@@ -58,7 +58,7 @@ test_that("split conformal quantile reports finite-sample rank and infinity", {
   expect_equal(z$rank, 9)
   expect_equal(z$threshold, 9)
   expect_true(is.infinite(etr_split_conformal_threshold(1:8, .10)$threshold))
-  expect_equal(etr_split_conformal_threshold(1:9, .20)$rank, 8L + 1L)
+  expect_equal(etr_split_conformal_threshold(1:9, .20)$rank, 8L)
   expect_error(etr_split_conformal_threshold(c(1, NA_real_)), "nonnegative")
   expect_error(etr_split_conformal_threshold(1:10, alpha = 0), "strictly between")
 })
