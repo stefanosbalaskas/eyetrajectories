@@ -1,15 +1,71 @@
 # eyetrajectories
 
+## Complete Python-backed function API — 380 explicit R wrappers
+
+**Development version 0.4.0.9000 (private; unreleased).** The
+eyetrajectoriespy GitHub main snapshot on 25 October 2026 defines 362
+root public functions and 18 module-scoped workflow functions.
+All **380 Python callables** now have named R wrappers:
+
+- `etpy_fit_fpca(...)` and the other 361 `etpy_*` root wrappers
+- `etpy_workflow_run_fpca_workflow(...)` and 17 other workflow wrappers
+- `etpy_catalog()` gives the exact 380-function manifest without initializing Python
+- `etpy_catalog(include_nonfunctions = TRUE)` catalogs 508 symbols:
+  458 root and 50 workflow exports; 128 are classes or constants
+- `etpy_verify_api(strict = TRUE)` verifies that your installed Python
+  distribution actually provides every recorded callable
+- `etpy_get_export("FPCAWorkflowConfig", .namespace = "workflows")`
+  retrieves an exported Python class or constant without invoking it
+
+~~~r
+library(eyetrajectories)
+nrow(etpy_catalog())  # 380 recorded root + workflow functions
+gaze <- etpy_simulate_planar_trajectories(
+  n_participants = 6L, trials_per_participant = 2L,
+  n_time = 41L, random_state = 7L
+)
+fit <- etpy_fit_mfpca(gaze, n_components = 0.95,
+                      scaling = "dimension_sd")
+head(et_to_r(etpy_fpca_score_frame(fit)))
+etpy_verify_api(strict = TRUE)
+~~~
+
+**Scientific scope:** The new 380 functions are thin Python-backed wrappers,
+not 380 independently implemented R estimators. The existing 88 native
+`etr_*` functions remain available without Python. The named wrappers
+require `reticulate` and the declared `eyetrajectoriespy==1.2.0` runtime;
+a GitHub source snapshot may differ from the installed PyPI artifact.
+Scientific assumptions, optional Python dependencies, and experimental
+uncertainty/calibration limitations are inherited from the Python backend.
+
+**Local qualification, 25 October 2026:** User-executed Windows 11 /
+R 4.6.1 check of version 0.3.2.9000 produced 0 errors, 0 warnings,
+0 notes; the original opt-in Python bridge integration tests passed.
+The NEW 380-function wrapper census and version 0.4.0.9000 have
+**not yet been locally checked**, and Linux/macOS checks remain pending.
+Hosted CI cannot start runners on this private repository at present.
+
+**Independent known-truth coverage grid:** 100 studies per design
+at 12, 24, 48 independent participants had group-contrast simultaneous
+coverage 65%, 79%, 84% and participant-mean coverage 63%, 89%, 86%
+at a 90% nominal target, with no fit failures. These results do not
+qualify the experimental uncertainty procedures; see
+[coverage-grid evidence](docs/phase3-coverage-grid-2026-10-25.md).
+
+Source inventory: `inst/extdata/python_api_2026-10-25.csv`.
+Call documentation: `?etpy_python_functions`.
+
+---
 ## Native R scientific core — expanded Phase 3
 
-**Version 0.3.2.9000, private / unreleased.** The package now exposes **88 native R
+**Previous checked version 0.3.2.9000, private / unreleased.** The native R core exposes **88 native R
 functions**: 38 Phase 2 core functions and 50 experimental Phase 3 advanced
 methods. Native functions do not initialize Python, although sparse PACE requires
 the optional R package fdapace.
 The Phase 1 Python bridge remains available under the original et_* interface
 for methods not yet ported.
 
-**Current qualification:** [Evidence matrix and remaining work](docs/phase3-qualification-status.md). The R and Python tests have not executed successfully because GitHub Actions jobs fail before starting, including a minimal runner test.
+**Current qualification:** [Evidence matrix and remaining work](docs/phase3-qualification-status.md). The local Windows 11 / R 4.6.1 tests passed, including the original opt-in Python integration tests. GitHub Actions remains unavailable before runner allocation; the new 380-function census has not yet been checked locally.
 
 ### Advanced R methods (experimental)
 
@@ -52,8 +108,7 @@ All are experimentally scoped rather than qualified inference.
 Read the [Phase 3 scientific qualification note](docs/phase3-scientific-qualification.md)
 and the [expansion methods article](docs/phase3-expansion-methods.md).
 These estimators do **not** yet establish generalized inference calibration,
-causal direction, or full Python API parity. CI remains blocked upstream of
-test execution; the source is merged to main at the owner's instruction.
+causal direction, or full Python API parity. Hosted CI remains blocked before runner allocation; local RStudio checks of the previous version passed.
 
 ### Native R quick start (no Python)
 
@@ -92,8 +147,7 @@ and the [native methods article](docs/native-methods.md).
 **Qualification notice:** This is a draft implementation, not an independently
 validated scientific release. The R tests assert 17 frozen mathematical
 reference targets, and CI is configured to verify them against published
-Python 1.2.0. Both checks remain **unverified** because CI jobs have not
-executed successfully. No calibrated
+Python 1.2.0. The original native numerical fixtures passed locally on Windows; cross-platform verification remains outstanding. No calibrated
 uncertainty inference or native sparse FPCA is claimed.
 
 ---
@@ -101,7 +155,7 @@ uncertainty inference or native sparse FPCA is claimed.
 
 **Optional experimental R interface to [eyetrajectoriespy 1.2.0](https://github.com/stefanosbalaskas/eyetrajectoriespy)** for continuous and functional analysis of eye-tracking trajectories.
 
-**Phase 1 history:** The optional `et_*` interface still delegates to the published Python 1.2.0 backend; the new `etr_*` interface is independently implemented native R. Neither interface has yet completed release qualification.
+**Phase 1 history:** The optional `et_*` interface still delegates to the published Python 1.2.0 backend; the new `etr_*` interface is independently implemented native R. Neither interface has completed full cross-platform or scientific release qualification.
 
 ## Python-backed Phase 1 interface (optional)
 
