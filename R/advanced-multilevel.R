@@ -27,7 +27,7 @@ etr_fit_multilevel_fpca <- function(x, participant, n_between = 2L, n_within = 2
               "n_between must be an integer from 1 to n_participants - 1")
   .etr_assert(is.numeric(n_within) && length(n_within) == 1L &&
                 is.finite(n_within) && n_within == as.integer(n_within) &&
-                n_within >= 1L && n_within <= n - length(participants),
+                n_within >= 1L && n_within <= min(n - length(participants), length(x$time) * dim(x$values)[3]),
               "n_within must be an integer from 1 to residual degrees of freedom")
   ng <- length(participants); nt <- length(x$time); nd <- dim(x$values)[3]
   means <- array(0, c(ng, nt, nd))

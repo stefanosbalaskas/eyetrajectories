@@ -46,6 +46,7 @@ etr_transfer_entropy <- function(source, target, k_target = 1L, k_source = 1L,
     .etr_assert(length(z) == n, "conditioning length must match")
   }
   first <- max(k_target + 1L, lag + k_source, if (!is.null(conditioning)) 2L else 1L)
+  .etr_assert(n >= first + 4L, "insufficient transitions for declared history")
   idx <- seq.int(first, n)
   .etr_assert(length(idx) >= 5L, "insufficient transitions for declared history")
   frame <- data.frame(future = y[idx], stringsAsFactors = FALSE)
@@ -95,6 +96,7 @@ etr_transfer_entropy_shift_test <- function(source, target,
                                     lag, conditioning)$transfer_entropy_bits
   n <- length(source)
   avoid <- max(as.integer(k_target), as.integer(k_source) + as.integer(lag), 3L)
+  .etr_assert(n >= 2L*avoid + 5L, "series too short for separated circular shifts")
   shifts <- seq.int(avoid, n - avoid)
   .etr_assert(length(shifts) >= 5L, "series too short for separated circular shifts")
   null <- .etr_seed_scope(seed, function() {

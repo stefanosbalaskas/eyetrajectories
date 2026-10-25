@@ -31,7 +31,7 @@ etr_simulate_sparse_known_truth <- function(n_subjects = 45L, min_observations =
     times <- vector("list", n_subjects)
     observed <- vector("list", n_subjects)
     for (i in seq_len(n_subjects)) {
-      ni <- sample(seq.int(min_observations, max_observations), 1L)
+      ni <- min_observations + sample.int(max_observations - min_observations + 1L, 1L) - 1L
       at <- sort(sample.int(length(grid), ni, replace = FALSE))
       times[[i]] <- grid[at]
       observed[[i]] <- truth[i, at] + stats::rnorm(ni, sd = noise_sd)
