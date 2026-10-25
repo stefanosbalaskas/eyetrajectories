@@ -1,9 +1,9 @@
 # eyetrajectories
 
-## Native R scientific core — Phases 2 and 3
+## Native R scientific core — expanded Phase 3
 
-**Version 0.3.0.9000, private / unreleased.** The package now exposes **58 native R
-functions**: 38 Phase 2 core functions and 20 experimental Phase 3 advanced
+**Version 0.3.1.9000, private / unreleased.** The package now exposes **85 native R
+functions**: 38 Phase 2 core functions and 47 experimental Phase 3 advanced
 methods. Native functions do not initialize Python, although sparse PACE requires
 the optional R package fdapace.
 The Phase 1 Python bridge remains available under the original et_* interface
@@ -40,7 +40,15 @@ fit_sparse <- etr_fit_sparse_pace(sparse$curves, max_components = 2L)
 head(etr_sparse_pace_scores(fit_sparse))
 ~~~
 
-Read the [Phase 3 scientific qualification note](docs/phase3-scientific-qualification.md).
+The expanded toolkit also includes **participant-stratified treatment contrasts**,
+**independently simulated coverage diagnostics**, **participant-grouped FPCA
+cross-validation** (rebuilding the PCA on each training fold), marginal sparse
+PACE support diagnostics, an optional `refund::pffr` functional mixed-effects
+adapter, and explicit transfer-entropy bias/null diagnostics and plots.
+All are experimentally scoped rather than qualified inference.
+
+Read the [Phase 3 scientific qualification note](docs/phase3-scientific-qualification.md)
+and the [expansion methods article](docs/phase3-expansion-methods.md).
 These estimators do **not** yet establish generalized inference calibration,
 causal direction, or full Python API parity. CI remains blocked upstream of
 test execution; the source is merged to main at the owner's instruction.
