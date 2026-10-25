@@ -83,11 +83,31 @@ CRAN incoming release conditions and scientific calibration remain open.
   Ubuntu previous-R-version case. Manual dispatch only; no runner
   admission/CI results yet.
 
-These scripts were committed without executing R checks in the assistant
-environment; pull and run the scripts on the local Windows R setup
-before treating their results as empirical evidence. None of the native
-`etr_*` estimator implementations was changed. Experimental
-simultaneous-band inference and CRAN release remain on HOLD.
+The author **executed both scripts successfully** on Windows 11 / R 4.6.1
+(25 October 2026) and supplied per-replicate CSVs, numerical summaries and
+the five-page native PDF. The native gallery found 20 independent participants,
+60 curves, descriptive reconstruction RMSE 0.04711, 12 participants per
+randomized arm, 35 sparse curves and a minimum time-bin support fraction
+0.48571. The observed TE was 0.48658 bits; circular-shift descriptive
+diagnostic p=0.02 is NOT a causal or calibrated significance claim.
+
+In the paired interval comparison (30 matched generated datasets in each
+of six method/design cells; B=199), all 360 method-dataset calculations
+completed without fit errors. Current fixed-SE group contrast band coverage
+at N=12/24/48 was 0.60/0.70/0.80 and participant-mean band coverage
+0.6667/0.7667/0.8333 versus the 0.90 target. Gaussian Student-t Bonferroni
+reference coverage on those **same datasets** was 0.9667/0.9667/1.0000
+(group) and 1.0000/0.9333/1.0000 (mean); the reference intervals were
+substantially wider. These exploratory results do NOT justify substituting
+the reference for a general estimator: homoskedastic Gaussian participant
+assumptions, missingness and multiplicity remain limitations.
+
+The newly added optional `scripts/run_native_ggplot_gallery.R` redraws
+the same five deterministic examples in ggplot2, including unclipped
+category labels and explicit TE observed-vs-surrogate range labeling.
+That plotting upgrade has been committed but **not yet run locally**.
+None of the native `etr_*` estimator implementations was changed.
+Scientific simultaneous-band inference and CRAN release remain on HOLD.
 ## What exists
 
 | Component | Source | R tests successfully executed |
