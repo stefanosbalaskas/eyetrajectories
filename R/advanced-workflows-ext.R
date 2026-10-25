@@ -22,7 +22,7 @@ etr_run_group_contrast_workflow <- function(x, participant, group,
   .etr_workflow("group_mean_function_difference", fit,
                 list(contrast = fit$contrast,
                      participants_per_group = fit$participants_per_group,
-                     max_t_critical = fit$critical),
+                     max_standardized_critical = fit$critical),
                 list(B = B, alpha = alpha, seed = seed,
                      group_levels = fit$group_levels,
                      resampling_unit = "participant"))

@@ -11,6 +11,9 @@
 .etr_entropy_columns <- function(z, cols) {
   if (!length(cols)) return(0)
   factors <- lapply(z[cols], factor)
+  support <- vapply(factors, nlevels, numeric(1))
+  .etr_assert(sum(log(pmax(support, 1))) <= log(1e6),
+              "discrete joint-state space exceeds 1 million theoretical cells; reduce bins/history")
   key <- do.call(interaction, c(factors, list(drop = TRUE, lex.order = TRUE)))
   p <- as.vector(table(key))
   p <- p[p > 0]; p <- p / sum(p)
@@ -88,8 +91,8 @@ etr_transfer_entropy_shift_test <- function(source, target,
                                             n_surrogates = 99L, seed = 1L) {
   .etr_assert(is.numeric(n_surrogates) && length(n_surrogates) == 1L &&
                 is.finite(n_surrogates) && n_surrogates >= 19L &&
-                n_surrogates == as.integer(n_surrogates),
-              "n_surrogates must be integer >= 19")
+                n_surrogates == as.integer(n_surrogates) && n_surrogates <= 10000L,
+              "n_surrogates must be integer 19 to 10000")
   .etr_assert(length(source) >= 30L && length(source) == length(target),
               "shift test needs >= 30 aligned observations")
   observed <- etr_transfer_entropy(source, target, k_target, k_source,

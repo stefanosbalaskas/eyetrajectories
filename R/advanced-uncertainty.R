@@ -38,7 +38,7 @@
 #' Participant-cluster bootstrap confidence bands for functional means
 #'
 #' Treats independent participant-mean curves as the resampling units. Produces
-#' exploratory pointwise percentile and max-studentized simultaneous bands.
+#' exploratory pointwise percentile and max-standardized (fixed empirical SE) simultaneous bands.
 #' No universal nominal-coverage guarantee is made for small clusters or
 #' non-Gaussian, heteroskedastic or informative observation processes.
 #' @param x Complete native common-grid trajectories.
@@ -83,7 +83,7 @@ etr_bootstrap_mean_band <- function(x, participant, B = 399L, alpha = 0.05, seed
                  cutoff = cutoff, alpha = alpha, B = as.integer(B),
                  independent_clusters = ng, resampling_unit = "participant",
                  time = g$time, dimensions = g$dimensions,
-                 method = "participant_mean_cluster_bootstrap_max_t"),
+                 method = "participant_mean_cluster_bootstrap_fixed_se_max_standardized"),
             class = "etr_mean_band")
 }
 

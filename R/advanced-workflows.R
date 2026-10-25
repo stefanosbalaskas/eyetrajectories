@@ -42,7 +42,7 @@ etr_run_mean_band_workflow <- function(x, participant, B = 399L,
   fit <- etr_bootstrap_mean_band(x, participant, B, alpha, seed)
   .etr_workflow("participant_cluster_mean_bands", fit,
                 list(cluster_count = fit$independent_clusters,
-                     max_t_cutoff = fit$cutoff),
+                     max_standardized_cutoff = fit$cutoff),
                 list(B = B, alpha = alpha, seed = seed,
                      resampling_unit = "participant"))
 }
