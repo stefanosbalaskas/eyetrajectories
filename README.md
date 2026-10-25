@@ -38,12 +38,17 @@ a GitHub source snapshot may differ from the installed PyPI artifact.
 Scientific assumptions, optional Python dependencies, and experimental
 uncertainty/calibration limitations are inherited from the Python backend.
 
-**Local qualification, 25 October 2026:** User-executed Windows 11 /
-R 4.6.1 check of version 0.3.2.9000 produced 0 errors, 0 warnings,
-0 notes; the original opt-in Python bridge integration tests passed.
-The NEW 380-function wrapper census and version 0.4.0.9000 have
-**not yet been locally checked**, and Linux/macOS checks remain pending.
-Hosted CI cannot start runners on this private repository at present.
+**Local qualification, 25 October 2026: PASS (user-executed).**
+On Windows 11 / R 4.6.1, development version **0.4.0.9000** passed
+`testthat` and `R CMD check --no-manual` with **0 errors, 0 warnings,
+0 notes**, with opt-in Python bridge and generated-wrapper integration
+tests enabled (`ET_RUN_PYTHON_TESTS=true`, `MPLBACKEND=Agg`).
+A separate strict installed-runtime census confirmed **380/380**
+recorded Python functions were exported and callable. This does **not**
+mean every Python function was individually exercised or scientifically
+validated. Linux/macOS checks remain pending; GitHub-hosted runners are
+still blocked before allocation for this private repository.
+[Qualification evidence and open risks](docs/phase3-qualification-status.md).
 
 **Independent known-truth coverage grid:** 100 studies per design
 at 12, 24, 48 independent participants had group-contrast simultaneous
@@ -58,14 +63,14 @@ Call documentation: `?etpy_python_functions`.
 ---
 ## Native R scientific core — expanded Phase 3
 
-**Previous checked version 0.3.2.9000, private / unreleased.** The native R core exposes **88 native R
+**Current development version 0.4.0.9000, private / unreleased.** The native R core exposes **88 native R
 functions**: 38 Phase 2 core functions and 50 experimental Phase 3 advanced
 methods. Native functions do not initialize Python, although sparse PACE requires
 the optional R package fdapace.
 The Phase 1 Python bridge remains available under the original et_* interface
 for methods not yet ported.
 
-**Current qualification:** [Evidence matrix and remaining work](docs/phase3-qualification-status.md). The local Windows 11 / R 4.6.1 tests passed, including the original opt-in Python integration tests. GitHub Actions remains unavailable before runner allocation; the new 380-function census has not yet been checked locally.
+**Current qualification:** [Evidence matrix and remaining work](docs/phase3-qualification-status.md). The local Windows 11 / R 4.6.1 suite passed for 0.4.0.9000, including the 380-function API census and opt-in Python integration tests. Hosted GitHub Actions remains unavailable before runner allocation.
 
 ### Advanced R methods (experimental)
 
@@ -108,7 +113,7 @@ All are experimentally scoped rather than qualified inference.
 Read the [Phase 3 scientific qualification note](docs/phase3-scientific-qualification.md)
 and the [expansion methods article](docs/phase3-expansion-methods.md).
 These estimators do **not** yet establish generalized inference calibration,
-causal direction, or full Python API parity. Hosted CI remains blocked before runner allocation; local RStudio checks of the previous version passed.
+causal direction, or full Python API parity. Hosted CI remains blocked before runner allocation; local RStudio checks of version 0.4.0.9000 passed.
 
 ### Native R quick start (no Python)
 

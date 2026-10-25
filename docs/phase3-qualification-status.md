@@ -1,21 +1,64 @@
 # Phase 3 qualification and remaining work — 25 October 2026
 
-**Version:** 0.3.2.9000 (private, unreleased, not on CRAN).
-**Exports:** 102 total, 88 native R, 14 Python-backed bridge names.
-**Scientific release status:** not qualified; code committed to main.
+**Version:** 0.4.0.9000 (private, unreleased, not on CRAN).
+**Native and original bridge exports:** 88 native R, 14 original Python-backed bridge names.
+**Python API expansion:** 380 explicit Python-backed wrappers and 3 catalog/verification utilities; 508 upstream Python symbols documented.
+**Engineering qualification:** Windows 11 / R 4.6.1 passed locally; hosted CI remains unavailable.
+**Scientific release status:** inference not qualified, no CRAN publication.
+
+
+## P0 — Windows 11 qualification evidence for R 0.4.0.9000
+
+**User-executed on 25 October 2026**, R 4.6.1 (ucrt), Windows 11 x64.
+The console output shows `source("scripts/local_qualification.R")` with
+`ET_RUN_PYTHON_TESTS=true` and `MPLBACKEND=Agg`: `testthat: PASS`,
+R CMD check **0 errors, 0 warnings, 0 notes**; package building,
+installation, loading, examples, Rd documentation and tests succeeded.
+Opt-in Python bridge tests and the generated-wrapper test file ran without
+failure. The informational `refund::pffr` note about a default sandwich
+covariance mode did not generate an R CMD check warning or note.
+
+The author also confirmed the installed `eyetrajectories` version
+`0.4.0.9000`, `nrow(etpy_catalog()) == 380`,
+`etpy_verify_api(strict=TRUE)` completed without error, and the
+installed-Python availability census returned `TRUE = 380`. The strict
+check also tests callability. This is a **structural runtime check**,
+not a functional exercise of each of the 380 Python functions.
+
+The independent R-native inventory remains **88 native scientific functions**
+and **14 original bridge functions**, plus 380 explicit Python-backed
+wrappers and three new Python API catalog/verification utilities. The
+upstream Python source snapshot lists 362 root callables and 18 workflow
+callables (and 128 nonfunction symbols across both namespaces). Generated
+wrappers are delegated Python calls, **not native R translations**.
+
+**Scope limits:** This is local Windows qualification and an upstream API
+interface census. It does not qualify scientific uncertainty coverage,
+estimate inference, full per-function behavioral parity, sparse-joint
+inference, cross-platform portability, or CRAN readiness. Main's
+GitHub Actions workflows remain manually dispatchable but blocked at
+runner admission; see issue #3.
+
+**Independent known-truth Monte Carlo evidence:** Across 100 simulated
+datasets at each of 12, 24 and 48 participants and 399 bootstrap draws
+per dataset, group-contrast simultaneous coverage was 65%, 79%, 84%;
+participant-mean coverage 63%, 89%, 86%, respectively, against a nominal
+90% target, with zero fit failures in all 600 datasets. Uncertainty
+calibration therefore remains **HOLD**; see
+[coverage grid evidence](phase3-coverage-grid-2026-10-25.md).
 
 ## What exists
 
 | Component | Source | R tests successfully executed |
 | --- | --- | --- |
-| Dense FPCA, distances, recurrence | Yes | No |
-| Univariate fdapace sparse PACE and marginal channel PACE | Yes | No |
-| Two-level descriptive FPCA | Yes | No |
-| Optional refund mixed-response model | Yes | No |
-| Cluster bootstrap bands, contrasts and eigenvalue spectra | Yes | No |
-| Transfer entropy, shuffle bias and autocorrelated null audits | Yes | No |
-| Scalar-on-FPCA regression with participant-grouped CV | Yes | No |
-| Known-truth simulations and native figure scripts | Yes | No |
+| Dense FPCA, distances, recurrence | Yes | Yes — local Windows tests; scientific validity pending |
+| Univariate fdapace sparse PACE and marginal channel PACE | Yes | Yes — local Windows tests; scientific validity pending |
+| Two-level descriptive FPCA | Yes | Yes — local Windows tests; scientific validity pending |
+| Optional refund mixed-response model | Yes | Yes — local Windows tests; scientific validity pending |
+| Cluster bootstrap bands, contrasts and eigenvalue spectra | Yes | Yes — local Windows tests; scientific validity pending |
+| Transfer entropy, shuffle bias and autocorrelated null audits | Yes | Yes — local Windows tests; scientific validity pending |
+| Scalar-on-FPCA regression with participant-grouped CV | Yes | Yes — local Windows tests; scientific validity pending |
+| Known-truth simulations and native figure scripts | Yes | Yes — local Windows tests; scientific validity pending |
 
 ## Independent mathematical checks (NOT R-package test results)
 
@@ -46,7 +89,7 @@ https://github.com/stefanosbalaskas/eyetrajectories/issues/3
 
 ## P1 — Mandatory scientific qualification
 
-- Execute complete R CMD check, testthat and independent oracle scripts.
+- R CMD check and testthat: completed successfully on Windows 11 / R 4.6.1 with opt-in Python integration; independent oracle scripts and cross-platform checks remain to be completed separately.
 - Sparse PACE: observed-device fixtures, convergence, data-density and
   smoothing sensitivity, missingness and cross-channel covariance.
 - Functional mixed effects: REML fit diagnostics, nested/unbalanced trial
