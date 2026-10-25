@@ -1,7 +1,7 @@
 # Phase 3 scientific qualification (experimental)
 
 Phase 3 is committed directly to main at the owner's instruction. No CRAN
-release has been made. Version 0.3.0.9000 is a development version and all
+release has been made. Version 0.3.2.9000 is a development version and all
 advanced methods are experimental until independent validation is completed.
 
 ## Scope

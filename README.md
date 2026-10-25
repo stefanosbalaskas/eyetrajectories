@@ -2,8 +2,8 @@
 
 ## Native R scientific core — expanded Phase 3
 
-**Version 0.3.1.9000, private / unreleased.** The package now exposes **85 native R
-functions**: 38 Phase 2 core functions and 47 experimental Phase 3 advanced
+**Version 0.3.2.9000, private / unreleased.** The package now exposes **88 native R
+functions**: 38 Phase 2 core functions and 50 experimental Phase 3 advanced
 methods. Native functions do not initialize Python, although sparse PACE requires
 the optional R package fdapace.
 The Phase 1 Python bridge remains available under the original et_* interface

@@ -1,8 +1,8 @@
 # Phase 3 extension — scientific contracts and simulation evidence
 
-**Package development version 0.3.1.9000.** The 27 new methods extend the
-20 earlier experimental Phase 3 functions. There are now 85 native R exports,
-plus 14 optional reticulate bridge exports.
+**Package development version 0.3.2.9000.** The expanded methods, including the 3 independent FPCA-spectrum and analytic
+variance functions, extend the 20 earlier experimental Phase 3 functions.
+There are now 88 native R exports and 14 optional reticulate bridge exports.
 
 All scientific results produced by the supplied examples and audit runner
 are **synthetic known-truth outcomes**. They must not be presented as
@@ -77,6 +77,23 @@ within-process persistence and **zero generating cross-series effect**.
 \`etr_evaluate_te_null()\` reports the fraction of circular-shift surrogates
 flagging a predetermined threshold, explicitly labelled as a *diagnostic
 flag rate*, not a proven type-I error probability.
+
+## Sign-invariant FPCA spectrum and analytic variance oracle
+
+`etr_bootstrap_fpca_spectrum()` resamples independent participant-mean curves,
+refits dense FPCA on every draw, and returns eigenvalue percentile intervals
+along with **every failed replicate**. This guards against arbitrary eigenvector
+sign flips when comparing spectra. It is not a calibrated eigenfunction or
+simultaneous band method.
+
+`etr_analytic_between_variance()` derives the integrated between-participant
+variance of the independent hierarchical generator directly from its sine/cosine
+basis and known subject/trial/noise variances. The analytic identity is
+orthogonal to the FPCA estimation code. The Monte Carlo audit
+`etr_evaluate_between_variance()` records integrated covariance-trace bias,
+root-mean-square error and Monte Carlo uncertainty. A correct theoretical
+trace does not guarantee small-sample coverage or extend to informative gaze
+missingness.
 
 ## Reproducible validation and plots
 
