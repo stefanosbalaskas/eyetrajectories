@@ -1,6 +1,6 @@
 Package: eyetrajectories
 Title: R Interface for Functional Eye-Tracking Trajectories
-Version: 0.3.2.9000
+Version: 0.4.0.9000
 Authors@R: person("Stefanos", "Balaskas", email = "s.balaskas@ac.upatras.gr", role = c("aut", "cre"))
 Description: Provides an experimental R interface to the Python package
     'eyetrajectoriespy' for continuous eye-tracking trajectory analysis.
@@ -11,7 +11,9 @@ Description: Provides an experimental R interface to the Python package
     functionality requires no Python installation. Includes an experimental
     R-native sparse PACE adapter backed by 'fdapace', participant-level
     functional decomposition, cluster bootstrap diagnostics and discrete
-    transfer entropy.
+    transfer entropy. Provides additional optional Python-backed wrappers
+    for the 380 public Python functions recorded in the 2026-10-25 source
+    snapshot, without implying native R parity.
 License: MIT + file LICENSE
 URL: https://github.com/stefanosbalaskas/eyetrajectories
 BugReports: https://github.com/stefanosbalaskas/eyetrajectories/issues
