@@ -18,6 +18,10 @@ BugReports: https://github.com/stefanosbalaskas/eyetrajectories/issues
 Encoding: UTF-8
 Depends: R (>= 4.2.0)
 Imports:
+    graphics,
+    grDevices,
+    stats,
+    utils,
     reticulate (>= 1.41)
 Suggests:
     testthat (>= 3.0.0),
