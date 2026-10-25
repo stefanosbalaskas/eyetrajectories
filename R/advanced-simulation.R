@@ -73,6 +73,9 @@ etr_evaluate_sparse_pace_recovery <- function(simulations = 5L, n_subjects = 45L
       }, numeric(length(pred$time))))
       mean_ref <- stats::approx(sample$grid, sample$true_mean,
                                 xout = pred$time, rule = 1)$y
+      .etr_assert(all(is.finite(pred$fitted)) && all(is.finite(ref)) &&
+                    all(is.finite(fit$model$mu)) && all(is.finite(mean_ref)),
+                  "non-finite PACE prediction or truth interpolation")
       c(sqrt(mean((pred$fitted - ref)^2)), sqrt(mean((fit$model$mu - mean_ref)^2)))
     }, error = function(e) {
       failures[i] <<- conditionMessage(e)

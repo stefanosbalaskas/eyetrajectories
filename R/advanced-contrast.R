@@ -27,7 +27,7 @@ etr_bootstrap_group_contrast <- function(x, participant, group, B = 399L,
     .etr_assert(length(g) == 1L, "participant must belong to exactly one group")
     g
   }, character(1))
-  levels <- unique(grp)
+  levels <- sort(unique(grp))
   .etr_assert(length(levels) == 2L, "group must have exactly two levels")
   idx <- lapply(levels, function(k) which(grp == k))
   .etr_assert(all(lengths(idx) >= 3L), "at least 3 independent participants per group required")
@@ -42,6 +42,8 @@ etr_bootstrap_group_contrast <- function(x, participant, group, B = 399L,
   delta <- mean_b - mean_a
   se <- sqrt(apply(group_a, 2L, stats::var) / nrow(group_a) +
              apply(group_b, 2L, stats::var) / nrow(group_b))
+  .etr_assert(as.double(length(delta)) * as.double(B) <= 1e7,
+              "group contrast bootstrap array exceeds 10 million cells")
   boots <- .etr_seed_scope(seed, function() {
     replicate(as.integer(B), {
       a <- colMeans(group_a[sample.int(nrow(group_a), nrow(group_a), TRUE), , drop = FALSE])

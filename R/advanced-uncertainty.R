@@ -50,7 +50,7 @@
 etr_bootstrap_mean_band <- function(x, participant, B = 399L, alpha = 0.05, seed = 1L) {
   g <- .etr_participant_matrix(x, participant)
   .etr_assert(is.numeric(B) && length(B) == 1L && is.finite(B) &&
-                B == as.integer(B) && B >= 39L, "B must be integer >= 39")
+                B == as.integer(B) && B >= 39L && B <= 20000L, "B must be integer 39 to 20000")
   .etr_assert(is.numeric(alpha) && length(alpha) == 1L &&
                 is.finite(alpha) && alpha > 0 && alpha < 1,
               "alpha must be in (0,1)")
@@ -58,6 +58,8 @@ etr_bootstrap_mean_band <- function(x, participant, B = 399L, alpha = 0.05, seed
   mean_curve <- colMeans(z)
   se <- apply(z, 2L, stats::sd) / sqrt(ng)
   active <- which(se > .Machine$double.eps)
+  .etr_assert(as.double(ncol(z)) * as.double(B) <= 1e7,
+              "cluster mean bootstrap array exceeds 10 million cells")
   boots <- .etr_seed_scope(seed, function() {
     replicate(as.integer(B),
       colMeans(z[sample.int(ng, ng, replace = TRUE), , drop = FALSE]))
