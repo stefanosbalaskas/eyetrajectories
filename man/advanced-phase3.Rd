@@ -41,19 +41,26 @@ etr_multilevel_variance(fit)
 
 etr_bootstrap_mean_band(x, participant, B = 399L, alpha = 0.05, seed = 1L)
 
-etr_simulate_hierarchical(n_subjects = 20L, trials_per_subject = 3L, n_time = 41L, subject_sd = 0.35, trial_sd = 0.15, noise_sd = 0.05, seed = 7L)
+etr_simulate_hierarchical(n_subjects = 20L, trials_per_subject = 3L, n_time = 41L,
+    subject_sd = 0.35, trial_sd = 0.15, noise_sd = 0.05, seed = 7L)
 
-etr_evaluate_mean_band_coverage(simulations = 20L, B = 99L, alpha = 0.10, n_subjects = 20L, seed = 100L)
+etr_evaluate_mean_band_coverage(simulations = 20L, B = 99L, alpha = 0.10,
+    n_subjects = 20L, seed = 100L)
 
-etr_transfer_entropy(source, target, k_target = 1L, k_source = 1L, lag = 1L, conditioning = NULL)
+etr_transfer_entropy(source, target, k_target = 1L, k_source = 1L, lag = 1L,
+    conditioning = NULL)
 
-etr_transfer_entropy_shift_test(source, target, k_target = 1L, k_source = 1L, lag = 1L, conditioning = NULL, n_surrogates = 99L, seed = 1L)
+etr_transfer_entropy_shift_test(source, target, k_target = 1L, k_source = 1L,
+    lag = 1L, conditioning = NULL, n_surrogates = 99L, seed = 1L)
 
-etr_transfer_entropy_directions(source, target, k_target = 1L, k_source = 1L, lag = 1L)
+etr_transfer_entropy_directions(source, target, k_target = 1L, k_source = 1L,
+    lag = 1L)
 
-etr_simulate_sparse_known_truth(n_subjects = 45L, min_observations = 5L, max_observations = 10L, noise_sd = 0.10, score_sd = 0.60, seed = 22L)
+etr_simulate_sparse_known_truth(n_subjects = 45L, min_observations = 5L,
+    max_observations = 10L, noise_sd = 0.10, score_sd = 0.60, seed = 22L)
 
-etr_evaluate_sparse_pace_recovery(simulations = 5L, n_subjects = 45L, seed = 100L, max_components = 2L)
+etr_evaluate_sparse_pace_recovery(simulations = 5L, n_subjects = 45L, seed = 100L,
+    max_components = 2L)
 
 etr_evaluate_multilevel_recovery(simulations = 10L, n_subjects = 20L, seed = 200L)
 
@@ -63,7 +70,8 @@ etr_run_multilevel_workflow(x, participant, n_between = 2L, n_within = 2L)
 
 etr_run_mean_band_workflow(x, participant, B = 399L, alpha = 0.05, seed = 1L)
 
-etr_run_transfer_entropy_workflow(source, target, k_target = 1L, k_source = 1L, lag = 1L, conditioning = NULL, n_surrogates = 99L, seed = 1L)
+etr_run_transfer_entropy_workflow(source, target, k_target = 1L, k_source = 1L,
+    lag = 1L, conditioning = NULL, n_surrogates = 99L, seed = 1L)
 }
 \arguments{
 \item{times}{A list of strictly increasing, finite observation-time vectors.}

@@ -1,14 +1,24 @@
 # Native CRAN smoke example; uses no Python or online services.
 # From package repository root after pkgload::load_all():
 #   source("inst/examples/cran_native_smoke.R")
-# Output folder defaults to tempdir() unless ET_EXAMPLE_OUTPUT_DIR is set.
+# Outputs default to project/artifacts/cran_native_example for local usage.
+# Set ET_EXAMPLE_OUTPUT_DIR to override; use tempdir() outside a repo root.
 if (!requireNamespace("eyetrajectories", quietly = TRUE))
   stop("Load eyetrajectories from the checkout before running this example.")
 library(eyetrajectories)
 out <- Sys.getenv("ET_EXAMPLE_OUTPUT_DIR", unset = "")
-if (!nzchar(out)) out <- file.path(tempdir(), "eyetrajectories_native_example")
+if (!nzchar(out)) {
+  if (file.exists("DESCRIPTION") &&
+      identical(unname(read.dcf("DESCRIPTION", fields = "Package")[1L]),
+                "eyetrajectories")) {
+    out <- file.path(getwd(), "artifacts", "cran_native_example")
+  } else {
+    out <- file.path(tempdir(), "eyetrajectories_native_example")
+  }
+}
 dir.create(out, recursive = TRUE, showWarnings = FALSE)
 stopifnot(dir.exists(out))
+out <- normalizePath(out, winslash = "/", mustWork = TRUE)
 
 # Reproducible mathematical paths with no empirical gaze observations.
 time <- seq(0, 1, length.out = 31L)
@@ -76,3 +86,5 @@ utils::write.csv(results, file.path(out, "cran_native_example_summary.csv"),
                  row.names = FALSE)
 print(results, row.names = FALSE)
 cat("Native example passed; outputs saved to: ", out, "\n", sep = "")
+cat("Summary CSV: ", file.path(out, "cran_native_example_summary.csv"), "\n", sep = "")
+cat("Plots PDF: ", pdf_file, "\n", sep = "")

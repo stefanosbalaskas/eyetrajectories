@@ -42,11 +42,13 @@ basic recurrence analysis, and base graphics.}
 \alias{etr_plot_fpca_variance}
 \alias{etr_plot_recurrence}
 \usage{
-etr_trajectory_set(time, values, curve_ids = NULL, dimension_names = NULL, metadata = NULL, coordinate_system = "unknown", time_unit = "unknown")
+etr_trajectory_set(time, values, curve_ids = NULL, dimension_names = NULL,
+    metadata = NULL, coordinate_system = "unknown", time_unit = "unknown")
 
 etr_validate(x, require_complete = FALSE)
 
-etr_from_long(data, curve_columns, time_column = "time", value_columns = c("x", "y"), metadata_columns = NULL, coordinate_system = "unknown", time_unit = "unknown")
+etr_from_long(data, curve_columns, time_column = "time", value_columns = c("x", "y"),
+    metadata_columns = NULL, coordinate_system = "unknown", time_unit = "unknown")
 
 etr_as_long(x)
 

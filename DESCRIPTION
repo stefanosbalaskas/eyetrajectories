@@ -15,8 +15,6 @@ Description: Provides an experimental R interface to the Python package
     for the 380 public Python functions recorded in the 2026-10-25 source
     snapshot, without implying native R parity.
 License: MIT + file LICENSE
-URL: https://github.com/stefanosbalaskas/eyetrajectories
-BugReports: https://github.com/stefanosbalaskas/eyetrajectories/issues
 Encoding: UTF-8
 Depends: R (>= 4.2.0)
 Imports:

@@ -38,8 +38,10 @@ source("inst/examples/cran_native_smoke.R")
 The script checks a long-format round trip, native MFPCA, distances,
 recurrence quantification, shape invariants of an experimental participant
 bootstrap band, and the 380-function API catalog. It writes a CSV and PDF
-under the session's temporary directory unless `ET_EXAMPLE_OUTPUT_DIR`
-is specified. The native example does **not** initialize Python.
+under `artifacts/cran_native_example/` in the repository for direct local
+execution. A custom `ET_EXAMPLE_OUTPUT_DIR` takes precedence; outside the
+project root the script falls back to the session's temporary directory.
+The script prints both output file paths. The native example does **not** initialize Python.
 
 ## Optional Python integration, tested separately
 
@@ -74,3 +76,25 @@ R CMD check documentation: https://cran.r-project.org/doc/manuals/r-release/R-ex
 
 Do not publish or submit until the scientific HOLD status and cross-platform
 matrix are independently reviewed.
+
+## October 25 full-check findings and corrections
+
+The first Windows 11 R 4.6.1 `R CMD check --as-cran` returned
+0 errors, **1 warning** and **2 notes**, while Rd examples, PDF manual and
+all tests passed. The native smoke generated all expected figures/CSV.
+The warning arose from README Markdown conversion and nonstandard root
+folders; the Rd note arose from very long \usage lines. Packaging now
+excludes repository development-only `scripts/`, `docs/` and redundant
+`LICENSE.md` from the built source tarball, while keeping them in GitHub.
+The README thematic breaks were changed to avoid a misleading YAML
+frontmatter interpretation, and the Rd function signatures were wrapped.
+These fixes require a new local RStudio CRAN check; they are not yet verified.
+
+The source GitHub repository is private, so its README links are visible to
+authenticated collaborators but are **not public CRAN URLs**. Its `URL`
+and `BugReports` DESCRIPTION fields were intentionally omitted from the
+pre-publication source package; restore legitimate **public** destinations
+before submitting to CRAN. This preserves the private repository state.
+Incoming-feasibility NOTEs for a new package and the development version
+`0.4.0.9000` may remain; they should not be misrepresented as resolved.
+The development version is not a CRAN release candidate.

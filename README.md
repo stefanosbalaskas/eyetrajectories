@@ -14,11 +14,13 @@ It performs source-build `R CMD check --as-cran` including the PDF manual
 and test suite, and runs a separate native example that creates numerical
 outputs and a three-figure PDF. Generated qualification reports go to a
 timestamped directory beside the repository rather than into the package.
+For the standalone example, PDF and CSV outputs are now saved in
+`artifacts/cran_native_example/` under the project root.
 The CRAN-facing stage disables opt-in Python tests and is offline-safe;
 Python integrations are tested separately. See
 [the qualification runbook](docs/cran-qualification-runbook.md).
 
----
+***
 ## Complete Python-backed function API — 380 explicit R wrappers
 
 **Development version 0.4.0.9000 (private; unreleased).** The
@@ -79,7 +81,7 @@ qualify the experimental uncertainty procedures; see
 Source inventory: `inst/extdata/python_api_2026-10-25.csv`.
 Call documentation: `?etpy_python_functions`.
 
----
+***
 ## Native R scientific core — expanded Phase 3
 
 **Current development version 0.4.0.9000, private / unreleased.** The native R core exposes **88 native R
@@ -174,7 +176,7 @@ reference targets, and CI is configured to verify them against published
 Python 1.2.0. The original native numerical fixtures passed locally on Windows; cross-platform verification remains outstanding. No calibrated
 uncertainty inference or native sparse FPCA is claimed.
 
----
+***
 
 
 **Optional experimental R interface to [eyetrajectoriespy 1.2.0](https://github.com/stefanosbalaskas/eyetrajectoriespy)** for continuous and functional analysis of eye-tracking trajectories.
