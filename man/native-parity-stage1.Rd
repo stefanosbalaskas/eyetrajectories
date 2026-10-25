@@ -39,7 +39,7 @@ etr_split_conformal_fpca_anomalies(fit, calibration, test, alpha = 0.10)
 etr_r_backend_catalog()
 }
 \arguments{
-\item{x}{Complete native common-grid trajectory set, compatible with the fit when scoring.}
+\item{x}{Native common-grid trajectories; must match the FPCA fit when scoring.}
 \item{source_landmarks}{Numeric source times, one row per curve, strictly ordered.}
 \item{target_landmarks}{Prespecified, increasing interior target times.}
 \item{registration}{Native landmark registration output.}
