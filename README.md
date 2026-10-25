@@ -1,5 +1,34 @@
 # eyetrajectories
 
+## Python–R capability parity: what is available?
+
+The R package has **380 named optional Python-backed function wrappers**
+(362 root + 18 workflow callables), and the author-verified installed
+Python API census was **380/380 callable**. These are available *through
+reticulate*, not 380 independent native R implementations. The package
+also exports **88 native `etr_*` functions**, but their count is not
+a 1-to-1 algorithm mapping against the Python functions. Classes and
+constants are available via `etpy_get_export()`.
+
+A new [capability matrix](docs/r-python-capability-parity.md) identifies
+the main native gaps and distinguishes package interfaces from numerical
+or inferential qualification. You can produce an exact full export and
+candidate native analog report with:
+
+~~~r
+source("scripts/report_python_r_capabilities.R")
+~~~
+
+The report saves CSVs in `artifacts/capability_parity/` and does not
+initialize Python unless `ET_CAPABILITY_CHECK_PYTHON=true`. A further
+review against Python `main` on 26 October 2026 found **no changes**
+to either namespace's exported symbol list since the October 25
+snapshot. Real behavioral and scientific parity remain incomplete;
+notably sparse asynchronous multivariate modelling, functional
+mixed-effects inference, generalized regression, registration/elastic
+analysis, nonlinear dynamics, and uncertainty calibration.
+
+***
 ## Optional ggplot2 figure upgrade (all plots remain in R)
 
 Run `install.packages('ggplot2')` once, then from the source project root:

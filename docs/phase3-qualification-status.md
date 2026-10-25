@@ -102,12 +102,39 @@ substantially wider. These exploratory results do NOT justify substituting
 the reference for a general estimator: homoskedastic Gaussian participant
 assumptions, missingness and multiplicity remain limitations.
 
-The newly added optional `scripts/run_native_ggplot_gallery.R` redraws
-the same five deterministic examples in ggplot2, including unclipped
-category labels and explicit TE observed-vs-surrogate range labeling.
-That plotting upgrade has been committed but **not yet run locally**.
+The owner **executed the optional ggplot2 gallery successfully** on
+Windows with ggplot2 4.0.3 (UTC 2026-10-25 22:12:14) and provided the
+five resulting PNGs, five-page PDF, summary CSV and manifest. All
+five figures use the native R-generated datasets and estimators, not
+Python. The first figure has no clipped category labels; the final
+figure explicitly states observed TE 0.486580 bits versus maximum
+surrogate 0.027734 bits. As the observed statistic lies far beyond
+the surrogate histogram, the display is intentionally limited to
+surrogate counts, with the out-of-range statistic in its subtitle.
+The diagnostic p-value is descriptive and is not a calibrated test.
+The plotting upgrade does not change numerical methods.
 None of the native `etr_*` estimator implementations was changed.
 Scientific simultaneous-band inference and CRAN release remain on HOLD.
+## P1.1 — Native versus delegated Python capability audit
+
+Current Python main SHA (2026-10-26):
+`22da0659c7934b5a075701b7be0b7173f4c81f18`.
+Both public `__all__` sequences match the R's stored Python inventory
+**exactly**, including the order of all 458 root and 50 workflow symbols.
+The R API has 380 explicit named Python function wrappers, 3 catalog
+utilities, 88 separate native-R `etr_*` exports and 14 original
+Python bridge names. Availability and numeric parity are not equivalent.
+
+New [capability matrix](r-python-capability-parity.md) documents
+limited or missing native implementations in sparse asynchronous
+multivariate modelling, functional mixed-effects covariance/inference,
+generalized regression/wild bootstrap, registration/elastic/phase models,
+nonlinear recurrence/surrogates and prediction/inference tools.
+A reproducible static function census is now available under
+`scripts/report_python_r_capabilities.R` and writes to
+`artifacts/capability_parity/`. The new script is committed but has
+**not yet been executed** on local RStudio.
+
 ## What exists
 
 | Component | Source | R tests successfully executed |
