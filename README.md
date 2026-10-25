@@ -17,7 +17,13 @@ timestamped directory beside the repository rather than into the package.
 For the standalone example, PDF and CSV outputs are now saved in
 `artifacts/cran_native_example/` under the project root.
 The CRAN-facing stage disables opt-in Python tests and is offline-safe;
-Python integrations are tested separately. See
+Python integrations are tested separately. The owner-run full Windows
+`--as-cran` check on 25 October 2026 finished with **0 errors,
+0 warnings and 1 CRAN incoming-feasibility NOTE** (new submission /
+development version). The full PDF/HTML manuals, package tests and real
+examples passed. The runner now reports notes as requiring review, rather
+than misclassifying a no-error/no-warning run as a test failure.
+This is **not CRAN submission approval**. See
 [the qualification runbook](docs/cran-qualification-runbook.md).
 
 ***

@@ -47,6 +47,29 @@ participant-mean coverage 63%, 89%, 86%, respectively, against a nominal
 calibration therefore remains **HOLD**; see
 [coverage grid evidence](phase3-coverage-grid-2026-10-25.md).
 
+## P0.1 — Full CRAN-style local check (2026-10-25)
+
+The owner executed `source("scripts/run_cran_qualification.R")` against
+`eyetrajectories` 0.4.0.9000 on Windows 11 x64 / R 4.6.1. Result:
+**0 ERROR, 0 WARNING, 1 NOTE** under `R CMD check --as-cran`.
+All tests and Rd examples passed; the full PDF and HTML manuals built;
+the standalone native example produced both its CSV and three-page PDF.
+The sole CRAN incoming feasibility NOTE reported `New submission` and
+`Version contains large components (0.4.0.9000)`. These do not constitute
+an executed scientific qualification or CRAN acceptance. A subsequent
+runner change reports this status as **PASS WITH NOTES - REVIEW REQUIRED**,
+without ignoring NOTE messages, and has not yet been run locally.
+
+The provided CSV records eight synthetic curves on a 31-point grid,
+two MFPCA components, recurrence rate 0.00689655172413793 under the
+illustrative sparse radius, 12 participants in a diagnostic mean-band
+bootstrap and the structural catalog count of 380 Python callables.
+The plotted trajectories, cumulative FPCA variance and sparse recurrence
+are synthetic demonstration graphics; they do not establish coverage.
+
+See [full CRAN runbook](cran-qualification-runbook.md). Cross-platform,
+CRAN incoming release conditions and scientific calibration remain open.
+
 ## What exists
 
 | Component | Source | R tests successfully executed |

@@ -98,3 +98,40 @@ before submitting to CRAN. This preserves the private repository state.
 Incoming-feasibility NOTEs for a new package and the development version
 `0.4.0.9000` may remain; they should not be misrepresented as resolved.
 The development version is not a CRAN release candidate.
+
+## Verified second Windows CRAN-style run: 25 October 2026
+
+The author reran `R CMD check --as-cran` for unreleased version
+`0.4.0.9000` on Windows 11 / R 4.6.1. The check reported
+**0 errors, 0 warnings, 1 NOTE**. All examples, `testthat`, HTML manual,
+PDF manual, namespaces, package build, installation and Rd line widths passed.
+The sole remaining NOTE was CRAN incoming feasibility:
+
+- New submission.
+- Version contains large components (`0.4.0.9000`).
+
+Those are reviewable incoming/development metadata observations, not
+algorithmic test failures. They do not establish CRAN acceptance or imply
+that the submitted development version would be appropriate for CRAN.
+The local runner previously labeled any NOTE `FAIL / REVIEW` and stopped;
+it now accurately reports **PASS WITH NOTES - REVIEW REQUIRED** when both
+R CMD check errors/warnings are zero and the native example passed. It still
+reports the complete NOTE count and writes all logs, never suppresses a NOTE,
+and still treats any ERROR, WARNING or example failure as failure.
+The changed runner is **not yet executed on the author's local R session**.
+
+The native example was independently executed successfully and the author
+uploaded the 3-page PDF and CSV. Reported metrics: 8 synthetic curves,
+31 samples per curve, 2 FPCA components, recurrence rate
+`0.00689655172413793` under radius `0.3` and Theiler exclusion `1`,
+12 independent bootstrap participants and 380 recorded Python callables.
+The sparse recurrence pattern (PDF page 3) is expected at the narrow
+predeclared radius and does not imply an estimator defect. Plots are only
+synthetic demonstrations, not inferential calibration. The persistent
+Windows outputs were located at:
+
+`C:/Users/Stefanos-PC/Documents/GitHub/eyetrajectories_cran_qualification/R_0.4.0.9000_20261025_232715/native_example/`
+
+Next acceptance gates: R check on another supported platform and R version;
+review CRAN incoming policies for a **release** version and real public URLs;
+remove scientific inference HOLD only after independent calibration work.

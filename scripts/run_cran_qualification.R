@@ -117,23 +117,40 @@ if (is.na(old_example_dir)) {
 if (!is.null(example_error))
   writeLines(example_error, file.path(report, "native_example_ERROR.txt"))
 
-clean <- is.null(check_error) && !is.na(errors) &&
-  errors == 0L && warnings == 0L && notes == 0L
+check_without_errors_or_warnings <- is.null(check_error) &&
+  !is.na(errors) && errors == 0L && warnings == 0L
+example_pass <- is.null(example_error)
+check_status <- if (!check_without_errors_or_warnings || !example_pass) {
+  "FAIL"
+} else if (!is.na(notes) && notes > 0L) {
+  "PASS WITH NOTES - REVIEW REQUIRED"
+} else {
+  "CLEAN PASS"
+}
 summary <- c(
   paste("Package:", version),
-  paste("CRAN-style check:", if (clean) "PASS" else "FAIL / REVIEW"),
+  paste("CRAN-style check:", check_status),
   paste("R CMD check errors:", errors),
   paste("R CMD check warnings:", warnings),
   paste("R CMD check notes:", notes),
   paste("Native source example:",
-        if (is.null(example_error)) "PASS" else paste("FAIL:", example_error)),
+        if (example_pass) "PASS" else paste("FAIL:", example_error)),
   paste("Report directory:", report),
+  if (!is.na(notes) && notes > 0L) {
+    "NOTE(s) require manual review. A clean package check is not CRAN acceptance."
+  } else {
+    "No incoming NOTES recorded. This is not CRAN acceptance."
+  },
   "Python integration intentionally disabled for CRAN-style stage.",
   "Cross-platform and scientific coverage qualification remain open."
 )
 writeLines(summary, file.path(report, "SUMMARY.txt"))
 cat("\n", paste(summary, collapse = "\n"), "\n", sep = "")
-if (!clean || !is.null(example_error))
-  stop("CRAN-style qualification did not pass completely. Review report files.",
+if (!check_without_errors_or_warnings || !example_pass)
+  stop("CRAN-style qualification has check errors/warnings or example failures. Review report files.",
        call. = FALSE)
-cat("Local CRAN-style R check and example passed; not CRAN acceptance.\n")
+if (!is.na(notes) && notes > 0L) {
+  cat("Local R CMD check completed without errors/warnings. NOTE(s) require manual review.\n")
+} else {
+  cat("Local CRAN-style R check and example passed without NOTES; not CRAN acceptance.\n")
+}
