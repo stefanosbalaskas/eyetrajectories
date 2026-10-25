@@ -1,13 +1,14 @@
 Package: eyetrajectories
 Title: R Interface for Functional Eye-Tracking Trajectories
-Version: 0.1.0.9000
+Version: 0.2.0.9000
 Authors@R: person("Stefanos", "Balaskas", email = "s.balaskas@ac.upatras.gr", role = c("aut", "cre"))
 Description: Provides an experimental R interface to the Python package
     'eyetrajectoriespy' for continuous eye-tracking trajectory analysis.
-    Supports explicit conversion of R long-format gaze samples, simulated
-    trajectories, functional principal component analysis, and selected
-    research workflows. Python is initialized only when a bridge function
-    is used. This package is not a native R implementation.
+    Provides a standalone native R core for common-grid trajectories,
+    explicit preprocessing, quadrature-weighted dense FPCA and MFPCA,
+    distances, kinematics, basic recurrence analysis and plots, alongside
+    optional Python-backed advanced methods through reticulate. The native
+    functionality requires no Python installation.
 License: MIT + file LICENSE
 URL: https://github.com/stefanosbalaskas/eyetrajectories
 BugReports: https://github.com/stefanosbalaskas/eyetrajectories/issues
