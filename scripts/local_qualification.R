@@ -35,13 +35,15 @@ capture.output(sessionInfo(), file = file.path(report_dir, "sessionInfo.txt"))
 
 # Keep test and check stages separate so failures are not hidden.
 cat("\n== testthat tests (offline R native plus any installed optional R packages) ==\n")
+prior_sinks <- sink.number()
 test_error <- tryCatch({
   sink(file.path(report_dir, "testthat.txt"), split = TRUE)
-  on.exit(sink(), add = TRUE)
   testthat::test_local(".", reporter = "summary", stop_on_failure = TRUE)
   NULL
-}, error = function(e) conditionMessage(e))
-while (sink.number() > 0L) sink()
+}, error = function(e) conditionMessage(e),
+   finally = {
+     while (sink.number() > prior_sinks) sink()
+   })
 cat("\n== R CMD check (build package, no PDF manual) ==\n")
 check_error <- NULL
 check <- tryCatch(
