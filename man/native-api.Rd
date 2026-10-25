@@ -168,3 +168,15 @@ missingness repair, smoothing, or coordinate normalization.
 \value{Depends on the function: a native trajectory collection, native FPCA
 result, numeric matrix/vector, recurrence result, data frame, or base-R plot.}
 \seealso{\code{\link{et_fit_mfpca}}, \code{\link{et_call}}}
+
+\examples{
+t <- seq(0, 1, length.out = 9)
+v <- array(0, c(6L, length(t), 2L))
+for (i in seq_len(6L)) {
+  v[i, , 1L] <- sin(2*pi*t + i/6)
+  v[i, , 2L] <- cos(2*pi*t + i/6)
+}
+x <- etr_trajectory_set(t, v, paste0("c", 1:6), c("x", "y"))
+fit <- etr_fit_mfpca(x, n_components = 1L)
+stopifnot(nrow(etr_fpca_scores(fit)) == 6L)
+}

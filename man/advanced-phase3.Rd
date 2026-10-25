@@ -123,3 +123,15 @@ a list of transfer-entropy estimates and diagnostics, an independent
 simulation result, or an auditable etr_advanced_workflow object.
 }
 \seealso{\code{\link{etr_fit_fpca}}, \code{\link{etr_trajectory_set}}}
+
+\examples{
+sample <- etr_simulate_hierarchical(
+  n_subjects = 8L, trials_per_subject = 2L, n_time = 9L, seed = 5L
+)
+band <- etr_bootstrap_mean_band(
+  sample$trajectories, sample$participant,
+  B = 39L, alpha = 0.10, seed = 7L
+)
+stopifnot(identical(dim(band$mean), c(9L, 2L)))
+# This illustrates API behavior, not calibrated interval coverage.
+}

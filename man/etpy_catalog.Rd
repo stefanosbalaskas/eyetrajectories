@@ -25,3 +25,10 @@ etpy_get_export returns the selected Python object or converted R value.}
 \details{All structural information comes from the recorded source API,
 not from empirical eye-tracking data. Installed Python availability must
 be checked separately, and scientific properties remain unqualified.}
+
+\examples{
+api <- etpy_catalog()
+stopifnot(nrow(api) == 380L)
+head(api[, c("namespace", "python_name", "r_wrapper")])
+# Run etpy_verify_api() only when the optional Python backend is installed.
+}

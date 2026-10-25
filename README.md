@@ -1,5 +1,24 @@
 # eyetrajectories
 
+## Full CRAN-style checks and examples
+
+The pre-submission local test runner is
+[scripts/run_cran_qualification.R](scripts/run_cran_qualification.R):
+
+~~~r
+source("scripts/run_cran_qualification.R")
+~~~
+
+It performs source-build `R CMD check --as-cran` including the PDF manual
+(requires a working TeX installation), exercises the package Rd examples
+and test suite, and runs a separate native example that creates numerical
+outputs and a three-figure PDF. Generated qualification reports go to a
+timestamped directory beside the repository rather than into the package.
+The CRAN-facing stage disables opt-in Python tests and is offline-safe;
+Python integrations are tested separately. See
+[the qualification runbook](docs/cran-qualification-runbook.md).
+
+---
 ## Complete Python-backed function API — 380 explicit R wrappers
 
 **Development version 0.4.0.9000 (private; unreleased).** The
