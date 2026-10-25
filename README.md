@@ -282,7 +282,7 @@ The default is to retain Python objects as Python proxies. Convert supported res
 
 ~~~sh
 R CMD build .
-R CMD check eyetrajectories_0.1.0.9000.tar.gz
+R CMD check --as-cran eyetrajectories_0.4.0.9000.tar.gz
 ~~~
 
 R-only tests do not need an installed Python backend. Real bridge integration tests are opt-in:
