@@ -70,6 +70,24 @@ are synthetic demonstration graphics; they do not establish coverage.
 See [full CRAN runbook](cran-qualification-runbook.md). Cross-platform,
 CRAN incoming release conditions and scientific calibration remain open.
 
+## P1 — Follow-up engineering work, committed but unverified
+
+- `scripts/run_native_worked_gallery.R`: reproducible five-figure native
+  demo across multilevel FPCA, two experimental functional bands,
+  sparse support and transfer-entropy shift diagnostics.
+- `scripts/run_phase3_interval_comparison.R`: failure-inclusive paired
+  coverage and mean-width comparison to a Gaussian pooled/one-sample
+  Bonferroni Student-t reference; **not** a new qualified estimator.
+- `.github/workflows/R-cross-platform-manual.yaml`: offline CRAN-style
+  package checks on release R for Ubuntu, Windows and macOS, plus an
+  Ubuntu previous-R-version case. Manual dispatch only; no runner
+  admission/CI results yet.
+
+These scripts were committed without executing R checks in the assistant
+environment; pull and run the scripts on the local Windows R setup
+before treating their results as empirical evidence. None of the native
+`etr_*` estimator implementations was changed. Experimental
+simultaneous-band inference and CRAN release remain on HOLD.
 ## What exists
 
 | Component | Source | R tests successfully executed |

@@ -1,5 +1,35 @@
 # eyetrajectories
 
+## October 2026 follow-up: native worked gallery and interval audit
+
+The initial Windows 0.4.0.9000 package check has passed without errors or
+warnings (one development-version CRAN incoming NOTE). The next two
+scripts are new **unexecuted** research examples:
+
+~~~r
+# Five native graphics and CSV diagnostics; no Python required
+source("scripts/run_native_worked_gallery.R")
+
+# Paired study: original fixed-SE bands versus an independent Gaussian
+# Student-t Bonferroni reference, reporting coverage AND interval width
+Sys.setenv(ET_INTERVAL_SIMS = "30", ET_INTERVAL_B = "199")
+source("scripts/run_phase3_interval_comparison.R")
+~~~
+
+The gallery writes to `artifacts/native_worked_gallery/`, the paired study
+to `artifacts/phase3_interval_comparison/`, and both retain failure-inclusive
+or methodological provenance. The comparator is deliberately conservative
+under its stated independent Gaussian assumptions and is not a replacement
+for any estimator or a general confidence-band guarantee.
+
+A new **manual-only** R cross-platform matrix targets Windows, Ubuntu
+and macOS plus Ubuntu previous R release. GitHub runner admission remains
+unresolved, and the matrix has not executed.
+
+See [native worked examples and platforms](docs/native-worked-gallery-and-platform-plan.md)
+and [paired interval study](docs/phase3-paired-interval-comparison.md).
+
+***
 ## Full CRAN-style checks and examples
 
 The pre-submission local test runner is
