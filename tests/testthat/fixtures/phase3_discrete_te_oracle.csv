@@ -1,0 +1,4 @@
+scenario,expected_bits
+forward_coupled,0.9880521049342745
+reverse_coupled,0.0008023573926947414
+independent_source,0.001245743252896503
