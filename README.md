@@ -9,6 +9,8 @@ the optional R package fdapace.
 The Phase 1 Python bridge remains available under the original et_* interface
 for methods not yet ported.
 
+**Current qualification:** [Evidence matrix and remaining work](docs/phase3-qualification-status.md). The R and Python tests have not executed successfully because GitHub Actions jobs fail before starting, including a minimal runner test.
+
 ### Advanced R methods (experimental)
 
 The new Phase 3 functions add: fdapace-backed univariate sparse PACE,
