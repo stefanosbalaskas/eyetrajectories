@@ -90,3 +90,29 @@ the execution environment used to prepare it. A previously clean Windows
 check of version 0.4.0.9000 does not qualify this new development version.
 Do not merge, submit or claim calibrated scientific coverage until the
 test fixtures and independent mathematical checks pass.
+
+## Exhaustive 380-function inventory and exercise scripts
+
+The audit includes a committed, reproducible full-API mapping:
+[inst/extdata/native_parity_gap_matrix_2026-10.csv](../inst/extdata/native_parity_gap_matrix_2026-10.csv).
+It contains **380 rows**, one for every root/workflow callable exported by the
+2026-10-25 Python snapshot. For each function it records Python namespace,
+its callable R wrapper, method family, officially documented candidate
+R packages, validation priority, a manually selected possible native analog
+(if one exists), and **not independently qualified** numeric parity status.
+The 36 possible analog labels are only investigation leads, not 36
+successfully reproduced Python contracts.
+
+The separate five-page native example is available at
+[scripts/run_native_parity_stage1_demo.R](../scripts/run_native_parity_stage1_demo.R)
+and writes synthetic plots and numerical evidence under the ignored folder
+artifacts/native_parity_stage1/. It has not been executed on an R interpreter.
+
+```r
+source("scripts/run_native_parity_stage1_demo.R")
+source("scripts/report_python_r_capabilities.R")
+```
+
+The second command now expects 98 native R exports on this branch and will
+report 380 Python-backed wrappers separately. It does not certify numerical
+parity. All real-data and simulation-estimator validation remains open.
