@@ -47,10 +47,10 @@ et_from_long <- function(
   et_call(
     "from_long_dataframe",
     data,
-    curve_columns = curve_columns,
+    curve_columns = as.list(curve_columns),
     time_column = time_column,
-    value_columns = value_columns,
-    metadata_columns = metadata_columns,
+    value_columns = as.list(value_columns),
+    metadata_columns = if (is.null(metadata_columns)) NULL else as.list(metadata_columns),
     coordinate_system = coordinate_system,
     time_unit = time_unit,
     require_common_grid = TRUE
