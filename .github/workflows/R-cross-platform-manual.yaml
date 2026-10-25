@@ -20,7 +20,7 @@ jobs:
           - os: macos-latest
             r: release
           - os: ubuntu-latest
-            r: oldrel
+            r: oldrel-1
     name: R ${{ matrix.r }} / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     env:
