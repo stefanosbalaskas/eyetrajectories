@@ -124,6 +124,6 @@ etr_scale_channels <- function(x, scaling = c("none", "dimension_sd")) {
   for (j in seq_len(nd)) v[, , j] <- v[, , j] / scales[j]
   ans <- etr_trajectory_set(x$time, v, x$curve_ids, x$dimension_names, x$metadata,
                             x$coordinate_system, x$time_unit)
-  attr(ans, "scale") <- setNames(scales, x$dimension_names)
+  attr(ans, "scale") <- stats::setNames(scales, x$dimension_names)
   ans
 }

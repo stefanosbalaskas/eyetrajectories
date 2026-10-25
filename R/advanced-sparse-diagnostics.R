@@ -29,8 +29,8 @@ etr_sparse_design_diagnostics <- function(x, bins = 10L) {
                       start = vapply(x$times, min, numeric(1)),
                       end = vapply(x$times, max, numeric(1)),
                       largest_gap = vapply(x$times, function(t) max(diff(t)), numeric(1)))
-  bins_df <- data.frame(bin = seq_len(bins), start = head(edges, -1L),
-                        end = tail(edges, -1L),
+  bins_df <- data.frame(bin = seq_len(bins), start = utils::head(edges, -1L),
+                        end = utils::tail(edges, -1L),
                         participants_observed = rowSums(within_bin),
                         fraction_observed = rowMeans(within_bin))
   list(curves = curve, support = bins_df,

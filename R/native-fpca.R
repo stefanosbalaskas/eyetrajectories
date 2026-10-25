@@ -7,7 +7,7 @@ etr_trapezoid_weights <- function(time, normalize = FALSE) {
                 all(is.finite(time)) && all(diff(time) > 0),
               "time must be strictly increasing and finite")
   d <- diff(time); n <- length(time)
-  w <- c(d[1] / 2, if (n > 2L) (d[-1] + d[-length(d)]) / 2, tail(d, 1) / 2)
+  w <- c(d[1] / 2, if (n > 2L) (d[-1] + d[-length(d)]) / 2, utils::tail(d, 1) / 2)
   if (isTRUE(normalize)) w <- w / sum(w)
   w
 }

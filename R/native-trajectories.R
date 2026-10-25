@@ -116,6 +116,7 @@ etr_from_long <- function(data, curve_columns, time_column = "time",
   rownames(metadata) <- NULL
   curve_ids <- vapply(frames, function(z) paste(as.character(z[1, curve_columns, drop = TRUE]),
                                                collapse = "|"), character(1))
+  curve_ids <- unname(curve_ids)
   etr_trajectory_set(grids[[1]], values, curve_ids, value_columns,
                      metadata, coordinate_system, time_unit)
 }
@@ -176,6 +177,6 @@ etr_summary <- function(x) {
   etr_validate(x)
   data.frame(n_curves = dim(x$values)[1], n_time = length(x$time),
              n_dimensions = dim(x$values)[3], start = x$time[1],
-             end = tail(x$time, 1), missing_samples = sum(is.na(x$values)),
+             end = utils::tail(x$time, 1), missing_samples = sum(is.na(x$values)),
              coordinate_system = x$coordinate_system, time_unit = x$time_unit)
 }
