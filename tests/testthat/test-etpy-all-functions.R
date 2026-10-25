@@ -25,7 +25,14 @@ test_that("actual installed Python exports are callable where declared", {
   live <- etpy_verify_api(strict = FALSE)
   expect_equal(nrow(live), 380L)
   failed <- live$python_name[!live$available | !live$callable]
-  expect_length(failed, 0L, info = paste(utils::head(failed, 20L), collapse = ", "))
+  if (length(failed) > 0L) {
+    testthat::fail(paste0(
+      "Unavailable or noncallable Python exports: ",
+      paste(utils::head(failed, 20L), collapse = ", "),
+      if (length(failed) > 20L) " ..." else ""
+    ))
+  }
+  expect_length(failed, 0L)
   expect_identical(unique(live$installed_python_version), "1.2.0")
   is_callable <- function(x) isTRUE(reticulate::py_to_r(
     reticulate::import_builtins(convert = FALSE)$callable(x)))
