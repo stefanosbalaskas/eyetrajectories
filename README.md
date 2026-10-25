@@ -1,11 +1,49 @@
 # eyetrajectories
 
-## Native R scientific core — Phase 2 development
+## Native R scientific core — Phases 2 and 3
 
-**Version 0.2.0.9000, private / unreleased.** The package now provides **38 native R
-functions** that analyze common-grid continuous trajectories without Python.
+**Version 0.3.0.9000, private / unreleased.** The package now exposes **58 native R
+functions**: 38 Phase 2 core functions and 20 experimental Phase 3 advanced
+methods. Native functions do not initialize Python, although sparse PACE requires
+the optional R package fdapace.
 The Phase 1 Python bridge remains available under the original et_* interface
 for methods not yet ported.
+
+### Advanced R methods (experimental)
+
+The new Phase 3 functions add: fdapace-backed univariate sparse PACE,
+two-level descriptive participant/trial FPCA, participant-cluster bootstrap
+mean bands, plug-in discrete transfer entropy with circular-shift sensitivity
+diagnostics, auditable workflow wrappers and known-truth simulation audits.
+
+~~~r
+library(eyetrajectories)
+sim <- etr_simulate_hierarchical(n_subjects = 20L, seed = 12L)
+multi <- etr_run_multilevel_workflow(sim$trajectories, sim$participant)
+print(multi$diagnostics$variances)
+
+bands <- etr_run_mean_band_workflow(sim$trajectories, sim$participant,
+                                    B = 199L, alpha = 0.10, seed = 99L)
+print(bands$diagnostics)
+
+# Independent synthetic recovery and coverage diagnostics (not validation claims):
+coverage <- etr_evaluate_mean_band_coverage(simulations = 10L, B = 99L)
+print(coverage$simultaneous_coverage)
+~~~
+
+Univariate sparse PACE requires an optional R dependency:
+
+~~~r
+install.packages("fdapace")
+sparse <- etr_simulate_sparse_known_truth(n_subjects = 45L, seed = 5L)
+fit_sparse <- etr_fit_sparse_pace(sparse$curves, max_components = 2L)
+head(etr_sparse_pace_scores(fit_sparse))
+~~~
+
+Read the [Phase 3 scientific qualification note](docs/phase3-scientific-qualification.md).
+These estimators do **not** yet establish generalized inference calibration,
+causal direction, or full Python API parity. CI remains blocked upstream of
+test execution; the source is merged to main at the owner's instruction.
 
 ### Native R quick start (no Python)
 
