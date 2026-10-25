@@ -23,3 +23,16 @@ is resolved, and no jobs have run. No claims of Linux/macOS passing.
 
 The scientific inference HOLD remains in place for the 90% simultaneous
 bands, following the six-design Monte Carlo undercoverage evidence.
+## Optional improved ggplot2 gallery
+
+The new optional script `scripts/run_native_ggplot_gallery.R` sources the
+existing base-R gallery in a separate R environment, then redraws its
+five figures using `ggplot2`, **without changing fitted estimates**.
+Horizontal labels prevent clipping; the transfer-entropy histogram
+explicitly prints an observed TE above the surrogate range in its subtitle
+(the original base-R plot's observed vertical line could be outside
+its displayed limits). Results are stored under
+`artifacts/native_ggplot_gallery/`: 5 PNG files, 1 PDF, CSV and manifest.
+Run `install.packages('ggplot2')` and
+`source('scripts/run_native_ggplot_gallery.R')` from the project root.
+The gallery is not part of R CMD check and has not been executed locally.

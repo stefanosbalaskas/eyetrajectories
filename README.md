@@ -1,5 +1,27 @@
 # eyetrajectories
 
+## Optional ggplot2 figure upgrade (all plots remain in R)
+
+Run `install.packages('ggplot2')` once, then from the source project root:
+
+~~~r
+source("scripts/run_native_ggplot_gallery.R")
+~~~
+
+This reuses **exactly the same synthetic datasets and estimates** as the
+five-figure native/base-R example. It adds cleaner horizontal multilevel
+labels, participant mean and group-contrast ribbons, sparse-support bars,
+and transfer-entropy surrogate plots with an explicit annotation when
+the observed statistic lies outside the surrogate x-range.
+
+The output folder `artifacts/native_ggplot_gallery/` contains a multipage
+PDF, five standalone PNG figures, summary CSV and provenance manifest.
+The visual rewrite is optional development tooling: it adds **no required
+Python dependency, no scientific estimator changes, and no new CRAN
+required imports**. The script and its output have not been tested
+by local RStudio yet.
+
+***
 ## October 2026 follow-up: native worked gallery and interval audit
 
 The initial Windows 0.4.0.9000 package check has passed without errors or
