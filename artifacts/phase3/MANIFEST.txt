@@ -1,0 +1,9 @@
+Experimental synthetic Phase 3 audit
+Run date UTC: 2026-10-25 19:54:07 UTC
+R: R version 4.6.1 (2026-06-24 ucrt)
+Package version: 0.3.2.9000
+Git SHA: local-unverified
+Monte Carlo simulations per major design: 5
+Bootstrap repetitions: 49
+All results are synthetic and not release qualification.
+No inferential calibration is certified by this script.
