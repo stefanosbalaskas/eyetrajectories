@@ -27,6 +27,7 @@ test_that("native structures and long conversion preserve grid and channels", {
   expect_equal(back$time, x$time)
   expect_equal(back$values, x$values)
   expect_equal(back$curve_ids, x$curve_ids)
+  expect_null(names(back$curve_ids))
   expect_error(etr_from_long(rbind(long, long[1, ]), "curve_id"), "unique")
   expect_error(etr_trajectory_set(c(0, 0), array(0, c(2, 2, 1))), "strictly increasing")
   expect_error(etr_trajectory_set(c(0, 1), array(0, c(2, 2, 1)),
@@ -49,7 +50,7 @@ test_that("explicit preprocessing does not silently repair missing gaze", {
 test_that("quadrature FPCA matches frozen mathematical Python 1.2.0 fixture", {
   x <- .native_fixture()
   expect_equal(etr_trapezoid_weights(x$time),
-    vapply(paste0("trapezoid_w", 1:4), .native_reference, numeric(1)), tolerance = 1e-13)
+    unname(vapply(paste0("trapezoid_w", 1:4), .native_reference, numeric(1))), tolerance = 1e-13)
   expect_equal(sum(etr_trapezoid_weights(x$time, normalize = TRUE)), 1)
   fit <- etr_fit_mfpca(x, n_components = 1L)
   expect_s3_class(fit, "etr_fpca")
