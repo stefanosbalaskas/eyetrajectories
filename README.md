@@ -1,10 +1,61 @@
 # eyetrajectories
 
-**Experimental R interface to [eyetrajectoriespy 1.2.0](https://github.com/stefanosbalaskas/eyetrajectoriespy)** for continuous and functional analysis of eye-tracking trajectories.
+## Native R scientific core — Phase 2 development
 
-**Status:** Phase 1 development (version 0.1.0.9000). Private repository, not on CRAN. This package provides an R-to-Python bridge, **not** an independently implemented or validated R numerical backend.
+**Version 0.2.0.9000, private / unreleased.** The package now provides **38 native R
+functions** that analyze common-grid continuous trajectories without Python.
+The Phase 1 Python bridge remains available under the original et_* interface
+for methods not yet ported.
 
-## What this first version provides
+### Native R quick start (no Python)
+
+~~~r
+library(eyetrajectories)
+
+time <- seq(0, 1, length.out = 81)
+values <- array(0, c(8, length(time), 2))
+for (i in seq_len(8)) {
+  values[i, , 1] <- sin(2 * pi * time + i / 10)
+  values[i, , 2] <- cos(2 * pi * time + i / 10)
+}
+gaze <- etr_trajectory_set(
+  time, values, curve_ids = paste0("trial_", seq_len(8)),
+  dimension_names = c("x", "y"),
+  coordinate_system = "normalized", time_unit = "s"
+)
+fit <- etr_fit_mfpca(gaze, n_components = 0.95,
+                     scaling = "dimension_sd")
+print(etr_fpca_variance_frame(fit))
+print(head(etr_fpca_scores(fit)))
+print(etr_pairwise_l2(gaze))
+rqa <- etr_rqa_metrics(
+  etr_recurrence_matrix(gaze, curve = "trial_1",
+                        radius = 0.15, theiler = 2L)
+)
+print(rqa)
+etr_plot_trajectories(gaze)
+~~~
+
+The example uses only deterministic synthetic mathematical trajectories.
+For reproducible PDF figures, see
+[the native Phase 2 example](inst/examples/native_phase2_demo.R)
+and the [native methods article](docs/native-methods.md).
+
+**Qualification notice:** This is a draft implementation, not an independently
+validated scientific release. The R tests assert 17 frozen mathematical
+reference targets, and CI is configured to verify them against published
+Python 1.2.0. Both checks remain **unverified** because CI jobs have not
+executed successfully. No calibrated
+uncertainty inference or native sparse FPCA is claimed.
+
+---
+
+
+**Optional experimental R interface to [eyetrajectoriespy 1.2.0](https://github.com/stefanosbalaskas/eyetrajectoriespy)** for continuous and functional analysis of eye-tracking trajectories.
+
+**Phase 1 history:** The optional `et_*` interface still delegates to the published Python 1.2.0 backend; the new `etr_*` interface is independently implemented native R. Neither interface has yet completed release qualification.
+
+## Python-backed Phase 1 interface (optional)
 
 - Declare Python 3.11–3.13 and eyetrajectoriespy 1.2.0 using reticulate::py_require().
 - Import common-grid gaze data from R data frames without hidden interpolation.
