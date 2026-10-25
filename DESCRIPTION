@@ -1,6 +1,6 @@
 Package: eyetrajectories
 Title: R Interface for Functional Eye-Tracking Trajectories
-Version: 0.3.1.9000
+Version: 0.3.2.9000
 Authors@R: person("Stefanos", "Balaskas", email = "s.balaskas@ac.upatras.gr", role = c("aut", "cre"))
 Description: Provides an experimental R interface to the Python package
     'eyetrajectoriespy' for continuous eye-tracking trajectory analysis.

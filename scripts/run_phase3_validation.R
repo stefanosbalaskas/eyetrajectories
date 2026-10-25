@@ -36,6 +36,17 @@ collect("participant_mean_band",
         data.frame(metric = c("simultaneous_coverage","mc_se","mean_pointwise_coverage"),
                    value = c(band$simultaneous_coverage,band$monte_carlo_se,
                              band$mean_pointwise_coverage)))
+analytic <- etr_evaluate_between_variance(
+ simulations = if(smoke) 5L else 40L,
+ n_subjects = if(smoke) 10L else 24L,
+ n_time = if(smoke) 21L else 41L, seed = 810L
+)
+collect("analytic_between_variance",
+        data.frame(metric = c("true_integrated_variance","mean_sample_trace",
+                              "bias","mc_se","rmse"),
+                   value = c(analytic$analytic_truth,analytic$mean_estimate,
+                             analytic$mean_bias,analytic$mc_se_of_mean,
+                             analytic$rmse)))
 multilevel <- etr_evaluate_multilevel_recovery(
   simulations = if(smoke) 3L else 20L,
   n_subjects = if(smoke) 10L else 24L, seed = 840L
