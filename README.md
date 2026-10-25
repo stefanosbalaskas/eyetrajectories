@@ -1,5 +1,33 @@
 # eyetrajectories
 
+## Research branch: native R parity stage 1 (UNVERIFIED)
+
+This development branch is **0.4.1.9000, not released or CRAN qualified**.
+It adds 10 narrow native-R research exports to the previous 88 native
+functions, while preserving all 380 named optional Python-backed wrappers.
+New methods cover explicit piecewise-linear landmark registration,
+time-delay embedding, scalar event return maps, undirected recurrence
+network diagnostics, frozen-FPCA split-conformal anomaly screening,
+and an offline R backend catalog. These are not full Python algorithm parity.
+
+See [official CRAN package survey and remaining scientific gaps]
+(docs/native-parity-research-2026-10.md). Pull this research branch before
+running the dedicated test fixtures and full CRAN check:
+
+~~~r
+Sys.setenv(ET_RUN_PYTHON_TESTS = "false", MPLBACKEND = "Agg")
+testthat::test_local(".", filter = "native-parity-stage1",
+                     reporter = "summary")
+source("scripts/local_qualification.R")
+source("scripts/run_cran_qualification.R")
+~~~
+
+**Test evidence:** these new functions have not been executed in RStudio
+or on Linux/macOS yet. Existing bootstrap undercoverage and all prior
+scientific qualification blockers remain. Do not merge/release merely
+because package functions and help pages were added.
+
+***
 ## Python–R capability parity: what is available?
 
 The R package has **380 named optional Python-backed function wrappers**
