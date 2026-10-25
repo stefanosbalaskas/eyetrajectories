@@ -126,10 +126,12 @@ utils::write.csv(summary, file.path(out, "coverage_grid_summary.csv"),
                  row.names = FALSE)
 utils::write.csv(trials, file.path(out, "coverage_grid_trials.csv"),
                  row.names = FALSE)
+failure_path <- file.path(out, "coverage_grid_failures.csv")
 if (any(trials$status != "ok")) {
   utils::write.csv(trials[trials$status != "ok", , drop = FALSE],
-                   file.path(out, "coverage_grid_failures.csv"),
-                   row.names = FALSE)
+                   failure_path, row.names = FALSE)
+} else if (file.exists(failure_path)) {
+  unlink(failure_path)
 }
 sha <- tryCatch(system2("git", c("rev-parse", "HEAD"),
                         stdout = TRUE, stderr = FALSE),
