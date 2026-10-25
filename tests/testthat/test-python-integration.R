@@ -71,6 +71,8 @@ test_that("matplotlib figures can be saved by the bridge", {
     n_participants = 2L, trials_per_participant = 2L,
     n_time = 15L, random_state = 4L
   )
+  # The test writes a PNG; it must never require a GUI/Tcl/Tk renderer.
+  reticulate::import("matplotlib", convert = FALSE)$use("Agg", force = TRUE)
   axes <- et_plot_planar(gaze)
   output <- tempfile(fileext = ".png")
   on.exit(unlink(output), add = TRUE)

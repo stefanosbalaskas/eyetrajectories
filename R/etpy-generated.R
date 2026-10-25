@@ -3227,9 +3227,12 @@ etpy_verify_api <- function(include_nonfunctions = FALSE, strict = FALSE) {
     active <- which_ns[result$available[which_ns] &
                        result$kind[which_ns] == "function"]
     if (length(active)) {
+      # Python's builtins.callable() is stable across supported reticulate
+      # versions; reticulate::py_is_callable() is not a public export.
+      py_callable <- reticulate::import_builtins(convert = FALSE)$callable
       result$callable[active] <- vapply(result$python_name[active],
-        function(n) reticulate::py_is_callable(
-          reticulate::py_get_attr(module, n)), logical(1))
+        function(n) isTRUE(reticulate::py_to_r(
+          py_callable(reticulate::py_get_attr(module, n)))), logical(1))
     }
   }
   result$installed_python_version <- et_python_version()

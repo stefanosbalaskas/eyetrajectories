@@ -17,6 +17,12 @@ if (length(missing)) {
        call. = FALSE)
 }
 root <- normalizePath(".")
+# Set the noninteractive rendering backend before any Python import for
+# opt-in bridge tests. This also propagates to the R CMD check child process.
+if (identical(Sys.getenv("ET_RUN_PYTHON_TESTS"), "true")) {
+  Sys.setenv(MPLBACKEND = "Agg")
+  cat("Python plotting test backend: Agg (noninteractive)\n")
+}
 report_dir <- file.path(dirname(root), "eyetrajectories_local_qualification")
 dir.create(report_dir, recursive = TRUE, showWarnings = FALSE)
 stamp <- format(Sys.time(), "%Y-%m-%d %H:%M:%S %Z")

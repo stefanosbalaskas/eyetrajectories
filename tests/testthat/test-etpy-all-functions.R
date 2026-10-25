@@ -27,8 +27,10 @@ test_that("actual installed Python exports are callable where declared", {
   failed <- live$python_name[!live$available | !live$callable]
   expect_length(failed, 0L, info = paste(utils::head(failed, 20L), collapse = ", "))
   expect_identical(unique(live$installed_python_version), "1.2.0")
-  expect_true(reticulate::py_is_callable(etpy_get_export("fit_fpca")))
-  expect_true(reticulate::py_is_callable(
+  is_callable <- function(x) isTRUE(reticulate::py_to_r(
+    reticulate::import_builtins(convert = FALSE)$callable(x)))
+  expect_true(is_callable(etpy_get_export("fit_fpca")))
+  expect_true(is_callable(
     etpy_get_export("run_fpca_workflow", .namespace = "workflows")))
 })
 
