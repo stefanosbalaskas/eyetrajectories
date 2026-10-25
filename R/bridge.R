@@ -70,7 +70,7 @@ et_call <- function(name, ..., .namespace = c("root", "workflows"), .convert = F
     )
   }
   target <- reticulate::py_get_attr(module, name)
-  result <- do.call(target, list(...))
+  result <- do.call(reticulate::py_call, c(list(target), list(...)))
   if (isTRUE(.convert)) reticulate::py_to_r(result) else result
 }
 
