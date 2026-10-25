@@ -1,15 +1,9 @@
 name: Phase 3 known-truth simulation qualification
 
+
+# TEMPORARY: manual-only until private-repository runner admission is fixed.
+# See issue #3. Restore push and pull_request triggers after runner smoke passes.
 on:
-  push:
-    branches: [main]
-    paths:
-      - "R/**"
-      - "tests/testthat/**"
-      - "DESCRIPTION"
-      - "scripts/run_phase3_validation.R"
-      - ".github/workflows/phase3-simulation.yaml"
-  pull_request:
   workflow_dispatch:
 
 permissions:

@@ -1,11 +1,9 @@
 name: Python 1.2 bridge integration
 
+
+# TEMPORARY: manual-only until private-repository runner admission is fixed.
+# See issue #3. Restore push and pull_request triggers after runner smoke passes.
 on:
-  push:
-    branches:
-      - main
-      - "feat/**"
-  pull_request:
   workflow_dispatch:
 
 permissions:
