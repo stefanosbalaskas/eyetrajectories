@@ -111,13 +111,15 @@ for (design in c("group_contrast", "participant_mean")) for (n in sizes) {
       next
     }
     baseline <- tryCatch({
-      fit <- if (design == "group_contrast")
+      fit <- if (design == "group_contrast") {
         eyetrajectories::etr_bootstrap_group_contrast(
           sample$trajectories, sample$participant, sample$treatment,
           B = B, alpha = alpha, seed = seed + 1L)
-      else eyetrajectories::etr_bootstrap_mean_band(
+      } else {
+        eyetrajectories::etr_bootstrap_mean_band(
           sample$trajectories, sample$participant,
           B = B, alpha = alpha, seed = seed + 1L)
+      }
       lo <- as.vector(fit$simultaneous_lower)
       hi <- as.vector(fit$simultaneous_upper)
       truth <- as.vector(if (design == "group_contrast")
@@ -143,8 +145,11 @@ summaries <- lapply(split(trials, list(
     ok <- df$status == "ok"
     nfit <- sum(ok)
     k <- sum(df$includes_truth[ok])
-    ci <- if (nfit) as.numeric(stats::binom.test(k, nfit)$conf.int)
-          else c(NA_real_, NA_real_)
+    ci <- if (nfit) {
+      as.numeric(stats::binom.test(k, nfit)$conf.int)
+    } else {
+      c(NA_real_, NA_real_)
+    }
     data.frame(design = df$design[1L], n_subjects = df$n_subjects[1L],
        method = df$method[1L], requested = nrow(df), fitted = nfit,
        fit_failures = nrow(df)-nfit,
@@ -162,8 +167,11 @@ utils::write.csv(summary, file.path(out, "paired_interval_summary.csv"),
                  row.names = FALSE)
 errors <- trials[trials$status != "ok", , drop = FALSE]
 failed_file <- file.path(out, "paired_interval_failures.csv")
-if (nrow(errors)) utils::write.csv(errors, failed_file, row.names = FALSE)
-else if (file.exists(failed_file)) unlink(failed_file)
+if (nrow(errors)) {
+  utils::write.csv(errors, failed_file, row.names = FALSE)
+} else if (file.exists(failed_file)) {
+  unlink(failed_file)
+}
 writeLines(c(
   "Exploratory paired interval audit; NOT a new qualified estimator",
   paste("Run UTC:", format(Sys.time(), tz = "UTC", usetz = TRUE)),
