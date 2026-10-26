@@ -39,6 +39,59 @@ test_noise_multiplier <- 3
 base_noise <- 0.06
 time <- seq(0, 1, length.out = 41L)
 scenarios <- c("iid_exchangeable", "test_noise_shift", "dependent_calibration")
+# Check all existing completed archives BEFORE doing expensive simulation.
+# The archive naming policy prevents overwrites, but is not sufficient to
+# prevent inadvertent repeats of exactly the same simulated datasets.
+base_out <- file.path("artifacts", "conformal_monte_carlo")
+new_seeds <- do.call(rbind, lapply(seq_along(scenarios), function(j)
+  data.frame(scenario = scenarios[j],
+             seed = as.integer(260000L + j * 100000L +
+                               seq_len(reps) * 31L + seed_offset))))
+if (anyDuplicated(new_seeds$seed))
+  stop("Seed formula overlaps across scenarios at this repetition count; ",
+       "reduce ET_CONFORMAL_REPS or revise the seed design.",
+       call. = FALSE)
+archive_dirs <- if (dir.exists(base_out))
+  list.dirs(base_out, recursive = FALSE, full.names = TRUE)
+else character()
+archive_dirs <- archive_dirs[
+  grepl("^run_[0-9]{8}_[0-9]{6}_pid[0-9]+$",
+        basename(archive_dirs))]
+archive_files <- file.path(archive_dirs, "conformal_trials.csv")
+archive_files <- archive_files[file.exists(archive_files)]
+new_keys <- paste(new_seeds$scenario, new_seeds$seed)
+overlap_count <- 0L
+collision_files <- character()
+for (csv in archive_files) {
+  previous <- utils::read.csv(csv, stringsAsFactors = FALSE)
+  if (!all(c("scenario", "seed") %in% names(previous)))
+    stop("Existing archive lacks scenario and seed columns: ", csv,
+         call. = FALSE)
+  existing_keys <- unique(paste(previous$scenario, previous$seed))
+  collisions <- intersect(new_keys, existing_keys)
+  if (length(collisions)) {
+    overlap_count <- overlap_count + length(collisions)
+    collision_files <- c(collision_files, csv)
+  }
+}
+allow_reuse <- identical(tolower(Sys.getenv(
+  "ET_CONFORMAL_ALLOW_SEED_REUSE", unset = "false")), "true")
+if (overlap_count > 0L && !allow_reuse) {
+  stop("SEED COLLISION PRECHECK: candidate run reuses ",
+       overlap_count, " scenario/seed IDs found in ",
+       length(collision_files), " archived run(s). No new archive ",
+       "was created. Set a NEW ET_CONFORMAL_SEED_OFFSET ",
+       "(e.g. '2000000') to generate disjoint datasets. ",
+       "Set ET_CONFORMAL_ALLOW_SEED_REUSE='true' ONLY for an ",
+       "intentional deterministic reproduction.", call. = FALSE)
+}
+if (overlap_count > 0L && allow_reuse)
+  warning("Intentional seed reuse permitted: ", overlap_count,
+          " prior scenario/seed matches. Treat this run as a ",
+          "reproduction, not independent replication.", call. = FALSE)
+cat("Conformal seed offset applied: ", seed_offset, "\n", sep = "")
+cat("Previously archived scenario/seed overlaps: ",
+    overlap_count, "\n", sep = "")
 # Archive each pilot / high-replication run separately. Never overwrite
 # previously archived failure-inclusive Monte Carlo evidence.
 base_out <- file.path("artifacts", "conformal_monte_carlo")
@@ -299,6 +352,8 @@ writeLines(c(
         unname(read.dcf("DESCRIPTION", fields = "Version")[1L])),
   paste("Independent generated datasets PER SCENARIO:", reps),
   paste("Independent seed offset:", seed_offset),
+  paste("Preflight prior-archive scenario/seed matches:", overlap_count),
+  paste("Intentional archive seed reuse enabled:", allow_reuse),
   "The seed offset should change when running a new independent replication.",
   "The original 2026-10-26 pilot used the default offset zero.",
   paste("Training independent curves:", n_train),
