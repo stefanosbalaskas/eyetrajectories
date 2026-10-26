@@ -149,3 +149,39 @@ shifted curves. These refinements have **not yet been run in RStudio**.
 The test file also adds an independent seeded nondegenerate calibration case.
 No estimator's mathematical definition was changed, and the draft PR
 remains unmerged pending the updated demonstration and test rerun.
+
+## Revised Windows test evidence and independent deterministic oracles
+
+The owner reran the revised tests on 26 October 2026 (Windows 11,
+R 4.6.1): `testthat::test_local(filter="native-parity-stage1")`
+completed with **no failures**, the revised native demonstration ran,
+the source capability audit returned **98 native functions, 380 Python
+callable wrappers, 37 candidate analogs and zero qualified cross-language
+contracts**, and `R CMD check --as-cran` completed with **0 errors,
+0 warnings, 1 incoming development-version NOTE**, including complete
+help examples, package tests and PDF/HTML manuals.
+
+Revised synthetic demonstration: radius 0.30 gives 3 recurrence edges,
+while radius 0.70 yields 129 edges, one connected component and
+transitivity 0.24818578. The noisy conformal illustration has 19
+calibration curves, threshold 0.06175659, no flags among its 2 ordinary
+test curves and flags among both deliberately shifted test curves.
+This is **not** an estimated false-positive rate, anomaly power,
+or proof of an exchangeable coverage guarantee. It only verifies
+a single constructed reproducible example.
+
+A new no-dependencies independent calculation was added at
+[`scripts/check_native_parity_stage1_oracles.py`](../scripts/check_native_parity_stage1_oracles.py).
+Its mathematical references are 3 recurrence edges with radius 0.30;
+at 0.70, 129 edges, 57 triangles, 689 connected triples and
+transitivity **171/689 = 0.24818577648766327**.
+It separately verifies simple registration landmarks, lag embedding,
+return-crossing interpolation, and split-conformal order statistics
+(n=19, alpha=.10, order-statistic rank 18). It does not invoke
+the R implementation and does not qualify covariance inference.
+
+**Decision:** Windows implementation validation is complete for this
+development branch. The native methods remain experimental until
+other-platform checks and independent behavioral/coverage studies.
+This work does not qualify the existing under-covering simultaneous bands
+or authorize CRAN publication.
