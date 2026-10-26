@@ -63,8 +63,10 @@ check_run <- function(folder) {
     stop("Repeated Monte Carlo generating-study identifiers: ", folder,
          call. = FALSE)
   }
-  for (identifier in unique(key)) {
-    d <- tr[key == identifier, , drop = FALSE]
+  # Split once, rather than rescan every trial row for each study.
+  study_groups <- split(tr, key)
+  for (identifier in names(study_groups)) {
+    d <- study_groups[[identifier]]
     d <- d[order(d$alpha), , drop = FALSE]
     if (nrow(d) != length(unique(sm$alpha))) {
       stop("Missing alpha evaluation for study ", identifier, call. = FALSE)
