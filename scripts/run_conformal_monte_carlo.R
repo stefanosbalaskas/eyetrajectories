@@ -315,6 +315,14 @@ writeLines(c(
 ), file.path(out, "MANIFEST.txt"))
 print(summary, row.names = FALSE)
 cat("Results: ", normalizePath(out, winslash = "/"), "\n", sep = "")
+cat("Summary CSV: ",
+    normalizePath(file.path(out, "conformal_summary.csv"),
+                  winslash = "/", mustWork = TRUE), "\n", sep = "")
+cat("Trials CSV: ",
+    normalizePath(file.path(out, "conformal_trials.csv"),
+                  winslash = "/", mustWork = TRUE), "\n", sep = "")
+cat("For the most recent archived results: ",
+    "source(\"scripts/read_conformal_results.R\")\n", sep = "")
 if (nrow(failed))
   stop("One or more independent conformal simulations failed; inspect ",
        failed_file, call. = FALSE)
