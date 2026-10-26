@@ -96,9 +96,18 @@ does **not** rerun simulations.
 1. Review trial-level CSV, `MANIFEST.txt`, seed independence, alpha pairing,
    numerical ties, score continuity and any omitted fit status.
 2. Rerun with **2,000 independent generating datasets per scenario**
-   (6,000 datasets total) and the same alpha values; archive separately.
-   At reference p=.10, the idealized Monte Carlo standard error with
-   2,000 independent datasets is about 0.0067; at p=.05, about 0.0049.
+   (6,000 datasets total) and the same alpha values, using a nonzero
+   `ET_CONFORMAL_SEED_OFFSET` to avoid reusing the pilot's first 200 seeds.
+   Every run archives separately. At reference p=.10, the idealized Monte
+   Carlo standard error with 2,000 datasets is about 0.0067; at p=.05,
+   about 0.0049. Example:
+
+   ```r
+   Sys.setenv(ET_CONFORMAL_REPS = "2000",
+              ET_CONFORMAL_SEED_OFFSET = "1000000")
+   source("scripts/run_conformal_monte_carlo.R")
+   source("scripts/read_conformal_results.R")
+   ```
 3. Vary calibration/training participant counts, contamination strength,
    measurement noise, model dimension and genuinely participant-level
    repeated-trial dependence; add missingness/observation-process stress.
