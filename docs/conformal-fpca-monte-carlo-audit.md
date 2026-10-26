@@ -145,3 +145,21 @@ Sys.unsetenv("ET_CONFORMAL_RUN_DIR")
 The helper verifies per-scenario trial and summary counts. The runner prints
 its exact summary and trials paths after a run. No flat
 `artifacts/conformal_monte_carlo/conformal_summary.csv` file is created.
+
+### Independent high-replication seed scheme
+
+The first 200-study pilot used `ET_CONFORMAL_SEED_OFFSET=0`. Increasing
+`ET_CONFORMAL_REPS` alone repeats its initial seeds and would not constitute
+an entirely independent replication. To generate 2,000 *new* studies per
+scenario, set:
+
+```r
+Sys.setenv(ET_CONFORMAL_REPS = "2000",
+           ET_CONFORMAL_SEED_OFFSET = "1000000")
+source("scripts/run_conformal_monte_carlo.R")
+source("scripts/read_conformal_results.R")
+```
+
+The seed offset is recorded in the run manifest. All studies retain their
+individual seeds and separate, non-overwriting timestamped output directories.
+The high-replication stage is **not yet executed**.
