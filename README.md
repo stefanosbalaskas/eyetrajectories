@@ -31,10 +31,25 @@ coverage in all six cells relative to fixed-SE bands, but required
 and estimand. N=24 and N=48 group contrast coverage remained below
 90% nominal. The Gaussian Bonferroni-t reference yielded still
 wider bands and has **restricted normality/equal-variance assumptions**.
-The read-only [paired candidate audit](scripts/audit_paired_band_candidates.R)
-can compute coverage discordances and paired width ratios from the
-owner's archived trial records. No method has been certified or
-substituted into the package. The script
+The independently seeded **200-study-per-participant-size**
+comparison (B=399) has also completed **3,600/3,600 candidate
+evaluations**, with zero reported fit failures. Studentized coverage
+improved relative to fixed-SE in all six cells (mean:
+73.0%→97.5%, 80.0%→88.0%, 82.5%→87.5%; null contrast:
+62.5%→97.0%, 80.5%→91.0%, 88.0%→94.5% for N=12/24/48).
+However, studentization increased average band width by
+**7.1%–73.7%**, and these results do not establish general
+90% calibration. The reference Gaussian Bonferroni-t intervals
+remained substantially wider under their restricted assumptions.
+
+The 30-study pilot's [paired candidate audit](scripts/audit_paired_band_candidates.R)
+**passed**, but the newer 200-study archive has **not yet been
+row-audited**. Another source-review correction: the comparison's
+legacy `avg_pointwise_rate` field actually represented average
+coordinate inclusion *within a simultaneous band*, not
+pointwise confidence-interval coverage. The research script now
+uses an accurate field name; archived results remain unchanged.
+No method has been certified or substituted into the package. The script
 [`scripts/stress_native_band_coverage.R`](scripts/stress_native_band_coverage.R)
 now checks previous trial archives for seed collisions before any
 new simulation. Use `ET_BAND_MC_SEED_OFFSET=30000000` for a
