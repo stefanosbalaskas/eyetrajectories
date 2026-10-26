@@ -139,10 +139,10 @@ for (scenario in scenarios) for (n in ns) for (estimand in estimands) {
          c("simulation", "generator_seed", "success",
            "simultaneous_covered", "mean_simultaneous_width"), drop=FALSE]
   for (candidate in candidates) {
-    c <- z[z$method==candidate,
+    cand_rows <- z[z$method==candidate,
            c("simulation", "generator_seed", "success",
              "simultaneous_covered", "mean_simultaneous_width"), drop=FALSE]
-    p <- merge(b, c, by=c("simulation", "generator_seed"),
+    p <- merge(b, cand_rows, by=c("simulation", "generator_seed"),
                suffixes=c("_base", "_candidate"), all=TRUE, sort=TRUE)
     valid <- p$success_base & p$success_candidate
     valid[is.na(valid)] <- FALSE
