@@ -465,3 +465,60 @@ The expanded raw CSV was validated by the **owner's R execution**,
 not independently uploaded to this conversation. Results remain
 scientifically conditional on the generator and the author's
 execution log. **No release-facing estimators were modified.**
+
+## New distributional robustness experiment — staged, not yet run
+
+The new research-only script
+[`scripts/stress_native_band_distributions.R`](../scripts/stress_native_band_distributions.R)
+extends the paired interval comparison to four known-truth
+**complete-data** participant-level generating processes:
+
+1. `gaussian_baseline`: independent Gaussian participant effects;
+2. `heavy_t3`: centered Student-t effects (3 degrees of freedom),
+   rescaled to the same standard deviation as the Gaussian condition;
+3. `heteroskedastic_groups`: independent Gaussian participant effects
+   with between-group SDs .18 and .70, breaking equal-variance assumptions;
+4. `skewed_lognormal`: centered, variance-standardized skewed
+   lognormal participant effects.
+
+All scenarios have known common functional population mean
+`sin(2*pi*t), cos(2*pi*t)`, null group contrast zero, three
+complete observed trials per participant, 41 time points, and
+two functional channels. This deliberately isolates
+**distributional robustness**; it does **not** test MCAR/MAR/MNAR
+or participant dropout and must not be used to claim missingness
+qualification.
+
+The comparison retains existing fixed-SE bootstrap, experimental
+studentized bootstrap and the Gaussian Bonferroni-t reference.
+Only the Gaussian baseline satisfies the latter's normality/equal-
+variance assumptions. The other three scenarios use that method
+as an **assumption-violating sensitivity comparison**, not a
+guaranteed-coverage procedure.
+
+Per-run seed prechecks against prior robustness runs,
+failure-inclusive trial/summary CSVs, known-truth coverage,
+mean width and explicit simultaneous-band coordinate inclusion
+are preserved. No native scientific estimator was changed.
+
+Initial structural and performance smoke test (four DGPs,
+three cluster sizes, 20 independent generated studies each):
+
+```r
+Sys.setenv(
+  ET_BAND_ROBUST_REPS = "20",
+  ET_BAND_ROBUST_B = "99",
+  ET_BAND_ROBUST_SEED_OFFSET = "96000000"
+)
+source("scripts/stress_native_band_distributions.R")
+```
+
+Conditional on successful smoke and archive checks, a separate
+200-study / B399 run needs a non-overlapping seed offset, e.g.
+`43000000`. Do not reuse pilot seed offset. More complete
+observation-process/missingness validation must follow as a
+separate study with an explicitly defined target estimand.
+
+**Status:** Code has been committed and statically inspected;
+**no local R execution or scientific results exist for these four
+scenarios yet**. Do not infer performance from script presence.
