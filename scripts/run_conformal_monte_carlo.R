@@ -114,8 +114,11 @@ simulate_once <- function(scenario, sim, seed) {
         scenario = scenario, simulation = sim, seed = seed,
         alpha = alpha, n_train = n_train, n_calibration = n_cal,
         n_calibration_independent_subjects =
-          if (scenario == "dependent_calibration") ceiling(n_cal/2)
-          else n_cal,
+          if (scenario == "dependent_calibration") {
+            ceiling(n_cal / 2)
+          } else {
+            n_cal
+          },
         quantile_rank = result$cutoff$rank,
         threshold = result$cutoff$threshold,
         null_score = score[1L], shifted_score = score[2L],
