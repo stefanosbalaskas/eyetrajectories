@@ -50,7 +50,44 @@ simultaneous-band undercoverage. It concerns the existing **fixed-SE
 participant-cluster max-standardized bootstrap** and is unrelated to
 the separate split-conformal one-curve anomaly screen.
 
-## Newly staged research stress harness
+## Owner-executed 20-dataset band-stress pilot (26 October 2026)
+
+The author executed `scripts/stress_native_band_coverage.R` from RStudio
+with `ET_BAND_MC_REPS=20`, `ET_BAND_MC_B=99`, nominal .90, three
+trials per participant, and `n_subjects` in 12/24/48.
+Archive (author's Windows checkout):
+`artifacts/band_coverage_stress/run_20261026_204746_pid51684/`.
+
+**All 120 attempted estimator fits succeeded** across 60 independently
+generated datasets (20 per participant-size condition). The participant
+mean and group contrast reuse each generated dataset, so their six
+summary cells are *not* 120 independent experiments.
+
+| Participants | Method | Covered / 20 | Simultaneous coverage | Exact 95% MC interval | One-sided binomial p vs .90 | Mean pointwise coverage | Mean band width |
+|---:|---|---:|---:|---|---:|---:|---:|
+| 12 | Participant mean | 15 | .75 | [.50895, .91343] | .04317 | .84939 | .32940 |
+| 12 | Two-group null contrast | 15 | .75 | [.50895, .91343] | .04317 | .82378 | .61743 |
+| 24 | Participant mean | 18 | .90 | [.68302, .98765] | .60825 | .87012 | .23597 |
+| 24 | Two-group null contrast | 13 | **.65** | **[.40781, .84609]** | **.002386** | .80061 | .46052 |
+| 48 | Participant mean | 18 | .90 | [.68302, .98765] | .60825 | .87866 | .17694 |
+| 48 | Two-group null contrast | 17 | .85 | [.62107, .96793] | .32307 | .92134 | .34700 |
+
+The participant contrast at N=24 has a 95% exact MC interval entirely
+below the nominal coverage level, giving clear evidence of poor coverage
+**in this one simulation scenario**. The six tests are descriptive,
+paired within N and not an independently confirmed family of
+hypothesis tests; do not overinterpret their unadjusted p-values.
+At N=12 the individual one-sided tail is below .05, but the two-sided
+exact MC interval includes .90. The absence of failed fits cannot
+validate coverage; notably the mean method's apparent .90 coverage at
+N=24/48 rests on just 20 independent draws each.
+
+The 20-study findings are supported by the owner's console output.
+The raw CSVs were **not independently uploaded or row-wise inspected**
+in this conversation. The higher-precision B=399 / 200-study stage
+has not run.
+
+## Research stress harness
 
 `scripts/stress_native_band_coverage.R` independently simulates 12, 24
 and 48 participant clusters with 3 trials per participant and a known
@@ -72,17 +109,30 @@ Sys.setenv(ET_BAND_MC_REPS = '20', ET_BAND_MC_B = '99')
 source('scripts/stress_native_band_coverage.R')
 ```
 
-Then evaluate the higher-precision candidate:
+The initial pilot used the default seed offset `12000000`. To
+ensure the expanded study is **disjoint** rather than simply
+reproducing its first 20 datasets per participant size, use a
+different offset after pulling the latest research branch:
 
 ```r
-Sys.setenv(ET_BAND_MC_REPS = '200', ET_BAND_MC_B = '399',
-           ET_BAND_MC_SEED_OFFSET = '12000000')
-source('scripts/stress_native_band_coverage.R')
+Sys.setenv(
+  ET_BAND_MC_REPS = "200",
+  ET_BAND_MC_B = "399",
+  ET_BAND_MC_SEED_OFFSET = "30000000",
+  ET_BAND_MC_ALLOW_SEED_REUSE = "false"
+)
+source("scripts/stress_native_band_coverage.R")
 ```
 
-The code has been committed and statically checked but **not executed
-in RStudio**. Avoid reporting its designed outputs as observed results
-until the owner runs and verifies its actual CSVs. No bootstrap
-estimator was changed. Qualification of small-cluster simultaneous
-intervals remains blocked; do not merge or release based on
-smoke-test pass counts.
+The new **preflight seed-collision guard** scans completed
+`band_coverage_trials.csv` archives for repeated
+(`n_subjects`, `generator_seed`) pairs and refuses reuse
+*before any fitting or output archive creation*, unless explicitly
+permitted using `ET_BAND_MC_ALLOW_SEED_REUSE=true`.
+That safeguard is committed but **has not yet been executed in the
+author's R environment**; it needs acceptance testing.
+
+The complete higher-precision study is still pending.
+No bootstrap estimator was changed. Qualification of
+small-cluster simultaneous intervals remains blocked; do not
+merge or release based on smoke-test pass counts.
