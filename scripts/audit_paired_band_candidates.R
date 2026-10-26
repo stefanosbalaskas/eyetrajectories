@@ -33,6 +33,20 @@ required <- c("n_subjects","simulation","generator_seed","estimand","method",
 if (!all(required %in% names(trials))) {
   stop("Trial archive lacks required audit columns.",call.=FALSE)
 }
+# Historical outputs used the word "pointwise" for an average of
+# coordinate-level inclusion INDICATORS under a simultaneous band.
+# It was never a marginal/pointwise confidence-interval calculation.
+legacy_coordinate_label <- "average_pointwise_coverage" %in% names(trials)
+current_coordinate_label <-
+  "coordinate_coverage_in_simultaneous_band" %in% names(trials)
+if (legacy_coordinate_label) {
+  message("NOTE: historic 'average_pointwise_coverage' means coordinate ",
+          "inclusion WITHIN A SIMULTANEOUS BAND, not pointwise CI coverage.")
+}
+if (!legacy_coordinate_label && !current_coordinate_label) {
+  warning("No coordinate-level simultaneous-band inclusion column present;",
+          " coverage/width auditing continues.",call.=FALSE)
+}
 if (!all(c("n_subjects","estimand","method","requested_datasets",
            "successful_fits","failed_fits","covered",
            "simultaneous_rate","avg_simultaneous_width") %in% names(reported))) {
@@ -203,5 +217,7 @@ writeLines(c(
 cat("Source archive: ",chosen,"\n",sep="")
 cat("Output: ",normalizePath(out,winslash="/"),"\n",sep="")
 cat("Archive summary/trial consistency: PASS\n")
+if (legacy_coordinate_label)
+  cat("Legacy field labels retained in source CSV; do NOT cite as pointwise CI coverage.\n")
 print(paired_summary,row.names=FALSE)
 cat("Paired read-only audit finished. No estimator or source trial modified.\n")
