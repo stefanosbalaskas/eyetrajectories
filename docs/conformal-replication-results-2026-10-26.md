@@ -192,7 +192,17 @@ was specified in the user session but could not affect that run.
 that scans archived scenario/seed identifiers and refuses overlaps
 before running FPCA or creating a new output archive, except when
 the user explicitly enables intentional deterministic reproduction.
-This revised guard has not yet been tested in the local R runtime.
+The owner **executed the negative acceptance test successfully** on
+Windows 11/R 4.6.1: set `ET_CONFORMAL_REPS=5`,
+`ET_CONFORMAL_SEED_OFFSET=0` and
+`ET_CONFORMAL_ALLOW_SEED_REUSE=false`; sourcing the runner
+returned the exact expected `SEED COLLISION PRECHECK` error.
+The surrounding assertion finished with
+`PASS: duplicate seeds blocked before simulation`.
+The temporary configuration variables were then unset.
+This establishes the fail-fast rejection path for known repeated seeds,
+not the full correctness of all possible seed combinations or
+statistical calibration.
 
 The archives are preserved unchanged. These are verified
 reproducibility and synthetic-study findings, **not CRAN acceptance,
