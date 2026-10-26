@@ -163,3 +163,17 @@ source("scripts/read_conformal_results.R")
 The seed offset is recorded in the run manifest. All studies retain their
 individual seeds and separate, non-overwriting timestamped output directories.
 The high-replication stage is **not yet executed**.
+
+## Expanded independent replication
+
+The author reported a 2,000-independent-generating-dataset-per-scenario run
+with zero fitting failures and exchangeable false alarms of .055/.098,
+consistent with .05/.10 continuous rank references. The full six-cell
+numerical report, exact intervals and provenance limitations are recorded
+in [conformal replication evidence](conformal-replication-results-2026-10-26.md).
+The uploaded raw trial CSV corresponds to the 200-study pilot only.
+Run `source('scripts/audit_conformal_replication.R')` on the synchronized
+research branch to compare both archived runs, validate summary counts,
+and reject overlapping seeds. Higher experimental precision by itself
+does not establish real-world robustness, participant-level validity, or
+calibrated simultaneous functional confidence bands.
