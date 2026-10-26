@@ -1,5 +1,28 @@
 # eyetrajectories
 
+## Scientific qualification: functional bootstrap confidence bands (HOLD)
+
+On 26 October 2026, the author ran the
+[known-truth band stress pilot](docs/native-band-coverage-stress-2026-10-26.md):
+**60 independently generated datasets** (20 each at N=12, 24, 48
+participant clusters), with paired participant-mean and true-null
+two-group contrast methods (120 fits), B=99 and nominal 90%
+simultaneous coverage. All fits completed, but coverage ranged from
+**75–90%** for the mean bands and **65–85%** for group contrasts.
+At N=24, the contrast covered 13/20 datasets (65%; exact 95% MC
+interval 40.8–84.6%). These are exploratory synthetic results,
+not proof of nominal calibration.
+
+A larger, **disjoint** 200-dataset-per-size / B=399 study remains
+pending. The script
+[`scripts/stress_native_band_coverage.R`](scripts/stress_native_band_coverage.R)
+now checks previous trial archives for seed collisions before any
+new simulation. Use `ET_BAND_MC_SEED_OFFSET=30000000` for a
+new study instead of reusing the pilot offset. This preflight
+guard has been committed but still requires author-run R acceptance
+testing. Bootstrap inference remains **experimental and not
+release-qualified**. No estimators were modified.
+
 ## Split-conformal false-alarm pilot and 2,000-study replication completed
 
 A failure-inclusive [frozen-FPCA conformal Monte Carlo study](docs/conformal-fpca-monte-carlo-audit.md)
