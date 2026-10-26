@@ -51,9 +51,11 @@ if (anyDuplicated(new_seeds$seed))
   stop("Seed formula overlaps across scenarios at this repetition count; ",
        "reduce ET_CONFORMAL_REPS or revise the seed design.",
        call. = FALSE)
-archive_dirs <- if (dir.exists(base_out))
+archive_dirs <- if (dir.exists(base_out)) {
   list.dirs(base_out, recursive = FALSE, full.names = TRUE)
-else character()
+} else {
+  character()
+}
 archive_dirs <- archive_dirs[
   grepl("^run_[0-9]{8}_[0-9]{6}_pid[0-9]+$",
         basename(archive_dirs))]
