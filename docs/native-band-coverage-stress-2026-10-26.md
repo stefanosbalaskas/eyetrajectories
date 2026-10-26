@@ -466,7 +466,7 @@ not independently uploaded to this conversation. Results remain
 scientifically conditional on the generator and the author's
 execution log. **No release-facing estimators were modified.**
 
-## New distributional robustness experiment — staged, not yet run
+## Distributional robustness experiment — 20-study author-run pilot
 
 The new research-only script
 [`scripts/stress_native_band_distributions.R`](../scripts/stress_native_band_distributions.R)
@@ -519,6 +519,26 @@ Conditional on successful smoke and archive checks, a separate
 observation-process/missingness validation must follow as a
 separate study with an explicitly defined target estimand.
 
-**Status:** Code has been committed and statically inspected;
-**no local R execution or scientific results exist for these four
-scenarios yet**. Do not infer performance from script presence.
+**Status:** Author-run 20-study/condition distributional stress completed on 26 October 2026. See execution evidence below. The script remains research-only; raw CSV records were not supplied for an independent row-by-row audit.
+
+### Author-executed pilot across four complete-data generators (26 October 2026)
+
+The owner sourced `scripts/stress_native_band_distributions.R` under Windows R with **20 independently generated datasets for every scenario/N combination** and `B=99` bootstrap draws, producing archive:
+`artifacts/band_robustness_stress/run_20261026_215536_pid51684/`.
+
+There are **4 generating scenarios × 3 N levels × 20 datasets = 240 distinct generated datasets**. Each dataset supplies **two paired estimands and three paired methods**, for **1,440 successful method/estimand evaluations and zero reported failed fits**. Evaluations from the same generating dataset are *dependent*: 1,440 must not be reported as 1,440 independent generating studies. The following descriptive totals aggregate 60 generated studies and two estimands per scenario; **each denominator of 120 combines correlated outcomes and must not be used as an independent-binomial calibration test**.
+
+| Complete-data DGP | Existing fixed-SE covered / 120 | Experimental studentized covered / 120 | Gaussian Bonferroni-t covered / 120 |
+|---|---:|---:|---:|
+| Independent Gaussian | 93 (77.5%) | 111 (92.5%) | 118 (98.3%) |
+| Heavy-tailed Student-t(3) | 87 (72.5%) | 111 (92.5%) | 115 (95.8%) |
+| Unequal group variances | 92 (76.7%) | 109 (90.8%) | 118 (98.3%) |
+| Centered skewed lognormal | 78 (65.0%) | 107 (89.2%) | 114 (95.0%) |
+
+The **strongest pilot warning** was skewed lognormal N=12: the existing fixed-SE band covered the true participant mean in only **9/20 (45%)** and the true-null group contrast in only **10/20 (50%)** generated datasets. The studentized candidate covered both targets in **19/20 and 20/20**, and the Bonferroni reference covered them in **19/20 and 20/20**, respectively. At N=24 and N=48 in the skewed participant-mean condition, the studentized candidate achieved only **16/20 (80%)**; in the N=24 heteroskedastic null-contrast condition, it achieved **17/20 (85%)**. These cell-wise counts are noisy and **cannot establish either general calibration or general failure to meet 90%** for the exploratory studentized candidate.
+
+The author-reported width columns show wider experimental intervals alongside the apparent gains. For skewed lognormal N=12 mean, mean widths were **0.262890 fixed-SE / 0.481333 studentized / 0.470930 Bonferroni**. For skewed lognormal N=12 null contrast, they were **0.511245 fixed-SE / 0.979211 studentized / 0.964791 Bonferroni**. Larger coverage therefore cannot be separated from interval inflation. These width numbers are reported directly from the owner's console output; raw `robustness_trials.csv` and `robustness_summary.csv` have not been uploaded for independent reconciliation.
+
+The Bonferroni reference is assumption-matched **only** to the Gaussian generator. Its observed coverage under the heavy-tailed, unequal-variance and skewed generators is a sensitivity result, **not** a finite-sample coverage guarantee. `B=99` makes bootstrap cutoff estimation coarse; **20 independent studies per cell** gives very wide exact Monte Carlo coverage intervals (e.g., 9/20: [0.23058,0.68472]; 16/20: [0.56339,0.94267]). No MCAR/MAR/MNAR, subject dropout, asynchronous sampling, sparse-time-grid or unequal observation density was tested.
+
+**Next gate:** Reconcile archived trial-level records with summaries and verify scenario/N/generator-seed uniqueness and complete six-way pairing, then run an independently seeded larger study (proposed `ET_BAND_ROBUST_REPS=200`, `ET_BAND_ROBUST_B=399`, `ET_BAND_ROBUST_SEED_OFFSET=43000000`) if computing cost permits. Report per-scenario/N/estimand simultaneous coverage, exact Monte Carlo uncertainty, paired candidate-only and baseline-only discordance counts, and width ratios. Follow with a *separate*, explicitly estimand-defined missingness/observation-process experiment. No estimator replacement, merge or release is authorized: **inference qualification remains HOLD**.
