@@ -180,6 +180,12 @@ The uploaded raw trial CSV corresponds to the 200-study pilot only.
 Run `source('scripts/audit_conformal_replication.R')` on the synchronized
 research branch to compare the archives, verify numerical identity at
 shared seeds, and report new-only results without double-counting.
-The old audit stopped at **600 overlapping scenario/seed records**. Higher experimental precision by itself
-does not establish real-world robustness, participant-level validity, or
-calibrated simultaneous functional confidence bands.
+The latest user-run revised audit **passed**: all 600 reused
+scenario/seed identifiers had numerically identical scores, cutoffs,
+flags and statuses at both alphas. It identified 1,800 new
+datasets per scenario and reported their exact binomial Monte Carlo
+intervals (see the replication evidence document). The large
+archive's recorded historical Git SHA confirms that its code predates
+the offset implementation. Higher precision does not establish
+real-world robustness, participant-level validity or calibrated
+simultaneous functional confidence bands.

@@ -34,18 +34,20 @@ undercoverage. No merger or release is implied.
 Large-run results and their **600 overlapping pilot seeds** are
 recorded in [the 2,000-study conformal audit](docs/conformal-replication-results-2026-10-26.md).
 The 2,000-dataset-per-scenario run is an extension of the 200-study
-pilot, not a disjoint replication. The package now provides a read-only
-overlap-and-numerical-consistency audit, plus a pre-run seed collision
-guard. Neither new script change has been run in local RStudio yet.
+pilot, not a disjoint replication. Its **author-run revised audit
+passed**, verifying numerical identity of all 600 overlapping study
+IDs and confirming 1,800 genuinely new datasets per scenario.
+A new pre-run seed-collision guard has been committed but not yet
+executed locally.
 Under independent exchangeability, author-reported false alarms were
 **.055 and .098**, consistent with .05/.10 rank references given Monte
 Carlo uncertainty; test-only noise shift inflated rates to .220/.414.
-The uploaded 1,200-row raw file belongs to the first 200-study pilot,
-not the larger 2,000-study archive. The latter's raw record identity
-comparison is pending; no release claims are warranted.
-After syncing GitHub Desktop, run
-`source('scripts/audit_conformal_replication.R')` to verify both
-archived runs and ensure they do not reuse simulated seeds.
+The uploaded 1,200-row file belongs to the initial 200-study pilot.
+The larger archive's matched records were verified on the author's
+local R session. Its remaining scientific limitations are distinct
+from this reproducibility correction; no release claims are warranted.
+Run `source('scripts/audit_conformal_replication.R')` again to
+reproduce the read-only overlap and new-only estimates.
 
 ***
 ## Research branch: native R parity stage 1 (WINDOWS CHECK PASSED)

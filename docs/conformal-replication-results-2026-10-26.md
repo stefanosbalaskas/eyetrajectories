@@ -20,14 +20,24 @@ branch `research/native-parity-stage1`.
    **600 overlapping scenario/seed identifiers** shared between the pilot
    and the larger archive. Therefore the larger archive is an
    **extension of the original pilot, not an independent replication**.
-   Assuming the shared seed records give identical observations and
-   statistics (verification pending), the larger archive contains
-   **5,400 new generating datasets, 1,800 per scenario**. Combining
+   The author then executed the revised read-only audit and confirmed
+   matching scores, thresholds, anomaly flags and fit statuses for **all
+   600 shared scenario/seed identifiers at both alpha levels**.
+   Therefore the larger archive contains **5,400 new generating
+   datasets, 1,800 per scenario**. Combining
    the pilot and expanded archive without double-counting provides
    6,000 unique scenario/seed identifiers, not 6,600.
-   The expanded trial-level CSV/manifest has not been uploaded here,
-   so its per-row scores, flags and seed-offset provenance are still
-   only author-console reported.
+   The expanded trial-level CSV/manifest has not been uploaded into
+   this conversation, but the owner-run local audit read both saved
+   files and verified matched rows and trial/summary counts.
+   Its archived manifest records Git SHA
+   `ceebc39a6cb4f89fe61b524374bd6348d73efc93`
+   and no seed-offset setting. The script fetched independently from
+   that exact commit contains the old
+   `260000 + scenario * 100000 + simulation * 31` seed formula
+   and has **no `ET_CONFORMAL_SEED_OFFSET` implementation**. The
+   environment variable therefore could not have affected the
+   expanded historical run.
 3. The terminal's subsequent repeated `source("scripts/run_conformal_monte_carlo.R")`
    had only printed its first simulation-progress line in the supplied
    transcript. Its outcome is not known. An otherwise identical rerun
@@ -85,11 +95,11 @@ These raw files must not be mislabeled as the 2,000-study replication.
 
 Both simulation scripts write dated non-overwriting archives below
 `artifacts/conformal_monte_carlo/run_YYYYMMDD_HHMMSS_pidNNNN/`.
-The helper `scripts/read_conformal_results.R` exists on the
-**GitHub research branch**, but the author's local checkout produced
-`No such file or directory`; it needs a GitHub Desktop Fetch/Pull before
-calling `source()`. This is a repository synchronization issue, not a
-statistical failure.
+The author synchronized the GitHub research branch successfully.
+`scripts/read_conformal_results.R` then read the 2,000-per-scenario
+archive and confirmed **6,000 study identifiers, 12,000 study-alpha
+records and 0 failures**. The earlier missing helper was a transient
+checkout synchronization issue, not a simulation failure.
 
 The read-only `scripts/audit_conformal_replication.R` initially verified
 each archive's trial-summary consistency but **stopped on detection of
@@ -112,13 +122,12 @@ The pilot is `run_20261026_103751_pid51684/`.
 
 ## Remaining scientific blockers
 
-- Inspect the actual 2,000-study raw trials and manifest, including the
-  600 shared seed records. Verify whether they produce **identical
-  scores, cutoffs, statuses and flags**; do not assume it from seed
-  equality alone. The earlier environment request included
-  `ET_CONFORMAL_SEED_OFFSET=1000000`, but the run's actual seeds
-  demonstrably overlapped the original pilot, indicating the local
-  runner likely preceded the seed-offset implementation.
+- The matched-record numerical audit is now **complete**: 600 shared
+  scenario/seed identifiers generated the same scores, cutoffs, flags
+  and statuses at both alpha values. The historical Git SHA
+  conclusively identifies the pre-offset implementation.
+  Test the new preflight seed-collision guard independently before
+  qualifying future nonoverlapping replications.
 - Broaden calibration sizes, train sizes, observation noise, waveform
   shapes and measurement processes, including informative missingness.
 - Develop and qualify separate **participant-level** procedures for
@@ -133,22 +142,59 @@ independent exchangeability, but NOT a disjoint replication of the
 pilot; not comprehensive scientific calibration, CRAN acceptance or
 publication authorization.**
 
-## Correction after user-run seed audit (26 October 2026)
+## Final archive identity audit — author-run PASS (26 October 2026)
 
-The author's local `source('scripts/audit_conformal_replication.R')`
-reported exactly **600 scenario-specific seed overlaps** (200 per
-scenario) and then stopped; this was an audit safeguard, not a fit
-failure. The large archive retains its original 2,000 studies per
-scenario. The new audit revision tests numerical identity of all
-matched outcomes at both alpha levels and reports the 1,800 new-study
-subset separately if the outcomes agree. No synthetic dataset is
-discarded or modified.
+Both saved raw archives were audited in RStudio using the revised
+`scripts/audit_conformal_replication.R`. The check passed all
+trial-summary counts, exact Monte Carlo confidence intervals and
+paired-alpha monotonicity/score invariance checks. **All 600
+overlapping scenario/seed identifiers produced identical scores,
+thresholds, flags and fit statuses at both alpha values.**
 
-The simulation runner now performs a **preflight seed-collision check
-before creating a new archive or fitting FPCA**. Overlapping proposed
-scenario/seed identifiers stop by default with a precise message;
-intentional deterministic reproduction must be explicitly enabled
-with `ET_CONFORMAL_ALLOW_SEED_REUSE='true'`. This change has not been
-executed in RStudio yet. Pull the branch and first rerun the **read-only
-archive audit**; do not rerun the whole 6,000-dataset experiment merely
-to correct the classification.
+| Quantity | Verified |
+|---|---:|
+| Original pilot generated datasets | 600 |
+| Large archive generated datasets | 6,000 |
+| Shared scenario/seed identities with matching outcomes | 600 |
+| New datasets in the large archive | 5,400 |
+| Unique scenario/seed datasets across both archives | 6,000 |
+| Fit failures | 0 |
+
+The new-only subset comprises **1,800 independently generated
+datasets per scenario**. The audit's observed false alarms and exact
+95% binomial Monte Carlo intervals are:
+
+| Scenario | alpha | False alarms / 1,800 | Rate | Exact 95% Monte Carlo interval |
+|---|---:|---:|---:|---:|
+| iid exchangeable | .05 | 101 | .056111 | [.045933, .067765] |
+| iid exchangeable | .10 | 184 | .102222 | [.088606, .117149] |
+| dependent calibration | .05 | 143 | .079444 | [.067367, .092913] |
+| dependent calibration | .10 | 178 | .098889 | [.085483, .113618] |
+| test-only noise shift | .05 | 397 | .220556 | [.201591, .240435] |
+| test-only noise shift | .10 | 753 | .418333 | [.395416, .441517] |
+
+Both iid-exchangeable conditions remain compatible with their
+exact continuous-score conformal rank references (.05 and .10).
+The dependent-calibration 5% rate exceeds nominal under the
+specific duplicated-latent-participant simulation, but the classical
+iid exchangeability theorem does **not** cover that design.
+The test-only measurement-noise shift produced substantial false-
+alarm inflation, again outside the classical assumptions.
+
+**Historical provenance:** the larger archive's manifest records
+Git commit `ceebc39a6cb4f89fe61b524374bd6348d73efc93`
+with no seed-offset metadata. Fetching the actual script at that
+commit verifies that `ET_CONFORMAL_SEED_OFFSET` was not implemented
+and the original deterministic seed formula was used. The offset
+was specified in the user session but could not affect that run.
+
+**Prevention:** the research branch now contains a preflight guard
+that scans archived scenario/seed identifiers and refuses overlaps
+before running FPCA or creating a new output archive, except when
+the user explicitly enables intentional deterministic reproduction.
+This revised guard has not yet been tested in the local R runtime.
+
+The archives are preserved unchanged. These are verified
+reproducibility and synthetic-study findings, **not CRAN acceptance,
+real-world anomaly performance qualification, or a solution to the
+separate simultaneous confidence-band undercoverage.**
