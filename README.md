@@ -22,11 +22,19 @@ intervals exclude the nominal target on the low side. This
 strongly reinforces that the fixed-SE bands are **not calibrated**
 in the tested known-truth hierarchical design.
 
-A new [paired experimental interval comparison](scripts/compare_native_band_intervals.R)
-compares existing fixed-SE bands with a studentized cluster bootstrap
-and an assumption-restricted Gaussian Bonferroni-t reference,
-on identical generated datasets. It is staged but has **not yet run**.
-None of these candidates is certified as a replacement. The script
+A [paired experimental interval comparison](scripts/compare_native_band_intervals.R)
+has now completed a 30-study-per-participant-size pilot (B=199) with
+**540 successful candidate evaluations and no failures**.
+The studentized cluster bootstrap improved observed simultaneous
+coverage in all six cells relative to fixed-SE bands, but required
+**8.0–78.3% wider intervals**, depending on participant count
+and estimand. N=24 and N=48 group contrast coverage remained below
+90% nominal. The Gaussian Bonferroni-t reference yielded still
+wider bands and has **restricted normality/equal-variance assumptions**.
+The read-only [paired candidate audit](scripts/audit_paired_band_candidates.R)
+can compute coverage discordances and paired width ratios from the
+owner's archived trial records. No method has been certified or
+substituted into the package. The script
 [`scripts/stress_native_band_coverage.R`](scripts/stress_native_band_coverage.R)
 now checks previous trial archives for seed collisions before any
 new simulation. Use `ET_BAND_MC_SEED_OFFSET=30000000` for a
