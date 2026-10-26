@@ -1,10 +1,13 @@
 # eyetrajectories
 
-## Next scientific audit: split-conformal false alarms (new, not yet run)
+## Split-conformal false-alarm pilot: Windows 200-study stage completed
 
-A new failure-inclusive [frozen-FPCA conformal Monte Carlo study]
-(docs/conformal-fpca-monte-carlo-audit.md) is staged in this research
-branch. It evaluates one independent held-out inlier and a paired
+A failure-inclusive [frozen-FPCA conformal Monte Carlo study](docs/conformal-fpca-monte-carlo-audit.md)
+is now part of this research branch. The author successfully completed its
+200-study-per-scenario pilot on Windows 11 / R 4.6.1 on 26 October 2026,
+with zero fit failures across 600 independently generated datasets.
+[Full pilot evidence and exact Monte Carlo intervals](docs/conformal-pilot-results-2026-10-26.md)
+are documented separately. It evaluates one independent held-out inlier and a paired
 deliberately shifted curve per simulation, under three separate scenarios:
 exchangeable curves, test-noise distribution shift, and correlated
 calibration trials from repeated participants. **Only the first design**
@@ -16,11 +19,17 @@ Sys.setenv(ET_CONFORMAL_REPS = "200",
 source("scripts/run_conformal_monte_carlo.R")
 ~~~
 
-Results are written under `artifacts/conformal_monte_carlo/`, with
-per-study seeds, fitting failures, exact Monte Carlo intervals, and
-diagnostic plots. New rank-oracle tests are included in the package.
-The Monte Carlo script and new tests have **not yet been run in RStudio**;
-no inferential qualification, merger or release is implied.
+Results are archived under
+`artifacts/conformal_monte_carlo/run_YYYYMMDD_HHMMSS_pidNNNN/`, with
+per-study seeds, fit status, exact Monte Carlo intervals and diagnostic plots.
+Use `source("scripts/read_conformal_results.R")` to inspect the most recent
+completed archive. The rank-oracle R test fixture passed.
+In the exchangeable condition, observed false alarms were 4.5% and 6%
+against rank references 5% and 10%; both exact 95% Monte Carlo intervals
+contain the benchmark. Test-only noise shift raised false alarms to
+21.5% and 37.5%. This is an exploratory pilot, **not final empirical
+conformal qualification**, and it does not repair functional-band
+undercoverage. No merger or release is implied.
 
 ***
 ## Research branch: native R parity stage 1 (WINDOWS CHECK PASSED)
