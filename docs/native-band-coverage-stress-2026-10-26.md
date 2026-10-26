@@ -183,3 +183,42 @@ No current native estimator was modified. A replacement must
 first improve coverage *and* report the width trade-off in
 an independently designed paired simulation; it cannot be
 selected solely on optimistic outputs from the same design.
+
+## Next research stage: paired simultaneous-interval candidates
+
+The new research-only [`scripts/compare_native_band_intervals.R`](../scripts/compare_native_band_intervals.R)
+places the existing fixed-SE participant-bootstrap intervals alongside
+(1) a cluster-resampled **studentized bootstrap** with recalculated SE in each
+resample and (2) a **Gaussian pooled-t/Bonferroni reference**. It uses the
+same independently generated datasets for every method, for N=12/24/48
+and for both the participant mean and equal-group null contrast.
+
+**The Gaussian reference is assumption-restricted:** under the known-truth
+normal, independent participant-mean generator and equal group variance,
+the marginal Student t pivots combined with Bonferroni control achieve at
+least the target familywise coverage (potentially with much wider bands).
+It is not a general correction for non-Gaussian processes, missingness,
+heteroskedastic group variance or dependent participants. The studentized
+bootstrap is entirely exploratory; its coverage must be measured rather
+than assumed. Both alternatives are implemented **only inside the research
+script**; the existing R estimators and exports are unchanged.
+
+Start with a small paired experiment on non-overlapping seeds:
+
+```r
+Sys.setenv(
+  ET_BAND_COMPARE_REPS = "30",
+  ET_BAND_COMPARE_B = "199",
+  ET_BAND_COMPARE_SEED_OFFSET = "57000000"
+)
+source("scripts/compare_native_band_intervals.R")
+```
+
+Outputs appear under `artifacts/band_interval_comparison/run_*/`: 
+`interval_comparison_trials.csv`, `interval_comparison_summary.csv`,
+`interval_comparison_failures.csv`, a manifest and session details.
+An archive seed-overlap guard prevents silently repeating datasets.
+The design compares **both** simultaneous truth coverage and interval
+width; fitting failures are retained. The script is committed and
+statically reviewed but **has not yet been executed in RStudio**.
+No inferential calibration claim follows from adding it.
