@@ -5,14 +5,16 @@
 #
 # From checkout root after pulling research/native-parity-stage1:
 #   Sys.setenv(ET_BAND_ROBUST_REPS="20", ET_BAND_ROBUST_B="99")
-#   source("scripts/compare_native_band_intervals.R")
+#   source("scripts/stress_native_band_distributions.R")
 #
-# Three paired methods per estimand and generating dataset:
+# Four complete-data generating models; three paired methods per estimand:
 #   1. Existing fixed-SE cluster bootstrap (package function).
 #   2. Exploratory studentized cluster bootstrap (re-estimates SE per resample).
 #   3. Gaussian equal-variance marginal t + Bonferroni simultaneous reference.
 #
-# Failure-inclusive, non-overwriting, one independent seed per dataset.
+# Failure-inclusive non-overwriting output, distinct seeds per dataset.
+# Gaussian Bonferroni-t is assumption-matched ONLY in gaussian_baseline.
+# No missingness stress or unobserved-data target is evaluated here.
 if (!file.exists("DESCRIPTION") ||
     unname(read.dcf("DESCRIPTION", fields="Package")[1L]) != "eyetrajectories")
   stop("Run from the eyetrajectories repository checkout.", call.=FALSE)
@@ -354,7 +356,8 @@ writeLines(c("RESEARCH-ONLY FOUR-GENERATOR PAIRED SIMULTANEOUS BAND STRESS",
   paste("Bootstrap draws:",B),
   paste("Alpha:",alpha),
   paste("Grid coordinates:",nt*2L),
-  "Same generated dataset used for ALL six estimator-method combinations.",
+  "For each scenario/N, all six method/estimand results share one study.",
+  "Across the four scenarios, the Monte Carlo generator seeds are distinct.",
   "Gaussian Bonferroni-t reference is assumption-matched ONLY",
   "for gaussian_baseline: independent Gaussian participant means and",
   "equal group variances. Under all three other DGPs it is a negative",
