@@ -2,9 +2,13 @@
 
 This research branch is NOT a release. The Python root API has 362 public
 functions and workflows has 18: 380 Python-backed R wrappers were already
-available. The original R package had 88 native scientific exports. This
-branch adds ten narrowly scoped native methods, none validated on a local
-R interpreter yet. The latest Python public API inventory has not changed.
+available. The original R package had 88 native scientific exports; this
+branch adds 10 narrow methods, giving 98 native exported functions.
+The author executed the 0.4.1.9000 full CRAN-style Windows check with
+0 errors, 0 warnings, 1 incoming NOTE; all package tests, Rd examples and
+both manuals passed. The numerical demonstration ran successfully.
+This evidence does not establish scientific equivalence or coverage.
+The Python public API inventory remains unchanged.
 
 ## Official package audit
 
@@ -100,7 +104,7 @@ It contains **380 rows**, one for every root/workflow callable exported by the
 its callable R wrapper, method family, officially documented candidate
 R packages, validation priority, a manually selected possible native analog
 (if one exists), and **not independently qualified** numeric parity status.
-The 36 possible analog labels are only investigation leads, not 36
+The 37 possible analog labels are only investigation leads, not 37
 successfully reproduced Python contracts.
 
 The separate five-page native example is available at
@@ -116,3 +120,28 @@ source("scripts/report_python_r_capabilities.R")
 The second command now expects 98 native R exports on this branch and will
 report 380 Python-backed wrappers separately. It does not certify numerical
 parity. All real-data and simulation-estimator validation remains open.
+
+## Windows engineering evidence and limitations (26 October 2026)
+
+The author successfully ran the native parity research demonstration and the
+complete `R CMD check --as-cran` for development version 0.4.1.9000 on
+Windows 11 / R 4.6.1. The result was **0 errors, 0 warnings, 1 CRAN incoming
+NOTE**, and the standalone native smoke example completed. The resulting
+capability inventory correctly reports 98 native functions, 380 Python
+wrappers, 14 legacy bridges, 3 catalog utilities, 37 possible analog names
+and **zero qualified cross-language estimator contracts**. This run includes
+package testthat, Rd examples, and PDF/HTML manuals but does not constitute
+an independent methodological oracle or cross-platform check.
+
+The initial supplied demo used a 0.30 recurrence radius that produced only
+3 edges among 41 sampled time nodes, and a near machine-precision conformal
+cutoff (approximately 1.38e-16) because the rank-one deterministic curves
+were almost exactly reconstructed. These are reproducible software outputs,
+not informative stochastic calibration benchmarks. The follow-up demo now
+shows both 0.30 and 0.70 graph radii and uses seeded independent noise with
+19 calibration curves, two ordinary held-out curves and two deliberately
+shifted curves. These refinements have **not yet been run in RStudio**.
+
+The test file also adds an independent seeded nondegenerate calibration case.
+No estimator's mathematical definition was changed, and the draft PR
+remains unmerged pending the updated demonstration and test rerun.

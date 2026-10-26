@@ -1,6 +1,6 @@
 # eyetrajectories
 
-## Research branch: native R parity stage 1 (UNVERIFIED)
+## Research branch: native R parity stage 1 (WINDOWS CHECK PASSED)
 
 This development branch is **0.4.1.9000, not released or CRAN qualified**.
 It adds 10 narrow native-R research exports to the previous 88 native
@@ -10,8 +10,7 @@ time-delay embedding, scalar event return maps, undirected recurrence
 network diagnostics, frozen-FPCA split-conformal anomaly screening,
 and an offline R backend catalog. These are not full Python algorithm parity.
 
-See [official CRAN package survey and remaining scientific gaps]
-(docs/native-parity-research-2026-10.md). Pull this research branch before
+See [official CRAN package survey and remaining scientific gaps](docs/native-parity-research-2026-10.md). Pull this research branch before
 running the dedicated test fixtures and full CRAN check:
 
 ~~~r
@@ -22,10 +21,12 @@ source("scripts/local_qualification.R")
 source("scripts/run_cran_qualification.R")
 ~~~
 
-**Test evidence:** these new functions have not been executed in RStudio
-or on Linux/macOS yet. Existing bootstrap undercoverage and all prior
-scientific qualification blockers remain. Do not merge/release merely
-because package functions and help pages were added.
+**Test evidence:** the author-run full Windows R 4.6.1 CRAN-style check
+of 0.4.1.9000 completed with 0 errors, 0 warnings and 1 incoming NOTE,
+including tests, manual builds, and successful native research examples.
+The research examples were refined after this check; the refinements
+require a new test/example run. Linux/macOS and independent numerical
+and scientific qualification remain open. Do not merge or release yet.
 
 ***
 ## Python–R capability parity: what is available?
@@ -34,7 +35,7 @@ The R package has **380 named optional Python-backed function wrappers**
 (362 root + 18 workflow callables), and the author-verified installed
 Python API census was **380/380 callable**. These are available *through
 reticulate*, not 380 independent native R implementations. The package
-also exports **88 native `etr_*` functions**, but their count is not
+also exports **98 native `etr_*` functions on this research branch**, but their count is not
 a 1-to-1 algorithm mapping against the Python functions. Classes and
 constants are available via `etpy_get_export()`.
 

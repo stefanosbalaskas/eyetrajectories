@@ -27,32 +27,54 @@ warp <- etr_registration_warp_frame(reg)
 utils::write.csv(warp, file.path(out, "landmark_warp.csv"), row.names = FALSE)
 
 embedding <- etr_delay_embedding(values[1L, , 1L], 3L, 2L)
-rec <- etr_recurrence_matrix(x, curve = 1L, radius = .3, theiler = 1L)
+# Demonstrate both a sparse and a diagnostically useful radius.
+# Theiler exclusions and research-unit interpretation are unchanged.
+sparse_rec <- etr_recurrence_matrix(x, curve = 1L, radius = .3, theiler = 1L)
+sparse_net <- etr_recurrence_network(sparse_rec)
+rec <- etr_recurrence_matrix(x, curve = 1L, radius = .70, theiler = 1L)
 net <- etr_recurrence_network(rec)
 utils::write.csv(etr_recurrence_network_nodes(net),
                  file.path(out, "network_nodes.csv"), row.names = FALSE)
+utils::write.csv(etr_recurrence_network_nodes(sparse_net),
+                 file.path(out, "network_nodes_sparse.csv"), row.names = FALSE)
 return_events <- etr_poincare_return_map(
   sin(seq(0, 10*pi, length.out = 101L)), threshold = 0, direction = "up")
 utils::write.csv(return_events$return_map,
                  file.path(out, "threshold_return_map.csv"), row.names = FALSE)
 
-# A frozen model and separated curve IDs. Only per-independent-unit marginal
-# conformal semantics; no true study-level false positive rate is asserted.
-generate <- function(ids, added = FALSE) {
-  m <- length(ids); z <- array(NA_real_, c(m, length(t), 1L))
-  for (i in seq_len(m))
-    z[i, , 1L] <- sin(2*pi*t) +
-      (i/(m+3)) * cos(2*pi*t) +
-      (if (added) 4 else 0) * sin(4*pi*t)
+# Frozen model and separated independent curve IDs. All INLIER curves
+# share the same stochastic generating distribution. Two held-out curves
+# are deliberately shifted and are NOT exchangeable under that inlier law.
+# This makes the example nondegenerate, not a conformal coverage study.
+set.seed(20261026L)
+generate <- function(ids, anomaly_amplitude = 0) {
+  m <- length(ids)
+  if (length(anomaly_amplitude) == 1L)
+    anomaly_amplitude <- rep(anomaly_amplitude, m)
+  stopifnot(length(anomaly_amplitude) == m)
+  z <- array(NA_real_, c(m, length(t), 1L))
+  for (i in seq_len(m)) {
+    coefficient <- stats::rnorm(1L, mean = 0, sd = .15)
+    measurement_noise <- stats::rnorm(length(t), mean = 0, sd = .05)
+    z[i, , 1L] <- sin(2*pi*t) + coefficient*cos(2*pi*t) +
+      measurement_noise +
+      anomaly_amplitude[i]*sin(4*pi*t)
+  }
   etr_trajectory_set(t, z, ids, "x")
 }
-training <- generate(paste0("training_", seq_len(8L)))
-calibration <- generate(paste0("calibration_", seq_len(10L)))
-test <- generate(paste0("test_", seq_len(3L)), added = TRUE)
+training <- generate(paste0("training_", seq_len(12L)))
+calibration <- generate(paste0("calibration_", seq_len(19L)))
+test_amplitude <- c(0, 0, 4, 4)
+test <- generate(paste0("test_", seq_len(4L)),
+                 anomaly_amplitude = test_amplitude)
 fit <- etr_fit_fpca(training, n_components = 1L)
 screen <- etr_split_conformal_fpca_anomalies(
   fit, calibration, test, alpha = .10)
+screen$test$deliberately_shifted <- test_amplitude != 0
 utils::write.csv(screen$test, file.path(out, "conformal_anomaly_test.csv"),
+                 row.names = FALSE)
+utils::write.csv(screen$calibration,
+                 file.path(out, "conformal_calibration_scores.csv"),
                  row.names = FALSE)
 
 pdf_file <- file.path(out, "native_parity_stage1_demo.pdf")
@@ -73,7 +95,7 @@ tryCatch({
                     main = "Delay embedding coordinates", pch = 16)
   graphics::image(net$adjacency * 1, axes = FALSE,
                   xlab = "Sample", ylab = "Sample",
-                  main = "Undirected binary recurrence graph adjacency")
+                  main = "Recurrence adjacency (radius 0.70, Theiler 1)")
   graphics::hist(screen$calibration$score, breaks = 8L,
                  xlab = "Frozen-model reconstruction residual",
                  main = "Split-conformal calibration scores")
@@ -81,14 +103,21 @@ tryCatch({
 }, finally = grDevices::dev.off())
 summary <- data.frame(
   measure = c("n_curves", "registration_landmark_target",
-              "network_edges", "network_transitivity",
+              "network_edges_sparse_radius_0.30",
+              "network_edges_display_radius_0.70",
+              "network_transitivity_radius_0.70",
+              "network_components_radius_0.70",
               "delay_embedding_rows", "poincare_events",
               "conformal_calibration_n", "conformal_threshold",
-              "number_test_anomaly_flags", "optional_R_packages_installed"),
-  value = c(n, .25, net$n_edges, net$transitivity,
+              "conformal_nonshifted_test_flags",
+              "conformal_shifted_test_flags",
+              "optional_R_packages_installed"),
+  value = c(n, .25, sparse_net$n_edges, net$n_edges,
+            net$transitivity, net$n_components,
             nrow(embedding), length(return_events$crossing_times),
             screen$cutoff$n_calibration, screen$cutoff$threshold,
-            sum(screen$test$is_anomaly),
+            sum(screen$test$is_anomaly[!screen$test$deliberately_shifted]),
+            sum(screen$test$is_anomaly[screen$test$deliberately_shifted]),
             sum(etr_r_backend_catalog()$installed))
 )
 utils::write.csv(summary, file.path(out, "summary.csv"), row.names = FALSE)
@@ -98,7 +127,11 @@ writeLines(c(
   "No scientifically calibrated simultaneous functional-band inference.",
   "Conformal marginal guarantee requires independent exchangeable curves.",
   "The plotted recurrence network is based on time-sample nodes.",
-  "Prespecified registration is not elastic/SRVF registration."
+  "Prespecified registration is not elastic/SRVF registration.",
+  "Two network radii shown: 0.30 sparse; 0.70 displayed.",
+  "Inlier train/cal/test curves use the same independent noisy law.",
+  "Two test curves have deliberately shifted waveforms; no power/coverage inference.",
+  "Split-conformal rank is calculated over 19 held-out calibration curves."
 ), file.path(out, "MANIFEST.txt"))
 print(summary, row.names = FALSE)
 cat("Wrote native research demo: ", normalizePath(out, winslash = "/"), "\n")

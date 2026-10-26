@@ -88,6 +88,37 @@ test_that("frozen FPCA heldout calibration/test IDs do not overlap", {
                "mutually disjoint")
 })
 
+test_that("noisy held-out FPCA calibration gives nondegenerate scores", {
+  t <- seq(0, 1, length.out = 41L)
+  set.seed(20261026L)
+  sample_set <- function(ids, shift = 0) {
+    n <- length(ids)
+    if (length(shift) == 1L) shift <- rep(shift, n)
+    vals <- array(NA_real_, c(n, length(t), 1L))
+    for (i in seq_len(n)) {
+      coeff <- stats::rnorm(1L, sd = .15)
+      noise <- stats::rnorm(length(t), sd = .05)
+      vals[i, , 1L] <- sin(2*pi*t) + coeff*cos(2*pi*t) +
+        noise + shift[i]*sin(4*pi*t)
+    }
+    etr_trajectory_set(t, vals, ids, "x")
+  }
+  train <- sample_set(paste0("train_", seq_len(12L)))
+  cal <- sample_set(paste0("cal_", seq_len(19L)))
+  future <- sample_set(paste0("test_", seq_len(4L)), c(0, 0, 4, 4))
+  fit <- etr_fit_fpca(train, n_components = 1L)
+  result <- etr_split_conformal_fpca_anomalies(fit, cal, future,
+                                                alpha = .1)
+  expect_true(all(is.finite(result$calibration$score)))
+  expect_true(all(result$calibration$score > 1e-4))
+  expect_equal(result$cutoff$n_calibration, 19L)
+  expect_true(is.finite(result$cutoff$threshold))
+  expect_true(result$cutoff$threshold > 1e-4)
+  expect_true(all(result$test$is_anomaly[3:4]))
+  # The first two are inliers; do not require a particular false-flag count
+  # or infer empirical validity from four deliberately constructed curves.
+})
+
 test_that("optional R dependency catalog never claims scientific parity", {
   x <- etr_r_backend_catalog()
   expect_equal(nrow(x), 26L)

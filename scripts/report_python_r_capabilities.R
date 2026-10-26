@@ -131,8 +131,10 @@ writeLines(c(
   paste("Python main API source SHA:", unique(api$source_git_sha)),
   "380 Python functions are exposed as wrappers, but runtime optional",
   "dependencies and numerical/behavioral parity require separate tests.",
-  "88 native exports are not 88 equivalents of 380 Python callables.",
-  "Native analogs are manually reviewed name candidates, not parity claims.",
+  paste(length(native),
+        "native exports are not equivalents of 380 Python callables."),
+  paste(sum(nzchar(functions$native_analog)),
+        "native analogs are name candidates, not parity claims."),
   "Nonfunction exports are retrievable through etpy_get_export().",
   "Scientific inferential calibration is still on HOLD."
 ), file.path(out, "MANIFEST.txt"))
