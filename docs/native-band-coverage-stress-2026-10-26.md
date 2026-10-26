@@ -222,3 +222,104 @@ The design compares **both** simultaneous truth coverage and interval
 width; fitting failures are retained. The script is committed and
 statically reviewed but **has not yet been executed in RStudio**.
 No inferential calibration claim follows from adding it.
+
+## Paired experimental interval comparison — author-run 30-study pilot
+
+**Execution (26 October 2026):** The owner ran
+`scripts/compare_native_band_intervals.R` with
+`ET_BAND_COMPARE_REPS=30`, `ET_BAND_COMPARE_B=199` and
+`ET_BAND_COMPARE_SEED_OFFSET=57000000`. Archive:
+`artifacts/band_interval_comparison/run_20261026_210748_pid51684/`.
+There were **90 independently generated datasets total** (30 for
+each N=12/24/48), shared between the mean and null contrast
+estimands. Each generating dataset supplied three methods for two
+estimands, producing **540 candidate evaluations with zero fitting
+failures**. Counting 540 results as independent would be pseudoreplication.
+
+The methods are the existing fixed-SE participant-cluster bootstrap,
+an experimental studentized cluster bootstrap (recalculating SE
+inside each resampling draw), and a Gaussian/pooled-t Bonferroni
+reference requiring Gaussian, independent, equal-variance clusters.
+
+### Coverage results, nominal simultaneous coverage 90%
+
+| Participants | Estimand | Existing (out of 30) | Studentized (out of 30) | Gaussian reference (out of 30) |
+|---:|---|---:|---:|---:|
+| 12 | Mean | 19 (.6333) | 29 (.9667) | 30 (1.000) |
+| 12 | Null group contrast | 18 (.6000) | 29 (.9667) | 29 (.9667) |
+| 24 | Mean | 24 (.8000) | 27 (.9000) | 29 (.9667) |
+| 24 | Null group contrast | 23 (.7667) | 26 (.8667) | 30 (1.000) |
+| 48 | Mean | 26 (.8667) | 28 (.9333) | 30 (1.000) |
+| 48 | Null group contrast | 23 (.7667) | 25 (.8333) | 29 (.9667) |
+
+The studentized candidate showed higher *observed* simultaneous
+coverage than the existing method in all six conditions, but
+the group contrasts at N=24 (26/30) and N=48 (25/30) remain
+below nominal, and the Monte Carlo confidence intervals are wide.
+These are **not** independent evidence of calibrated 90% coverage.
+The high Gaussian Bonferroni proportions are expected to accompany
+conservative intervals under this restricted generator; even 30/30
+has an exact 95% Monte Carlo lower limit of approximately 88.4%,
+which alone does not establish coverage of at least 90%.
+
+### Interval-width trade-offs (averaged over all 30 datasets)
+
+| Participants | Estimand | Existing width | Studentized width | Gaussian width | Studentized width increase |
+|---:|---|---:|---:|---:|---:|
+| 12 | Mean | .315390 | .485937 | .567577 | +54.1% |
+| 12 | Null contrast | .593780 | 1.058628 | 1.160553 | +78.3% |
+| 24 | Mean | .235366 | .273443 | .338887 | +16.2% |
+| 24 | Null contrast | .455071 | .554732 | .684925 | +21.9% |
+| 48 | Mean | .168019 | .181480 | .225789 | +8.0% |
+| 48 | Null contrast | .332950 | .363565 | .452400 | +9.2% |
+
+Thus the studentized method's apparent coverage gains are **not
+free**: at N=12, mean bands widen by roughly 54% and contrast bands
+by roughly 78%. The Gaussian reference produces still wider bands
+in all six conditions, as expected from its conservative construction.
+
+The raw `interval_comparison_trials.csv` has **not been uploaded to
+this conversation for independent row-wise audit**. The table above
+is sourced from the owner's RStudio console output, not independently
+recomputed from raw trial records.
+
+### Paired-data audit and next independent replication
+
+A read-only script
+[`scripts/audit_paired_band_candidates.R`](../scripts/audit_paired_band_candidates.R)
+has been added to validate archived trial-summary counts, verify
+the shared generating seed within all six method/estimand evaluations,
+and compute exploratory **paired coverage gains**, coverage
+discordance counts and mean-width ratios. It also computes
+paired-bootstrap Monte Carlo intervals for those differences.
+This audit is committed and statically checked but **not executed in
+the owner's RStudio session**.
+
+```r
+source("scripts/audit_paired_band_candidates.R")
+```
+
+After that audit passes, an independently seeded 200-study-per-N,
+B=399 confirmation should preserve the same three-method
+comparison, 90% nominal target, failure-inclusive outputs,
+and a **different generating seed offset**, for example:
+
+```r
+Sys.setenv(
+  ET_BAND_COMPARE_REPS = "200",
+  ET_BAND_COMPARE_B = "399",
+  ET_BAND_COMPARE_SEED_OFFSET = "81000000"
+)
+source("scripts/compare_native_band_intervals.R")
+```
+
+The runner checks previous comparison archives for overlapping
+(`n_subjects`, `generator_seed`) pairs. Do not choose a
+replacement based solely on the pilot's observed improvement;
+also require data-generating stress under heavy tails,
+heteroskedasticity, and missing observation processes, plus
+an independent participant-level qualification design.
+
+**No published or release-facing estimator changed.**
+Scientific simultaneous-band qualification and the release
+decision remain **HOLD**.
