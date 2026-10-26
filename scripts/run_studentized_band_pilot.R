@@ -42,9 +42,11 @@ preserve_rng <- function(seed, fn) {
   had <- exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
   if (had) prev <- get(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
   on.exit({
-    if (had) assign(".Random.seed", prev, envir = .GlobalEnv)
-    else if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE))
+    if (had) {
+      assign(".Random.seed", prev, envir = .GlobalEnv)
+    } else if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)) {
       rm(".Random.seed", envir = .GlobalEnv)
+    }
   }, add = TRUE)
   set.seed(seed)
   fn()
@@ -226,8 +228,12 @@ tryCatch({
     linecols <- c("#356B87","#B35F3C")
     for (measure in c("conditional_coverage","mean_width")) {
       yvals <- dat[[measure]]
-      ylim <- if (measure=="conditional_coverage") c(0,1) else
-        range(c(0,yvals),finite=TRUE)
+      ylim <- if (measure=="conditional_coverage") {
+        c(0, 1)
+      } else {
+        finite <- yvals[is.finite(yvals)]
+        c(0, if (length(finite)) max(1e-6, finite) else 1)
+      }
       graphics::plot(range(x),ylim,type="n",xlab="Independent participants",
                      ylab=measure, main=paste(design,measure),xaxt="n")
       graphics::axis(1,at=x)
