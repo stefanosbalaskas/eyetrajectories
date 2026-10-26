@@ -185,3 +185,19 @@ development branch. The native methods remain experimental until
 other-platform checks and independent behavioral/coverage studies.
 This work does not qualify the existing under-covering simultaneous bands
 or authorize CRAN publication.
+
+## Independent oracle: author-executed PASS (26 October 2026)
+
+The owner ran `scripts/check_native_parity_stage1_oracles.py` in the local
+Windows Python environment. All independent, standard-library mathematical
+checks returned PASS. Radius 0.30 recurrence: 3 edges, zero triangles,
+38 components. Radius 0.70 recurrence: 129 edges, 57 triangles, 689 connected
+triples, one connected component, transitivity 0.24818577648766327. The
+source landmarks spanned 0.19--0.31, lag-embedding and linear threshold
+crossing fixtures reproduced their expected values, and the 19-calibration,
+alpha=0.10 split-conformal reference gave rank 18. These checks independently
+reproduce deterministic R examples, but do NOT execute R themselves, evaluate
+empirical anomaly-detection rates, establish small-cluster confidence-band
+coverage or prove overall R--Python numerical parity. CRAN submission remains
+on hold. The owner-reported full Windows --as-cran result remains
+0 errors, 0 warnings, 1 incoming feasibility NOTE.
