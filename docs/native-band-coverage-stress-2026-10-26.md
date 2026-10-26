@@ -323,3 +323,90 @@ an independent participant-level qualification design.
 **No published or release-facing estimator changed.**
 Scientific simultaneous-band qualification and the release
 decision remain **HOLD**.
+
+## Independent expanded candidate comparison — author-run 200/N, B=399
+
+The owner first ran the read-only paired audit on the earlier **30-study**
+archive. It passed its trial-summary integrity checks with no missing pairs.
+That audit pertains to the *pilot*, not the newer expanded study.
+
+The owner then ran `scripts/compare_native_band_intervals.R` with
+`ET_BAND_COMPARE_REPS=200`, `ET_BAND_COMPARE_B=399`,
+`ET_BAND_COMPARE_SEED_OFFSET=81000000` and saved:
+`artifacts/band_interval_comparison/run_20261026_212042_pid51684/`.
+The experiment comprises **600 independently generated datasets**
+(200 per N=12/24/48), each supplying six method/estimand evaluations:
+**3,600 successful evaluations, no reported fitting failures**.
+The seed-overlap precheck did not abort. Raw expanded trial records
+have not been uploaded into this conversation, so independent
+row-level validation of the expanded archive is still pending.
+
+### Simultaneous population-mean and null-contrast coverage (nominal 90%)
+
+| Participants | Estimand | Existing fixed-SE | Studentized | Gaussian Bonferroni-t |
+|---:|---|---:|---:|---:|
+| 12 | Mean | 146/200 = **.730** | 195/200 = **.975** | 196/200 = .980 |
+| 12 | Null contrast | 125/200 = **.625** | 194/200 = **.970** | 195/200 = .975 |
+| 24 | Mean | 160/200 = **.800** | 176/200 = .880 | 195/200 = .975 |
+| 24 | Null contrast | 161/200 = **.805** | 182/200 = .910 | 196/200 = .980 |
+| 48 | Mean | 165/200 = **.825** | 175/200 = .875 | 195/200 = .975 |
+| 48 | Null contrast | 176/200 = .880 | 189/200 = .945 | 199/200 = .995 |
+
+Studentization improved observed simultaneous coverage in all six cells.
+However, N24 and N48 mean coverage remained .880 and .875, with exact
+95% Monte Carlo intervals [.82673,.92158] and [.82103,.91745]. Both
+intervals include nominal .90; this neither demonstrates calibrated
+coverage nor conclusively establishes undercoverage in those two cells.
+N12 studentized mean .975 has exact 95% CI [.94263,.99183], indicating
+potential conservatism in the specified Gaussian generator.
+Gaussian Bonferroni-t reference rates .975–.995 are expected to be
+conservative under its independent Gaussian equal-variance assumptions,
+not generally valid under other participant and observation processes.
+
+### Mean simultaneous band width
+
+| Participants | Estimand | Existing | Studentized | Gaussian | Studentized width increase |
+|---:|---|---:|---:|---:|---:|
+| 12 | Mean | .317734 | .477744 | .564829 | **+50.4%** |
+| 12 | Null contrast | .600213 | 1.042275 | 1.159661 | **+73.7%** |
+| 24 | Mean | .237065 | .275614 | .345269 | +16.3% |
+| 24 | Null contrast | .462661 | .562379 | .694446 | +21.6% |
+| 48 | Mean | .169745 | .181870 | .226777 | +7.1% |
+| 48 | Null contrast | .335902 | .363291 | .453789 | +8.2% |
+
+The observed improvements are accompanied by meaningful interval inflation,
+most notably for 12-participant designs.
+
+### Historical reporting-label correction
+
+Code inspection found that the archived comparison fields
+`average_pointwise_coverage` (trials) and `avg_pointwise_rate` (summary)
+were computed by comparing truth to the **simultaneous band's** lower
+and upper bounds. They therefore describe **mean coordinate inclusion
+within the simultaneous band**, not separately constructed marginal
+pointwise CI coverage. The research script's future output has been
+renamed `coordinate_coverage_in_simultaneous_band` and
+`avg_coordinate_coverage_in_simultaneous_band`. Original archives
+are retained unchanged. **Simultaneous all-coordinate coverage counts
+and band widths are unaffected.** Historical pointwise-labeled columns
+must not be cited as pointwise confidence-interval calibration evidence.
+
+### Next steps and qualification limits
+
+The current read-only `scripts/audit_paired_band_candidates.R` should
+be run on the 200-study archive to validate all 3,600 saved trial rows
+and estimate paired coverage gains, exact discordance tests and
+paired-bootstrap Monte Carlo intervals for the width ratios:
+
+```r
+Sys.setenv(
+  ET_BAND_COMPARE_AUDIT_DIR =
+    "artifacts/band_interval_comparison/run_20261026_212042_pid51684"
+)
+source("scripts/audit_paired_band_candidates.R")
+```
+
+The next independent qualification must vary participant-effect tails,
+between-group variances, observation density and missingness while
+preserving the failure-inclusive protocol. No published estimator
+has been modified; inferential release status remains **HOLD**.
