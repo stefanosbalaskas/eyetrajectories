@@ -19,6 +19,9 @@ int_env <- function(key, default, min, max) {
   val
 }
 reps <- int_env("ET_CONFORMAL_REPS", 200L, 5L, 10000L)
+# A nonzero offset makes a larger study an independent seeded replication
+# rather than silently reusing the first 200 generated pilot datasets.
+seed_offset <- int_env("ET_CONFORMAL_SEED_OFFSET", 0L, 0L, 100000000L)
 n_train <- int_env("ET_CONFORMAL_TRAIN", 24L, 8L, 100L)
 n_cal <- int_env("ET_CONFORMAL_CALIBRATION", 19L, 9L, 200L)
 raw_alphas <- strsplit(Sys.getenv("ET_CONFORMAL_ALPHAS",
@@ -156,7 +159,8 @@ for (j in seq_along(scenarios)) {
   cat("Simulating ", scenario, ": ", reps, " independent datasets\n", sep = "")
   for (i in seq_len(reps)) {
     pos <- pos + 1L
-    seed <- as.integer(260000L + j * 100000L + i * 31L)
+    seed <- as.integer(260000L + j * 100000L + i * 31L +
+                       seed_offset)
     result <- tryCatch(simulate_once(scenario, i, seed),
                        error = function(e) e)
     rows[[pos]] <- if (inherits(result, "error")) {
@@ -294,6 +298,9 @@ writeLines(c(
   paste("Source package version:",
         unname(read.dcf("DESCRIPTION", fields = "Version")[1L])),
   paste("Independent generated datasets PER SCENARIO:", reps),
+  paste("Independent seed offset:", seed_offset),
+  "The seed offset should change when running a new independent replication.",
+  "The original 2026-10-26 pilot used the default offset zero.",
   paste("Training independent curves:", n_train),
   paste("Calibration curves:", n_cal),
   paste("Alpha values:", paste(alphas, collapse = ",")),
