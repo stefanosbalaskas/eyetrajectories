@@ -129,10 +129,57 @@ The new **preflight seed-collision guard** scans completed
 (`n_subjects`, `generator_seed`) pairs and refuses reuse
 *before any fitting or output archive creation*, unless explicitly
 permitted using `ET_BAND_MC_ALLOW_SEED_REUSE=true`.
-That safeguard is committed but **has not yet been executed in the
-author's R environment**; it needs acceptance testing.
+The owner **executed the negative seed-guard test successfully**: five
+already-used seeds under the pilot offset were blocked with the expected
+`BAND SEED COLLISION PRECHECK` error before fitting.
 
-The complete higher-precision study is still pending.
+The expanded 200-study-per-participant-size study **completed** (see below).
 No bootstrap estimator was changed. Qualification of
 small-cluster simultaneous intervals remains blocked; do not
 merge or release based on smoke-test pass counts.
+
+## Owner-executed expanded 200-study / B=399 qualification (26 October 2026)
+
+The author executed `scripts/stress_native_band_coverage.R` with
+`ET_BAND_MC_REPS=200`, `ET_BAND_MC_B=399`,
+`ET_BAND_MC_SEED_OFFSET=30000000` and explicit no-reuse mode.
+The script reported **zero overlapping archived generating-study seeds**.
+Its archive was
+`artifacts/band_coverage_stress/run_20261026_205405_pid51684/`.
+The prior negative seed-collision check passed.
+
+There are **600 independently generated datasets** (200 at each N)
+and **1,200 fitted estimator evaluations**, two using each generated
+dataset, **zero fitting failures**. Reported exact Monte Carlo
+confidence intervals and one-sided binomial tails:
+
+| N participants | Estimator | Covered / 200 | Simultaneous coverage | Exact 95% MC interval | One-sided p against 90% | Mean pointwise coverage | Mean band width |
+|---:|---|---:|---:|---|---:|---:|---:|
+| 12 | Participant mean | 126 | **0.630** | [0.55905, 0.69703] | 2.1184e-24 | 0.834878 | 0.323027 |
+| 12 | Two-group null contrast | 110 | **0.550** | [0.47825, 0.62025] | 3.5739e-37 | 0.835854 | 0.610305 |
+| 24 | Participant mean | 151 | **0.755** | [0.68936, 0.81292] | 2.7691e-09 | 0.858232 | 0.233832 |
+| 24 | Two-group null contrast | 152 | **0.760** | [0.69469, 0.81743] | 8.1410e-09 | 0.864512 | 0.456831 |
+| 48 | Participant mean | 174 | 0.870 | [0.81535, 0.91329] | 0.100457 | 0.887317 | 0.170627 |
+| 48 | Two-group null contrast | 167 | **0.835** | [0.77616, 0.88362] | 0.002916 | 0.879756 | 0.336803 |
+
+The exact 95% MC intervals for **five of six** conditions have
+upper endpoints below nominal 90%. The N=48 participant-mean
+interval includes 90%, so nonrejection in that condition does
+**not establish statistical calibration**. The two estimator
+outcomes within a generating dataset are paired; the six
+descriptive binomial tests are not jointly multiplicity-adjusted.
+A complete pointwise-versus-simultaneous analysis and
+distributional generalization require additional models.
+
+The user's console output supports these six rows and their
+zero-failure claims. The raw `band_coverage_trials.csv` from
+the expanded study has **not** been uploaded to this chat for
+independent record-by-record verification.
+
+**Qualification decision: HOLD.** The fixed-SE participant
+bootstrap produces material undercoverage for the known-truth
+Gaussian hierarchical generator at modest cluster sizes.
+No current native estimator was modified. A replacement must
+first improve coverage *and* report the width trade-off in
+an independently designed paired simulation; it cannot be
+selected solely on optimistic outputs from the same design.
