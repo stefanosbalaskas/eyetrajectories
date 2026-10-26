@@ -95,15 +95,88 @@ choose <- function(n) {
   if (!length(k)) stop("Cannot locate ", n, "-study-per-scenario archive.")
   k[order(basename(folders[k]), decreasing = TRUE)][1L]
 }
-pilot <- archives[[choose(200L)]]
-replication <- archives[[choose(2000L)]]
+# Allow explicit archive choices when multiple 2000-study runs exist.
+select_archive <- function(n, env_key) {
+  requested <- Sys.getenv(env_key, unset = "")
+  if (!nzchar(requested)) return(archives[[choose(n)]])
+  requested <- normalizePath(requested, winslash = "/", mustWork = TRUE)
+  loc <- which(vapply(folders, function(folder)
+    identical(normalizePath(folder, winslash = "/", mustWork = TRUE),
+              requested), logical(1)))
+  if (length(loc) != 1L || study_counts[loc] != n)
+    stop(env_key, " must name a complete ", n,
+         "-study-per-scenario archive.", call. = FALSE)
+  archives[[loc]]
+}
+pilot <- select_archive(200L, "ET_CONFORMAL_PILOT_DIR")
+replication <- select_archive(2000L, "ET_CONFORMAL_REPLICATION_DIR")
+
 first_ids <- paste(pilot$study_seeds$scenario, pilot$study_seeds$seed)
 second_ids <- paste(replication$study_seeds$scenario, replication$study_seeds$seed)
 overlap <- intersect(first_ids, second_ids)
-if (length(overlap))
-  stop("Pilot and replication reuse ", length(overlap),
-       " scenario-specific seeds. They are NOT disjoint experiments.",
-       call. = FALSE)
+# A shared random seed is not by itself proof of identical output if code or
+# input contracts changed. Verify EVERY matched alpha-level record.
+if (length(overlap)) {
+  fields <- c("status", "quantile_rank", "threshold", "null_score",
+              "shifted_score", "null_flag", "shifted_flag")
+  if (!all(fields %in% names(pilot$trials)) ||
+      !all(fields %in% names(replication$trials)))
+    stop("Cannot verify overlapping outputs: trial fields are missing.",
+         call. = FALSE)
+  match_p <- pilot$trials[
+    paste(pilot$trials$scenario, pilot$trials$seed) %in% overlap,
+    c("scenario", "seed", "alpha", fields), drop = FALSE]
+  match_r <- replication$trials[
+    paste(replication$trials$scenario, replication$trials$seed) %in% overlap,
+    c("scenario", "seed", "alpha", fields), drop = FALSE]
+  paired <- merge(match_p, match_r, by = c("scenario", "seed", "alpha"),
+                  suffixes = c("_pilot", "_large"), sort = TRUE)
+  expected <- length(overlap) * length(unique(pilot$summary$alpha))
+  if (nrow(paired) != expected ||
+      nrow(match_p) != expected || nrow(match_r) != expected)
+    stop("Overlapping seed IDs do not have complete matching alpha records.",
+         call. = FALSE)
+  same_values <- function(a, b) {
+    if (is.numeric(a) && is.numeric(b))
+      return(isTRUE(all.equal(a, b, tolerance = 1e-10,
+                              check.attributes = FALSE)))
+    identical(as.vector(a), as.vector(b))
+  }
+  differing <- fields[!vapply(fields, function(field)
+    same_values(paired[[paste0(field, "_pilot")]],
+                paired[[paste0(field, "_large")]]), logical(1))]
+  if (length(differing))
+    stop("Overlapping seeds give DIFFERENT output records for: ",
+         paste(differing, collapse = ", "),
+         ". Cannot safely deduplicate; inspect code and manifests.",
+         call. = FALSE)
+}
+new_ids <- setdiff(second_ids, first_ids)
+total_unique <- length(union(first_ids, second_ids))
+extra <- replication$trials[
+  !(paste(replication$trials$scenario, replication$trials$seed) %in%
+      first_ids), , drop = FALSE]
+if (!nrow(extra))
+  stop("Large archive contains no new generated datasets.", call. = FALSE)
+
+summarize_new <- function(df) {
+  success <- df$status == "ok"
+  n <- sum(success)
+  k <- sum(df$null_flag[success])
+  ci <- if (n) stats::binom.test(k, n)$conf.int else c(NA_real_, NA_real_)
+  data.frame(
+    scenario = df$scenario[1L], alpha = df$alpha[1L],
+    newly_generated_datasets = nrow(df),
+    successful_fits = n, failed_fits = nrow(df) - n,
+    false_alarms = k,
+    false_alarm_rate = if (n) k / n else NA_real_,
+    exact_95_lower = ci[1L], exact_95_upper = ci[2L])
+}
+new_cells <- split(extra, interaction(extra$scenario, extra$alpha, drop=TRUE))
+novel_summary <- do.call(rbind, lapply(new_cells, summarize_new))
+rownames(novel_summary) <- NULL
+novel_summary <- novel_summary[order(novel_summary$alpha,
+                                     novel_summary$scenario), , drop=FALSE]
 p <- pilot$summary
 r <- replication$summary
 matches <- merge(
@@ -111,20 +184,41 @@ matches <- merge(
   r[, c("scenario", "alpha", "false_alarm_rate", "failed_datasets",
         "false_alarm_exact_95_lower", "false_alarm_exact_95_upper",
         "successful_datasets")],
-  by = c("scenario", "alpha"), suffixes = c("_pilot", "_replication")
+  by = c("scenario", "alpha"), suffixes = c("_pilot", "_large_archive")
 )
-matches$delta_replication_minus_pilot <- with(
-  matches, false_alarm_rate_replication - false_alarm_rate_pilot)
-matches <- matches[order(matches$alpha, matches$scenario), , drop = FALSE]
+matches$delta_large_minus_pilot <- with(
+  matches, false_alarm_rate_large_archive - false_alarm_rate_pilot)
+matches <- matches[order(matches$alpha, matches$scenario), , drop=FALSE]
 rownames(matches) <- NULL
-cat("Pilot archive: ", normalizePath(pilot$path, winslash = "/"), "\n", sep = "")
-cat("Replication archive: ",
-    normalizePath(replication$path, winslash = "/"), "\n", sep = "")
-cat("Independent pilot generating datasets: ", pilot$study_count, "\n",
-    sep = "")
-cat("Independent new replication generating datasets: ",
-    replication$study_count, "\n", sep = "")
-cat("Overlapping scenario/seed pairs: ", length(overlap), "\n", sep = "")
-cat("All archived trial-summary, exact-CI and paired-alpha checks: PASS\n")
-print(matches, row.names = FALSE)
-# Deliberately do not write or overwrite scientific simulation artifacts.
+
+get_offset <- function(folder) {
+  m <- grep("^Independent seed offset:",
+            readLines(file.path(folder, "MANIFEST.txt"), warn=FALSE),
+            value=TRUE)
+  if (length(m)) trimws(sub("^Independent seed offset:", "", m[1L]))
+  else "not recorded (likely legacy runner)"
+}
+cat("Pilot archive: ", normalizePath(pilot$path, winslash="/"), "\n", sep="")
+cat("Larger archive: ", normalizePath(replication$path, winslash="/"),
+    "\n", sep="")
+cat("Recorded seed offsets (pilot / large): ",
+    get_offset(pilot$path), " / ", get_offset(replication$path), "\n", sep="")
+cat("Pilot generated datasets: ", pilot$study_count, "\n", sep="")
+cat("Large archive generated datasets: ", replication$study_count,
+    "\n", sep="")
+cat("Reused scenario-specific seeds: ", length(overlap), "\n", sep="")
+if (length(overlap))
+  cat("Overlapping trial scores/flags/cutoffs: IDENTICAL at both alphas\n")
+cat("Genuinely NEW datasets in large archive: ", length(new_ids), "\n", sep="")
+cat("Unique generated datasets across BOTH archives: ",
+    total_unique, "\n", sep="")
+cat("All trial-summary/CI/paired-alpha checks: PASS\n")
+if (length(overlap))
+  cat("NOTE: the larger archive is an EXTENSION, not an independent replication.\n")
+else
+  cat("The large archive has no duplicated scenario-specific seeds.\n")
+cat("\nEntire 2000-dataset-per-scenario archive (includes any reused pilot data):\n")
+print(matches, row.names=FALSE)
+cat("\nNew-only subset, excluding pilot scenario/seed IDs:\n")
+print(novel_summary, row.names=FALSE)
+# Read-only; all original archives are retained unmodified.
