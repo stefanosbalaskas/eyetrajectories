@@ -82,9 +82,9 @@ by local RStudio yet.
 ***
 ## October 2026 follow-up: native worked gallery and interval audit
 
-The initial Windows 0.4.0.9000 package check has passed without errors or
-warnings (one development-version CRAN incoming NOTE). The next two
-scripts are new **unexecuted** research examples:
+The author executed these native R examples on Windows 11 / R 4.6.1,
+alongside full CRAN-style checks. The examples and earlier 0.4.0.9000
+version passed without errors or warnings (one incoming NOTE):
 
 ~~~r
 # Five native graphics and CSV diagnostics; no Python required
@@ -139,7 +139,7 @@ This is **not CRAN submission approval**. See
 ***
 ## Complete Python-backed function API — 380 explicit R wrappers
 
-**Development version 0.4.0.9000 (private; unreleased).** The
+**Python bridge expansion introduced in 0.4.0.9000 (private; unreleased).** The
 eyetrajectoriespy GitHub main snapshot on 25 October 2026 defines 362
 root public functions and 18 module-scoped workflow functions.
 All **380 Python callables** now have named R wrappers:
@@ -168,8 +168,9 @@ etpy_verify_api(strict = TRUE)
 ~~~
 
 **Scientific scope:** The new 380 functions are thin Python-backed wrappers,
-not 380 independently implemented R estimators. The existing 88 native
-`etr_*` functions remain available without Python. The named wrappers
+not 380 independently implemented R estimators. The native `etr_*`
+functions remain available without Python (88 in 0.4.0.9000; 98 in the
+current 0.4.1.9000 research branch). The named wrappers
 require `reticulate` and the declared `eyetrajectoriespy==1.2.0` runtime;
 a GitHub source snapshot may differ from the installed PyPI artifact.
 Scientific assumptions, optional Python dependencies, and experimental
@@ -200,9 +201,10 @@ Call documentation: `?etpy_python_functions`.
 ***
 ## Native R scientific core — expanded Phase 3
 
-**Current development version 0.4.0.9000, private / unreleased.** The native R core exposes **88 native R
-functions**: 38 Phase 2 core functions and 50 experimental Phase 3 advanced
-methods. Native functions do not initialize Python, although sparse PACE requires
+**Current development version 0.4.1.9000 on this research branch,
+private / unreleased.** The native R core exposes **98 native R functions**:
+38 Phase 2 core, 50 experimental Phase 3 advanced methods and 10 additional
+experimental native parity extensions. Native functions do not initialize Python, although sparse PACE requires
 the optional R package fdapace.
 The Phase 1 Python bridge remains available under the original et_* interface
 for methods not yet ported.

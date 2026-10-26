@@ -89,11 +89,14 @@ Run the narrow offline tests first, then the full existing check script:
     pkgload::load_all(".", quiet = TRUE)
     etr_r_backend_catalog()
 
-This is an unverified research branch: no R interpreter is installed in
-the execution environment used to prepare it. A previously clean Windows
-check of version 0.4.0.9000 does not qualify this new development version.
-Do not merge, submit or claim calibrated scientific coverage until the
-test fixtures and independent mathematical checks pass.
+The author has since executed R 4.6.1 / Windows 11 full --as-cran checks
+on this 0.4.1.9000 research branch (0 errors, 0 warnings, 1 incoming NOTE),
+including the package test suite. The original native example and capability
+audit also executed successfully; this is local engineering evidence, NOT
+an independent numerical/coverage qualification. Newly revised noisy
+demonstration and extended tests have not yet been rerun. Do not merge or
+submit until the revised fixtures, platform checks and independent scientific
+methods audit are reviewed.
 
 ## Exhaustive 380-function inventory and exercise scripts
 
@@ -110,7 +113,8 @@ successfully reproduced Python contracts.
 The separate five-page native example is available at
 [scripts/run_native_parity_stage1_demo.R](../scripts/run_native_parity_stage1_demo.R)
 and writes synthetic plots and numerical evidence under the ignored folder
-artifacts/native_parity_stage1/. It has not been executed on an R interpreter.
+artifacts/native_parity_stage1/. Its original deterministic version ran in the author's Windows R session;
+the revised noise-bearing demonstration is pending rerun.
 
 ```r
 source("scripts/run_native_parity_stage1_demo.R")
