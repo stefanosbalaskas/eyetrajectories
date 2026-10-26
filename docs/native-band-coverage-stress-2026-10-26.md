@@ -542,3 +542,13 @@ The author-reported width columns show wider experimental intervals alongside th
 The Bonferroni reference is assumption-matched **only** to the Gaussian generator. Its observed coverage under the heavy-tailed, unequal-variance and skewed generators is a sensitivity result, **not** a finite-sample coverage guarantee. `B=99` makes bootstrap cutoff estimation coarse; **20 independent studies per cell** gives very wide exact Monte Carlo coverage intervals (e.g., 9/20: [0.23058,0.68472]; 16/20: [0.56339,0.94267]). No MCAR/MAR/MNAR, subject dropout, asynchronous sampling, sparse-time-grid or unequal observation density was tested.
 
 **Next gate:** Reconcile archived trial-level records with summaries and verify scenario/N/generator-seed uniqueness and complete six-way pairing, then run an independently seeded larger study (proposed `ET_BAND_ROBUST_REPS=200`, `ET_BAND_ROBUST_B=399`, `ET_BAND_ROBUST_SEED_OFFSET=43000000`) if computing cost permits. Report per-scenario/N/estimand simultaneous coverage, exact Monte Carlo uncertainty, paired candidate-only and baseline-only discordance counts, and width ratios. Follow with a *separate*, explicitly estimand-defined missingness/observation-process experiment. No estimator replacement, merge or release is authorized: **inference qualification remains HOLD**.
+
+A **read-only archive reconciliation and paired-candidate audit** is now staged in [`scripts/audit_native_band_distributions.R`](../scripts/audit_native_band_distributions.R). It checks each six-way study block, verifies global generating-seed uniqueness, reconstructs all 72 archived summary cells including exact Monte Carlo intervals and average widths, and derives per-scenario/N/estimand paired coverage gains, recoveries/losses and width ratios with descriptive 2,000-resample paired Monte Carlo intervals. It creates a *new* audit folder and does not alter the input CSVs. **This audit script has not yet been run by the author**; the pilot archive consistency remains unverified at row level.
+
+```r
+Sys.setenv(ET_BAND_ROBUST_AUDIT_DIR =
+  "artifacts/band_robustness_stress/run_20261026_215536_pid51684")
+source("scripts/audit_native_band_distributions.R")
+Sys.unsetenv("ET_BAND_ROBUST_AUDIT_DIR")
+```
+
