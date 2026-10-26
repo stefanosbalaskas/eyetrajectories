@@ -36,8 +36,18 @@ test_noise_multiplier <- 3
 base_noise <- 0.06
 time <- seq(0, 1, length.out = 41L)
 scenarios <- c("iid_exchangeable", "test_noise_shift", "dependent_calibration")
-out <- file.path("artifacts", "conformal_monte_carlo")
+# Archive each pilot / high-replication run separately. Never overwrite
+# previously archived failure-inclusive Monte Carlo evidence.
+base_out <- file.path("artifacts", "conformal_monte_carlo")
+run_name <- paste0(
+  "run_", format(Sys.time(), "%Y%m%d_%H%M%S", tz = "UTC"),
+  "_pid", Sys.getpid())
+out <- file.path(base_out, run_name)
+if (dir.exists(out)) {
+  stop("Archive collision; previous conformal outputs must not be overwritten.")
+}
 dir.create(out, recursive = TRUE, showWarnings = FALSE)
+if (!dir.exists(out)) stop("Could not create output archive.", call. = FALSE)
 
 # Isolate each independent Monte Carlo dataset from the caller's global RNG.
 with_seed <- function(seed, expression) {
@@ -186,8 +196,11 @@ summarize_cell <- function(d) {
   ci_null <- exact(false_alarms)
   ci_det <- exact(detections)
   rank <- ceiling((n_cal + 1) * (1-d$alpha[1L]))
-  continuous_exact <- if (rank <= n_cal)
-    (n_cal + 1 - rank)/(n_cal + 1) else 0
+  continuous_exact <- if (rank <= n_cal) {
+    (n_cal + 1 - rank)/(n_cal + 1)
+  } else {
+    0
+  }
   is_iid <- identical(d$scenario[1L], "iid_exchangeable")
   data.frame(
     scenario = d$scenario[1L], alpha = d$alpha[1L],
@@ -204,6 +217,16 @@ summarize_cell <- function(d) {
     shifted_exact_95_lower = ci_det[1L],
     shifted_exact_95_upper = ci_det[2L],
     continuous_rank_reference = if (is_iid) continuous_exact else NA_real_,
+    reference_in_mc_95_ci = if (is_iid && n > 0L) {
+      ci_null[1L] <= continuous_exact && continuous_exact <= ci_null[2L]
+    } else {
+      NA
+    },
+    deviation_from_rank_reference = if (is_iid && n > 0L) {
+      null_rate - continuous_exact
+    } else {
+      NA_real_
+    },
     nominal_alpha = d$alpha[1L],
     mean_threshold = if (n) mean(d$threshold[success]) else NA_real_,
     mean_null_score = if (n) mean(d$null_score[success]) else NA_real_,
@@ -260,8 +283,11 @@ git_sha <- tryCatch(system2("git", c("rev-parse", "HEAD"),
                             stdout = TRUE, stderr = FALSE),
                     error = function(e) "unavailable")
 if (!length(git_sha)) git_sha <- "unavailable"
+capture.output(sessionInfo(), file = file.path(out, "sessionInfo.txt"))
 writeLines(c(
   "RESEARCH ONLY: split-conformal frozen FPCA, failure-inclusive simulations",
+  paste("Archive:", normalizePath(out, winslash = "/")),
+  "Each execution creates a unique archive; no overwrite of earlier runs.",
   paste("UTC:", format(Sys.time(), tz = "UTC", usetz = TRUE)),
   paste("Git HEAD:", git_sha[1L]),
   paste("R version:", R.version.string),
