@@ -13,14 +13,27 @@ At N=24, the contrast covered 13/20 datasets (65%; exact 95% MC
 interval 40.8–84.6%). These are exploratory synthetic results,
 not proof of nominal calibration.
 
-A larger, **disjoint** 200-dataset-per-size / B=399 study remains
-pending. The script
+A larger, **disjoint** 200-dataset-per-size / B=399 study is now
+**complete**, with zero fitting failures. Across N=12/24/48, the
+participant mean achieved **63.0%, 75.5%, 87.0%** simultaneous
+coverage and the two-group null contrast **55.0%, 76.0%, 83.5%**,
+respectively (nominal 90%). Five of six exact 95% Monte Carlo
+intervals exclude the nominal target on the low side. This
+strongly reinforces that the fixed-SE bands are **not calibrated**
+in the tested known-truth hierarchical design.
+
+A new [paired experimental interval comparison](scripts/compare_native_band_intervals.R)
+compares existing fixed-SE bands with a studentized cluster bootstrap
+and an assumption-restricted Gaussian Bonferroni-t reference,
+on identical generated datasets. It is staged but has **not yet run**.
+None of these candidates is certified as a replacement. The script
 [`scripts/stress_native_band_coverage.R`](scripts/stress_native_band_coverage.R)
 now checks previous trial archives for seed collisions before any
 new simulation. Use `ET_BAND_MC_SEED_OFFSET=30000000` for a
 new study instead of reusing the pilot offset. This preflight
-guard has been committed but still requires author-run R acceptance
-testing. Bootstrap inference remains **experimental and not
+guard **passed its author-run negative acceptance test** on five
+known repeated generating-study seeds, before fitting.
+Bootstrap inference remains **experimental and not
 release-qualified**. No estimators were modified.
 
 ## Split-conformal false-alarm pilot and 2,000-study replication completed
@@ -60,8 +73,8 @@ The 2,000-dataset-per-scenario run is an extension of the 200-study
 pilot, not a disjoint replication. Its **author-run revised audit
 passed**, verifying numerical identity of all 600 overlapping study
 IDs and confirming 1,800 genuinely new datasets per scenario.
-A new pre-run seed-collision guard has been committed but not yet
-executed locally.
+The pre-run conformal seed-collision guard passed its local
+author-executed negative acceptance test.
 Under independent exchangeability, author-reported false alarms were
 **.055 and .098**, consistent with .05/.10 rank references given Monte
 Carlo uncertainty; test-only noise shift inflated rates to .220/.414.
