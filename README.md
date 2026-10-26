@@ -42,9 +42,21 @@ However, studentization increased average band width by
 90% calibration. The reference Gaussian Bonferroni-t intervals
 remained substantially wider under their restricted assumptions.
 
-The 30-study pilot's [paired candidate audit](scripts/audit_paired_band_candidates.R)
-**passed**, but the newer 200-study archive has **not yet been
-row-audited**. Another source-review correction: the comparison's
+Both the 30-study and 200-study
+[paired candidate archive audits](scripts/audit_paired_band_candidates.R)
+**passed** in the author's R environment. The expanded read-only audit
+verified 3,600 paired records and showed that all studentized
+coverage gains corresponded to recovered previously missed datasets,
+with **zero observed baseline-covered/candidate-missed records**.
+The studentized candidate was consistently wider than the fixed-SE
+baseline; this does **not** prove calibration.
+
+A [distributional robustness stress script](scripts/stress_native_band_distributions.R)
+is now staged to compare methods across Gaussian, heavy-tailed
+Student-t, unequal group-variance and centered skew-lognormal
+participant effects. This script is **not yet executed locally**,
+and deliberately excludes missingness, which requires a separate
+known-estimand observation-process study. Another source-review correction: the comparison's
 legacy `avg_pointwise_rate` field actually represented average
 coordinate inclusion *within a simultaneous band*, not
 pointwise confidence-interval coverage. The research script now
