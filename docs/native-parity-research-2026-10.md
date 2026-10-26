@@ -201,3 +201,27 @@ empirical anomaly-detection rates, establish small-cluster confidence-band
 coverage or prove overall R--Python numerical parity. CRAN submission remains
 on hold. The owner-reported full Windows --as-cran result remains
 0 errors, 0 warnings, 1 incoming feasibility NOTE.
+
+## Next independent experiment — conformal anomaly false alarms
+
+A new [prespecified Monte Carlo protocol](conformal-fpca-monte-carlo-audit.md)
+and script `scripts/run_conformal_monte_carlo.R` are committed but have
+not yet been executed. The experiment distinguishes iid held-out
+exchangeable curves from two assumption-breaking stress tests:
+test-only noise variance shift and repeated-participant calibration
+dependence. A frozen FPCA is trained independently of both calibration
+and test curves in each independent generated dataset. The script
+records false-alarm rates, shift-detection rates, exact binomial
+Monte Carlo intervals, failures and metadata, for separate alpha levels.
+
+An independent `scripts/check_conformal_rank_oracle.py` and an R
+`testthat` fixture enumerate every possible future score rank for
+n_calibration=19, with 1/20, 2/20 and 4/20 false-alarm ranks at
+alpha=.05, .10 and .20 under no ties and exchangeability.
+Those are **combinatorial rank identities**, not evidence of observed
+score validity. The standard-library rank formula has been reproduced
+in a separate Python check; the new R Monte Carlo has not been executed.
+
+None of the existing 98 native R exports or 380 Python wrappers
+were changed for this study. In particular, the low-cluster 90%
+simultaneous confidence-band coverage deficit remains unresolved.
