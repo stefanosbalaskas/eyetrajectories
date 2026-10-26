@@ -393,10 +393,15 @@ must not be cited as pointwise confidence-interval calibration evidence.
 
 ### Next steps and qualification limits
 
-The current read-only `scripts/audit_paired_band_candidates.R` should
-be run on the 200-study archive to validate all 3,600 saved trial rows
-and estimate paired coverage gains, exact discordance tests and
-paired-bootstrap Monte Carlo intervals for the width ratios:
+The author has now **successfully run**
+`scripts/audit_paired_band_candidates.R` on the 200-study archive,
+verifying the saved trial-summary counts, all six-way paired records
+and zero missing/failed fit pairs. The historical coordinate-level
+reporting field was correctly identified as simultaneous-band
+coordinate inclusion rather than true pointwise CI coverage.
+The audit calculated exact discordance tests and paired-bootstrap
+Monte Carlo intervals for differences in simultaneous coverage and
+mean width ratios:
 
 ```r
 Sys.setenv(
@@ -410,3 +415,53 @@ The next independent qualification must vary participant-effect tails,
 between-group variances, observation density and missingness while
 preserving the failure-inclusive protocol. No published estimator
 has been modified; inferential release status remains **HOLD**.
+
+## Expanded 200-study paired audit — completed (26 October 2026)
+
+**Author-run outcome:** `Archive summary/trial consistency: PASS`.
+Archived trial source:
+`artifacts/band_interval_comparison/run_20261026_212042_pid51684/`.
+Derived audit:
+`artifacts/band_interval_comparison_audit/audit_20261026_213928_pid51684/`.
+All six generating-study blocks per independent dataset were present;
+**600 distinct generating datasets, 3,600 method/estimand rows**,
+zero reported failures or missing method pairs. Historical
+`average_pointwise_coverage` was explicitly flagged as
+coordinate inclusion within the simultaneous interval, NOT
+separate pointwise confidence-interval coverage.
+
+### Paired candidate coverage gains and width ratios
+
+The reported Monte Carlo intervals for gains/ratios were constructed
+with **2,000 paired generating-study bootstrap draws per condition**.
+
+| Participants | Estimand | Candidate | Gain (percentage points) | Paired 95% MC interval (pp) | Recovered / lost baseline-covered studies | Mean width ratio |
+|---:|---|---|---:|---|---:|---:|
+| 12 | Mean | Studentized | +24.5 | [18.5,30.5] | 49 / 0 | 1.5036 |
+| 12 | Mean | Gaussian Bonferroni-t | +25.0 | [19.0,31.5] | 50 / 0 | 1.7777 |
+| 12 | Null contrast | Studentized | +34.5 | [28.0,41.0] | 69 / 0 | 1.7365 |
+| 12 | Null contrast | Gaussian Bonferroni-t | +35.0 | [28.49,42.0] | 70 / 0 | 1.9321 |
+| 24 | Mean | Studentized | +8.0 | [4.5,12.0] | 16 / 0 | 1.1626 |
+| 24 | Mean | Gaussian Bonferroni-t | +17.5 | [12.0,22.5] | 35 / 0 | 1.4564 |
+| 24 | Null contrast | Studentized | +10.5 | [6.5,14.51] | 21 / 0 | 1.2155 |
+| 24 | Null contrast | Gaussian Bonferroni-t | +17.5 | [12.5,23.0] | 35 / 0 | 1.5010 |
+| 48 | Mean | Studentized | +5.0 | [2.0,8.5] | 10 / 0 | 1.0714 |
+| 48 | Mean | Gaussian Bonferroni-t | +15.0 | [10.5,20.0] | 30 / 0 | 1.3360 |
+| 48 | Null contrast | Studentized | +6.5 | [3.5,10.0] | 13 / 0 | 1.0815 |
+| 48 | Null contrast | Gaussian Bonferroni-t | +11.5 | [7.5,16.0] | 23 / 0 | 1.3510 |
+
+**All 12 paired comparisons had zero observed baseline-covered/candidate-
+missed datasets.** This is *not* a formal proof of algebraic band
+nesting nor scientific coverage validity. In all 12 conditions the
+candidate was **wider** than the baseline, so simple conservatism
+explains at least part of the improvement. The descriptive exact
+discordance sign tests therefore cannot establish that studentizing
+provides a generally valid 90% interval. The gain confidence
+intervals estimate Monte Carlo uncertainty under this same
+prespecified Gaussian generator and do not cover DGP uncertainty,
+multiplicity or model selection.
+
+The expanded raw CSV was validated by the **owner's R execution**,
+not independently uploaded to this conversation. Results remain
+scientifically conditional on the generator and the author's
+execution log. **No release-facing estimators were modified.**
