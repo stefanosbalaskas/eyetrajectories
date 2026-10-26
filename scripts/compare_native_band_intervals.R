@@ -189,7 +189,7 @@ evaluate <- function(interval,truth) {
       any(!is.finite(c(lo,hi))) || any(lo>hi))
     stop("Malformed/nonfinite candidate intervals.",call.=FALSE)
   list(covered=all(truth>=lo & truth<=hi),
-       pointwise=mean(truth>=lo & truth<=hi),
+       coordinate_coverage_in_simultaneous_band=mean(truth>=lo & truth<=hi),
        width=mean(hi-lo),cutoff=interval$cutoff,
        degenerate=interval$degenerate_replicates)
 }
@@ -243,7 +243,8 @@ for (j in seq_along(N)) {
           n_grid_coordinates=nt*2L,B=B,nominal=1-alpha,
           success=success,
           simultaneous_covered=if(success) result$covered else NA,
-          average_pointwise_coverage=if(success) result$pointwise else NA_real_,
+          coordinate_coverage_in_simultaneous_band=if(success)
+            result$coordinate_coverage_in_simultaneous_band else NA_real_,
           mean_simultaneous_width=if(success) result$width else NA_real_,
           cutoff=if(success) result$cutoff else NA_real_,
           degenerate_bootstrap_draws=if(success) result$degenerate else NA_integer_,
@@ -277,8 +278,8 @@ summ <- lapply(cells,function(z){
     failed_fits=nrow(z)-m,covered=cov,
     simultaneous_rate=if(m)cov/m else NA_real_,
     exact_95_lower=ci[1L],exact_95_upper=ci[2L],
-    avg_pointwise_rate=if(m)
-      mean(z$average_pointwise_coverage[ok]) else NA_real_,
+    avg_coordinate_coverage_in_simultaneous_band=if(m)
+      mean(z$coordinate_coverage_in_simultaneous_band[ok]) else NA_real_,
     avg_simultaneous_width=if(m)
       mean(z$mean_simultaneous_width[ok]) else NA_real_)
 })
@@ -311,6 +312,8 @@ writeLines(c("RESEARCH-ONLY EXPERIMENTAL PAIRED SIMULTANEOUS INTERVAL COMPARISON
   "Studentized cluster bootstrap is experimental and has no declared guarantee.",
   "All fit failures retained. Rates conditional on successful fits.",
   "No runtime estimator or CRAN package implementation was altered.",
+  "Recorded coordinate coverage is within the SIMULTANEOUS band,",
+  "not a marginal-pointwise CI coverage estimate.",
   "Compare BOTH truth coverage and mean simultaneous interval width."
 ),file.path(out,"MANIFEST.txt"))
 cat("Output: ",normalizePath(out,winslash="/"),"\n",sep="")
