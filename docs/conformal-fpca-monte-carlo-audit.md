@@ -64,9 +64,15 @@ Sys.setenv(
 source("scripts/run_conformal_monte_carlo.R")
 ```
 
-For a higher precision *qualification candidate*, set
-`ET_CONFORMAL_REPS='2000'` and retain the first pilot outputs before
-overwriting the directory. If alpha=0.10, 2,000 independent generating
+The owner executed the initial 200-study-per-scenario pilot on
+26 October 2026 with zero failures. Its exact coverage intervals, stress
+results and limitations are recorded in
+[the first conformal pilot results](conformal-pilot-results-2026-10-26.md).
+
+For a higher-precision *qualification candidate*, set
+`ET_CONFORMAL_REPS='2000'`. Each run now creates its own
+`run_YYYYMMDD_HHMMSS_pidNNNN/` archive: previous outputs are retained
+rather than overwritten. If alpha=0.10, 2,000 independent generating
 studies give an approximate binomial Monte Carlo SE of 0.0067 under
 the exact 10% reference. More studies may be required to investigate
 small deviations or multiple conditions. This script is a **diagnostic**
@@ -75,7 +81,8 @@ or cross-platform conformal validity.
 
 ## Outputs and interpretation
 
-Under `artifacts/conformal_monte_carlo/` (ignored by Git):
+Under a timestamped run-specific subdirectory of
+`artifacts/conformal_monte_carlo/` (ignored by Git):
 
 - `conformal_trials.csv`: every scenario/dataset/alpha, seeds,
   calibration rank/threshold, held-out null/shifted scores and flags,
@@ -121,3 +128,20 @@ enumerates all 20 possible held-out ranks (n=19) for alpha
 0.05/0.10/0.20, checks calibration order invariance and ties,
 and exercises frozen-model scoring with disjoint curve IDs.
 These tests are fast; they do not substitute for the Monte Carlo study.
+
+### Read an archived run
+
+```r
+# After pulling the research branch:
+source("scripts/read_conformal_results.R")
+
+# Or a specific archive, without rerunning the simulation:
+Sys.setenv(ET_CONFORMAL_RUN_DIR =
+  "artifacts/conformal_monte_carlo/run_20261026_103751_pid51684")
+source("scripts/read_conformal_results.R")
+Sys.unsetenv("ET_CONFORMAL_RUN_DIR")
+```
+
+The helper verifies per-scenario trial and summary counts. The runner prints
+its exact summary and trials paths after a run. No flat
+`artifacts/conformal_monte_carlo/conformal_summary.csv` file is created.
