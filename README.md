@@ -1,5 +1,28 @@
 # eyetrajectories
 
+## Next scientific audit: split-conformal false alarms (new, not yet run)
+
+A new failure-inclusive [frozen-FPCA conformal Monte Carlo study]
+(docs/conformal-fpca-monte-carlo-audit.md) is staged in this research
+branch. It evaluates one independent held-out inlier and a paired
+deliberately shifted curve per simulation, under three separate scenarios:
+exchangeable curves, test-noise distribution shift, and correlated
+calibration trials from repeated participants. **Only the first design**
+has the classical finite-sample exchangeability guarantee.
+
+~~~r
+Sys.setenv(ET_CONFORMAL_REPS = "200",
+           ET_CONFORMAL_ALPHAS = "0.05,0.10")
+source("scripts/run_conformal_monte_carlo.R")
+~~~
+
+Results are written under `artifacts/conformal_monte_carlo/`, with
+per-study seeds, fitting failures, exact Monte Carlo intervals, and
+diagnostic plots. New rank-oracle tests are included in the package.
+The Monte Carlo script and new tests have **not yet been run in RStudio**;
+no inferential qualification, merger or release is implied.
+
+***
 ## Research branch: native R parity stage 1 (WINDOWS CHECK PASSED)
 
 This development branch is **0.4.1.9000, not released or CRAN qualified**.
