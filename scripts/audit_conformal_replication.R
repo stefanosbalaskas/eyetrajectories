@@ -216,10 +216,11 @@ cat("Genuinely NEW datasets in large archive: ", length(new_ids), "\n", sep="")
 cat("Unique generated datasets across BOTH archives: ",
     total_unique, "\n", sep="")
 cat("All trial-summary/CI/paired-alpha checks: PASS\n")
-if (length(overlap))
+if (length(overlap)) {
   cat("NOTE: the larger archive is an EXTENSION, not an independent replication.\n")
-else
+} else {
   cat("The large archive has no duplicated scenario-specific seeds.\n")
+}
 cat("\nEntire 2000-dataset-per-scenario archive (includes any reused pilot data):\n")
 print(matches, row.names=FALSE)
 cat("\nNew-only subset, excluding pilot scenario/seed IDs:\n")
