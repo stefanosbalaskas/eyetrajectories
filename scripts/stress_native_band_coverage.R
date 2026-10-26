@@ -33,6 +33,52 @@ group_sizes <- c(12L, 24L, 48L)
 trials_per_subject <- 3L
 n_time <- 41L
 root <- file.path("artifacts", "band_coverage_stress")
+# An archive name prevents overwrites but does NOT imply a new Monte Carlo
+# sample. Refuse to reuse independent generating-study seeds silently.
+candidate_seeds <- do.call(rbind, lapply(seq_along(group_sizes), function(j)
+  data.frame(n_subjects = group_sizes[j],
+             generator_seed = as.integer(seed_offset + 1000000L*j +
+                                         3L*seq_len(reps)))))
+candidate_keys <- paste(candidate_seeds$n_subjects,
+                        candidate_seeds$generator_seed, sep = ":")
+if (anyDuplicated(candidate_keys))
+  stop("Internal generating-study seed collision.", call.=FALSE)
+previous_dirs <- if (dir.exists(root)) {
+  list.dirs(root, recursive=FALSE, full.names=TRUE)
+} else {
+  character()
+}
+previous_dirs <- previous_dirs[
+  grepl("^run_[0-9]{8}_[0-9]{6}_pid[0-9]+$",
+        basename(previous_dirs))]
+prior_csv <- file.path(previous_dirs, "band_coverage_trials.csv")
+prior_csv <- prior_csv[file.exists(prior_csv)]
+overlaps <- character()
+for (file in prior_csv) {
+  prior <- utils::read.csv(file, stringsAsFactors=FALSE)
+  if (!all(c("n_subjects", "generator_seed") %in% names(prior)))
+    stop("Previous band archive does not record generating seeds: ",
+         file, call.=FALSE)
+  previous_keys <- unique(paste(prior$n_subjects,
+                                prior$generator_seed, sep=":"))
+  overlaps <- union(overlaps, intersect(candidate_keys, previous_keys))
+}
+allow_reuse <- identical(tolower(Sys.getenv(
+  "ET_BAND_MC_ALLOW_SEED_REUSE", unset="false")), "true")
+if (length(overlaps) && !allow_reuse)
+  stop("BAND SEED COLLISION PRECHECK: ", length(overlaps),
+       " generating datasets overlap prior completed archives. ",
+       "No simulation or new archive was started. Choose a new ",
+       "ET_BAND_MC_SEED_OFFSET (e.g. '30000000'). For a deliberately ",
+       "reproducible rerun, explicitly set ",
+       "ET_BAND_MC_ALLOW_SEED_REUSE=true.", call.=FALSE)
+if (length(overlaps) && allow_reuse)
+  warning(length(overlaps),
+          " generating datasets intentionally reuse archive seeds.",
+          call.=FALSE)
+cat("Band Monte Carlo applied seed offset: ", seed_offset, "\n",
+    "Overlapping archived generating-study seeds: ",
+    length(overlaps), "\n", sep="")
 out <- file.path(root,
                  paste0("run_",format(Sys.time(),"%Y%m%d_%H%M%S",tz="UTC"),
                         "_pid", Sys.getpid()))
@@ -174,6 +220,8 @@ writeLines(c(
   paste("R:",R.version.string),
   paste("Package:",unname(read.dcf("DESCRIPTION", fields="Version")[1L])),
   paste("Seed offset:",seed_offset),
+  paste("Previously archived generating-study overlaps:",length(overlaps)),
+  paste("Intentional seed reuse enabled:",allow_reuse),
   paste("Independent generating datasets per n_subjects:",reps),
   paste("Independent clusters:",paste(group_sizes,collapse=",")),
   paste("Trials per participant:",trials_per_subject),
