@@ -195,8 +195,11 @@ get_offset <- function(folder) {
   m <- grep("^Independent seed offset:",
             readLines(file.path(folder, "MANIFEST.txt"), warn=FALSE),
             value=TRUE)
-  if (length(m)) trimws(sub("^Independent seed offset:", "", m[1L]))
-  else "not recorded (likely legacy runner)"
+  if (length(m)) {
+    trimws(sub("^Independent seed offset:", "", m[1L]))
+  } else {
+    "not recorded (likely legacy runner)"
+  }
 }
 cat("Pilot archive: ", normalizePath(pilot$path, winslash="/"), "\n", sep="")
 cat("Larger archive: ", normalizePath(replication$path, winslash="/"),
