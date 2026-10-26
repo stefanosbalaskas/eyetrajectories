@@ -160,8 +160,11 @@ utils::write.csv(trials, file.path(out, "conformal_trials.csv"),
                  row.names = FALSE)
 failed <- trials[trials$status != "ok", , drop = FALSE]
 failed_file <- file.path(out, "conformal_failures.csv")
-if (nrow(failed)) utils::write.csv(failed, failed_file, row.names = FALSE)
-else if (file.exists(failed_file)) unlink(failed_file)
+if (nrow(failed)) {
+  utils::write.csv(failed, failed_file, row.names = FALSE)
+} else if (file.exists(failed_file)) {
+  unlink(failed_file)
+}
 
 # Exact binomial intervals describe finite Monte Carlo precision, not
 # uncertainty about a scientific treatment effect or conditional coverage.
