@@ -1,4 +1,4 @@
-# Conformal FPCA independent-replication stage — October 26, 2026
+# Conformal FPCA expanded-run overlap audit — October 26, 2026
 
 **Development-only, no release clearance.** R package 0.4.1.9000,
 branch `research/native-parity-stage1`.
@@ -12,13 +12,22 @@ branch `research/native-parity-stage1`.
    `ceebc39a6cb4f89fe61b524374bd6348d73efc93`, with **200 generated
    datasets per scenario**. There are 600 unique scenario/simulation/seed
    combinations, 1,200 paired-alpha records, and zero failures.
-2. The independent **2,000-dataset per scenario** replication was executed
-   by the author and its full six-cell numerical output was supplied in the
-   RStudio console. This is **6,000 nominal generated datasets and 12,000
-   paired-alpha evaluation rows**, zero reported failures. The replication's
-   raw trial CSV and manifest have **not** been uploaded and were not
-   independently audited. The user specified seed offset 1,000,000;
-   actual seed nonoverlap needs verification against the archived CSV/manifest.
+2. The **2,000-dataset per scenario** expanded run was executed by the
+   author and its full six-cell numerical output was supplied in the
+   RStudio console. This is **6,000 generated datasets in the larger
+   archive**, 12,000 paired-alpha evaluation rows, and zero reported
+   failures. The user then ran the raw-data audit locally: it found
+   **600 overlapping scenario/seed identifiers** shared between the pilot
+   and the larger archive. Therefore the larger archive is an
+   **extension of the original pilot, not an independent replication**.
+   Assuming the shared seed records give identical observations and
+   statistics (verification pending), the larger archive contains
+   **5,400 new generating datasets, 1,800 per scenario**. Combining
+   the pilot and expanded archive without double-counting provides
+   6,000 unique scenario/seed identifiers, not 6,600.
+   The expanded trial-level CSV/manifest has not been uploaded here,
+   so its per-row scores, flags and seed-offset provenance are still
+   only author-console reported.
 3. The terminal's subsequent repeated `source("scripts/run_conformal_monte_carlo.R")`
    had only printed its first simulation-progress line in the supplied
    transcript. Its outcome is not known. An otherwise identical rerun
@@ -37,7 +46,11 @@ branch `research/native-parity-stage1`.
 | test-only noise shift | .10 | 828 | .414 | [.39230, .43595] | Not applicable |
 
 The exact intervals above were independently recalculated from the
-author-reported event counts using exact binomial probabilities. Both
+author-reported event counts using exact binomial probabilities. The
+2,000-dataset estimates remain legitimate single-run Monte Carlo
+estimates even though the run is not an independent replication of
+the 200-dataset pilot. Do NOT pool their reported counts or treat the
+two runs as 2,200 independent datasets per scenario. Both
 iid-exchangeable intervals include the classical split-conformal reference
 rates (.05 and .10). These observations are compatible with the finite-
 sample marginal rank argument in this specified exchangeable Gaussian
@@ -78,10 +91,13 @@ The helper `scripts/read_conformal_results.R` exists on the
 calling `source()`. This is a repository synchronization issue, not a
 statistical failure.
 
-A new read-only `scripts/audit_conformal_replication.R` verifies the
-200-pilot and 2,000-replication CSV archives side by side, confirms
-summary counts/exact intervals and paired-alpha consistency, and rejects
-overlapping scenario-specific random seeds. Run after fetching/pulling
+The read-only `scripts/audit_conformal_replication.R` initially verified
+each archive's trial-summary consistency but **stopped on detection of
+600 seed overlaps**. It has now been improved to identify overlap,
+compare matched score/cutoff/flag records, and calculate a
+**new-only 1,800-study-per-scenario subset** if overlapping outputs are
+identical. If identical seeds produce different outcomes, the audit
+appropriately stops rather than assuming safe deduplication. Run after fetching/pulling
 the branch, from the project root:
 
 ```r
@@ -96,8 +112,13 @@ The pilot is `run_20261026_103751_pid51684/`.
 
 ## Remaining scientific blockers
 
-- Inspect the actual 2,000-study raw trials and manifest, verify
-  `ET_CONFORMAL_SEED_OFFSET=1000000` and pilot/replication independence.
+- Inspect the actual 2,000-study raw trials and manifest, including the
+  600 shared seed records. Verify whether they produce **identical
+  scores, cutoffs, statuses and flags**; do not assume it from seed
+  equality alone. The earlier environment request included
+  `ET_CONFORMAL_SEED_OFFSET=1000000`, but the run's actual seeds
+  demonstrably overlapped the original pilot, indicating the local
+  runner likely preceded the seed-offset implementation.
 - Broaden calibration sizes, train sizes, observation noise, waveform
   shapes and measurement processes, including informative missingness.
 - Develop and qualify separate **participant-level** procedures for
@@ -107,6 +128,27 @@ The pilot is `run_20261026_103751_pid51684/`.
 - Finish cross-platform Linux/macOS and R-version checks and external
   Python-R behavioral equivalence validation.
 
-**Conclusion: supportive replication under stipulated independent
-exchangeability; not comprehensive scientific calibration, not CRAN
-acceptance, not publication authorization.**
+**Conclusion: supportive expanded Monte Carlo study under stipulated
+independent exchangeability, but NOT a disjoint replication of the
+pilot; not comprehensive scientific calibration, CRAN acceptance or
+publication authorization.**
+
+## Correction after user-run seed audit (26 October 2026)
+
+The author's local `source('scripts/audit_conformal_replication.R')`
+reported exactly **600 scenario-specific seed overlaps** (200 per
+scenario) and then stopped; this was an audit safeguard, not a fit
+failure. The large archive retains its original 2,000 studies per
+scenario. The new audit revision tests numerical identity of all
+matched outcomes at both alpha levels and reports the 1,800 new-study
+subset separately if the outcomes agree. No synthetic dataset is
+discarded or modified.
+
+The simulation runner now performs a **preflight seed-collision check
+before creating a new archive or fitting FPCA**. Overlapping proposed
+scenario/seed identifiers stop by default with a precise message;
+intentional deterministic reproduction must be explicitly enabled
+with `ET_CONFORMAL_ALLOW_SEED_REUSE='true'`. This change has not been
+executed in RStudio yet. Pull the branch and first rerun the **read-only
+archive audit**; do not rerun the whole 6,000-dataset experiment merely
+to correct the classification.
