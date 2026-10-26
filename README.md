@@ -31,14 +31,18 @@ contain the benchmark. Test-only noise shift raised false alarms to
 conformal qualification**, and it does not repair functional-band
 undercoverage. No merger or release is implied.
 
-Independent large-replication results are recorded in
-[the 2,000-study conformal audit](docs/conformal-replication-results-2026-10-26.md).
+Large-run results and their **600 overlapping pilot seeds** are
+recorded in [the 2,000-study conformal audit](docs/conformal-replication-results-2026-10-26.md).
+The 2,000-dataset-per-scenario run is an extension of the 200-study
+pilot, not a disjoint replication. The package now provides a read-only
+overlap-and-numerical-consistency audit, plus a pre-run seed collision
+guard. Neither new script change has been run in local RStudio yet.
 Under independent exchangeability, author-reported false alarms were
 **.055 and .098**, consistent with .05/.10 rank references given Monte
 Carlo uncertainty; test-only noise shift inflated rates to .220/.414.
 The uploaded 1,200-row raw file belongs to the first 200-study pilot,
-not the 2,000-study repetition. The latter's raw trial CSV still needs
-independent row-wise/seed audit; no release claims are warranted.
+not the larger 2,000-study archive. The latter's raw record identity
+comparison is pending; no release claims are warranted.
 After syncing GitHub Desktop, run
 `source('scripts/audit_conformal_replication.R')` to verify both
 archived runs and ensure they do not reuse simulated seeds.
