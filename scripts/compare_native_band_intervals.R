@@ -42,8 +42,11 @@ keys <- do.call(rbind,lapply(seq_along(N),function(j)
              generator_seed=as.integer(offset+1000000L*j+3L*seq_len(reps)))))
 if (anyDuplicated(paste(keys$n_subjects,keys$generator_seed)))
   stop("Non-unique generating-study seeds within a planned run.",call.=FALSE)
-existing_dirs <- if (dir.exists(root))
-  list.dirs(root,recursive=FALSE,full.names=TRUE) else character()
+existing_dirs <- if (dir.exists(root)) {
+  list.dirs(root,recursive=FALSE,full.names=TRUE)
+} else {
+  character()
+}
 existing_csv <- file.path(existing_dirs,"interval_comparison_trials.csv")
 existing_csv <- existing_csv[file.exists(existing_csv)]
 for (path in existing_csv) {
@@ -205,15 +208,24 @@ for (j in seq_along(N)) {
     sim <- tryCatch(etr_simulate_hierarchical(
       n_subjects=n,trials_per_subject=n_trials,n_time=nt,
       subject_sd=.35,trial_sd=.15,noise_sd=.05,seed=seed),error=identity)
-    design <- if (!inherits(sim,"error"))
-      tryCatch(participant_matrix(sim),error=identity) else sim
+    design <- if (!inherits(sim,"error")) {
+      tryCatch(participant_matrix(sim),error=identity)
+    } else {
+      sim
+    }
     for (ei in seq_along(estimands)) {
       estimand <- estimands[ei]
-      d <- if (!inherits(design,"error"))
-        tryCatch(data_for(design$z,estimand),error=identity) else design
+      d <- if (!inherits(design,"error")) {
+        tryCatch(data_for(design$z,estimand),error=identity)
+      } else {
+        design
+      }
       truth <- if (estimand=="participant_mean" &&
-                   !inherits(sim,"error"))
-        as.vector(t(sim$truth_mean)) else rep(0,nt*2L)
+                   !inherits(sim,"error")) {
+        as.vector(t(sim$truth_mean))
+      } else {
+        rep(0,nt*2L)
+      }
       for (mi in seq_along(methods)) {
         k <- k+1L
         fit_seed <- as.integer(seed+10L*ei+mi)
@@ -254,7 +266,11 @@ summ <- lapply(cells,function(z){
   ok <- z$success
   m <- sum(ok)
   cov <- sum(z$simultaneous_covered[ok])
-  ci <- if(m) stats::binom.test(cov,m)$conf.int else c(NA_real_,NA_real_)
+  ci <- if(m) {
+    stats::binom.test(cov,m)$conf.int
+  } else {
+    c(NA_real_,NA_real_)
+  }
   data.frame(n_subjects=z$n_subjects[1L],
     estimand=z$estimand[1L],method=z$method[1L],
     requested_datasets=nrow(z),successful_fits=m,
