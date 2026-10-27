@@ -22,6 +22,16 @@
   dynamic_time_warping_distance="etr_dynamic_time_warping",
   pairwise_dynamic_time_warping_distances="etr_pairwise_dtw_full",
   load_portable_result="etr_read_python_portable_result",
+  validate_common_grid="etr_validate_common_grid",
+  validate_simplex="etr_validate_simplex",
+  validate_no_long_missing_runs="etr_validate_no_long_missing_runs",
+  from_irregular_long_dataframe_native="etr_from_irregular_long_native",
+  common_overlap_interval="etr_common_overlap_interval",
+  make_common_grid="etr_make_common_grid",
+  resample_irregular_to_grid="etr_resample_irregular_to_grid",
+  resample_irregular_to_common_grid="etr_resample_irregular_to_common_grid",
+  irregular_sampling_summary="etr_irregular_sampling_summary",
+  phase_landmark_frame="etr_phase_landmark_frame",
   pairwise_discrete_frechet_distances="etr_pairwise_frechet",
   nearest_trajectory_indices="etr_nearest_trajectory_indices",
   functional_trapezoid_weights="etr_trapezoid_weights",
@@ -102,20 +112,30 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
                     "dynamic_time_warping_distance",
                     "pairwise_dynamic_time_warping_distances")
   stage6_names <- "load_portable_result"
+  stage7_names <- c(
+    "validate_common_grid","validate_simplex",
+    "validate_no_long_missing_runs",
+    "from_irregular_long_dataframe_native",
+    "common_overlap_interval","make_common_grid",
+    "resample_irregular_to_grid",
+    "resample_irregular_to_common_grid",
+    "irregular_sampling_summary","phase_landmark_frame")
   api$native_implementation_stage <- ifelse(
       api$is_python_function & api$python_name %in% stage2_names,2L,
       ifelse(api$is_python_function & api$python_name %in% stage3_names,3L,
-        ifelse(api$is_python_function & api$python_name %in% stage4_names,
-               4L,
-          ifelse(api$is_python_function &
-                 api$python_name %in% stage6_names,6L,NA_integer_))))
+        ifelse(api$is_python_function & api$python_name %in% stage4_names,4L,
+          ifelse(api$is_python_function & api$python_name %in% stage6_names,
+            6L,ifelse(api$is_python_function &
+              api$python_name %in% stage7_names,7L,NA_integer_)))))
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset
   # provenance behavior in R, but not all source class/schema contracts.
   api$native_representation_stage <- ifelse(
     !api$is_python_function & api$namespace=="root" &
-      api$python_name=="TrajectorySet",5L,NA_integer_)
+      api$python_name=="TrajectorySet",5L,
+    ifelse(!api$is_python_function & api$namespace=="root" &
+      api$python_name=="IrregularTrajectorySet",7L,NA_integer_))
   api$status <- ifelse(!api$is_python_function,
     ifelse(!is.na(api$native_representation_stage),
       "class_or_constant_native_representation_partial",
