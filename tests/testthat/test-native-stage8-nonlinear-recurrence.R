@@ -145,8 +145,12 @@ test_that("Python 1.2 independent recurrence network, joint and radius oracles a
   py_summary<-etpy_get_export("recurrence_network_summary_frame")
   py_joint<-etpy_get_export("joint_recurrence_matrix")
   py_joint_frame<-etpy_get_export("joint_recurrence_component_frame")
+  py_joint_rqa<-etpy_get_export("joint_rqa_metrics")
+  py_cross<-etpy_get_export("cross_recurrence_matrix")
+  py_cross_rqa<-etpy_get_export("cross_rqa_metrics")
   py_radius<-etpy_get_export("recurrence_radius_profile")
   py_win<-etpy_get_export("windowed_rqa")
+  py_func<-etpy_get_export("windowed_rqa_trajectory_set")
   nt<-12L
   values<-array(0,c(2L,nt,1L))
   values[1L,,1L]<-rep(c(0,0,1,1),3)
@@ -214,6 +218,24 @@ test_that("Python 1.2 independent recurrence network, joint and radius oracles a
   for(col in c("radius","achieved_recurrence_rate",
                "state_dimension","theiler_window_samples"))
     compare_na(jt[[col]],pyjt[[col]],paste("joint component",col))
+  jr<-etr_joint_rqa_metrics(j)
+  pjr<-reticulate::py_call(py_joint_rqa,result=pj)
+  for(col in c("recurrence_rate","determinism","laminarity",
+               "center_of_recurrence_mass","trapping_time"))
+    compare_na(jr[[col]],as.numeric(et_to_r(
+      reticulate::py_get_attr(pjr,col))),paste("joint RQA",col))
+  a<-matrix(values[1L,,1L],ncol=1L)
+  b<-matrix(values[2L,,1L],ncol=1L)
+  cross_r<-etr_cross_rqa_metrics(etr_cross_recurrence_matrix(
+    a,b,radius=.5))
+  pcross<-reticulate::py_call(py_cross,source_a=py_x,source_b=py_x,
+    curve_a=0L,curve_b=1L,radius=.5,
+    dimensions_a=as.list("x"),dimensions_b=as.list("x"))
+  pcross_r<-reticulate::py_call(py_cross_rqa,recurrence=pcross)
+  for(col in c("recurrence_rate","determinism","laminarity",
+               "trapping_time","center_of_recurrence_mass"))
+    compare_na(cross_r[[col]],as.numeric(et_to_r(
+      reticulate::py_get_attr(pcross_r,col))),paste("cross RQA",col))
   win<-etr_windowed_rqa(x,1L,window=6L,step=2L,radius=.5,
                         theiler_window=1L)
   pwin<-reticulate::py_call(py_win,trajectories=py_x,
@@ -224,4 +246,17 @@ test_that("Python 1.2 independent recurrence network, joint and radius oracles a
                "recurrence_rate","determinism","laminarity",
                "center_of_recurrence_mass"))
     compare_na(win$table[[col]],pytable[[col]],paste("windowed",col))
+  functional<-etr_windowed_rqa_trajectory_set(
+    x,metrics="recurrence_rate",window=6L,step=2L,radius=.5,
+    theiler_window=1L,dimensions="x")
+  pfunctional<-reticulate::py_call(py_func,trajectories=py_x,
+    metrics=as.list("recurrence_rate"),window=6L,step=2L,
+    radius=.5,theiler_window=1L,dimensions=as.list("x"))
+  expect_identical(dim(functional$trajectories$values),
+    dim(et_to_r(pfunctional$trajectories$values)))
+  compare_na(as.vector(functional$trajectories$values),
+    as.vector(et_to_r(pfunctional$trajectories$values)),
+    "functional-window RQA")
+  expect_equal(functional$overlap_fraction,
+    as.numeric(et_to_r(pfunctional$overlap_fraction)))
 })
