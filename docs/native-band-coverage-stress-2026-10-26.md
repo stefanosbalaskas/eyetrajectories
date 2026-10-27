@@ -569,3 +569,35 @@ source("scripts/audit_native_band_distributions.R")
 Sys.unsetenv("ET_BAND_ROBUST_AUDIT_DIR")
 ```
 
+
+## Independent 2,400-dataset four-DGP expansion — completed 27 October 2026
+
+The owner executed the planned 200-dataset-per-scenario/N study with
+`ET_BAND_ROBUST_B=399` and seed offset `43000000` under RStudio.
+Across four DGPs and N=12/24/48, there were **2,400 independently
+generated datasets**, evaluated for paired participant mean and null
+group contrast by all three methods (**14,400 successful evaluations,
+zero reported fitting failures**). Archive:
+`artifacts/band_robustness_stress/run_20261027_005525_pid51684/`.
+
+The new [expanded study report](native-band-robustness-expanded-2026-10-27.md)
+contains **all 24 scenario/N/estimand coverage comparisons**, three
+method rates, the studentized coverage gains and mean width ratios,
+plus a warning against pooling correlated estimands as independent
+Monte Carlo units.
+
+**Main findings:** Baseline undercoverage persisted, particularly
+heavy-t(3) N=12 null contrast **107/200 = 53.5%**. Studentized
+intervals improved observed coverage in **24/24 cells** but mean
+band widths were **1.063–2.036× the baseline**. Three candidate cells
+had observed coverage below nominal 90% (Gaussian N24 contrast
+89.5%; Gaussian N48 mean 89.0%; skewed N48 mean 88.5%); their separate
+exact 95% Monte Carlo intervals include .90. Gaussian Bonferroni-t
+is a restricted reference, not a general-purpose correction.
+
+**The earlier 240-dataset pilot's read-only audit was PASS, but this
+larger archive is NOT YET AUDITED at trial level.** Run
+`scripts/audit_native_band_distributions.R` with
+`ET_BAND_ROBUST_AUDIT_DIR` pointing to
+`run_20261027_005525_pid51684` before considering the larger
+study reproducibility-qualified. No estimator changed; release HOLD.
