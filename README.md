@@ -1,7 +1,7 @@
 # eyetrajectories
 
 
-## Complete Python 1.2 functionality from R (new draft hybrid bridge)
+## Draft Python 1.2 public-interface bridge for R (runtime unverified)
 
 The `eyetrajectoriespy==1.2.0` public API has **508 upstream exports**:
 **380 functions** and **128 additional classes/configurations/constants**.
@@ -27,9 +27,22 @@ scores <- py$root$fpca_score_frame(fit,.convert=TRUE)
 **[Complete R–Python 1.2 bridge guide](docs/full-python-12-hybrid-parity.md)** ·
 **[Draft implementation PR #7](https://github.com/stefanosbalaskas/eyetrajectories/pull/7)**.
 
-Runtime acceptance, optional backend compatibility and platform CI remain
-pending. Existing R-native estimation and all missing-gaze/90% inference
-scientific release holds are unchanged.
+**Verification status:** Source-level name mapping is 508/508, but these
+are *not* 508 independently verified working functions. GitHub Actions did
+not execute any R tests (initial job failed before recording steps). Please
+run the source-only diagnostic first:
+
+```r
+source("scripts/diagnose_full_python_surface.R")
+# After that passes, an optional Python-backed check:
+Sys.setenv(ET_PY_DIAG_LIVE="true")
+source("scripts/diagnose_full_python_surface.R")
+Sys.unsetenv("ET_PY_DIAG_LIVE")
+```
+
+This branch is **not merged to main**; checking out PR #7's head is
+required to see the new functions. Existing R-native estimation and all
+missing-gaze/90% inference scientific release holds are unchanged.
 
 
 ## Scientific qualification: functional bootstrap confidence bands (HOLD)
