@@ -58,7 +58,7 @@ test_that("explicit native time interval matches affine mathematical contract",{
   x <- etr_trajectory_set(tt,a,dimension_names=c("x","y"),
                           time_unit="ms")
   z <- etr_normalize_time_interval(x,start=-1,end=3)
-  expect_equal(z$time,c(-1,-1+2/3,-1+8/3,3))
+  expect_equal(z$time,-1+(tt-tt[1L])/(tt[length(tt)]-tt[1L])*4)
   expect_identical(z$time_unit,"normalized")
   expect_identical(z$values,a)
   expect_identical(x$time,tt)
