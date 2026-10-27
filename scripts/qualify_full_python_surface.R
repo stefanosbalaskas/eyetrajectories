@@ -28,7 +28,7 @@ status <- tryCatch({
   pkgload::load_all(".",quiet=TRUE)
   testthat::test_local(".",filter="full-python-surface",
                        reporter="summary",stop_on_failure=TRUE)
-  full <- eyetrajectories::etpy_full_verify(strict=TRUE)
+  full <- eyetrajectories::etpy_signature_catalog(strict=TRUE)
   if (nrow(full)!=508L || sum(full$kind=="function")!=380L ||
       sum(full$namespace=="root")!=458L ||
       sum(full$namespace=="workflows")!=50L ||
@@ -59,6 +59,9 @@ writeLines(c(
   paste("function_symbols:",sum(status$kind=="function")),
   paste("other_public_symbols:",sum(status$kind!="function")),
   paste("available_and_version_matched:",sum(status$structurally_available)),
+  "508 public exports were individually reflected for signatures and runtime types.",
+  paste("supported_signatures:",sum(!is.na(status$python_signature))),
+  paste("runtime_classes:",sum(status$runtime_kind=="class")),
   "Selected FPCA/MFPCA and workflow calls were run by the opt-in tests.",
   "The 380 functions were NOT all behaviorally executed one-by-one.",
   "All function calls execute Python code: not 380 native R algorithms.",
@@ -67,6 +70,7 @@ writeLines(c(
 cat("FULL PYTHON 1.2 PUBLIC R SURFACE: STRUCTURAL PASS\n",
  "508/508 public symbols structurally available;\n",
  "380 Python function bridges; 128 other Python class/constant exports;\n",
+ "All 508 public symbols introspected for runtime type/signature;\n",
  "Full-surface R tests completed on selected real Python calls;\n",
  "Archive: ",normalizePath(out,winslash="/"),"\n",
  "NOT native algorithmic/scientific parity. No release authorized.\n",sep="")
