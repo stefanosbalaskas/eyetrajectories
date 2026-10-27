@@ -7,6 +7,7 @@
 if (!file.exists("DESCRIPTION") ||
     unname(read.dcf("DESCRIPTION",fields="Package")[1L])!="eyetrajectories")
   stop("Run from repository checkout.",call.=FALSE)
+source("scripts/audit_missing_gaze_ipw_helpers.R",local=TRUE)
 root <- file.path("artifacts","missing_gaze_ipw_pilot")
 chosen <- Sys.getenv("ET_OBS_IPW_AUDIT_DIR",unset="")
 if (!nzchar(chosen)) {
@@ -68,11 +69,14 @@ group <- split(trials,interaction(trials$family,trials$mechanism,
                                   trials$n_subjects,drop=TRUE))
 if (length(group)!=nrow(summary))
   stop("Summary condition count mismatches trials.",call.=FALSE)
-measures <- c("mean_coordinate_support","observed_fraction",
-              "naive_mean_rmse_supported","ht_mean_rmse_supported",
-              "naive_contrast_rmse_supported","ht_contrast_rmse_supported",
-              "ht_mean_signed_all_grid","ht_contrast_signed_all_grid",
-              "ht_mean_rmse_all_grid","ht_contrast_rmse_all_grid")
+# The trials name their metric 'observed_fraction'; the archived summary
+# correctly names its aggregate 'mean_observed_fraction'. Reconcile using
+# explicit named pairs, never a missing data.frame column that returns NULL.
+measures <- et_ipw_summary_metric_map
+if (!all(names(measures) %in% names(trials)) ||
+    !all(unname(measures) %in% names(summary)))
+  stop("Trial/summary metric schema mismatch; missing metric columns.",
+       call.=FALSE)
 for(z in group){
   r <- summary[summary$family==z$family[1L] &
                  summary$mechanism==z$mechanism[1L] &
@@ -88,13 +92,9 @@ for(z in group){
   if(max(abs(c(r$exact_95_lower,r$exact_95_upper)-ci))>1e-7 ||
      abs(r$support_rate-k/nrow(z))>1e-10)
     stop("Support-rate/MC-interval mismatch.",call.=FALSE)
-  for(field in measures) {
-    vals <- z[[field]]
-    expected <- if(all(is.na(vals))) NA_real_ else mean(vals,na.rm=TRUE)
-    actual <- r[[field]]
-    if(xor(is.na(expected),is.na(actual)) ||
-       (!is.na(expected) && abs(expected-actual)>1e-9))
-      stop("Metric mismatch: ",field,call.=FALSE)
+  for (trial_field in names(measures)) {
+    et_ipw_verify_metric(z, r, trial_field,
+                         unname(measures[[trial_field]]))
   }
 }
 if(sum(summary$requested_datasets)!=nrow(trials))
