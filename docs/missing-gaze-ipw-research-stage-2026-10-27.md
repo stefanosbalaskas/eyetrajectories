@@ -49,7 +49,7 @@ source("scripts/audit_missing_gaze_ipw_pilot.R")
 
 The runner writes `ipw_trials.csv`, `ipw_summary.csv`, and a manifest in a newly timestamped `artifacts/missing_gaze_ipw_pilot/run_.../` directory. If a seed collision is detected, stop and choose a genuinely new offset rather than bypassing the safeguard. Preserve all unsupported and error rows.
 
-**Execution status:** New R files passed *static* delimiter inspection, but R parser execution, tests, new Monte Carlo, and new archive audit have **not** yet run. Scientific acceptance and PR #6 merge/release remain blocked.
+**Execution status updated below:** The corrected estimator tests and 240-dataset pilot have run in the owner's Windows RStudio. The original archive audit failed due to a summary-field lookup error; its correction still requires an R rerun. Scientific acceptance and PR #6 merge/release remain blocked.
 
 ## 27 October 2026: MAR propensity bug identified and patched (retest required)
 
@@ -58,3 +58,23 @@ The owner's first execution of `testthat::test_local(".", filter="observation-ip
 **Fix:** Rename the vector `retention_probability`, explicitly reference `base::pi` in the periodic MAR component, and add an independent deterministic analytic regression fixture at times 0, 0.25, and 0.5. The original generator-vs-reconstruction test is retained.
 
 **Status:** The source correction and regression test are committed to the research branch but have **not been rerun under R here**. Do not run the 240-dataset Monte Carlo until the complete updated `observation-ipw-research` test filter passes. No pilot archive is known to have been produced by the failed test.
+
+## 27 October 2026: 240-study pilot completed; initial archive audit defect isolated
+
+**Owner execution:** The corrected `testthat::test_local(".", filter="observation-ipw-research")` reported **31 PASS, zero failures/warnings/skips**. The independent known-design IPW point-estimation pilot ran **240/240 generating studies** (4 mechanisms × 3 N values × 20 per cell), reporting **235 full-grid-supported**, **5 no-observation-support**, **0 numerical failures**. Owner-local archive: `artifacts/missing_gaze_ipw_pilot/run_20261027_103444_pid51684/`. Its raw trial and summary CSVs have not been independently inspected here.
+
+**Audit bug and fix:** The first `source("scripts/audit_missing_gaze_ipw_pilot.R")` stopped with `missing value where TRUE/FALSE needed`, not a quantitative archive inconsistency. The runner writes a trial column `observed_fraction` and correctly summarizes it as `mean_observed_fraction`. The auditor was erroneously looking up `summary[["observed_fraction"]]`, which returns `NULL`; the subsequent Boolean comparison was invalid. The research branch now contains a named metric mapping, a strict missing-column check, and `et_ipw_verify_metric()` with explicit NA, finite-value, and dimension handling in `scripts/audit_missing_gaze_ipw_helpers.R`. The auditor now sources those helpers. Regression tests were added in `tests/testthat/test-observation-ipw-audit.R`.
+
+**Re-run only the corrected tests and read-only audit on the existing archive**, after pulling the updated research branch:
+
+```r
+testthat::test_local(".", filter="observation-ipw-audit")
+Sys.setenv(
+  ET_OBS_IPW_AUDIT_DIR =
+    "artifacts/missing_gaze_ipw_pilot/run_20261027_103444_pid51684"
+)
+source("scripts/audit_missing_gaze_ipw_pilot.R")
+Sys.unsetenv("ET_OBS_IPW_AUDIT_DIR")
+```
+
+**Current gate:** Archive consistency remains **PENDING** until that command prints `DESIGN-KNOWN IPW ARCHIVE AUDIT PASS`. Do not rerun the 240 generating datasets or reuse their seeds. Even a passing audit will not establish an effective weighting correction or confidence-band validity: the scientific comparison of paired errors, support, variance/width and mechanisms must be reviewed separately. PR #6 remains unmerged and CRAN release blocked.
