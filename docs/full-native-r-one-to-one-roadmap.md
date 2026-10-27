@@ -223,6 +223,12 @@ unconstrained/Sakoe-Chiba DTW and normalizable symmetric2.
 A **declared resource cap of 5 million point pairs** is a deliberate
 native R/Python behavioral deviation and still requires policy review.
 Machine-readable full 508-contract gate must remain fail-closed. The
-new tests and independent Python 1.2 numeric oracles are **not yet
-executed**; do not claim R runtime or cross-OS CI passes. No release
+new native-only tests have now passed locally (**64 PASS, two expected
+Python-test SKIPs**), and the owner-run Python 1.2 numerical oracle passed
+**733/733 assertions, zero FAIL/WARN/SKIP** on Windows after separately
+confirming the reference version. The Stage 4 parity ledger passed
+**26/26** assertions. Cross-OS CI remains unverified because the GitHub
+Actions jobs still run **zero steps**. See the
+[qualified Stage 4 record](full-native-r-stage4-frechet-dtw.md#stage-4-windows-qualification--owner-run-pass-27-october-2026)
+for scope, evidence, and remaining source-contract deviations. No release
 or main merge.
