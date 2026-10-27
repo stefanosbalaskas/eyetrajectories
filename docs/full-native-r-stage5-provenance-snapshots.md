@@ -139,3 +139,38 @@ gate remains **closed**.
 **Research draft only. No main-branch merge, CRAN release, Python
 package release, or claims about W3 interval calibration or MNAR
 identifiability.**
+
+
+## First owner-executed Stage 5 test: defect and fixture correction (27 Oct 2026)
+
+The owner ran `testthat::test_local(".",filter="native-stage5-trajectory-provenance")`
+in Windows RStudio on the original Stage 5 branch head. The result was
+**PASS 54, FAIL 2, WARN 0, SKIP 1**. The skipped Python object/reference
+oracle is deliberately opt-in.
+
+The two failures were:
+
+1. **Actual native validation defect:** The JSON-like `.etr_provenance_valid()`
+   recursive predicate allowed a top-level character scalar
+   (`provenance="bad"`), although Python `TrajectorySet.provenance`
+   is a dictionary. This is now fixed by requiring the *root* to be
+   a plain R list, while retaining JSON-like scalar and NULL values in
+   nested entries. Added negative tests for string/numeric/logical roots,
+   unnamed lists and data frames, plus a positive nested-NULL case.
+2. **Incorrect test expectation:** The malformed R replacement
+   `array(1,c(1,4,2))` changes curve count 2 to 1 while preserving
+   the time dimension. Both the Python-like and R constructor perform
+   curve-ID count validation and raise `curve_ids`, **not**
+   `values dimensions`. The fixture now expects the correct error
+   and separately checks `array(1,c(2,3,2))`, whose time dimension
+   disagrees with the four-element common grid and correctly produces
+   a `values dimensions` error. No trajectory calculation or numerical
+   tolerance was modified.
+
+**Source-only verification:** the amended R validator and tests are
+committed. The corrected full R test suite has **not yet been executed**,
+and neither the opt-in Python 1.2 object oracle nor cross-platform CI
+has passed. Stage 4's earlier 733/733 Windows numerical verification
+remains unchanged. Pull the updated Stage 5 branch head and rerun
+both native and optional Python tests as described above; do not
+report Stage 5 as passing on the strength of this fixture correction.
