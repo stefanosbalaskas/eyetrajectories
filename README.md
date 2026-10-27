@@ -1,5 +1,27 @@
 # eyetrajectories
 
+## Native R Stage 9 — functional and phase diagnostics (draft)
+
+Twelve additional independently implemented **Python-free** R functions
+cover additive log-ratio compositional transformations, FPCA component
+trajectories and score diagnostics, pairwise functional distances,
+irregular single-dimension sampling support, and phase-function summaries.
+Native landmark registration now retains the original trajectories
+and source-oriented warpings without changing the numerical registration.
+
+The frozen Python 1.2 source register now maps **77 of 380 Python
+callables** (+12), leaving **303 unmapped**. Across Stages 2-9,
+**47 newly authored native R implementations** are registered.
+Seven of 128 nonfunction source objects have partial R representations.
+**0/508 full Python contracts remain formally certified**.
+
+The Stage 9 analytic tests and direct pinned-Python source oracle are
+committed, **not yet run**. GitHub CI job admission and owner-run
+Windows oracle remain pending. No main merge, version bump or release.
+
+[Stage 9 methods and testing guide](docs/full-native-r-stage9-functional-diagnostics.md).
+
+
 ## Native R Stage 8 — ten nonlinear recurrence and RQA methods (draft)
 
 Ten further Python-independent R functions cover recurrence-network
