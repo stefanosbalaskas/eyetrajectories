@@ -270,8 +270,9 @@ etr_recurrence_radius_profile <- function(source,curve=1L,radii,
   n<-length(source$time)
   .etr_assert(n<=2500L,"native dense recurrence radius profile limited to 2500 states")
   tt<-as.integer(theiler_window)
-  eligible<-sum(upper.tri(matrix(FALSE,n,n)) &
-      abs(row(matrix(FALSE,n,n))-col(matrix(FALSE,n,n)))>tt)
+  # Exact eligible-pair closed form: sum_{lag=theiler+1}^{n-1}(n-lag).
+  # Avoid allocating three extra n-by-n matrices merely to count pairs.
+  eligible<-as.double(n-tt)*as.double(n-tt-1L)/2
   .etr_assert(eligible>0L,"Theiler window leaves no eligible pairs")
   values<-matrix(source$values[curve,,idx,drop=FALSE],nrow=n,ncol=length(idx))
   # Preallocate pairwise distance storage instead of repeatedly
