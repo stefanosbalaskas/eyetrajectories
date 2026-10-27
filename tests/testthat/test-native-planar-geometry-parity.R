@@ -147,3 +147,95 @@ test_that("numerical outputs match the Python v1.2 implementations when opted in
                  as.character(unlist(et_to_r(case$python$dimension_names))))
   }
 })
+
+
+# This fixture expansion strengthens numerical oracle coverage beyond the
+# original two-curve quadratic example, WITHOUT qualifying all algorithms or
+# claiming any general scientific inference coverage.
+test_that("seeded irregular and degenerate geometry agrees with Python 1.2", {
+  if (!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Seeded independent Python/R numerical parity is opt-in")
+
+  # Avoid changing the user's RNG stream in an interactive RStudio session.
+  had_seed <- exists(".Random.seed",envir=.GlobalEnv,inherits=FALSE)
+  if (had_seed)
+    saved_seed <- get(".Random.seed",envir=.GlobalEnv,inherits=FALSE)
+  on.exit({
+    if (had_seed) {
+      assign(".Random.seed",saved_seed,envir=.GlobalEnv)
+    } else if (exists(".Random.seed",envir=.GlobalEnv,inherits=FALSE)) {
+      rm(".Random.seed",envir=.GlobalEnv)
+    }
+  },add=TRUE)
+  set.seed(20261027L)
+
+  PythonTrajectorySet <- etpy_get_export("TrajectorySet")
+  compare_values <- function(native,python,description) {
+    nv <- native$values
+    pv <- et_to_r(python$values)
+    expect_identical(dim(nv),dim(pv),info=description)
+    expect_identical(as.vector(is.na(nv)),as.vector(is.na(pv)),
+                     info=paste(description,"undefined/missing mask"))
+    present <- !is.na(nv) & !is.na(pv)
+    if (any(present))
+      expect_equal(unname(as.numeric(nv[present])),
+                   unname(as.numeric(pv[present])),
+                   tolerance=1e-8,info=description)
+    expect_equal(native$time,as.numeric(et_to_r(python$time)),
+                 info=paste(description,"time grid"))
+    expect_identical(native$dimension_names,
+                     as.character(unlist(et_to_r(python$dimension_names))),
+                     info=paste(description,"dimension names"))
+  }
+
+  for (scenario in seq_len(12L)) {
+    n_curves <- 2L + (scenario %% 3L)
+    n_time <- 7L + scenario
+    times <- c(0,cumsum(stats::runif(n_time-1L,.03,.35)))
+    values <- array(0,dim=c(n_curves,n_time,2L))
+    for (i in seq_len(n_curves)) {
+      values[i,,1L] <- .75*times +
+        .14*sin(times*(1+.09*i)) +
+        stats::rnorm(n_time,sd=.035)
+      values[i,,2L] <- .4*times^2 +
+        .16*cos(times*(.6+.04*scenario)) +
+        stats::rnorm(n_time,sd=.035)
+    }
+    # Flat curves test exact 0/0 handling, NaN↔NA masks and absence
+    # of unstated stabilizing epsilons.
+    if (scenario %% 4L == 0L) {
+      values[1L,,1L] <- .5
+      values[1L,,2L] <- -2
+    }
+    dimension_names <- c("x","y")
+    curve_ids <- paste0("scenario",scenario,"_curve",seq_len(n_curves))
+    x <- etr_trajectory_set(
+      times,values,curve_ids,dimension_names,
+      coordinate_system="pixels",time_unit="ms")
+    py <- reticulate::py_call(PythonTrajectorySet,
+      time=times,values=reticulate::r_to_py(values),
+      curve_ids=curve_ids,dimension_names=dimension_names,
+      coordinate_system="pixels",time_unit="ms")
+    loc_x <- stats::runif(n_curves,-1,1)
+    loc_y <- stats::runif(n_curves,-1,1)
+    threshold <- if (scenario %% 3L == 0L) .8 else 0
+
+    compare_values(
+      etr_acceleration_magnitude(x),
+      etpy_acceleration_magnitude_function(py),
+      paste("scenario",scenario,"acceleration"))
+    compare_values(
+      etr_distance_to_landmark(x,loc_x,loc_y),
+      etpy_distance_to_landmark_function(py,
+        landmark_x=loc_x,landmark_y=loc_y),
+      paste("scenario",scenario,"landmark"))
+    compare_values(
+      etr_signed_curvature(x,min_speed=threshold),
+      etpy_signed_curvature_function(py,min_speed=threshold),
+      paste("scenario",scenario,"curvature"))
+    compare_values(
+      etr_turning_rate(x,min_speed=threshold),
+      etpy_turning_rate_function(py,min_speed=threshold),
+      paste("scenario",scenario,"turning rate"))
+  }
+})
