@@ -60,3 +60,46 @@ The fail-closed `etr_native_parity_catalog(require_complete=TRUE)` must remain a
 ## Product and merge boundary
 
 The Python-backed integration PR #7 remains a separate user-convenience path, not fulfillment of native parity. This native project is independently staged against `research/native-parity-stage1`. It does not modify or promote known-failing 90% simultaneous confidence bands or unresolved MNAR identification. No main merge, public release or CRAN submission is implied.
+
+
+## Owner-executed Stage 2 qualification — 27 October 2026
+
+On the native branch in RStudio, both expected test files were present, and
+the owner completed these independent local tests:
+
+- `testthat::test_local(".", filter="native-planar-geometry-parity")`:
+  **40 PASS, 1 SKIP, 0 FAIL, 0 WARN**. The sole skip was the
+  explicitly opt-in Python-vs-R numerical oracle; all native analytical
+  and boundary checks executed successfully.
+- `testthat::test_local(".", filter="full-native-r-parity-ledger")`:
+  **35 PASS, 0 SKIP, 0 FAIL, 0 WARN**.
+- `source("scripts/report_full_native_r_parity.R")`:
+  generated the full 508-symbol catalog; **380 function contracts,
+  128 nonfunction contracts, 41 name candidates, 4 newly implemented native
+  algorithms, 37 existing but unqualified analogues, 339 unmapped Python
+  functions and zero independently certified one-to-one contracts**.
+
+Owner-local output:
+`artifacts/full_native_r_parity/audit_20261027_182923_pid51684/`.
+The source CSV was not uploaded/independently read; counts above are from
+the owner's console transcript.
+
+**Next required test:** In a separately verified managed Python 3.12
+environment containing stable `eyetrajectoriespy==1.2.0`:
+
+```r
+pkgload::load_all(".", quiet = TRUE)
+stopifnot(identical(et_python_version(), "1.2.0"))
+Sys.setenv(ET_RUN_PYTHON_TESTS = "true")
+testthat::test_local(".", filter = "native-planar-geometry-parity")
+Sys.unsetenv("ET_RUN_PYTHON_TESTS")
+```
+
+This runs the independent numeric Python-reference test as well. It is
+only a **four-method fixture comparison**, not exhaustive parity on all
+input distributions or all Python functions.
+
+These findings validate native R analytic behavior and the gap inventory,
+but do not establish native R/Python numerical parity or qualify any
+scientific inference contracts. Keep PR #9 draft and the full release gate
+closed. GitHub Actions CI has not executed a single job step.
