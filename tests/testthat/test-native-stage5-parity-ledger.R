@@ -17,6 +17,12 @@ test_that("native Stage 5 provenance does not overclaim 508-export parity", {
   expect_false(record$is_python_function)
   expect_false(record$native_implementation_started)
   expect_false(record$one_to_one_native_contract_complete)
+  expect_identical(record$native_representation_stage,5L)
+  expect_identical(record$status,
+                   "class_or_constant_native_representation_partial")
+  expect_equal(sum(!is.na(catalog$native_representation_stage)),1L)
+  expect_equal(sum(catalog$status==
+    "class_or_constant_native_representation_not_reviewed"),127L)
   expect_true(all(!catalog$one_to_one_native_contract_complete))
   expect_identical(reticulate::py_available(initialize=FALSE),was)
   expect_error(etr_native_parity_catalog(require_complete=TRUE),
