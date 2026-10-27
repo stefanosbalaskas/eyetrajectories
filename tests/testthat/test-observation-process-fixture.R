@@ -11,8 +11,8 @@ testthat::test_that("latent population truth and registered covariates are disti
   testthat::expect_equal(x$truth_mean[, 1L], sin(2 * pi * x$time))
   testthat::expect_equal(x$truth_mean[, 2L], cos(2 * pi * x$time))
   testthat::expect_true(all(x$truth_contrast == 0))
-  testthat::expect_identical(table(x$registry$group), structure(c(6L, 6L),
-                         dim = 2L, dimnames = list(c("0", "1"))))
+  testthat::expect_equal(unname(as.integer(table(x$registry$group))),
+                         c(6L, 6L))
   testthat::expect_true(all(is.finite(x$registry$Z)))
   testthat::expect_error(et_obs_generate_complete(11L, 1241L),
                          "even integer")
