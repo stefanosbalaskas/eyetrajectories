@@ -20,9 +20,12 @@ other nonfunction symbols unreviewed. These are partial mappings,
 **not 56 qualified source-contract equivalents**. The strict full
 508-source gate remains CLOSED.
 
-The R analytical tests and three real Python 1.2 irregular-data
-numerical scenarios are written but **have not been executed**.
-The source-level static syntax and 56-name export checks passed.
+**Stage 7 passed owner-run Windows qualification:** native tests
+**58 PASS / one expected Python-oracle SKIP**, Stage 7 source
+ledger **69 PASS**, and the opt-in Python 1.2 irregular-data
+numerical reference **115 PASS / 0 FAIL / 0 WARN / 0 SKIP**.
+Static source and 56-name export checks also passed. Full Python
+PCHIP and cross-OS CI remain unqualified.
 
 ```r
 # Checkout research/full-native-r-parity-stage7-batch-20261027 first
