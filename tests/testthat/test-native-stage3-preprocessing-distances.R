@@ -273,9 +273,17 @@ test_that("stage3 randomized Python reference checks match on complete and incom
   incomplete[1L,,2L] <- c(1,2,3,4)
   x_na <- etr_trajectory_set(c(0,1,2,3),incomplete,
                              dimension_names=c("x","y"))
+  # reticulate may simplify length-one R character vectors to a Python
+  # scalar string. Python TrajectorySet requires a *sequence* of curve IDs,
+  # even when values.shape[0] == 1. Keep the boundary explicit.
+  expect_identical(length(x_na$curve_ids),1L)
   py_na <- reticulate::py_call(ctor,
     time=x_na$time,values=reticulate::r_to_py(incomplete),
-    curve_ids=x_na$curve_ids,dimension_names=x_na$dimension_names)
+    curve_ids=as.list(x_na$curve_ids),
+    dimension_names=x_na$dimension_names)
+  expect_identical(
+    as.character(unlist(et_to_r(py_na$curve_ids))),
+    x_na$curve_ids)
   compare_array(etr_normalize_coordinates(x_na,5,10),
                 etpy_normalize_coordinates(py_na,width=5,height=10),
                 "incomplete coordinate normalization")
