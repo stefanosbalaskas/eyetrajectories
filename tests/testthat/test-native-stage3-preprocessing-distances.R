@@ -283,3 +283,41 @@ test_that("stage3 randomized Python reference checks match on complete and incom
                 etpy_center_on_landmark(py_na,landmark_x=2,landmark_y=3),
                 "incomplete landmark centering")
 })
+
+
+test_that("default zero-speed mask and declared stationary threshold match Python 1.2", {
+  if (!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Independent Python 1.2 heading-threshold oracle is opt-in")
+  stopifnot(identical(as.character(et_python_version()),"1.2.0"))
+  time <- c(0,.1,.4,1,2)
+  values <- array(0,dim=c(1L,length(time),2L))
+  values[1L,,1L] <- 2
+  values[1L,,2L] <- -3
+  x <- etr_trajectory_set(time,values,"stationary",c("x","y"))
+  py_ctor <- etpy_get_export("TrajectorySet")
+  py_x <- reticulate::py_call(py_ctor,
+    time=time,values=reticulate::r_to_py(values),
+    curve_ids="stationary",dimension_names=c("x","y"))
+
+  for (threshold in c(0,1e-12)) {
+    actual <- etr_heading_function(x,min_speed=threshold)
+    expected <- etpy_heading_function(py_x,min_speed=threshold)
+    expected_values <- et_to_r(expected$values)
+    expect_identical(dim(actual$values),dim(expected_values))
+    expect_identical(is.na(actual$values),is.na(expected_values))
+    finite <- !is.na(actual$values) & !is.na(expected_values)
+    if (any(finite))
+      expect_equal(as.numeric(actual$values[finite]),
+                   as.numeric(expected_values[finite]),
+                   tolerance=1e-9)
+  }
+
+  expect_true(all(is.na(etr_heading_function(
+    x,min_speed=1e-12)$values)))
+  expect_error(etr_heading_function(
+    x,min_speed=1e-12,undefined_policy="raise"),
+    "undefined")
+  expect_error(etpy_heading_function(
+    py_x,min_speed=1e-12,undefined_policy="raise"),
+    "undefined")
+})
