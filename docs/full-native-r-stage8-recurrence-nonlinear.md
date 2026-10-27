@@ -131,12 +131,46 @@ compares two recurrence-state curves for network topology, node
 tables and global summaries, radius counts, joint-component
 statistics and selected windowed-RQA metrics, with pinned Python 1.2.
 
-**Current qualification:** implementation, tests, help and offline
-source/export structural checks completed. No Stage 8 native R or
-Python oracle runtime results have been reported. Do **not** mark
-this stage as Windows-qualified or full-source-parity complete
-before executing its tests. Prior GitHub Actions runner admission
-failures with zero steps are not scientific numerical failures.
+**Current qualification:** the initial owner-run native Stage 8
+suite reported **57 PASS / 1 ERROR / 0 WARN / 1 expected Python SKIP**.
+The error was isolated to a malformed test time-grid fixture, corrected
+in draft PR #16 without altering any numerical estimator. The
+**amended head has not been rerun**, and the independent Python
+numerical oracle has not yet executed. Static code checks and exports
+are separate evidence from numerical-runtime qualification.
+GitHub Actions runner admission failures with zero recorded steps
+are not scientific numerical failures.
 
 **Research draft only:** no main merge, CRAN/PyPI release,
 or inference/coverage/identifiability claim.
+
+## First local Stage 8 run: malformed time-grid fixture (28 October 2026)
+
+The owner ran `testthat::test_local(".",filter="native-stage8-nonlinear-recurrence")`.
+The test output was **57 PASS, 1 ERROR, 0 WARN, 1 expected SKIP**
+for the opt-in Python reference.
+
+The error occurred in the negative joint-recurrence time-alignment
+assertion. The original test changed only the initial timestamp
+(`bad$time[1] <- 99`), unintentionally making the component's own time
+vector non-increasing. The native `.etr8_rec()` validity check
+correctly rejected that malformed component with
+`"recurrence time must match state count and be strictly increasing"`,
+before the cross-component alignment validator ran. It was thus
+incorrect for that specific malformed input to expect
+`"same time grid"`.
+
+The corrected tests now explicitly distinguish:
+
+1. **Malformed individual recurrence grid:** assert the intrinsic
+   `"strictly increasing"` failure for `bad$time[1] <- 99`.
+2. **Valid but unsynchronized recurrence grids:** shift the entire
+   vector `bad$time <- r2$time + 0.5`, preserving strict monotonicity,
+   and require the intended `"same time grid"` rejection.
+
+No recurrence estimators, time-alignment requirements, numerical
+thresholds or RQA calculations were changed. **Only the test
+fixture and assertions were modified.**
+
+This fix is committed to research Stage 8 draft PR #16;
+Windows rerun and pinned Python 1.2 comparison remain pending.
