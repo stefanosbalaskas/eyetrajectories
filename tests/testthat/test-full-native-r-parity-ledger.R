@@ -40,7 +40,15 @@ test_that("classes and constants are separately tracked, not called native algor
   z <- etr_native_parity_catalog()
   others <- z[!z$is_python_function,,drop=FALSE]
   expect_equal(nrow(others),128L)
-  expect_true(all(others$status==
+  stage5 <- others[others$python_name=="TrajectorySet" &
+                    others$namespace=="root",,drop=FALSE]
+  expect_equal(nrow(stage5),1L)
+  expect_identical(stage5$status,
+                   "class_or_constant_native_representation_partial")
+  expect_identical(stage5$native_representation_stage,5L)
+  pending <- others[is.na(others$native_representation_stage),,drop=FALSE]
+  expect_equal(nrow(pending),127L)
+  expect_true(all(pending$status==
      "class_or_constant_native_representation_not_reviewed"))
   expect_false(any(others$native_implementation_started))
 })
