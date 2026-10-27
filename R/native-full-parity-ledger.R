@@ -21,6 +21,7 @@
   discrete_frechet_distance="etr_discrete_frechet",
   dynamic_time_warping_distance="etr_dynamic_time_warping",
   pairwise_dynamic_time_warping_distances="etr_pairwise_dtw_full",
+  load_portable_result="etr_read_python_portable_result",
   pairwise_discrete_frechet_distances="etr_pairwise_frechet",
   nearest_trajectory_indices="etr_nearest_trajectory_indices",
   functional_trapezoid_weights="etr_trapezoid_weights",
@@ -100,11 +101,14 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   stage4_names <- c("discrete_frechet_distance",
                     "dynamic_time_warping_distance",
                     "pairwise_dynamic_time_warping_distances")
+  stage6_names <- "load_portable_result"
   api$native_implementation_stage <- ifelse(
       api$is_python_function & api$python_name %in% stage2_names,2L,
       ifelse(api$is_python_function & api$python_name %in% stage3_names,3L,
         ifelse(api$is_python_function & api$python_name %in% stage4_names,
-               4L,NA_integer_)))
+               4L,
+          ifelse(api$is_python_function &
+                 api$python_name %in% stage6_names,6L,NA_integer_))))
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset

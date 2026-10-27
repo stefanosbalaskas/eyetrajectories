@@ -1,5 +1,55 @@
 # eyetrajectories
 
+## Native R Stage 6 — read Python 1.2 scientific-result snapshots
+
+New `etr_read_python_portable_result()` provides a **Python-free R
+reader for published `eyetrajectoriespy 1.2.0` portable scientific
+results**. It reads `manifest.json` and `arrays.npz`, verifies the
+NumPy archive's SHA-256 checksum, safely decodes supported
+numeric/boolean/Unicode and JSON-backed string arrays, and preserves
+scientific identifiers, units, metadata and provenance as inspectable
+R objects. It never runs `reticulate` or Python.
+
+Only optional R packages `jsonlite` and `digest` are needed at call
+time. Unsupported NumPy dtypes, malformed/oversized archives and
+nonrepresentable backend objects fail explicitly; arbitrary Python
+objects are never unpickled or fitted. This is an **independent native
+reader**, not yet a full replacement for Python's
+`load_portable_result()` or a writer of Python-compatible archives.
+The Stage 5 RDS snapshot remains a separate native R format.
+
+```r
+# Checkout research/full-native-r-parity-stage6-20261027 first
+pkgload::load_all(".",quiet=TRUE)
+testthat::test_local(".",filter="native-stage6-python-portable-reader")
+testthat::test_local(".",filter="native-stage6-parity-ledger")
+
+# Independent Python 1.2 source archive oracle only:
+stopifnot(identical(et_python_version(),"1.2.0"))
+Sys.setenv(ET_RUN_PYTHON_TESTS="true")
+tryCatch(
+  testthat::test_local(".",filter="native-stage6-python-portable-reader"),
+  finally=Sys.unsetenv("ET_RUN_PYTHON_TESTS"))
+```
+
+**Stage 6 passed its owner-run Windows qualification on 27 October
+2026:** native R reader **18 PASS (one expected Python opt-in SKIP)**;
+Stage 6 parity ledger **20 PASS**; independent pinned Python 1.2
+generated JSON+NPZ interoperability oracle **79 PASS, 0 FAIL, 0
+WARN, 0 SKIP**. The Python-enabled count includes native assertions;
+these are not 117 independent cross-language cases.
+Historical Windows tests: Stage 5 Python 1.2 `TrajectorySet` provenance
+oracle **106/106**, Stage 4 advanced distances **733/733**.
+GitHub Actions/Linux/macOS verification remains unavailable.
+The frozen 508-export source register now identifies **46 mapped
+candidate R functions among 380 Python callables, 334 unmapped
+functions, one partially represented nonfunction class and 127
+unreviewed nonfunction public objects**. No complete
+508/508 native parity claim, merge or release.
+
+**[Stage 6 source contract and security boundaries](docs/full-native-r-stage6-python-portable-reader.md)** · **[Draft Stage 6 PR #14](https://github.com/stefanosbalaskas/eyetrajectories/pull/14)**.
+
+
 ## Native R Stage 5 — trajectory provenance and snapshots (research)
 
 The native `etr_trajectory_set()` now accepts an eighth, backwards-
