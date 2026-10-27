@@ -343,8 +343,12 @@ The new source-to-native test matrix includes independent Python 1.2
 comparisons over three irregular multi-curve sampling scenarios,
 overlap/union grids, linear interpolation and max-gap missing-value
 preservation; analytical validation tests and updated offline source
-inventory are also committed. **Tests have not yet been executed in
-an R runtime**. Python PCHIP remains explicitly unsupported and
-R/Python data-frame metadata equivalence is not claimed.
-See [Stage 7 technical scope and owner-run commands](full-native-r-stage7-ten-function-batch.md).
-The research PR is DRAFT and no release/merge is authorized.
+inventory are committed. **Stage 7 has now passed owner-executed
+Windows tests:** native-only **58 PASS / 1 expected Python-oracle SKIP**,
+native parity ledger **69 PASS**, and independently enabled Python
+1.2 oracle **115 PASS / 0 FAIL / 0 WARN / 0 SKIP**.
+[Detailed owner-run qualification](full-native-r-stage7-ten-function-batch.md#owner-executed-stage-7-qualification--windows-pass-28-october-2026).
+Python PCHIP remains explicitly unsupported, complete R/Python
+data-frame metadata equivalence is not claimed, and cross-platform
+GitHub CI had zero executed job steps. The research PR stays DRAFT;
+no release/merge is authorized.
