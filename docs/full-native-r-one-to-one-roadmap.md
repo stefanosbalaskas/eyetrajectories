@@ -352,3 +352,45 @@ Python PCHIP remains explicitly unsupported, complete R/Python
 data-frame metadata equivalence is not claimed, and cross-platform
 GitHub CI had zero executed job steps. The research PR stays DRAFT;
 no release/merge is authorized.
+
+
+## Stage 8 — recurrence-network and nonlinear RQA, ten-function batch
+
+This stage extends the qualified Stage 7 irregular-data work
+(owner-run Windows **115/115** Python 1.2 oracle assertions) with
+ten independently implemented native R nonlinear recurrence
+functions: `recurrence_network`, its node and summary frames,
+`joint_recurrence_matrix`, joint component frames and RQA,
+cross-RQA, declared recurrence-radius profiles, and
+windowed RQA with a functional trajectory representation.
+
+**Counts:** 65 mapped Python callable names among 380 (+9
+over Stage 7, because recurrence_network was already listed as
+a candidate), **315 unmapped** callable names; **35** independently
+new native R callable implementations over Stages 2/3/4/6/7/8,
+a growth of ten. Exactly **7** of 128 other public Python
+objects/classes have a partial native representation and
+**121** remain unreviewed. Full 508-source contract completion
+remains zero; the fail-closed gate has not changed.
+
+Independent Python 1.2 reference tests and R analytical cases
+were added with the
+[Stage 8 nonlinear implementation and reproduction guide](full-native-r-stage8-recurrence-nonlinear.md).
+**Stage 8 owner-run numerical qualification (Windows, 28 October
+2026): PASS.** The corrected native recurrence filter passed **62
+assertions** with **one expected Python-opt-in skip**; the Stage 8
+ledger passed **82 assertions** without skips; after verifying the
+Python reference version was exactly **1.2.0**, the Python-enabled
+recurrence filter passed **189 assertions** without failures, warnings
+or skips. The 189 include native assertions and are not independent
+additional oracle cases. A malformed negative time-grid fixture was
+corrected; no native scientific algorithm or tolerance changed.
+[Stage 8 qualification details](full-native-r-stage8-recurrence-nonlinear.md).
+
+**Cross-platform qualification remains blocked:** Stage 8
+[Actions run #40598507486](https://github.com/stefanosbalaskas/eyetrajectories/actions/runs/40598507486)
+failed with zero recorded steps in each of four jobs, so GitHub did not
+execute numerical CI. Python sparse-graph methods, time-based windows,
+target-rate threshold selection, and complete result schemas exceed
+the declared native R partial contracts. The 508/508 fail-closed gate
+remains closed. This branch is DRAFT, not merged or released.

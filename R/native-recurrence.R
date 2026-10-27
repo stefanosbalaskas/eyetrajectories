@@ -41,7 +41,12 @@ etr_recurrence_matrix <- function(x, curve = 1L, radius, theiler = 0L) {
   structure(list(matrix = m, kind = "auto", curve_ids = x$curve_ids[curve],
                  radius = radius, theiler = as.integer(theiler),
                  eligible_pairs = sum(upper), recurrence_rate = rate,
-                 time = x$time), class = "etr_recurrence")
+                 time = x$time, time_unit = x$time_unit,
+                 metric = "euclidean", state_dimension = ncol(a),
+                 target_recurrence_rate = NULL,
+                 provenance = list(source="native_R_recurrence",
+                   recurrence_rate_denominator="eligible_off_diagonal_pairs_outside_theiler_window")),
+            class = "etr_recurrence")
 }
 
 #' Native cross-recurrence matrix for two point sequences

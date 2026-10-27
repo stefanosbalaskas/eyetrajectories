@@ -55,6 +55,15 @@
   delay_embed_trajectory="etr_delay_embedding",
   poincare_crossings="etr_poincare_return_map",
   recurrence_network="etr_recurrence_network",
+  recurrence_network_node_frame="etr_recurrence_network_node_frame",
+  recurrence_network_summary_frame="etr_recurrence_network_summary_frame",
+  joint_recurrence_matrix="etr_joint_recurrence_matrix",
+  joint_recurrence_component_frame="etr_joint_recurrence_component_frame",
+  joint_rqa_metrics="etr_joint_rqa_metrics",
+  cross_rqa_metrics="etr_cross_rqa_metrics",
+  recurrence_radius_profile="etr_recurrence_radius_profile",
+  windowed_rqa="etr_windowed_rqa",
+  windowed_rqa_trajectory_set="etr_windowed_rqa_trajectory_set",
   split_conformal_fpca_anomaly="etr_split_conformal_fpca_anomalies",
   # These four new native methods are experimentally implemented here.
   acceleration_magnitude_function="etr_acceleration_magnitude",
@@ -120,13 +129,22 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     "resample_irregular_to_grid",
     "resample_irregular_to_common_grid",
     "irregular_sampling_summary","phase_landmark_frame")
+  stage8_names <- c(
+    "recurrence_network","recurrence_network_node_frame",
+    "recurrence_network_summary_frame",
+    "joint_recurrence_matrix","joint_recurrence_component_frame",
+    "joint_rqa_metrics","cross_rqa_metrics",
+    "recurrence_radius_profile","windowed_rqa",
+    "windowed_rqa_trajectory_set")
   api$native_implementation_stage <- ifelse(
       api$is_python_function & api$python_name %in% stage2_names,2L,
       ifelse(api$is_python_function & api$python_name %in% stage3_names,3L,
         ifelse(api$is_python_function & api$python_name %in% stage4_names,4L,
           ifelse(api$is_python_function & api$python_name %in% stage6_names,
             6L,ifelse(api$is_python_function &
-              api$python_name %in% stage7_names,7L,NA_integer_)))))
+              api$python_name %in% stage7_names,7L,
+              ifelse(api$is_python_function &
+                api$python_name %in% stage8_names,8L,NA_integer_))))))
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset
@@ -135,7 +153,12 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     !api$is_python_function & api$namespace=="root" &
       api$python_name=="TrajectorySet",5L,
     ifelse(!api$is_python_function & api$namespace=="root" &
-      api$python_name=="IrregularTrajectorySet",7L,NA_integer_))
+      api$python_name=="IrregularTrajectorySet",7L,
+      ifelse(!api$is_python_function & api$namespace=="root" &
+        api$python_name %in% c(
+          "RecurrenceNetworkResult","JointRecurrenceResult",
+          "RecurrenceRadiusProfileResult","WindowedRQAResult",
+          "WindowedRQAFunctionalResult"),8L,NA_integer_)))
   api$status <- ifelse(!api$is_python_function,
     ifelse(!is.na(api$native_representation_stage),
       "class_or_constant_native_representation_partial",

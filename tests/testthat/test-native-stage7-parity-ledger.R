@@ -15,10 +15,10 @@ test_that("ten Stage 7 public functions are independently implemented and mapped
     phase_landmark_frame="etr_phase_landmark_frame")
   expect_equal(nrow(catalog),508L)
   expect_equal(sum(catalog$is_python_function),380L)
-  expect_equal(sum(catalog$named_native_candidate),56L)
+  expect_equal(sum(catalog$named_native_candidate),65L)
   expect_equal(sum(catalog$is_python_function &
-                   !catalog$named_native_candidate),324L)
-  expect_equal(sum(catalog$native_implementation_started),25L)
+                   !catalog$named_native_candidate),315L)
+  expect_equal(sum(catalog$native_implementation_started),35L)
   expect_equal(sum(catalog$native_implementation_stage==7L,
                    na.rm=TRUE),10L)
   for(name in names(names)){
@@ -39,9 +39,9 @@ test_that("ten Stage 7 public functions are independently implemented and mapped
                      as.integer(pair[[2L]]))
     expect_false(row$one_to_one_native_contract_complete)
   }
-  expect_equal(sum(!is.na(catalog$native_representation_stage)),2L)
+  expect_equal(sum(!is.na(catalog$native_representation_stage)),7L)
   expect_equal(sum(catalog$status==
-    "class_or_constant_native_representation_not_reviewed"),126L)
+    "class_or_constant_native_representation_not_reviewed"),121L)
   expect_true(all(!catalog$one_to_one_native_contract_complete))
   expect_identical(reticulate::py_available(initialize=FALSE),was)
   expect_error(etr_native_parity_catalog(require_complete=TRUE),

@@ -1,5 +1,53 @@
 # eyetrajectories
 
+## Native R Stage 8 — ten nonlinear recurrence and RQA methods (draft)
+
+Ten further Python-independent R functions cover recurrence-network
+degree, triangles, clustering and components; synchronized joint
+recurrence and joint/cross RQA; prespecified radius-rate profiles;
+and full-window RQA and its functional trajectory representation.
+The code is based on the published Python 1.2 source, not Python
+bridges.
+
+The frozen 508-public-export register now identifies **65 / 380
+callable Python names with mapped R candidates**, **315 unmapped
+callable names** and **35 independently written native R callable
+implementations across Stages 2–4 and 6–8**.
+Seven nonfunction classes/results now have partial native R
+representations; 121 other nonfunction exports await review.
+Because `recurrence_network` was already a named candidate,
+**ten implemented functions produce nine new name mappings**.
+No complete 508-contract equivalence is claimed.
+
+```r
+# Checkout research/full-native-r-parity-stage8-batch-20261028 first.
+pkgload::load_all(".",quiet=TRUE)
+testthat::test_local(".",filter="native-stage8-nonlinear-recurrence")
+testthat::test_local(".",filter="native-stage8-parity-ledger")
+
+# Independent Python 1.2 verification is opt-in:
+stopifnot(identical(et_python_version(),"1.2.0"))
+Sys.setenv(ET_RUN_PYTHON_TESTS="true")
+tryCatch(testthat::test_local(".",
+  filter="native-stage8-nonlinear-recurrence"),
+  finally=Sys.unsetenv("ET_RUN_PYTHON_TESTS"))
+```
+
+**Stage 8 owner-run Windows qualification passed (28 October 2026):**
+62 native R recurrence assertions (one expected Python skip), 82 parity
+ledger assertions, and **189 assertions in the independent Python 1.2-
+enabled suite** (0 failures, warnings or skips). The Python-enabled
+count includes native assertions; it is not an additional 189 distinct
+oracle experiments. The corrected time-grid fixture required **no
+numerical estimator changes**. GitHub Actions on the same branch still
+failed all four jobs with zero executed steps, so cross-platform tests
+remain unqualified. Full Python sparse-graph contracts, target-radius
+policies and time-unit windows are not reproduced, and
+`etr_recurrence_network()` retains its 750-node dense R bound.
+
+**[Stage 8 scientific contracts and limitations](docs/full-native-r-stage8-recurrence-nonlinear.md)** · **[Draft PR #16](https://github.com/stefanosbalaskas/eyetrajectories/pull/16)**.
+
+
 ## Native R Stage 7 — ten Python 1.2 functions in one batch (draft)
 
 The new Stage 7 branch adds **ten independent Python-free R methods**
