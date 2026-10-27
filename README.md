@@ -39,7 +39,7 @@ time-unit windows are not reproduced, and
 `etr_recurrence_network()` has a 750-node dense R bound.
 Static source checks are distinct from native numerical agreement.
 
-**[Stage 8 scientific contracts and limitations](docs/full-native-r-stage8-recurrence-nonlinear.md)**.
+**[Stage 8 scientific contracts and limitations](docs/full-native-r-stage8-recurrence-nonlinear.md)** · **[Draft PR #16](https://github.com/stefanosbalaskas/eyetrajectories/pull/16)**.
 
 
 ## Native R Stage 7 — ten Python 1.2 functions in one batch (draft)
