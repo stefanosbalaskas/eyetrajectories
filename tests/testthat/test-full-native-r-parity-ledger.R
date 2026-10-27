@@ -5,7 +5,7 @@ test_that("strict register covers all 508 Python public exports without Python",
   expect_equal(nrow(z),508L)
   expect_equal(sum(z$is_python_function),380L)
   expect_equal(sum(!z$is_python_function),128L)
-  expect_equal(sum(z$native_implementation_started),15L)
+  expect_equal(sum(z$native_implementation_started),25L)
   expect_true(all(z$one_to_one_native_contract_complete==FALSE))
   expect_true(all(z$independent_numeric_parity_pass==FALSE))
   expect_true(all(z$scientific_inference_qualified==FALSE))
@@ -47,7 +47,7 @@ test_that("classes and constants are separately tracked, not called native algor
                    "class_or_constant_native_representation_partial")
   expect_identical(stage5$native_representation_stage,5L)
   pending <- others[is.na(others$native_representation_stage),,drop=FALSE]
-  expect_equal(nrow(pending),127L)
+  expect_equal(nrow(pending),126L)
   expect_true(all(pending$status==
      "class_or_constant_native_representation_not_reviewed"))
   expect_false(any(others$native_implementation_started))
