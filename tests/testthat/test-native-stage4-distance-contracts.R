@@ -8,7 +8,7 @@ test_that("native discrete Frechet coupling follows deterministic diagonal ties"
   expect_s3_class(r,"etr_discrete_frechet_result")
   expect_equal(etr_discrete_frechet(a,b),.1,tolerance=1e-12)
   expect_equal(r$distance,.1,tolerance=1e-12)
-  expect_identical(r$coupling,cbind(0:2,0:2))
+  expect_identical(r$coupling,unname(cbind(0:2,0:2)))
   expect_equal(r$local_distances,rep(.1,3),tolerance=1e-12)
   expect_identical(r$n_points_a,3L)
   expect_identical(r$n_points_b,3L)
@@ -64,7 +64,7 @@ test_that("native full DTW defaults preserve symmetric1 and exposes symmetric2",
   expect_s3_class(two,"etr_dtw_result")
   expect_equal(old,.3,tolerance=1e-12)
   expect_equal(one$distance,old)
-  expect_identical(one$path,cbind(0:2,0:2))
+  expect_identical(one$path,unname(cbind(0:2,0:2)))
   expect_equal(one$step_weights,rep(1,3))
   expect_equal(one$raw_distance,.3,tolerance=1e-12)
   expect_null(one$normalized_distance)
@@ -169,7 +169,7 @@ test_that("seeded Python 1.2 Fréchet/DTW numeric values and exact paths agree",
     expect_equal(as.numeric(actual),expected,tolerance=1e-9,info=tag)
   }
   compare_path <- function(native,python,native_path,tag){
-    py_path <- et_to_r(python[[native_path]])
+    py_path <- et_to_r(reticulate::py_get_attr(python,native_path))
     expect_identical(dim(native[[native_path]]),dim(py_path),
                      info=paste(tag,native_path,"shape"))
     expect_equal(unname(native[[native_path]]),
