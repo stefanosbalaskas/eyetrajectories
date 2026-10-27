@@ -1,5 +1,39 @@
 # eyetrajectories
 
+## Native R Stage 3 — seven more Python-free methods (research)
+
+Stage 3 adds **seven independently implemented R functions** for
+coordinates, landmark centering, explicit time intervals, wrapped heading,
+per-curve tortuosity, weighted pairwise discrete Fréchet distance and
+nearest trajectories. Stage 2's four kinematics methods passed **296/296**
+owner-run Python 1.2 numerical assertions on Windows; Stage 3 itself has
+**not yet passed R runtime tests**.
+
+The exact 508-symbol inventory now identifies **44 native candidates**
+(11 additions from Stages 2–3 plus 33 existing analogues), while
+**336 Python functions remain unmapped** and 128 public nonfunction
+symbols require native representation review. These are names/candidates,
+not 44 fully verified one-to-one numerical contracts.
+
+```r
+# Checkout research/full-native-r-parity-stage3-20261027 first.
+pkgload::load_all(".", quiet=TRUE)
+testthat::test_local(".", filter="native-stage3-preprocessing-distances")
+testthat::test_local(".", filter="native-stage3-parity-ledger")
+source("scripts/report_full_native_r_parity.R")
+
+# Optional independent numerical comparison only:
+stopifnot(identical(et_python_version(),"1.2.0"))
+Sys.setenv(ET_RUN_PYTHON_TESTS="true")
+testthat::test_local(".", filter="native-stage3-preprocessing-distances")
+Sys.unsetenv("ET_RUN_PYTHON_TESTS")
+```
+
+**[Stage 3 scientific contracts and instructions](docs/full-native-r-stage3-preprocessing-distances.md)** ·
+**[Stage 3 draft PR](https://github.com/stefanosbalaskas/eyetrajectories/pull/11)**.
+No release or native 508/508 parity claim.
+
+
 ## Complete native-R parity programme — 508 Python public source contracts
 
 **Target:** every public `eyetrajectoriespy 1.2.0` algorithm available as an
