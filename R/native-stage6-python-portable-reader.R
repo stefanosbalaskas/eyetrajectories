@@ -163,7 +163,7 @@
   aperm(a,rev(seq_along(shape)))
 }
 
-.etr6_decode <- function(value,arrays,depth=0L) {
+.etr6_decode <- function(value,arrays=list(),depth=0L) {
   .etr_assert(depth<=64L,
               "portable payload nesting exceeds native R safety limit")
   if(is.null(value)||is.atomic(value))return(value)
