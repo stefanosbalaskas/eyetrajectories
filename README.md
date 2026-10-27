@@ -16,10 +16,13 @@ native R snapshot round-trips** through trusted RDS files. This is **not**
 Python's JSON+NPZ scientific-result archive format, and it is not a claim
 of cross-language file interchange.
 
-The Stage 5 scientific/data-contract tests (including an optional Python
-1.2 object/provenance oracle) are committed but **not yet executed**.
+**Stage 5 has now passed its owner-executed Windows tests**:
+**62** native provenance/snapshot assertions (one intentionally skipped
+Python oracle), **19** Stage 5 ledger assertions and **106** Python
+1.2 object/provenance assertions with **zero failures, warnings or skips**.
 Stage 4 previously passed **733/733** owner-executed Windows numerical
-assertions. The strict mapping remains unchanged: **45 named native R
+assertions. Cross-platform CI and Python JSON+NPZ interoperability
+remain unverified. The strict mapping remains unchanged: **45 named native R
 function candidates among 380 Python callables**, **335 unmapped
 callables**, and **128 other Python public objects** (including
 `TrajectorySet`) still requiring full representation review.
