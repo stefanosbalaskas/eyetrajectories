@@ -4,16 +4,16 @@
 
 ## Staged components
 
-- \`scripts/observation_process_fixture.R\`: independent complete participant/trial/channel trajectories with 41 evaluation-grid points; fully observed baseline covariate Z, pre-mask full-population means and null contrast, and separate realized masks for complete data, MCAR, MAR, MNAR, MAR participant dropout, MNAR participant dropout, unequal density and sparse participant/trial-specific subsets of the common grid. Missing values are **never filled**.
-- \`scripts/run_missing_gaze_pilot.R\`: seed-disjoint, failure-inclusive research pilot; defaults to Gaussian data, N=12/24/48, 20 independent generated datasets per mechanism/N (480 datasets across eight mechanisms), moderate severity. Outputs \`missing_gaze_trials.csv\`, \`missing_gaze_summary.csv\`, and \`manifest.txt\`. No package dependency beyond base/recommended R.
-- \`scripts/audit_missing_gaze_pilot.R\`: independent read-only trial/summary reconciliation, distinct generator/mask seeds, status/denominator checks and missingness diagnostics.
-- \`tests/testthat/test-observation-process-fixture.R\`: latent truth/observed-data separation, reproducibility, RNG restoration, MAR/MNAR distinction, participant dropout and unsupported grid tests.
+- `scripts/observation_process_fixture.R`: independent complete participant/trial/channel trajectories with 41 evaluation-grid points; fully observed baseline covariate Z, pre-mask full-population means and null contrast, and separate realized masks for complete data, MCAR, MAR, MNAR, MAR participant dropout, MNAR participant dropout, unequal density and sparse participant/trial-specific subsets of the common grid. Missing values are **never filled**.
+- `scripts/run_missing_gaze_pilot.R`: seed-disjoint, failure-inclusive research pilot; defaults to Gaussian data, N=12/24/48, 20 independent generated datasets per mechanism/N (480 datasets across eight mechanisms), moderate severity. Outputs `missing_gaze_trials.csv`, `missing_gaze_summary.csv`, and `manifest.txt`. No package dependency beyond base/recommended R.
+- `scripts/audit_missing_gaze_pilot.R`: independent read-only trial/summary reconciliation, distinct generator/mask seeds, status/denominator checks and missingness diagnostics.
+- `tests/testthat/test-observation-process-fixture.R`: latent truth/observed-data separation, reproducibility, RNG restoration, MAR/MNAR distinction, participant dropout and unsupported grid tests.
 
 ## Initial owner-run verification
 
-Run **from the repository root** after pulling \`research/native-parity-stage1\`:
+Run **from the repository root** after pulling `research/native-parity-stage1`:
 
-\`\`\`r
+```r
 testthat::test_local(".", filter = "observation-process-fixture")
 Sys.setenv(ET_OBS_REPS = "20",
            ET_OBS_SEVERITY = "moderate",
@@ -23,14 +23,14 @@ source("scripts/run_missing_gaze_pilot.R")
 Sys.unsetenv(c("ET_OBS_REPS", "ET_OBS_SEVERITY",
                "ET_OBS_SEED_OFFSET", "ET_OBS_FAMILIES"))
 source("scripts/audit_missing_gaze_pilot.R")
-\`\`\`
+```
 
-If an archive already exists, the preflight seed collision guard should halt and **must not be bypassed**; use a genuinely new seed offset only for an intended new replication. The audit defaults to the latest completed archive; to inspect a particular archive, set \`ET_OBS_AUDIT_DIR\` first. Preserve all failure/no-support rows.
+If an archive already exists, the preflight seed collision guard should halt and **must not be bypassed**; use a genuinely new seed offset only for an intended new replication. The audit defaults to the latest completed archive; to inspect a particular archive, set `ET_OBS_AUDIT_DIR` first. Preserve all failure/no-support rows.
 
 ## Interpretation boundaries
 
 - The naive diagnostic averages trials **within participants**, then averages participants or group means, and compares these observed-data estimates to the generator's declared **unconditional full-population** truth. This exposes selection bias, not a demonstrated correction for it.
-- RMSE and bias are **supported-coordinate only**, explicitly recorded alongside the supported fraction. A study missing sufficient participants at any time/channel receives \`no_observation_support\`.
+- RMSE and bias are **supported-coordinate only**, explicitly recorded alongside the supported fraction. A study missing sufficient participants at any time/channel receives `no_observation_support`.
 - MCAR and observed-Z/time MAR generation expose known retention probabilities in the **sealed mask** for potential future identification diagnostics; no propensity-corrected estimator has been implemented or validated.
 - For MNAR, latent Y/effects affect retention by construction. Internal mask probabilities are **infeasible oracles**, not observed-data information.
 - Sparse asynchronous observation here means **irregular participant/trial-specific subsets of the 41-point grid**, not arbitrary off-grid timestamps. Continuous-time smoothing/interpolation requires a separately qualified stage.
