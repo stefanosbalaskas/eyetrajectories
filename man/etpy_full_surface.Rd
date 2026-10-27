@@ -43,8 +43,8 @@ before creating the R environments.}
 \item{...}{Arguments forwarded to Python, or unused print arguments.}
 \item{.namespace}{Public Python root or workflows module.}
 \item{object}{Unconverted Python model, result, configuration or other proxy.}
-\item{extra}{Published Python 1.2.0 optional backend selection: \\code{fda},
-\\code{sparse}, \\code{elastic}, or \\code{all}. The sparse extra is
+\item{extra}{Published Python 1.2.0 optional backend selection: \code{fda},
+\code{sparse}, \code{elastic}, or \code{all}. The sparse extra is
 only declared on Python 3.11--3.12 when Python has not already started.}
 \item{strict}{Logical; fail if a recorded public symbol is missing,
 a recorded function is noncallable, or the installed Python distribution
