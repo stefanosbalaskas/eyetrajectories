@@ -99,7 +99,36 @@ This runs the independent numeric Python-reference test as well. It is
 only a **four-method fixture comparison**, not exhaustive parity on all
 input distributions or all Python functions.
 
-These findings validate native R analytic behavior and the gap inventory,
-but do not establish native R/Python numerical parity or qualify any
-scientific inference contracts. Keep PR #9 draft and the full release gate
-closed. GitHub Actions CI has not executed a single job step.
+**Superseded for the four fixed-reference cases:** the owner later executed
+the opt-in numerical oracle successfully (details below). Generalized
+numerical and scientific one-to-one qualification, full 508-symbol parity,
+and cross-platform CI remain open. Keep PR #9 draft and the release gate
+closed; GitHub Actions has still not executed any steps.
+
+## Independent Python v1.2.0 numerical comparison — owner PASS, 27 October 2026
+
+On Windows in RStudio, the owner explicitly verified
+`identical(et_python_version(), "1.2.0")`, enabled
+`ET_RUN_PYTHON_TESTS=true` and executed
+
+```r
+testthat::test_local(".", filter="native-planar-geometry-parity")
+```
+
+The complete output was **FAIL 0, WARN 0, SKIP 0, PASS 56**. The opt-in
+independent R-vs-Python numerical oracle was **executed**, not skipped.
+All four newly implemented R methods (`etr_acceleration_magnitude`,
+`etr_distance_to_landmark`, `etr_signed_curvature`,
+`etr_turning_rate`) therefore agree with the published Python reference
+for the original deterministic, irregular-grid fixtures within the test
+tolerance. This also preserves the previously observed 40/40 native
+analytic and 35/35 ledger assertions.
+
+**Do not interpret these 56 assertions as 56 independently tested
+methods**, nor automatically set `one_to_one_native_contract_complete`
+to TRUE: additional randomized inputs, low-speed/missingness boundary
+comparisons, explicit output-schema/provenance agreement and cross-platform
+tests still matter. The conservative native parity ledger therefore
+continues to report **0 of 508 fully qualified one-to-one public contracts**.
+The independent test output is owner-provided console evidence, not CI
+or an uploaded test artifact.
