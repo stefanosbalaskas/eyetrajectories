@@ -46,7 +46,7 @@ test_that("typed JSON portable decoding rejects unsafe markers", {
   decode <- eyetrajectories:::.etr6_decode
   expect_equal(decode(list('__portable_type__'="mapping",
     entries=list(list("foo",1L),list("nested",
-      list('__portable_type__'="tuple",items=list(TRUE,"item"))))),
+      list('__portable_type__'="tuple",items=list(TRUE,"item")))))),
     list(foo=1L,nested=structure(list(TRUE,"item"),
                                 class="etr_python_tuple")))
   expect_equal(decode(list('__portable_type__'="dataclass",
