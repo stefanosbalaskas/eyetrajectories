@@ -262,7 +262,11 @@ The native R snapshot is **not** Python's
 no Python portable loader or cryptographic integrity proof is claimed.
 The full 508-export parity completion gate remains CLOSED.
 
-New [Stage 5 tests and explicit RStudio/Python oracle instructions](full-native-r-stage5-provenance-snapshots.md)
-are committed and static-source-checked. Native R execution, Python
-1.2 `TrajectorySet` object comparisons, complete ecosystem regression
-testing and 3-OS CI are **pending**. No main merge or release.
+Stage 5's owner-run Windows qualification has **passed**:
+native-only `native-stage5-trajectory-provenance` **62 PASS /
+1 expected Python-oracle SKIP**, the Stage 5 parity ledger **19 PASS**,
+and the opt-in Python 1.2 `TrajectorySet` provenance/reference suite
+**106 PASS / 0 FAIL / 0 WARN / 0 SKIP**. See the
+[Stage 5 technical record](full-native-r-stage5-provenance-snapshots.md#stage-5-corrected-qualification--windows-rstudio-pass-27-october-2026).
+Complete ecosystem regression testing, Python JSON+NPZ portable-format
+equivalence and independent 3-OS CI remain open. No main merge or release.
