@@ -36,7 +36,7 @@ tryCatch(testthat::test_local(
   finally=Sys.unsetenv("ET_RUN_PYTHON_TESTS"))
 ```
 
-**[Ten-function batch guide](docs/full-native-r-stage7-ten-function-batch.md)**.
+**[Ten-function batch guide](docs/full-native-r-stage7-ten-function-batch.md)** · **[Draft PR #15](https://github.com/stefanosbalaskas/eyetrajectories/pull/15)**.
 Draft research only; no release/merge.
 
 
