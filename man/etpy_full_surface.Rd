@@ -6,6 +6,7 @@
 \alias{etpy_signature}
 \alias{etpy_full_verify}
 \alias{etpy_enable_extras}
+\alias{etpy_signature_catalog}
 \alias{print.etpy_full_surface}
 \title{Complete Python 1.2 public capability surface from R}
 \description{
@@ -29,6 +30,8 @@ etpy_method(object, name, ..., .convert = FALSE)
 etpy_signature(name, .namespace = c("root", "workflows"))
 
 etpy_full_verify(strict = TRUE)
+
+etpy_signature_catalog(strict = TRUE)
 
 etpy_enable_extras(extra = c("all", "fda", "sparse", "elastic"))
 
@@ -58,6 +61,7 @@ environments and a static export catalog. \code{etpy_invoke()} and
 \code{etpy_attribute()} returns a public Python attribute.
 \code{etpy_signature()} returns a Python callable signature or \code{NA}.
 \code{etpy_full_verify()} returns a 508-row structural contract report.
+\code{etpy_signature_catalog()} returns a 508-row runtime signature/type report.
 \code{etpy_enable_extras()} invisibly returns the pinned Python requirement.
 }
 \details{
