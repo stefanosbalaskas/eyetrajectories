@@ -157,6 +157,13 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
               api$python_name %in% stage7_names,7L,
               ifelse(api$is_python_function &
                 api$python_name %in% stage8_names,8L,NA_integer_))))))
+  s9 <- c("alr_transform","inverse_alr","component_trajectories",
+    "select_n_components","fpca_score_frame","score_distance_matrix",
+    "pairwise_functional_distances","sparse_dimension_summary",
+    "warping_displacement","phase_summary","phase_trajectory_set",
+    "fit_phase_fpca")
+  api$native_implementation_stage[api$python_name %in% s9 &
+    api$is_python_function] <- 9L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset
