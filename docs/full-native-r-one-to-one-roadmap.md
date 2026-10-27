@@ -192,8 +192,7 @@ Python objects** still awaiting native representation; **11 newly
 implemented algorithms** across Stages 2 and 3 (four and seven).
 A candidate count is **not** a numerical parity rate.
 
-The native unit/oracle test files and [reproduction commands](full-native-r-stage3-preprocessing-distances.md)
-are committed, but **have not yet been run in R**. The multi-OS workflow
+**Superseded by the owner-run result of 27 October 2026:** the native-only Stage 3 tests passed **60 assertions** (two optional Python skips), and the complete Python-enabled suite then passed **347/347 assertions, zero failures or skips** on Windows. The console also emitted two Python NumPy RuntimeWarnings on deliberately incomplete gaze; see [the full Stage 3 record](full-native-r-stage3-preprocessing-distances.md). The strict 508-contract completeness requirement remains separate from these seven numerical oracle results. The multi-OS workflow
 [run #40571516967](https://github.com/stefanosbalaskas/eyetrajectories/actions/runs/40571516967)
 failed at runner admission with zero recorded steps in all four jobs,
 which is not a scientific algorithm outcome. The strict 508-source
