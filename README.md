@@ -32,10 +32,15 @@ tryCatch(
   finally=Sys.unsetenv("ET_RUN_PYTHON_TESTS"))
 ```
 
-The Stage 6 source, ledger, documentation and R/Python reference
-tests are committed, but **Stage 6 runtime tests have not yet passed**.
+**Stage 6 passed its owner-run Windows qualification on 27 October
+2026:** native R reader **18 PASS (one expected Python opt-in SKIP)**;
+Stage 6 parity ledger **20 PASS**; independent pinned Python 1.2
+generated JSON+NPZ interoperability oracle **79 PASS, 0 FAIL, 0
+WARN, 0 SKIP**. The Python-enabled count includes native assertions;
+these are not 117 independent cross-language cases.
 Historical Windows tests: Stage 5 Python 1.2 `TrajectorySet` provenance
 oracle **106/106**, Stage 4 advanced distances **733/733**.
+GitHub Actions/Linux/macOS verification remains unavailable.
 The frozen 508-export source register now identifies **46 mapped
 candidate R functions among 380 Python callables, 334 unmapped
 functions, one partially represented nonfunction class and 127
