@@ -20,15 +20,15 @@ test_that("strict register covers all 508 Python public exports without Python",
 
 test_that("four new native implementation names map one-to-one to public Python names", {
   z <- etr_native_parity_catalog()
-  names <- c(
+  analogues <- c(
     acceleration_magnitude_function="etr_acceleration_magnitude",
     distance_to_landmark_function="etr_distance_to_landmark",
     signed_curvature_function="etr_signed_curvature",
     turning_rate_function="etr_turning_rate")
-  for(n in names(names)) {
+  for(n in names(analogues)) {
     row <- z[z$namespace=="root" & z$python_name==n,,drop=FALSE]
     expect_equal(nrow(row),1L)
-    expect_identical(row$native_r_candidate,unname(names[[n]]))
+    expect_identical(row$native_r_candidate,unname(analogues[[n]]))
     expect_true(row$native_implementation_started)
     expect_identical(row$status,
        "native_algorithm_implemented_qualification_pending")
