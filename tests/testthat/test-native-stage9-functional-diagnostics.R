@@ -81,8 +81,7 @@ test_that("Stage 9 sparse dimensional support preserves missingness",{
     "max_observed_interval"))
   expect_equal(tab$n_observed,c(3L,2L))
   expect_equal(tab$n_nonfinite,c(1L,1L))
-  expect_equal(tab$median_observed_interval,c(2,.7+1.4)/c(1,1),
-    tolerance=1e-12) # interval 0.7->2.1 = 1.4 for curve b
+  expect_equal(tab$median_observed_interval,c(2,1.4),tolerance=1e-12)
   expect_error(etr_sparse_dimension_summary(x,"unknown"),"Unknown")
 })
 
