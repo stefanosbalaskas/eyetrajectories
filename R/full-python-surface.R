@@ -13,7 +13,7 @@
 
 .etpy_validate_symbol <- function(name) {
   if (!is.character(name) || length(name)!=1L || is.na(name) ||
-      !grepl("^[A-Za-z][A-Za-z0-9_]*$",name))
+      !grepl("^[A-Za-z_][A-Za-z0-9_]*$",name))
     stop("name must be one public Python identifier",call.=FALSE)
   invisible(name)
 }
