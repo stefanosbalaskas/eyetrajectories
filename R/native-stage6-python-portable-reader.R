@@ -134,10 +134,13 @@
     as.logical(as.integer(bytes))
   } else if((typ=="u"||typ=="i") && width==8L) {
     .etr6_decode_u64(bytes,signed=typ=="i")
-  } else if(typ=="u" && width==4L) {
-    # R integer cannot safely store uint32 >= 2^31; decode exactly to double.
+  } else if(typ %in% c("u","i") && width==4L) {
+    # R's 32-bit INT_MIN is reserved for NA_integer_, so decode both
+    # signed/unsigned int32 to exact doubles from bytes instead of
+    # silently mapping the valid NumPy value -2147483648 to missing.
     bb <- matrix(as.numeric(as.integer(bytes)),nrow=4L)
-    as.numeric(crossprod(256^(0:3),bb))
+    value <- as.numeric(crossprod(256^(0:3),bb))
+    if(typ=="i") ifelse(value>=2^31,value-2^32,value) else value
   } else {
     rc <- rawConnection(bytes,open="rb")
     on.exit(close(rc),add=TRUE)
