@@ -75,12 +75,19 @@ test_that("native heading follows wrapped atan2 and low-speed masking",{
   v[2L,,1L] <- 2
   v[2L,,2L] <- -3
   x <- etr_trajectory_set(time,v,c("moving","stationary"),c("x","y"))
-  h <- etr_heading_function(x)
+  # A nonzero constant channel on an irregular grid can have
+  # ~1e-15 roundoff in numpy.gradient(edge_order=2). With min_speed=0,
+  # Python intentionally masks only *exactly* zero numerical speed.
+  # Declare a scientifically explicit 1e-12 threshold when testing
+  # stationary-path masking; do not silently modify R or Python defaults.
+  min_stationary_speed <- 1e-12
+  h <- etr_heading_function(x,min_speed=min_stationary_speed)
   expect_equal(h$values[1L,,1L],atan2(2*time,1),tolerance=1e-10)
   expect_true(all(is.na(h$values[2L,,1L])))
   expect_identical(h$dimension_names,"heading")
   expect_identical(h$coordinate_system,"unknown")
-  expect_error(etr_heading_function(x,undefined_policy="raise"),
+  expect_error(etr_heading_function(x,min_speed=min_stationary_speed,
+                                    undefined_policy="raise"),
                "undefined")
   expect_error(etr_heading_function(x,min_speed=-.2),"non-negative")
 })
