@@ -74,3 +74,47 @@ The cross-platform CI matrix and Linux pinned-Python oracle are defined in `.git
 4. Qualify each of 380 Python callable contracts individually, and map the remaining 128 public objects to native R representations; preserve the strict completion gate.
 
 **Status:** Research draft only; no CRAN publication, main merge, package release, or inferential calibration claim.
+
+
+## Stationary heading test correction — owner Windows finding, 27 Oct 2026
+
+The owner's first Stage 3 `testthat::test_local(".", filter =
+"native-stage3-preprocessing-distances")` resulted in **PASS 58,
+FAIL 2, WARN 0, SKIP 1**. Both failed assertions were in the *same
+stationary-path heading fixture*, which assumed that a constant nonzero
+coordinate pair (`x=2, y=-3`) yields an **exactly zero** numerical
+derivative on a nonuniform time grid. This assumption is false for the
+published Python reference's `numpy.gradient(edge_order=2)`: for
+`time=c(0,.1,.4,1,2)`, NumPy can return nonzero floating-point
+derivatives even on constant-valued paths (speed approximately
+`2.5e-16` to `7.3e-15`). Python's exact public default
+`min_speed=0` masks **only speed <= 0**, not near-zero positive speed.
+Thus the two failed assertions were incorrect expectations about Python,
+not proof that R deviates numerically from Python.
+
+**Fix committed:** The native test retains the default R/Python
+numerical behavior and explicitly sets `min_speed=1e-12` in the
+stationary-undefined example, which reliably masks the finite-precision
+residual and causes `undefined_policy="raise"` to raise as intended.
+It does **not** change the native implementation, lower-level
+gradient, public default, or inject undocumented epsilon
+stabilization. A new opt-in independent Python test compares the
+*default zero-threshold mask* and the *explicit 1e-12-threshold mask*
+with the published Python 1.2 reference on the same fixture.
+
+**Current evidence:** NumPy reference derivative behavior was directly
+reproduced, and changed R source/test delimiters were checked
+statically. The owner has **not rerun** the corrected R tests yet;
+no Stage 3 PASS can be asserted from the previous failure transcript.
+Pull the new branch head before retesting:
+
+```r
+pkgload::load_all(".", quiet=TRUE)
+testthat::test_local(".", filter="native-stage3-preprocessing-distances")
+
+# The Python v1.2 numerical oracle is still opt-in.
+stopifnot(identical(et_python_version(),"1.2.0"))
+Sys.setenv(ET_RUN_PYTHON_TESTS="true")
+testthat::test_local(".", filter="native-stage3-preprocessing-distances")
+Sys.unsetenv("ET_RUN_PYTHON_TESTS")
+```
