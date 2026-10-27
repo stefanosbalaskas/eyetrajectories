@@ -118,3 +118,46 @@ Sys.setenv(ET_RUN_PYTHON_TESTS="true")
 testthat::test_local(".", filter="native-stage3-preprocessing-distances")
 Sys.unsetenv("ET_RUN_PYTHON_TESTS")
 ```
+
+
+## One-curve Python oracle constructor correction — owner finding, 27 Oct 2026
+
+After the earlier stationary-heading test correction, the owner reran
+the Stage 3 suite on the latest code. Results:
+
+- Native-only filter: **PASS 60, FAIL 0, WARN 0, SKIP 2** (the two
+  independent Python 1.2 comparison cases are intentionally opt-in).
+- Python-enabled filter: **PASS 333, FAIL 1, WARN 0, SKIP 0**, duration
+  about 1.5 seconds. The sole failure was a **Python constructor
+  exception** in the one-curve incomplete-gaze fixture at line 276,
+  *after* the eight seeded multitrajectory numeric comparisons.
+
+Python `TrajectorySet` requires `len(curve_ids) ==
+values.shape[0]`. A single-element R character vector such as
+`x_na$curve_ids` may be converted by `reticulate::py_call()` to
+a Python **scalar string** rather than a length-one sequence.
+The constructor then sees its string length (number of characters),
+not the required number of curves, and emits `ValueError:
+curve_ids length must equal number of curves`. This is a test-argument
+marshalling bug, not a demonstrated native R/Python numerical mismatch.
+
+**Correction committed:** The one-curve fixture now explicitly uses
+`curve_ids=as.list(x_na$curve_ids)` and checks that the Python object
+retains the same sole curve ID. The same explicit sequence convention
+was already used in the stationary-heading Python fixture. No native
+estimators, numerical tolerance or public function defaults were
+changed. Static syntax/delimiter inspection passed, but **this
+amended Python fixture has not yet been executed by the owner**.
+
+Refresh the Stage 3 branch using `git pull --ff-only` from the
+RStudio Terminal, then in the R Console:
+
+```r
+pkgload::load_all(".", quiet=TRUE)
+stopifnot(identical(et_python_version(),"1.2.0"))
+Sys.setenv(ET_RUN_PYTHON_TESTS="true")
+testthat::test_local(".",filter="native-stage3-preprocessing-distances")
+Sys.unsetenv("ET_RUN_PYTHON_TESTS")
+```
+
+Keep Stage 3 in draft until the amended full opt-in suite passes.
