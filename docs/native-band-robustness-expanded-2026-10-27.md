@@ -81,6 +81,8 @@ Sys.unsetenv("ET_BAND_ROBUST_AUDIT_DIR")
 
 **Observed and verified in the author's RStudio audit:** 2,400 unique generating studies, 14,400 trial rows, zero failed evaluations, 72 consistent summary cells and 48 complete candidate-versus-baseline paired comparisons of 200 studies each. **All 48 pairs had zero observed baseline-covered/candidate-missed datasets**, with studentized average width ratios **1.062766–2.036074** and Gaussian reference ratios **1.326512–1.982138**. This is an empirical finite-simulation inclusion pattern, *not* a theorem of set nesting or evidence of general calibration.
 
+The next-stage [missing-gaze and observation-process qualification protocol](missing-gaze-observation-process-qualification-2026-10-27.md) now prespecifies distinct full-population, selected-participant and observed-sample estimands, and differentiates MCAR, MAR, MNAR, dropout and asynchronous sampling. **It is a protocol only: no missingness simulations have run.**
+
 **Development decision:** Research HOLD. Reassess method calibration against prespecified operating tolerances, wider intervals and independent observation-process/missingness scenarios before considering any estimator replacement. PR #6 remains unmerged and no CRAN release is approved.
 
 ## Separate expanded archive audit — executed 27 October 2026
