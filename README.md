@@ -1,5 +1,47 @@
 # eyetrajectories
 
+## Native R Stage 8 — ten nonlinear recurrence and RQA methods (draft)
+
+Ten further Python-independent R functions cover recurrence-network
+degree, triangles, clustering and components; synchronized joint
+recurrence and joint/cross RQA; prespecified radius-rate profiles;
+and full-window RQA and its functional trajectory representation.
+The code is based on the published Python 1.2 source, not Python
+bridges.
+
+The frozen 508-public-export register now identifies **65 / 380
+callable Python names with mapped R candidates**, **315 unmapped
+callable names** and **35 independently written native R callable
+implementations across Stages 2–4 and 6–8**.
+Seven nonfunction classes/results now have partial native R
+representations; 121 other nonfunction exports await review.
+Because `recurrence_network` was already a named candidate,
+**ten implemented functions produce nine new name mappings**.
+No complete 508-contract equivalence is claimed.
+
+```r
+# Checkout research/full-native-r-parity-stage8-batch-20261028 first.
+pkgload::load_all(".",quiet=TRUE)
+testthat::test_local(".",filter="native-stage8-nonlinear-recurrence")
+testthat::test_local(".",filter="native-stage8-parity-ledger")
+
+# Independent Python 1.2 verification is opt-in:
+stopifnot(identical(et_python_version(),"1.2.0"))
+Sys.setenv(ET_RUN_PYTHON_TESTS="true")
+tryCatch(testthat::test_local(".",
+  filter="native-stage8-nonlinear-recurrence"),
+  finally=Sys.unsetenv("ET_RUN_PYTHON_TESTS"))
+```
+
+**Stage 8 runtime tests have not yet been executed.** Full
+Python sparse-graph contracts, target-radius policies and
+time-unit windows are not reproduced, and
+`etr_recurrence_network()` has a 750-node dense R bound.
+Static source checks are distinct from native numerical agreement.
+
+**[Stage 8 scientific contracts and limitations](docs/full-native-r-stage8-recurrence-nonlinear.md)**.
+
+
 ## Native R Stage 7 — ten Python 1.2 functions in one batch (draft)
 
 The new Stage 7 branch adds **ten independent Python-free R methods**
