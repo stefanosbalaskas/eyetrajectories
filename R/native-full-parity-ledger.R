@@ -107,8 +107,15 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
                4L,NA_integer_)))
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
+  # Stage 5 represents key TrajectorySet fields and with_values/subset
+  # provenance behavior in R, but not all source class/schema contracts.
+  api$native_representation_stage <- ifelse(
+    !api$is_python_function & api$namespace=="root" &
+      api$python_name=="TrajectorySet",5L,NA_integer_)
   api$status <- ifelse(!api$is_python_function,
-    "class_or_constant_native_representation_not_reviewed",
+    ifelse(!is.na(api$native_representation_stage),
+      "class_or_constant_native_representation_partial",
+      "class_or_constant_native_representation_not_reviewed"),
     ifelse(api$native_implementation_started,
       "native_algorithm_implemented_qualification_pending",
       ifelse(api$named_native_candidate,
