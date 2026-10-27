@@ -4,8 +4,8 @@
 #
 # Explicit subset: manifest v1, NumPy .npy v1/v2/v3, little endian
 # f4/f8, signed i1/i2/i4/i8, unsigned u1/u2/u4/u8 (safe integers),
-# bool b1 and UTF-32 Unicode U arrays. Object/pickle and unsupported
-# descriptors FAIL CLOSED. This is NOT a Python portable-result writer.
+# bool b1, UTF-32 Unicode U, and primitive JSON-only object arrays.
+# Pickled objects and unsupported descriptors FAIL CLOSED. This is NOT a Python portable-result writer.
 
 .etr6_need <- function(package) {
   if (!requireNamespace(package,quietly=TRUE))
@@ -215,9 +215,44 @@
     python_type=value$python_type,
     representation=value$representation))
   if(marker=="path")return(value$value)
-  if(marker=="object_array")
-    stop("NumPy object arrays are unsupported without Python; unsafe ",
-         "pickle deserialization is never attempted",call.=FALSE)
+  if(marker=="object_array") {
+    # Python's writer stores dtype=object arrays as JSON items, never as
+    # pickled NPZ content. Decode only homogeneous JSON scalar arrays,
+    # not arbitrary backend Python objects, and retain C-order shape.
+    shape <- as.numeric(unlist(value$shape))
+    .etr_assert(all(is.finite(shape)) && all(shape>=0) &&
+       length(shape)<=6L && prod(shape)<=1048576,
+       "unsupported or excessive portable JSON object-array shape")
+    items <- .etr6_decode(value$items,arrays,depth+1L)
+    flatten <- function(x,level=0L){
+      .etr_assert(level<=16L,"object array nesting exceeds limit")
+      if(is.list(x) && is.null(names(x)))
+        return(unlist(lapply(x,flatten,level=level+1L),
+                      recursive=FALSE))
+      list(x)
+    }
+    entries <- flatten(items)
+    .etr_assert(length(entries)==prod(shape),
+                "portable object-array shape/item count mismatch")
+    scalar_type <- function(z,t) {
+      is.atomic(z) && length(z)==1L && !is.na(z) &&
+        switch(t,string=is.character(z),
+               numeric=is.numeric(z) && is.finite(z),
+               logical=is.logical(z))
+    }
+    if(all(vapply(entries,scalar_type,logical(1L),t="string")))
+      out <- as.character(unlist(entries,use.names=FALSE))
+    else if(all(vapply(entries,scalar_type,logical(1L),t="numeric")))
+      out <- as.numeric(unlist(entries,use.names=FALSE))
+    else if(all(vapply(entries,scalar_type,logical(1L),t="logical")))
+      out <- as.logical(unlist(entries,use.names=FALSE))
+    else stop("heterogeneous or nonscalar portable JSON object array ",
+              "requires a higher-level type policy; rejected",call.=FALSE)
+    if(!length(shape)) return(out[[1L]])
+    if(length(shape)==1L)return(array(out,dim=as.integer(shape)))
+    return(aperm(array(out,dim=rev(as.integer(shape))),
+                 rev(seq_along(shape))))
+  }
   if(marker %in% c("dataframe","series")) {
     cols <- if(marker=="dataframe")
       .etr6_decode(value$columns,arrays,depth+1L) else
