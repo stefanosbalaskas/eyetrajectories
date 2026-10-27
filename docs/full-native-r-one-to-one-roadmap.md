@@ -352,3 +352,33 @@ Python PCHIP remains explicitly unsupported, complete R/Python
 data-frame metadata equivalence is not claimed, and cross-platform
 GitHub CI had zero executed job steps. The research PR stays DRAFT;
 no release/merge is authorized.
+
+
+## Stage 8 — recurrence-network and nonlinear RQA, ten-function batch
+
+This stage extends the qualified Stage 7 irregular-data work
+(owner-run Windows **115/115** Python 1.2 oracle assertions) with
+ten independently implemented native R nonlinear recurrence
+functions: `recurrence_network`, its node and summary frames,
+`joint_recurrence_matrix`, joint component frames and RQA,
+cross-RQA, declared recurrence-radius profiles, and
+windowed RQA with a functional trajectory representation.
+
+**Counts:** 65 mapped Python callable names among 380 (+9
+over Stage 7, because recurrence_network was already listed as
+a candidate), **315 unmapped** callable names; **35** independently
+new native R callable implementations over Stages 2/3/4/6/7/8,
+a growth of ten. Exactly **7** of 128 other public Python
+objects/classes have a partial native representation and
+**121** remain unreviewed. Full 508-source contract completion
+remains zero; the fail-closed gate has not changed.
+
+Independent Python 1.2 reference tests and R analytical cases
+were added with the
+[Stage 8 nonlinear implementation and reproduction guide](full-native-r-stage8-recurrence-nonlinear.md).
+The source-level export mapping and balance checks are not a
+numerical runtime pass. Stage 8's targeted R and Python 1.2
+oracles **have not executed** at initial authoring. The
+Python sparse-graph methods, time-based windows, and target-rate
+threshold selection exceed the declared native R partial contracts.
+This research branch is DRAFT, not merged or released.
