@@ -42,7 +42,7 @@ functions, one partially represented nonfunction class and 127
 unreviewed nonfunction public objects**. No complete
 508/508 native parity claim, merge or release.
 
-**[Stage 6 source contract and security boundaries](docs/full-native-r-stage6-python-portable-reader.md)**.
+**[Stage 6 source contract and security boundaries](docs/full-native-r-stage6-python-portable-reader.md)** · **[Draft Stage 6 PR #14](https://github.com/stefanosbalaskas/eyetrajectories/pull/14)**.
 
 
 ## Native R Stage 5 — trajectory provenance and snapshots (research)
