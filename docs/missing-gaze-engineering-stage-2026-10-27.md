@@ -35,8 +35,31 @@ If an archive already exists, the preflight seed collision guard should halt and
 - For MNAR, latent Y/effects affect retention by construction. Internal mask probabilities are **infeasible oracles**, not observed-data information.
 - Sparse asynchronous observation here means **irregular participant/trial-specific subsets of the 41-point grid**, not arbitrary off-grid timestamps. Continuous-time smoothing/interpolation requires a separately qualified stage.
 - These scripts do not construct confidence bands. No 90% simultaneous coverage is reported, and no 90% coverage assertion is licensed by this engineering pilot.
-- R tests and the pilot have **not yet been executed** in the current session (R is unavailable). Delimiter checks are static, not R parser/test/CI acceptance. Existing GitHub Actions runner admission failure is independently tracked in issue #3.
+- On the owner's Windows RStudio session the **fixture tests, pilot and original row/summary audit subsequently passed**; the assistant environment still cannot execute R or independently inspect the local raw CSVs. GitHub Actions runner admission failure remains tracked in issue #3.
 
 ## After the audit
 
 Only after an executed PASS should the next research step add prespecified, separately labeled full-population and observed-cohort estimators, analyze identification under MCAR/MAR, and conduct a disjoint-seed 200-study-per-cell experiment across all four latent families and three severities. Candidate *confidence bands* require a distinct validity and interval-width gate. Do not merge research PR #6, replace native estimators, or submit to CRAN on the basis of these fixtures.
+
+
+## Owner-executed pilot verification (27 October 2026)
+
+- `testthat::test_local(".", filter="observation-process-fixture")`: **40 PASS / 0 FAIL / 0 WARN / 0 SKIP**.
+- Pilot archive: `artifacts/missing_gaze_pilot/run_20261027_094753_pid51684/`. Exactly **480 generated datasets**, **24 cells**; **406 full-grid supported**, **74 no-observation-support**, **0 numerical failures**.
+- Independent `scripts/audit_missing_gaze_pilot.R`: **PASS** on that archive, according to the owner's RStudio console. Raw CSVs are local to the owner and have not been independently inspected here.
+- This is an **engineering gate**, not a calibrated inferential-coverage finding. The 74 unsupported datasets must remain in every denominator and be stratified before evaluating alternatives.
+
+### Read-only next step: explain the 74 no-support datasets
+
+From the repository checkout after pulling the research branch, run:
+
+```r
+Sys.setenv(
+  ET_OBS_REPORT_DIR =
+    "artifacts/missing_gaze_pilot/run_20261027_094753_pid51684"
+)
+source("scripts/report_missing_gaze_mechanisms.R")
+Sys.unsetenv("ET_OBS_REPORT_DIR")
+```
+
+This does **not** create new simulated datasets. It verifies cell-level counts and independent seeds, reports support rates with exact simulation intervals for each mechanism and N, and saves separate `by_mechanism.csv` and `by_mechanism_N.csv` files under a **new** `artifacts/missing_gaze_mechanism_report/audit_...` directory. Signed bias and RMSE are *conditional on supported coordinates*; they must never be interpreted as unconditional performance or valid confidence-band coverage. Do not use the original default seed offset to rerun the same 480 datasets.
