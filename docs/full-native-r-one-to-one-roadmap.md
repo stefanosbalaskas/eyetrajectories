@@ -270,3 +270,42 @@ and the opt-in Python 1.2 `TrajectorySet` provenance/reference suite
 [Stage 5 technical record](full-native-r-stage5-provenance-snapshots.md#stage-5-corrected-qualification--windows-rstudio-pass-27-october-2026).
 Complete ecosystem regression testing, Python JSON+NPZ portable-format
 equivalence and independent 3-OS CI remain open. No main merge or release.
+
+
+## Stage 6 — Python-format scientific result imports in pure R (research)
+
+[Stage 6 source contract and repeatable qualification steps](full-native-r-stage6-python-portable-reader.md)
+extend Stage 5's RDS-only native snapshots with a genuinely native R
+**read-only** implementation for Python's published v1
+`load_portable_result()` JSON+NPZ scientific-result format. The
+loader verifies `arrays.npz` SHA-256, rejects unsafe/unsupported
+NumPy payload descriptors without pickle, and reconstructs the
+supported scientific state (arrays, identifiers, units, numeric and
+string metadata, explicit nonportable object markers) without
+initializing Python. The JSON manifest itself is not signed.
+
+Only optional R packages `jsonlite` and `digest` are added as
+suggested dependencies. No Python package or Python runtime is
+required by the native loader. Reproducibility tests generate actual
+Python 1.2 dataclass snapshots using the published
+`export_portable_result()` oracle and verify independent R decoding.
+
+**Cumulative inventory:** **46** of **380** public Python callable
+names now have identified native R candidate functions, **334**
+remain unmapped, **15** independently written native R functions
+have been added over Stages 2/3/4/6 (four plus seven plus three
+plus one). Stage 5's four native R support functions are counted
+separately, not invented mappings. Among **128** other public
+objects, one `TrajectorySet` representation remains partial and
+127 are not yet reviewed. Full **508/508** source-contract
+completion remains blocked.
+
+Important qualification boundary: Stage 6's native reader uses a
+restricted dtype/subtype set and explicit resource limits. It
+does not implement a Python portable **writer**, unsupported Python
+dtype behavior, fitted-backend reconstruction, or general Python
+`load_portable_result` equivalence. The prior Windows-local
+Stage 2–5 qualification results remain unchanged. Stage 6 itself
+has only static source/entrypoint checks at initial authoring,
+**not** executed R tests or CI. Keep the research draft,
+releases and main merge on HOLD.
