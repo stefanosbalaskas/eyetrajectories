@@ -84,7 +84,7 @@ cell_report <- do.call(rbind, lapply(cells,function(z) {
     naive_signed_mean_error_supported=safe_mean(z$mean_bias_supported),
     naive_mean_rmse_supported=safe_mean(z$mean_rmse_supported),
     naive_signed_contrast_error_supported=safe_mean(z$contrast_bias_supported),
-    naive_contrast_rmse_supported=safe_mean(z$contrast_rmse_supported)))
+    naive_contrast_rmse_supported=safe_mean(z$contrast_rmse_supported))
 }))
 rownames(cell_report) <- NULL
 cell_report <- cell_report[order(cell_report$mechanism,
@@ -105,7 +105,7 @@ mechanism_report <- do.call(rbind,lapply(mechanism_groups,function(z) {
     mean_contrast_coordinate_support=safe_mean(
       z$contrast_supported_fraction),
     naive_mean_rmse_supported=safe_mean(z$mean_rmse_supported),
-    naive_contrast_rmse_supported=safe_mean(z$contrast_rmse_supported)))
+    naive_contrast_rmse_supported=safe_mean(z$contrast_rmse_supported))
 }))
 rownames(mechanism_report) <- NULL
 mechanism_report <- mechanism_report[order(mechanism_report$mechanism),]
