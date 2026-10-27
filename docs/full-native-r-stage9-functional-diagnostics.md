@@ -46,3 +46,7 @@ tryCatch(testthat::test_local('.', filter='native-stage9-functional-diagnostics'
 ```
 
 Research draft only; no merge, CRAN submission or release.
+
+## Final-head GitHub Actions admission audit (28 October 2026)
+
+[Stage 9 run #40601586058](https://github.com/stefanosbalaskas/eyetrajectories/actions/runs/40601586058) completed with a `failure` conclusion for all four jobs (Windows, Ubuntu, macOS native R and Linux pinned Python reference), each with **zero recorded job steps**. This demonstrates failure before any scientific or software test executed, not a failed Stage 9 numerical parity comparison. Independent RStudio runtime qualification is outstanding. The 77/380 and 47-implementation figures are code and source-ledger inventory, not test-pass or public-contract certificates.
