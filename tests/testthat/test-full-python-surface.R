@@ -69,6 +69,22 @@ test_that("functional Python 1.2 workflows execute using R surface", {
   from_surface <- surface$root$fpca_score_frame(fit,.convert=TRUE)
   from_wrapper <- etpy_fpca_score_frame(fit,.convert=TRUE)
   expect_s3_class(from_surface,"data.frame")
+  expect_s3_class(from_wrapper,"data.frame")
+  # reticulate attaches a pandas.index Python proxy to each conversion.
+  # Independent conversions hold different external-pointer identities
+  # even if the underlying Pandas index and scientific data are equal.
+  # Assert R values, names, row identities and *index values*, not the
+  # identity of reticulate's volatile Python index wrapper.
+  left_index <- attr(from_surface,"pandas.index",exact=TRUE)
+  right_index <- attr(from_wrapper,"pandas.index",exact=TRUE)
+  expect_identical(is.null(left_index),is.null(right_index))
+  if (!is.null(left_index)) {
+    expect_equal(
+      reticulate::py_to_r(left_index$tolist()),
+      reticulate::py_to_r(right_index$tolist()))
+  }
+  attr(from_surface,"pandas.index") <- NULL
+  attr(from_wrapper,"pandas.index") <- NULL
   expect_equal(from_surface,from_wrapper)
   expect_equal(nrow(from_surface),8L)
   config <- surface$workflows$FPCAWorkflowConfig(
