@@ -5,6 +5,7 @@
 \alias{etpy_method}
 \alias{etpy_signature}
 \alias{etpy_full_verify}
+\alias{etpy_enable_extras}
 \alias{print.etpy_full_surface}
 \title{Complete Python 1.2 public capability surface from R}
 \description{
@@ -29,6 +30,8 @@ etpy_signature(name, .namespace = c("root", "workflows"))
 
 etpy_full_verify(strict = TRUE)
 
+etpy_enable_extras(extra = c("all", "fda", "sparse", "elastic"))
+
 \method{print}{etpy_full_surface}(x, ...)
 }
 \arguments{
@@ -40,6 +43,9 @@ before creating the R environments.}
 \item{...}{Arguments forwarded to Python, or unused print arguments.}
 \item{.namespace}{Public Python root or workflows module.}
 \item{object}{Unconverted Python model, result, configuration or other proxy.}
+\item{extra}{Published Python 1.2.0 optional backend selection: \\code{fda},
+\\code{sparse}, \\code{elastic}, or \\code{all}. The sparse extra is
+only declared on Python 3.11--3.12 when Python has not already started.}
 \item{strict}{Logical; fail if a recorded public symbol is missing,
 a recorded function is noncallable, or the installed Python distribution
 is not exactly 1.2.0.}
@@ -52,6 +58,7 @@ environments and a static export catalog. \code{etpy_invoke()} and
 \code{etpy_attribute()} returns a public Python attribute.
 \code{etpy_signature()} returns a Python callable signature or \code{NA}.
 \code{etpy_full_verify()} returns a 508-row structural contract report.
+\code{etpy_enable_extras()} invisibly returns the pinned Python requirement.
 }
 \details{
 The existing \code{etpy_*} and \code{etpy_workflow_*} named wrappers
@@ -76,6 +83,8 @@ length(ls(surface$root))
 length(ls(surface$workflows))
 
 \dontrun{
+# For optional Python backends, call before first Python import:
+# etpy_enable_extras("all")
 # Requires Python 3.11--3.13 and eyetrajectoriespy==1.2.0:
 report <- etpy_full_verify()
 curves <- surface$root$simulate_planar_trajectories(
