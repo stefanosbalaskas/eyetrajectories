@@ -61,8 +61,15 @@ test_that("joint recurrence is synchronized, exact and fail-closed",{
   expect_true(all(c("min_diagonal_length","n_diagonal_lines",
                     "laminarity") %in% names(rqa)))
   expect_error(etr_joint_recurrence_matrix(list(r1)),"at least two")
+  # A malformed component must fail its *own* grid validation.
   bad<-r2;bad$time[1]<-99
-  expect_error(etr_joint_recurrence_matrix(list(r1,bad)),"same time grid")
+  expect_error(etr_joint_recurrence_matrix(list(r1,bad)),
+               "strictly increasing")
+  # A valid but different grid reaches the cross-component alignment check.
+  bad<-r2;bad$time<-r2$time+0.5
+  expect_true(all(diff(bad$time)>0))
+  expect_error(etr_joint_recurrence_matrix(list(r1,bad)),
+               "same time grid")
   bad<-r2;bad$theiler<-0L
   expect_error(etr_joint_recurrence_matrix(list(r1,bad)),"same Theiler")
   expect_error(etr_joint_recurrence_matrix(list(r1,r2),
