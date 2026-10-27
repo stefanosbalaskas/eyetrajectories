@@ -5,7 +5,7 @@
 # pandas/dataframe or backend estimator. Native-R fields keep that distinction.
 .etr_provenance_valid <- function(value, depth=0L, mapping=TRUE) {
   if (depth > 32L) return(FALSE)
-  if (is.null(value)) return(TRUE)
+  if (is.null(value)) return(!mapping)
   if (is.list(value) && !is.object(value)) {
     keys <- names(value)
     if (mapping) {
