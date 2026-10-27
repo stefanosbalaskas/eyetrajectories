@@ -208,3 +208,33 @@ print.etpy_full_surface <- function(x,...) {
       "this is not 508 native R algorithms.\n",sep="")
   invisible(x)
 }
+
+#' Declare optional Python scientific backends from R
+#'
+#' The stable Python package exposes some functionality only when extras
+#' are installed (e.g., FDApy, scikit-fda or fdasrsf). This function
+#' declares the corresponding *published* extras requirements using
+#' reticulate::py_require() so the managed Python environment can resolve
+#' them. This does not initialize Python or guarantee optional wheels
+#' exist on every OS/Python version. Prefer calling before first import.
+#'
+#' @param extra One of "fda", "sparse", "elastic", or "all".
+#'   For "sparse"/"all", Python 3.11-3.12 is recommended because the
+#'   upstream 1.2.0 sparse extra excludes Python 3.13.
+#' @return Invisibly the pinned requirement string.
+#' @export
+etpy_enable_extras <- function(extra=c("all","fda","sparse","elastic")) {
+  extra <- match.arg(extra)
+  requirement <- paste0("eyetrajectoriespy[",extra,"]==1.2.0")
+  # Once initialized, Python version constraints cannot be changed.
+  # Preserve interpreter choice and only add new package requirements.
+  if (isTRUE(reticulate::py_available(initialize=FALSE))) {
+    reticulate::py_require(packages=requirement,action="add")
+  } else {
+    constraint <- if (extra %in% c("all","sparse"))
+      ">=3.11,<3.13" else ">=3.11,<3.14"
+    reticulate::py_require(packages=requirement,
+                           python_version=constraint,action="add")
+  }
+  invisible(requirement)
+}
