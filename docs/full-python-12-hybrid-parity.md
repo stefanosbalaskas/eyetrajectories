@@ -100,7 +100,7 @@ The owner ran the draft PR #7 bridge on **Windows / R 4.6.1 / managed Python 3.1
 
 The user's `etpy_enable_extras("all")` produced a nonfatal `reticulate::py_require` warning because Python was already initialized and `eyetrajectoriespy==1.2.0` was already declared; the attempted `eyetrajectoriespy[all]==1.2.0` requirement uses the same base package. **Code correction:** when Python is already initialized, declare only the **additional** stable 1.2.0 backend packages, matching their published exact constraints (`scikit-fda`, `multimethod`, `FDApy`, `fdasrsf`), after removing package names already declared in reticulate's requirement manifest. This respects reticulate's rule that only *new* package requirements can be added after initialization. Python 3.13 is explicitly refused for the sparse backend, which is not published there. In a fresh session the exact `eyetrajectoriespy[all]==1.2.0` extra is still declared before the first import.
 
-These fixes are **committed but not yet rerun by the owner**; original R 508-symbol diagnostics passed but the full behavioral qualification does *not* count as PASS until a fresh complete run succeeds. No optional dependency execution or scientifically valid interval coverage can be inferred from source-only checks.
+**Superseded by the latest Windows execution evidence below:** both corrections were rerun by the owner and the full qualification now passes. Optional-backend-specific scientific executions and interval calibration remain separate, unverified claims.
 
 Run from the updated feature branch:
 
@@ -115,3 +115,24 @@ source("scripts/qualify_full_python_surface.R")
 ```
 
 CI runner-admission remains a separate unresolved issue. The R package stays unmerged and unreleased.
+
+
+## Owner-run Windows hybrid qualification completed — 27 October 2026
+
+**Full qualification: PASS on the corrected draft PR #7 implementation.**
+
+The owner ran `testthat::test_local(".", filter="full-python-surface")`: **FAIL 0, WARN 0, SKIP 4, PASS 27**. The four skips were deliberately gated Python tests (full export inventory; two functional runtime cases; Python reflection). They were **not failures**.
+
+The owner then ran `source("scripts/qualify_full_python_surface.R")`, which sets `ET_RUN_PYTHON_TESTS="true"` and executes the test filter again with the Python backend enabled. Its output reported **no test failures**, **FULL PYTHON 1.2 PUBLIC R SURFACE: STRUCTURAL PASS**, **508/508 public symbols available**, **380 function bridges and 128 other exports**, **all 508 names introspected for runtime type/signature**, and successful selected Python workflow execution.
+
+The local owner-generated audit archive is:
+
+```text
+C:/Users/Stefanos-PC/Documents/GitHub/eyetrajectories/artifacts/full_python_surface/run_20261027_172215_pid51684
+```
+
+The recorded artifact path is owner-local; its CSV and manifest were **not uploaded or independently read** in this session. The confirmation is therefore grounded in the printed console output. The exact number of successful Python-enabled assertions is not printed by the full qualification transcript and is not invented here.
+
+**Qualification boundary:** Complete structural/public-symbol access from R and the selected executable Python-backed Windows smoke tests are now validated. Full behavior tests for every one of the 380 Python functions, optional scientific backend scenario coverage, all data-shape/serialization conversions, independent *native R* numerical equivalence, and Python 3.11/3.13/Linux/macOS checks remain open. GitHub Actions still has zero-step admission failures in this repository; it has not delivered independent matrix validation.
+
+**Release/merge:** PR #7 remains draft, based on `research/native-parity-stage1`; no release or main merge is authorized by these specific results.
