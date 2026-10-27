@@ -1,5 +1,65 @@
 # eyetrajectories
 
+## Complete native-R parity programme — 508 Python public source contracts
+
+**Target:** every public `eyetrajectoriespy 1.2.0` algorithm available as an
+independent R implementation **without executing Python**. The existing
+`reticulate` bridge remains optional; it is **not** native parity.
+
+This research branch adds four actual native R algorithms
+(`etr_acceleration_magnitude()`, `etr_distance_to_landmark()`,
+`etr_signed_curvature()`, `etr_turning_rate()`), Python-free analytic
+tests and an optional independent Python numerical-oracle test.
+
+The strict `etr_native_parity_catalog()` currently identifies **41 named
+native counterparts/candidates** across **380 Python functions** (37 prior,
+4 new); **339 functions lack a specifically mapped native counterpart**.
+A further **128 public Python classes/configurations/constants** remain
+to be reviewed for native representation. Native name similarity does not
+qualify numerical, behavioral or scientific one-to-one parity.
+
+```r
+# Source branch: research/full-native-r-parity-stage2-20261027
+pkgload::load_all(".", quiet = TRUE)
+testthat::test_local(".", filter = "native-planar-geometry-parity")
+testthat::test_local(".", filter = "full-native-r-parity-ledger")
+source("scripts/report_full_native_r_parity.R")
+```
+
+**[Full native parity roadmap](docs/full-native-r-one-to-one-roadmap.md)** ·
+**[Draft native PR #9](https://github.com/stefanosbalaskas/eyetrajectories/pull/9)** ·
+**[Completion issue #10](https://github.com/stefanosbalaskas/eyetrajectories/issues/10)**.
+
+**If `testthat` says "No test files found", you are almost certainly
+running an older branch.** The two native tests exist only on the
+`research/full-native-r-parity-stage2-20261027` branch, not on the older
+`feat/full-python12-hybrid-parity-20261027` or `research/native-parity-stage1`
+branches. In the **RStudio Terminal** (not the R console), first check for
+uncommitted work and fetch the new research branch:
+
+```sh
+git status --short
+git fetch origin
+git switch research/full-native-r-parity-stage2-20261027
+```
+
+If `git switch` reports the local branch does not exist yet, use
+`git switch --track origin/research/full-native-r-parity-stage2-20261027`.
+Do **not** use `--force` or discard local research changes. Then update
+with `git pull --ff-only` and **restart RStudio**. Verify:
+
+```r
+getwd()
+file.exists("tests/testthat/test-native-planar-geometry-parity.R")
+file.exists("tests/testthat/test-full-native-r-parity-ledger.R")
+# Both must return TRUE before calling test_local().
+```
+
+New code has passed static source checks only; the native R tests and
+cross-platform CI have not yet passed. **No merge, release, or claim that
+all Python algorithms are implemented natively in R.**
+
+
 ## Scientific qualification: functional bootstrap confidence bands (HOLD)
 
 **27 October 2026 follow-up:** The independently seeded
