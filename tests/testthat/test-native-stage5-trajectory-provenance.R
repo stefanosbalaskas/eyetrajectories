@@ -24,6 +24,18 @@ test_that("native trajectory provenance is validated and backwards compatible",{
 
   expect_error(etr_trajectory_set(tt,a,provenance="bad"),
                "provenance")
+  expect_error(etr_trajectory_set(tt,a,provenance=42),
+               "provenance")
+  expect_error(etr_trajectory_set(tt,a,provenance=FALSE),
+               "provenance")
+  expect_error(etr_trajectory_set(tt,a,provenance=list("unnamed")),
+               "provenance")
+  expect_error(etr_trajectory_set(tt,a,provenance=data.frame(a=1)),
+               "provenance")
+  # Python-like None is allowed as a nested dictionary value.
+  expect_identical(etr_trajectory_set(
+    tt,a,provenance=list(nested=list(none=NULL)))$provenance,
+    list(nested=list(none=NULL)))
   expect_error(etr_trajectory_set(tt,a,provenance=list(A=1,A=2)),
                "provenance")
   expect_error(etr_trajectory_set(tt,a,provenance=list(thing=function()1)),
@@ -66,7 +78,12 @@ test_that("native with_values replaces top-level provenance keys only",{
                "provenance_update")
   expect_error(etr_with_values(x,time=c(2,1,3,4)),
                "strictly increasing")
+  # Python's TrajectorySet validates the number of curve IDs first
+  # for a wrong curve count; a wrong time-axis length is instead rejected
+  # by the earlier array/grid shape check. Exercise both separately.
   expect_error(etr_with_values(x,values=array(1,c(1,4,2))),
+               "curve_ids")
+  expect_error(etr_with_values(x,values=array(1,c(2,3,2))),
                "values dimensions")
 })
 
