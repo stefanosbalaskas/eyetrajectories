@@ -57,10 +57,45 @@ testthat::test_local(".",filter="native-stage4-distance-contracts")
 Sys.unsetenv("ET_RUN_PYTHON_TESTS")
 ```
 
-The opt-in tests use **10 seeded unequal-length multivariate sequence scenarios**, exact coupling/path comparisons, `symmetric1/symmetric2` and normalized variants, unconstrained and index-windowed cases, plus **6 seeded multi-curve pairwise DTW cases**. Tests also inspect transition weights, weighted-local-cost audits, R/Python zero-based alignment paths, optional results, invalid inputs and resource constraints. **No Stage 4 R or Python numerical test has been executed as of initial authoring.** Static source balance and exports should be checked separately; CI results cannot be assumed green while GitHub Actions jobs fail with zero steps.
+The opt-in tests use **10 seeded unequal-length multivariate sequence scenarios**, exact coupling/path comparisons, `symmetric1/symmetric2` and normalized variants, unconstrained and index-windowed cases, plus **6 seeded multi-curve pairwise DTW cases**. Tests also inspect transition weights, weighted-local-cost audits, R/Python zero-based alignment paths, optional results, invalid inputs and resource constraints. **Initial authoring note (superseded):** Stage 4 has since passed the owner's local Windows native R and Python 1.2 numerical tests; see the recorded qualification below. GitHub Actions still fails with zero executed steps, so independent cross-platform CI remains unverified.
 
 ## Remaining native parity programme
 
 Next priorities include native `TrajectorySet` / result schema provenance, additional functional-distance sensitivity and full multivariate FPCA/sparse and irregular methods; the full 508-symbol contract map remains the controlling register. The earlier mean-band coverage and MNAR/identifiability research gates are independent and cannot be made green merely by successful source-level numerical equivalence.
 
 **Release boundary:** Stage 4 is a research-only draft based on Stage 3; no merge, PyPI action, CRAN submission, or complete-native-R parity claim.
+
+## Stage 4 Windows qualification — owner-run PASS, 27 October 2026
+
+The owner executed the source-checkout Stage 4 tests from RStudio
+on Windows and reported the following complete results:
+
+| Test filter | PASS | FAIL | WARN (testthat) | SKIP | Notes |
+|---|---:|---:|---:|---:|---|
+| `native-stage4-distance-contracts`, R-only | 64 | 0 | 0 | 2 | Both skips are intentionally opt-in independent Python numeric tests |
+| `native-stage4-parity-ledger` | 26 | 0 | 0 | 0 | 508-row source inventory invariants and Stage 4 tags |
+| `native-stage4-distance-contracts`, `ET_RUN_PYTHON_TESTS=true` | **733** | **0** | **0** | **0** | Completed in **3.1 s**, with `et_python_version()=="1.2.0"` verified beforehand |
+
+The expanded numerical oracle actually ran on the published Python 1.2
+reference. Its successful comparisons covered unequal-length,
+multivariate and pairwise cases, deterministic zero-based coupling
+and alignment paths, raw/normalized DTW distances, symmetric1/symmetric2,
+index-window restrictions, local costs, step weights, and cost/path audits.
+The **733 expectations do not mean 733 separate scientific estimators** or
+733 independent randomized datasets.
+
+**Qualification interpretation:** Stage 4's three new native-R algorithms
+have passing native functional tests and direct Windows numerical
+agreement with Python 1.2 on the executed test matrix. The source
+contracts are not yet universally qualified: a native R resource
+guard at **5 million point pairs**, output serialization/dataclass
+round-trip and provenance compatibility, untested broader data regimes,
+and Linux/macOS tests remain open. The full **508-public-export
+one-to-one completion gate stays CLOSED**; neither source-name mappings
+nor these numeric assertions justify a release.
+
+The GitHub Actions execution issue remains independent: PR #12's
+cross-platform runs had **zero executed job steps**, so they do not
+provide CI acceptance. The sole primary evidence for the above
+results is the owner's pasted RStudio output; its local generated
+audit artifacts have not been uploaded for independent review.
