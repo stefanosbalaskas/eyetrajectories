@@ -33,11 +33,17 @@ tryCatch(testthat::test_local(".",
   finally=Sys.unsetenv("ET_RUN_PYTHON_TESTS"))
 ```
 
-**Stage 8 runtime tests have not yet been executed.** Full
-Python sparse-graph contracts, target-radius policies and
-time-unit windows are not reproduced, and
-`etr_recurrence_network()` has a 750-node dense R bound.
-Static source checks are distinct from native numerical agreement.
+**Stage 8 owner-run Windows qualification passed (28 October 2026):**
+62 native R recurrence assertions (one expected Python skip), 82 parity
+ledger assertions, and **189 assertions in the independent Python 1.2-
+enabled suite** (0 failures, warnings or skips). The Python-enabled
+count includes native assertions; it is not an additional 189 distinct
+oracle experiments. The corrected time-grid fixture required **no
+numerical estimator changes**. GitHub Actions on the same branch still
+failed all four jobs with zero executed steps, so cross-platform tests
+remain unqualified. Full Python sparse-graph contracts, target-radius
+policies and time-unit windows are not reproduced, and
+`etr_recurrence_network()` retains its 750-node dense R bound.
 
 **[Stage 8 scientific contracts and limitations](docs/full-native-r-stage8-recurrence-nonlinear.md)** · **[Draft PR #16](https://github.com/stefanosbalaskas/eyetrajectories/pull/16)**.
 
