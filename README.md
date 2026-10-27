@@ -1,7 +1,7 @@
 # eyetrajectories
 
 
-## Draft Python 1.2 public-interface bridge for R (runtime unverified)
+## Draft Python 1.2 public-interface bridge for R (Windows validated)
 
 The `eyetrajectoriespy==1.2.0` public API has **508 upstream exports**:
 **380 functions** and **128 additional classes/configurations/constants**.
@@ -27,10 +27,19 @@ scores <- py$root$fpca_score_frame(fit,.convert=TRUE)
 **[Complete R–Python 1.2 bridge guide](docs/full-python-12-hybrid-parity.md)** ·
 **[Draft implementation PR #7](https://github.com/stefanosbalaskas/eyetrajectories/pull/7)**.
 
-**Verification status:** Source-level name mapping is 508/508, but these
-are *not* 508 independently verified working functions. GitHub Actions did
-not execute any R tests (initial job failed before recording steps). Please
-run the source-only diagnostic first:
+**Verification status — 27 October 2026:** Owner-run R 4.6.1 on Windows
+with managed Python 3.12 successfully completed the 508/508 public-symbol
+audit, all-symbol signature inspection and selected real Python workflow
+tests. The initial offline test filter reported **PASS 27, SKIP 4** (the
+Python tests are deliberately opt-in); the subsequent full qualification
+enabled those tests and finished **STRUCTURAL PASS** without reported
+failures, saving `artifacts/full_python_surface/run_20261027_172215_pid51684`.
+These results establish hybrid interface access and selected Windows
+execution, **not** individually exercised behavior of all 380 algorithms
+or independent native R parity. GitHub Actions has still not executed its
+cross-platform test matrix due to zero-step job failures.
+
+For further installation and environment diagnostics:
 
 ```r
 source("scripts/diagnose_full_python_surface.R")
