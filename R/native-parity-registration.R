@@ -50,7 +50,9 @@ etr_register_landmarks <- function(x, source_landmarks, target_landmarks) {
     x$time, values, x$curve_ids, x$dimension_names,
     x$metadata, x$coordinate_system, x$time_unit)
   dimnames(inverse_warps) <- list(x$curve_ids, NULL)
-  structure(list(registered = aligned, inverse_warps = inverse_warps,
+  structure(list(registered = aligned, original = x,
+                 warping_functions = inverse_warps,
+                 inverse_warps = inverse_warps,
                  original_landmarks = source_landmarks,
                  target_landmarks = target_landmarks,
                  fixed_endpoints = c(t0, t1),
