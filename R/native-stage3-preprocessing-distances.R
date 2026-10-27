@@ -21,9 +21,10 @@
 
 .etr_s3_copy <- function(x,values=x$values,time=x$time,
                          coordinate_system=x$coordinate_system,
-                         time_unit=x$time_unit) {
-  etr_trajectory_set(time,values,x$curve_ids,x$dimension_names,x$metadata,
-                     coordinate_system,time_unit)
+                         time_unit=x$time_unit,provenance_update=NULL) {
+  etr_with_values(x,values=values,time=time,
+    coordinate_system=coordinate_system,time_unit=time_unit,
+    provenance_update=provenance_update)
 }
 
 #' Native coordinate normalization of the first two trajectory channels
@@ -43,7 +44,9 @@ etr_normalize_coordinates <- function(x,width,height) {
   values <- x$values
   values[,,1L] <- values[,,1L]/width
   values[,,2L] <- values[,,2L]/height
-  .etr_s3_copy(x,values=values,coordinate_system="normalized")
+  .etr_s3_copy(x,values=values,coordinate_system="normalized",
+    provenance_update=list(coordinate_normalization=list(
+      width=width,height=height)))
 }
 
 #' Native per-curve landmark centering (Python center_on_landmark counterpart)
@@ -65,7 +68,8 @@ etr_center_on_landmark <- function(x,landmark_x,landmark_y) {
     values[i,,1L] <- values[i,,1L]-lx[i]
     values[i,,2L] <- values[i,,2L]-ly[i]
   }
-  .etr_s3_copy(x,values=values,coordinate_system="landmark_relative")
+  .etr_s3_copy(x,values=values,coordinate_system="landmark_relative",
+    provenance_update=list(landmark_centering=list(per_curve=TRUE)))
 }
 
 #' Native normalization to an explicit time interval
@@ -83,7 +87,12 @@ etr_normalize_time_interval <- function(x,start=0,end=1) {
   .etr_assert(end>start,"end must be greater than start")
   old <- x$time
   time <- start+(old-old[1L])/(old[length(old)]-old[1L])*(end-start)
-  .etr_s3_copy(x,time=time,time_unit="normalized")
+  .etr_s3_copy(x,time=time,time_unit="normalized",
+    provenance_update=list(time_normalization=list(
+      original_start=as.numeric(old[1L]),
+      original_end=as.numeric(old[length(old)]),
+      original_unit=x$time_unit,
+      new_start=start,new_end=end)))
 }
 
 #' Native heading function with explicit low-speed/undefined policy

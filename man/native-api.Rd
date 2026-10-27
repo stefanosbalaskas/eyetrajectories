@@ -43,12 +43,14 @@ basic recurrence analysis, and base graphics.}
 \alias{etr_plot_recurrence}
 \usage{
 etr_trajectory_set(time, values, curve_ids = NULL, dimension_names = NULL,
-    metadata = NULL, coordinate_system = "unknown", time_unit = "unknown")
+    metadata = NULL, coordinate_system = "unknown", time_unit = "unknown",
+    provenance = list())
 
 etr_validate(x, require_complete = FALSE)
 
 etr_from_long(data, curve_columns, time_column = "time", value_columns = c("x", "y"),
-    metadata_columns = NULL, coordinate_system = "unknown", time_unit = "unknown")
+    metadata_columns = NULL, coordinate_system = "unknown", time_unit = "unknown",
+    provenance = NULL)
 
 etr_as_long(x)
 
@@ -128,6 +130,7 @@ etr_plot_recurrence(recurrence, ...)
 \item{metadata}{Optional curve-level data frame.}
 \item{coordinate_system}{Explicit coordinate semantics, e.g. pixels.}
 \item{time_unit}{Explicit temporal units, e.g. ms or s.}
+\item{provenance}{Optional JSON-like named native R list of source and preprocessing decisions. For \code{etr_from_long}, the source audit is added by default and user-supplied named keys are applied as shallow overrides.}
 \item{x}{Native trajectory set, or a fitted object as documented in the specific function.}
 \item{require_complete}{Whether to reject missing samples.}
 \item{data}{Long-format data frame with individual gaze samples.}

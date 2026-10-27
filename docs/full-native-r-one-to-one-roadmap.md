@@ -232,3 +232,41 @@ Actions jobs still run **zero steps**. See the
 [qualified Stage 4 record](full-native-r-stage4-frechet-dtw.md#stage-4-windows-qualification--owner-run-pass-27-october-2026)
 for scope, evidence, and remaining source-contract deviations. No release
 or main merge.
+
+
+## Stage 5 — native trajectory provenance and versioned R snapshots (draft PR #13)
+
+[Stage 5 draft PR #13](https://github.com/stefanosbalaskas/eyetrajectories/pull/13)
+introduces backwards-compatible native R `etr_trajectory_set(provenance=list())`,
+a Python-`TrajectorySet.with_values`-style nonmutating shallow
+update, provenance-preserving `etr_subset()`, source audits
+for `etr_from_long()`, and preservation of input provenance through
+Stage 3 normalization/centering and planar derived functions.
+The new `etr_trajectory_snapshot()` and
+`etr_restore_trajectory_snapshot()` support versioned RDS
+round-trips with explicit schema and shape validation.
+
+This work improves object/metadata scientific traceability, *not* the
+source-level mapping count of Python callable exports. The frozen
+inventory remains **45 named candidate R functions among 380 Python
+callables**, **335 unmapped callable names** and **128 other public
+objects**. Among those 128, exactly **one Python class —
+`TrajectorySet` — is now classified as a partial Stage 5 native
+representation** and **127 remain not reviewed**. The Stage 5
+`TrajectorySet` representation is deliberately **not** marked as a
+fully qualified one-to-one Python contract. The legacy Python-backed
+`reticulate` bridge is not a native replacement.
+
+The native R snapshot is **not** Python's
+`portable_results.py` JSON+NPZ scientific-result interchange schema:
+no Python portable loader or cryptographic integrity proof is claimed.
+The full 508-export parity completion gate remains CLOSED.
+
+Stage 5's owner-run Windows qualification has **passed**:
+native-only `native-stage5-trajectory-provenance` **62 PASS /
+1 expected Python-oracle SKIP**, the Stage 5 parity ledger **19 PASS**,
+and the opt-in Python 1.2 `TrajectorySet` provenance/reference suite
+**106 PASS / 0 FAIL / 0 WARN / 0 SKIP**. See the
+[Stage 5 technical record](full-native-r-stage5-provenance-snapshots.md#stage-5-corrected-qualification--windows-rstudio-pass-27-october-2026).
+Complete ecosystem regression testing, Python JSON+NPZ portable-format
+equivalence and independent 3-OS CI remain open. No main merge or release.

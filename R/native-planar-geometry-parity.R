@@ -40,7 +40,8 @@
   values[is.nan(values)] <- NA_real_
   out <- etr_trajectory_set(
     x$time,array(values,dim=c(nrow(values),ncol(values),1L)),
-    x$curve_ids,name,x$metadata,coordinate_system,x$time_unit
+    x$curve_ids,name,x$metadata,coordinate_system,x$time_unit,
+    provenance=etr_trajectory_provenance(x)
   )
   out
 }

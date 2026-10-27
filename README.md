@@ -1,5 +1,50 @@
 # eyetrajectories
 
+## Native R Stage 5 — trajectory provenance and snapshots (research)
+
+The native `etr_trajectory_set()` now accepts an eighth, backwards-
+compatible `provenance=list()` argument. New `etr_with_values()`
+matches Python `TrajectorySet.with_values()`'s shallow provenance update
+without Python, while `etr_trajectory_provenance()` retrieves the source
+audit. Curve subsets and the earlier Stage 3 normalization/centering
+methods now preserve provenance; `etr_from_long()` adds explicit source
+audit fields.
+
+`etr_trajectory_snapshot()` and
+`etr_restore_trajectory_snapshot()` provide **versioned, validated
+native R snapshot round-trips** through trusted RDS files. This is **not**
+Python's JSON+NPZ scientific-result archive format, and it is not a claim
+of cross-language file interchange.
+
+**Stage 5 has now passed its owner-executed Windows tests**:
+**62** native provenance/snapshot assertions (one intentionally skipped
+Python oracle), **19** Stage 5 ledger assertions and **106** Python
+1.2 object/provenance assertions with **zero failures, warnings or skips**.
+Stage 4 previously passed **733/733** owner-executed Windows numerical
+assertions. Cross-platform CI and Python JSON+NPZ interoperability
+remain unverified. The strict mapping remains unchanged: **45 named native R
+function candidates among 380 Python callables**, **335 unmapped
+callables**, and **128 other Python public objects** (including
+`TrajectorySet`) still requiring full representation review.
+
+```r
+# Checkout research/full-native-r-parity-stage5-20261027 first.
+pkgload::load_all(".",quiet=TRUE)
+testthat::test_local(".",filter="native-stage5-trajectory-provenance")
+testthat::test_local(".",filter="native-stage5-parity-ledger")
+
+# The Python reference comparison is optional and ONLY for tests:
+stopifnot(identical(et_python_version(),"1.2.0"))
+Sys.setenv(ET_RUN_PYTHON_TESTS="true")
+testthat::test_local(".",filter="native-stage5-trajectory-provenance")
+Sys.unsetenv("ET_RUN_PYTHON_TESTS")
+```
+
+**[Stage 5 contracts and RDS limitations](docs/full-native-r-stage5-provenance-snapshots.md)** ·
+**[Stage 5 draft PR #13](https://github.com/stefanosbalaskas/eyetrajectories/pull/13)**.
+Draft research branch only; no merge/release/508-contract certification.
+
+
 ## Native R Stage 4 — complete Fréchet coupling and audited DTW (draft)
 
 Three additional Python-free R implementations now expose the Python

@@ -68,11 +68,13 @@ with the same inclusive zero-denominator rule as the Python reference.
 Pairwise Frechet uses ordered point sequences, not elapsed time, in the
 discrete dynamic-programming recurrence.
 
-Unlike the Python \code{TrajectorySet} class, the current native R
-trajectory object does not yet store equivalent JSON-like provenance.
-The native tortuosity data frame omits the Python pandas
-\code{DataFrame.attrs} provenance field. These differences remain open
-for full behavioral and schema parity.
+As of native Stage 5, \code{etr_trajectory_set()} can retain a
+JSON-like native R provenance mapping, and Stage 3 normalization and
+landmark centering append their documented audit fields without Python.
+This does not qualify all Python source-schema details or serialization.
+The native tortuosity data frame still omits the Python pandas
+\code{DataFrame.attrs} provenance field. Full behavioral and schema
+parity remain open.
 For nearest-neighbor distance ties, the native R version uses ascending
 original index; Python NumPy's default argsort tie ordering may differ.
 }
