@@ -223,19 +223,71 @@ print.etpy_full_surface <- function(x,...) {
 #'   upstream 1.2.0 sparse extra excludes Python 3.13.
 #' @return Invisibly the pinned requirement string.
 #' @export
+# Literal specs copied from the published eyetrajectoriespy v1.2.0
+# [project.optional-dependencies] metadata. Do not substitute unpinned
+# extra requirements or alter the base package version.
+.etpy_extra_dependencies <- function(extra) {
+  specs <- c(
+    fda="scikit-fda>=0.10.1,<0.11",
+    fda_aux="multimethod>=1.12,<2",
+    sparse="FDApy>=1.0.3,<1.1; python_version < '3.13'",
+    elastic="fdasrsf>=2.7"
+  )
+  switch(extra,
+    fda=unname(specs[c("fda","fda_aux")]),
+    sparse=unname(specs["sparse"]),
+    elastic=unname(specs["elastic"]),
+    all=unname(specs),
+    stop("Unknown Python extras group.",call.=FALSE))
+}
+
+# Match requirements by normalized distribution name, not by full spec.
+# A post-initialization py_require() may only ADD genuinely new names.
+.etpy_requirement_basename <- function(x) {
+  x <- sub(";.*$","",x)
+  x <- sub("\\[.*$","",x)
+  x <- sub("[[:space:]<>=!~].*$","",x)
+  tolower(gsub("[-_.]+","-",trimws(x)))
+}
+
+#' @rdname etpy_full_surface
+#' @export
 etpy_enable_extras <- function(extra=c("all","fda","sparse","elastic")) {
   extra <- match.arg(extra)
   requirement <- paste0("eyetrajectoriespy[",extra,"]==1.2.0")
-  # Once initialized, Python version constraints cannot be changed.
-  # Preserve interpreter choice and only add new package requirements.
-  if (isTRUE(reticulate::py_available(initialize=FALSE))) {
-    reticulate::py_require(packages=requirement,action="add")
-  } else {
+  initialized <- isTRUE(reticulate::py_available(initialize=FALSE))
+  if (!initialized) {
+    # Before import, reticulate can merge the base package's .onLoad()
+    # requirement with its exact, published optional-extra variant.
     constraint <- if (extra %in% c("all","sparse"))
       ">=3.11,<3.13" else ">=3.11,<3.14"
-    reticulate::py_require(packages=requirement,
-                           python_version=constraint,action="add")
+    reticulate::py_require(
+      packages=requirement,python_version=constraint,action="add")
+    return(invisible(requirement))
   }
+
+  # After initialization, reticulate rejects another specification of
+  # the existing "eyetrajectoriespy" distribution, even with [all].
+  # Its documented permitted operation is adding *new* distributions.
+  # Resolve the stable v1.2.0 extras to their exact published packages.
+  version <- reticulate::py_config()$version_string
+  if(extra %in% c("all","sparse") &&
+     grepl("^3\\.13(\\.|$)",version))
+    stop("The FDApy sparse backend is not declared on Python 3.13. ",
+         "Restart R and select managed Python 3.11 or 3.12 before ",
+         "calling etpy_enable_extras('",extra,"').",call.=FALSE)
+
+  wanted <- .etpy_extra_dependencies(extra)
+  already <- reticulate::py_require()$packages
+  is_new <- !.etpy_requirement_basename(wanted) %in%
+    .etpy_requirement_basename(already)
+  if (any(!is_new)) {
+    message("Optional packages already declared: ",
+      paste(.etpy_requirement_basename(wanted[!is_new]),collapse=", "),
+      ". Their versions cannot be replaced in this Python session.")
+  }
+  if (any(is_new))
+    reticulate::py_require(packages=wanted[is_new],action="add")
   invisible(requirement)
 }
 
