@@ -4,24 +4,24 @@
 
 ## Exact scope
 
-The Python \`eyetrajectoriespy==1.2.0\` public \`__all__\` lists 458 symbols in \`eyetrajectoriespy\` and 50 symbols in \`eyetrajectoriespy.workflows\` (508 in total). The R package's committed source snapshot names 380 public functions and 128 other symbols (classes, configurations, constants and other public objects). Upstream current \`main\` exports were compared to this frozen source manifest in exact order: **508/508 match**.
+The Python `eyetrajectoriespy==1.2.0` public `__all__` lists 458 symbols in `eyetrajectoriespy` and 50 symbols in `eyetrajectoriespy.workflows` (508 in total). The R package's committed source snapshot names 380 public functions and 128 other symbols (classes, configurations, constants and other public objects). Upstream current `main` exports were compared to this frozen source manifest in exact order: **508/508 match**.
 
-The R package already exposed 380 explicit \`etpy_*\` and \`etpy_workflow_*\` Python-backed function wrappers, plus \`etpy_get_export()\` for nonfunction Python exports. This PR adds a convenient **complete, discoverable read-only R namespace** and explicit class/method access, without copying 508 Python algorithms into R.
+The R package already exposed 380 explicit `etpy_*` and `etpy_workflow_*` Python-backed function wrappers, plus `etpy_get_export()` for nonfunction Python exports. This PR adds a convenient **complete, discoverable read-only R namespace** and explicit class/method access, without copying 508 Python algorithms into R.
 
 | Surface | In R | Backend | Qualification |
 |---|---|---|---|
-| Root functions (362) | \`etpy_full_surface()$root$function_name(...)\` | Exact published Python 1.2.0 | Export list matched; execution depends on Python and dependencies |
-| Workflow functions (18) | \`etpy_full_surface()$workflows$function_name(...)\` | Exact published Python 1.2.0 | Export list matched; selected smoke tests added |
-| Classes, configs and constants (128) | \`surface$root$Class(...)\`, \`surface$workflows$Config(...)\`, noncallable values | Exact published Python 1.2.0 | Constructors checked for Python callability on access |
-| Model/result attributes | \`etpy_attribute(python_model,"name")\` | Python proxy | Public attributes only |
-| Model/result methods | \`etpy_method(python_model,"method",...)\` | Python proxy | Public callable methods only |
-| Existing native R methods (98 exports) | \`etr_*\` | Standalone R | Scientific equivalence depends on method; separate research programme |
+| Root functions (362) | `etpy_full_surface()$root$function_name(...)` | Exact published Python 1.2.0 | Export list matched; execution depends on Python and dependencies |
+| Workflow functions (18) | `etpy_full_surface()$workflows$function_name(...)` | Exact published Python 1.2.0 | Export list matched; selected smoke tests added |
+| Classes, configs and constants (128) | `surface$root$Class(...)`, `surface$workflows$Config(...)`, noncallable values | Exact published Python 1.2.0 | Constructors checked for Python callability on access |
+| Model/result attributes | `etpy_attribute(python_model,"name")` | Python proxy | Public attributes only |
+| Model/result methods | `etpy_method(python_model,"method",...)` | Python proxy | Public callable methods only |
+| Existing native R methods (98 exports) | `etr_*` | Standalone R | Scientific equivalence depends on method; separate research programme |
 
 This surface is a **Python-backed full public API bridge**, not 508 independently written native R estimators. Some methods need optional PyPI extras and native numeric/plotting prerequisites. Private Python implementation functions and undocumented third-party methods are not added to the supported public contract.
 
 ## Install and choose the backend
 
-\`\`\`r
+```r
 # Existing source checkout:
 pkgload::load_all(".", quiet=TRUE)
 
@@ -32,13 +32,13 @@ etpy_enable_extras("all")
 # Declare Python 1.2.0 API contract and check 508 symbols.
 verification <- etpy_full_verify(strict=TRUE)
 stopifnot(nrow(verification)==508L)
-\`\`\`
+```
 
-The package declares \`eyetrajectoriespy==1.2.0\` and Python 3.11–3.13 using \`reticulate::py_require()\` at load time, **without initializing Python**. Calling \`etpy_enable_extras("all")\` adds the Python distribution's own published \`[all]\` extra to reticulate requirements. For sparse FDApy support choose Python **3.11 or 3.12**, because the stable 1.2.0 metadata excludes the sparse extra's FDApy dependency on Python 3.13. \`reticulate\` may prefer an explicitly configured pre-existing environment over its managed environment; for that case install \`eyetrajectoriespy[all]==1.2.0\` with that interpreter and check \`reticulate::py_config()\`. A declaration is not proof of availability on every OS.
+The package declares `eyetrajectoriespy==1.2.0` and Python 3.11–3.13 using `reticulate::py_require()` at load time, **without initializing Python**. Calling `etpy_enable_extras("all")` adds the Python distribution's own published `[all]` extra to reticulate requirements. For sparse FDApy support choose Python **3.11 or 3.12**, because the stable 1.2.0 metadata excludes the sparse extra's FDApy dependency on Python 3.13. `reticulate` may prefer an explicitly configured pre-existing environment over its managed environment; for that case install `eyetrajectoriespy[all]==1.2.0` with that interpreter and check `reticulate::py_config()`. A declaration is not proof of availability on every OS.
 
 ## R examples
 
-\`\`\`r
+```r
 # This statement is lazy: no Python initialization.
 py <- etpy_full_surface()
 
@@ -68,18 +68,18 @@ other <- etpy_invoke(
   "FPCAWorkflowConfig",.namespace="workflows",
   n_components=1L,scaling="dimension_sd"
 )
-\`\`\`
+```
 
-**Keep Python model objects unconverted** (the default) while performing methods or passing them between workflow functions. Use \`et_to_r()\` or \`.convert=TRUE\` only when R data frames, arrays or lists are the desired final outputs. Automatic R/Python conversion may lose Python class-specific metadata; no general serialization-parity guarantee is claimed.
+**Keep Python model objects unconverted** (the default) while performing methods or passing them between workflow functions. Use `et_to_r()` or `.convert=TRUE` only when R data frames, arrays or lists are the desired final outputs. Automatic R/Python conversion may lose Python class-specific metadata; no general serialization-parity guarantee is claimed.
 
 ## Complete capability report
 
-\`\`\`r
+```r
 # Run only after installing/configuring a supported backend:
 source("scripts/qualify_full_python_surface.R")
-\`\`\`
+```
 
-This records one row per all **508 exports**, exact version, availability and structural callability in \`artifacts/full_python_surface/run_.../all_508_exports.csv\`, after running the opt-in full-surface tests. Test execution includes representative Python FPCA/MFPCA and workflow methods, constructors, attributes and Python proxy method calls. **It does not actually execute every scientific algorithm in all 380 Python functions.** The \`execution_tested\` and \`numeric_parity_qualified\` columns deliberately remain FALSE at the symbol level.
+This records one row per all **508 exports**, exact version, availability and structural callability in `artifacts/full_python_surface/run_.../all_508_exports.csv`, after running the opt-in full-surface tests. Test execution includes representative Python FPCA/MFPCA and workflow methods, constructors, attributes and Python proxy method calls. **It does not actually execute every scientific algorithm in all 380 Python functions.** The `execution_tested` and `numeric_parity_qualified` columns deliberately remain FALSE at the symbol level.
 
 ## Acceptance and remaining work
 
@@ -89,4 +89,4 @@ For genuine, **standalone native R implementation of all Python methods** more e
 
 The Python scientific inference limitations also remain: W3 nominal 90% functional inference is not generally calibrated (Python issue #289), and outcome-dependent missing gaze is not field-identified (Python issue #296). Full access to a Python API does **not** make invalid intervals scientifically valid. The separate R bootstrap-calibration research holds similarly.
 
-**Release:** research only, no CRAN upload or merge into \`main\` until the full CI and package-specific release gates are satisfied.
+**Release:** research only, no CRAN upload or merge into `main` until the full CI and package-specific release gates are satisfied.
