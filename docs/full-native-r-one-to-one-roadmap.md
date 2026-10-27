@@ -132,3 +132,45 @@ tests still matter. The conservative native parity ledger therefore
 continues to report **0 of 508 fully qualified one-to-one public contracts**.
 The independent test output is owner-provided console evidence, not CI
 or an uploaded test artifact.
+
+
+## Expanded owner-run independent numerical oracle — PASS 296/296
+
+**Observed on 27 October 2026:** After updating the native research branch,
+the owner reran `testthat::test_local(".", filter =
+"native-planar-geometry-parity")` with `ET_RUN_PYTHON_TESTS=true`
+and exact Python `eyetrajectoriespy==1.2.0` already verified in
+the preceding qualification. RStudio reported:
+
+```text
+native-planar-geometry-parity [1.2s]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 296 ]
+```
+
+This includes the previous **56 assertions** and **240 additional
+assertions** from 12 deterministic seeded irregular/noisy/degenerate
+scenarios, across four newly written independent native R kinematic
+operations. The 12 scenarios exercise varying numbers of curves,
+irregular time grids, perturbed nonlinear trajectories, exactly stationary
+trajectories, per-curve landmarks, low-speed undefined masks, output
+dimensions and named channels; numerical comparison tolerance on the
+added cases is `1e-8`. This is a real executed cross-language oracle
+at the tested configurations, not a simple import/name-availability
+check.
+
+**Qualification boundary:** The above is owner-provided local RStudio
+console evidence; a machine-readable oracle archive was not supplied.
+These 296 test expectations are **not 296 separately implemented
+functions**. The native implementations and their tested numerical
+behavior are validated on these fixtures, but semantic exceptions,
+metadata/provenance representation, exhaustive missing-data patterns,
+randomized coverage across broader parameter regions, independent
+Windows/Linux/macOS reproduction, and all remaining Python public
+exports remain to be addressed. The fail-closed `etr_native_parity_catalog()`
+still marks **zero complete 508-symbol contracts** automatically, because
+the ledger is a conservative static inventory rather than a proof derived
+from test execution.
+
+Next development work is broader native R algorithm coverage and
+standalone scientific/data-contract qualification, rather than rerunning
+the same four-method fixture repeatedly.
