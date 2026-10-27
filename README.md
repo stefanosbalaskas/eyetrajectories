@@ -1,5 +1,59 @@
 # eyetrajectories
 
+
+## Draft Python 1.2 public-interface bridge for R (Windows validated)
+
+The `eyetrajectoriespy==1.2.0` public API has **508 upstream exports**:
+**380 functions** and **128 additional classes/configurations/constants**.
+This research branch now exposes the entire frozen upstream public surface
+through `etpy_full_surface()`, complementing the 380 existing explicit
+`etpy_*` R function wrappers. Calls use the *actual Python algorithms*
+through reticulate: this is a full **hybrid capability interface**, not
+508 independent native R implementations.
+
+```r
+# Requires Python 3.11/3.12 for the broadest optional backend support.
+# Call before any Python import:
+etpy_enable_extras("all")
+py <- etpy_full_surface(.verify=TRUE)  # verify all 508 public symbols
+gaze <- py$root$simulate_planar_trajectories(
+  n_participants=20L, trials_per_participant=3L, random_state=7L
+)
+fit <- py$root$fit_mfpca(gaze, n_components=1L,
+                         scaling="dimension_sd")
+scores <- py$root$fpca_score_frame(fit,.convert=TRUE)
+```
+
+**[Complete R–Python 1.2 bridge guide](docs/full-python-12-hybrid-parity.md)** ·
+**[Draft implementation PR #7](https://github.com/stefanosbalaskas/eyetrajectories/pull/7)**.
+
+**Verification status — 27 October 2026:** Owner-run R 4.6.1 on Windows
+with managed Python 3.12 successfully completed the 508/508 public-symbol
+audit, all-symbol signature inspection and selected real Python workflow
+tests. The initial offline test filter reported **PASS 27, SKIP 4** (the
+Python tests are deliberately opt-in); the subsequent full qualification
+enabled those tests and finished **STRUCTURAL PASS** without reported
+failures, saving `artifacts/full_python_surface/run_20261027_172215_pid51684`.
+These results establish hybrid interface access and selected Windows
+execution, **not** individually exercised behavior of all 380 algorithms
+or independent native R parity. GitHub Actions has still not executed its
+cross-platform test matrix due to zero-step job failures.
+
+For further installation and environment diagnostics:
+
+```r
+source("scripts/diagnose_full_python_surface.R")
+# After that passes, an optional Python-backed check:
+Sys.setenv(ET_PY_DIAG_LIVE="true")
+source("scripts/diagnose_full_python_surface.R")
+Sys.unsetenv("ET_PY_DIAG_LIVE")
+```
+
+This branch is **not merged to main**; checking out PR #7's head is
+required to see the new functions. Existing R-native estimation and all
+missing-gaze/90% inference scientific release holds are unchanged.
+
+
 ## Scientific qualification: functional bootstrap confidence bands (HOLD)
 
 **27 October 2026 follow-up:** The independently seeded

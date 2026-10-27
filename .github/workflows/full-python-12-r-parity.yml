@@ -1,0 +1,133 @@
+name: Full Python 1.2 public API from R
+
+on:
+  pull_request:
+    paths:
+      - "R/full-python-surface.R"
+      - "R/etpy-generated.R"
+      - "R/bridge.R"
+      - "R/zzz.R"
+      - "NAMESPACE"
+      - "DESCRIPTION"
+      - "inst/extdata/python_api_2026-10-25.csv"
+      - "tests/testthat/test-full-python-surface.R"
+      - "scripts/qualify_full_python_surface.R"
+      - "scripts/audit_etpy_api.py"
+      - ".github/workflows/full-python-12-r-parity.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  public-api-manifest:
+    name: Frozen 508-symbol source-contract audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate 380 wrappers, 508 exports and documentation
+        run: python scripts/audit_etpy_api.py
+
+  hybrid-surface:
+    name: R/Python ${{ matrix.os }} / py${{ matrix.python }}
+    needs: public-api-manifest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            python: "3.11"
+          - os: ubuntu-latest
+            python: "3.12"
+          - os: ubuntu-latest
+            python: "3.13"
+          - os: windows-latest
+            python: "3.12"
+          - os: macos-latest
+            python: "3.12"
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+      MPLBACKEND: Agg
+      R_KEEP_PKG_SOURCE: "yes"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install selected Python interpreter
+        id: python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install stable Python 1.2.0 public backend
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "eyetrajectoriespy==1.2.0"
+          python -c "import importlib.metadata as m; assert m.version('eyetrajectoriespy') == '1.2.0'"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: "hard"
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: R structural + Python-backed execution tests
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          Rscript -e 'pkgload::load_all(".", quiet=TRUE); testthat::test_local(".", filter="full-python-surface", reporter="summary", stop_on_failure=TRUE)'
+      - name: Archive 508-symbol evidence
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          Rscript -e 'source("scripts/qualify_full_python_surface.R")'
+      - name: Upload audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-python12-r-${{ matrix.os }}-py${{ matrix.python }}
+          path: artifacts/full_python_surface/
+          if-no-files-found: ignore
+
+  optional-all-backends:
+    name: Python 3.12 all published extra backends / R
+    needs: public-api-manifest
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Python 3.12 (including sparse FDApy requirement)
+        id: python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install all published Python 1.2.0 optional backend groups
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "eyetrajectoriespy[all]==1.2.0"
+          python -c "import importlib.metadata as m; assert m.version('eyetrajectoriespy') == '1.2.0'"
+          python -c "import skfda; import FDApy; import fdasrsf"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: "hard"
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Verify all 508 symbols with optional backends installed
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          Rscript -e 'pkgload::load_all(".", quiet=TRUE); stopifnot(nrow(etpy_signature_catalog(strict=TRUE)) == 508L)'
