@@ -167,10 +167,39 @@ The two failures were:
    a `values dimensions` error. No trajectory calculation or numerical
    tolerance was modified.
 
-**Source-only verification:** the amended R validator and tests are
-committed. The corrected full R test suite has **not yet been executed**,
-and neither the opt-in Python 1.2 object oracle nor cross-platform CI
-has passed. Stage 4's earlier 733/733 Windows numerical verification
-remains unchanged. Pull the updated Stage 5 branch head and rerun
-both native and optional Python tests as described above; do not
-report Stage 5 as passing on the strength of this fixture correction.
+**Superseded by the subsequent passing Windows test run:** the corrected
+R-only suite, native parity ledger and opt-in Python 1.2 oracle have
+all passed, with details immediately below. Cross-platform CI and
+complete Python portable-results schema equivalence are still pending.
+
+## Stage 5 corrected qualification — Windows RStudio PASS, 27 October 2026
+
+After updating PR #13's Stage 5 branch, the owner ran the amended tests
+locally and supplied the complete RStudio console results:
+
+| Test filter | PASS | FAIL | WARN | SKIP |
+|---|---:|---:|---:|---:|
+| `native-stage5-trajectory-provenance`, native-only | **62** | 0 | 0 | 1 expected opt-in Python oracle |
+| `native-stage5-parity-ledger` | **19** | 0 | 0 | 0 |
+| `native-stage5-trajectory-provenance`, `ET_RUN_PYTHON_TESTS=true` | **106** | 0 | 0 | 0 |
+
+The owner explicitly checked `identical(et_python_version(),"1.2.0")`
+before the Python-reference suite. This run confirms execution of the
+optional Python dataclass comparison (no skip), unlike the initial R-only
+run. **The 106 assertions include the native assertions** and must not be
+treated as 106 independent implementations.
+
+The corrected root-provenance validator and malformed-dimension test
+both passed. The existing test matrix covers native provenance
+validation, shallow `with_values()` copies, subset preservation,
+source audits, RDS snapshots/metadata/missing gaze, and direct Python 1.2
+comparisons for the selected `TrajectorySet` transformations.
+
+**Evidence boundary:** This is successful owner-run Windows testing,
+not independent Linux/macOS CI. Python scientific portable-results
+JSON+NPZ schema compatibility, broader data/metadata types,
+all legacy native R transformations, and full 508-export one-to-one
+contract qualification remain open. Exactly one public nonfunction
+symbol (`TrajectorySet`) is partially represented, 127 other such
+symbols remain not reviewed, and none is certified fully equivalent.
+Keep the PR as a research draft; no merge or release.
