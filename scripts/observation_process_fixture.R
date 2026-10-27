@@ -187,7 +187,7 @@ et_obs_observed_only <- function(latent, mask) {
   registry <- latent$registry
   registry$selected <- mask$selected
   list(samples = idx, registry = registry,
-       n_time = length(latent$time),
+       n_time = length(latent$time), n_trials = d[2L],
        time = latent$time, mechanism = mask$mechanism)
 }
 
@@ -238,5 +238,6 @@ et_obs_naive_diagnostic <- function(observed, truth_mean, truth_contrast) {
        mean_estimate = mean_est, contrast_estimate = contrast_est,
        observed_participants = length(unique(all_samples$participant)),
        eligible_participants = n, observed_gaze_samples = nrow(all_samples),
-       observed_fraction = nrow(all_samples) / (n * 3L * nt * 2L))
+       observed_fraction = nrow(all_samples) /
+         (n * observed$n_trials * nt * 2L))
 }
