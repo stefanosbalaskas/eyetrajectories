@@ -1,12 +1,181 @@
 # eyetrajectories
 
+## Scientific qualification: functional bootstrap confidence bands (HOLD)
+
+**27 October 2026 follow-up:** The independently seeded
+[four-DGP, 200-dataset-per-condition robustness expansion](docs/native-band-robustness-expanded-2026-10-27.md)
+completed **2,400 generating datasets / 14,400 paired method evaluations**
+with no reported fit failures. Existing fixed-SE 90% simultaneous bands
+remain severely under-covering in several small-cluster conditions
+(heavy-t(3) N=12 group contrast **53.5%**). Experimental studentization
+improved observed coverage in all **24** cells, but its bands were
+**1.063–2.036× wider**, and three cells remained below 90% observed
+coverage. The owner-run **read-only trial-level audit passed**,
+verifying 2,400 generating study keys, all 14,400 method/estimand
+records, all 72 summary cells and 48 paired comparisons without
+missing fits. All 48 candidate comparisons had **zero observed
+baseline-covered/candidate-missed study outcomes**, but the
+candidates were uniformly wider on average; this is not a
+coverage-validity theorem. **No missingness scenario has been tested.**
+A separate [missing-gaze observation-process research protocol](docs/missing-gaze-observation-process-qualification-2026-10-27.md) now defines full-population versus selected/observed estimands and distinguishes MCAR, MAR, MNAR, participant dropout and sparse asynchronous sampling. It has **not been executed** and does not add or replace an estimator.
+
+No estimator substitution, merge or release is authorized.
+
+On 26 October 2026, the author ran the
+[known-truth band stress pilot](docs/native-band-coverage-stress-2026-10-26.md):
+**60 independently generated datasets** (20 each at N=12, 24, 48
+participant clusters), with paired participant-mean and true-null
+two-group contrast methods (120 fits), B=99 and nominal 90%
+simultaneous coverage. All fits completed, but coverage ranged from
+**75–90%** for the mean bands and **65–85%** for group contrasts.
+At N=24, the contrast covered 13/20 datasets (65%; exact 95% MC
+interval 40.8–84.6%). These are exploratory synthetic results,
+not proof of nominal calibration.
+
+A larger, **disjoint** 200-dataset-per-size / B=399 study is now
+**complete**, with zero fitting failures. Across N=12/24/48, the
+participant mean achieved **63.0%, 75.5%, 87.0%** simultaneous
+coverage and the two-group null contrast **55.0%, 76.0%, 83.5%**,
+respectively (nominal 90%). Five of six exact 95% Monte Carlo
+intervals exclude the nominal target on the low side. This
+strongly reinforces that the fixed-SE bands are **not calibrated**
+in the tested known-truth hierarchical design.
+
+A [paired experimental interval comparison](scripts/compare_native_band_intervals.R)
+has now completed a 30-study-per-participant-size pilot (B=199) with
+**540 successful candidate evaluations and no failures**.
+The studentized cluster bootstrap improved observed simultaneous
+coverage in all six cells relative to fixed-SE bands, but required
+**8.0–78.3% wider intervals**, depending on participant count
+and estimand. N=24 and N=48 group contrast coverage remained below
+90% nominal. The Gaussian Bonferroni-t reference yielded still
+wider bands and has **restricted normality/equal-variance assumptions**.
+The independently seeded **200-study-per-participant-size**
+comparison (B=399) has also completed **3,600/3,600 candidate
+evaluations**, with zero reported fit failures. Studentized coverage
+improved relative to fixed-SE in all six cells (mean:
+73.0%→97.5%, 80.0%→88.0%, 82.5%→87.5%; null contrast:
+62.5%→97.0%, 80.5%→91.0%, 88.0%→94.5% for N=12/24/48).
+However, studentization increased average band width by
+**7.1%–73.7%**, and these results do not establish general
+90% calibration. The reference Gaussian Bonferroni-t intervals
+remained substantially wider under their restricted assumptions.
+
+Both the 30-study and 200-study
+[paired candidate archive audits](scripts/audit_paired_band_candidates.R)
+**passed** in the author's R environment. The expanded read-only audit
+verified 3,600 paired records and showed that all studentized
+coverage gains corresponded to recovered previously missed datasets,
+with **zero observed baseline-covered/candidate-missed records**.
+The studentized candidate was consistently wider than the fixed-SE
+baseline; this does **not** prove calibration.
+
+A [distributional robustness stress script](scripts/stress_native_band_distributions.R)
+is now staged to compare methods across Gaussian, heavy-tailed
+Student-t, unequal group-variance and centered skew-lognormal
+participant effects. This script is **not yet executed locally**,
+and deliberately excludes missingness, which requires a separate
+known-estimand observation-process study. Another source-review correction: the comparison's
+legacy `avg_pointwise_rate` field actually represented average
+coordinate inclusion *within a simultaneous band*, not
+pointwise confidence-interval coverage. The research script now
+uses an accurate field name; archived results remain unchanged.
+No method has been certified or substituted into the package. The script
+[`scripts/stress_native_band_coverage.R`](scripts/stress_native_band_coverage.R)
+now checks previous trial archives for seed collisions before any
+new simulation. Use `ET_BAND_MC_SEED_OFFSET=30000000` for a
+new study instead of reusing the pilot offset. This preflight
+guard **passed its author-run negative acceptance test** on five
+known repeated generating-study seeds, before fitting.
+Bootstrap inference remains **experimental and not
+release-qualified**. No estimators were modified.
+
+## Split-conformal false-alarm pilot and 2,000-study replication completed
+
+A failure-inclusive [frozen-FPCA conformal Monte Carlo study](docs/conformal-fpca-monte-carlo-audit.md)
+is now part of this research branch. The author successfully completed its
+200-study-per-scenario pilot on Windows 11 / R 4.6.1 on 26 October 2026,
+with zero fit failures across 600 independently generated datasets.
+[Full pilot evidence and exact Monte Carlo intervals](docs/conformal-pilot-results-2026-10-26.md)
+are documented separately. It evaluates one independent held-out inlier and a paired
+deliberately shifted curve per simulation, under three separate scenarios:
+exchangeable curves, test-noise distribution shift, and correlated
+calibration trials from repeated participants. **Only the first design**
+has the classical finite-sample exchangeability guarantee.
+
+~~~r
+Sys.setenv(ET_CONFORMAL_REPS = "200",
+           ET_CONFORMAL_ALPHAS = "0.05,0.10")
+source("scripts/run_conformal_monte_carlo.R")
+~~~
+
+Results are archived under
+`artifacts/conformal_monte_carlo/run_YYYYMMDD_HHMMSS_pidNNNN/`, with
+per-study seeds, fit status, exact Monte Carlo intervals and diagnostic plots.
+Use `source("scripts/read_conformal_results.R")` to inspect the most recent
+completed archive. The rank-oracle R test fixture passed.
+In the exchangeable condition, observed false alarms were 4.5% and 6%
+against rank references 5% and 10%; both exact 95% Monte Carlo intervals
+contain the benchmark. Test-only noise shift raised false alarms to
+21.5% and 37.5%. This is an exploratory pilot, **not final empirical
+conformal qualification**, and it does not repair functional-band
+undercoverage. No merger or release is implied.
+
+Large-run results and their **600 overlapping pilot seeds** are
+recorded in [the 2,000-study conformal audit](docs/conformal-replication-results-2026-10-26.md).
+The 2,000-dataset-per-scenario run is an extension of the 200-study
+pilot, not a disjoint replication. Its **author-run revised audit
+passed**, verifying numerical identity of all 600 overlapping study
+IDs and confirming 1,800 genuinely new datasets per scenario.
+The pre-run conformal seed-collision guard passed its local
+author-executed negative acceptance test.
+Under independent exchangeability, author-reported false alarms were
+**.055 and .098**, consistent with .05/.10 rank references given Monte
+Carlo uncertainty; test-only noise shift inflated rates to .220/.414.
+The uploaded 1,200-row file belongs to the initial 200-study pilot.
+The larger archive's matched records were verified on the author's
+local R session. Its remaining scientific limitations are distinct
+from this reproducibility correction; no release claims are warranted.
+Run `source('scripts/audit_conformal_replication.R')` again to
+reproduce the read-only overlap and new-only estimates.
+
+***
+## Research branch: native R parity stage 1 (WINDOWS CHECK PASSED)
+
+This development branch is **0.4.1.9000, not released or CRAN qualified**.
+It adds 10 narrow native-R research exports to the previous 88 native
+functions, while preserving all 380 named optional Python-backed wrappers.
+New methods cover explicit piecewise-linear landmark registration,
+time-delay embedding, scalar event return maps, undirected recurrence
+network diagnostics, frozen-FPCA split-conformal anomaly screening,
+and an offline R backend catalog. These are not full Python algorithm parity.
+
+See [official CRAN package survey and remaining scientific gaps](docs/native-parity-research-2026-10.md). Pull this research branch before
+running the dedicated test fixtures and full CRAN check:
+
+~~~r
+Sys.setenv(ET_RUN_PYTHON_TESTS = "false", MPLBACKEND = "Agg")
+testthat::test_local(".", filter = "native-parity-stage1",
+                     reporter = "summary")
+source("scripts/local_qualification.R")
+source("scripts/run_cran_qualification.R")
+~~~
+
+**Test evidence:** the author-run full Windows R 4.6.1 CRAN-style check
+of 0.4.1.9000 completed with 0 errors, 0 warnings and 1 incoming NOTE,
+including tests, manual builds, and successful native research examples.
+The research examples were refined after this check; the refinements
+require a new test/example run. Linux/macOS and independent numerical
+and scientific qualification remain open. Do not merge or release yet.
+
+***
 ## Python–R capability parity: what is available?
 
 The R package has **380 named optional Python-backed function wrappers**
 (362 root + 18 workflow callables), and the author-verified installed
 Python API census was **380/380 callable**. These are available *through
 reticulate*, not 380 independent native R implementations. The package
-also exports **88 native `etr_*` functions**, but their count is not
+also exports **98 native `etr_*` functions on this research branch**, but their count is not
 a 1-to-1 algorithm mapping against the Python functions. Classes and
 constants are available via `etpy_get_export()`.
 
@@ -53,9 +222,9 @@ by local RStudio yet.
 ***
 ## October 2026 follow-up: native worked gallery and interval audit
 
-The initial Windows 0.4.0.9000 package check has passed without errors or
-warnings (one development-version CRAN incoming NOTE). The next two
-scripts are new **unexecuted** research examples:
+The author executed these native R examples on Windows 11 / R 4.6.1,
+alongside full CRAN-style checks. The examples and earlier 0.4.0.9000
+version passed without errors or warnings (one incoming NOTE):
 
 ~~~r
 # Five native graphics and CSV diagnostics; no Python required
@@ -110,7 +279,7 @@ This is **not CRAN submission approval**. See
 ***
 ## Complete Python-backed function API — 380 explicit R wrappers
 
-**Development version 0.4.0.9000 (private; unreleased).** The
+**Python bridge expansion introduced in 0.4.0.9000 (private; unreleased).** The
 eyetrajectoriespy GitHub main snapshot on 25 October 2026 defines 362
 root public functions and 18 module-scoped workflow functions.
 All **380 Python callables** now have named R wrappers:
@@ -139,8 +308,9 @@ etpy_verify_api(strict = TRUE)
 ~~~
 
 **Scientific scope:** The new 380 functions are thin Python-backed wrappers,
-not 380 independently implemented R estimators. The existing 88 native
-`etr_*` functions remain available without Python. The named wrappers
+not 380 independently implemented R estimators. The native `etr_*`
+functions remain available without Python (88 in 0.4.0.9000; 98 in the
+current 0.4.1.9000 research branch). The named wrappers
 require `reticulate` and the declared `eyetrajectoriespy==1.2.0` runtime;
 a GitHub source snapshot may differ from the installed PyPI artifact.
 Scientific assumptions, optional Python dependencies, and experimental
@@ -171,9 +341,10 @@ Call documentation: `?etpy_python_functions`.
 ***
 ## Native R scientific core — expanded Phase 3
 
-**Current development version 0.4.0.9000, private / unreleased.** The native R core exposes **88 native R
-functions**: 38 Phase 2 core functions and 50 experimental Phase 3 advanced
-methods. Native functions do not initialize Python, although sparse PACE requires
+**Current development version 0.4.1.9000 on this research branch,
+private / unreleased.** The native R core exposes **98 native R functions**:
+38 Phase 2 core, 50 experimental Phase 3 advanced methods and 10 additional
+experimental native parity extensions. Native functions do not initialize Python, although sparse PACE requires
 the optional R package fdapace.
 The Phase 1 Python bridge remains available under the original et_* interface
 for methods not yet ported.

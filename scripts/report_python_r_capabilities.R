@@ -22,7 +22,7 @@ ns <- getNamespaceExports("eyetrajectories")
 native <- sort(grep("^etr_", ns, value = TRUE))
 bridge <- sort(grep("^etpy_", ns, value = TRUE))
 legacy <- sort(grep("^et_", ns, value = TRUE))
-stopifnot(length(native) == 88L,
+stopifnot(length(native) == 98L,
           length(bridge) == 383L, # 380 wrappers + 3 catalog utilities
           length(legacy) == 14L)
 stopifnot(all(functions$r_wrapper %in% ns))
@@ -61,7 +61,12 @@ analog <- c(
   fit_functional_mixed_effects_regression = "etr_fit_functional_mixed",
   discrete_transfer_entropy = "etr_transfer_entropy",
   transfer_entropy_circular_shift_test = "etr_transfer_entropy_shift_test",
-  fit_scalar_on_function_regression = "etr_fit_scalar_on_fpca"
+  fit_scalar_on_function_regression = "etr_fit_scalar_on_fpca",
+  register_to_landmarks = "etr_register_landmarks",
+  delay_embed_trajectory = "etr_delay_embedding",
+  poincare_crossings = "etr_poincare_return_map",
+  recurrence_network = "etr_recurrence_network",
+  split_conformal_fpca_anomaly = "etr_split_conformal_fpca_anomalies"
 )
 if (!all(unname(analog) %in% native))
   stop("Native analogy catalog contains nonexistent R function(s).")
@@ -126,8 +131,10 @@ writeLines(c(
   paste("Python main API source SHA:", unique(api$source_git_sha)),
   "380 Python functions are exposed as wrappers, but runtime optional",
   "dependencies and numerical/behavioral parity require separate tests.",
-  "88 native exports are not 88 equivalents of 380 Python callables.",
-  "Native analogs are manually reviewed name candidates, not parity claims.",
+  paste(length(native),
+        "native exports are not equivalents of 380 Python callables."),
+  paste(sum(nzchar(functions$native_analog)),
+        "native analogs are name candidates, not parity claims."),
   "Nonfunction exports are retrievable through etpy_get_export().",
   "Scientific inferential calibration is still on HOLD."
 ), file.path(out, "MANIFEST.txt"))
