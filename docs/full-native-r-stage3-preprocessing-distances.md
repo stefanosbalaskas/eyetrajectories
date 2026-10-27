@@ -161,3 +161,49 @@ Sys.unsetenv("ET_RUN_PYTHON_TESTS")
 ```
 
 Keep Stage 3 in draft until the amended full opt-in suite passes.
+
+
+## Full Stage 3 Windows Python/R oracle — PASS, 27 October 2026
+
+The owner pulled the one-curve fixture fix and reran the full opt-in
+`testthat::test_local(".", filter="native-stage3-preprocessing-distances")`
+suite with `ET_RUN_PYTHON_TESTS=true` (the stable Python 1.2.0 version
+having been checked in the immediately preceding run). The complete
+reported result was:
+
+```text
+native-stage3-preprocessing-distances [1.6s]
+[ FAIL 0 | WARN 0 | SKIP 0 | PASS 347 ]
+```
+
+This independently executes the Python-reference comparisons for the
+**seven** native Stage 3 methods, including eight seeded irregular
+multi-curve scenarios, low-speed heading thresholds, weighted pairwise
+discrete Fréchet, nearest-neighbor ranking and incomplete-gaze
+normalization/landmark centering. It also validates the corrected
+single-curve `TrajectorySet` constructor fixture. The owner-reported
+earlier native-only result remains **60 PASS, 2 opt-in SKIP, 0 FAIL,
+0 WARN**.
+
+Two unhandled **Python NumPy RuntimeWarning messages** were printed
+outside the `testthat` warning count, from `preprocessing.py`:
+
+- `invalid value encountered in divide` at coordinate normalization
+  of an incomplete-gaze `NaN`/R `NA` value;
+- `invalid value encountered in subtract` at landmark centering of
+  the same incomplete trajectory.
+
+These warnings originate in reference Python arithmetic applied to
+the deliberately incomplete test case. The test's missingness-mask
+and finite-value equality checks passed; the console reported no
+`testthat` warnings. They should be retained as visible runtime
+evidence, not misrepresented as though no warnings appeared anywhere
+or automatically treated as estimator defects.
+
+**Status change:** Stage 3 native R algorithms have now passed the
+owner-executed Windows numerical/reference suite; no further repeat
+of the same fixture is required. This does **not** qualify arbitrary
+input/data contracts, native metadata/provenance equivalence, cross-OS
+execution or the remaining **336 unmapped Python function exports**
+and **128 nonfunction public exports**. The native full-508 completeness
+gate therefore remains closed and PR #11 remains draft/unreleased.
