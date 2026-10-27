@@ -218,3 +218,31 @@ test_that("Python TrajectorySet with_values/subset and Stage 3 provenance match"
     compare(stage3[[i]]$r,stage3[[i]]$py,
             paste("Stage3 provenance",i))
 })
+
+
+test_that("native from-long source audit provenance is explicit and overrideable",{
+  df <- data.frame(
+    participant=c("P1","P1","P1","P2","P2","P2"),
+    time=c(0,1,2,0,1,2),
+    x=c(0,1,2,3,4,5),
+    y=c(2,3,4,5,6,7),
+    block=c("A","A","A","B","B","B"))
+  original <- etr_from_long(
+    df,curve_columns="participant",time_column="time",
+    value_columns=c("x","y"),metadata_columns="block",
+    coordinate_system="pixels",time_unit="s")
+  expect_identical(original$provenance,list(
+    source="long_dataframe",
+    curve_columns="participant",
+    time_column="time",value_columns=c("x","y")))
+  expect_identical(original$curve_ids,c("P1","P2"))
+  custom <- etr_from_long(
+    df,curve_columns="participant",time_column="time",
+    value_columns=c("x","y"),metadata_columns="block",
+    provenance=list(source="registered",wave="T1"))
+  expect_identical(custom$provenance$source,"registered")
+  expect_identical(custom$provenance$wave,"T1")
+  expect_identical(custom$provenance$value_columns,c("x","y"))
+  expect_error(etr_from_long(df,curve_columns="participant",
+               provenance=list(wave=function()NULL)),"provenance")
+})
