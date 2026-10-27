@@ -238,3 +238,50 @@ etpy_enable_extras <- function(extra=c("all","fda","sparse","elastic")) {
   }
   invisible(requirement)
 }
+
+#' Inspect signatures and runtime types for every Python public export
+#'
+#' Returns the installed Python 1.2.0 signature, module provenance and
+#' runtime distinction between function, class constructor and constant
+#' for ALL 508 public symbols. This initializes Python and does not
+#' execute any scientific fitting routine.
+#' @param strict Run the full 508-symbol version/callability gate first.
+#' @return A 508-row data frame with public exported names and signatures;
+#'   NA for Python objects that do not support inspect.signature().
+#' @export
+etpy_signature_catalog <- function(strict=TRUE) {
+  .etpy_validate_boolean(strict,"strict")
+  verified <- etpy_full_verify(strict=strict)
+  inspect <- reticulate::import("inspect",convert=FALSE)
+  builtins <- reticulate::import_builtins(convert=FALSE)
+  n <- nrow(verified)
+  sig <- rep(NA_character_,n)
+  module_name <- rep(NA_character_,n)
+  runtime_kind <- rep("unknown",n)
+  for (ns in c("root","workflows")) {
+    module <- .et_import(ns)
+    indices <- which(verified$namespace==ns)
+    for (i in indices) {
+      if (!isTRUE(verified$available[i])) next
+      obj <- reticulate::py_get_attr(module,verified$python_name[i])
+      isclass <- isTRUE(reticulate::py_to_r(inspect$isclass(obj)))
+      iscallable <- isTRUE(reticulate::py_to_r(builtins$callable(obj)))
+      runtime_kind[i] <- if(isclass) "class" else
+        if(iscallable) "callable" else "value"
+      sig[i] <- tryCatch(
+        as.character(reticulate::py_to_r(
+          builtins$str(inspect$signature(obj)))),
+        error=function(e) NA_character_)
+      if (reticulate::py_has_attr(obj,"__module__")) {
+        module_name[i] <- tryCatch(
+          as.character(reticulate::py_to_r(
+            reticulate::py_get_attr(obj,"__module__"))),
+          error=function(e) NA_character_)
+      }
+    }
+  }
+  verified$runtime_kind <- runtime_kind
+  verified$python_signature <- sig
+  verified$python_module <- module_name
+  verified
+}
