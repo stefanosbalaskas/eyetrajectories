@@ -2,6 +2,18 @@
 
 ## Scientific qualification: functional bootstrap confidence bands (HOLD)
 
+**27 October 2026 follow-up:** The independently seeded
+[four-DGP, 200-dataset-per-condition robustness expansion](docs/native-band-robustness-expanded-2026-10-27.md)
+completed **2,400 generating datasets / 14,400 paired method evaluations**
+with no reported fit failures. Existing fixed-SE 90% simultaneous bands
+remain severely under-covering in several small-cluster conditions
+(heavy-t(3) N=12 group contrast **53.5%**). Experimental studentization
+improved observed coverage in all **24** cells, but its bands were
+**1.063–2.036× wider**, and three cells remained below 90% observed
+coverage. The larger archive's **read-only trial-level audit is still
+pending**, and no missingness scenario has been tested. **No estimator
+substitution, merge or release is authorized.**
+
 On 26 October 2026, the author ran the
 [known-truth band stress pilot](docs/native-band-coverage-stress-2026-10-26.md):
 **60 independently generated datasets** (20 each at N=12, 24, 48
