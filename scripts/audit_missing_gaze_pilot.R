@@ -73,7 +73,9 @@ for (s in seq_len(nrow(summary))) {
     c("observed_fraction", "mean_observed_fraction"),
     c("mean_supported_fraction", "mean_support_fraction"),
     c("contrast_supported_fraction", "contrast_support_fraction"),
+    c("mean_bias_supported", "naive_mean_bias_supported"),
     c("mean_rmse_supported", "naive_mean_rmse_supported"),
+    c("contrast_bias_supported", "naive_contrast_bias_supported"),
     c("contrast_rmse_supported", "naive_contrast_rmse_supported"))) {
     vals <- subset[[pair[1L]]]
     expected <- if (all(is.na(vals))) NA_real_ else mean(vals, na.rm = TRUE)
