@@ -77,4 +77,29 @@ source("scripts/audit_missing_gaze_ipw_pilot.R")
 Sys.unsetenv("ET_OBS_IPW_AUDIT_DIR")
 ```
 
-**Current gate:** Archive consistency remains **PENDING** until that command prints `DESIGN-KNOWN IPW ARCHIVE AUDIT PASS`. Do not rerun the 240 generating datasets or reuse their seeds. Even a passing audit will not establish an effective weighting correction or confidence-band validity: the scientific comparison of paired errors, support, variance/width and mechanisms must be reviewed separately. PR #6 remains unmerged and CRAN release blocked.
+**Historical gate at the first audit failure:** archive consistency was pending. The owner subsequently passed the corrected audit; see the newer milestone below. No IPW weighting benefit or confidence-band validity has yet been demonstrated. PR #6 remains unmerged and CRAN release blocked.
+
+## 27 October 2026: IPW engineering archive certified; paired error review staged
+
+**Owner execution evidence:** The audit-helper regression tests passed **8/8** (`FAIL 0, WARN 0, SKIP 0`). The corrected `source("scripts/audit_missing_gaze_ipw_pilot.R")` reported **DESIGN-KNOWN IPW ARCHIVE AUDIT PASS**: **240 independent studies**, **12 cells**, **235 full-grid supported**, **5 no-observation-support**, **0 numerical failures**. This supersedes the historical audit failure above. The archive remains local to the owner; no copied trial-level dataset has been independently examined in this session.
+
+**New read-only scientific analysis:** `scripts/analyze_missing_gaze_ipw_results.R` plus `scripts/analyze_missing_gaze_ipw_helpers.R` and independent regression tests `tests/testthat/test-observation-ipw-paired-analysis.R` were added to PR #6. They **have not been executed under R**. The analysis re-runs the existing independent archive audit first, then produces two research tables (no new trajectories or masks generated):
+
+- `paired_rmse_by_cell.csv`: naive vs design-known Horvitz–Thompson (HT) within the **same dataset** and common supported coordinates, separately for mean and two-group contrast and N=12/24/48. Reports average *within-dataset functional RMSE*, paired HT-minus-naive RMSE, ratio of those means, mean signed error, how many paired datasets contribute, and a 1,999-draw paired-dataset bootstrap percentile interval for the **Monte Carlo performance difference**. Includes both partial-support and strict full-grid-supported-only comparisons with explicitly distinct denominators. **These are not trajectory confidence bands**.
+- `ht_all_grid_by_cell.csv`: HT-only entire-grid signed error and per-dataset RMSE, **including** the five unsupported studies (unless a study genuinely failed numerically), with dataset-bootstrap interval on the mean signed error. A comparable unconditional all-grid naive estimator is not available for all studies, so none is fabricated.
+
+Run from the updated research checkout:
+
+```r
+testthat::test_local(".", filter = "observation-ipw-paired-analysis")
+Sys.setenv(
+  ET_OBS_IPW_AUDIT_DIR =
+    "artifacts/missing_gaze_ipw_pilot/run_20261027_103444_pid51684"
+)
+source("scripts/analyze_missing_gaze_ipw_results.R")
+Sys.unsetenv("ET_OBS_IPW_AUDIT_DIR")
+```
+
+A new non-overwriting research directory `artifacts/missing_gaze_ipw_pair_analysis/review_...` receives the outputs. The **exact original input archive is unchanged**. Conditional-on-full-grid comparisons are selected-sample performance, and coordinate-supported comparisons can depend on selection; neither by itself demonstrates unconditional unbiasedness. 20 repetitions per mechanism/sample-size cell are exploratory. Do not characterize dataset-bootstrap Monte Carlo intervals as 90% functional confidence bands or as final publication-quality calibration.
+
+**Gate:** raw data integrity PASS as reported by the owner; actual naive-vs-HT performance **unknown until paired analysis executes**. No release, no native estimator replacement, no claims of calibrated 90% simultaneous coverage.
