@@ -1,6 +1,30 @@
 # Native trajectory objects never import or initialize Python.
 .etr_assert <- function(ok, message) if (!isTRUE(ok)) stop(message, call. = FALSE)
 
+# Python TrajectorySet.provenance is a JSON-like mapping, not a
+# pandas/dataframe or backend estimator. Native-R fields keep that distinction.
+.etr_provenance_valid <- function(value, depth=0L, mapping=TRUE) {
+  if (depth > 32L) return(FALSE)
+  if (is.null(value)) return(TRUE)
+  if (is.list(value) && !is.object(value)) {
+    keys <- names(value)
+    if (mapping) {
+      if (length(value) > 0L && (is.null(keys) ||
+            anyNA(keys) || any(!nzchar(keys)) || anyDuplicated(keys)))
+        return(FALSE)
+    } else if (!is.null(keys) &&
+               (anyNA(keys) || any(!nzchar(keys)) || anyDuplicated(keys))) {
+      return(FALSE)
+    }
+    for (entry in value)
+      if (!.etr_provenance_valid(entry,depth+1L,mapping=FALSE)) return(FALSE)
+    return(TRUE)
+  }
+  is.atomic(value) && is.null(dim(value)) &&
+    (is.character(value) || is.numeric(value) || is.logical(value)) &&
+    !anyNA(value) && (!is.numeric(value) || all(is.finite(value)))
+}
+
 #' Construct a native common-grid trajectory collection
 #' @param time Finite, strictly increasing numeric observation times.
 #' @param values Numeric array (curve, time, channel); NA represents missing gaze.
@@ -9,10 +33,13 @@
 #' @param metadata Optional one-row-per-curve data.frame.
 #' @param coordinate_system Explicit coordinate semantics.
 #' @param time_unit Explicit clock unit.
+#' @param provenance Optional JSON-like named R list recording the source,
+#'   preprocessing steps and specifications; empty by default. This is a
+#'   native representation of Python's provenance mapping, not a fitted model.
 #' @export
 etr_trajectory_set <- function(time, values, curve_ids = NULL, dimension_names = NULL,
                                metadata = NULL, coordinate_system = "unknown",
-                               time_unit = "unknown") {
+                               time_unit = "unknown", provenance = list()) {
   .etr_assert(is.numeric(time) && length(time) >= 2L && all(is.finite(time)) &&
                 all(diff(time) > 0), "time must be finite, strictly increasing, length >= 2")
   .etr_assert(is.array(values) && is.numeric(values) && length(dim(values)) == 3L,
@@ -39,10 +66,12 @@ etr_trajectory_set <- function(time, values, curve_ids = NULL, dimension_names =
   .etr_assert(is.character(time_unit) && length(time_unit) == 1L &&
                 !is.na(time_unit) && nzchar(time_unit),
               "time_unit must be a single nonempty string")
+  .etr_assert(.etr_provenance_valid(provenance),
+              "provenance must be a JSON-like named R list with unique nonempty keys")
   structure(list(time = as.numeric(time), values = values,
                  curve_ids = curve_ids, dimension_names = dimension_names,
                  metadata = metadata, coordinate_system = coordinate_system,
-                 time_unit = time_unit),
+                 time_unit = time_unit, provenance = provenance),
             class = "etr_trajectory_set")
 }
 
@@ -54,7 +83,8 @@ etr_validate <- function(x, require_complete = FALSE) {
   .etr_assert(inherits(x, "etr_trajectory_set") && is.list(x),
               "x must be a native etr_trajectory_set")
   etr_trajectory_set(x$time, x$values, x$curve_ids, x$dimension_names,
-                     x$metadata, x$coordinate_system, x$time_unit)
+                     x$metadata, x$coordinate_system, x$time_unit,
+                     if (is.null(x$provenance)) list() else x$provenance)
   if (isTRUE(require_complete)) {
     .etr_assert(!anyNA(x$values), "complete observations required; handle missing gaze explicitly")
   }
@@ -151,7 +181,8 @@ etr_subset <- function(x, curves) {
   etr_trajectory_set(x$time, x$values[curves, , , drop = FALSE],
                      x$curve_ids[curves], x$dimension_names,
                      x$metadata[curves, , drop = FALSE],
-                     x$coordinate_system, x$time_unit)
+                     x$coordinate_system, x$time_unit,
+                     if (is.null(x$provenance)) list() else x$provenance)
 }
 
 #' Retrieve one channel as curve-by-time matrix
