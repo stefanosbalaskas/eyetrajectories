@@ -79,7 +79,7 @@ et_obs_ipw_point_diagnostics <- function(observed,truth_mean,truth_contrast,
   bucket <- samples$group*ncell+cell
   totals <- numeric(2L*ncell)
   if (length(bucket)) {
-    sums <- rowsum(samples$Y/pi,bucket,reorder=FALSE)
+    sums <- rowsum(matrix(samples$Y/pi,ncol=1L),bucket,reorder=FALSE)
     totals[as.integer(rownames(sums))] <- as.numeric(sums[,1L])
   }
   group_sums <- matrix(totals,nrow=ncell,ncol=2L)
