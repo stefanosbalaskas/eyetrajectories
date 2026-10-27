@@ -174,3 +174,27 @@ from test execution.
 Next development work is broader native R algorithm coverage and
 standalone scientific/data-contract qualification, rather than rerunning
 the same four-method fixture repeatedly.
+
+
+## Stage 3 native-R expansion — draft PR #11 (code complete; runtime pending)
+
+[Stage 3 draft PR #11](https://github.com/stefanosbalaskas/eyetrajectories/pull/11)
+adds seven Python-free native R algorithms spanning pixel normalization,
+per-curve landmark centering, arbitrary time-domain normalization, heading
+with stationary-gaze policy, tortuosity tables, weighted pairwise discrete
+Fréchet distances, and functional-L2 nearest-trajectory ranking. These
+seven source functions replace four under-specified earlier native
+analogues and add three previously unmapped Python function names.
+
+**Updated exact map:** 44 native analogue candidates among 380 public
+Python functions; **336 unmapped** function names; **128 other public
+Python objects** still awaiting native representation; **11 newly
+implemented algorithms** across Stages 2 and 3 (four and seven).
+A candidate count is **not** a numerical parity rate.
+
+The native unit/oracle test files and [reproduction commands](full-native-r-stage3-preprocessing-distances.md)
+are committed, but **have not yet been run in R**. The multi-OS workflow
+[run #40571516967](https://github.com/stefanosbalaskas/eyetrajectories/actions/runs/40571516967)
+failed at runner admission with zero recorded steps in all four jobs,
+which is not a scientific algorithm outcome. The strict 508-source
+completion gate remains closed; no release or main merge.
