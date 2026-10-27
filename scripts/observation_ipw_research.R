@@ -27,22 +27,25 @@ et_obs_public_retention_probability <- function(observed, severity="moderate") {
     stop("Nonfinite observed value or unknown participant.",call.=FALSE)
   target <- unname(rates[[severity]])
   n <- nrow(z)
-  pi <- rep(1,n)
+  # Never name a retention-probability vector 'pi': that would shadow
+  # the mathematical constant in the MAR temporal cos(2*pi*time) term.
+  retention_probability <- rep(1,n)
   if (observed$mechanism=="mcar_gaze") {
-    pi[] <- target
+    retention_probability[] <- target
   } else if (observed$mechanism=="mar_gaze") {
     eta <- stats::qlogis(target)+.65*z$Z+
-      .50*cos(2*pi*z$time)+.12*(z$channel=="y")
-    pi <- pmax(.05,pmin(.95,stats::plogis(eta)))
+      .50*cos(2*base::pi*z$time)+.12*(z$channel=="y")
+    retention_probability <- pmax(.05,pmin(.95,stats::plogis(eta)))
   } else if (observed$mechanism=="mar_dropout") {
     pS <- pmax(.05,pmin(.95,
       stats::plogis(stats::qlogis(target)+.70*r$Z)))
-    pi <- pS[match(z$participant,r$participant)]
+    retention_probability <- pS[match(z$participant,r$participant)]
   }
-  if (anyNA(pi) || any(!is.finite(pi)) || any(pi<=0) ||
-      any(pi>1))
+  if (anyNA(retention_probability) ||
+      any(!is.finite(retention_probability)) ||
+      any(retention_probability<=0) || any(retention_probability>1))
     stop("Invalid known design probabilities.",call.=FALSE)
-  pi
+  retention_probability
 }
 
 et_obs_ipw_point_diagnostics <- function(observed,truth_mean,truth_contrast,
