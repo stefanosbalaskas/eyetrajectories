@@ -30,6 +30,31 @@ source("scripts/report_full_native_r_parity.R")
 **[Draft native PR #9](https://github.com/stefanosbalaskas/eyetrajectories/pull/9)** ·
 **[Completion issue #10](https://github.com/stefanosbalaskas/eyetrajectories/issues/10)**.
 
+**If `testthat` says "No test files found", you are almost certainly
+running an older branch.** The two native tests exist only on the
+`research/full-native-r-parity-stage2-20261027` branch, not on the older
+`feat/full-python12-hybrid-parity-20261027` or `research/native-parity-stage1`
+branches. In the **RStudio Terminal** (not the R console), first check for
+uncommitted work and fetch the new research branch:
+
+```sh
+git status --short
+git fetch origin
+git switch research/full-native-r-parity-stage2-20261027
+```
+
+If `git switch` reports the local branch does not exist yet, use
+`git switch --track origin/research/full-native-r-parity-stage2-20261027`.
+Do **not** use `--force` or discard local research changes. Then update
+with `git pull --ff-only` and **restart RStudio**. Verify:
+
+```r
+getwd()
+file.exists("tests/testthat/test-native-planar-geometry-parity.R")
+file.exists("tests/testthat/test-full-native-r-parity-ledger.R")
+# Both must return TRUE before calling test_local().
+```
+
 New code has passed static source checks only; the native R tests and
 cross-platform CI have not yet passed. **No merge, release, or claim that
 all Python algorithms are implemented natively in R.**
