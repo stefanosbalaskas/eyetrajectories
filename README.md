@@ -42,7 +42,7 @@ testthat::test_local(".",filter="native-stage4-distance-contracts")
 Sys.unsetenv("ET_RUN_PYTHON_TESTS")
 ```
 
-**[Stage 4 method contracts and reproducibility](docs/full-native-r-stage4-frechet-dtw.md)**.
+**[Stage 4 method contracts and reproducibility](docs/full-native-r-stage4-frechet-dtw.md)** · **[Stage 4 draft PR #12](https://github.com/stefanosbalaskas/eyetrajectories/pull/12)**.
 Research-only; no release/merge and no general scientific inferential
 qualification.
 
