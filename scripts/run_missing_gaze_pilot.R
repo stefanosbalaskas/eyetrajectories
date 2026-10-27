@@ -136,7 +136,9 @@ summary <- do.call(rbind, lapply(by_cell, function(z) {
      mean_observed_fraction = num_mean(z$observed_fraction),
      mean_support_fraction = num_mean(z$mean_supported_fraction),
      contrast_support_fraction = num_mean(z$contrast_supported_fraction),
+     naive_mean_bias_supported = num_mean(z$mean_bias_supported),
      naive_mean_rmse_supported = num_mean(z$mean_rmse_supported),
+     naive_contrast_bias_supported = num_mean(z$contrast_bias_supported),
      naive_contrast_rmse_supported = num_mean(z$contrast_rmse_supported))
 }))
 rownames(summary) <- NULL
