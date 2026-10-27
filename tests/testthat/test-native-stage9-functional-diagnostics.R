@@ -206,4 +206,63 @@ test_that("Stage 9 source-level Python 1.2 numeric oracle is opt-in",{
                    as.character(py_score_frame$curve_id))
   expect_equal(abs(as.matrix(native_frame[,-1L])),
                abs(as.matrix(py_score_frame[,-1L])),tolerance=1e-8)
+  # Irregular single-dimension support: exact source schema and values.
+  ir<-etr_irregular_trajectory_set(
+    list(c(0,1,2,4),c(.3,.7,2.1)),
+    list(matrix(c(1,NA,3,5,10,11,12,13),ncol=2L),
+         matrix(c(2,4,6,9,8,7),ncol=2L)),
+    c("a","b"),c("x","y"))
+  pir<-reticulate::py_call(etpy_get_export("IrregularTrajectorySet"),
+    time=lapply(ir$time,reticulate::r_to_py),
+    values=lapply(ir$values,reticulate::r_to_py),
+    curve_ids=as.list(ir$curve_ids),
+    dimension_names=as.list(ir$dimension_names))
+  ir_tab<-etr_sparse_dimension_summary(ir,"x")
+  py_ir_tab<-et_to_r(reticulate::py_call(
+    etpy_get_export("sparse_dimension_summary"),
+    trajectories=pir,dimension="x"))
+  expect_identical(names(ir_tab),names(py_ir_tab))
+  expect_equal(as.character(ir_tab$curve_id),as.character(py_ir_tab$curve_id))
+  for(col in setdiff(names(ir_tab),"curve_id"))
+    expect_equal(as.numeric(ir_tab[[col]]),as.numeric(py_ir_tab[[col]]),
+      tolerance=1e-10,info=paste("sparse",col))
+
+  # Registration is specified with source/reference orientation h_i(t).
+  t<-x$time
+  w<-rbind(t,t+c(0,.1,.2,.1,0),t+c(0,-.1,-.2,-.1,0),
+            t+c(0,.06,-.04,.08,0))
+  reg<-list(original=x,warping_functions=w,
+    method="declared_fixture",provenance=list(source="oracle"))
+  pyreg<-reticulate::py_call(etpy_get_export("RegistrationResult"),
+    registered=px,original=px,
+    warping_functions=reticulate::r_to_py(w),
+    reference_landmarks=reticulate::r_to_py(c(2)),
+    observed_landmarks=reticulate::r_to_py(
+      matrix(c(2,2.1,1.9,2),ncol=1L)),
+    method="declared_fixture")
+  expect_equal(etr_warping_displacement(reg),
+    et_to_r(reticulate::py_call(etpy_get_export("warping_displacement"),
+      result=pyreg)),tolerance=1e-10)
+  ps<-et_to_r(reticulate::py_call(etpy_get_export("phase_summary"),
+                                result=pyreg))
+  rs<-etr_phase_summary(reg)
+  expect_identical(names(rs),names(ps))
+  for(field in names(rs))
+    expect_equal(as.numeric(rs[[field]]),as.numeric(ps[[field]]),
+                 tolerance=1e-10,info=field)
+  pyphase<-reticulate::py_call(etpy_get_export("phase_trajectory_set"),
+    registration=pyreg,representation="displacement")
+  rphase<-etr_phase_trajectory_set(reg,"displacement")
+  expect_equal(rphase$values,et_to_r(pyphase$values),tolerance=1e-10)
+  fit_phase_py<-reticulate::py_call(etpy_get_export("fit_phase_fpca"),
+    registration=pyreg,n_components=as.integer(1L))
+  fit_phase_r<-etr_fit_phase_fpca(reg,n_components=1L)
+  expect_equal(fit_phase_r$mean,et_to_r(fit_phase_py$mean),
+               tolerance=1e-8)
+  expect_equal(fit_phase_r$explained_variance,
+               as.numeric(et_to_r(fit_phase_py$explained_variance)),
+               tolerance=1e-8)
+  expect_equal(abs(fit_phase_r$scores),abs(et_to_r(fit_phase_py$scores)),
+               tolerance=1e-8)
+
 })
