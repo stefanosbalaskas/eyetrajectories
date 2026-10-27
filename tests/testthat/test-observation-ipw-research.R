@@ -41,6 +41,20 @@ testthat::test_that("MCAR probability is constant and HT uses eligible N x J",{
   testthat::expect_true(is.finite(result$ht_mean_signed_all_grid))
 })
 
+testthat::test_that("MAR cosine uses mathematical pi, not a local probability vector",{
+  synthetic <- list(
+    mechanism="mar_gaze",
+    registry=data.frame(participant=1L,group=0L,Z=0),
+    samples=data.frame(participant=c(1L,1L,1L),trial=c(1L,1L,1L),
+      time_index=1:3,channel=c("x","x","y"),
+      time=c(0,.25,.5),Y=c(.2,.1,-.2),group=0L,Z=0))
+  expected <- stats::plogis(stats::qlogis(.6)+
+                             c(.5,0,-.5+.12))
+  testthat::expect_equal(
+    et_obs_public_retention_probability(synthetic,"moderate"),
+    expected,tolerance=1e-12)
+})
+
 testthat::test_that("MAR gaze probabilities use observed Z time channel only",{
   x <- et_obs_generate_complete(12L,420301L)
   mask <- et_obs_make_mask(x,"mar_gaze",420302L)
