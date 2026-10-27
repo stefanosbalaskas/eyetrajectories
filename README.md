@@ -17,6 +17,8 @@ missing fits. All 48 candidate comparisons had **zero observed
 baseline-covered/candidate-missed study outcomes**, but the
 candidates were uniformly wider on average; this is not a
 coverage-validity theorem. **No missingness scenario has been tested.**
+A separate [missing-gaze observation-process research protocol](docs/missing-gaze-observation-process-qualification-2026-10-27.md) now defines full-population versus selected/observed estimands and distinguishes MCAR, MAR, MNAR, participant dropout and sparse asynchronous sampling. It has **not been executed** and does not add or replace an estimator.
+
 No estimator substitution, merge or release is authorized.
 
 On 26 October 2026, the author ran the
