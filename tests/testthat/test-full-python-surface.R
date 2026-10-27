@@ -106,3 +106,29 @@ test_that("Python result public attribute and method helper keep object identity
                            .namespace="workflows"),
                "not callable")
 })
+
+
+test_that("full Python reflection catalog covers 508 exported symbols", {
+  if (!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Real Python runtime introspection is opt-in")
+  runtime <- etpy_signature_catalog(strict=TRUE)
+  expect_equal(nrow(runtime),508L)
+  expect_true(all(runtime$structurally_available))
+  expect_setequal(unique(runtime$runtime_kind),
+                  intersect(c("callable","class","value"),
+                            unique(runtime$runtime_kind)))
+  expect_false(any(runtime$runtime_kind=="unknown"))
+  expect_true(all(c("python_signature","python_module","runtime_kind") %in%
+                  names(runtime)))
+  m <- runtime[runtime$namespace=="root" &
+               runtime$python_name=="fit_mfpca",,drop=FALSE]
+  expect_equal(nrow(m),1L)
+  expect_identical(m$runtime_kind,"callable")
+  expect_false(is.na(m$python_signature))
+  config <- runtime[runtime$namespace=="workflows" &
+                    runtime$python_name=="FPCAWorkflowConfig",,
+                    drop=FALSE]
+  expect_equal(nrow(config),1L)
+  expect_identical(config$runtime_kind,"class")
+  expect_false(is.na(config$python_signature))
+})
