@@ -252,6 +252,13 @@ test_that("seeded Python 1.2 Fréchet/DTW numeric values and exact paths agree",
 test_that("seeded Python 1.2 pairwise constrained/normalized DTW matches",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("Independent Python 1.2 pairwise DTW oracle is opt-in")
+  had_seed <- exists(".Random.seed",envir=.GlobalEnv,inherits=FALSE)
+  if(had_seed) saved_seed <- get(".Random.seed",envir=.GlobalEnv)
+  on.exit({
+    if(had_seed) assign(".Random.seed",saved_seed,envir=.GlobalEnv)
+    else if(exists(".Random.seed",envir=.GlobalEnv,inherits=FALSE))
+      rm(".Random.seed",envir=.GlobalEnv)
+  },add=TRUE)
   set.seed(12042L)
   ctor <- etpy_get_export("TrajectorySet")
   for(scenario in seq_len(6L)){
