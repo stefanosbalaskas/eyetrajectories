@@ -167,7 +167,8 @@ test_that("Python 1.2 independent recurrence network, joint and radius oracles a
   for(i in 1:2) {
     r[[i]]<-etr_recurrence_matrix(x,i,radius=.5,theiler=1L)
     p[[i]]<-reticulate::py_call(py_rec,source=py_x,
-       curve=as.integer(i-1L),radius=.5,theiler_window=1L)
+       curve=as.integer(i-1L),radius=.5,theiler_window=1L,
+       dimensions=as.list("x"))
     native<-etr_recurrence_network(r[[i]])
     python<-reticulate::py_call(py_net,recurrence=p[[i]])
     expect_equal(native$degree,as.integer(et_to_r(python$degree)))
@@ -195,7 +196,7 @@ test_that("Python 1.2 independent recurrence network, joint and radius oracles a
       rr<-etr_recurrence_radius_profile(x,i,radii,theiler_window=1L)
       pr<-reticulate::py_call(py_radius,source=py_x,
         curve=as.integer(0L),radii=as.list(radii),
-        theiler_window=1L)
+        theiler_window=1L,dimensions=as.list("x"))
       table<-et_to_r(pr$table)
       for(col in names(rr$table))compare_na(rr$table[[col]],
         table[[col]],paste("radius",col))
@@ -217,7 +218,7 @@ test_that("Python 1.2 independent recurrence network, joint and radius oracles a
                         theiler_window=1L)
   pwin<-reticulate::py_call(py_win,trajectories=py_x,
     curve=as.integer(0L),window=6L,step=2L,radius=.5,
-    theiler_window=1L)
+    theiler_window=1L,dimensions=as.list("x"))
   pytable<-et_to_r(pwin$table)
   for(col in c("start_index","stop_index","center_time",
                "recurrence_rate","determinism","laminarity",
