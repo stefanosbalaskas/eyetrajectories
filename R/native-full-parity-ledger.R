@@ -9,16 +9,19 @@
   resample_to_grid="etr_resample",
   interpolate_short_gaps="etr_interpolate_gaps",
   smooth_trajectories="etr_smooth",
-  normalize_time="etr_normalize_time",
-  center_on_landmark="etr_center",
+  normalize_time="etr_normalize_time_interval",
+  normalize_coordinates="etr_normalize_coordinates",
+  center_on_landmark="etr_center_on_landmark",
   differentiate_trajectories="etr_velocity",
   speed_function="etr_speed",
-  heading_function="etr_heading",
+  heading_function="etr_heading_function",
   cumulative_path_length="etr_cumulative_path_length",
-  trajectory_tortuosity="etr_tortuosity",
+  trajectory_tortuosity="etr_trajectory_tortuosity_frame",
   functional_l2_distance="etr_l2_distance",
   discrete_frechet_distance="etr_frechet",
   dynamic_time_warping_distance="etr_dtw",
+  pairwise_discrete_frechet_distances="etr_pairwise_frechet",
+  nearest_trajectory_indices="etr_nearest_trajectory_indices",
   functional_trapezoid_weights="etr_trapezoid_weights",
   fit_fpca="etr_fit_fpca",
   fit_mfpca="etr_fit_mfpca",
@@ -85,11 +88,20 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   api$python_bridge_available <-
     ifelse(api$is_python_function,
       nzchar(api$r_wrapper),TRUE)  # classes/constants use etpy_get_export
+  stage2_names <- c("acceleration_magnitude_function",
+                    "distance_to_landmark_function",
+                    "signed_curvature_function","turning_rate_function")
+  stage3_names <- c("normalize_coordinates","center_on_landmark",
+                    "normalize_time","heading_function",
+                    "trajectory_tortuosity",
+                    "pairwise_discrete_frechet_distances",
+                    "nearest_trajectory_indices")
+  api$native_implementation_stage <- ifelse(
+      api$is_python_function & api$python_name %in% stage2_names,2L,
+      ifelse(api$is_python_function & api$python_name %in% stage3_names,3L,
+             NA_integer_))
   api$native_implementation_started <-
-    api$python_name %in%
-      c("acceleration_magnitude_function","distance_to_landmark_function",
-        "signed_curvature_function","turning_rate_function") &
-      api$is_python_function
+    !is.na(api$native_implementation_stage)
   api$status <- ifelse(!api$is_python_function,
     "class_or_constant_native_representation_not_reviewed",
     ifelse(api$native_implementation_started,
