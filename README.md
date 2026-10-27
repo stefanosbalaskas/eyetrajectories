@@ -37,7 +37,8 @@ testthat::test_local(".",filter="native-stage5-trajectory-provenance")
 Sys.unsetenv("ET_RUN_PYTHON_TESTS")
 ```
 
-**[Stage 5 contracts and RDS limitations](docs/full-native-r-stage5-provenance-snapshots.md)**.
+**[Stage 5 contracts and RDS limitations](docs/full-native-r-stage5-provenance-snapshots.md)** ·
+**[Stage 5 draft PR #13](https://github.com/stefanosbalaskas/eyetrajectories/pull/13)**.
 Draft research branch only; no merge/release/508-contract certification.
 
 
