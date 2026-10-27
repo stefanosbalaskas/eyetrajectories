@@ -51,7 +51,7 @@ test_that("typed JSON portable decoding rejects unsafe markers", {
                                 class="etr_python_tuple")))
   expect_equal(decode(list('__portable_type__'="dataclass",
     python_type="eyetrajectoriespy.types.Example",
-    fields=list(answer=42L,kind="snapshot")),list(
+    fields=list(answer=42L,kind="snapshot"))),list(
     '__python_type__'="eyetrajectoriespy.types.Example",
     answer=42L,kind="snapshot"))
   expect_equal(as.vector(decode(list('__portable_type__'="object_array",
