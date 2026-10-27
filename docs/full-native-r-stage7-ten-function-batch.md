@@ -119,13 +119,50 @@ published Python 1.2 `from_irregular_long_dataframe_native`,
 and `validate_simplex` functions. Missing values, union/overlap
 domains, max-gap masking and provenance are included.
 
-**Qualification status on authoring:** only static R source
-delimiter/quote/export and 508-inventory map checks completed.
-Neither the R unit tests nor the opt-in Python oracle have been
-executed yet. Repository-wide GitHub Actions is historically blocked
-before steps run; an empty CI job is not a scientific failure or pass.
+**Qualification update (supersedes the initial authoring status):**
+The owner subsequently executed and passed native R, the Stage 7
+parity ledger, and the pinned Python 1.2 opt-in numerical oracle on
+Windows. The exact local results are recorded below. Repository-wide
+GitHub Actions remains blocked before any recorded job steps, so
+independent cross-platform CI is not yet verified.
 
 **Release boundary:** All changes are research-only on a separate
 draft PR based on Stage 6. No merge to main, no CRAN/PyPI release,
 no 508/508 claim, and no assumptions about posterior coverage,
 MNAR identifiability or other inferential scientific gates.
+
+
+## Owner-executed Stage 7 qualification — Windows PASS, 28 October 2026
+
+After changing the local checkout to the Stage 7 branch, the owner
+verified that `tests/testthat/test-native-stage7-batch-irregular-validation.R`
+existed and ran all three requested filters. Complete RStudio output:
+
+| Test filter | PASS | FAIL | WARN | SKIP |
+|---|---:|---:|---:|---:|
+| Native `native-stage7-batch-irregular-validation` | **58** | 0 | 0 | 1 expected Python opt-in test |
+| Native `native-stage7-parity-ledger` | **69** | 0 | 0 | 0 |
+| Full `native-stage7-batch-irregular-validation`, `ET_RUN_PYTHON_TESTS=true` | **115** | 0 | 0 | 0 |
+
+The owner explicitly verified `identical(et_python_version(),"1.2.0")`
+before enabling the Python-reference suite. The full 115-pass run
+includes the native test assertions; 115 does not represent 115
+independent Python/R function comparisons.
+
+The successful opt-in suite provides actual Windows test evidence
+for source-matched irregular import, common overlap/union grid
+construction, supported *linear* projection with maximum-gap
+missingness masking, selected curve-level sampling summaries and
+simplex validation. Pure-R analytic tests also passed for additional
+edge conditions and landmark reporting.
+
+**Unqualified boundaries:** Python `pchip` interpolation is
+intentionally unsupported; broad input/marshalling variations,
+complete Python dataclass and pandas metadata semantics, all
+regression suites, and independent Linux/macOS execution remain
+open. GitHub Actions
+[run #40589428504](https://github.com/stefanosbalaskas/eyetrajectories/actions/runs/40589428504)
+failed with zero recorded steps in each job, which must not be
+reported as either successful runtime execution or a numerical
+mismatch. Full 508-symbol source-contract certification remains
+closed. PR #15 stays DRAFT, with no merge or release.
