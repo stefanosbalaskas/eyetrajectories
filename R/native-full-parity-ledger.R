@@ -181,3 +181,5 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   rownames(api) <- NULL
   api
 }
+
+# Stage 9 implementation inventory pending registration.
