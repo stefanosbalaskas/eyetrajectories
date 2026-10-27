@@ -314,3 +314,41 @@ fixture results, not general Python-format equivalence.
 [Execution evidence and boundaries](full-native-r-stage6-python-portable-reader.md#owner-windows-rstudio-verification--pass-on-27-october-2026).
 Independent CI remains blocked before job execution; keep draft PR
 #14, releases and main merge on HOLD.
+
+
+## Stage 7 — faster batch parity development (10 independent native R methods)
+
+[Draft PR #15](https://github.com/stefanosbalaskas/eyetrajectories/pull/15)
+implements ten published Python 1.2 public callable candidates in
+one research increment. Three scientific validation functions
+(`validate_common_grid`, `validate_simplex`,
+`validate_no_long_missing_runs`), six irregular-trajectory
+functions (curve-specific long-form import, overlap domain,
+common grid, explicit grid resampling, convenience resampling,
+sampling summary), and registration landmark deviation reporting
+are independently written in R. The new R-native irregular
+trajectory object retains per-curve time grids and source metadata.
+
+**Frozen source inventory now: 56 / 380 Python callable function
+names have native R candidates, 324 remain unmapped.**
+Across Stages 2–4, 6 and 7, **25 new R callable implementations**
+were written (4+7+3+1+10). Stage 5 infrastructure remains separately
+counted. Among 128 nonfunction public Python symbols, only two
+(`TrajectorySet`, `IrregularTrajectorySet`) are partially represented
+and **126 others remain unreviewed**. Full source contract
+qualification is still **0/508**, with the strict completeness gate
+intentionally failing until supported by more evidence.
+
+The new source-to-native test matrix includes independent Python 1.2
+comparisons over three irregular multi-curve sampling scenarios,
+overlap/union grids, linear interpolation and max-gap missing-value
+preservation; analytical validation tests and updated offline source
+inventory are committed. **Stage 7 has now passed owner-executed
+Windows tests:** native-only **58 PASS / 1 expected Python-oracle SKIP**,
+native parity ledger **69 PASS**, and independently enabled Python
+1.2 oracle **115 PASS / 0 FAIL / 0 WARN / 0 SKIP**.
+[Detailed owner-run qualification](full-native-r-stage7-ten-function-batch.md#owner-executed-stage-7-qualification--windows-pass-28-october-2026).
+Python PCHIP remains explicitly unsupported, complete R/Python
+data-frame metadata equivalence is not claimed, and cross-platform
+GitHub CI had zero executed job steps. The research PR stays DRAFT;
+no release/merge is authorized.

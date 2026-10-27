@@ -1,5 +1,48 @@
 # eyetrajectories
 
+## Native R Stage 7 — ten Python 1.2 functions in one batch (draft)
+
+The new Stage 7 branch adds **ten independent Python-free R methods**
+covering scientific validation, native irregular sampling, overlap/union
+time domains, explicit linear resampling, missingness summaries and
+registration landmark reporting. A new R-native
+`etr_irregular_trajectory_set()` holds distinct time grids per curve,
+while retaining metadata and source provenance. Unsupported Python PCHIP
+interpolation explicitly errors rather than pretending to reproduce
+SciPy's numerical implementation.
+
+The frozen 508-symbol native-parity ledger now counts **56 mapped
+candidate Python functions / 380**, **324 still unmapped**;
+**25** independently written callable-function candidates since Stage 2
+and **two** partly represented Python nonfunction classes
+(`TrajectorySet` and `IrregularTrajectorySet`), leaving 126
+other nonfunction symbols unreviewed. These are partial mappings,
+**not 56 qualified source-contract equivalents**. The strict full
+508-source gate remains CLOSED.
+
+**Stage 7 passed owner-run Windows qualification:** native tests
+**58 PASS / one expected Python-oracle SKIP**, Stage 7 source
+ledger **69 PASS**, and the opt-in Python 1.2 irregular-data
+numerical reference **115 PASS / 0 FAIL / 0 WARN / 0 SKIP**.
+Static source and 56-name export checks also passed. Full Python
+PCHIP and cross-OS CI remain unqualified.
+
+```r
+# Checkout research/full-native-r-parity-stage7-batch-20261027 first
+pkgload::load_all(".",quiet=TRUE)
+testthat::test_local(".",filter="native-stage7-batch-irregular-validation")
+testthat::test_local(".",filter="native-stage7-parity-ledger")
+stopifnot(identical(et_python_version(),"1.2.0"))
+Sys.setenv(ET_RUN_PYTHON_TESTS="true")
+tryCatch(testthat::test_local(
+  ".",filter="native-stage7-batch-irregular-validation"),
+  finally=Sys.unsetenv("ET_RUN_PYTHON_TESTS"))
+```
+
+**[Ten-function batch guide](docs/full-native-r-stage7-ten-function-batch.md)** · **[Draft PR #15](https://github.com/stefanosbalaskas/eyetrajectories/pull/15)**.
+Draft research only; no release/merge.
+
+
 ## Native R Stage 6 — read Python 1.2 scientific-result snapshots
 
 New `etr_read_python_portable_result()` provides a **Python-free R
