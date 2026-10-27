@@ -297,7 +297,7 @@ test_that("default zero-speed mask and declared stationary threshold match Pytho
   py_ctor <- etpy_get_export("TrajectorySet")
   py_x <- reticulate::py_call(py_ctor,
     time=time,values=reticulate::r_to_py(values),
-    curve_ids="stationary",dimension_names=c("x","y"))
+    curve_ids=list("stationary"),dimension_names=c("x","y"))
 
   for (threshold in c(0,1e-12)) {
     actual <- etr_heading_function(x,min_speed=threshold)
