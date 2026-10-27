@@ -90,3 +90,28 @@ For genuine, **standalone native R implementation of all Python methods** more e
 The Python scientific inference limitations also remain: W3 nominal 90% functional inference is not generally calibrated (Python issue #289), and outcome-dependent missing gaze is not field-identified (Python issue #296). Full access to a Python API does **not** make invalid intervals scientifically valid. The separate R bootstrap-calibration research holds similarly.
 
 **Release:** research only, no CRAN upload or merge into `main` until the full CI and package-specific release gates are satisfied.
+
+
+## Live Windows diagnostics and targeted repair (27 October 2026)
+
+The owner ran the draft PR #7 bridge on **Windows / R 4.6.1 / managed Python 3.12.14**. Both diagnostic modes **PASSED**: R loading, draft exports, the lazy 508-symbol namespace, the selected Python interpreter, **508/508 live Python public-export verification**, and a real trajectory simulation. A subsequent full qualification script executed hundreds of assertions but failed **one comparison** at `tests/testthat/test-full-python-surface.R:72`. The values were compared as reticulate-converted pandas data frames: each conversion retained an independent Python `pandas.index` object, whose `pyobj` pointer address naturally differs between runs.
+
+**Code correction:** The test now separately checks both original pandas index **values**, removes only the volatile Python `pandas.index` attachment from the local comparison copies, and then checks all remaining R data-frame values/columns/rows/metadata. It does not change numeric Python estimators or strip index metadata from returned user data.
+
+The user's `etpy_enable_extras("all")` produced a nonfatal `reticulate::py_require` warning because Python was already initialized and `eyetrajectoriespy==1.2.0` was already declared; the attempted `eyetrajectoriespy[all]==1.2.0` requirement uses the same base package. **Code correction:** when Python is already initialized, declare only the **additional** stable 1.2.0 backend packages, matching their published exact constraints (`scikit-fda`, `multimethod`, `FDApy`, `fdasrsf`), after removing package names already declared in reticulate's requirement manifest. This respects reticulate's rule that only *new* package requirements can be added after initialization. Python 3.13 is explicitly refused for the sparse backend, which is not published there. In a fresh session the exact `eyetrajectoriespy[all]==1.2.0` extra is still declared before the first import.
+
+These fixes are **committed but not yet rerun by the owner**; original R 508-symbol diagnostics passed but the full behavioral qualification does *not* count as PASS until a fresh complete run succeeds. No optional dependency execution or scientifically valid interval coverage can be inferred from source-only checks.
+
+Run from the updated feature branch:
+
+```r
+pkgload::load_all(".", quiet = TRUE)
+# In an already initialized Python session, adding only missing
+# published extras is supported by the revised function.
+# This step is optional for the core FPCA smoke test.
+etpy_enable_extras("all")
+testthat::test_local(".",filter="full-python-surface")
+source("scripts/qualify_full_python_surface.R")
+```
+
+CI runner-admission remains a separate unresolved issue. The R package stays unmerged and unreleased.
