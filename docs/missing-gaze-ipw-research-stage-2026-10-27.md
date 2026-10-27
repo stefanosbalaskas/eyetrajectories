@@ -50,3 +50,11 @@ source("scripts/audit_missing_gaze_ipw_pilot.R")
 The runner writes `ipw_trials.csv`, `ipw_summary.csv`, and a manifest in a newly timestamped `artifacts/missing_gaze_ipw_pilot/run_.../` directory. If a seed collision is detected, stop and choose a genuinely new offset rather than bypassing the safeguard. Preserve all unsupported and error rows.
 
 **Execution status:** New R files passed *static* delimiter inspection, but R parser execution, tests, new Monte Carlo, and new archive audit have **not** yet run. Scientific acceptance and PR #6 merge/release remain blocked.
+
+## 27 October 2026: MAR propensity bug identified and patched (retest required)
+
+The owner's first execution of `testthat::test_local(".", filter="observation-ipw-research")` reported **29 PASS / 1 FAIL / 0 WARN / 0 SKIP**. The failing equality check compared the reconstructed observed-Z/time/channel MAR retention probabilities against the probabilities stored by the latent mask generator. The research point-estimator script had named its probability vector `pi`, unintentionally **shadowing R's mathematical constant** in `cos(2*pi*time)`. This changed the retained-sample propensity calculation and would bias the intended inverse-probability weights.
+
+**Fix:** Rename the vector `retention_probability`, explicitly reference `base::pi` in the periodic MAR component, and add an independent deterministic analytic regression fixture at times 0, 0.25, and 0.5. The original generator-vs-reconstruction test is retained.
+
+**Status:** The source correction and regression test are committed to the research branch but have **not been rerun under R here**. Do not run the 240-dataset Monte Carlo until the complete updated `observation-ipw-research` test filter passes. No pilot archive is known to have been produced by the failed test.
