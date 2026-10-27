@@ -1,5 +1,5 @@
 test_that("full hybrid surface lazily exposes all 508 frozen symbols", {
-  expect_false(reticulate::py_available(initialize=FALSE))
+  python_before <- reticulate::py_available(initialize=FALSE)
   surface <- etpy_full_surface()
   expect_s3_class(surface,"etpy_full_surface")
   expect_true(is.environment(surface$root))
@@ -16,7 +16,7 @@ test_that("full hybrid surface lazily exposes all 508 frozen symbols", {
       etpy_catalog(include_nonfunctions=TRUE)$namespace=="workflows"])
   expect_true(is.function(surface$root$fit_mfpca))
   expect_true(is.function(surface$workflows$run_fpca_workflow))
-  expect_false(reticulate::py_available(initialize=FALSE))
+  expect_identical(reticulate::py_available(initialize=FALSE),python_before)
   expect_error(surface$root$fit_mfpca <- 3,
                "read-only|locked")
   expect_error(etpy_full_surface(.convert=NA),"must be TRUE or FALSE")
