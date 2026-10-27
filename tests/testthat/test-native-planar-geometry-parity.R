@@ -139,8 +139,10 @@ test_that("numerical outputs match the Python v1.2 implementations when opted in
   )
   for (case in ops){
     expect_equal(case$native$time,as.numeric(et_to_r(case$python$time)))
-    expect_equal(case$native$values,et_to_r(case$python$values),
-                 tolerance=1e-9,ignore_attr=TRUE)
+    py_values <- et_to_r(case$python$values)
+    expect_identical(dim(case$native$values),dim(py_values))
+    expect_equal(as.vector(case$native$values),as.vector(py_values),
+                 tolerance=1e-9)
     expect_equal(case$native$dimension_names,
                  as.character(unlist(et_to_r(case$python$dimension_names))))
   }
