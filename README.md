@@ -3,15 +3,15 @@
 
 ## Complete Python 1.2 functionality from R (new draft hybrid bridge)
 
-The \`eyetrajectoriespy==1.2.0\` public API has **508 upstream exports**:
+The `eyetrajectoriespy==1.2.0` public API has **508 upstream exports**:
 **380 functions** and **128 additional classes/configurations/constants**.
 This research branch now exposes the entire frozen upstream public surface
-through \`etpy_full_surface()\`, complementing the 380 existing explicit
-\`etpy_*\` R function wrappers. Calls use the *actual Python algorithms*
+through `etpy_full_surface()`, complementing the 380 existing explicit
+`etpy_*` R function wrappers. Calls use the *actual Python algorithms*
 through reticulate: this is a full **hybrid capability interface**, not
 508 independent native R implementations.
 
-\`\`\`r
+```r
 # Requires Python 3.11/3.12 for the broadest optional backend support.
 # Call before any Python import:
 etpy_enable_extras("all")
@@ -22,7 +22,7 @@ gaze <- py$root$simulate_planar_trajectories(
 fit <- py$root$fit_mfpca(gaze, n_components=1L,
                          scaling="dimension_sd")
 scores <- py$root$fpca_score_frame(fit,.convert=TRUE)
-\`\`\`
+```
 
 **[Complete R–Python 1.2 bridge guide](docs/full-python-12-hybrid-parity.md)** ·
 **[Draft implementation PR #7](https://github.com/stefanosbalaskas/eyetrajectories/pull/7)**.
