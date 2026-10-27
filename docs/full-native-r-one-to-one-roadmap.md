@@ -305,7 +305,12 @@ restricted dtype/subtype set and explicit resource limits. It
 does not implement a Python portable **writer**, unsupported Python
 dtype behavior, fitted-backend reconstruction, or general Python
 `load_portable_result` equivalence. The prior Windows-local
-Stage 2–5 qualification results remain unchanged. Stage 6 itself
-has only static source/entrypoint checks at initial authoring,
-**not** executed R tests or CI. Keep the research draft,
-releases and main merge on HOLD.
+Stage 2–5 qualification results remain unchanged. **Stage 6 has now
+passed owner-run Windows tests:** native R parser **18 PASS with one
+intentionally skipped Python reference test**, strict Stage 6 ledger
+**20 PASS**, and opt-in Python 1.2 JSON+NPZ interoperability oracle
+**79 PASS / 0 FAIL / 0 WARN / 0 SKIP**. These are selected Windows
+fixture results, not general Python-format equivalence.
+[Execution evidence and boundaries](full-native-r-stage6-python-portable-reader.md#owner-windows-rstudio-verification--pass-on-27-october-2026).
+Independent CI remains blocked before job execution; keep draft PR
+#14, releases and main merge on HOLD.
