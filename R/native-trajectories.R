@@ -101,7 +101,8 @@ etr_validate <- function(x, require_complete = FALSE) {
 #' @export
 etr_from_long <- function(data, curve_columns, time_column = "time",
                           value_columns = c("x", "y"), metadata_columns = NULL,
-                          coordinate_system = "unknown", time_unit = "unknown") {
+                          coordinate_system = "unknown", time_unit = "unknown",
+                          provenance = NULL) {
   .etr_assert(is.data.frame(data) && nrow(data) > 0L, "data must be a nonempty data.frame")
   .etr_assert(is.character(curve_columns) && length(curve_columns) >= 1L &&
                 !anyNA(curve_columns) && !anyDuplicated(curve_columns),
@@ -147,8 +148,19 @@ etr_from_long <- function(data, curve_columns, time_column = "time",
   curve_ids <- vapply(frames, function(z) paste(as.character(z[1, curve_columns, drop = TRUE]),
                                                collapse = "|"), character(1))
   curve_ids <- unname(curve_ids)
+  # Python from_long_dataframe includes an explicit source audit.
+  provenance_defaults <- list(source="long_dataframe",
+    curve_columns=as.character(curve_columns),
+    time_column=as.character(time_column),
+    value_columns=as.character(value_columns))
+  if(!is.null(provenance)) {
+    .etr_assert(.etr_provenance_valid(provenance),
+                "provenance must be a JSON-like named R list")
+    provenance_defaults[names(provenance)] <- provenance
+  }
   etr_trajectory_set(grids[[1]], values, curve_ids, value_columns,
-                     metadata, coordinate_system, time_unit)
+                     metadata, coordinate_system, time_unit,
+                     provenance=provenance_defaults)
 }
 
 #' Return all samples in tidy long form
