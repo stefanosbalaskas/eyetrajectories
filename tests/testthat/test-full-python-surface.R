@@ -1,3 +1,22 @@
+
+test_that("published optional requirements are derived without duplicate names", {
+  base <- eyetrajectories:::.etpy_requirement_basename
+  specs <- eyetrajectories:::.etpy_extra_dependencies
+  all <- specs("all")
+  expect_length(all,4L)
+  expect_setequal(base(all),
+    c("scikit-fda","multimethod","fdapy","fdasrsf"))
+  expect_identical(base("eyetrajectoriespy[all]==1.2.0"),
+                   "eyetrajectoriespy")
+  expect_identical(base("eyetrajectoriespy==1.2.0"),
+                   "eyetrajectoriespy")
+  expect_identical(base("FDApy>=1.0.3,<1.1; python_version < '3.13'"),
+                   "fdapy")
+  expect_equal(specs("fda"),all[1:2])
+  expect_equal(specs("sparse"),all[3])
+  expect_equal(specs("elastic"),all[4])
+})
+
 test_that("full hybrid surface lazily exposes all 508 frozen symbols", {
   python_before <- reticulate::py_available(initialize=FALSE)
   surface <- etpy_full_surface()
