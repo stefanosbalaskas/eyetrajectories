@@ -274,13 +274,25 @@ etr_recurrence_radius_profile <- function(source,curve=1L,radii,
       abs(row(matrix(FALSE,n,n))-col(matrix(FALSE,n,n)))>tt)
   .etr_assert(eligible>0L,"Theiler window leaves no eligible pairs")
   values<-matrix(source$values[curve,,idx,drop=FALSE],nrow=n,ncol=length(idx))
-  distances<-numeric(0);excluded<-numeric(0)
+  # Preallocate pairwise distance storage instead of repeatedly
+  # copying growing vectors inside the O(n^2) state-pair loop.
+  distances<-numeric(eligible)
+  excluded<-numeric(n*(n-1)/2-eligible)
+  keep_i<-0L;drop_i<-0L
   for(i in seq_len(n-1L))for(j in (i+1L):n) {
     delta<-abs(values[i,]-values[j,])
     d<-switch(metric,euclidean=sqrt(sum(delta^2)),
               cityblock=sum(delta),chebyshev=max(delta))
-    if(j-i<=tt)excluded<-c(excluded,d) else distances<-c(distances,d)
+    if(j-i<=tt){
+      drop_i<-drop_i+1L
+      excluded[drop_i]<-d
+    } else {
+      keep_i<-keep_i+1L
+      distances[keep_i]<-d
+    }
   }
+  .etr_assert(keep_i==eligible &&
+    drop_i==length(excluded),"recurrence profile eligibility count mismatch")
   counts<-vapply(radii,function(z)sum(distances<=z),numeric(1L))
   ex<-vapply(radii,function(z)sum(excluded<=z),numeric(1L))
   shell<-diff(c(0,counts))
