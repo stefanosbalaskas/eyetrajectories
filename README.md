@@ -10,9 +10,14 @@ remain severely under-covering in several small-cluster conditions
 (heavy-t(3) N=12 group contrast **53.5%**). Experimental studentization
 improved observed coverage in all **24** cells, but its bands were
 **1.063–2.036× wider**, and three cells remained below 90% observed
-coverage. The larger archive's **read-only trial-level audit is still
-pending**, and no missingness scenario has been tested. **No estimator
-substitution, merge or release is authorized.**
+coverage. The owner-run **read-only trial-level audit passed**,
+verifying 2,400 generating study keys, all 14,400 method/estimand
+records, all 72 summary cells and 48 paired comparisons without
+missing fits. All 48 candidate comparisons had **zero observed
+baseline-covered/candidate-missed study outcomes**, but the
+candidates were uniformly wider on average; this is not a
+coverage-validity theorem. **No missingness scenario has been tested.**
+No estimator substitution, merge or release is authorized.
 
 On 26 October 2026, the author ran the
 [known-truth band stress pilot](docs/native-band-coverage-stress-2026-10-26.md):
