@@ -15,10 +15,12 @@ Three additional Python-free R implementations now expose the Python
   Python-equivalent unlabeled pairwise DTW distance matrices.
 
 **These are native R algorithms. No Python is executed by them.**
-Stage 4's separate randomized Python reference tests are explicitly
-opt-in, and Stage 4 R tests **have not yet run**. Source static
-bracket/quote checks and export-map validation are separate from
-successful R numerical tests.
+Stage 4's Python reference tests are explicitly opt-in. **On 27
+October 2026 the owner ran the native R tests (64 PASS, two intentionally
+skipped Python cases), the Stage 4 ledger (26 PASS), and the full opt-in
+Python 1.2 numerical oracle (733 PASS, no failures/warnings/skips)
+on Windows.** Source static checks and owner-run numerical tests are
+distinct from cross-OS CI, which has not yet executed.
 
 The frozen Python 1.2 inventory is still **508 public exports**:
 **380 callable functions + 128 other types/objects**. Currently
