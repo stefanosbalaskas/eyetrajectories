@@ -18,8 +18,9 @@
   cumulative_path_length="etr_cumulative_path_length",
   trajectory_tortuosity="etr_trajectory_tortuosity_frame",
   functional_l2_distance="etr_l2_distance",
-  discrete_frechet_distance="etr_frechet",
-  dynamic_time_warping_distance="etr_dtw",
+  discrete_frechet_distance="etr_discrete_frechet",
+  dynamic_time_warping_distance="etr_dynamic_time_warping",
+  pairwise_dynamic_time_warping_distances="etr_pairwise_dtw_full",
   pairwise_discrete_frechet_distances="etr_pairwise_frechet",
   nearest_trajectory_indices="etr_nearest_trajectory_indices",
   functional_trapezoid_weights="etr_trapezoid_weights",
@@ -96,10 +97,14 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
                     "trajectory_tortuosity",
                     "pairwise_discrete_frechet_distances",
                     "nearest_trajectory_indices")
+  stage4_names <- c("discrete_frechet_distance",
+                    "dynamic_time_warping_distance",
+                    "pairwise_dynamic_time_warping_distances")
   api$native_implementation_stage <- ifelse(
       api$is_python_function & api$python_name %in% stage2_names,2L,
       ifelse(api$is_python_function & api$python_name %in% stage3_names,3L,
-             NA_integer_))
+        ifelse(api$is_python_function & api$python_name %in% stage4_names,
+               4L,NA_integer_)))
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   api$status <- ifelse(!api$is_python_function,

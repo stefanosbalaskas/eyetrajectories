@@ -1,15 +1,64 @@
 # eyetrajectories
 
+## Native R Stage 4 — complete Fréchet coupling and audited DTW (draft)
+
+Three additional Python-free R implementations now expose the Python
+1.2.0 sequence-distance contracts missing from the earlier short
+`etr_frechet()` / `etr_dtw()` functions:
+
+- `etr_discrete_frechet()`: scalar or deterministic optimal coupling,
+  0-based path indices, local costs, and provenance.
+- `etr_dynamic_time_warping()`: symmetric1/symmetric2 step weighting,
+  Sakoe-Chiba index windows, normalizable symmetric2 scores, and
+  complete 0-based alignment path/cost audits.
+- `etr_pairwise_dtw_full()`: full options and selected channels for
+  Python-equivalent unlabeled pairwise DTW distance matrices.
+
+**These are native R algorithms. No Python is executed by them.**
+Stage 4's Python reference tests are explicitly opt-in. **On 27
+October 2026 the owner ran the native R tests (64 PASS, two intentionally
+skipped Python cases), the Stage 4 ledger (26 PASS), and the full opt-in
+Python 1.2 numerical oracle (733 PASS, no failures/warnings/skips)
+on Windows.** Source static checks and owner-run numerical tests are
+distinct from cross-OS CI, which has not yet executed.
+
+The frozen Python 1.2 inventory is still **508 public exports**:
+**380 callable functions + 128 other types/objects**. Currently
+**45** function names have an identified native R candidate, with
+**335 unmapped** function names; Stage 2–4 have added **14** genuinely
+new R implementations. The completion ledger remains fail-closed,
+not a claim of 45 qualified equivalents.
+
+```r
+# First checkout: research/full-native-r-parity-stage4-20261027
+pkgload::load_all(".",quiet=TRUE)
+testthat::test_local(".",filter="native-stage4-distance-contracts")
+testthat::test_local(".",filter="native-stage4-parity-ledger")
+testthat::test_local(".",filter="full-native-r-parity-ledger")
+source("scripts/report_full_native_r_parity.R")
+
+# Optional independently executed Python v1.2.0 comparison:
+stopifnot(identical(et_python_version(),"1.2.0"))
+Sys.setenv(ET_RUN_PYTHON_TESTS="true")
+testthat::test_local(".",filter="native-stage4-distance-contracts")
+Sys.unsetenv("ET_RUN_PYTHON_TESTS")
+```
+
+**[Stage 4 method contracts and reproducibility](docs/full-native-r-stage4-frechet-dtw.md)** · **[Stage 4 draft PR #12](https://github.com/stefanosbalaskas/eyetrajectories/pull/12)**.
+Research-only; no release/merge and no general scientific inferential
+qualification.
+
+
 ## Native R Stage 3 — seven more Python-free methods (research)
 
 Stage 3 adds **seven independently implemented R functions** for
 coordinates, landmark centering, explicit time intervals, wrapped heading,
 per-curve tortuosity, weighted pairwise discrete Fréchet distance and
 nearest trajectories. Stage 2's four kinematics methods passed **296/296**
-owner-run Python 1.2 numerical assertions on Windows; Stage 3 itself has
-**not yet passed R runtime tests**.
+owner-run Python 1.2 numerical assertions on Windows. Stage 3 subsequently
+passed **347/347** complete Python 1.2 numerical assertions on Windows.
 
-The exact 508-symbol inventory now identifies **44 native candidates**
+At the Stage 3 checkpoint, the exact 508-symbol inventory identified **44 native candidates**
 (11 additions from Stages 2–3 plus 33 existing analogues), while
 **336 Python functions remain unmapped** and 128 public nonfunction
 symbols require native representation review. These are names/candidates,
@@ -40,12 +89,12 @@ No release or native 508/508 parity claim.
 independent R implementation **without executing Python**. The existing
 `reticulate` bridge remains optional; it is **not** native parity.
 
-This research branch adds four actual native R algorithms
+The initial Stage 2 research branch added four native R algorithms
 (`etr_acceleration_magnitude()`, `etr_distance_to_landmark()`,
 `etr_signed_curvature()`, `etr_turning_rate()`), Python-free analytic
 tests and an optional independent Python numerical-oracle test.
 
-The strict `etr_native_parity_catalog()` currently identifies **41 named
+At the Stage 2 checkpoint, the strict `etr_native_parity_catalog()` identified **41 named
 native counterparts/candidates** across **380 Python functions** (37 prior,
 4 new); **339 functions lack a specifically mapped native counterpart**.
 A further **128 public Python classes/configurations/constants** remain
@@ -89,8 +138,9 @@ file.exists("tests/testthat/test-full-native-r-parity-ledger.R")
 # Both must return TRUE before calling test_local().
 ```
 
-New code has passed static source checks only; the native R tests and
-cross-platform CI have not yet passed. **No merge, release, or claim that
+Stage 2 and Stage 3 completed owner-executed Windows numeric oracle tests;
+Stage 4 still needs runtime checks, and cross-platform GitHub Actions
+has not executed steps. **No merge, release, or claim that
 all Python algorithms are implemented natively in R.**
 
 

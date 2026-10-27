@@ -197,3 +197,38 @@ A candidate count is **not** a numerical parity rate.
 failed at runner admission with zero recorded steps in all four jobs,
 which is not a scientific algorithm outcome. The strict 508-source
 completion gate remains closed; no release or main merge.
+
+
+## Stage 4 — full native R path-based Fréchet / DTW (draft)
+
+Stage 4 extends [the Stage 3 Windows-verified 347/347 numeric assertion
+checkpoint](full-native-r-stage3-preprocessing-distances.md) with three
+independently written Python-free R sequence-distance methods:
+`etr_discrete_frechet()` for deterministic optimal coupling,
+`etr_dynamic_time_warping()` for symmetric1/symmetric2 index-windowed
+alignment and path-normalization/cost audits, and
+`etr_pairwise_dtw_full()` for complete pairwise distance options.
+The two standalone full scalar/path functions supersede narrower name
+analogues for *new* calls while preserving old user-facing R functions.
+
+**Cumulative port inventory:** 45 named native R candidates out of
+380 callable Python 1.2 public exports, **335 unmapped Python function
+names**, 128 other public objects still to review, and **14 new
+independently implemented native R functions** over Stages 2/3/4
+(4+7+3). The name count is not numerical equivalence qualification.
+
+Stage 4 [contract specification and test instructions](full-native-r-stage4-frechet-dtw.md)
+define zero-based coupling indices, deterministic Python tie order,
+unconstrained/Sakoe-Chiba DTW and normalizable symmetric2.
+A **declared resource cap of 5 million point pairs** is a deliberate
+native R/Python behavioral deviation and still requires policy review.
+Machine-readable full 508-contract gate must remain fail-closed. The
+new native-only tests have now passed locally (**64 PASS, two expected
+Python-test SKIPs**), and the owner-run Python 1.2 numerical oracle passed
+**733/733 assertions, zero FAIL/WARN/SKIP** on Windows after separately
+confirming the reference version. The Stage 4 parity ledger passed
+**26/26** assertions. Cross-OS CI remains unverified because the GitHub
+Actions jobs still run **zero steps**. See the
+[qualified Stage 4 record](full-native-r-stage4-frechet-dtw.md#stage-4-windows-qualification--owner-run-pass-27-october-2026)
+for scope, evidence, and remaining source-contract deviations. No release
+or main merge.
