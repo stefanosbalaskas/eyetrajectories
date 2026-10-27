@@ -140,13 +140,54 @@ It checks the Python loader independently accepts those archives,
 then tests native-R array shapes, missingness, metadata,
 source fields and checksum tampering.
 
-**Do not mark these tests PASS before owner execution.** On this
-repository GitHub Actions has previously failed with zero executed
-steps across runners; such failures do not constitute numerical
-or format-validation findings.
+**Qualification update:** the owner has executed and passed the Stage 6
+native R tests, parity ledger and the Python-generated reference
+archives on Windows; see the verified local results below. Independent
+GitHub Actions/Linux/macOS execution is still outstanding because
+jobs failed before recording steps.
 
-**Stage 6 status:** source/tests authored in a draft research PR,
-no publication, merge or 508/508 completion claim. The next
-interoperability increment should study a matching native R
-portable writer and broader dtype/metadata support only after
-the reader's Python-created bundles qualify.
+**Stage 6 status:** source and the selected owner-executed Windows
+Python/R interoperability cases are qualified; the draft PR remains
+unmerged and unreleased. No 508/508 completion claim. A future
+interoperability increment may examine an R portable writer and
+broader dtype/metadata support, but only with separate numerical,
+format, integrity and security verification.
+
+
+## Owner Windows RStudio verification — PASS on 27 October 2026
+
+The owner executed all three requested Stage 6 filters on the Stage 6
+research branch and supplied the following complete console results:
+
+| Test filter | Assertions passed | Failed | Warnings | Skipped |
+|---|---:|---:|---:|---:|
+| `native-stage6-python-portable-reader`, Python opt-in disabled | **18** | 0 | 0 | 1 (expected Python oracle) |
+| `native-stage6-parity-ledger` | **20** | 0 | 0 | 0 |
+| `native-stage6-python-portable-reader`, `ET_RUN_PYTHON_TESTS=true` | **79** | 0 | 0 | 0 |
+
+The owner confirmed `identical(et_python_version(), "1.2.0")` before
+enabling the independent Python oracle. The last run executed the actual
+Python 1.2 `export_portable_result()` test scenarios, decoded them in
+native R, and completed the fixture's `load_portable_result()`
+reference and checksum-mismatch assertions. These 79 testthat
+assertions *include* the native-only assertions; do not add them
+together as 117 independent Python/R tests.
+
+**Verified scope:** The tested Python-generated JSON+NPZ exports are
+readable through the independent R reader, and their expected array
+shapes, numeric data, missingness masks, curve identifiers,
+supported metadata, units, provenance and checksum enforcement match
+the fixture's assertions. The test suite also checks core malformed
+headers, safety and ledger invariants. The output is not a
+cryptographically authenticated scientific record merely because its
+archive checksum matches its manifest.
+
+**Still open:** complete dtype/mixed-pandas compatibility, the writer
+direction (R-to-Python), broader dataclass result objects and adversarial
+archive validation, independent Linux/macOS CI, and regression across
+all earlier package capabilities. GitHub Actions
+[run #40585424140](https://github.com/stefanosbalaskas/eyetrajectories/actions/runs/40585424140)
+failed with **zero executed steps** across four jobs, so the successful
+Windows owner run—not GitHub CI—is the source of this verification.
+The strict 508-public-symbol native parity completion gate remains
+closed. Keep PR #14 **DRAFT**, no main merge or package release.
