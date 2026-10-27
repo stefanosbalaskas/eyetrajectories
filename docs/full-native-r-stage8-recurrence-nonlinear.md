@@ -131,15 +131,29 @@ compares two recurrence-state curves for network topology, node
 tables and global summaries, radius counts, joint-component
 statistics and selected windowed-RQA metrics, with pinned Python 1.2.
 
-**Current qualification:** the initial owner-run native Stage 8
-suite reported **57 PASS / 1 ERROR / 0 WARN / 1 expected Python SKIP**.
-The error was isolated to a malformed test time-grid fixture, corrected
-in draft PR #16 without altering any numerical estimator. The
-**amended head has not been rerun**, and the independent Python
-numerical oracle has not yet executed. Static code checks and exports
-are separate evidence from numerical-runtime qualification.
-GitHub Actions runner admission failures with zero recorded steps
-are not scientific numerical failures.
+**Current qualification — owner-run Windows RStudio, 28 October 2026:**
+
+| Stage 8 check | PASS | FAIL | WARN | SKIP |
+|---|---:|---:|---:|---:|
+| `native-stage8-nonlinear-recurrence`, R-only | **62** | 0 | 0 | 1 expected opt-in Python skip |
+| `native-stage8-parity-ledger` | **82** | 0 | 0 | 0 |
+| `native-stage8-nonlinear-recurrence`, Python oracle enabled | **189** | 0 | 0 | 0 |
+
+The owner checked `identical(et_python_version(), "1.2.0")`
+before enabling `ET_RUN_PYTHON_TESTS=true`; the direct Python 1.2
+reference comparison then completed without skips. The Python-enabled
+189 assertions **include** the native expectations; these rows must
+not be summed as independent scientific oracle tests. The previous
+57 PASS / 1 ERROR / 1 SKIP run was a malformed negative *test fixture*;
+its monotonicity/synchronization expectations were corrected without
+changing recurrence algorithms, numerical tolerances or thresholds.
+
+The [final-head Stage 8 Actions run #40598507486](https://github.com/stefanosbalaskas/eyetrajectories/actions/runs/40598507486)
+failed at job admission for all four jobs (Windows, Ubuntu, macOS and
+Linux pinned-Python oracle): **zero recorded steps each**. Therefore
+cross-platform CI execution is **not** qualified. The owner-provided
+Windows console transcript is numerical evidence for the executed
+fixtures, not a GitHub runner or complete Python-contract certificate.
 
 **Research draft only:** no main merge, CRAN/PyPI release,
 or inference/coverage/identifiability claim.
@@ -172,5 +186,7 @@ No recurrence estimators, time-alignment requirements, numerical
 thresholds or RQA calculations were changed. **Only the test
 fixture and assertions were modified.**
 
-This fix is committed to research Stage 8 draft PR #16;
-Windows rerun and pinned Python 1.2 comparison remain pending.
+This fix is committed to research Stage 8 draft PR #16. Subsequently,
+the corrected Windows native suite passed 62 assertions, the ledger
+passed 82 and the Python 1.2-enabled suite passed 189 with no skips.
+Cross-platform execution and full-contract equivalence remain pending.
