@@ -9,6 +9,8 @@
 \alias{etr_simulate_planar_trajectories}
 \alias{etr_simulate_aoi_probability_trajectories}
 \alias{etr_from_irregular_long_dataframe}
+\alias{etr_poincare_crossings}
+\alias{etr_fit_local_return_map}
 \title{Stage 13 native R functional regression, embedding and simulation}
 \description{Python-free numerical function-on-scalar OLS, HC1 standard errors, fixed-design wild bootstrap, observed-grid simultaneous bands, nonlinear embedding diagnostics, empirical return-map stability, trajectory generators and explicit irregular sample projection.}
 \usage{
@@ -22,6 +24,8 @@ etr_return_map_stability(fit, tolerance = 1e-6)
 etr_simulate_planar_trajectories(n_participants = 20L, trials_per_participant = 6L, n_time = 121L, duration = 2, random_state = 42L)
 etr_simulate_aoi_probability_trajectories(n_curves = 80L, n_time = 101L, n_aoi = 4L, duration = 2, random_state = 17L)
 etr_from_irregular_long_dataframe(data, curve_columns, time_column, value_columns = c("x", "y"), grid, metadata_columns = NULL, method = "linear", max_gap = NULL, coordinate_system = "unknown", time_unit = "unknown")
+etr_poincare_crossings(trajectories, curve, section_dimension, section_value, direction, state_dimensions = NULL)
+etr_fit_local_return_map(crossings, reference, neighborhood_radius = NULL, n_neighbors = NULL)
 }
 \arguments{
 \item{trajectories}{Complete native functional responses; no automatic interpolation or selection.}
@@ -69,5 +73,6 @@ etr_from_irregular_long_dataframe(data, curve_columns, time_column, value_column
 \item{coordinate_system}{Declared trajectory coordinate semantics.}
 \item{time_unit}{Declared observed time unit.}
 }
+\item{section_dimension}{Explicit Poincare section dimension.}\item{section_value}{Finite section threshold.}\item{direction}{Positive, negative or both orientations.}\item{state_dimensions}{Declared non-section functional state dimensions.}\item{crossings}{Native Poincare crossing results.}\item{reference}{Local return-map mean, median or explicit reference vector.}\item{neighborhood_radius}{Positive local radius, exclusive with n_neighbors.}\item{n_neighbors}{Number of locally selected transitions, exclusive with radius.}
 \value{A native fit, diagnostic or band result, trajectory collection, or structured coefficient data frame according to the invoked method.}
 \details{The base-R pseudorandom generator does not reproduce NumPy random sequences. Simultaneous bands are observed-grid approximations only. FNN is exact brute force with a size cap and explicit tie differences. Time-unit embedding delays remain unsupported. No public source-contract certification or release is implied.}
