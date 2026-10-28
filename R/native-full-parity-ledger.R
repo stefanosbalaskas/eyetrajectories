@@ -106,6 +106,20 @@
   largest_lyapunov_reporting_text="etr_largest_lyapunov_reporting_text",
   surrogate_nonlinearity_reporting_text="etr_surrogate_nonlinearity_reporting_text",
   return_map_stability_reporting_text="etr_return_map_stability_reporting_text",
+  cross_validate_fpca_reconstruction="etr_cross_validate_fpca_reconstruction",
+  summarise_fpca_cross_validation="etr_summarise_fpca_cross_validation",
+  select_fpca_components_cv="etr_select_fpca_components_cv",
+  summarise_fpca_regression_cv="etr_summarise_fpca_regression_cv",
+  select_fpca_regression_components="etr_select_fpca_regression_components",
+  fpca_score_uncertainty_frame="etr_fpca_score_uncertainty_frame",
+  fpca_spectrum_uncertainty_frame="etr_fpca_spectrum_uncertainty_frame",
+  conformal_fpca_anomaly_frame="etr_conformal_fpca_anomaly_frame",
+  trajectory_distance_comparison_frame="etr_trajectory_distance_comparison_frame",
+  trajectory_distance_neighbor_frame="etr_trajectory_distance_neighbor_frame",
+  fpca_regression_slope_band_frame="etr_fpca_regression_slope_band_frame",
+  fpca_regression_slope_uncertainty_frame="etr_fpca_regression_slope_uncertainty_frame",
+  fpca_regression_prediction_uncertainty_frame="etr_fpca_regression_prediction_uncertainty_frame",
+  fpca_regression_future_prediction_frame="etr_fpca_regression_future_prediction_frame",
   split_conformal_fpca_anomaly="etr_split_conformal_fpca_anomalies",
   # These four new native methods are experimentally implemented here.
   acceleration_magnitude_function="etr_acceleration_magnitude",
@@ -206,6 +220,9 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   stage11_names <- c("joint_recurrence_reporting_text","recurrence_network_reporting_text","recurrence_radius_profile_reporting_text","rqa_reporting_text","rqa_metric_mean_bootstrap_reporting_text","windowed_rqa_reporting_text","windowed_rqa_functional_reporting_text","windowed_rqa_sensitivity_reporting_text","windowed_rqa_mean_band_reporting_text","rqa_parameter_sensitivity_reporting_text","kantz_parameter_sensitivity_reporting_text","lyapunov_parameter_sensitivity_reporting_text","largest_lyapunov_reporting_text","surrogate_nonlinearity_reporting_text","return_map_stability_reporting_text")
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% stage11_names] <- 11L
+  stage12_names <- c("cross_validate_fpca_reconstruction","summarise_fpca_cross_validation","select_fpca_components_cv","summarise_fpca_regression_cv","select_fpca_regression_components","fpca_score_uncertainty_frame","fpca_spectrum_uncertainty_frame","conformal_fpca_anomaly_frame","trajectory_distance_comparison_frame","trajectory_distance_neighbor_frame","fpca_regression_slope_band_frame","fpca_regression_slope_uncertainty_frame","fpca_regression_prediction_uncertainty_frame","fpca_regression_future_prediction_frame")
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% stage12_names] <- 12L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset
