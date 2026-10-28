@@ -6,7 +6,8 @@ test_that("source-contract approval cannot be inferred from numeric fixtures",{
   z<-etr_native_parity_catalog()
   candidates<-z[z$contract_certification_candidate,,drop=FALSE]
   expect_setequal(candidates$python_name,
-    c("alr_transform","inverse_alr","score_distance_matrix"))
+    c("alr_transform","inverse_alr","score_distance_matrix",
+      "functional_trapezoid_weights"))
   expect_true(all(candidates$contract_numerical_fixture_pass))
   expect_false(any(candidates$independent_numeric_parity_pass))
   expect_false(any(candidates$behavioral_schema_parity_pass))
