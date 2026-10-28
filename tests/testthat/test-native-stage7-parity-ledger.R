@@ -15,10 +15,10 @@ test_that("ten Stage 7 public functions are independently implemented and mapped
     phase_landmark_frame="etr_phase_landmark_frame")
   expect_equal(nrow(catalog),508L)
   expect_equal(sum(catalog$is_python_function),380L)
-  expect_equal(sum(catalog$named_native_candidate),154L)
+  expect_equal(sum(catalog$named_native_candidate),159L)
   expect_equal(sum(catalog$is_python_function &
-                   !catalog$named_native_candidate),226L)
-  expect_equal(sum(catalog$native_implementation_started),127L)
+                   !catalog$named_native_candidate),221L)
+  expect_equal(sum(catalog$native_implementation_started),133L)
   expect_equal(sum(catalog$native_implementation_stage==7L,
                    na.rm=TRUE),10L)
   for(name in names(names)){
