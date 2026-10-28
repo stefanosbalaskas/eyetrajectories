@@ -323,3 +323,67 @@ etr_transfer_entropy_reporting_text <- function(result){
     result$source_lag,result$n_effective,result$n_joint_histories,
     result$singleton_joint_history_fraction)
 }
+
+
+#' Analyst-shift TE null reporting
+#' @inheritParams etr_transfer_entropy_local_frame
+#' @export
+etr_transfer_entropy_circular_shift_reporting_text <- function(result){
+  .etr_assert(inherits(result,"etr_transfer_entropy_circular_shift_test"),
+    "result must be native circular shift TE test")
+  sprintf(paste0("Observed transfer entropy was %.6g bits; the mean across %d ",
+    "analyst-declared circular source shifts was %.6g bits, giving a surrogate-",
+    "centered difference of %.6g bits. The plus-one upper-tail Monte Carlo ",
+    "p-value was %.6g (minimum attainable resolution %.6g). The null preserves ",
+    "the source marginal and circular auto-dependence but assumes the declared ",
+    "wrap-around shifts are scientifically defensible; the test does not establish causality."),
+    result$observed$transfer_entropy_bits,length(result$shifts),
+    result$surrogate_mean_bits,result$surrogate_centered_transfer_entropy_bits,
+    result$upper_tail_p_value,result$p_value_resolution)
+}
+#' Conditional discrete transfer entropy scientific reporting
+#' @inheritParams etr_transfer_entropy_local_frame
+#' @export
+etr_conditional_transfer_entropy_reporting_text <- function(result){
+  .etr_assert(inherits(result,"etr_conditional_transfer_entropy"),
+    "result must be native conditional TE")
+  sprintf(paste0("Conditional discrete transfer entropy was %.6g bits ",
+    "using target/source/conditioning histories %d/%d/%d and declared ",
+    "source/conditioning lags %d/%d, based on %d effective transitions. ",
+    "The estimate describes incremental directed predictive information ",
+    "conditional on recorded histories, not evidence of causal influence."),
+    result$conditional_transfer_entropy_bits,result$target_history,
+    result$source_history,result$condition_history,
+    result$source_lag,result$condition_lag,result$n_effective)
+}
+#' Conditional source-shift TE scientific reporting
+#' @inheritParams etr_transfer_entropy_local_frame
+#' @export
+etr_conditional_transfer_entropy_circular_shift_reporting_text <- function(result){
+  .etr_assert(inherits(result,"etr_conditional_transfer_entropy_circular_shift_test"),
+    "result must be native conditional TE circular shift")
+  sprintf(paste0("Observed conditional transfer entropy was %.6g bits; the ",
+    "mean across %d declared source-only shifts was %.6g bits. ",
+    "The surrogate-centered difference was %.6g bits and the plus-one ",
+    "upper-tail p-value was %.6g (resolution %.6g). Target and conditioning ",
+    "processes were kept fixed. This is not causal identification."),
+    result$observed$conditional_transfer_entropy_bits,length(result$shifts),
+    result$surrogate_mean_bits,
+    result$surrogate_centered_conditional_transfer_entropy_bits,
+    result$upper_tail_p_value,result$p_value_resolution)
+}
+#' Descriptive predeclared transfer entropy sensitivity text
+#' @inheritParams etr_transfer_entropy_local_frame
+#' @export
+etr_transfer_entropy_parameter_sensitivity_reporting_text <- function(result){
+  .etr_assert(inherits(result,"etr_transfer_entropy_sensitivity"),
+    "result must be native TE sensitivity")
+  rr<-range(result$table$transfer_entropy_bits)
+  sprintf(paste0("Discrete transfer entropy was evaluated over %d ",
+    "predeclared target-history/source-history/source-lag specifications; ",
+    "observed estimates ranged from %.6g to %.6g bits. ",
+    "No specification was selected automatically. Variation across ",
+    "settings describes analytical sensitivity, not sampling uncertainty ",
+    "or multiplicity-adjusted evidence of causality."),
+    nrow(result$table),rr[1L],rr[2L])
+}
