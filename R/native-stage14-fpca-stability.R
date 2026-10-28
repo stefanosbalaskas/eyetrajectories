@@ -122,7 +122,12 @@ etr_compare_fpca_subspaces <- function(reference,candidate,
     "quadrature weights differ")
   a<-.etr14_block(reference,start,stop)
   b<-.etr14_block(candidate,start,stop)
-  cos<-svd(a%*%t(b),nu=0L,nv=0L)$d
+  # Identical standardized bases span exactly the same subspace.
+  # SVD may return 1 - machine epsilon for their self-Gram matrix;
+  # acos/sqrt magnifies that harmless roundoff to about 1e-8.
+  # Handle exact equality only: never snap genuinely distinct bases.
+  cos<-if(identical(a,b))rep(1,k) else
+    svd(a%*%t(b),nu=0L,nv=0L)$d
   cos<-pmax(0,pmin(1,cos))
   ang<-acos(cos)*180/pi
   frob<-sqrt(2*sum(pmax(0,1-cos^2)))
