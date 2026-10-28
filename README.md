@@ -1,5 +1,22 @@
 # eyetrajectories
 
+## Stage 11 — Python-free nonlinear scientific reporting (research draft)
+
+Fifteen new native R **reporting/adaptor** functions translate existing
+recurrence, RQA, temporal-window and declared sensitivity result records
+into transparent scientific methods text. Some sensitivity and uncertainty
+reports consume explicit R result schemas whose upstream native estimators
+remain unimplemented; these are not fifteen new scientific estimators.
+
+Cumulative independently authored R functions: **77**, including the
+reporting utilities. Named Python 1.2 callable mappings: **107 / 380**;
+unmapped: **273**. Fully one-to-one certified contracts: **0 / 508**.
+Stage 11 source and tests are authored but **have not run**; Stage 10
+Python-oracle tuple indexing was corrected but has not been rerun.
+
+[Stage 11 source contracts and qualification](docs/full-native-r-stage11-nonlinear-reporting.md).
+
+
 ## Stage 10 — compositional FPCA and functional diagnostics (research draft)
 
 Fifteen additional Python-free R implementations are now authored: ALR-based
