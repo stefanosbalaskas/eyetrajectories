@@ -166,3 +166,59 @@ test_that("Stage 21 independent pinned Python v1.2 spectral diagnostic oracle is
   # NO claim that exact surrogate draws or their spectral errors
   # match across independent RNG engines.
 })
+
+
+test_that("Stage 21 multivariate LLE surrogate null retains exact plus-one inference and provenance",{
+  x<-.etr21_fixture()
+  set.seed(221);before<-.Random.seed
+  r<-etr_multivariate_surrogate_nonlinearity_test(
+    x,"c1",c("x","y"),"x","largest_lyapunov",
+    embedding_dimension=2L,delay=2L,theiler_window=3L,
+    max_horizon=8L,fit_start=1L,fit_end=5L,
+    n_surrogates=3L,alternative="greater",max_iterations=12L,
+    tolerance=10,random_state=4L)
+  expect_identical(before,.Random.seed)
+  expect_s3_class(r,"etr_multivariate_surrogate_nonlinearity")
+  expect_s3_class(r$surrogate_result,"etr_multivariate_iaaft")
+  expect_equal(length(r$surrogate_statistics),3L)
+  expect_true(is.finite(r$observed_statistic))
+  expect_true(all(is.finite(r$surrogate_statistics)))
+  expect_equal(r$p_value,
+    (1+sum(r$surrogate_statistics>=r$observed_statistic))/4,
+    tolerance=0)
+  expect_true(r$p_value>0&&r$p_value<=1)
+  expect_false(r$provenance$source_python_equivalent_stochastic_draws)
+  r2<-etr_multivariate_surrogate_nonlinearity_test(
+    x,"c1",c("x","y"),"x","largest_lyapunov",
+    2L,2L,3L,8L,1L,5L,
+    n_surrogates=3L,alternative="greater",max_iterations=12L,
+    tolerance=10,random_state=4L)
+  expect_identical(r$surrogate_statistics,r2$surrogate_statistics)
+  expect_error(etr_multivariate_surrogate_nonlinearity_test(
+    x,"c1",c("x","y"),"x","unsupported",
+    2L,2L,3L,8L,1L,5L),"largest_lyapunov")
+  expect_error(etr_multivariate_surrogate_nonlinearity_test(
+    x,"c1",c("x","y"),"x","largest_lyapunov",
+    2L,2L,3L,8L,1L,5L,alternative="both"),"alternative")
+})
+
+test_that("Stage 21 two-sided and lower-tail p-values use the declared Monte Carlo correction",{
+  x<-.etr21_fixture()
+  shared<-list(trajectories=x,curve="c1",
+    dimensions=c("x","y"),reference_dimension="x",
+    statistic="largest_lyapunov",
+    embedding_dimension=2L,delay=2L,theiler_window=3L,
+    max_horizon=8L,fit_start=1L,fit_end=5L,
+    n_surrogates=3L,max_iterations=12L,tolerance=10,random_state=4L)
+  less<-do.call(etr_multivariate_surrogate_nonlinearity_test,
+    c(shared,list(alternative="less")))
+  two<-do.call(etr_multivariate_surrogate_nonlinearity_test,
+    c(shared,list(alternative="two-sided")))
+  expect_equal(less$p_value,
+    (1+sum(less$surrogate_statistics<=less$observed_statistic))/4,
+    tolerance=0)
+  upper<-(1+sum(two$surrogate_statistics>=two$observed_statistic))/4
+  lower<-(1+sum(two$surrogate_statistics<=two$observed_statistic))/4
+  expect_equal(two$p_value,min(1,2*min(lower,upper)),tolerance=0)
+  expect_identical(less$surrogate_statistics,two$surrogate_statistics)
+})
