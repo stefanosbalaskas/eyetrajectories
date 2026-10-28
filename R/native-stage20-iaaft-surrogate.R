@@ -100,7 +100,12 @@ etr_surrogate_nonlinearity_test <- function(trajectories,curve,
     etr_estimate_largest_lyapunov_rosenstein(div,start,end)$exponent
   }
   observed<-stat(signal)
-  restore<-.etr13_rng(random_state);on.exit(restore(),add=TRUE)
+  if(!is.null(random_state)){
+    restore<-.etr13_rng(random_state)
+    on.exit(restore(),add=TRUE)
+  }
+  # Without a seed, native R uses its active RNG stream; unlike Python
+  # default_rng(NULL), these stochastic draws are not NumPy-equivalent.
   sur<-iter<-errors<-numeric(b)
   for(i in seq_len(b)){
     trial<-tryCatch({
