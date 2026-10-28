@@ -1,6 +1,6 @@
 # Stage 13 — native functional OLS, bootstrap, nonlinear diagnostics and simulation
 
-Published source reference: `eyetrajectoriespy==1.2.0` (`function_on_scalar.py`, `embedding.py`, `return_maps.py`, `simulate.py`, `io.py`). Ten **genuine Python-free R numerical operations** were authored; none calls a Python bridge.
+Published source reference: `eyetrajectoriespy==1.2.0` (`function_on_scalar.py`, `embedding.py`, `return_maps.py`, `simulate.py`, `io.py`). Twelve **genuine Python-free R numerical operations** were authored; none calls a Python bridge.
 
 | Python public source callable | Native R counterpart | Method |
 |---|---|---|
@@ -14,6 +14,8 @@ Published source reference: `eyetrajectoriespy==1.2.0` (`function_on_scalar.py`,
 | `simulate_planar_trajectories` | `etr_simulate_planar_trajectories` | Repeat-participant planar gaze simulator |
 | `simulate_aoi_probability_trajectories` | `etr_simulate_aoi_probability_trajectories` | AOI probability simplex simulator |
 | `from_irregular_long_dataframe` | `etr_from_irregular_long_dataframe` | Explicit irregular-to-grid resampling |
+| `poincare_crossings` | `etr_poincare_crossings` | Exact interpolated section crossing states and times |
+| `fit_local_return_map` | `etr_fit_local_return_map` | Local affine return-map OLS with reference and neighborhood policy |
 
 ## Numerical boundaries and independent-unit design
 
@@ -23,6 +25,7 @@ Published source reference: `eyetrajectoriespy==1.2.0` (`function_on_scalar.py`,
 - Simultaneous bands use the empirical **higher** order statistic of maximum absolute studentized deviations, either coefficient-wise or over the coefficient family. Zero-SE cells receive zero-width bands. These are **observed-grid finite-replicate approximations**, not continuous-domain or prequalified frequentist coverage guarantees.
 - Embedding delay uses a global signal range, common histogram edges, autocorrelation with common denominator, and a strictly interior AMI local-minimum **diagnostic without automatically selecting a lag**. The current native R API supports sample lags with approximately regular physical-time grids only; time-unit delay resolution remains unsupported.
 - FNN checks explicit positive-distance temporally separated nearest neighbors with exact brute-force search, capped at 2,500 samples. Ties may be resolved differently than SciPy `cKDTree`. No automatic dimension selection.
+- Explicit Poincare section crossings and a local affine return-map fit are now native as well. They interpolate crossing states, choose a declared reference and radius/count neighborhood, require full-rank OLS, and preserve empirical-design provenance.
 - Empirical return-map stability uses Jacobian eigenvalues and declared tolerance; contraction/expansion is **not** interpreted as deterministic orbital stability.
 - Functional simulators follow the Python model equations and generate complete auditable R trajectory containers. The random engine is base R, **not** NumPy. Consequently same seed does not imply cross-language bitwise equivalence; reproducibility is tested independently in each language.
 - Irregular long-to-grid conversion composes earlier native construction and explicit resampling; no extrapolation or hidden interpolation on malformed inputs.
@@ -31,9 +34,9 @@ Published source reference: `eyetrajectoriespy==1.2.0` (`function_on_scalar.py`,
 
 | Measure | Stage 12 | Stage 13 authored |
 |---|---:|---:|
-| Independently authored native R functions | 91 | **101** |
-| Mapped Python source function names | 121 / 380 | **131 / 380** |
-| Unmapped Python callable names | 259 | **249** |
+| Independently authored native R functions | 91 | **103** |
+| Mapped Python source function names | 121 / 380 | **133 / 380** |
+| Unmapped Python callable names | 259 | **247** |
 | Partial representations of other exported objects | 7 / 128 | **7 / 128** |
 | Fully qualified public Python source contracts | 0 / 508 | **0 / 508** |
 
