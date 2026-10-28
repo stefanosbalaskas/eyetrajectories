@@ -61,8 +61,10 @@ The qualification process requires all of:
 5. An independent reviewer approval with concrete GitHub evidence
    for the qualified exact head.
 
-The three Stage 20 candidates have green owner-run targeted fixtures
-but **still have source-acceptance/overflow/duck-typing gaps**. The
+The three original Stage 20 candidates and the fourth Stage 23
+`functional_trapezoid_weights` candidate have targeted owner-run
+numerical fixtures, but **all four remain missing complete-domain
+independent review and have known unresolved Python/R differences**. The
 Stage 22 audited known-gap register is fail-closed. Reporting adapters
 cannot inherit certification from the underlying estimator or from
 their own fixture success. No new approval flags have been set and
@@ -89,3 +91,19 @@ c(native=sum(z$native_implementation_started),
 
 **No merge, version bump, CRAN publication, PyPI publication or
 complete-contract approval** is authorized by this research PR.
+
+
+## First four reviewed-candidate queue — no full approvals
+
+The Stage 23 certification register now holds **four** source contracts
+with targeted numerical fixture PASS evidence: `alr_transform`,
+`inverse_alr`, `score_distance_matrix`, and
+`functional_trapezoid_weights`. A Stage 23 source correction adds
+regular rectangular nested simplex-sequence acceptance to native ALR
+without changing its finite-array numerical formula. This closes one
+previous input-edge mismatch but **does not establish complete public
+coercion-domain parity**. The other source differences remain open.
+
+[Independent complete-source reviewer checklist and signoff queue](https://github.com/stefanosbalaskas/eyetrajectories/issues/34).
+All four source-contract approval booleans remain FALSE, and the
+known-gap gate refuses to certify an unresolved difference.
