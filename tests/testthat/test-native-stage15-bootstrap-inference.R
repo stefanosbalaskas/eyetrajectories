@@ -139,9 +139,9 @@ test_that("Stage 15 frozen 508-source register remains fail-closed",{
   z<-etr_native_parity_catalog()
   expect_equal(nrow(z),508L)
   expect_equal(sum(z$is_python_function),380L)
-  expect_equal(sum(z$named_native_candidate),173L)
-  expect_equal(sum(z$is_python_function & !z$named_native_candidate),207L)
-  expect_equal(sum(z$native_implementation_started),148L)
+  expect_equal(sum(z$named_native_candidate),174L)
+  expect_equal(sum(z$is_python_function & !z$named_native_candidate),206L)
+  expect_equal(sum(z$native_implementation_started),149L)
   expect_equal(sum(z$native_implementation_stage==15L,na.rm=TRUE),5L)
   expect_equal(sum(!is.na(z$native_representation_stage)),7L)
   expect_equal(sum(!z$is_python_function &
