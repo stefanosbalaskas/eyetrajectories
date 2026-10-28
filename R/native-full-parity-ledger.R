@@ -203,6 +203,9 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     "registration_sensitivity_reporting_text","functional_mean_band_frame")
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% stage10_names] <- 10L
+  stage11_names <- c("joint_recurrence_reporting_text","recurrence_network_reporting_text","recurrence_radius_profile_reporting_text","rqa_reporting_text","rqa_metric_mean_bootstrap_reporting_text","windowed_rqa_reporting_text","windowed_rqa_functional_reporting_text","windowed_rqa_sensitivity_reporting_text","windowed_rqa_mean_band_reporting_text","rqa_parameter_sensitivity_reporting_text","kantz_parameter_sensitivity_reporting_text","lyapunov_parameter_sensitivity_reporting_text","largest_lyapunov_reporting_text","surrogate_nonlinearity_reporting_text","return_map_stability_reporting_text")
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% stage11_names] <- 11L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset
