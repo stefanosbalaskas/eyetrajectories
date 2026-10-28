@@ -35,8 +35,8 @@ Published source reference: `eyetrajectoriespy==1.2.0` (`function_on_scalar.py`,
 | Measure | Stage 12 | Stage 13 authored |
 |---|---:|---:|
 | Independently authored native R functions | 91 | **103** |
-| Mapped Python source function names | 121 / 380 | **133 / 380** |
-| Unmapped Python callable names | 259 | **247** |
+| Mapped Python source function names | 121 / 380 | **132 / 380** |
+| Unmapped Python callable names | 259 | **248** |
 | Partial representations of other exported objects | 7 / 128 | **7 / 128** |
 | Fully qualified public Python source contracts | 0 / 508 | **0 / 508** |
 
