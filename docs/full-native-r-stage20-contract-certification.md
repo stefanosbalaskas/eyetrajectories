@@ -16,7 +16,15 @@ Stage 20 introduces the first three **certification pilots**:
 
 The machine-readable registry is `inst/extdata/native_contract_certification_pilots_v1.csv`. Each record must have **all four explicit approvals**: independent pinned Python numeric oracle, full in-domain shape/boundary behavior, scientific-scope review and independent human reviewer signoff with review evidence. The register pins **both the development inventory SHA and published v1.2.0 release commit**, plus the candidate's mapped R export, and rejects mismatched values offline. Approval also requires a real GitHub evidence URL, not a blank flag.
 
-**The registry starts with every approval FALSE. The 508-contract fully certified count remains 0 until the Stage 20 tests run and an independent source review confirms the scope. No test automatically mutates the approval registry.** Even if the first three pilots pass, approval is per public source contract, not inference about neighboring functions or subcontracts.
+**All four full-contract approval flags remain FALSE. The direct numerical fixtures have passed, but complete source-contract numerical/schema behavior and independent source review remain unapproved. No test automatically mutates the approval registry.** Even if the first three pilots pass, approval is per public source contract, not inference about neighboring functions or subcontracts.
+
+## Qualified test-fixture milestone — three candidates, zero complete contracts
+
+The owner has now passed the corrected Stage 9 (114 assertions), Stage 20 native (63), full source census (39), and Python 1.2 direct Stage 20 oracle (84), all with zero failures and warnings. The single-channel simplex source behavior was added and verified.
+
+The registry distinguishes **`numerical_fixture_pass=TRUE` for all three pilots** from **`numerical_oracle_approved=FALSE`**, which requires exhaustive accepted-domain/source-contract review. Schema, scope and independent reviewer approvals remain FALSE as well. Each numerical fixture result is linked to the owner's Stage 20 GitHub PR evidence. Consequently **3/3 source numerical fixture checks passed, 0/508 complete public contracts independently certified**. The new evidence-state assertions themselves still need an exact-head rerun.
+
+[Candidate-level edge findings](full-native-r-stage20-certification-edge-audit.md).
 
 ## Approval checklist and audit contract
 
