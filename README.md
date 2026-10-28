@@ -1,5 +1,25 @@
 # eyetrajectories
 
+## Stage 12 — held-out FPCA validation and uncertainty frames (research draft)
+
+Fourteen additional Python-free R methods add refitted held-out FPCA
+reconstruction cross-validation, curve/group leakage control, minimum
+and one-standard-error FPC selection, regression-CV summaries,
+and validated uncertainty, conformal anomaly and prediction frames.
+The **one new CV estimator** is substantive numerical inference-support
+infrastructure; the other methods are explicit aggregation/selection
+algorithms and result adapters, not newly fitted bootstrap or conformal
+estimators.
+
+Cumulative: **91 independent native R functions**, **121/380 mapped
+Python callables**, **259 unmapped**, and **0/508 fully certified source
+contracts**. Native Stage 12 and pinned Python 1.2 source-oracle tests
+are authored but have not executed. Stage 10 and 11 RStudio Python
+source checks have passed (84 and 61 assertions, respectively).
+
+[Stage 12 methods, qualification and exact source differences](docs/full-native-r-stage12-cv-uncertainty.md).
+
+
 ## Stage 11 — Python-free nonlinear scientific reporting (research draft)
 
 Fifteen new native R **reporting/adaptor** functions translate existing
