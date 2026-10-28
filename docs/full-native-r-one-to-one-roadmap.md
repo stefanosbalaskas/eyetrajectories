@@ -495,7 +495,7 @@ bands, AMI delay and FNN diagnostics, eigenvalue-based return-map stability,
 two reproducible trajectory simulators, Poincare crossings, local return-map fitting and explicit irregular-grid
 projection. They are **numerical methods**, not ten reporting aliases.
 
-Inventories: **133/380 mapped callable function names**, **247 unmapped**,
+Inventories: **132/380 mapped callable function names**, **248 unmapped**,
 **103 independently authored native R functions**, **7 other symbol
 representations** and **0/508 fully certified public source contracts**.
 The complete source policy remains fail-closed. Stage 12 owner-run Windows
