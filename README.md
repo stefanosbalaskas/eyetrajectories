@@ -1168,3 +1168,17 @@ A new 12-row known-difference register hard-blocks approval of any
 public source contract with a documented unresolved Python/R behavior
 difference. Stage 22 runtime tests remain pending; it is not a release.
 See [Stage 22 scientific graphics and certification evidence](docs/full-native-r-stage22-certification-and-plots.md).
+
+
+## Stage 23: native manuscript reporting (unreleased)
+
+Eight more Python-free native R functions produce descriptive manuscript
+text from audited DTW, distance-multiverse, FPCA stability, outlier,
+influence, eigenspace, cross-validation and multilevel outputs.
+The authored **166 native methods** map **191/380 public Python
+callables**; **189 callable names** remain unmapped.
+Fully source-certified public Python contracts remain **0/508**
+pending full-domain independent review. Source-aligned reporting is
+not underlying estimator certification.
+
+[Stage 23 research methods and verification](docs/full-native-r-stage23-manuscript-source-contracts.md).
