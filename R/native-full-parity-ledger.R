@@ -328,7 +328,8 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     package="eyetrajectories"),stringsAsFactors=FALSE)
   needed <- c("python_name","native_r_candidate","source_path",
     "frozen_catalog_snapshot_sha","published_tag",
-    "published_tag_commit","independent_oracle_suite","evidence_state",
+    "published_tag_commit","independent_oracle_suite",
+    "numerical_fixture_pass","numerical_fixture_evidence","evidence_state",
     "numerical_oracle_approved","schema_boundary_approved",
     "scientific_scope_approved","independent_reviewer_approved",
     "review_evidence")
@@ -345,6 +346,15 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     all(nzchar(register$source_path)) &&
     all(nzchar(register$independent_oracle_suite)),
     "certification evidence register is malformed or mismatched to frozen API")
+  .etr_assert(is.logical(register$numerical_fixture_pass) &&
+    !anyNA(register$numerical_fixture_pass),
+    "fixture evidence state must have explicit boolean values")
+  fixture_link <- as.character(register$numerical_fixture_evidence)
+  fixture_link_present <- !is.na(fixture_link) &
+    grepl("^https://github\\.com/",fixture_link)
+  .etr_assert(!any(register$numerical_fixture_pass &
+    !fixture_link_present),
+    "numeric fixture PASS requires a GitHub evidence link")
   approved <- c("numerical_oracle_approved","schema_boundary_approved",
     "scientific_scope_approved","independent_reviewer_approved")
   .etr_assert(all(vapply(register[approved],function(x)
@@ -363,6 +373,8 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   api$contract_certification_candidate <- !is.na(found)
   api$contract_certification_evidence_state <- ifelse(is.na(found),
     "not_reviewed",register$evidence_state[found])
+  api$contract_numerical_fixture_pass <- ifelse(is.na(found),FALSE,
+    register$numerical_fixture_pass[found])
   api$independent_numeric_parity_pass <- ifelse(is.na(found),FALSE,
     register$numerical_oracle_approved[found])
   api$behavioral_schema_parity_pass <- ifelse(is.na(found),FALSE,
