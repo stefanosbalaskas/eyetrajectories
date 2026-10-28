@@ -144,8 +144,11 @@ etr_cross_validate_fpca_reconstruction <- function(trajectories,
         "exceeds training-fold maximum",max_k))
     train<-.etr12_subset(trajectories,train_ids)
     test<-.etr12_subset(trajectories,test_ids)
-    fit<-etr_fit_fpca(train,n_components=as.integer(max(counts)),
-                       scaling=scaling)
+    fit<-if(length(train$dimension_names)>1L)
+      etr_fit_mfpca(train,n_components=as.integer(max(counts)),
+                    scaling=scaling)
+    else etr_fit_fpca(train,n_components=as.integer(max(counts)),
+                      scaling=scaling)
     scores<-etr_transform_fpca(fit,test)
     for(k in counts) {
       reconstructed<-.etr10_scores_reconstruct(fit,scores,k)
