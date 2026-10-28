@@ -488,15 +488,15 @@ The 508-contract release gate remains closed.
 
 ## Stage 13 — numerical function-on-scalar models and nonlinear dynamics
 
-Ten additional independently authored Python-free R functions target
+Twelve additional independently authored Python-free R functions target
 function-on-scalar observed-grid OLS with HC1 standard errors, participant
 aggregation, fixed-design wild bootstrap, coefficient/family simultaneous
 bands, AMI delay and FNN diagnostics, eigenvalue-based return-map stability,
-two reproducible trajectory simulators and explicit irregular-grid
+two reproducible trajectory simulators, Poincare crossings, local return-map fitting and explicit irregular-grid
 projection. They are **numerical methods**, not ten reporting aliases.
 
-Inventories: **131/380 mapped callable function names**, **249 unmapped**,
-**101 independently authored native R functions**, **7 other symbol
+Inventories: **133/380 mapped callable function names**, **247 unmapped**,
+**103 independently authored native R functions**, **7 other symbol
 representations** and **0/508 fully certified public source contracts**.
 The complete source policy remains fail-closed. Stage 12 owner-run Windows
 RStudio native, ledger and pinned Python oracle tests passed 69, 39, and 79
