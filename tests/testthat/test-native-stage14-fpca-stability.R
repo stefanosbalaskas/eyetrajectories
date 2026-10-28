@@ -94,9 +94,9 @@ test_that("Stage 14 component-bootstrap matching tracks sign and variance",{
     "similarity_threshold","median_explained_variance_ratio"))
   expect_true(all(summary$fraction_at_or_above_threshold>=0&
                   summary$fraction_at_or_above_threshold<=1))
-  repeat<-etr_bootstrap_fpca_stability(x,n_bootstrap=5L,n_components=2L,
+  repeated_fit<-etr_bootstrap_fpca_stability(x,n_bootstrap=5L,n_components=2L,
       scaling="none",random_state=17L)
-  expect_identical(z$similarities,repeat$similarities)
+  expect_identical(z$similarities,repeated_fit$similarities)
   expect_identical(before,reticulate::py_available(initialize=FALSE))
   expect_error(etr_summarise_fpca_stability(z,similarity_threshold=1.5),
     "similarity_threshold")
