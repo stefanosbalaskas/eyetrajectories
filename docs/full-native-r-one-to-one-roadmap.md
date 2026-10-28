@@ -682,3 +682,21 @@ research head is unmerged, unreleased and has not completed
 exact-head RStudio or cross-platform CI qualification.
 
 [Stage 21 native visual integration and source-boundary evidence](full-native-r-stage21-visual-contracts.md).
+
+
+## Stage 22 — eight scientific plotting integrations and stronger certification gate
+
+Eight source-aligned native R plots now cover embedding, recurrence,
+divergence, surrogate inference and one-dimensional Poincare transitions
+using base graphics. Geometry is retained for numerical audit rather
+than obscured by a Python/Matplotlib bridge.
+
+The authored **cumulative** inventory is **158 native implementations,
+183/380 mapped public Python functions, 197 unmapped callable functions
+and 0/508 fully approved public source contracts**. Stage 21 owner-run
+verification passed; Stage 22 source/tests are authored but not yet
+runtime qualified. The newly machine-readable 12-gap source registry
+prevents certification of known-divergent contracts even if review
+flags are erroneously switched to TRUE.
+
+[Stage 22 native plotting and hard-fail published-source certification](full-native-r-stage22-certification-and-plots.md).
