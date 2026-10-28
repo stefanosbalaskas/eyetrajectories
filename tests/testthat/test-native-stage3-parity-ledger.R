@@ -12,8 +12,8 @@ test_that("stage 3 port mapping covers exact Python 1.2 named contracts", {
   )
   expect_equal(nrow(z),508L)
   expect_equal(sum(z$is_python_function),380L)
-  expect_equal(sum(z$named_native_candidate),139L)
-  expect_equal(sum(z$native_implementation_started),110L)
+  expect_equal(sum(z$named_native_candidate),144L)
+  expect_equal(sum(z$native_implementation_started),115L)
   expect_equal(sum(z$native_implementation_stage==2L,na.rm=TRUE),4L)
   expect_equal(sum(z$native_implementation_stage==3L,na.rm=TRUE),7L)
   for (name in names(expected)) {

@@ -1,5 +1,23 @@
 # eyetrajectories
 
+## Stage 15 — native observed-grid mean/FPCA bootstrap uncertainty (research draft)
+
+Five additional independently authored Python-free R methods implement
+Gaussian-multiplier simultaneous functional-mean bands, sign-aligned
+fixed-target FPCA score bootstrap, matched-eigenvalue/ratio bootstrap,
+simultaneous FPC shape bands with optional eigengap screening, and
+component band tables.
+
+Research inventory: **115 native R implementations**, **144 / 380
+mapped Python callable names**, **236 unmapped**, **7 partial other
+exports** and **0 / 508 fully certified source contracts**.
+Stage 14 Windows RStudio native and Python 1.2 tests passed; Stage 15
+is authored but **not runtime qualified**. All intervals are
+observed-grid approximations, not exact coverage guarantees.
+
+[Stage 15 source-level methods and statistical boundaries](docs/full-native-r-stage15-bootstrap-inference.md).
+
+
 ## Stage 14 — native FPCA influence and eigenspace stability (draft)
 
 Seven Python-free R methods now compare weighted principal-angle FPC
