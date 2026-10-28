@@ -10,8 +10,8 @@ AMI delay and false-nearest-neighbor diagnostics, empirical return-map
 spectral stability, reproducible native planar/AOI simulators, and
 explicit irregular-long-data conversion.
 
-The **authored inventory** is now **103 native R functions**, **133/380
-mapped Python callable names**, **247 unmapped**, and still **0/508
+The **authored inventory** is now **103 native R functions**, **132/380
+mapped Python callable names**, **248 unmapped**, and still **0/508
 fully qualified contracts**. Stage 12 locally verified 69 native, 79
 Python-oracle and 39 full ledger assertions; Stage 13 code and tests
 are committed but **not runtime qualified**. NumPy RNG, FNN tie
