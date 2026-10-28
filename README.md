@@ -1,5 +1,32 @@
 # eyetrajectories
 
+## Stage 21 — three native multivariate IAAFT integrations; review-ready certification pilots
+
+Three additional Python-free numerical R methods provide
+**reference-anchored multivariate IAAFT**, per-channel and pairwise
+spectral fidelity diagnostics, and a **multichannel Lyapunov
+surrogate-null Monte Carlo test** with exact plus-one p-values. The
+cross-spectral phase offsets are declared relative to the chosen
+reference channel, and marginal samples are restored exactly after
+rank remapping. R/NumPy stochastic draws are **not** claimed identical.
+
+Frozen cumulative inventory: **149 authored native R methods**,
+**174 / 380 mapped Python callable names**, **206 unmapped**;
+**3 / 3 numerical certification pilot fixture sets passed**,
+but **0 / 508 full public source contracts approved**.
+
+The three Stage 20 pilot contracts now have a formal
+source-code/edge-boundary reviewer checklist. GitHub recorded no
+independent PR #28 review at the last check. Python ALR coercion and
+extreme inverse-exponentiation behavior, plus source FPCA container
+acceptance, remain material certification questions. Do not turn
+fixture success into full-contract approval.
+
+[Stage 21 research source/reviewer protocol](docs/full-native-r-stage21-miaaft-certification.md).
+Stage 21 tests are authored and awaiting owner-run native R and pinned
+Python 1.2 qualification. Research PR is draft; no merge or release.
+
+
 ## Stage 20 — auditable native source-contract certification starts (research draft)
 
 **Three source contracts now have candidate-level evidence records**:
