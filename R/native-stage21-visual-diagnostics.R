@@ -160,7 +160,7 @@ etr_plot_trajectory_distance_rank_correlations <- function(result,...) {
   .etr_assert(all(seen[row(seen)!=col(seen)]),
     "comparison table is missing a specification pair")
   graphics::image(seq_len(n),seq_len(n),m,zlim=c(-1,1),
-    col=grDevices::hcl.colors(101L,"Blue-Red 3"),
+    col=grDevices::colorRampPalette(c("navy","white","firebrick"))(101L),
     xaxt="n",yaxt="n",xlab="",ylab="",
     main="Trajectory-distance rank agreement",...)
   graphics::axis(1L,at=seq_len(n),labels=labels,las=2L)
