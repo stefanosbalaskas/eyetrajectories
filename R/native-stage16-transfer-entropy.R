@@ -61,8 +61,11 @@
   khistory<-paste(a,b,c,sep="\035")
   kconditioned<-paste(current,a,c,sep="\035")
   kbase<-paste(a,c,sep="\035")
-  local<-log2(.etr16_count(kfull)*.etr16_count(kbase)/
-    (.etr16_count(khistory)*.etr16_count(kconditioned)))
+  # Convert count products to double to avoid 32-bit integer overflow.
+  local<-log2(as.double(.etr16_count(kfull))*
+    as.double(.etr16_count(kbase))/
+    (as.double(.etr16_count(khistory))*
+     as.double(.etr16_count(kconditioned))))
   history_support<-as.integer(table(khistory))
   fields<-list(
     local=as.numeric(local),time_indices=as.integer(time-1L),
