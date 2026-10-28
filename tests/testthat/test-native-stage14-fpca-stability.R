@@ -25,8 +25,11 @@ test_that("Stage 14 principal angles ignore sign switches and rotations",{
                                    n_components=2L)
   expect_s3_class(same,"etr_fpca_subspace_comparison")
   expect_equal(same$principal_cosines,c(1,1),tolerance=1e-7)
-  expect_equal(same$normalized_projector_distance,0,tolerance=1e-7)
-  expect_equal(same$principal_angles_degrees,c(0,0),tolerance=1e-5)
+  # Bitwise-identical weighted bases have exactly zero principal angles;
+  # roundoff in SVD of the self-Gram matrix must not generate 1e-8 distances.
+  expect_identical(same$normalized_projector_distance,0)
+  expect_identical(same$projector_distance_frobenius,0)
+  expect_equal(same$principal_angles_degrees,c(0,0),tolerance=0)
   b<-a
   b$components[1L,,]<- -b$components[1L,,]
   b$components[2L,,]<- -b$components[2L,,]
