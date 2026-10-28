@@ -325,3 +325,158 @@ etr_from_irregular_long_dataframe <- function(data,curve_columns,time_column,
     value_columns,metadata_columns,coordinate_system,time_unit)
   etr_resample_irregular_to_grid(ir,grid,method=method,max_gap=max_gap)
 }
+
+
+#' Explicit interpolated crossings of a declared Poincare section
+#' @param trajectories Complete common-grid native functional trajectories.
+#' @param curve One-based curve index or exact source curve ID.
+#' @param section_dimension Scalar crossing channel.
+#' @param section_value Declared finite scalar section threshold.
+#' @param direction Positive, negative, or both crossing orientations.
+#' @param state_dimensions Nonempty explicit non-section state channels.
+#' @export
+etr_poincare_crossings <- function(trajectories,curve,section_dimension,
+    section_value,direction,state_dimensions=NULL) {
+  etr_validate(trajectories,require_complete=TRUE)
+  .etr_assert(is.character(section_dimension)&&
+    length(section_dimension)==1L&&section_dimension%in%
+    trajectories$dimension_names,"Unknown section_dimension")
+  .etr_assert(is.numeric(section_value)&&length(section_value)==1L&&
+    is.finite(section_value),"section_value must be finite")
+  .etr_assert(is.character(direction)&&length(direction)==1L&&
+    direction%in%c("positive","negative","both"),
+    "direction must be 'positive', 'negative', or 'both'")
+  .etr_assert(is.character(state_dimensions)&&length(state_dimensions)>0L&&
+    !anyNA(state_dimensions)&&!anyDuplicated(state_dimensions)&&
+    all(state_dimensions%in%trajectories$dimension_names)&&
+    !(section_dimension%in%state_dimensions),
+    "state_dimensions must explicitly select distinct non-section channels")
+  if(is.character(curve))curve<-match(curve,trajectories$curve_ids)
+  .etr_assert(is.numeric(curve)&&length(curve)==1L&&!is.na(curve)&&
+    curve==as.integer(curve)&&curve>=1L&&
+    curve<=length(trajectories$curve_ids),"curve index or ID is out of range")
+  v<-matrix(trajectories$values[curve,,,drop=FALSE],
+    nrow=length(trajectories$time),
+    ncol=length(trajectories$dimension_names))
+  idx<-match(state_dimensions,trajectories$dimension_names)
+  q<-v[,match(section_dimension,trajectories$dimension_names)]-section_value
+  left<-integer();fractions<-numeric()
+  for(i in seq_len(length(q)-1L)){
+    a<-q[i];b<-q[i+1L]
+    positive<-a<0 && b>=0
+    negative<-a>0 && b<=0
+    if(!((direction=="positive"&&positive)||
+         (direction=="negative"&&negative)||
+         (direction=="both"&&(positive||negative))))next
+    denom<-b-a
+    if(denom==0)next
+    frac<- -a/denom
+    if(frac>=0&&frac<=1){left<-c(left,i);fractions<-c(fractions,frac)}
+  }
+  .etr_assert(length(left)>0L,
+    "no crossings satisfy declared section and direction")
+  states<-matrix(0,length(left),length(idx))
+  times<-numeric(length(left))
+  for(i in seq_along(left)){
+    j<-left[i];w<-fractions[i]
+    states[i,]<-v[j,idx]+w*(v[j+1L,idx]-v[j,idx])
+    times[i]<-trajectories$time[j]+
+      w*(trajectories$time[j+1L]-trajectories$time[j])
+  }
+  provenance<-list(operation="poincare_crossings",
+    source_provenance=trajectories$provenance,
+    interpolation="linear_between_observed_samples",
+    section_dimension=section_dimension,section_value=section_value,
+    direction=direction,state_dimensions=as.list(state_dimensions),
+    experimental=TRUE)
+  structure(list(states=states,times=times,
+    left_indices=as.integer(left-1L),fractions=fractions,
+    curve_id=trajectories$curve_ids[curve],
+    section_dimension=section_dimension,section_value=section_value,
+    direction=direction,state_dimensions=state_dimensions,
+    provenance=provenance),class="etr_poincare_crossings")
+}
+
+#' Local affine return map of consecutive declared section crossings
+#' @param crossings Native Poincare crossing result (at least 3 crossings).
+#' @param reference Explicit mean/median reference or numeric state vector.
+#' @param neighborhood_radius Radius neighborhood, mutually exclusive with n_neighbors.
+#' @param n_neighbors Count of nearest transition origins to the reference.
+#' @export
+etr_fit_local_return_map <- function(crossings,reference,
+    neighborhood_radius=NULL,n_neighbors=NULL) {
+  .etr_assert(inherits(crossings,"etr_poincare_crossings") &&
+    is.matrix(crossings$states)&&is.numeric(crossings$states) &&
+    nrow(crossings$states)>=3L&&ncol(crossings$states)>=1L &&
+    all(is.finite(crossings$states)),
+    "at least three finite Poincare crossings required")
+  .etr_assert(xor(is.null(neighborhood_radius),is.null(n_neighbors)),
+    "supply exactly one of neighborhood_radius or n_neighbors")
+  values<-crossings$states
+  n<-nrow(values)-1L;nd<-ncol(values)
+  x<-values[seq_len(n),,drop=FALSE]
+  y<-values[seq.int(2L,n+1L),,drop=FALSE]
+  if(is.character(reference)&&length(reference)==1L) {
+    .etr_assert(reference%in%c("mean","median"),
+      "reference string must be 'mean' or 'median'")
+    state<-if(reference=="mean")colMeans(x)else
+      apply(x,2L,stats::median)
+    refpolicy<-reference
+  }else{
+    .etr_assert(is.numeric(reference)&&is.null(dim(reference))&&
+      length(reference)==nd&&all(is.finite(reference)),
+      "reference state must be a finite vector matching state dimensions")
+    state<-as.numeric(reference);refpolicy<-"supplied_state"
+  }
+  diff<-sweep(x,2L,state,"-")
+  distances<-sqrt(rowSums(diff^2))
+  if(!is.null(neighborhood_radius)){
+    .etr_assert(is.numeric(neighborhood_radius)&&
+      length(neighborhood_radius)==1L&&is.finite(neighborhood_radius)&&
+      neighborhood_radius>0,
+      "neighborhood_radius must be positive finite")
+    selected<-which(distances<=neighborhood_radius)
+    policy<-"radius";value<-neighborhood_radius
+  }else{
+    .etr_assert(is.numeric(n_neighbors)&&length(n_neighbors)==1L&&
+      is.finite(n_neighbors)&&n_neighbors==as.integer(n_neighbors)&&
+      n_neighbors>=1L&&n_neighbors<=n,
+      "n_neighbors must be a positive integer within transition count")
+    selected<-order(distances,seq_along(distances))[seq_len(n_neighbors)]
+    policy<-"n_neighbors";value<-as.integer(n_neighbors)
+  }
+  .etr_assert(length(selected)>=nd+1L,
+    paste("local affine return map requires at least",nd+1L,
+      "selected transitions"))
+  design<-cbind(1,sweep(x[selected,,drop=FALSE],2L,state,"-"))
+  .etr_assert(qr(design)$rank==ncol(design),
+    "selected return-map neighborhood is rank deficient")
+  condition<-kappa(design,exact=TRUE)
+  .etr_assert(is.finite(condition),
+    "selected return-map design has nonfinite condition number")
+  response<-sweep(y[selected,,drop=FALSE],2L,state,"-")
+  coef<-qr.solve(design,response)
+  if(is.null(dim(coef)))coef<-matrix(coef,ncol=nd)
+  fit<-design%*%coef;resid<-response-fit
+  jacobian<-t(coef[-1L,,drop=FALSE])
+  r2<-vapply(seq_len(nd),function(j){
+    target<-response[,j];denom<-sum((target-mean(target))^2)
+    if(denom<=0)NaN else 1-sum(resid[,j]^2)/denom
+  },numeric(1L))
+  provenance<-list(operation="fit_local_return_map",
+    crossing_provenance=crossings$provenance,
+    reference_policy=refpolicy,neighborhood_policy=policy,
+    neighborhood_value=value,n_selected_transitions=length(selected),
+    design_condition_number=condition,fit="local_affine_least_squares",
+    experimental=TRUE,
+    interpretation_boundary=paste(
+      "empirical local return-map Jacobian; not a variational-equation",
+      "monodromy matrix or classical Floquet multiplier calculation"))
+  structure(list(reference_state=as.numeric(state),
+    selected_transition_indices=as.integer(selected-1L),
+    jacobian=jacobian,intercept=as.numeric(coef[1L,]),
+    residuals=resid,r_squared=r2,design_condition_number=condition,
+    neighborhood_policy=policy,neighborhood_value=value,
+    n_transitions=length(selected),provenance=provenance),
+    class="etr_local_return_map")
+}
