@@ -716,3 +716,22 @@ public source contracts fully certified. Stage 22 owner-run Windows
 RStudio tests passed; Stage 23 remains unexecuted on the new head.
 
 [Stage 23 method and verification](full-native-r-stage23-manuscript-source-contracts.md).
+
+
+## Stage 24 — nine Python-free scientific plots and 21 explicit source blockers
+
+Nine new source-aligned native R plotting methods span matched FPC
+stability, influence, outlier review, FPCA cross-validation,
+eigenspace diagnostics, functional mean bands, joint recurrence,
+windowed-RQA trajectories and fixed-dimensional RQA sensitivity.
+A direct published-Python 1.2 Axes coordinates oracle is authored.
+
+**Cumulative authored census**: **175 native implementations**,
+**200/380 mapped source functions**, **180 unmapped source callables**,
+**4 targeted numerical candidate fixtures**, and **0/508 independent
+fully certified Python public source contracts**. The 21-row
+known-source behavior difference register now hard-gates all graphical
+output classes. Plot source geometry equivalence does not certify
+backend or public return classes.
+
+[Stage 24 scientific plots and certification limits](full-native-r-stage24-nine-scientific-plots.md).
