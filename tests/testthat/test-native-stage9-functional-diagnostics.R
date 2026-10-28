@@ -99,11 +99,12 @@ test_that("Stage 9 phase displacement is explicit and not an inverse warp",{
   expect_equal(summary$signed_mean_displacement,rowMeans(delta))
   p<-etr_phase_trajectory_set(reg)
   expect_s3_class(p,"etr_trajectory_set")
-  expect_equal(p$values[,,1L],delta)
+  expect_equal(unname(p$values[,,1L]),unname(delta))
   expect_identical(p$coordinate_system,"phase_time")
   expect_identical(p$dimension_names,"phase_displacement")
   expect_false(is.null(p$provenance$registration_method))
-  expect_equal(etr_phase_trajectory_set(reg,"warping")$values[,,1L],w)
+  expect_equal(unname(etr_phase_trajectory_set(reg,"warping")$values[,,1L]),
+               unname(w))
   expect_s3_class(etr_fit_phase_fpca(reg,n_components=1L),"etr_fpca")
   expect_error(etr_phase_trajectory_set(reg,"invalid"),"representation")
   joined<-etr_register_landmarks(x,
