@@ -91,6 +91,21 @@
   fpca_eigengap_reporting_text="etr_fpca_eigengap_reporting_text",
   registration_sensitivity_reporting_text="etr_registration_sensitivity_reporting_text",
   functional_mean_band_frame="etr_functional_mean_band_frame",
+  joint_recurrence_reporting_text="etr_joint_recurrence_reporting_text",
+  recurrence_network_reporting_text="etr_recurrence_network_reporting_text",
+  recurrence_radius_profile_reporting_text="etr_recurrence_radius_profile_reporting_text",
+  rqa_reporting_text="etr_rqa_reporting_text",
+  rqa_metric_mean_bootstrap_reporting_text="etr_rqa_metric_mean_bootstrap_reporting_text",
+  windowed_rqa_reporting_text="etr_windowed_rqa_reporting_text",
+  windowed_rqa_functional_reporting_text="etr_windowed_rqa_functional_reporting_text",
+  windowed_rqa_sensitivity_reporting_text="etr_windowed_rqa_sensitivity_reporting_text",
+  windowed_rqa_mean_band_reporting_text="etr_windowed_rqa_mean_band_reporting_text",
+  rqa_parameter_sensitivity_reporting_text="etr_rqa_parameter_sensitivity_reporting_text",
+  kantz_parameter_sensitivity_reporting_text="etr_kantz_parameter_sensitivity_reporting_text",
+  lyapunov_parameter_sensitivity_reporting_text="etr_lyapunov_parameter_sensitivity_reporting_text",
+  largest_lyapunov_reporting_text="etr_largest_lyapunov_reporting_text",
+  surrogate_nonlinearity_reporting_text="etr_surrogate_nonlinearity_reporting_text",
+  return_map_stability_reporting_text="etr_return_map_stability_reporting_text",
   split_conformal_fpca_anomaly="etr_split_conformal_fpca_anomalies",
   # These four new native methods are experimentally implemented here.
   acceleration_magnitude_function="etr_acceleration_magnitude",
@@ -188,6 +203,9 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     "registration_sensitivity_reporting_text","functional_mean_band_frame")
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% stage10_names] <- 10L
+  stage11_names <- c("joint_recurrence_reporting_text","recurrence_network_reporting_text","recurrence_radius_profile_reporting_text","rqa_reporting_text","rqa_metric_mean_bootstrap_reporting_text","windowed_rqa_reporting_text","windowed_rqa_functional_reporting_text","windowed_rqa_sensitivity_reporting_text","windowed_rqa_mean_band_reporting_text","rqa_parameter_sensitivity_reporting_text","kantz_parameter_sensitivity_reporting_text","lyapunov_parameter_sensitivity_reporting_text","largest_lyapunov_reporting_text","surrogate_nonlinearity_reporting_text","return_map_stability_reporting_text")
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% stage11_names] <- 11L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset
