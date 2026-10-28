@@ -141,9 +141,9 @@ test_that("Stage 9 frozen 508 source register counts only native implementations
     fit_phase_fpca="etr_fit_phase_fpca")
   expect_equal(nrow(x),508L)
   expect_equal(sum(x$is_python_function),380L)
-  expect_equal(sum(x$named_native_candidate),175L)
-  expect_equal(sum(x$is_python_function & !x$named_native_candidate),205L)
-  expect_equal(sum(x$native_implementation_started),150L)
+  expect_equal(sum(x$named_native_candidate),183L)
+  expect_equal(sum(x$is_python_function & !x$named_native_candidate),197L)
+  expect_equal(sum(x$native_implementation_started),158L)
   expect_equal(sum(x$native_implementation_stage==9L,na.rm=TRUE),12L)
   for (n in names(want)) {
     one<-x[x$namespace=="root" & x$python_name==n,,drop=FALSE]
