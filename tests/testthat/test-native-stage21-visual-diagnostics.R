@@ -28,9 +28,9 @@ test_that("Stage 21 registered public plotting names remain uncertified", {
     expect_true(row$native_implementation_started)
     expect_false(row$one_to_one_native_contract_complete)
   }
-  expect_equal(sum(z$native_implementation_started),166L)
-  expect_equal(sum(z$named_native_candidate&z$is_python_function),191L)
-  expect_equal(sum(z$is_python_function&!z$named_native_candidate),189L)
+  expect_equal(sum(z$native_implementation_started),175L)
+  expect_equal(sum(z$named_native_candidate&z$is_python_function),200L)
+  expect_equal(sum(z$is_python_function&!z$named_native_candidate),180L)
   expect_equal(sum(z$contract_certification_candidate),4L)
   expect_equal(sum(z$contract_numerical_fixture_pass),4L)
   expect_equal(sum(z$one_to_one_native_contract_complete),0L)
