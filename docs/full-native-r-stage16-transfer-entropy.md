@@ -31,8 +31,8 @@ Audited against the **published `eyetrajectoriespy==1.2.0`** source (`transfer_e
 | Measure | Stage 15 owner-tested | Stage 16 code authored |
 |---|---:|---:|
 | Independently authored native R functions including descriptive reports | 115 | **127** |
-| Named mapped Python function contracts | 144 / 380 | **156 / 380** |
-| Unmapped Python callable names | 236 | **224** |
+| Named mapped Python function contracts | 144 / 380 | **154 / 380** |
+| Unmapped Python callable names | 236 | **226** |
 | Partially represented nonfunction exports | 7 / 128 | **7 / 128** |
 | Pending nonfunction source objects | 121 | **121** |
 | Fully one-to-one source certified contracts | 0 / 508 | **0 / 508** |
