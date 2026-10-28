@@ -1,5 +1,5 @@
 #' Trapezoidal weights on an irregular, strictly increasing grid
-#' @param time Finite increasing time vector.
+#' @param time Finite increasing one-dimensional vector or list of scalar values coercible to numeric time.
 #' @param normalize Divide weights by their sum when TRUE.
 #' @export
 etr_trapezoid_weights <- function(time, normalize = FALSE) {
