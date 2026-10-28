@@ -164,3 +164,99 @@ etr_multivariate_iaaft_diagnostics_frame <- function(result){
     mean_spectral_error=rowMeans(result$spectral_errors),
     mean_cross_spectral_error=rowMeans(result$cross_spectral_errors))
 }
+
+
+#' Native multivariate surrogate test of an explicitly declared Lyapunov slope
+#' @param statistic Only largest_lyapunov.
+#' @param embedding_dimension Explicit delay-coordinate blocks >=2.
+#' @param delay,theiler_window,max_horizon,fit_start,fit_end Declared sample indices.
+#' @param delay_units,theiler_window_units,max_horizon_units,fit_units Samples only.
+#' @param alternative greater, less or two-sided Monte Carlo tail.
+#' @inheritParams etr_generate_multivariate_iaaft_surrogates
+#' @export
+etr_multivariate_surrogate_nonlinearity_test <- function(trajectories,curve,
+    dimensions,reference_dimension,statistic,embedding_dimension,delay,
+    theiler_window,max_horizon,fit_start,fit_end,delay_units="samples",
+    theiler_window_units="samples",max_horizon_units="samples",
+    fit_units="samples",n_surrogates=199L,alternative="greater",
+    max_iterations=1000L,tolerance=1e-8,random_state=NULL){
+  .etr_assert(identical(statistic,"largest_lyapunov"),
+    "only largest_lyapunov is a supported surrogate statistic")
+  .etr_assert(is.character(alternative)&&length(alternative)==1L&&
+    alternative%in%c("greater","less","two-sided"),
+    "alternative must be greater, less, or two-sided")
+  .etr_assert(all(c(delay_units,theiler_window_units,
+    max_horizon_units,fit_units)=="samples"),
+    "only sample-unit statistic settings are supported")
+  m<-.etr17_integer(embedding_dimension,2L,"embedding_dimension")
+  d<-.etr17_integer(delay,1L,"delay")
+  tw<-.etr17_integer(theiler_window,0L,"theiler_window")
+  horizon<-.etr17_integer(max_horizon,1L,"max_horizon")
+  start<-.etr17_integer(fit_start,0L,"fit_start")
+  end<-.etr17_integer(fit_end,1L,"fit_end")
+  .etr_assert(end>start,"fit_end must exceed fit_start")
+  etr_validate(trajectories,require_complete=TRUE)
+  ci<-.etr17_curve(trajectories$curve_ids,curve)
+  .etr_assert(is.character(dimensions)&&length(dimensions)>=2L&&
+    !anyNA(dimensions)&&!anyDuplicated(dimensions)&&
+    all(dimensions%in%trajectories$dimension_names),
+    "dimensions must be two or more unique known channels")
+  selected<-match(dimensions,trajectories$dimension_names)
+  values<-matrix(trajectories$values[ci,,selected,drop=FALSE],
+    nrow=length(trajectories$time),ncol=length(selected))
+  one<-function(mat) {
+    etr_trajectory_set(
+      trajectories$time,
+      array(mat,c(1L,nrow(mat),ncol(mat))),
+      trajectories$curve_ids[ci],dimensions,
+      time_unit=trajectories$time_unit,
+      coordinate_system=trajectories$coordinate_system)
+  }
+  lle<-function(mat){
+    embedded<-etr_delay_embed_trajectory(one(mat),m,d,
+      dimensions=dimensions)
+    div<-etr_local_divergence_curve(embedded,curve=0L,
+      theiler_window=tw,max_horizon=horizon)
+    etr_estimate_largest_lyapunov_rosenstein(div,start,end)$exponent
+  }
+  observed<-lle(values)
+  surrogates<-etr_generate_multivariate_iaaft_surrogates(
+    trajectories,curve=curve,dimensions=dimensions,
+    reference_dimension=reference_dimension,n_surrogates=n_surrogates,
+    max_iterations=max_iterations,tolerance=tolerance,
+    random_state=random_state)
+  simulated<-numeric(surrogates$n_surrogates)
+  for(i in seq_len(surrogates$n_surrogates)){
+    mat<-matrix(surrogates$surrogates[i,,],
+      nrow=length(trajectories$time),ncol=length(dimensions))
+    simulated[i]<-tryCatch(lle(mat),
+      error=function(e)stop(sprintf(
+        "multivariate surrogate statistic %d failed under the declared analysis contract: %s",
+        i-1L,conditionMessage(e)),call.=FALSE))
+  }
+  b<-length(simulated)
+  upper<-(1+sum(simulated>=observed))/(b+1)
+  lower<-(1+sum(simulated<=observed))/(b+1)
+  p<-switch(alternative,greater=upper,less=lower,
+    "two-sided"=min(1,2*min(upper,lower)))
+  structure(list(observed_statistic=observed,
+    surrogate_statistics=simulated,p_value=p,alternative=alternative,
+    statistic=statistic,surrogate_result=surrogates,
+    provenance=list(operation="multivariate_surrogate_nonlinearity_test",
+      source_curve_id=trajectories$curve_ids[ci],
+      dimensions=dimensions,reference_dimension=reference_dimension,
+      surrogate_method="multivariate_IAAFT",
+      source_python_equivalent_stochastic_draws=FALSE,
+      p_value_correction=if(alternative=="two-sided")
+        "two_sided_double_min_plus_one_tails" else "plus_one",
+      common_statistic_settings=list(
+        embedding_dimension=m,delay=d,theiler_window=tw,
+        max_horizon=horizon,fit_start=start,fit_end=end,
+        delay_units="samples",theiler_window_units="samples",
+        max_horizon_units="samples",fit_units="samples"),
+      failed_surrogate_policy="error",
+      interpretation_boundary=paste(
+        "Rejection is evidence against the declared multivariate",
+        "linear stochastic null, not a unique chaotic mechanism"))),
+    class="etr_multivariate_surrogate_nonlinearity")
+}
