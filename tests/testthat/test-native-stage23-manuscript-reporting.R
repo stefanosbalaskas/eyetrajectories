@@ -161,3 +161,18 @@ test_that("Stage 23 direct published Python 1.2 reporting oracle is opt-in",{
   expect_equal(sum(etr_native_parity_catalog()$
     one_to_one_native_contract_complete),0L)
 })
+
+test_that("Stage 23 regular nested ALR source sequences preserve 3D geometry", {
+  nested<-list(
+    list(c(.2,.3,.5),c(.1,.4,.5)),
+    list(c(.3,.4,.3),c(.2,.2,.6)))
+  array_fixture<-array(NA_real_,c(2L,2L,3L))
+  for(i in seq_len(2L))for(j in seq_len(2L))
+    array_fixture[i,j,]<-nested[[i]][[j]]
+  expect_equal(etr_alr_transform(nested),
+    etr_alr_transform(array_fixture),tolerance=0)
+  expect_identical(dim(etr_alr_transform(nested)),c(2L,2L,2L))
+  expect_error(etr_alr_transform(list(
+    list(c(.2,.3,.5)),list(c(.2,.3)))),
+    "equal scalar dimensions")
+})
