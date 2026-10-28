@@ -20,10 +20,11 @@ test_that("Stage 20 certification census never treats candidate as complete",{
   expect_equal(sum(z$native_implementation_started),166L)
   expect_equal(sum(z$is_python_function & !z$named_native_candidate),189L)
   expect_equal(sum(z$native_implementation_stage==20L,na.rm=TRUE),1L)
-  expect_equal(sum(z$contract_certification_candidate),3L)
+  expect_equal(sum(z$contract_certification_candidate),4L)
   expect_identical(sort(z$python_name[z$contract_certification_candidate]),
-    sort(c("alr_transform","inverse_alr","score_distance_matrix")))
-  expect_equal(sum(z$contract_numerical_fixture_pass),3L)
+    sort(c("alr_transform","inverse_alr","score_distance_matrix",
+      "functional_trapezoid_weights")))
+  expect_equal(sum(z$contract_numerical_fixture_pass),4L)
   expect_true(all(z$contract_numerical_fixture_pass[
     z$contract_certification_candidate]))
   # Source-oracle fixture PASS is not the same as complete-domain
@@ -186,6 +187,6 @@ test_that("Stage 20 exact published Python 1.2 ALR and distance contract oracle 
   # Source-oracle PASS means candidate evidence exists. It does not
   # self-authorize reviewer approval or automatic full certification.
   z<-etr_native_parity_catalog()
-  expect_equal(sum(z$contract_certification_candidate),3L)
+  expect_equal(sum(z$contract_certification_candidate),4L)
   expect_equal(sum(z$one_to_one_native_contract_complete),0L)
 })
