@@ -5,8 +5,8 @@ test_that("Stage 6 maps Python portable-result loader only as a candidate", {
   register <- etr_native_parity_catalog()
   expect_equal(nrow(register),508L)
   expect_equal(sum(register$is_python_function),380L)
-  expect_equal(sum(register$named_native_candidate),121L)
-  expect_equal(sum(register$native_implementation_started),91L)
+  expect_equal(sum(register$named_native_candidate),131L)
+  expect_equal(sum(register$native_implementation_started),101L)
   expect_equal(sum(register$native_implementation_stage==2L,na.rm=TRUE),4L)
   expect_equal(sum(register$native_implementation_stage==3L,na.rm=TRUE),7L)
   expect_equal(sum(register$native_implementation_stage==4L,na.rm=TRUE),3L)
@@ -22,7 +22,7 @@ test_that("Stage 6 maps Python portable-result loader only as a candidate", {
   expect_false(row$independent_numeric_parity_pass)
   expect_equal(sum(!is.na(register$native_representation_stage)),7L)
   expect_equal(sum(register$status==
-     "class_or_constant_native_representation_not_reviewed"),121L)
+     "class_or_constant_native_representation_not_reviewed"),131L)
   expect_true(all(!register$one_to_one_native_contract_complete))
   expect_identical(reticulate::py_available(initialize=FALSE),was)
   expect_error(etr_native_parity_catalog(require_complete=TRUE),
