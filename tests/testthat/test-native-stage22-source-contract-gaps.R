@@ -11,7 +11,7 @@ test_that("508-contract certificate gate rejects known unresolved source differe
   expect_true(all(z$contract_numerical_fixture_pass[
     z$contract_certification_candidate]))
   expect_false(any(z$one_to_one_native_contract_complete))
-  expect_equal(sum(z$contract_certification_candidate),3L)
+  expect_equal(sum(z$contract_certification_candidate),4L)
   expect_error(etr_native_parity_catalog(require_complete=TRUE),
     "NOT complete")
   plot_names<-c("plot_embedding_delay_diagnostics",
