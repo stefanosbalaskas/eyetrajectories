@@ -657,3 +657,6 @@ export(etr_cluster_fpca_scores)
 export(etr_trajectory_distance_sensitivity)
 
 export(etr_surrogate_nonlinearity_test)
+
+export(etr_generate_multivariate_iaaft_surrogates)
+export(etr_multivariate_iaaft_diagnostics_frame)
