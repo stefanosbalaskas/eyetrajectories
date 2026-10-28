@@ -32,7 +32,11 @@ test_that("Stage 9 ALR and inverse preserve the declared simplex",{
   expect_error(etr_alr_transform(v,epsilon=Inf),"epsilon")
   expect_error(etr_inverse_alr(z,0L,4L),"dimensions")
   expect_error(etr_inverse_alr(z*Inf,-1L,3L),"nonfinite")
-  expect_error(etr_alr_transform(array(1,c(2,4,1))),"simplex|dimensions")
+  singleton<-array(1,c(2L,4L,1L))
+  one<-etr_alr_transform(singleton)
+  expect_identical(dim(one),c(2L,4L,0L))
+  expect_equal(etr_inverse_alr(one,0L,1L),singleton)
+  expect_equal(etr_inverse_alr(one,-1L,1L),singleton)
 })
 
 test_that("Stage 9 FPCA component curves, selection, score frames and distances",{
