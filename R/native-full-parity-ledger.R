@@ -174,6 +174,14 @@
   plot_fpca_component="etr_plot_fpca_component",
   plot_dynamic_time_warping_alignment="etr_plot_dynamic_time_warping_alignment",
   plot_trajectory_distance_rank_correlations="etr_plot_trajectory_distance_rank_correlations",
+  plot_embedding_delay_diagnostics="etr_plot_embedding_delay_diagnostics",
+  plot_embedding_dimension_diagnostics="etr_plot_embedding_dimension_diagnostics",
+  plot_recurrence_network_degree="etr_plot_recurrence_network_degree",
+  plot_recurrence_rate_curve="etr_plot_recurrence_rate_curve",
+  plot_windowed_rqa="etr_plot_windowed_rqa",
+  plot_local_divergence="etr_plot_local_divergence",
+  plot_surrogate_nonlinearity="etr_plot_surrogate_nonlinearity",
+  plot_poincare_return_map="etr_plot_poincare_return_map",
   split_conformal_fpca_anomaly="etr_split_conformal_fpca_anomalies",
   # These four new native methods are experimentally implemented here.
   acceleration_magnitude_function="etr_acceleration_magnitude",
@@ -306,6 +314,18 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     "plot_trajectory_distance_rank_correlations")
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% stage21_names] <- 21L
+  stage22_names <- c(
+    "plot_embedding_delay_diagnostics",
+    "plot_embedding_dimension_diagnostics",
+    "plot_recurrence_network_degree",
+    "plot_recurrence_rate_curve",
+    "plot_windowed_rqa",
+    "plot_local_divergence",
+    "plot_surrogate_nonlinearity",
+    "plot_poincare_return_map"
+  )
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% stage22_names] <- 22L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset
@@ -329,6 +349,31 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
       ifelse(api$named_native_candidate,
         "native_analog_present_behavior_unverified",
         "no_specific_native_function_mapped")))
+  # Independently identified differences are hard blockers: a human/CI
+  # approval flag cannot override a known unresolved published-source gap.
+  # This audit is read offline and never initializes Python.
+  gaps <- utils::read.csv(system.file("extdata",
+    "native_source_contract_gaps_stage22.csv",
+    package="eyetrajectories"),stringsAsFactors=FALSE)
+  required_gap_columns <- c("python_name","native_r_candidate","gap_kind",
+    "known_source_difference","source_witness","review_resolution",
+    "unresolved_source_gap")
+  .etr_assert(identical(names(gaps),required_gap_columns) &&
+    !anyDuplicated(gaps$python_name) &&
+    all(gaps$python_name %in% api$python_name[api$is_python_function]) &&
+    all(gaps$native_r_candidate ==
+      unname(analogues[gaps$python_name])) &&
+    all(vapply(gaps[required_gap_columns[3:6]],function(x)
+      is.character(x)&&all(!is.na(x)&nzchar(x)),logical(1L))) &&
+    is.logical(gaps$unresolved_source_gap) &&
+    !anyNA(gaps$unresolved_source_gap),
+    "native published-source gap inventory is malformed")
+  gap_idx<-match(api$python_name,gaps$python_name)
+  api$source_contract_gap_known <- !is.na(gap_idx)
+  api$source_contract_gap_unresolved <- ifelse(is.na(gap_idx),FALSE,
+    gaps$unresolved_source_gap[gap_idx])
+  api$source_contract_gap_kind <- ifelse(is.na(gap_idx),"",
+    gaps$gap_kind[gap_idx])
   # Explicit signed-off source-contract evidence, NOT inferred from
   # implementation age, mapping, a standalone CI check, or a Python wrapper.
   # Candidate rows are locked to the frozen API source Git revision.
@@ -375,6 +420,10 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   pass <- apply(register[approved],1L,all) &
     register$evidence_state=="approved_and_reproducible" &
     evidence_linked
+  unresolved<-api$source_contract_gap_unresolved[
+    match(register$python_name,api$python_name)]
+  .etr_assert(!any(pass & unresolved),
+    "cannot approve a fully certified public source contract while published-source differences remain unresolved")
   .etr_assert(!any(pass & !register$python_name %in%
     api$python_name[api$native_implementation_started]),
     "cannot certify a Python contract without an implemented native method")

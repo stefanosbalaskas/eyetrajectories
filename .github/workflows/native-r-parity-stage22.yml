@@ -1,0 +1,67 @@
+name: Native R Stage 22 source-contract gaps and scientific visualization
+on:
+  pull_request:
+    paths:
+      - "R/native-stage22-scientific-visualization.R"
+      - "R/native-fpca.R"
+      - "R/native-full-parity-ledger.R"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "tests/testthat/test-native-stage22-scientific-visualization.R"
+      - "tests/testthat/test-native-stage22-source-contract-gaps.R"
+      - "NAMESPACE"
+      - ".github/workflows/native-r-parity-stage22.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-geometry-and-evidence:
+    name: Stage 22 native plot geometry and immutable-gap gate / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: "hard"
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Geometry, frozen API and fail-closed certificate checks
+        shell: bash
+        run: |
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-stage22-scientific-visualization|native-stage22-source-contract-gaps|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))'
+  pinned-python-source-witnesses:
+    name: Published Python 1.2 contract source witnesses
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - id: python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: "hard"
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Direct published Python contract divergence tests
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-stage21-source-boundaries|native-stage22-source-contract-gaps",reporter="summary",stop_on_failure=TRUE)'
