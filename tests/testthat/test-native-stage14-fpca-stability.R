@@ -66,7 +66,7 @@ test_that("Stage 14 principal-angle bootstrap has independent group units",{
   expect_equal(nrow(table),1L)
   expect_equal(table$component_start,1L)
   expect_equal(table$component_end,2L)
-  expect_true(all(is.finite(as.numeric(table[1L,4:ncol(table)]))))
+  expect_true(all(is.finite(unlist(table[1L,4:ncol(table)],use.names=FALSE))))
   expect_error(etr_summarise_fpca_subspace_stability(res,c(.9,.1)),
     "interval")
   expect_error(etr_bootstrap_fpca_subspace_stability(x,
