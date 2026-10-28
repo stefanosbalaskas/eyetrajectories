@@ -190,6 +190,15 @@
   fpca_subspace_stability_reporting_text="etr_fpca_subspace_stability_reporting_text",
   fpca_cross_validation_reporting_text="etr_fpca_cross_validation_reporting_text",
   multilevel_fpca_reporting_text="etr_multilevel_fpca_reporting_text",
+  plot_fpca_stability="etr_plot_fpca_stability",
+  plot_fpca_influence="etr_plot_fpca_influence",
+  plot_fpca_outlier_diagnostics="etr_plot_fpca_outlier_diagnostics",
+  plot_fpca_cross_validation="etr_plot_fpca_cross_validation",
+  plot_fpca_subspace_stability="etr_plot_fpca_subspace_stability",
+  plot_functional_mean_band="etr_plot_functional_mean_band",
+  plot_joint_recurrence="etr_plot_joint_recurrence",
+  plot_windowed_rqa_trajectories="etr_plot_windowed_rqa_trajectories",
+  plot_rqa_sensitivity="etr_plot_rqa_sensitivity",
   split_conformal_fpca_anomaly="etr_split_conformal_fpca_anomalies",
   # These four new native methods are experimentally implemented here.
   acceleration_magnitude_function="etr_acceleration_magnitude",
@@ -346,6 +355,19 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   )
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% stage23_names] <- 23L
+  stage24_names <- c(
+    "plot_fpca_stability",
+    "plot_fpca_influence",
+    "plot_fpca_outlier_diagnostics",
+    "plot_fpca_cross_validation",
+    "plot_fpca_subspace_stability",
+    "plot_functional_mean_band",
+    "plot_joint_recurrence",
+    "plot_windowed_rqa_trajectories",
+    "plot_rqa_sensitivity"
+  )
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% stage24_names] <- 24L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset
