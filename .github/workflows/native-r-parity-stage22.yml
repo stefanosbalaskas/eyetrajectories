@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - "R/native-stage22-scientific-visualization.R"
+      - "R/native-fpca.R"
       - "R/native-full-parity-ledger.R"
       - "inst/extdata/native_source_contract_gaps_stage22.csv"
       - "tests/testthat/test-native-stage22-scientific-visualization.R"
