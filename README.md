@@ -1034,6 +1034,17 @@ uncertainty inference or native sparse FPCA is claimed.
 
 Loading the R package **does not initialize Python**. The first bridge function does.
 
+## Stage 21 native R visual integration (unreleased research branch)
+
+Four more Python-free R plotting functions are now implemented: `etr_plot_planar_trajectories()`,
+`etr_plot_fpca_component()`, `etr_plot_dynamic_time_warping_alignment()`,
+and `etr_plot_trajectory_distance_rank_correlations()`. They draw through
+base R graphics, not a Python Matplotlib backend, and are **not fully
+source-contract certified**. The research branch tracks **175/380 mapped
+Python functions, 150 native implementations, and 0/508 fully source-certified
+contracts** (pending exact-head runtime and external review). See
+[Stage 21 source-contract notes](docs/full-native-r-stage21-visual-contracts.md).
+
 ## Installation (authenticated private repository)
 
 Using an authenticated GitHub client, for example pak:
