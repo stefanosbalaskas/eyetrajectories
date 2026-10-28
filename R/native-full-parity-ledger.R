@@ -64,6 +64,18 @@
   recurrence_radius_profile="etr_recurrence_radius_profile",
   windowed_rqa="etr_windowed_rqa",
   windowed_rqa_trajectory_set="etr_windowed_rqa_trajectory_set",
+  alr_transform="etr_alr_transform",
+  inverse_alr="etr_inverse_alr",
+  component_trajectories="etr_component_trajectories",
+  select_n_components="etr_select_n_components",
+  fpca_score_frame="etr_fpca_score_frame",
+  score_distance_matrix="etr_score_distance_matrix",
+  pairwise_functional_distances="etr_pairwise_functional_distances",
+  sparse_dimension_summary="etr_sparse_dimension_summary",
+  warping_displacement="etr_warping_displacement",
+  phase_summary="etr_phase_summary",
+  phase_trajectory_set="etr_phase_trajectory_set",
+  fit_phase_fpca="etr_fit_phase_fpca",
   split_conformal_fpca_anomaly="etr_split_conformal_fpca_anomalies",
   # These four new native methods are experimentally implemented here.
   acceleration_magnitude_function="etr_acceleration_magnitude",
@@ -145,6 +157,13 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
               api$python_name %in% stage7_names,7L,
               ifelse(api$is_python_function &
                 api$python_name %in% stage8_names,8L,NA_integer_))))))
+  s9 <- c("alr_transform","inverse_alr","component_trajectories",
+    "select_n_components","fpca_score_frame","score_distance_matrix",
+    "pairwise_functional_distances","sparse_dimension_summary",
+    "warping_displacement","phase_summary","phase_trajectory_set",
+    "fit_phase_fpca")
+  api$native_implementation_stage[api$python_name %in% s9 &
+    api$is_python_function] <- 9L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset
@@ -181,3 +200,5 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   rownames(api) <- NULL
   api
 }
+
+# Stage 9 implementation inventory pending registration.

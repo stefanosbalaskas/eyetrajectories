@@ -394,3 +394,29 @@ execute numerical CI. Python sparse-graph methods, time-based windows,
 target-rate threshold selection, and complete result schemas exceed
 the declared native R partial contracts. The 508/508 fail-closed gate
 remains closed. This branch is DRAFT, not merged or released.
+
+
+## Stage 9 — twelve Python-free functional and phase diagnostics (draft)
+
+Published Python 1.2 functions independently implemented in R:
+ALR and inverse ALR; component trajectories, variance component selection,
+FPCA score frames and score-distance matrices; pairwise functional L2
+distance matrices; sparse observed-time density diagnostics; displacement
+and phase summaries; phase functional trajectories and native phase FPCA.
+These methods share existing Python-free native trajectory, FPCA,
+registration and irregular-sampling infrastructure.
+
+**Frozen 508-export inventory:** 77 mapped names among 380 callable
+Python APIs, 303 unmapped callable names, 47 newly authored native R
+callable implementations (Stages 2-9), seven partly represented
+nonfunction Python objects, and **zero fully qualified out of 508**.
+
+A Stage 9 deterministic test suite, optional pinned Python 1.2 direct
+numerical oracle and three-OS CI workflow were committed. **No Stage 9
+R or Python runtime test execution is claimed** at authoring time.
+Earlier Stage 8 Windows results remain independently documented and
+must not be misattributed to Stage 9. Cross-platform job admission,
+broader input/schemas, inferential validity and actual equivalence
+qualification are still outstanding. Research draft only; no release.
+
+[Detailed Stage 9 source and reproduction guide](full-native-r-stage9-functional-diagnostics.md).
