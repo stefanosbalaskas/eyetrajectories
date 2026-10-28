@@ -103,7 +103,8 @@ test_that("Stage 21 distance agreement plot is symmetric and diagonal one",{
   on.exit(grDevices::dev.off(),add=TRUE)
   m<-etr_plot_trajectory_distance_rank_correlations(result)
   expect_equal(dim(m),c(2L,2L))
-  expect_equal(diag(m),rep(1,2))
+  expect_equal(unname(diag(m)),rep(1,2))
+  expect_identical(names(diag(m)),c("L2","Frechet"))
   expect_equal(m,t(m),tolerance=0)
   expect_equal(m[1L,2L],
     result$comparison_table$spearman_rank_correlation[1L])
