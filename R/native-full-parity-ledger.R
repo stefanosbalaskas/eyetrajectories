@@ -143,6 +143,18 @@
   bootstrap_fpca_spectrum_uncertainty="etr_bootstrap_fpca_spectrum_uncertainty",
   bootstrap_fpca_component_bands="etr_bootstrap_fpca_component_bands",
   fpca_component_band_frame="etr_fpca_component_band_frame",
+  discrete_transfer_entropy="etr_discrete_transfer_entropy",
+  transfer_entropy_local_frame="etr_transfer_entropy_local_frame",
+  transfer_entropy_circular_shift_test="etr_transfer_entropy_circular_shift_test",
+  conditional_transfer_entropy="etr_conditional_transfer_entropy",
+  conditional_transfer_entropy_local_frame="etr_conditional_transfer_entropy_local_frame",
+  conditional_transfer_entropy_circular_shift_test="etr_conditional_transfer_entropy_circular_shift_test",
+  transfer_entropy_parameter_sensitivity="etr_transfer_entropy_parameter_sensitivity",
+  transfer_entropy_reporting_text="etr_transfer_entropy_reporting_text",
+  transfer_entropy_circular_shift_reporting_text="etr_transfer_entropy_circular_shift_reporting_text",
+  conditional_transfer_entropy_reporting_text="etr_conditional_transfer_entropy_reporting_text",
+  conditional_transfer_entropy_circular_shift_reporting_text="etr_conditional_transfer_entropy_circular_shift_reporting_text",
+  transfer_entropy_parameter_sensitivity_reporting_text="etr_transfer_entropy_parameter_sensitivity_reporting_text",
   split_conformal_fpca_anomaly="etr_split_conformal_fpca_anomalies",
   # These four new native methods are experimentally implemented here.
   acceleration_magnitude_function="etr_acceleration_magnitude",
@@ -255,6 +267,9 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   stage15_names <- c("multiplier_functional_mean_band","bootstrap_fpca_score_uncertainty","bootstrap_fpca_spectrum_uncertainty","bootstrap_fpca_component_bands","fpca_component_band_frame")
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% stage15_names] <- 15L
+  stage16_names <- c("discrete_transfer_entropy","transfer_entropy_local_frame","transfer_entropy_circular_shift_test","conditional_transfer_entropy","conditional_transfer_entropy_local_frame","conditional_transfer_entropy_circular_shift_test","transfer_entropy_parameter_sensitivity","transfer_entropy_reporting_text","transfer_entropy_circular_shift_reporting_text","conditional_transfer_entropy_reporting_text","conditional_transfer_entropy_circular_shift_reporting_text","transfer_entropy_parameter_sensitivity_reporting_text")
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% stage16_names] <- 16L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset
