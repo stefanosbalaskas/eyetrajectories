@@ -2,7 +2,7 @@
 
 ## Stage 13 — numerical functional regression, embedding and simulation (draft)
 
-Ten additional independent native R methods include observed-grid
+Twelve additional independent native R methods include observed-grid
 function-on-scalar OLS with HC1 sandwich errors, participant-equal-weight
 inference-unit controls, fixed-design whole-curve wild bootstrap, and
 studentized observed-grid simultaneous bands. The batch also implements
@@ -10,8 +10,8 @@ AMI delay and false-nearest-neighbor diagnostics, empirical return-map
 spectral stability, reproducible native planar/AOI simulators, and
 explicit irregular-long-data conversion.
 
-The **authored inventory** is now **101 native R functions**, **131/380
-mapped Python callable names**, **249 unmapped**, and still **0/508
+The **authored inventory** is now **103 native R functions**, **133/380
+mapped Python callable names**, **247 unmapped**, and still **0/508
 fully qualified contracts**. Stage 12 locally verified 69 native, 79
 Python-oracle and 39 full ledger assertions; Stage 13 code and tests
 are committed but **not runtime qualified**. NumPy RNG, FNN tie
@@ -99,7 +99,7 @@ Windows oracle remain pending. No main merge, version bump or release.
 
 ## Native R Stage 8 — ten nonlinear recurrence and RQA methods (draft)
 
-Ten further Python-independent R functions cover recurrence-network
+Twelve further Python-independent R functions cover recurrence-network
 degree, triangles, clustering and components; synchronized joint
 recurrence and joint/cross RQA; prespecified radius-rate profiles;
 and full-window RQA and its functional trajectory representation.
