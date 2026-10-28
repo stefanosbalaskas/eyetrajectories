@@ -503,3 +503,24 @@ RStudio native, ledger and pinned Python oracle tests passed 69, 39, and 79
 assertions respectively. Stage 13 tests are authored but have not executed.
 
 [Stage 13 source contracts and explicit cross-language limitations](full-native-r-stage13-functional-models.md).
+
+
+## Stage 14 — native FPCA influence and eigenspace stability (draft)
+
+Seven Python-free R methods now compare weighted principal-angle FPC
+subspaces, bootstrap complete curve or participant blocks, summarize
+matched component stability, calculate leave-one-group-out influence,
+and screen fitted curves using explicit **empirical** score covariance
+plus reconstruction-MAD diagnostics. Unsupported robust MCD covariance
+fails closed. None of these reports automatically excludes curves or
+establishes bootstrap calibration.
+
+Authored research inventory: **110 native R implementations**,
+**139 / 380 mapped Python function names**, **241 unmapped**, **7
+partially represented other exports**, and still **0 / 508 fully
+certified source contracts**. Stage 13 owner-run Windows RStudio
+native, oracle and ledger tests passed; Stage 14 tests are authored
+but **have not been executed**. All research code remains draft.
+
+[Stage 14 numerical contracts and restrictions](full-native-r-stage14-fpca-stability.md).
+
