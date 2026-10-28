@@ -34,7 +34,9 @@ etr_alr_transform <- function(values,reference_dimension=-1L,epsilon=1e-8) {
     is.finite(epsilon) && epsilon>0,"epsilon must be positive and finite")
   etr_validate_simplex(values)
   d<-dim(values); k<-d[3L]
-  .etr_assert(k>=2L,"ALR requires at least two simplex dimensions")
+  # Published Python 1.2 accepts a one-channel simplex and returns an
+  # empty last-axis ALR array; inverse_alr maps it back to all ones.
+  .etr_assert(k>=1L,"ALR requires at least one simplex dimension")
   ref<-.etr9_index(reference_dimension,k,"reference_dimension")
   clipped<-pmax(values,epsilon)
   totals<-apply(clipped,c(1L,2L),sum)
@@ -53,9 +55,9 @@ etr_alr_transform <- function(values,reference_dimension=-1L,epsilon=1e-8) {
 #' @export
 etr_inverse_alr <- function(transformed,reference_dimension,n_dimensions) {
   .etr_assert(is.numeric(n_dimensions) && length(n_dimensions)==1L &&
-    is.finite(n_dimensions) && n_dimensions>=2L &&
+    is.finite(n_dimensions) && n_dimensions>=1L &&
     n_dimensions==as.integer(n_dimensions),
-    "n_dimensions must be an integer >= 2")
+    "n_dimensions must be an integer >= 1")
   .etr_assert(is.array(transformed) && is.numeric(transformed) &&
     length(dim(transformed))==3L &&
     dim(transformed)[3L]==n_dimensions-1L &&

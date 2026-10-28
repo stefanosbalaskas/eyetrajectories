@@ -655,3 +655,5 @@ export(etr_kantz_parameter_sensitivity)
 export(etr_rqa_parameter_sensitivity)
 export(etr_cluster_fpca_scores)
 export(etr_trajectory_distance_sensitivity)
+
+export(etr_surrogate_nonlinearity_test)

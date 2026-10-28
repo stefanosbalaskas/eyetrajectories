@@ -637,3 +637,30 @@ or inferential coverage.
 
 [Stage 19 numerical contracts](full-native-r-stage19-multiverse-clustering.md).
 
+
+
+## Stage 20 — auditable native source-contract certification starts (research draft)
+
+**Three source contracts now have candidate-level evidence records**:
+`alr_transform`, `inverse_alr` and `score_distance_matrix`.
+A frozen-source-SHA certification registry independently tracks direct
+Python numeric tests, in-domain shape and invalid-input boundaries,
+scientific scope and independent reviewer signoff. All four approvals
+are required before any contract is **fully certified**; all currently
+remain **pending**. **Fully certified: 0 / 508**, not an inflated mapping
+count. A new source-oracle suite and explicit owner-run qualification
+commands have been committed.
+
+The new **native IAAFT surrogate nonlinearity test** calculates
+declared largest-Lyapunov statistics under independent Fourier
+surrogates and exact plus-one Monte Carlo tails. This is one additional
+Python-free numerical R implementation, not a stochastic NumPy RNG
+equivalence claim.
+
+Cumulative inventory: **146 native R implementations**,
+**171 / 380 uniquely mapped Python callable names**,
+**209 unmapped functions**; 121 other public exports unrepresented.
+Stage 19 owner-run tests passed; Stage 20 tests have **not** yet run.
+
+[Stage 20 certification evidence, scientific contracts and audit plan](full-native-r-stage20-contract-certification.md).
+

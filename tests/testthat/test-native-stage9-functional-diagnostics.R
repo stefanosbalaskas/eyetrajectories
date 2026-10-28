@@ -32,7 +32,11 @@ test_that("Stage 9 ALR and inverse preserve the declared simplex",{
   expect_error(etr_alr_transform(v,epsilon=Inf),"epsilon")
   expect_error(etr_inverse_alr(z,0L,4L),"dimensions")
   expect_error(etr_inverse_alr(z*Inf,-1L,3L),"nonfinite")
-  expect_error(etr_alr_transform(array(1,c(2,4,1))),"simplex|dimensions")
+  singleton<-array(1,c(2L,4L,1L))
+  one<-etr_alr_transform(singleton)
+  expect_identical(dim(one),c(2L,4L,0L))
+  expect_equal(etr_inverse_alr(one,0L,1L),singleton)
+  expect_equal(etr_inverse_alr(one,-1L,1L),singleton)
 })
 
 test_that("Stage 9 FPCA component curves, selection, score frames and distances",{
@@ -137,9 +141,9 @@ test_that("Stage 9 frozen 508 source register counts only native implementations
     fit_phase_fpca="etr_fit_phase_fpca")
   expect_equal(nrow(x),508L)
   expect_equal(sum(x$is_python_function),380L)
-  expect_equal(sum(x$named_native_candidate),170L)
-  expect_equal(sum(x$is_python_function & !x$named_native_candidate),210L)
-  expect_equal(sum(x$native_implementation_started),145L)
+  expect_equal(sum(x$named_native_candidate),171L)
+  expect_equal(sum(x$is_python_function & !x$named_native_candidate),209L)
+  expect_equal(sum(x$native_implementation_started),146L)
   expect_equal(sum(x$native_implementation_stage==9L,na.rm=TRUE),12L)
   for (n in names(want)) {
     one<-x[x$namespace=="root" & x$python_name==n,,drop=FALSE]

@@ -169,6 +169,7 @@
   rqa_parameter_sensitivity="etr_rqa_parameter_sensitivity",
   cluster_fpca_scores="etr_cluster_fpca_scores",
   trajectory_distance_sensitivity="etr_trajectory_distance_sensitivity",
+  surrogate_nonlinearity_test="etr_surrogate_nonlinearity_test",
   split_conformal_fpca_anomaly="etr_split_conformal_fpca_anomalies",
   # These four new native methods are experimentally implemented here.
   acceleration_magnitude_function="etr_acceleration_magnitude",
@@ -293,6 +294,9 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   stage19_names <- c("lyapunov_parameter_sensitivity","kantz_parameter_sensitivity","rqa_parameter_sensitivity","cluster_fpca_scores","trajectory_distance_sensitivity")
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% stage19_names] <- 19L
+  stage20_names <- "surrogate_nonlinearity_test"
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% stage20_names] <- 20L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset
@@ -316,12 +320,72 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
       ifelse(api$named_native_candidate,
         "native_analog_present_behavior_unverified",
         "no_specific_native_function_mapped")))
-  # No numerical oracle can be marked PASS solely through a source-census
-  # report. The independent opt-in test fixture is separate evidence.
-  api$independent_numeric_parity_pass <- FALSE
-  api$behavioral_schema_parity_pass <- FALSE
-  api$scientific_inference_qualified <- FALSE
+  # Explicit signed-off source-contract evidence, NOT inferred from
+  # implementation age, mapping, a standalone CI check, or a Python wrapper.
+  # Candidate rows are locked to the frozen API source Git revision.
+  register <- utils::read.csv(system.file("extdata",
+    "native_contract_certification_pilots_v1.csv",
+    package="eyetrajectories"),stringsAsFactors=FALSE)
+  needed <- c("python_name","native_r_candidate","source_path",
+    "frozen_catalog_snapshot_sha","published_tag",
+    "published_tag_commit","independent_oracle_suite",
+    "numerical_fixture_pass","numerical_fixture_evidence","evidence_state",
+    "numerical_oracle_approved","schema_boundary_approved",
+    "scientific_scope_approved","independent_reviewer_approved",
+    "review_evidence")
+  .etr_assert(identical(names(register),needed) &&
+    !anyDuplicated(register$python_name) &&
+    all(register$python_name %in% api$python_name[api$is_python_function]) &&
+    all(register$native_r_candidate ==
+      unname(analogues[register$python_name])) &&
+    all(register$frozen_catalog_snapshot_sha ==
+      api$source_git_sha[match(register$python_name,api$python_name)]) &&
+    all(register$published_tag=="v1.2.0") &&
+    all(register$published_tag_commit==
+      "c1cd95ad718327550f7e55393ff38582872f7a94") &&
+    all(nzchar(register$source_path)) &&
+    all(nzchar(register$independent_oracle_suite)),
+    "certification evidence register is malformed or mismatched to frozen API")
+  .etr_assert(is.logical(register$numerical_fixture_pass) &&
+    !anyNA(register$numerical_fixture_pass),
+    "fixture evidence state must have explicit boolean values")
+  fixture_link <- as.character(register$numerical_fixture_evidence)
+  fixture_link_present <- !is.na(fixture_link) &
+    grepl("^https://github\\.com/",fixture_link)
+  .etr_assert(!any(register$numerical_fixture_pass &
+    !fixture_link_present),
+    "numeric fixture PASS requires a GitHub evidence link")
+  approved <- c("numerical_oracle_approved","schema_boundary_approved",
+    "scientific_scope_approved","independent_reviewer_approved")
+  .etr_assert(all(vapply(register[approved],function(x)
+    is.logical(x)&&!anyNA(x),logical(1L))),
+    "certification evidence approvals must be explicit booleans")
+  review <- as.character(register$review_evidence)
+  evidence_linked <- !is.na(review) &
+    grepl("^https://github\\.com/",review)
+  pass <- apply(register[approved],1L,all) &
+    register$evidence_state=="approved_and_reproducible" &
+    evidence_linked
+  .etr_assert(!any(pass & !register$python_name %in%
+    api$python_name[api$native_implementation_started]),
+    "cannot certify a Python contract without an implemented native method")
+  found <- match(api$python_name,register$python_name)
+  api$contract_certification_candidate <- !is.na(found)
+  api$contract_certification_evidence_state <- ifelse(is.na(found),
+    "not_reviewed",register$evidence_state[found])
+  api$contract_numerical_fixture_pass <- ifelse(is.na(found),FALSE,
+    register$numerical_fixture_pass[found])
+  api$independent_numeric_parity_pass <- ifelse(is.na(found),FALSE,
+    register$numerical_oracle_approved[found])
+  api$behavioral_schema_parity_pass <- ifelse(is.na(found),FALSE,
+    register$schema_boundary_approved[found])
+  api$scientific_inference_qualified <- ifelse(is.na(found),FALSE,
+    register$scientific_scope_approved[found])
+  api$independent_contract_review_pass <- ifelse(is.na(found),FALSE,
+    register$independent_reviewer_approved[found])
   api$one_to_one_native_contract_complete <- FALSE
+  api$one_to_one_native_contract_complete[match(register$python_name,
+    api$python_name)] <- pass
   if (require_complete && !all(api$one_to_one_native_contract_complete))
     stop("Full 508-export one-to-one native R parity is NOT complete: ",
          sum(!api$one_to_one_native_contract_complete),

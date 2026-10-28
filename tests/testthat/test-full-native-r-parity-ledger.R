@@ -5,7 +5,7 @@ test_that("strict register covers all 508 Python public exports without Python",
   expect_equal(nrow(z),508L)
   expect_equal(sum(z$is_python_function),380L)
   expect_equal(sum(!z$is_python_function),128L)
-  expect_equal(sum(z$native_implementation_started),145L)
+  expect_equal(sum(z$native_implementation_started),146L)
   expect_true(all(z$one_to_one_native_contract_complete==FALSE))
   expect_true(all(z$independent_numeric_parity_pass==FALSE))
   expect_true(all(z$scientific_inference_qualified==FALSE))
