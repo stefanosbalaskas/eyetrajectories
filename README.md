@@ -1,5 +1,23 @@
 # eyetrajectories
 
+## Stage 10 — compositional FPCA and functional diagnostics (research draft)
+
+Fifteen additional Python-free R implementations are now authored: ALR-based
+compositional FPCA and inverse reconstruction, signed component cosine
+similarities and globally optimal exact component matching (up to 12
+components), quadrature-weighted reconstruction error, registration
+sensitivity, descriptive FPCA/eigengap reports, and functional-mean band
+frames. These are source-specific implementations rather than Python bridges.
+
+The frozen Python 1.2 register has **92 / 380** mapped callable names,
+**288** unmapped callables, **62** independently authored native R function
+implementations and **0 / 508** one-to-one fully certified contracts.
+Source-aware deterministic and pinned Python 1.2 tests have been authored,
+**not executed**. Release and merge qualification remain closed.
+
+[Stage 10 source contracts and testing](docs/full-native-r-stage10-fpca-extensions.md).
+
+
 ## Native R Stage 9 — functional and phase diagnostics (draft)
 
 Twelve additional independently implemented **Python-free** R functions
