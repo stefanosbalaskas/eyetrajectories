@@ -72,7 +72,7 @@ etr_fit_local_return_map(crossings, reference, neighborhood_radius = NULL, n_nei
 \item{max_gap}{Optional largest interpolatable source gap.}
 \item{coordinate_system}{Declared trajectory coordinate semantics.}
 \item{time_unit}{Declared observed time unit.}
-}
 \item{section_dimension}{Explicit Poincare section dimension.}\item{section_value}{Finite section threshold.}\item{direction}{Positive, negative or both orientations.}\item{state_dimensions}{Declared non-section functional state dimensions.}\item{crossings}{Native Poincare crossing results.}\item{reference}{Local return-map mean, median or explicit reference vector.}\item{neighborhood_radius}{Positive local radius, exclusive with n_neighbors.}\item{n_neighbors}{Number of locally selected transitions, exclusive with radius.}
+}
 \value{A native fit, diagnostic or band result, trajectory collection, or structured coefficient data frame according to the invoked method.}
 \details{The base-R pseudorandom generator does not reproduce NumPy random sequences. Simultaneous bands are observed-grid approximations only. FNN is exact brute force with a size cap and explicit tie differences. Time-unit embedding delays remain unsupported. No public source-contract certification or release is implied.}
