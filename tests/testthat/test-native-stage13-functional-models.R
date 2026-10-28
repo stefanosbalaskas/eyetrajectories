@@ -113,7 +113,7 @@ test_that("Stage 13 wild bootstrap is fixed-design, entire-function and reproduc
 })
 
 test_that("Stage 13 delay AMI and FNN give deterministic, declared diagnostics",{
-  t<-seq(0,5,length.out=103L)
+  t<-seq(0,5,length.out=101L)
   v<-array(0,c(1L,length(t),1L))
   v[1L,,1L]<-sin(2*pi*t)+.2*cos(6*pi*t)+.03*t
   x<-etr_trajectory_set(t,v,"wave","signal",time_unit="s")
