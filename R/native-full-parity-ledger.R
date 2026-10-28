@@ -327,7 +327,8 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     "native_contract_certification_pilots_v1.csv",
     package="eyetrajectories"),stringsAsFactors=FALSE)
   needed <- c("python_name","native_r_candidate","source_path",
-    "pinned_source_sha","independent_oracle_suite","evidence_state",
+    "frozen_catalog_snapshot_sha","published_tag",
+    "published_tag_commit","independent_oracle_suite","evidence_state",
     "numerical_oracle_approved","schema_boundary_approved",
     "scientific_scope_approved","independent_reviewer_approved",
     "review_evidence")
@@ -336,8 +337,11 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     all(register$python_name %in% api$python_name[api$is_python_function]) &&
     all(register$native_r_candidate ==
       unname(analogues[register$python_name])) &&
-    all(register$pinned_source_sha ==
+    all(register$frozen_catalog_snapshot_sha ==
       api$source_git_sha[match(register$python_name,api$python_name)]) &&
+    all(register$published_tag=="v1.2.0") &&
+    all(register$published_tag_commit==
+      "c1cd95ad718327550f7e55393ff38582872f7a94") &&
     all(nzchar(register$source_path)) &&
     all(nzchar(register$independent_oracle_suite)),
     "certification evidence register is malformed or mismatched to frozen API")
