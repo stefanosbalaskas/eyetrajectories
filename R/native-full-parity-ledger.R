@@ -48,8 +48,6 @@
   fit_sparse_fpca="etr_fit_sparse_pace",
   fit_multilevel_fpca="etr_fit_multilevel_fpca",
   fit_functional_mixed_effects_regression="etr_fit_functional_mixed",
-  discrete_transfer_entropy="etr_transfer_entropy",
-  transfer_entropy_circular_shift_test="etr_transfer_entropy_shift_test",
   fit_scalar_on_function_regression="etr_fit_scalar_on_fpca",
   register_to_landmarks="etr_register_landmarks",
   delay_embed_trajectory="etr_delay_embedding",
