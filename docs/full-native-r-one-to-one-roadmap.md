@@ -700,3 +700,19 @@ prevents certification of known-divergent contracts even if review
 flags are erroneously switched to TRUE.
 
 [Stage 22 native plotting and hard-fail published-source certification](full-native-r-stage22-certification-and-plots.md).
+
+
+## Stage 23 — eight manuscript reporting integrations (draft)
+
+Eight independent Python-free R descriptive text entrypoints build
+manuscript-ready summaries from already computed native scientific
+objects. Direct source-oracle comparisons are authored for three
+deterministic text outputs and native fail-closed checks for all eight.
+
+**Authored census: 166 native implementations; 191/380 source names
+mapped; 189 unmapped Python callable names.** No new independent
+complete-contract certification has been obtained: **0/508**
+public source contracts fully certified. Stage 22 owner-run Windows
+RStudio tests passed; Stage 23 remains unexecuted on the new head.
+
+[Stage 23 method and verification](full-native-r-stage23-manuscript-source-contracts.md).

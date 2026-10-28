@@ -23,6 +23,36 @@
   invisible(result)
 }
 
+# Python np.asarray(..., dtype=float) accepts regular nested sequences.
+# Convert one useful class of those inputs without Python/reticulate.
+# Full Python coercion and nonfinite/epsilon semantics remain unqualified.
+.etr9_simplex_nested_input <- function(values) {
+  if(!is.list(values) || is.data.frame(values) ||
+     !is.null(dim(values))) return(values)
+  n<-length(values)
+  .etr_assert(n>=1L && is.list(values[[1L]]) &&
+    length(values[[1L]])>=1L,
+    "simplex nested input requires nonempty curve/time dimensions")
+  nt<-length(values[[1L]])
+  k<-length(values[[1L]][[1L]])
+  .etr_assert(k>=1L,"nested simplex must contain at least one dimension")
+  out<-array(NA_real_,c(n,nt,k))
+  for(i in seq_len(n)) {
+    .etr_assert(is.list(values[[i]]) &&
+      length(values[[i]])==nt,
+      "simplex nested input must have rectangular time dimensions")
+    for(t in seq_len(nt)) {
+      cell<-values[[i]][[t]]
+      .etr_assert(is.atomic(cell) && is.null(dim(cell)) &&
+        !is.factor(cell) && length(cell)==k &&
+        (is.numeric(cell)||is.logical(cell)||is.character(cell)),
+        "simplex nested input must have equal scalar dimensions")
+      out[i,t,]<-suppressWarnings(as.numeric(cell))
+    }
+  }
+  out
+}
+
 #' Native additive log-ratio transformation for compositional trajectories
 #' @param values Numeric array of shape curve by time by dimension.
 #' @param reference_dimension Python-style zero-based reference index (-1 = last).
@@ -32,6 +62,7 @@
 etr_alr_transform <- function(values,reference_dimension=-1L,epsilon=1e-8) {
   .etr_assert(is.numeric(epsilon) && length(epsilon)==1L &&
     is.finite(epsilon) && epsilon>0,"epsilon must be positive and finite")
+  values<-.etr9_simplex_nested_input(values)
   etr_validate_simplex(values)
   d<-dim(values); k<-d[3L]
   # Published Python 1.2 accepts a one-channel simplex and returns an

@@ -6,7 +6,8 @@ test_that("source-contract approval cannot be inferred from numeric fixtures",{
   z<-etr_native_parity_catalog()
   candidates<-z[z$contract_certification_candidate,,drop=FALSE]
   expect_setequal(candidates$python_name,
-    c("alr_transform","inverse_alr","score_distance_matrix"))
+    c("alr_transform","inverse_alr","score_distance_matrix",
+      "functional_trapezoid_weights"))
   expect_true(all(candidates$contract_numerical_fixture_pass))
   expect_false(any(candidates$independent_numeric_parity_pass))
   expect_false(any(candidates$behavioral_schema_parity_pass))
@@ -21,14 +22,17 @@ test_that("published Python 1.2 accepts inputs that strict native R rejects",{
     skip("Direct pinned published Python 1.2 boundary probes are opt-in")
   expect_identical(et_python_version(),"1.2.0")
 
-  # Python converts nested sequences with np.asarray. R's strict native
-  # simplex validator deliberately requires a numeric 3-D array.
+  # Python converts nested regular sequences with np.asarray. Native
+  # R now supports the corresponding rectangular numeric 3-D inputs.
   nested<-list(list(c(0.2,0.3,0.5)))
   py_alr<-reticulate::py_call(etpy_get_export("alr_transform"),
     values=reticulate::r_to_py(nested))
   alr_values<-et_to_r(py_alr)
   expect_equal(dim(alr_values),c(1L,1L,2L))
-  expect_error(etr_alr_transform(nested))
+  expect_equal(unname(etr_alr_transform(nested)),unname(alr_values),
+    tolerance=1e-12)
+  expect_error(etr_alr_transform(list(list(c(.2,.3,.5)),
+    list(c(.2,.3),c(.3,.3,.4)))),"rectangular")
 
   # Published inverse_alr uses np.exp and ordinary numpy division,
   # yielding nonfinite entries for extreme log-ratios; strict native R
