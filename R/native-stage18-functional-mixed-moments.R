@@ -178,7 +178,7 @@ etr_functional_mixed_effects_whitened_residuals <- function(result){
 .etr18_aggregate <- function(trial,cols){
   keys<-unique(trial[,cols,drop=FALSE])
   rows<-vector("list",nrow(keys))
-  for(i in seq_len(nrow(keys)){
+  for(i in seq_len(nrow(keys))){
     keep<-rep(TRUE,nrow(trial))
     for(c in cols)keep<-keep&(trial[[c]]==keys[[c]][i])
     f<-trial[keep,,drop=FALSE];w<-f$n_pairs
