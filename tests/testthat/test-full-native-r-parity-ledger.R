@@ -47,7 +47,7 @@ test_that("classes and constants are separately tracked, not called native algor
                    "class_or_constant_native_representation_partial")
   expect_identical(stage5$native_representation_stage,5L)
   pending <- others[is.na(others$native_representation_stage),,drop=FALSE]
-  expect_equal(nrow(pending),133L)
+  expect_equal(nrow(pending),132L)
   expect_true(all(pending$status==
      "class_or_constant_native_representation_not_reviewed"))
   expect_false(any(others$native_implementation_started))
