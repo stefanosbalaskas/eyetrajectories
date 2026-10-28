@@ -440,3 +440,22 @@ awaiting actual execution; the previous Stage 9 owner-reported test
 passes do not qualify Stage 10. Research PR must remain draft.
 
 [Stage 10 source-level implementation and reproduction guide](full-native-r-stage10-fpca-extensions.md).
+
+## Stage 11 — Python-free nonlinear scientific reporting
+
+Fifteen additional Python-root reporting callable names are independently
+implemented in R. These are **manuscript-text and result-adapter utilities**,
+not new RQA/uncertainty/surrogate estimators. Five families consume native
+Stage 8 recurrence and windowed-RQA objects directly. Other reports accept
+validated source-shaped R results pending upstream estimator implementation.
+
+The 508-export inventory now records **107/380 mapped Python callable
+names**, **273 unmapped callable names**, **77 independently authored native
+R callable implementations across Stages 2–11**, **7 partial object
+representations**, and **0/508 fully certified source contracts**. The
+implementation method tally includes 15 new descriptive reporting functions.
+Stage 11 tests and Python 1.2 reporting oracle were authored but are not yet
+runtime-qualified. The Stage 10 tuple-indexing oracle fixture correction
+(182f4dbe) likewise requires an owner-run numerical recheck.
+
+[Stage 11 reporting contracts and qualifications](full-native-r-stage11-nonlinear-reporting.md).
