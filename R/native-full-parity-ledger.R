@@ -170,6 +170,8 @@
   cluster_fpca_scores="etr_cluster_fpca_scores",
   trajectory_distance_sensitivity="etr_trajectory_distance_sensitivity",
   surrogate_nonlinearity_test="etr_surrogate_nonlinearity_test",
+  generate_multivariate_iaaft_surrogates="etr_generate_multivariate_iaaft_surrogates",
+  multivariate_iaaft_diagnostics_frame="etr_multivariate_iaaft_diagnostics_frame",
   split_conformal_fpca_anomaly="etr_split_conformal_fpca_anomalies",
   # These four new native methods are experimentally implemented here.
   acceleration_magnitude_function="etr_acceleration_magnitude",
@@ -297,6 +299,10 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   stage20_names <- "surrogate_nonlinearity_test"
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% stage20_names] <- 20L
+  stage21_names <- c("generate_multivariate_iaaft_surrogates",
+    "multivariate_iaaft_diagnostics_frame")
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% stage21_names] <- 21L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset
