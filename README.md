@@ -1152,3 +1152,19 @@ The Python implementation is the numerical source of truth during Phase 1. Inter
 See [Phase 1 design and boundaries](docs/phase1-scope.md). Planned Phase 2 work is a separately validated native R core; no CRAN release is authorized by this development branch.
 
 Copyright (c) 2026 Stefanos Balaskas. MIT License.
+
+
+## Stage 22 source-aligned native scientific graphics (unreleased)
+
+Eight further Python-free diagnostics for embedding delay/dimension,
+recurrence degree/radius/windowed RQA, local divergence,
+IAAFT-surrogate tests, and Poincare return maps are implemented on
+the Stage 22 research branch. The cumulative **authored** parity census
+is **158 native R implementations**, **183/380 source-name callable
+mappings**, **197 unmapped callable names**, and **0/508 fully
+certified public source contracts**.
+
+A new 12-row known-difference register hard-blocks approval of any
+public source contract with a documented unresolved Python/R behavior
+difference. Stage 22 runtime tests remain pending; it is not a release.
+See [Stage 22 scientific graphics and certification evidence](docs/full-native-r-stage22-certification-and-plots.md).
