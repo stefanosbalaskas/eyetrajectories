@@ -182,6 +182,14 @@
   plot_local_divergence="etr_plot_local_divergence",
   plot_surrogate_nonlinearity="etr_plot_surrogate_nonlinearity",
   plot_poincare_return_map="etr_plot_poincare_return_map",
+  dynamic_time_warping_reporting_text="etr_dynamic_time_warping_reporting_text",
+  trajectory_distance_sensitivity_reporting_text="etr_trajectory_distance_sensitivity_reporting_text",
+  fpca_stability_reporting_text="etr_fpca_stability_reporting_text",
+  fpca_outlier_reporting_text="etr_fpca_outlier_reporting_text",
+  fpca_influence_reporting_text="etr_fpca_influence_reporting_text",
+  fpca_subspace_stability_reporting_text="etr_fpca_subspace_stability_reporting_text",
+  fpca_cross_validation_reporting_text="etr_fpca_cross_validation_reporting_text",
+  multilevel_fpca_reporting_text="etr_multilevel_fpca_reporting_text",
   split_conformal_fpca_anomaly="etr_split_conformal_fpca_anomalies",
   # These four new native methods are experimentally implemented here.
   acceleration_magnitude_function="etr_acceleration_magnitude",
@@ -326,6 +334,18 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   )
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% stage22_names] <- 22L
+  stage23_names <- c(
+    "dynamic_time_warping_reporting_text",
+    "trajectory_distance_sensitivity_reporting_text",
+    "fpca_stability_reporting_text",
+    "fpca_outlier_reporting_text",
+    "fpca_influence_reporting_text",
+    "fpca_subspace_stability_reporting_text",
+    "fpca_cross_validation_reporting_text",
+    "multilevel_fpca_reporting_text"
+  )
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% stage23_names] <- 23L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset
