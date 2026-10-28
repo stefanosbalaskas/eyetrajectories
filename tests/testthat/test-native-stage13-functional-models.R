@@ -113,7 +113,7 @@ test_that("Stage 13 wild bootstrap is fixed-design, entire-function and reproduc
 })
 
 test_that("Stage 13 delay AMI and FNN give deterministic, declared diagnostics",{
-  t<-seq(0,5,length.out=101L)
+  t<-seq(0,5,length.out=103L)
   v<-array(0,c(1L,length(t),1L))
   v[1L,,1L]<-sin(2*pi*t)+.2*cos(6*pi*t)+.03*t
   x<-etr_trajectory_set(t,v,"wave","signal",time_unit="s")
@@ -208,10 +208,10 @@ test_that("Stage 13 508-source inventory remains fail-closed",{
   z<-etr_native_parity_catalog()
   expect_equal(nrow(z),508L)
   expect_equal(sum(z$is_python_function),380L)
-  expect_equal(sum(z$named_native_candidate),131L)
-  expect_equal(sum(z$is_python_function & !z$named_native_candidate),249L)
-  expect_equal(sum(z$native_implementation_started),101L)
-  expect_equal(sum(z$native_implementation_stage==13L,na.rm=TRUE),10L)
+  expect_equal(sum(z$named_native_candidate),133L)
+  expect_equal(sum(z$is_python_function & !z$named_native_candidate),247L)
+  expect_equal(sum(z$native_implementation_started),103L)
+  expect_equal(sum(z$native_implementation_stage==13L,na.rm=TRUE),12L)
   expect_equal(sum(!is.na(z$native_representation_stage)),7L)
   expect_true(all(!z$one_to_one_native_contract_complete))
   expect_error(etr_native_parity_catalog(require_complete=TRUE),"NOT complete")
