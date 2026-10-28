@@ -10,8 +10,8 @@ with conservative scientific reporting. No discretization, lag
 selection, shift generation, causal identification or Python bridge
 occurs implicitly.
 
-Cumulative authored inventory: **127 native R functions**, **156 / 380
-mapped Python callable names**, **224 unmapped**, **121 pending
+Cumulative authored inventory: **127 native R functions**, **154 / 380
+mapped Python callable names**, **226 unmapped**, **121 pending
 nonfunction exports**, and **0 / 508 certified full source contracts**.
 Stage 15 owner-run RStudio tests passed all native and pinned Python
 source comparisons; Stage 16 is authored but **not runtime-qualified**.
