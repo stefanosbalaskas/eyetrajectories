@@ -53,7 +53,7 @@
   fit_scalar_on_function_regression="etr_fit_scalar_on_fpca",
   register_to_landmarks="etr_register_landmarks",
   delay_embed_trajectory="etr_delay_embedding",
-  poincare_crossings="etr_poincare_return_map",
+  poincare_crossings="etr_poincare_crossings",
   recurrence_network="etr_recurrence_network",
   recurrence_network_node_frame="etr_recurrence_network_node_frame",
   recurrence_network_summary_frame="etr_recurrence_network_summary_frame",
@@ -130,7 +130,6 @@
   simulate_planar_trajectories="etr_simulate_planar_trajectories",
   simulate_aoi_probability_trajectories="etr_simulate_aoi_probability_trajectories",
   from_irregular_long_dataframe="etr_from_irregular_long_dataframe",
-  poincare_crossings="etr_poincare_crossings",
   fit_local_return_map="etr_fit_local_return_map",
   split_conformal_fpca_anomaly="etr_split_conformal_fpca_anomalies",
   # These four new native methods are experimentally implemented here.
