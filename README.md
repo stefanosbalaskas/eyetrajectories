@@ -1,5 +1,24 @@
 # eyetrajectories
 
+## Stage 16 — native discrete and conditional transfer entropy (research draft)
+
+Twelve independent Python-free R functions now calculate exact
+integer-coded empirical transfer entropy, conditional transfer entropy,
+their local history contributions, analyst-declared source-only
+circular-shift nulls, and Cartesian parameter-sensitivity analyses,
+with conservative scientific reporting. No discretization, lag
+selection, shift generation, causal identification or Python bridge
+occurs implicitly.
+
+Cumulative authored inventory: **127 native R functions**, **154 / 380
+mapped Python callable names**, **226 unmapped**, **121 pending
+nonfunction exports**, and **0 / 508 certified full source contracts**.
+Stage 15 owner-run RStudio tests passed all native and pinned Python
+source comparisons; Stage 16 is authored but **not runtime-qualified**.
+
+[Stage 16 information-theory source contracts](docs/full-native-r-stage16-transfer-entropy.md).
+
+
 ## Stage 15 — native observed-grid mean/FPCA bootstrap uncertainty (research draft)
 
 Five additional independently authored Python-free R methods implement
