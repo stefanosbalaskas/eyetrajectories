@@ -1,5 +1,25 @@
 # eyetrajectories
 
+## Stage 13 — numerical functional regression, embedding and simulation (draft)
+
+Twelve additional independent native R methods include observed-grid
+function-on-scalar OLS with HC1 sandwich errors, participant-equal-weight
+inference-unit controls, fixed-design whole-curve wild bootstrap, and
+studentized observed-grid simultaneous bands. The batch also implements
+AMI delay and false-nearest-neighbor diagnostics, empirical return-map
+spectral stability, reproducible native planar/AOI simulators, and
+explicit irregular-long-data conversion.
+
+The **authored inventory** is now **103 native R functions**, **132/380
+mapped Python callable names**, **248 unmapped**, and still **0/508
+fully qualified contracts**. Stage 12 locally verified 69 native, 79
+Python-oracle and 39 full ledger assertions; Stage 13 code and tests
+are committed but **not runtime qualified**. NumPy RNG, FNN tie
+semantics, and time-based embedding lag handling are documented gaps.
+
+[Stage 13 scientific methods and restrictions](docs/full-native-r-stage13-functional-models.md).
+
+
 ## Stage 12 — held-out FPCA validation and uncertainty frames (research draft)
 
 Fourteen additional Python-free R methods add refitted held-out FPCA
@@ -79,7 +99,7 @@ Windows oracle remain pending. No main merge, version bump or release.
 
 ## Native R Stage 8 — ten nonlinear recurrence and RQA methods (draft)
 
-Ten further Python-independent R functions cover recurrence-network
+Twelve further Python-independent R functions cover recurrence-network
 degree, triangles, clustering and components; synchronized joint
 recurrence and joint/cross RQA; prespecified radius-rate profiles;
 and full-window RQA and its functional trajectory representation.
