@@ -123,9 +123,9 @@ test_that("Stage 16 Cartesian sensitivity retains every declared specification",
   expect_equal(nrow(z$summary_table),8L)
   expect_identical(z$table$specification_id,0:7)
   expect_identical(as.integer(z$table$target_history),
-    c(1,1,1,1,2,2,2,2))
+    c(1L,1L,1L,1L,2L,2L,2L,2L))
   expect_identical(as.integer(z$table$source_history),
-    c(1,1,2,2,1,1,2,2))
+    c(1L,1L,2L,2L,1L,1L,2L,2L))
   expect_true(all(is.na(z$table$surrogate_mean_bits)))
   expect_identical(z$parameter_columns,
     c("target_history","source_history","source_lag"))
