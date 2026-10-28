@@ -420,3 +420,23 @@ broader input/schemas, inferential validity and actual equivalence
 qualification are still outstanding. Research draft only; no release.
 
 [Detailed Stage 9 source and reproduction guide](full-native-r-stage9-functional-diagnostics.md).
+
+## Stage 10 — 15 Python-free FPCA extension contracts (research draft)
+
+Published source version: eyetrajectoriespy==1.2.0, with direct source
+inspection of compositional, stability, phase, subspace, reporting and
+inference modules. Stage 10 adds 15 Python-free native R functions.
+Compositional inverse maps reconstruct onto the simplex; component
+matching uses a globally optimal exact assignment for up to 12 FPCs;
+reconstruction diagnostics, phase sensitivity, eigengaps and reporting
+are separated from inferential certification.
+
+The frozen inventory becomes **92/380 named callable candidates**, **288
+unmapped callable functions**, **62 independently authored native R
+implementations**, **7 partially represented other symbols**, and
+**0/508 fully qualified public contracts**. The Stage 10 deterministic
+and pinned Python 1.2 source-oracle tests have been authored but are
+awaiting actual execution; the previous Stage 9 owner-reported test
+passes do not qualify Stage 10. Research PR must remain draft.
+
+[Stage 10 source-level implementation and reproduction guide](full-native-r-stage10-fpca-extensions.md).
