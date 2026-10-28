@@ -459,3 +459,29 @@ runtime-qualified. The Stage 10 tuple-indexing oracle fixture correction
 (182f4dbe) likewise requires an owner-run numerical recheck.
 
 [Stage 11 reporting contracts and qualifications](full-native-r-stage11-nonlinear-reporting.md).
+
+## Stage 12 — native held-out functional PCA CV and source-shaped inference reporting
+
+Stage 12 introduces **14** independently authored Python-free R
+functions, including a substantive leakage-aware FPCA held-out
+reconstruction CV routine that refits the functional basis inside
+each training fold, supports group-blocked participant holdouts, and
+applies an explicit minimum-mean or one-standard-error retention
+criterion. Declared fixed-target uncertainty, conformal anomaly,
+distance-sensitivity and functional-regression prediction frames
+are separate non-estimator adapters: no bootstrap or conformal
+coverage claim is inferred from table construction alone.
+
+Exact published Python source modules were inspected; direct oracle
+comparison uses unshuffled curve KFold, because R's shuffled
+permutations and tied group-fold allocation are intentionally not
+claimed bitwise identical to scikit-learn. Numerical, leakage and
+validation tests are authored but **have not yet run**.
+
+Cumulative frozen register: **121 / 380** named Python callable
+mappings, **259** unmapped callable names, **91** Python-free authored
+R functions including adapters, **7** partial other-export
+representations, **0 / 508** one-to-one certified source contracts.
+The 508-contract release gate remains closed.
+
+[Stage 12 full source-level methods and qualification](full-native-r-stage12-cv-uncertainty.md).
