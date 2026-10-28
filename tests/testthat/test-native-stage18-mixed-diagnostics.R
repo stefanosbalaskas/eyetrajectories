@@ -136,7 +136,11 @@ test_that("Stage 18 coefficient and variance frames retain native inferential bo
     "estimate","standard_error","lower_95_wald","upper_95_wald"))
   expect_equal(nrow(cf),2L*17L)
   expect_true(all(cf$lower_95_wald<=cf$upper_95_wald))
-  expect_equal(cf$estimate[1L],fit$coefficient_functions[1L,1L])
+  # Numeric coefficient equality is independent of matrix dimname metadata.
+  # Check the coefficient identity explicitly in the source-shaped table.
+  expect_identical(cf$coefficient[1L],"Intercept")
+  expect_equal(unname(cf$estimate[1L]),
+    unname(fit$coefficient_functions[1L,1L]))
   v<-etr_functional_mixed_effects_variance_decomposition(fit,
     model_label="restricted-model")
   expect_identical(sort(unique(v$component)),
