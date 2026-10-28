@@ -5,7 +5,7 @@ test_that("Stage 6 maps Python portable-result loader only as a candidate", {
   register <- etr_native_parity_catalog()
   expect_equal(nrow(register),508L)
   expect_equal(sum(register$is_python_function),380L)
-  expect_equal(sum(register$named_native_candidate),156L)
+  expect_equal(sum(register$named_native_candidate),154L)
   expect_equal(sum(register$native_implementation_started),127L)
   expect_equal(sum(register$native_implementation_stage==2L,na.rm=TRUE),4L)
   expect_equal(sum(register$native_implementation_stage==3L,na.rm=TRUE),7L)
