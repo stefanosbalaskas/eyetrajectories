@@ -131,6 +131,13 @@
   simulate_aoi_probability_trajectories="etr_simulate_aoi_probability_trajectories",
   from_irregular_long_dataframe="etr_from_irregular_long_dataframe",
   fit_local_return_map="etr_fit_local_return_map",
+  compare_fpca_subspaces="etr_compare_fpca_subspaces",
+  bootstrap_fpca_subspace_stability="etr_bootstrap_fpca_subspace_stability",
+  summarise_fpca_subspace_stability="etr_summarise_fpca_subspace_stability",
+  leave_one_group_out_fpca_influence="etr_leave_one_group_out_fpca_influence",
+  bootstrap_fpca_stability="etr_bootstrap_fpca_stability",
+  summarise_fpca_stability="etr_summarise_fpca_stability",
+  diagnose_fpca_outliers="etr_diagnose_fpca_outliers",
   split_conformal_fpca_anomaly="etr_split_conformal_fpca_anomalies",
   # These four new native methods are experimentally implemented here.
   acceleration_magnitude_function="etr_acceleration_magnitude",
@@ -237,6 +244,9 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   stage13_names <- c("poincare_crossings","fit_local_return_map","fit_function_on_scalar_regression","bootstrap_function_on_scalar_coefficients","function_on_scalar_simultaneous_bands","function_on_scalar_coefficient_frame","embedding_delay_diagnostics","embedding_dimension_diagnostics","return_map_stability","simulate_planar_trajectories","simulate_aoi_probability_trajectories","from_irregular_long_dataframe")
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% stage13_names] <- 13L
+  stage14_names <- c("compare_fpca_subspaces","bootstrap_fpca_subspace_stability","summarise_fpca_subspace_stability","leave_one_group_out_fpca_influence","bootstrap_fpca_stability","summarise_fpca_stability","diagnose_fpca_outliers")
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% stage14_names] <- 14L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset

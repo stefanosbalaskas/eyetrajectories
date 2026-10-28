@@ -607,3 +607,11 @@ export(etr_from_irregular_long_dataframe)
 
 export(etr_poincare_crossings)
 export(etr_fit_local_return_map)
+
+export(etr_compare_fpca_subspaces)
+export(etr_bootstrap_fpca_subspace_stability)
+export(etr_summarise_fpca_subspace_stability)
+export(etr_leave_one_group_out_fpca_influence)
+export(etr_bootstrap_fpca_stability)
+export(etr_summarise_fpca_stability)
+export(etr_diagnose_fpca_outliers)

@@ -1,0 +1,66 @@
+name: Native R Stage 14 FPCA stability and diagnostic estimators
+on:
+  pull_request:
+    paths:
+      - "R/native-stage14-fpca-stability.R"
+      - "R/native-full-parity-ledger.R"
+      - "tests/testthat/test-native-stage14-fpca-stability.R"
+      - "tests/testthat/test-native-stage*-parity-ledger.R"
+      - "NAMESPACE"
+      - ".github/workflows/native-r-parity-stage14.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-r:
+    name: Stage 14 native R / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: "hard"
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Native FPCA eigenspace and influence checks
+        shell: bash
+        run: |
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-stage14-fpca-stability|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))'
+  python-v1-2-oracle:
+    name: Stage 14 independent pinned Python 1.2 FPCA oracle
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - id: python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install source reference
+        run: python -m pip install "eyetrajectoriespy==1.2.0"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: "hard"
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: FPCA subspace angles and empirical outlier source parity
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-stage14-fpca-stability",reporter="summary",stop_on_failure=TRUE)'
