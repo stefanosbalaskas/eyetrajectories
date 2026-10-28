@@ -81,11 +81,11 @@ etr_bootstrap_rqa_metric_means <- function(trajectories,dimensions,metrics,
   data<-.etr17_rqa_source(trajectories,dimensions,
     embedding_dimension,delay,delay_units)
   nr<-length(data$curve_ids)
-  obs<-data.frame(curve_id=data$curve_ids,stringsAsFactors=FALSE)
+  obs<-data.frame(curve_id=data$curve_ids,
+    resolved_radius=rep(as.numeric(radius),nr),
+    achieved_recurrence_rate=numeric(nr),
+    theiler_window_samples=rep(th,nr),stringsAsFactors=FALSE)
   for(metric in metrics)obs[[metric]]<-numeric(nr)
-  obs$resolved_radius<-rep(as.numeric(radius),nr)
-  obs$achieved_recurrence_rate<-numeric(nr)
-  obs$theiler_window_samples<-rep(th,nr)
   for(i in seq_len(nr)){
     rec<-etr_recurrence_matrix(data,curve=i,radius=radius,theiler=th)
     q<-etr_rqa_metrics(rec,min_diagonal_length=md,min_vertical_length=mv)
