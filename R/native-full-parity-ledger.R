@@ -179,6 +179,15 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     "fit_phase_fpca")
   api$native_implementation_stage[api$python_name %in% s9 &
     api$is_python_function] <- 9L
+  stage10_names <- c("fit_compositional_fpca","reconstruct_compositional_fpca",
+    "component_similarity_matrix","match_fpca_components",
+    "reconstruction_error_by_curve","fpca_reconstruction_curve",
+    "compare_registered_unregistered_fpca","registration_sensitivity_frame",
+    "summarise_trajectory_set","summarise_fpca","fpca_reporting_text",
+    "fpca_eigenvalue_gap_table","fpca_eigengap_reporting_text",
+    "registration_sensitivity_reporting_text","functional_mean_band_frame")
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% stage10_names] <- 10L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset
