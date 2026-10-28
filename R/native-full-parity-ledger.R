@@ -350,9 +350,12 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   .etr_assert(all(vapply(register[approved],function(x)
     is.logical(x)&&!anyNA(x),logical(1L))),
     "certification evidence approvals must be explicit booleans")
+  review <- as.character(register$review_evidence)
+  evidence_linked <- !is.na(review) &
+    grepl("^https://github\\.com/",review)
   pass <- apply(register[approved],1L,all) &
     register$evidence_state=="approved_and_reproducible" &
-    nzchar(register$review_evidence)
+    evidence_linked
   .etr_assert(!any(pass & !register$python_name %in%
     api$python_name[api$native_implementation_started]),
     "cannot certify a Python contract without an implemented native method")
