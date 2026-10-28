@@ -50,7 +50,7 @@
   fit_functional_mixed_effects_regression="etr_fit_functional_mixed",
   fit_scalar_on_function_regression="etr_fit_scalar_on_fpca",
   register_to_landmarks="etr_register_landmarks",
-  delay_embed_trajectory="etr_delay_embedding",
+  delay_embed_trajectory="etr_delay_embed_trajectory",
   poincare_crossings="etr_poincare_crossings",
   recurrence_network="etr_recurrence_network",
   recurrence_network_node_frame="etr_recurrence_network_node_frame",
@@ -153,6 +153,11 @@
   conditional_transfer_entropy_reporting_text="etr_conditional_transfer_entropy_reporting_text",
   conditional_transfer_entropy_circular_shift_reporting_text="etr_conditional_transfer_entropy_circular_shift_reporting_text",
   transfer_entropy_parameter_sensitivity_reporting_text="etr_transfer_entropy_parameter_sensitivity_reporting_text",
+  local_divergence_curve="etr_local_divergence_curve",
+  kantz_divergence_curve="etr_kantz_divergence_curve",
+  estimate_largest_lyapunov_rosenstein="etr_estimate_largest_lyapunov_rosenstein",
+  estimate_largest_lyapunov_kantz="etr_estimate_largest_lyapunov_kantz",
+  bootstrap_rqa_metric_means="etr_bootstrap_rqa_metric_means",
   split_conformal_fpca_anomaly="etr_split_conformal_fpca_anomalies",
   # These four new native methods are experimentally implemented here.
   acceleration_magnitude_function="etr_acceleration_magnitude",
@@ -268,6 +273,9 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   stage16_names <- c("discrete_transfer_entropy","transfer_entropy_local_frame","transfer_entropy_circular_shift_test","conditional_transfer_entropy","conditional_transfer_entropy_local_frame","conditional_transfer_entropy_circular_shift_test","transfer_entropy_parameter_sensitivity","transfer_entropy_reporting_text","transfer_entropy_circular_shift_reporting_text","conditional_transfer_entropy_reporting_text","conditional_transfer_entropy_circular_shift_reporting_text","transfer_entropy_parameter_sensitivity_reporting_text")
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% stage16_names] <- 16L
+  stage17_names <- c("delay_embed_trajectory","local_divergence_curve","kantz_divergence_curve","estimate_largest_lyapunov_rosenstein","estimate_largest_lyapunov_kantz","bootstrap_rqa_metric_means")
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% stage17_names] <- 17L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset
