@@ -221,3 +221,107 @@ etr_simulate_aoi_probability_trajectories <- function(n_curves=80L,
       random_state=as.integer(random_state),synthetic=TRUE,
       random_engine="base_R_not_NumPy"))
 }
+
+
+#' Kennel-style false nearest-neighbor fractions across embedding dimensions
+#' @inheritParams etr_embedding_delay_diagnostics
+#' @param delay Positive integer lag in samples.
+#' @param delay_units,theiler_window_units Only "samples" supported.
+#' @param max_dimension Maximum candidate dimension.
+#' @param theiler_window Temporally excluded neighboring states.
+#' @param rtol,atol Declared positive FNN thresholds.
+#' @export
+etr_embedding_dimension_diagnostics <- function(trajectories,curve,dimension,
+    delay,delay_units="samples",max_dimension=10L,theiler_window=0L,
+    theiler_window_units="samples",rtol=10,atol=2){
+  etr_validate(trajectories,require_complete=TRUE)
+  step<-.etr13_regularity(trajectories$time)
+  .etr_assert(identical(delay_units,"samples") &&
+    identical(theiler_window_units,"samples"),
+    "embedding FNN time-unit parameters not yet qualified; use sample units")
+  .etr_assert(is.numeric(delay)&&length(delay)==1L&&is.finite(delay)&&
+    delay==as.integer(delay)&&delay>=1L,
+    "delay must be a positive sample count")
+  .etr_assert(is.numeric(theiler_window)&&length(theiler_window)==1L&&
+    is.finite(theiler_window)&&theiler_window==as.integer(theiler_window)&&
+    theiler_window>=0L,
+    "theiler_window must be a nonnegative sample count")
+  .etr_assert(is.numeric(max_dimension)&&length(max_dimension)==1L&&
+    is.finite(max_dimension)&&max_dimension==as.integer(max_dimension)&&
+    max_dimension>=1L,
+    "max_dimension must be a positive integer")
+  .etr_assert(is.numeric(rtol)&&length(rtol)==1L&&is.finite(rtol)&&rtol>0&&
+    is.numeric(atol)&&length(atol)==1L&&is.finite(atol)&&atol>0,
+    "rtol and atol must be positive finite")
+  .etr_assert(is.character(dimension)&&length(dimension)==1L&&
+    dimension%in%trajectories$dimension_names,
+    "Unknown dimension")
+  if(is.character(curve))curve<-match(curve,trajectories$curve_ids)
+  .etr_assert(is.numeric(curve)&&length(curve)==1L&&!is.na(curve)&&
+    curve==as.integer(curve)&&curve>=1L&&
+    curve<=length(trajectories$curve_ids),"curve index/ID out of range")
+  y<-as.vector(trajectories$values[curve,,match(dimension,
+    trajectories$dimension_names)])
+  n<-length(y);delay<-as.integer(delay)
+  tw<-as.integer(theiler_window)
+  .etr_assert(n<=2500L,
+    "native exact FNN nearest-neighbor search limited to 2500 samples")
+  scale<-sqrt(mean((y-mean(y))^2))
+  .etr_assert(scale>0,"FNN diagnostics require a non-constant signal")
+  rows<-list()
+  for(m in seq_len(as.integer(max_dimension))){
+    start<-m*delay
+    if(start>=n-1L)break
+    endpoints<-(start+1L):n
+    st<-sapply(0:(m-1L),function(lag)y[endpoints-lag*delay])
+    if(is.null(dim(st)))st<-matrix(st,ncol=1L)
+    added<-y[endpoints-m*delay]
+    nr<-nrow(st)
+    .etr_assert(nr>=2L,"FNN requires at least two reconstructed states")
+    failed<-logical(nr)
+    for(i in seq_len(nr)){
+      dists<-sqrt(rowSums((st-matrix(st[i,],nr,m,byrow=TRUE))^2))
+      candidates<-which(seq_len(nr)!=i &
+        abs(seq_len(nr)-i)>tw & is.finite(dists) & dists>0)
+      .etr_assert(length(candidates)>0L,
+        "no positive-distance temporally separated nearest neighbor")
+      idx<-candidates[which.min(dists[candidates])]
+      extra<-abs(added[i]-added[idx])
+      newdist<-sqrt(dists[idx]^2+extra^2)
+      failed[i]<-extra/dists[idx]>rtol||newdist/scale>atol
+    }
+    rows[[length(rows)+1L]]<-data.frame(
+      embedding_dimension=as.integer(m),
+      false_neighbor_fraction=mean(failed),
+      n_reference_states=as.integer(nr),rtol=rtol,atol=atol)
+  }
+  .etr_assert(length(rows)>0L,
+    "no embedding dimensions supported by available series length")
+  structure(list(table=do.call(rbind,rows),
+    curve_id=trajectories$curve_ids[curve],dimension=dimension,
+    delay_samples=delay,theiler_window_samples=tw,rtol=rtol,atol=atol,
+    provenance=list(operation="embedding_dimension_diagnostics",
+      criterion="Kennel-Brown-Abarbanel false nearest neighbors",
+      automatic_dimension_selection=FALSE,missing_policy="error",
+      sampling_contract="approximately_regular_grid",sampling_step=step)),
+    class="etr_embedding_dimension_diagnostics")
+}
+
+#' Explicit irregular-long-dataframe projection to a supplied fixed grid
+#' @param data Source samples in long-format R data.frame.
+#' @param curve_columns Curve-identifying columns.
+#' @param time_column Numeric sample time column.
+#' @param value_columns Functional channels.
+#' @param grid Declared complete finite increasing target time grid.
+#' @param metadata_columns Optional curve-constant fields.
+#' @param method Explicit native resampling interpolation method.
+#' @param max_gap Optional maximum bridgeable source sampling gap.
+#' @param coordinate_system,time_unit Declared original measurement semantics.
+#' @export
+etr_from_irregular_long_dataframe <- function(data,curve_columns,time_column,
+    value_columns=c("x","y"),grid,metadata_columns=NULL,method="linear",
+    max_gap=NULL,coordinate_system="unknown",time_unit="unknown"){
+  ir<-etr_from_irregular_long_native(data,curve_columns,time_column,
+    value_columns,metadata_columns,coordinate_system,time_unit)
+  etr_resample_irregular_to_grid(ir,grid,method=method,max_gap=max_gap)
+}
