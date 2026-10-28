@@ -76,6 +76,10 @@ test_that("Stage 24 nine scientific visualization mappings are unique and unsign
   expect_equal(sum(z$is_python_function&!z$named_native_candidate),180L)
   expect_equal(sum(z$native_implementation_started),175L)
   expect_equal(sum(z$contract_certification_candidate),4L)
+  expect_equal(sum(z$source_contract_gap_unresolved),21L)
+  expect_true(all(z$source_contract_gap_unresolved[
+    z$native_implementation_stage==24L &
+      !is.na(z$native_implementation_stage)]))
   expect_equal(sum(z$one_to_one_native_contract_complete),0L)
 })
 
