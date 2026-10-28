@@ -241,9 +241,10 @@ test_that("Stage 9 source-level Python 1.2 numeric oracle is opt-in",{
     observed_landmarks=reticulate::r_to_py(
       matrix(c(2,2.1,1.9,2),ncol=1L)),
     method="declared_fixture")
-  expect_equal(etr_warping_displacement(reg),
-    et_to_r(reticulate::py_call(etpy_get_export("warping_displacement"),
-      result=pyreg)),tolerance=1e-10)
+  expect_equal(unname(etr_warping_displacement(reg)),
+    unname(et_to_r(reticulate::py_call(
+      etpy_get_export("warping_displacement"),
+      result=pyreg))),tolerance=1e-10)
   ps<-et_to_r(reticulate::py_call(etpy_get_export("phase_summary"),
                                 result=pyreg))
   rs<-etr_phase_summary(reg)
