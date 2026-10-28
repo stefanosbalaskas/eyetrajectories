@@ -76,7 +76,7 @@ etr_plot_fpca_component <- function(result,component=0L,
     sd_multipliers=c(-sd_multiplier,0,sd_multiplier))
   y<-data.frame(time=result$time,lower=as.numeric(curves[1L,,d]),
     mean=as.numeric(curves[2L,,d]),upper=as.numeric(curves[3L,,d]))
-  graphics::plot(y$time,y$mean,type="l",ylim=range(y[-1L]),
+  graphics::plot(y$time,y$mean,type="l",ylim=range(c(y$lower,y$mean,y$upper)),
     xlab=sprintf("Time (%s)",result$time_unit),ylab=dimension,
     main=sprintf("FPC%d: %s(t)",as.integer(component)+1L,dimension),...)
   graphics::lines(y$time,y$lower,lty=2L)
@@ -133,21 +133,21 @@ etr_plot_dynamic_time_warping_alignment <- function(result,...) {
 etr_plot_trajectory_distance_rank_correlations <- function(result,...) {
   .etr_assert(inherits(result,"etr_trajectory_distance_sensitivity"),
     "result must be a native trajectory distance sensitivity result")
-  names<-result$specification_names
-  .etr_assert(is.character(names)&&length(names)>=2L&&
-    !anyNA(names)&&!anyDuplicated(names),
+  labels<-result$specification_names
+  .etr_assert(is.character(labels)&&length(labels)>=2L&&
+    !anyNA(labels)&&!anyDuplicated(labels),
     "specification names must be distinct")
-  n<-length(names)
+  n<-length(labels)
   comparison<-result$comparison_table
   .etr_assert(is.data.frame(comparison)&&all(c(
     "specification_a","specification_b",
     "spearman_rank_correlation")%in%names(comparison)),
     "comparison table lacks rank-correlation fields")
-  m<-diag(1,n);dimnames(m)<-list(names,names)
+  m<-diag(1,n);dimnames(m)<-list(labels,labels)
   seen<-matrix(FALSE,n,n)
   for(i in seq_len(nrow(comparison))){
-    a<-match(comparison$specification_a[i],names)
-    b<-match(comparison$specification_b[i],names)
+    a<-match(comparison$specification_a[i],labels)
+    b<-match(comparison$specification_b[i],labels)
     .etr_assert(!is.na(a)&&!is.na(b)&&a!=b&&!seen[a,b],
       "comparison table has an unknown or duplicate specification pair")
     v<-comparison$spearman_rank_correlation[i]
@@ -163,8 +163,8 @@ etr_plot_trajectory_distance_rank_correlations <- function(result,...) {
     col=grDevices::hcl.colors(101L,"Blue-Red 3"),
     xaxt="n",yaxt="n",xlab="",ylab="",
     main="Trajectory-distance rank agreement",...)
-  graphics::axis(1L,at=seq_len(n),labels=names,las=2L)
-  graphics::axis(2L,at=seq_len(n),labels=names,las=2L)
+  graphics::axis(1L,at=seq_len(n),labels=labels,las=2L)
+  graphics::axis(2L,at=seq_len(n),labels=labels,las=2L)
   for(i in seq_len(n))for(j in seq_len(n))
     graphics::text(i,j,if(is.nan(m[i,j]))"nan" else
       sprintf("%.2f",m[i,j]),cex=.7)
