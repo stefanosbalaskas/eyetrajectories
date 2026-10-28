@@ -585,3 +585,30 @@ delay parameters are explicitly unsupported.
 
 [Stage 17 scientific source contracts](full-native-r-stage17-divergence.md).
 
+
+
+## Stage 18 — native restricted functional repeated-measures estimation (research draft)
+
+Seven independently authored Python-free R functions now estimate a
+**restricted two-level functional method-of-moments model**, derive
+participant covariance and linear-prediction functions, whiten
+within-trial residuals, audit physical-time lagged residual dependence,
+expose exact residual-pair records, and produce variance and fixed-effect
+tables.
+
+**Important:** this is **not** the published Python 1.2
+`statsmodels` spline-basis MixedLM/REML likelihood estimator and is
+not certified as a replacement. The estimator uses pointwise fixed
+effects and participant-group covariance moments, including an explicit
+positive ridge. Random slopes, nested trial random functions,
+likelihood-optimized serial covariance and simultaneous mixed-model
+inference are not implemented.
+
+Frozen inventory: **140 independent R implementations**;
+**165 / 380 mapped callable source names**; **215 unmapped**;
+**121 pending other source exports**; **0 / 508 fully certified
+source contracts**. Stage 17 owner-run native and pinned Python tests
+passed; Stage 18 test code has **not yet been executed**.
+
+[Stage 18 numerical contract and limitations](full-native-r-stage18-mixed-diagnostics.md).
+
