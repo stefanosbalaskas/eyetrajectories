@@ -563,3 +563,25 @@ source comparisons; Stage 16 is authored but **not runtime-qualified**.
 
 [Stage 16 information-theory source contracts](full-native-r-stage16-transfer-entropy.md).
 
+
+
+## Stage 17 — native nonlinear divergence and independent-unit RQA bootstrap (draft)
+
+Six more independently authored Python-free numerical R functions
+reconstruct explicitly selected multichannel delay coordinates, estimate
+Rosenstein and fixed-radius Kantz divergence curves, fit explicitly
+declared Lyapunov slope intervals, and bootstrap curve-level RQA metric
+means with optional equal-weight participant aggregation.
+
+The source-census now covers **133 native R implementations** and
+**159/380 mapped Python callable names**, leaving **221 unmapped**.
+The prior `delay_embed_trajectory` candidate was **replaced**, not
+double-counted; 121 other exports remain unrepresented and
+**0/508 full public source contracts are certified**. Stage 16 local
+native and pinned Python tests passed; Stage 17 code/test suites are
+authored but not runtime-qualified. Positive slopes do not establish
+deterministic chaos. Adaptive recurrence thresholds and time-unit
+delay parameters are explicitly unsupported.
+
+[Stage 17 scientific source contracts](full-native-r-stage17-divergence.md).
+
