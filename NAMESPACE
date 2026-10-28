@@ -660,3 +660,5 @@ export(etr_surrogate_nonlinearity_test)
 
 export(etr_generate_multivariate_iaaft_surrogates)
 export(etr_multivariate_iaaft_diagnostics_frame)
+
+export(etr_multivariate_surrogate_nonlinearity_test)
