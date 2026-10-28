@@ -207,8 +207,15 @@ test_that("Stage 10 pinned Python 1.2 direct numerical reference is opt-in",{
   expect_identical(sm$assignments,c(0L,1L))
   pm<-reticulate::py_call(etpy_get_export("match_fpca_components"),
     reference=pfit,candidate=pfit)
+  # Convert the whole Python tuple before R 1-based list indexing.
+  # Indexing the Python tuple directly with [[1L]] selects its SECOND item
+  # (signed cosine similarities), not its zero-based assignment vector.
+  pm_r<-reticulate::py_to_r(pm)
+  expect_identical(length(pm_r),2L)
   expect_equal(as.integer(sm$assignments),
-    as.integer(et_to_r(pm[[1L]])))
+    as.integer(pm_r[[1L]]))
+  expect_equal(as.numeric(sm$signed_similarity),
+    as.numeric(pm_r[[2L]]),tolerance=1e-8)
   pgap<-et_to_r(reticulate::py_call(etpy_get_export(
     "fpca_eigenvalue_gap_table"),result=pfit,
     relative_gap_threshold=.5))
