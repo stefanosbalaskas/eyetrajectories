@@ -612,3 +612,28 @@ passed; Stage 18 test code has **not yet been executed**.
 
 [Stage 18 numerical contract and limitations](full-native-r-stage18-mixed-diagnostics.md).
 
+
+
+## Stage 19 — five native numerical sensitivity/clustering integrations (draft)
+
+Five new **Python-free, independently authored numerical R methods**
+evaluate exhaustive Rosenstein/Kantz/RQA parameter multiverses, fit
+explicitly seeded K-means to native FPCA score matrices, and audit the
+raw-metric rank and nearest-neighbor sensitivity of trajectory-distance
+choices. All parameter combinations are retained, with fail-closed
+invalid contracts and **no** implicit optimizer/tuning winner.
+
+Cumulative conservative source census: **145 native R implementations**,
+**170 / 380 unique mapped Python callable names** and **210 unmapped**;
+seven other public exports have partial representations and 121 are
+pending; **0 / 508 full source contracts are certified**. Stage 18 owner
+RStudio native and NumPy formula checks passed. Stage 19 test fixtures
+have been authored, **not run**.
+
+The RQA multiverse currently requires Euclidean fixed-radius/sample-unit
+contracts. Hartigan–Wong K-means is **not** bitwise scikit-learn KMeans.
+These methods support descriptive sensitivity, not chaos probabilities
+or inferential coverage.
+
+[Stage 19 numerical contracts](full-native-r-stage19-multiverse-clustering.md).
+

@@ -164,6 +164,11 @@
   functional_mixed_effects_residual_pair_frame="etr_functional_mixed_effects_residual_pair_frame",
   functional_mixed_effects_variance_decomposition="etr_functional_mixed_effects_variance_decomposition",
   functional_mixed_effects_coefficient_frame="etr_functional_mixed_effects_coefficient_frame",
+  lyapunov_parameter_sensitivity="etr_lyapunov_parameter_sensitivity",
+  kantz_parameter_sensitivity="etr_kantz_parameter_sensitivity",
+  rqa_parameter_sensitivity="etr_rqa_parameter_sensitivity",
+  cluster_fpca_scores="etr_cluster_fpca_scores",
+  trajectory_distance_sensitivity="etr_trajectory_distance_sensitivity",
   split_conformal_fpca_anomaly="etr_split_conformal_fpca_anomalies",
   # These four new native methods are experimentally implemented here.
   acceleration_magnitude_function="etr_acceleration_magnitude",
@@ -285,6 +290,9 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   stage18_names <- c("fit_functional_mixed_effects_regression","functional_mixed_effects_whitened_residuals","functional_mixed_effects_residual_diagnostics","functional_mixed_effects_residual_diagnostic_frame","functional_mixed_effects_residual_pair_frame","functional_mixed_effects_variance_decomposition","functional_mixed_effects_coefficient_frame")
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% stage18_names] <- 18L
+  stage19_names <- c("lyapunov_parameter_sensitivity","kantz_parameter_sensitivity","rqa_parameter_sensitivity","cluster_fpca_scores","trajectory_distance_sensitivity")
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% stage19_names] <- 19L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset
