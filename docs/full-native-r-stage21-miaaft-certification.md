@@ -2,10 +2,11 @@
 
 Reference: published `eyetrajectoriespy==1.2.0` (annotated tag resolves to `c1cd95ad718327550f7e55393ff38582872f7a94`). Source modules: `multivariate_surrogates.py`, `nonlinear_types.py`, `compositional.py`, `analysis.py`. The independent native development branch is stacked on Stage 20 draft PR #28.
 
-## Two new substantial Python-free numerical R implementations
+## Three new substantial Python-free numerical R implementations
 
 1. `generate_multivariate_iaaft_surrogates` → `etr_generate_multivariate_iaaft_surrogates`: reference-anchored **multivariate IAAFT**, preserving each channel's observed empirical sample distribution exactly under stable rank remapping, and fitting original auto-Fourier amplitudes plus relative interchannel phases through iterative constrained Fourier adjustments.
 2. `multivariate_iaaft_diagnostics_frame` → `etr_multivariate_iaaft_diagnostics_frame`: per-surrogate iteration, relative auto- and cross-spectral approximation errors, summarized without concealing actual retained errors.
+3. `multivariate_surrogate_nonlinearity_test` → `etr_multivariate_surrogate_nonlinearity_test`: run the declared multichannel Rosenstein-Lyapunov statistic on the observed trajectory and all generated multivariate IAAFT surrogates, yielding exact plus-one one-sided or doubled-min-tail two-sided Monte Carlo probabilities. Neither rejection nor positive slope identifies a unique chaotic mechanism.
 
 The exact source-aligned error formulas use two-sided FFT reconstruction, with real DC and (when present) Nyquist bins preserved. The reference channel is specified rather than chosen automatically. Separate R RNG streams **do not** reproduce the source NumPy seed's stochastic draws, and the method fails closed if the requested iterations do not achieve the declared error-change threshold.
 
@@ -13,9 +14,9 @@ The exact source-aligned error formulas use two-sided FFT reconstruction, with r
 
 | Item | Stage 20 locally qualified | Stage 21 authored |
 |---|---:|---:|
-| Python-free native R authored scientific methods | 146 | **148** |
-| Unique mapped Python callable names | 171 / 380 | **173 / 380** |
-| Unmapped Python callables | 209 | **207** |
+| Python-free native R authored scientific methods | 146 | **149** |
+| Unique mapped Python callable names | 171 / 380 | **174 / 380** |
+| Unmapped Python callables | 209 | **206** |
 | Numerical source-contract certification fixture pilots | 3 / 3 | **3 / 3** |
 | Fully certified public source contracts | 0 / 508 | **0 / 508** |
 
