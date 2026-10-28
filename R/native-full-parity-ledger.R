@@ -47,7 +47,7 @@
   plot_recurrence="etr_plot_recurrence",
   fit_sparse_fpca="etr_fit_sparse_pace",
   fit_multilevel_fpca="etr_fit_multilevel_fpca",
-  fit_functional_mixed_effects_regression="etr_fit_functional_mixed",
+  fit_functional_mixed_effects_regression="etr_fit_functional_mixed_effects_regression",
   fit_scalar_on_function_regression="etr_fit_scalar_on_fpca",
   register_to_landmarks="etr_register_landmarks",
   delay_embed_trajectory="etr_delay_embed_trajectory",
@@ -158,6 +158,12 @@
   estimate_largest_lyapunov_rosenstein="etr_estimate_largest_lyapunov_rosenstein",
   estimate_largest_lyapunov_kantz="etr_estimate_largest_lyapunov_kantz",
   bootstrap_rqa_metric_means="etr_bootstrap_rqa_metric_means",
+  functional_mixed_effects_whitened_residuals="etr_functional_mixed_effects_whitened_residuals",
+  functional_mixed_effects_residual_diagnostics="etr_functional_mixed_effects_residual_diagnostics",
+  functional_mixed_effects_residual_diagnostic_frame="etr_functional_mixed_effects_residual_diagnostic_frame",
+  functional_mixed_effects_residual_pair_frame="etr_functional_mixed_effects_residual_pair_frame",
+  functional_mixed_effects_variance_decomposition="etr_functional_mixed_effects_variance_decomposition",
+  functional_mixed_effects_coefficient_frame="etr_functional_mixed_effects_coefficient_frame",
   split_conformal_fpca_anomaly="etr_split_conformal_fpca_anomalies",
   # These four new native methods are experimentally implemented here.
   acceleration_magnitude_function="etr_acceleration_magnitude",
@@ -276,6 +282,9 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   stage17_names <- c("delay_embed_trajectory","local_divergence_curve","kantz_divergence_curve","estimate_largest_lyapunov_rosenstein","estimate_largest_lyapunov_kantz","bootstrap_rqa_metric_means")
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% stage17_names] <- 17L
+  stage18_names <- c("fit_functional_mixed_effects_regression","functional_mixed_effects_whitened_residuals","functional_mixed_effects_residual_diagnostics","functional_mixed_effects_residual_diagnostic_frame","functional_mixed_effects_residual_pair_frame","functional_mixed_effects_variance_decomposition","functional_mixed_effects_coefficient_frame")
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% stage18_names] <- 18L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset
