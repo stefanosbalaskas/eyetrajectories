@@ -138,6 +138,11 @@
   bootstrap_fpca_stability="etr_bootstrap_fpca_stability",
   summarise_fpca_stability="etr_summarise_fpca_stability",
   diagnose_fpca_outliers="etr_diagnose_fpca_outliers",
+  multiplier_functional_mean_band="etr_multiplier_functional_mean_band",
+  bootstrap_fpca_score_uncertainty="etr_bootstrap_fpca_score_uncertainty",
+  bootstrap_fpca_spectrum_uncertainty="etr_bootstrap_fpca_spectrum_uncertainty",
+  bootstrap_fpca_component_bands="etr_bootstrap_fpca_component_bands",
+  fpca_component_band_frame="etr_fpca_component_band_frame",
   split_conformal_fpca_anomaly="etr_split_conformal_fpca_anomalies",
   # These four new native methods are experimentally implemented here.
   acceleration_magnitude_function="etr_acceleration_magnitude",
@@ -247,6 +252,9 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   stage14_names <- c("compare_fpca_subspaces","bootstrap_fpca_subspace_stability","summarise_fpca_subspace_stability","leave_one_group_out_fpca_influence","bootstrap_fpca_stability","summarise_fpca_stability","diagnose_fpca_outliers")
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% stage14_names] <- 14L
+  stage15_names <- c("multiplier_functional_mean_band","bootstrap_fpca_score_uncertainty","bootstrap_fpca_spectrum_uncertainty","bootstrap_fpca_component_bands","fpca_component_band_frame")
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% stage15_names] <- 15L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset
