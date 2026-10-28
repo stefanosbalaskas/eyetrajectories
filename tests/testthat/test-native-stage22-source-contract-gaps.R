@@ -36,7 +36,7 @@ test_that("508-contract certificate gate rejects known unresolved source differe
   expect_identical(before,reticulate::py_available(initialize=FALSE))
 })
 
-test_that("source Python 1.2 trapezoid accepts numerical list rejected by R",{
+test_that("source Python 1.2 trapezoid sequence inputs now align but truthiness does not",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("Pinned public Python 1.2 source acceptance witness is opt-in")
   expect_identical(et_python_version(),"1.2.0")
@@ -45,8 +45,23 @@ test_that("source Python 1.2 trapezoid accepts numerical list rejected by R",{
   expect_equal(as.numeric(et_to_r(py)),c(.5,1.5,1),tolerance=0)
   expect_equal(etr_trapezoid_weights(c(0,1,3)),
     c(.5,1.5,1),tolerance=0)
-  expect_error(etr_trapezoid_weights(list(0,1,3)),
-    "time must be")
+  expect_equal(etr_trapezoid_weights(list(0,1,3)),
+    c(.5,1.5,1),tolerance=0)
+  expect_equal(etr_trapezoid_weights(c("0","1","3")),
+    c(.5,1.5,1),tolerance=0)
+  expect_error(etr_trapezoid_weights(matrix(c(0,1,3),ncol=1)),
+    "one-dimensional")
+  # The published Python function tests truthiness, not logical identity:
+  # normalize=1 is accepted and normalizes in Python, but native R
+  # intentionally requires an explicit logical TRUE in scientific use.
+  py_norm<-reticulate::py_call(
+    etpy_get_export("functional_trapezoid_weights"),
+    time=reticulate::r_to_py(c(0,1,3)),
+    normalize=as.integer(1L))
+  expect_equal(as.numeric(et_to_r(py_norm)),
+    c(.5,1.5,1)/3,tolerance=1e-15)
+  expect_equal(etr_trapezoid_weights(c(0,1,3),normalize=1L),
+    c(.5,1.5,1),tolerance=0)
   expect_true(etr_native_parity_catalog()$source_contract_gap_unresolved[
     etr_native_parity_catalog()$python_name==
       "functional_trapezoid_weights"])
