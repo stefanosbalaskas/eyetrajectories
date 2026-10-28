@@ -92,6 +92,7 @@ test_that("Stage 20 native IAAFT surrogates are permutation-preserving and seed 
   expect_equal(sort(a$values),sort(signal),tolerance=0)
   expect_true(a$iterations>=2L && a$iterations<=20L)
   expect_true(is.finite(a$spectral_error))
+  set.seed(201);before<-.Random.seed
   x<-etr_trajectory_set(seq(0,1,length.out=64L),
     array(signal,c(1L,64L,1L)),"test","x",time_unit="s")
   result<-etr_surrogate_nonlinearity_test(x,"test","x",
