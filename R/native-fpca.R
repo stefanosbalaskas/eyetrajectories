@@ -3,11 +3,32 @@
 #' @param normalize Divide weights by their sum when TRUE.
 #' @export
 etr_trapezoid_weights <- function(time, normalize = FALSE) {
-  .etr_assert(is.numeric(time) && length(time) >= 2L &&
-                all(is.finite(time)) && all(diff(time) > 0),
+  # Python 1.2 np.asarray accepts a 1-D sequence of scalar numeric
+  # elements. Preserve this common scientific input domain in native R,
+  # without allowing a matrix/data.frame or automatic time interpolation.
+  if (is.list(time) && !is.data.frame(time)) {
+    .etr_assert(length(time) >= 2L && all(vapply(time,
+      function(x) is.atomic(x) && is.null(dim(x)) &&
+        length(x) == 1L && !is.factor(x) &&
+        (is.numeric(x) || is.logical(x) || is.character(x)),
+      logical(1L))),
+      "time must be a one-dimensional sequence of numeric scalars")
+    time <- unlist(time, use.names = FALSE)
+  }
+  .etr_assert(is.atomic(time) && is.null(dim(time)) &&
+                !is.factor(time) &&
+                (is.numeric(time) || is.logical(time) ||
+                 is.character(time)),
+              "time must be a one-dimensional numeric sequence")
+  time <- suppressWarnings(as.numeric(time))
+  .etr_assert(length(time) >= 2L && all(is.finite(time)) &&
+                all(diff(time) > 0),
               "time must be strictly increasing and finite")
   d <- diff(time); n <- length(time)
-  w <- c(d[1] / 2, if (n > 2L) (d[-1] + d[-length(d)]) / 2, utils::tail(d, 1) / 2)
+  w <- c(d[1] / 2, if (n > 2L) (d[-1] + d[-length(d)]) / 2,
+         utils::tail(d, 1) / 2)
+  # Normalize remains an R logical flag in native scientific workflows.
+  # Python's broader truthiness acceptance is NOT full-contract parity.
   if (isTRUE(normalize)) w <- w / sum(w)
   w
 }
