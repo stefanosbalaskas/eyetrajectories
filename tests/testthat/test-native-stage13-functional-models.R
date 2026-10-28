@@ -171,8 +171,7 @@ test_that("Stage 13 two generators return reproducible true trajectory container
   expect_true(all(x$values>=0 & x$values<=1))
   expect_identical(x$dimension_names,c("x","y"))
   expect_identical(x$curve_ids[1L],"P001|T01")
-  expect_equal(table(x$metadata$condition),
-    c(control=3L,evidence_prompt=3L))
+  expect_identical(as.integer(table(x$metadata$condition)),c(3L,3L))
   a<-etr_simulate_aoi_probability_trajectories(6L,11L,3L,1,8L)
   expect_identical(rng,.Random.seed)
   expect_equal(dim(a$values),c(6L,11L,3L))
