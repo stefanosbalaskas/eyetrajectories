@@ -113,6 +113,9 @@ test_that("Stage 17 whole-participant RQA mean bootstrap is deterministic and fa
   expect_identical(before,.Random.seed)
   expect_s3_class(z,"etr_rqa_metric_bootstrap")
   expect_equal(nrow(z$observed_table),8L)
+  expect_identical(names(z$observed_table),
+    c("curve_id","resolved_radius","achieved_recurrence_rate",
+      "theiler_window_samples","recurrence_rate"))
   expect_equal(nrow(z$unit_table),4L)
   expect_equal(nrow(z$bootstrap_table),100L)
   expect_equal(nrow(z$summary_table),1L)
