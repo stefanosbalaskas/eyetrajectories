@@ -271,3 +271,68 @@ test_that("Stage 13 pinned Python 1.2 fixed-design FOS OLS reference is opt-in",
   expect_equal(unname(r$standard_errors),
     unname(et_to_r(py$standard_errors)),tolerance=1e-8)
 })
+
+
+test_that("Stage 13 explicit Poincare-to-return-map pipeline is numerical and auditable",{
+  t<-seq(0,13,by=1)
+  vals<-array(0,c(1L,length(t),2L))
+  vals[1L,,1L]<-rep(c(-1,1),length.out=length(t))
+  vals[1L,,2L]<-sin(t*.41)+.09*t+.1*cos(t*.7)
+  x<-etr_trajectory_set(t,vals,"periodic",c("section","state"),
+    coordinate_system="normalized",time_unit="s")
+  c<-etr_poincare_crossings(x,1L,"section",0,"positive",
+    state_dimensions="state")
+  expect_s3_class(c,"etr_poincare_crossings")
+  expect_true(length(c$times)>=5L)
+  expect_equal(c$times,seq(.5,12.5,by=2))
+  expect_equal(c$left_indices,seq(0L,12L,by=2L))
+  expect_equal(c$fractions,rep(.5,7L))
+  expect_identical(dim(c$states),c(7L,1L))
+  expect_equal(c$states[,1L],
+    rowMeans(cbind(vals[1L,seq(1L,13L,by=2L),2L],
+      vals[1L,seq(2L,14L,by=2L),2L])))
+  fit<-etr_fit_local_return_map(c,reference="mean",n_neighbors=5L)
+  expect_s3_class(fit,"etr_local_return_map")
+  expect_identical(dim(fit$jacobian),c(1L,1L))
+  expect_equal(fit$n_transitions,5L)
+  expect_equal(fit$neighborhood_policy,"n_neighbors")
+  expect_true(is.finite(fit$design_condition_number))
+  result<-etr_return_map_stability(fit)
+  expect_s3_class(result,"etr_return_map_stability")
+  expect_equal(result$spectral_radius,abs(fit$jacobian[1L,1L]),
+    tolerance=1e-10)
+  expect_true(result$classification%in%
+    c("contracting","expanding","near-neutral"))
+  expect_error(etr_poincare_crossings(x,1L,"section",0,"positive",
+    state_dimensions="section"),"state_dimensions")
+  expect_error(etr_fit_local_return_map(c,reference="mean",
+    n_neighbors=5L,neighborhood_radius=1),"exactly one")
+})
+
+test_that("Stage 13 Python 1.2 Poincare crossing interpolation oracle is opt-in",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Stage 13 Python 1.2 Poincare crossing oracle is opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  t<-seq(0,13,by=1)
+  vals<-array(0,c(1L,length(t),2L))
+  vals[1L,,1L]<-rep(c(-1,1),length.out=length(t))
+  vals[1L,,2L]<-sin(t*.41)+.09*t+.1*cos(t*.7)
+  x<-etr_trajectory_set(t,vals,"periodic",c("section","state"),
+    time_unit="s")
+  native<-etr_poincare_crossings(x,"periodic","section",0,"positive",
+    state_dimensions="state")
+  pyx<-reticulate::py_call(etpy_get_export("TrajectorySet"),
+    time=reticulate::r_to_py(x$time),
+    values=reticulate::r_to_py(x$values),
+    curve_ids=as.list(x$curve_ids),
+    dimension_names=as.list(x$dimension_names),time_unit="s")
+  py<-reticulate::py_call(etpy_get_export("poincare_crossings"),
+    trajectories=pyx,curve="periodic",section_dimension="section",
+    section_value=0,direction="positive",state_dimensions=as.list("state"))
+  expect_equal(unname(native$states),unname(et_to_r(py$states)),
+    tolerance=1e-12)
+  expect_equal(native$times,as.numeric(et_to_r(py$times)),tolerance=1e-12)
+  expect_equal(native$fractions,as.numeric(et_to_r(py$fractions)),
+    tolerance=1e-12)
+  expect_equal(native$left_indices,as.integer(et_to_r(py$left_indices)))
+})
