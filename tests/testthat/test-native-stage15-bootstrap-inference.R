@@ -187,8 +187,9 @@ test_that("Stage 15 pinned Python 1.2 deterministic reference geometry is opt-in
   expect_identical(dim(rband$lower),dim(et_to_r(pyband$lower)))
   expect_identical(dim(rband$max_statistics),
     dim(et_to_r(pyband$max_statistics)))
-  expect_equal(unname(rband$reference$components),
-    unname(et_to_r(pyband$reference$components)),tolerance=1e-8)
+  # Eigenfunction global signs are unidentified across LAPACK backends.
+  expect_equal(abs(unname(rband$reference$components)),
+    abs(unname(et_to_r(pyband$reference$components))),tolerance=1e-8)
   pframe<-et_to_r(reticulate::py_call(
     etpy_get_export("fpca_component_band_frame"),result=pyband))
   expect_identical(names(etr_fpca_component_band_frame(rband)),names(pframe))
