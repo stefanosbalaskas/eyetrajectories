@@ -47,6 +47,13 @@ test_that("Stage 20 ALR/inverse contract candidate exercises dimensions and boun
     expect_equal(apply(back,c(1L,2L),sum),
       matrix(1,3L,5L),tolerance=1e-12)
   }
+  # Python 1.2 permits a one-part probability simplex (zero ALR
+  # components); this is a valid domain edge, not an invalid-input test.
+  singleton<-array(1,c(3L,5L,1L))
+  no_ratios<-etr_alr_transform(singleton,reference_dimension=-1L)
+  expect_identical(dim(no_ratios),c(3L,5L,0L))
+  expect_equal(etr_inverse_alr(no_ratios,0L,1L),
+    singleton,tolerance=0)
   zero<-v;zero[1L,1L,]<-c(0,.4,.6)
   a<-etr_alr_transform(zero,reference_dimension=0L,epsilon=1e-5)
   expect_true(all(is.finite(a)))
@@ -132,6 +139,18 @@ test_that("Stage 20 exact published Python 1.2 ALR and distance contract oracle 
       n_dimensions=as.integer(3L))
     expect_equal(unname(rb),unname(et_to_r(pyi)),tolerance=1e-12)
   }
+  singleton<-array(1,c(3L,5L,1L))
+  r_single<-etr_alr_transform(singleton)
+  py_single<-reticulate::py_call(etpy_get_export("alr_transform"),
+    values=reticulate::r_to_py(singleton),
+    reference_dimension=as.integer(-1L))
+  expect_identical(dim(r_single),c(3L,5L,0L))
+  expect_equal(unname(r_single),unname(et_to_r(py_single)),tolerance=0)
+  r_back<-etr_inverse_alr(r_single,0L,1L)
+  py_back<-reticulate::py_call(etpy_get_export("inverse_alr"),
+    transformed=py_single,reference_dimension=as.integer(0L),
+    n_dimensions=as.integer(1L))
+  expect_equal(unname(r_back),unname(et_to_r(py_back)),tolerance=0)
   with_zero<-v;with_zero[1L,1L,]<-c(0,.4,.6)
   for(ep in c(1e-8,1e-5,.03)){
     ra<-etr_alr_transform(with_zero,reference_dimension=1L,epsilon=ep)
