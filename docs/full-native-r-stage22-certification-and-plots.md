@@ -59,9 +59,9 @@ The 12 known gaps are:
 - **3 Stage 20 candidates**: ALR nested input coercion; inverse-ALR
   exponential overflow; FPCA score-distance object duck typing.
 - **1 deterministic mathematical primitive**:
-  `functional_trapezoid_weights` accepts Python `np.asarray`-coercible
-  sequences while native `etr_trapezoid_weights` requires atomic numeric
-  time. Optional normalization also needs full accepted-type scrutiny.
+  `functional_trapezoid_weights` now accepts common 1-D scalar
+  sequences on both Python and native R. Python's broad `normalize`
+  truthiness and extreme nonfinite inputs remain full-contract gaps.
 - **8 plots**: Matplotlib Axes return/graphics interface differ from R;
   surrogate histogram bins are additionally backend-specific.
 
