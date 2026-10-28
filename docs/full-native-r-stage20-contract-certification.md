@@ -1,6 +1,6 @@
 # Stage 20 — source-contract certification program and IAAFT numeric method
 
-Published source of record: **eyetrajectoriespy==1.2.0**, frozen Git SHA `7bb9b8c74c0e708efe0669aa7e4265ea8ff13eed` and 508-name API census.
+Published source of record: **eyetrajectoriespy==1.2.0**, tagged release commit `c1cd95ad718327550f7e55393ff38582872f7a94`. The frozen 508-name R API census separately records its development-snapshot commit `7bb9b8c74c0e708efe0669aa7e4265ea8ff13eed`. These **are different commits and are audited independently**.
 
 ## Why Stage 19's green tests did not turn 0/508 into 170/508
 
@@ -14,7 +14,7 @@ Stage 20 introduces the first three **certification pilots**:
 | `inverse_alr` | `etr_inverse_alr` | `compositional.py` | Pending runtime/review |
 | `score_distance_matrix` | `etr_score_distance_matrix` | `analysis.py` | Pending runtime/review |
 
-The machine-readable registry is `inst/extdata/native_contract_certification_pilots_v1.csv`. Each record must have **all four explicit approvals**: independent pinned Python numeric oracle, full in-domain shape/boundary behavior, scientific-scope review and independent human reviewer signoff with review evidence. The registry source Git SHA and mapped R export are checked by the offline parity catalog.
+The machine-readable registry is `inst/extdata/native_contract_certification_pilots_v1.csv`. Each record must have **all four explicit approvals**: independent pinned Python numeric oracle, full in-domain shape/boundary behavior, scientific-scope review and independent human reviewer signoff with review evidence. The register pins **both the development inventory SHA and published v1.2.0 release commit**, plus the candidate's mapped R export, and rejects mismatched values offline. Approval also requires a real GitHub evidence URL, not a blank flag.
 
 **The registry starts with every approval FALSE. The 508-contract fully certified count remains 0 until the Stage 20 tests run and an independent source review confirms the scope. No test automatically mutates the approval registry.** Even if the first three pilots pass, approval is per public source contract, not inference about neighboring functions or subcontracts.
 
@@ -24,7 +24,7 @@ The machine-readable registry is `inst/extdata/native_contract_certification_pil
 2. Compare exact same input geometry and deterministic results through `ET_RUN_PYTHON_TESTS=true`, including 3-D simplex shape, all supported reference indices, epsilon/zero clipping and finite inverse, and score matrix component truncation. Compare the Python public callable directly, not just shared algebra.
 3. Verify success and failure boundaries: error on malformed simplex, non-finite inputs, unsupported dimension, zero/nonpositive epsilon, score component out of range, and shape handling. Explicitly distinguish Python and R errors when idioms differ.
 4. Audit output structure, numerical tolerance, lack of silent coercion, use of original source units, and any R-only restrictions against the full public Python source contract.
-5. Independently review the committed tests, identified failure boundaries and GitHub commit. Only then commit an evidence record marking `evidence_state=approved_and_reproducible`, four approvals TRUE, and the nonempty review evidence referencing exact code/test head and owner-run outputs. A failed obligation must remain pending.
+5. Independently review the committed tests, identified failure boundaries and GitHub commit. Only then commit an evidence record marking `evidence_state=approved_and_reproducible`, four approvals TRUE, and a GitHub review-evidence URL referencing exact code/test head and owner-run outputs. A failed obligation must remain pending.
 6. Preserve the offline strict `require_complete=TRUE` failure until **all 508** pass independently.
 
 A lock-state test asserts exactly three candidates and zero approved; only after review may that test be intentionally updated alongside the signed-off registry. Avoid artificially passing it by changing the count expectations in advance.
