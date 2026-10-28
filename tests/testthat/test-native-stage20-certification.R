@@ -23,6 +23,11 @@ test_that("Stage 20 certification census never treats candidate as complete",{
   expect_equal(sum(z$contract_certification_candidate),3L)
   expect_identical(sort(z$python_name[z$contract_certification_candidate]),
     sort(c("alr_transform","inverse_alr","score_distance_matrix")))
+  expect_equal(sum(z$contract_numerical_fixture_pass),3L)
+  expect_true(all(z$contract_numerical_fixture_pass[
+    z$contract_certification_candidate]))
+  # Source-oracle fixture PASS is not the same as complete-domain
+  # independent numeric-equivalence approval.
   expect_true(all(!z$independent_numeric_parity_pass))
   expect_true(all(!z$behavioral_schema_parity_pass))
   expect_true(all(!z$scientific_inference_qualified))
@@ -31,7 +36,7 @@ test_that("Stage 20 certification census never treats candidate as complete",{
   expect_equal(sum(z$one_to_one_native_contract_complete),0L)
   expect_identical(unique(z$contract_certification_evidence_state[
     z$contract_certification_candidate]),
-    "pending_owner_runtime_and_review")
+    "numeric_fixtures_passed_full_contract_review_pending")
   expect_error(etr_native_parity_catalog(require_complete=TRUE),
     "NOT complete")
   expect_identical(before,reticulate::py_available(initialize=FALSE))
