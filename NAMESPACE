@@ -657,3 +657,8 @@ export(etr_cluster_fpca_scores)
 export(etr_trajectory_distance_sensitivity)
 
 export(etr_surrogate_nonlinearity_test)
+
+export(etr_plot_planar_trajectories)
+export(etr_plot_fpca_component)
+export(etr_plot_dynamic_time_warping_alignment)
+export(etr_plot_trajectory_distance_rank_correlations)

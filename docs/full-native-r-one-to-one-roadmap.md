@@ -664,3 +664,21 @@ Stage 19 owner-run tests passed; Stage 20 tests have **not** yet run.
 
 [Stage 20 certification evidence, scientific contracts and audit plan](full-native-r-stage20-contract-certification.md).
 
+
+
+## Stage 21 — native R plot geometries and direct source-boundary witnesses (draft)
+
+Four Python-free visual entrypoints now plot native planar gaze, fitted
+FPCA component mean/SD profiles, audited zero-based DTW alignment and
+descriptive rank-agreement matrices. The Matplotlib Axes result type is
+not reproduced: this is a deliberate backend/return-object divergence.
+
+**Cumulative authored census: 150 native R implementations, 175/380
+mapped Python public callables and 205 unmapped functions.** Stage 20's
+three numerical-fixture candidate records are retained, with explicit
+Python 1.2 boundary divergences now covered by source tests.
+**Full public source-contract certification remains 0/508.** This
+research head is unmerged, unreleased and has not completed
+exact-head RStudio or cross-platform CI qualification.
+
+[Stage 21 native visual integration and source-boundary evidence](full-native-r-stage21-visual-contracts.md).
