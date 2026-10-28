@@ -604,3 +604,6 @@ export(etr_return_map_stability)
 export(etr_simulate_planar_trajectories)
 export(etr_simulate_aoi_probability_trajectories)
 export(etr_from_irregular_long_dataframe)
+
+export(etr_poincare_crossings)
+export(etr_fit_local_return_map)
