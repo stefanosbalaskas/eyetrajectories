@@ -174,6 +174,14 @@
   plot_fpca_component="etr_plot_fpca_component",
   plot_dynamic_time_warping_alignment="etr_plot_dynamic_time_warping_alignment",
   plot_trajectory_distance_rank_correlations="etr_plot_trajectory_distance_rank_correlations",
+  plot_embedding_delay_diagnostics="etr_plot_embedding_delay_diagnostics",
+  plot_embedding_dimension_diagnostics="etr_plot_embedding_dimension_diagnostics",
+  plot_recurrence_network_degree="etr_plot_recurrence_network_degree",
+  plot_recurrence_rate_curve="etr_plot_recurrence_rate_curve",
+  plot_windowed_rqa="etr_plot_windowed_rqa",
+  plot_local_divergence="etr_plot_local_divergence",
+  plot_surrogate_nonlinearity="etr_plot_surrogate_nonlinearity",
+  plot_poincare_return_map="etr_plot_poincare_return_map",
   split_conformal_fpca_anomaly="etr_split_conformal_fpca_anomalies",
   # These four new native methods are experimentally implemented here.
   acceleration_magnitude_function="etr_acceleration_magnitude",
@@ -306,6 +314,18 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     "plot_trajectory_distance_rank_correlations")
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% stage21_names] <- 21L
+  stage22_names <- c(
+    "plot_embedding_delay_diagnostics",
+    "plot_embedding_dimension_diagnostics",
+    "plot_recurrence_network_degree",
+    "plot_recurrence_rate_curve",
+    "plot_windowed_rqa",
+    "plot_local_divergence",
+    "plot_surrogate_nonlinearity",
+    "plot_poincare_return_map"
+  )
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% stage22_names] <- 22L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset
