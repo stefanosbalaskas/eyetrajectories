@@ -230,6 +230,10 @@
   conformal_fpca_anomaly_reporting_text="etr_conformal_fpca_anomaly_reporting_text",
   plot_rqa_metric_mean_bootstrap="etr_plot_rqa_metric_mean_bootstrap",
   plot_functional_variance_decomposition="etr_plot_functional_variance_decomposition",
+  functional_recovery_frame="etr_functional_recovery_frame",
+  functional_recovery_failure_frame="etr_functional_recovery_failure_frame",
+  functional_recovery_summary_frame="etr_functional_recovery_summary_frame",
+  plot_functional_recovery_summary="etr_plot_functional_recovery_summary",
   functional_recovery_assessment_frame="etr_functional_recovery_assessment_frame",
   split_conformal_fpca_anomaly="etr_split_conformal_fpca_anomalies",
   # These four new native methods are experimentally implemented here.
@@ -454,6 +458,14 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   )
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% inference_visual_names] <- 31L
+  recovery_evidence_names <- c(
+    "functional_recovery_frame",
+    "functional_recovery_failure_frame",
+    "functional_recovery_summary_frame",
+    "plot_functional_recovery_summary"
+  )
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% recovery_evidence_names] <- 32L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset
