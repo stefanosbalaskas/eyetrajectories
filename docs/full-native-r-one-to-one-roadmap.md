@@ -834,3 +834,24 @@ explicitly documented cross-language source return-type differences
 **46**; full independent public source certification remains **0/508**.
 
 [Native stable function names and source geometry](native-public-naming-registration-plots.md).
+
+
+## Native functional inference source geometry and conservative qualification
+
+Seven new scientifically named native R interfaces deliver
+function-on-scalar observed-grid coefficient/band plots and exact
+model wording, conformal FPCA marginal review visualizations and
+reporting, restricted mixed-moments pointwise Wald and variance
+component plots, and population-average RQA bootstrap intervals.
+The published Python 1.2 oracles use a **real fitted FOS result**
+and compare source Matplotlib and reporting outputs, plus a
+source-shaped conditional conformal result for p-value behavior.
+
+**207** mapped native implementations, **232/380** public Python
+callables mapped, **148** unmapped names and **53** known public
+Python/R scientific/result-type differences. Full independently
+approved source contracts **0/508**; four existing numerical fixture
+candidates remain awaiting full-domain and reviewer signoff.
+No function name contains a development-stage identifier.
+
+[Functional scientific source and partial-contract evidence](native-functional-inference-source-audit.md).

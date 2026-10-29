@@ -4,8 +4,8 @@ test_that("508-contract certificate gate rejects known unresolved source differe
   before<-reticulate::py_available(initialize=FALSE)
   z<-etr_native_parity_catalog()
   expect_equal(nrow(z),508L)
-  expect_equal(sum(z$source_contract_gap_known),46L)
-  expect_equal(sum(z$source_contract_gap_unresolved),46L)
+  expect_equal(sum(z$source_contract_gap_known),53L)
+  expect_equal(sum(z$source_contract_gap_unresolved),53L)
   expect_true(all(z$source_contract_gap_unresolved[
     z$contract_certification_candidate]))
   expect_true(all(z$contract_numerical_fixture_pass[

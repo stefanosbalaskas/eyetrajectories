@@ -223,6 +223,13 @@
   plot_reconstruction_curve="etr_plot_reconstruction_curve",
   plot_registration="etr_plot_registration",
   plot_warping_functions="etr_plot_warping_functions",
+  plot_function_on_scalar_coefficients="etr_plot_function_on_scalar_coefficients",
+  function_on_scalar_reporting_text="etr_function_on_scalar_reporting_text",
+  plot_functional_mixed_effects_coefficient="etr_plot_functional_mixed_effects_coefficient",
+  plot_conformal_fpca_anomaly="etr_plot_conformal_fpca_anomaly",
+  conformal_fpca_anomaly_reporting_text="etr_conformal_fpca_anomaly_reporting_text",
+  plot_rqa_metric_mean_bootstrap="etr_plot_rqa_metric_mean_bootstrap",
+  plot_functional_variance_decomposition="etr_plot_functional_variance_decomposition",
   functional_recovery_assessment_frame="etr_functional_recovery_assessment_frame",
   split_conformal_fpca_anomaly="etr_split_conformal_fpca_anomalies",
   # These four new native methods are experimentally implemented here.
@@ -436,6 +443,17 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     "plot_registration","plot_warping_functions")
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% registration_plot_names] <- 30L
+  inference_visual_names <- c(
+    "plot_function_on_scalar_coefficients",
+    "function_on_scalar_reporting_text",
+    "plot_functional_mixed_effects_coefficient",
+    "plot_conformal_fpca_anomaly",
+    "conformal_fpca_anomaly_reporting_text",
+    "plot_rqa_metric_mean_bootstrap",
+    "plot_functional_variance_decomposition"
+  )
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% inference_visual_names] <- 31L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset
