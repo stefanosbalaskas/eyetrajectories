@@ -1218,3 +1218,21 @@ Python source callables**, **174 unmapped callable names**,
 No merge or release; Stage 26 runtime tests pending.
 
 [Stage 26 scientific contract and test details](docs/full-native-r-stage26-functional-rqa-recovery.md).
+
+
+## Stage 27: native FPCA bootstrap uncertainty reporting and plots (draft)
+
+Seven new independent Python-free R functions render matched-bootstrap
+FPCA target score, spectrum, simultaneous component and functional
+mean uncertainty. Four source-aligned manuscript-reporting strings
+have direct published Python 1.2 textual oracles; three plots retain
+the exact observed-grid numeric uncertainty geometry.
+
+**Authored** cumulative inventory: **188 native implementations**,
+**213/380 mapped public Python callables**, **167 unmapped function
+names**, and **34 identified unresolved source differences**.
+Four numerical-fixture candidates are under independent full-contract
+review; **0/508 full Python public source contracts** are approved.
+Stage 27 runtime verification remains pending.
+
+[Stage 27 source and science limitations](docs/full-native-r-stage27-fpca-source.md).
