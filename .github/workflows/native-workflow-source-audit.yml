@@ -50,7 +50,7 @@ jobs:
       - name: Run native audits without initializing Python
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-functional-scenario-design|native-workflow-configuration|native-private-helper-names|native-workflow-source-audit|full-native-r-parity-ledger|native-functional-recovery-evidence|native-functional-inference-visuals|native-stage22-source-contract-gaps",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-functional-scenario-design|native-workflow-configuration|native-private-helper-names|native-workflow-source-audit|full-native-r-parity-ledger|native-functional-recovery-evidence|native-functional-inference-visuals|native-stage",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
   python-source:
     name: Published Python 1.2 typed workflow oracle
     runs-on: ubuntu-latest
