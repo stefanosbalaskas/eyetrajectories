@@ -3,7 +3,8 @@
 # Cross-language dataclass, pandas and JSON serialization differences remain
 # EXPLICIT source-contract gaps; no complete source equivalence is asserted.
 
-.etr_workflow_json <- function(value, path="value", empty_mapping=FALSE) {
+.etr_workflow_json <- function(value, path="value", empty_mapping=FALSE,
+    validate_only=FALSE) {
   check <- function(x, p) {
     if (is.null(x)) return(invisible(TRUE))
     if (is.data.frame(x) || is.factor(x) || is.complex(x))
@@ -26,6 +27,7 @@
     invisible(TRUE)
   }
   check(value,path)
+  if (validate_only) return(invisible(TRUE))
   if (empty_mapping && is.list(value) && !length(value)) return("{}")
   if (!requireNamespace("jsonlite",quietly=TRUE))
     stop("jsonlite is required to serialize workflow JSON",call.=FALSE)
@@ -52,7 +54,8 @@
       (is.null(step$warnings) ||
         (is.character(step$warnings) && !anyNA(step$warnings))),
       "each step requires a name, function, status, parameters, time and warnings")
-    .etr_workflow_json(step$parameters,"step.parameters",empty_mapping=TRUE)
+    .etr_workflow_json(step$parameters,"step.parameters",empty_mapping=TRUE,
+      validate_only=TRUE)
   }
   invisible(TRUE)
 }
@@ -74,7 +77,7 @@
       (rec$source!="audited_selector" ||
         (!is.null(rec$criterion) && nzchar(rec$criterion))),
       "decision requires a value, accepted source and selector criterion")
-    .etr_workflow_json(rec$value,"decision.value")
+    .etr_workflow_json(rec$value,"decision.value",validate_only=TRUE)
   }
   invisible(TRUE)
 }
@@ -151,8 +154,10 @@ etr_workflow_audit_result <- function(workflow_contract,steps=list(),
     "config and provenance must be native JSON-compatible lists")
   .etr_workflow_validate_steps(steps)
   .etr_workflow_validate_decisions(decisions)
-  .etr_workflow_json(config,"config",empty_mapping=TRUE)
-  .etr_workflow_json(provenance,"provenance",empty_mapping=TRUE)
+  .etr_workflow_json(config,"config",empty_mapping=TRUE,
+    validate_only=TRUE)
+  .etr_workflow_json(provenance,"provenance",empty_mapping=TRUE,
+    validate_only=TRUE)
   structure(list(workflow_schema_version=1L,
     workflow_contract=workflow_contract,config=config,steps=steps,
     decisions=decisions,provenance=provenance),
