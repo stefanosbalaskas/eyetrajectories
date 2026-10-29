@@ -165,7 +165,7 @@ test_that("Stage 18 frozen source map does not imply full likelihood equivalence
   expect_equal(sum(z$native_implementation_started),181L)
   expect_equal(sum(z$native_implementation_stage==18L,na.rm=TRUE),7L)
   expect_equal(sum(!z$is_python_function &
-    is.na(z$native_representation_stage)),127L)
+    is.na(z$native_representation_stage)),121L)
   expect_true(all(!z$one_to_one_native_contract_complete))
   expect_error(etr_native_parity_catalog(require_complete=TRUE),"NOT complete")
   expect_identical(before,reticulate::py_available(initialize=FALSE))
