@@ -594,6 +594,58 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   api$one_to_one_native_contract_complete <- FALSE
   api$one_to_one_native_contract_complete[match(register$python_name,
     api$python_name)] <- pass
+  # The 508-symbol certificate includes 128 non-function exports.
+  # Classes/constants have a separate FULL-domain schema/value and reviewer
+  # evidence register. This never treats a class as an R callable mapping.
+  other <- utils::read.csv(system.file("extdata",
+    "native_nonfunction_contract_review_v1.csv",
+    package="eyetrajectories"),stringsAsFactors=FALSE)
+  expected_other_columns <- c("namespace","python_name","kind",
+    "source_git_sha","native_representation","evidence_state",
+    "numerical_or_value_approved","schema_boundary_approved",
+    "scientific_scope_approved","independent_reviewer_approved",
+    "review_evidence")
+  other_key <- paste(other$namespace,other$python_name,sep="::")
+  api_key <- paste(api$namespace,api$python_name,sep="::")
+  other_idx <- match(other_key,api_key)
+  .etr_assert(identical(names(other),expected_other_columns) &&
+    nrow(other)==128L && !anyDuplicated(other_key) &&
+    !anyNA(other_idx) && all(!api$is_python_function[other_idx]) &&
+    all(other$kind==api$kind[other_idx]) &&
+    all(other$source_git_sha==api$source_git_sha[other_idx]),
+    "non-function source-contract review inventory must match 128 frozen exports")
+  other_approvals <- c("numerical_or_value_approved",
+    "schema_boundary_approved","scientific_scope_approved",
+    "independent_reviewer_approved")
+  .etr_assert(all(vapply(other[other_approvals],function(x)
+    is.logical(x)&&!anyNA(x),logical(1L))),
+    "class/constant certification approvals must be explicit booleans")
+  other_representation <- as.character(other$native_representation)
+  other_representation[is.na(other_representation)] <- ""
+  other_links <- as.character(other$review_evidence)
+  other_links[is.na(other_links)] <- ""
+  # A full commit SHA in the review URL prevents an unpinned generic PR link
+  # from being mistaken for complete independent source contract evidence.
+  reviewed_commit <- grepl(
+    "^https://github\\.com/[^/]+/[^/]+/commit/[0-9a-f]{40}$",
+    other_links)
+  other_pass <- apply(other[other_approvals],1L,all) &
+    other$evidence_state=="approved_and_reproducible" &
+    nzchar(other_representation) & reviewed_commit
+  api$contract_certification_candidate[other_idx] <-
+    other$evidence_state!="not_reviewed"
+  api$contract_certification_evidence_state[other_idx] <-
+    other$evidence_state
+  api$independent_numeric_parity_pass[other_idx] <-
+    other$numerical_or_value_approved
+  api$behavioral_schema_parity_pass[other_idx] <-
+    other$schema_boundary_approved
+  api$scientific_inference_qualified[other_idx] <-
+    other$scientific_scope_approved
+  api$independent_contract_review_pass[other_idx] <-
+    other$independent_reviewer_approved
+  api$one_to_one_native_contract_complete[other_idx] <- other_pass
+
   if (require_complete && !all(api$one_to_one_native_contract_complete))
     stop("Full 508-export one-to-one native R parity is NOT complete: ",
          sum(!api$one_to_one_native_contract_complete),
