@@ -1,6 +1,6 @@
 # Stage 11: scientific reporting parity, source-boundary and zero-Python tests.
 
-.etr11_fixture <- function() {
+.etr_nonlinear_reporting_test_fixture <- function() {
   t<-seq(0,1,length.out=7L)
   vals<-array(0,c(3L,length(t),2L))
   for(i in 1:3) {
@@ -12,7 +12,7 @@
 }
 
 test_that("Stage 11 native recurrence report adapters preserve study specifications",{
-  x<-.etr11_fixture()
+  x<-.etr_nonlinear_reporting_test_fixture()
   a<-etr_recurrence_matrix(x,curve=1L,radius=1.5,theiler=0L)
   b<-etr_recurrence_matrix(x,curve=2L,radius=1.5,theiler=0L)
   net<-etr_recurrence_network(a)
@@ -42,7 +42,7 @@ test_that("Stage 11 native recurrence report adapters preserve study specificati
 })
 
 test_that("Stage 11 native radius and windows report complete-time support",{
-  x<-.etr11_fixture()
+  x<-.etr_nonlinear_reporting_test_fixture()
   rp<-etr_recurrence_radius_profile(x,1L,radii=c(.1,1,2))
   text<-etr_recurrence_radius_profile_reporting_text(rp)
   expect_true(grepl("3 predeclared radii",text,fixed=TRUE))
@@ -175,7 +175,7 @@ test_that("Stage 11 pinned Python 1.2 windowed-RQA reporting oracle is opt-in",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("Stage 11 pinned Python 1.2 reporting oracle is opt-in")
   expect_identical(et_python_version(),"1.2.0")
-  x<-.etr11_fixture()
+  x<-.etr_nonlinear_reporting_test_fixture()
   w<-etr_windowed_rqa(x,curve=1L,window=4L,step=2L,radius=1.5)
   py<-reticulate::py_call(etpy_get_export("WindowedRQAResult"),
     table=reticulate::r_to_py(w$table),

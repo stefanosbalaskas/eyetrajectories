@@ -1,7 +1,7 @@
 # Stage 21: native visualization geometry tests, no Python initialization.
 # No matplotlib Axes parity or full 508-export contract certification claimed.
 
-.etr21_fixture <- function() {
+.etr_visual_diagnostics_test_fixture <- function() {
   time<-seq(0,1,length.out=16L)
   v<-array(0,c(6L,length(time),2L))
   for(i in seq_len(6L)){
@@ -38,7 +38,7 @@ test_that("Stage 21 registered public plotting names remain uncertified", {
 })
 
 test_that("Stage 21 planar visualization preserves selected native geometry",{
-  x<-.etr21_fixture()
+  x<-.etr_visual_diagnostics_test_fixture()
   grDevices::pdf(tempfile(fileext=".pdf"))
   on.exit(grDevices::dev.off(),add=TRUE)
   g<-etr_plot_planar_trajectories(x,max_curves=2L,alpha=.6,
@@ -58,7 +58,7 @@ test_that("Stage 21 planar visualization preserves selected native geometry",{
 })
 
 test_that("Stage 21 FPCA graphics follow fitted score-SD geometry exactly",{
-  x<-.etr21_fixture();fit<-etr_fit_mfpca(x,n_components=2L)
+  x<-.etr_visual_diagnostics_test_fixture();fit<-etr_fit_mfpca(x,n_components=2L)
   grDevices::pdf(tempfile(fileext=".pdf"))
   on.exit(grDevices::dev.off(),add=TRUE)
   g<-etr_plot_fpca_component(fit,component=0L,dimension="x",
@@ -94,7 +94,7 @@ test_that("Stage 21 DTW plots use source zero-based audited path",{
 })
 
 test_that("Stage 21 distance agreement plot is symmetric and diagonal one",{
-  x<-.etr21_fixture()
+  x<-.etr_visual_diagnostics_test_fixture()
   result<-etr_trajectory_distance_sensitivity(x,
     list(list(name="L2",method="functional_l2"),
          list(name="Frechet",method="discrete_frechet")),

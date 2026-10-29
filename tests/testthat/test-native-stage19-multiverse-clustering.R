@@ -1,6 +1,6 @@
 # Stage 19: source-oriented multiverse, FPCA clusters and distance sensitivity.
 
-.etr19_fixture <- function(){
+.etr_multiverse_test_fixture <- function(){
   nt<-41L;t<-seq(0,2,length.out=nt);n<-8L
   z<-array(0,c(n,nt,2L))
   for(i in seq_len(n)){
@@ -11,7 +11,7 @@
     time_unit="s",coordinate_system="normalized")
 }
 test_that("Stage 19 Rosenstein sensitivity retains complete declared fit grid",{
-  x<-.etr19_fixture()
+  x<-.etr_multiverse_test_fixture()
   s<-etr_lyapunov_parameter_sensitivity(x,"c01",c("x","y"),
     embedding_dimensions=2L,delays=c(1L,2L),
     theiler_windows=c(2L,3L),
@@ -37,7 +37,7 @@ test_that("Stage 19 Rosenstein sensitivity retains complete declared fit grid",{
 })
 
 test_that("Stage 19 Kantz sensitivity reuses exact radius and explicit fits",{
-  x<-.etr19_fixture()
+  x<-.etr_multiverse_test_fixture()
   s<-etr_kantz_parameter_sensitivity(x,"c01",c("x","y"),
     embedding_dimensions=2L,delays=1L,
     radii=c(2,3),min_neighbors=c(1L,2L),
@@ -61,7 +61,7 @@ test_that("Stage 19 Kantz sensitivity reuses exact radius and explicit fits",{
 })
 
 test_that("Stage 19 fixed-radius RQA sensitivity preserves full Cartesian choices",{
-  x<-.etr19_fixture()
+  x<-.etr_multiverse_test_fixture()
   s<-etr_rqa_parameter_sensitivity(x,"c01",c("x","y"),
     embedding_dimensions=2L,delays=1L,
     theiler_windows=c(1L,2L),radii=c(.4,.8),
@@ -83,7 +83,7 @@ test_that("Stage 19 fixed-radius RQA sensitivity preserves full Cartesian choice
 })
 
 test_that("Stage 19 native FPCA clustering respects score geometry and isolated RNG",{
-  x<-.etr19_fixture()
+  x<-.etr_multiverse_test_fixture()
   fit<-etr_fit_mfpca(x,n_components=3L)
   set.seed(191);before<-.Random.seed
   z<-etr_cluster_fpca_scores(fit,2L,2L,random_state=3L,n_init=4L)
@@ -110,7 +110,7 @@ test_that("Stage 19 native FPCA clustering respects score geometry and isolated 
 })
 
 test_that("Stage 19 distance multiverse compares raw matrices and exact neighbors",{
-  x<-.etr19_fixture()
+  x<-.etr_multiverse_test_fixture()
   specs<-list(
     list(name="l2",method="functional_l2"),
     list(name="frechet",method="discrete_frechet"),
@@ -167,7 +167,7 @@ test_that("Stage 19 pinned Python 1.2 deterministic distance and divergence orac
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("Stage 19 pinned Python 1.2 deterministic numerical oracle opt-in")
   expect_identical(et_python_version(),"1.2.0")
-  x<-.etr19_fixture()
+  x<-.etr_multiverse_test_fixture()
   pyx<-reticulate::py_call(etpy_get_export("TrajectorySet"),
     time=reticulate::r_to_py(x$time),values=reticulate::r_to_py(x$values),
     curve_ids=as.list(x$curve_ids),

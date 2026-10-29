@@ -1,6 +1,6 @@
 # Stage 10 Python-free analytic tests; pinned Python 1.2 oracle is opt-in.
 
-.etr10_fixture <- function(){
+.etr_fpca_extension_test_fixture <- function(){
   t<-seq(0,1,length.out=7L)
   n<-6L
   v<-array(0,c(n,length(t),3L))
@@ -13,8 +13,8 @@
     coordinate_system="normalized",time_unit="s")
 }
 
-.etr10_simplex <- function() {
-  x<-.etr10_fixture()
+.etr_fpca_simplex_test_fixture <- function() {
+  x<-.etr_fpca_extension_test_fixture()
   v<-exp(x$values)
   for(i in seq_len(dim(v)[1L]))for(t in seq_len(dim(v)[2L]))
     v[i,t,]<-v[i,t,]/sum(v[i,t,])
@@ -23,7 +23,7 @@
 }
 
 test_that("Stage 10 composition FPCA reconstructs into simplex without Python",{
-  x<-.etr10_simplex()
+  x<-.etr_fpca_simplex_test_fixture()
   comp<-etr_fit_compositional_fpca(x,reference_dimension=-1L,
     n_components=2L)
   expect_s3_class(comp,"etr_compositional_fpca")
@@ -53,7 +53,7 @@ test_that("Stage 10 composition FPCA reconstructs into simplex without Python",{
 })
 
 test_that("Stage 10 component similarity is sign-aware and matching exact",{
-  x<-.etr10_fixture()
+  x<-.etr_fpca_extension_test_fixture()
   a<-etr_fit_fpca(x,n_components=2L)
   b<-a
   b$components[1L,,]<- -b$components[1L,,]
@@ -78,7 +78,7 @@ test_that("Stage 10 component similarity is sign-aware and matching exact",{
 })
 
 test_that("Stage 10 reconstruction RMSE decreases and respects curve ID order",{
-  x<-.etr10_fixture()
+  x<-.etr_fpca_extension_test_fixture()
   fit<-etr_fit_fpca(x,n_components=3L)
   table<-etr_reconstruction_error_by_curve(fit,x,2L)
   expect_identical(names(table),c("curve_id","n_components","integrated_rmse"))
@@ -99,7 +99,7 @@ test_that("Stage 10 reconstruction RMSE decreases and respects curve ID order",{
 })
 
 test_that("Stage 10 registered sensitivity and eigengaps are descriptive",{
-  x<-.etr10_fixture()
+  x<-.etr_fpca_extension_test_fixture()
   reg<-etr_register_landmarks(x,
     source_landmarks=matrix(c(.42,.45,.38,.41,.44,.40),ncol=1L),
     target_landmarks=.42)
@@ -128,7 +128,7 @@ test_that("Stage 10 registered sensitivity and eigengaps are descriptive",{
 })
 
 test_that("Stage 10 reporting frames and frozen source inventory",{
-  x<-.etr10_fixture()
+  x<-.etr_fpca_extension_test_fixture()
   fit<-etr_fit_fpca(x,n_components=2L)
   info<-etr_summarise_trajectory_set(x)
   expect_equal(info$n_curves,6L)
@@ -170,7 +170,7 @@ test_that("Stage 10 pinned Python 1.2 direct numerical reference is opt-in",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("Stage 10 Python source reference tests are opt-in")
   expect_identical(as.character(et_python_version()),"1.2.0")
-  x<-.etr10_fixture()
+  x<-.etr_fpca_extension_test_fixture()
   py<-reticulate::py_call(etpy_get_export("TrajectorySet"),
     time=reticulate::r_to_py(x$time),
     values=reticulate::r_to_py(x$values),
@@ -226,7 +226,7 @@ test_that("Stage 10 pinned Python 1.2 direct numerical reference is opt-in",{
   ptext<-as.character(et_to_r(reticulate::py_call(etpy_get_export(
     "fpca_reporting_text"),result=pfit,digits=as.integer(1L))))
   expect_identical(etr_fpca_reporting_text(rfit,digits=1L),ptext)
-  s<-.etr10_simplex()
+  s<-.etr_fpca_simplex_test_fixture()
   ps<-reticulate::py_call(etpy_get_export("TrajectorySet"),
     time=reticulate::r_to_py(s$time),values=reticulate::r_to_py(s$values),
     curve_ids=as.list(s$curve_ids),dimension_names=as.list(s$dimension_names),

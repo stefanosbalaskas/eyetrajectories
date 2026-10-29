@@ -3,7 +3,7 @@
 # The source-of-record candidate manifest remains unapproved until independent
 # numeric, schema, scope and review evidence is committed and reproduced.
 
-.etr20_simplex_fixture <- function(){
+.etr_iaaft_simplex_test_fixture <- function(){
   a<-array(0,c(3L,5L,3L))
   for(i in 1:3)for(j in 1:5)
     a[i,j,]<-c(.11+.015*i,.27+.013*j,
@@ -44,7 +44,7 @@ test_that("Stage 20 certification census never treats candidate as complete",{
 })
 
 test_that("Stage 20 ALR/inverse contract candidate exercises dimensions and bounds",{
-  v<-.etr20_simplex_fixture()
+  v<-.etr_iaaft_simplex_test_fixture()
   for(ref in c(-1L,0L,1L,2L,5L)){
     a<-etr_alr_transform(v,reference_dimension=ref)
     expect_identical(dim(a),c(3L,5L,2L))
@@ -133,7 +133,7 @@ test_that("Stage 20 exact published Python 1.2 ALR and distance contract oracle 
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("Stage 20 508-contract certification pilot Python numerical/schema oracle is opt-in")
   expect_identical(et_python_version(),"1.2.0")
-  v<-.etr20_simplex_fixture()
+  v<-.etr_iaaft_simplex_test_fixture()
   for(ref in c(-1L,0L,1L,2L,5L)){
     ra<-etr_alr_transform(v,reference_dimension=ref)
     py<-reticulate::py_call(etpy_get_export("alr_transform"),

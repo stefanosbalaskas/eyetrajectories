@@ -1,7 +1,7 @@
 # Stage 22: source-aligned plot geometry. These are R graphics, not
 # bitwise Matplotlib Axes or backend equivalence certificates.
 
-.etr22_plot_device <- function(f) {
+.etr_scientific_plot_test_device <- function(f) {
   grDevices::pdf(tempfile(fileext=".pdf"))
   on.exit(grDevices::dev.off(),add=TRUE)
   f()
@@ -40,7 +40,7 @@ test_that("Stage 22 AMI and ACF plots retain separate source axes",{
     first_ami_local_minimum=c(FALSE,TRUE,FALSE,FALSE)),
     curve_id="test",dimension="x",time_unit="s"),
     class="etr_embedding_delay_diagnostics")
-  .etr22_plot_device(function(){
+  .etr_scientific_plot_test_device(function(){
     a<-etr_plot_embedding_delay_diagnostics(x)
     expect_equal(a$time,x$table$lag_time)
     expect_equal(a$ami,x$table$average_mutual_information)
@@ -57,7 +57,7 @@ test_that("Stage 22 FNN curve uses exact dimension/fractonal pairs",{
     false_neighbor_fraction=c(.5,.25,.1)),
     curve_id="test",dimension="y"),
     class="etr_embedding_dimension_diagnostics")
-  .etr22_plot_device(function(){
+  .etr_scientific_plot_test_device(function(){
     out<-etr_plot_embedding_dimension_diagnostics(x)
     expect_identical(out,x$table)
     invalid<-x;invalid$table$false_neighbor_fraction[2L]<-1.2
@@ -70,7 +70,7 @@ test_that("Stage 22 network degree plot preserves sample index and normalization
   x<-structure(list(degree=c(1,2,1),
     normalized_degree=c(.5,1,.5),graph_density=2/3),
     class="etr_recurrence_network")
-  .etr22_plot_device(function(){
+  .etr_scientific_plot_test_device(function(){
     a<-etr_plot_recurrence_network_degree(x)
     b<-etr_plot_recurrence_network_degree(x,normalized=FALSE)
     expect_equal(a$state_index,c(0L,1L,2L))
@@ -86,7 +86,7 @@ test_that("Stage 22 radius profile reports exact radius and rate",{
     recurrence_rate=c(.1,.4,.8)),
     metric="euclidean",curve_id="test"),
     class="etr_recurrence_radius_profile")
-  .etr22_plot_device(function(){
+  .etr_scientific_plot_test_device(function(){
     a<-etr_plot_recurrence_rate_curve(x)
     expect_identical(a,x$table)
     b<-x;b$table$recurrence_rate[2L]<-2
@@ -100,7 +100,7 @@ test_that("Stage 22 windowed RQA uses declared metrics and physical center times
     determinism=c(.5,.6,.6,.7),
     laminarity=c(.2,.3,.5,.7)),time_unit="s"),
     class="etr_windowed_rqa")
-  .etr22_plot_device(function(){
+  .etr_scientific_plot_test_device(function(){
     a<-etr_plot_windowed_rqa(x,metrics=c("laminarity","recurrence_rate"))
     expect_identical(names(a),c("center_time","laminarity","recurrence_rate"))
     expect_equal(a$center_time,x$table$center_time)
@@ -121,7 +121,7 @@ test_that("Stage 22 source LLE fit uses declared time window and physical units"
   fit<-structure(list(divergence=div,fit_start=1,fit_end=3,
     intercept=-1.5,exponent=500,exponent_unit="1/s"),
     class="etr_largest_lyapunov")
-  .etr22_plot_device(function(){
+  .etr_scientific_plot_test_device(function(){
     a<-etr_plot_local_divergence(div)
     expect_true(all(is.na(a$fit)))
     b<-etr_plot_local_divergence(fit)
@@ -137,7 +137,7 @@ test_that("Stage 22 IAAFT histogram returns counts but not Matplotlib parity",{
   x<-structure(list(surrogate_statistics=c(1.1,1.3,1.8,2.0,2.2),
     observed_statistic=1.9,p_value=.3,statistic="largest_lyapunov",
     method="iaaft"),class="etr_surrogate_nonlinearity")
-  .etr22_plot_device(function(){
+  .etr_scientific_plot_test_device(function(){
     out<-etr_plot_surrogate_nonlinearity(x,bins=3L)
     expect_equal(sum(out$counts),length(x$surrogate_statistics))
     expect_equal(out$observed,1.9)
@@ -152,7 +152,7 @@ test_that("Stage 22 Poincare return plot keeps observed transitions",{
     state_dimensions="x"),class="etr_poincare_crossings")
   fit<-structure(list(reference_state=1.5,intercept=.2,
     jacobian=matrix(.4,1L,1L)),class="etr_local_return_map")
-  .etr22_plot_device(function(){
+  .etr_scientific_plot_test_device(function(){
     a<-etr_plot_poincare_return_map(crossings)
     expect_equal(a$current,c(1,1.4,1.8))
     expect_equal(a$next_state,c(1.4,1.8,1.5))

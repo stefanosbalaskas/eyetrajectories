@@ -1,7 +1,7 @@
 # Stage 23 deterministic source-facing manuscript reporting contracts.
 # Strings are descriptive and do not certify estimators or inference.
 
-.etr23_fixtures <- function() {
+.etr_manuscript_reporting_test_fixtures <- function() {
   dtw<-structure(list(path=matrix(c(0L,0L,1L,1L),ncol=2L,byrow=TRUE),
     distance=2,raw_distance=4,normalized_distance=2,
     step_pattern="symmetric2",path_length=2L,n_points_a=2L,
@@ -45,7 +45,7 @@
 }
 
 test_that("Stage 23 output text is deterministic and source-scope qualified",{
-  z<-.etr23_fixtures()
+  z<-.etr_manuscript_reporting_test_fixtures()
   a<-etr_dynamic_time_warping_reporting_text(z$dtw)
   expect_match(a,"symmetric2 step pattern")
   expect_match(a,"N\\+M-normalized distance=2.000")
@@ -86,7 +86,7 @@ test_that("Stage 23 output text is deterministic and source-scope qualified",{
 })
 
 test_that("Stage 23 reporting inputs fail closed on missing source evidence",{
-  z<-.etr23_fixtures()
+  z<-.etr_manuscript_reporting_test_fixtures()
   x<-z$outlier;x$diagnostics$review_flag[1L]<-NA
   expect_error(etr_fpca_outlier_reporting_text(x),"review_flag")
   x<-z$stability;x$similarities[1L,1L]<-NA_real_
@@ -128,7 +128,7 @@ test_that("Stage 23 direct published Python 1.2 reporting oracle is opt-in",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("Published Python 1.2 text-oracle comparisons are opt-in")
   expect_identical(et_python_version(),"1.2.0")
-  z<-.etr23_fixtures()
+  z<-.etr_manuscript_reporting_test_fixtures()
   types<-reticulate::import("types")
   pd<-reticulate::import("pandas")
   outlier<-types$SimpleNamespace(method=z$outlier$method,

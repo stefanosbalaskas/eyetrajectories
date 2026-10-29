@@ -1,7 +1,7 @@
 # Stage 12: leakage-aware numeric FPCA CV, selection and fixed-target
 # reporting frames. Python==1.2.0 source oracle only when explicitly enabled.
 
-.etr12_fixture <- function(with_groups=FALSE) {
+.etr_cv_uncertainty_test_fixture <- function(with_groups=FALSE) {
   n<-12L;t<-seq(0,1,length.out=9L)
   vals<-array(0,c(n,length(t),2L))
   for(i in seq_len(n)) {
@@ -18,7 +18,7 @@
 }
 
 test_that("Stage 12 CV refits training folds and retains exact holdouts", {
-  x<-.etr12_fixture()
+  x<-.etr_cv_uncertainty_test_fixture()
   before<-reticulate::py_available(initialize=FALSE)
   res<-etr_cross_validate_fpca_reconstruction(x,
     candidate_components=c(2L,1L,2L),n_splits=3L,
@@ -50,7 +50,7 @@ test_that("Stage 12 CV refits training folds and retains exact holdouts", {
 })
 
 test_that("Stage 12 group folds exclude whole participants and preserve RNG",{
-  x<-.etr12_fixture(with_groups=TRUE)
+  x<-.etr_cv_uncertainty_test_fixture(with_groups=TRUE)
   x$metadata$participant_id<-rep(sprintf("p%02d",1:6),each=2L)
   res<-etr_cross_validate_fpca_reconstruction(x,
     candidate_components=1L,n_splits=3L,
@@ -104,7 +104,7 @@ test_that("Stage 12 selection distinguishes predictive minimum and one-SE",{
 })
 
 test_that("Stage 12 fixed-target score, spectrum and conformal frames",{
-  x<-.etr12_fixture()
+  x<-.etr_cv_uncertainty_test_fixture()
   fit<-etr_fit_fpca(x,n_components=2L)
   ids<-c("target1","target2")
   scores<-list(target_curve_ids=ids,n_components=2L,
@@ -155,7 +155,7 @@ test_that("Stage 12 fixed-target score, spectrum and conformal frames",{
 })
 
 test_that("Stage 12 functional regression uncertainty tables respect ordering",{
-  x<-.etr12_fixture();fit<-etr_fit_fpca(x,n_components=1L)
+  x<-.etr_cv_uncertainty_test_fixture();fit<-etr_fit_fpca(x,n_components=1L)
   n<-length(fit$time);d<-length(fit$dimension_names)
   a<-matrix(seq_len(n*d),n,d)/100
   u<-list(reference_fpca=fit,reference_slope=a,
@@ -208,7 +208,7 @@ test_that("Stage 12 pinned Python 1.2 source CV oracle is opt-in",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("Stage 12 independent Python 1.2 numerical CV oracle is opt-in")
   expect_identical(et_python_version(),"1.2.0")
-  x<-.etr12_fixture()
+  x<-.etr_cv_uncertainty_test_fixture()
   pset<-reticulate::py_call(etpy_get_export("TrajectorySet"),
     time=reticulate::r_to_py(x$time),
     values=reticulate::r_to_py(x$values),
