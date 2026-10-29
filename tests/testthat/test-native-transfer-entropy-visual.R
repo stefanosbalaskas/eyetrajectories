@@ -29,7 +29,7 @@
   list(spec=spec,te=te,cte=cte)
 }
 
-test_that("Stage 29 source TE sensitivity never averages tuning specifications",{
+test_that("source TE sensitivity never averages tuning specifications",{
   z<-.etr_test_transfer_entropy_fixture()
   .etr_test_transfer_entropy_pdf(function(){
     x<-etr_plot_transfer_entropy_sensitivity(z$spec,
@@ -55,7 +55,7 @@ test_that("Stage 29 source TE sensitivity never averages tuning specifications",
   })
 })
 
-test_that("Stage 29 source-shift TE histograms preserve declared null samples",{
+test_that("source-shift TE histograms preserve declared null samples",{
   z<-.etr_test_transfer_entropy_fixture()
   .etr_test_transfer_entropy_pdf(function(){
     a<-etr_plot_transfer_entropy_circular_shift_test(z$te,bins=4L)
@@ -81,7 +81,7 @@ test_that("Stage 29 source-shift TE histograms preserve declared null samples",{
   })
 })
 
-test_that("Stage 29 null results never claim causal identification",{
+test_that("null results never claim causal identification",{
   z<-.etr_test_transfer_entropy_fixture()
   .etr_test_transfer_entropy_pdf(function(){
     a<-etr_plot_transfer_entropy_circular_shift_test(z$te)
@@ -90,7 +90,7 @@ test_that("Stage 29 null results never claim causal identification",{
   })
 })
 
-test_that("Stage 29 three actual Python source names are mapped and unsigned",{
+test_that("three actual Python source names are mapped and unsigned",{
   z<-etr_native_parity_catalog()
   for(name in c("plot_transfer_entropy_sensitivity",
     "plot_transfer_entropy_circular_shift_test",
@@ -112,7 +112,7 @@ test_that("Stage 29 three actual Python source names are mapped and unsigned",{
   expect_equal(sum(z$one_to_one_native_contract_complete),0L)
 })
 
-test_that("Stage 29 published Python 1.2 source Axes geometry is opt-in",{
+test_that("published Python 1.2 source Axes geometry is opt-in",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("Real published Python 1.2 TE plots oracle is opt-in")
   expect_identical(et_python_version(),"1.2.0")

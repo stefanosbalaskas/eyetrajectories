@@ -12,7 +12,7 @@
     c("x","y"),time_unit="s")
 }
 
-test_that("Stage 21 registered public plotting names remain uncertified", {
+test_that("registered public plotting names remain uncertified", {
   started<-reticulate::py_available(initialize=FALSE)
   z<-etr_native_parity_catalog()
   names<-c("plot_planar_trajectories","plot_fpca_component",
@@ -37,7 +37,7 @@ test_that("Stage 21 registered public plotting names remain uncertified", {
   expect_identical(started,reticulate::py_available(initialize=FALSE))
 })
 
-test_that("Stage 21 planar visualization preserves selected native geometry",{
+test_that("planar visualization preserves selected native geometry",{
   x<-.etr_visual_diagnostics_test_fixture()
   grDevices::pdf(tempfile(fileext=".pdf"))
   on.exit(grDevices::dev.off(),add=TRUE)
@@ -57,7 +57,7 @@ test_that("Stage 21 planar visualization preserves selected native geometry",{
     "invert_y")
 })
 
-test_that("Stage 21 FPCA graphics follow fitted score-SD geometry exactly",{
+test_that("FPCA graphics follow fitted score-SD geometry exactly",{
   x<-.etr_visual_diagnostics_test_fixture();fit<-etr_fit_mfpca(x,n_components=2L)
   grDevices::pdf(tempfile(fileext=".pdf"))
   on.exit(grDevices::dev.off(),add=TRUE)
@@ -75,7 +75,7 @@ test_that("Stage 21 FPCA graphics follow fitted score-SD geometry exactly",{
     "sd_multiplier")
 })
 
-test_that("Stage 21 DTW plots use source zero-based audited path",{
+test_that("DTW plots use source zero-based audited path",{
   a<-matrix(c(0,1,2,2.5),ncol=1L)
   b<-matrix(c(0,.7,1.8,2.5),ncol=1L)
   result<-etr_dynamic_time_warping(a,b,
@@ -93,7 +93,7 @@ test_that("Stage 21 DTW plots use source zero-based audited path",{
     "monotone")
 })
 
-test_that("Stage 21 distance agreement plot is symmetric and diagonal one",{
+test_that("distance agreement plot is symmetric and diagonal one",{
   x<-.etr_visual_diagnostics_test_fixture()
   result<-etr_trajectory_distance_sensitivity(x,
     list(list(name="L2",method="functional_l2"),

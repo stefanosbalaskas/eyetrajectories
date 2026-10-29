@@ -9,7 +9,7 @@
   list(x=source,y=target,z=condition)
 }
 
-test_that("Stage 16 discrete TE exact plug-in estimand and local contributions",{
+test_that("discrete TE exact plug-in estimand and local contributions",{
   a<-.etr_transfer_entropy_test_fixture()
   old<-reticulate::py_available(initialize=FALSE)
   fit<-etr_discrete_transfer_entropy(a$x,a$y,
@@ -45,7 +45,7 @@ test_that("Stage 16 discrete TE exact plug-in estimand and local contributions",
     "no transitions")
 })
 
-test_that("Stage 16 source-only TE circular null uses exact declared shifts",{
+test_that("source-only TE circular null uses exact declared shifts",{
   a<-.etr_transfer_entropy_test_fixture()
   z<-etr_transfer_entropy_circular_shift_test(a$x,a$y,
     target_history=1L,source_history=2L,source_lag=1L,shifts=c(3L,7L,13L))
@@ -67,7 +67,7 @@ test_that("Stage 16 source-only TE circular null uses exact declared shifts",{
     1L,1L,1L,c(0L,2L)),"1 <= shift")
 })
 
-test_that("Stage 16 conditional TE retains all exact conditioning histories",{
+test_that("conditional TE retains all exact conditioning histories",{
   a<-.etr_transfer_entropy_test_fixture()
   z<-etr_conditional_transfer_entropy(a$x,a$y,a$z,
     target_history=2L,source_history=2L,condition_history=2L,
@@ -94,7 +94,7 @@ test_that("Stage 16 conditional TE retains all exact conditioning histories",{
     1L,1L,1L,1L,1L),"same length")
 })
 
-test_that("Stage 16 conditional source-only shifts preserve fixed confounder",{
+test_that("conditional source-only shifts preserve fixed confounder",{
   a<-.etr_transfer_entropy_test_fixture()
   z<-etr_conditional_transfer_entropy_circular_shift_test(
     a$x,a$y,a$z,1L,2L,1L,1L,1L,shifts=c(4L,12L,20L))
@@ -113,7 +113,7 @@ test_that("Stage 16 conditional source-only shifts preserve fixed confounder",{
     a$x,a$y,a$z,1L,1L,1L,1L,1L,shifts=integer()),"shifts")
 })
 
-test_that("Stage 16 Cartesian sensitivity retains every declared specification",{
+test_that("Cartesian sensitivity retains every declared specification",{
   a<-.etr_transfer_entropy_test_fixture()
   z<-etr_transfer_entropy_parameter_sensitivity(a$x,a$y,
     target_histories=c(1L,2L),source_histories=c(1L,2L),
@@ -146,7 +146,7 @@ test_that("Stage 16 Cartesian sensitivity retains every declared specification",
     "target_history=96")
 })
 
-test_that("Stage 16 frozen public source inventory remains conservatively closed",{
+test_that("frozen public source inventory remains conservatively closed",{
   was<-reticulate::py_available(initialize=FALSE)
   api<-etr_native_parity_catalog()
   expect_equal(nrow(api),508L)
@@ -162,9 +162,9 @@ test_that("Stage 16 frozen public source inventory remains conservatively closed
   expect_identical(was,reticulate::py_available(initialize=FALSE))
 })
 
-test_that("Stage 16 exact Python 1.2 local TE and conditional oracle is opt-in",{
+test_that("exact Python 1.2 local TE and conditional oracle is opt-in",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
-    skip("Stage 16 pinned Python 1.2 empirical TE oracle is opt-in")
+    skip("pinned Python 1.2 empirical TE oracle is opt-in")
   expect_identical(et_python_version(),"1.2.0")
   a<-.etr_transfer_entropy_test_fixture()
   py<-reticulate::py_call(etpy_get_export("discrete_transfer_entropy"),

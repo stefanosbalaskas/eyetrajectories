@@ -87,7 +87,7 @@ test_that("native with_values replaces top-level provenance keys only",{
                "values dimensions")
 })
 
-test_that("Stage 3 transforms now append exactly sourced Python provenance",{
+test_that("transforms now append exactly sourced Python provenance",{
   tt <- c(2,3,4,5)
   a <- array(0,c(2L,length(tt),3L))
   a[1L,,1L] <- c(0,10,20,30)
