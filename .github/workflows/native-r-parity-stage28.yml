@@ -7,6 +7,7 @@ on:
       - "inst/extdata/native_mathematical_contract_frame_py120.csv"
       - "inst/extdata/native_source_contract_gaps_stage22.csv"
       - "tests/testthat/test-native-stage28-math-contracts-diagnostics.R"
+      - "scripts/verify_stage28_math_contracts.py"
       - "NAMESPACE"
       - ".github/workflows/native-r-parity-stage28.yml"
   workflow_dispatch:
@@ -50,6 +51,8 @@ jobs:
         with:
           python-version: "3.12"
       - run: python -m pip install "eyetrajectoriespy==1.2.0"
+      - name: Pure Python published-source 41-contract 88-row content attestation
+        run: python scripts/verify_stage28_math_contracts.py
       - uses: r-lib/actions/setup-r@v2
         with:
           use-public-rspm: true
