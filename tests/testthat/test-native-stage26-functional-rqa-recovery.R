@@ -60,6 +60,11 @@ test_that("Stage 26 native recovery assessment preserves metric semantics and or
     "must match the published")
   expect_error(etr_functional_recovery_assessment_frame(
     list(values=list())),"at least one")
+  z$provenance<-list(estimator="fpca")
+  prose<-etr_functional_recovery_reporting_text(z)
+  expect_match(prose,"estimator 'fpca'")
+  expect_match(prose,"mean_ise, score_correlation")
+  expect_match(prose,"not an estimator-tuning input")
 })
 
 test_that("Stage 26 windowed-RQA sensitivity reports exact source reuse and centers",{
@@ -141,7 +146,7 @@ test_that("Stage 26 catalog and numerical additions do not self-certify source c
     "windowed_rqa_functional_mean_band",
     "functional_recovery_metric_catalog",
     "functional_recovery_metric_catalog_frame",
-    "functional_recovery_value_key",
+    "functional_recovery_reporting_text",
     "functional_recovery_assessment_frame")
   for(name in new){
     row<-z[z$python_name==name&z$is_python_function,,drop=FALSE]
@@ -177,8 +182,11 @@ test_that("Stage 26 direct published Python 1.2 recovery registry oracle is opt-
   metric<-types$SimpleNamespace(name="mean_ise")
   value<-types$SimpleNamespace(metric=metric,component=as.integer(0L),
     source="participant")
+  # This key helper exists in Python recovery.py but is not a
+  # published root callable in the frozen 380-name catalog.
+  recovery<-reticulate::import("eyetrajectoriespy.recovery")
   py_key<-reticulate::py_call(
-    etpy_get_export("functional_recovery_value_key"),value=value)
+    recovery$functional_recovery_value_key,value=value)
   local<-etr_functional_recovery_value_key(
     list(metric=list(name="mean_ise"),component=0L,source="participant"))
   expect_identical(as.character(et_to_r(py_key)),local)
