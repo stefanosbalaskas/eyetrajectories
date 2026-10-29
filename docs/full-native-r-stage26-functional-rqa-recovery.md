@@ -15,7 +15,7 @@ The 508 exported symbol census is frozen separately to catalog SHA
 | `windowed_rqa_functional_mean_band` | `etr_windowed_rqa_functional_mean_band` | Gaussian multiplier simultaneous mean band for derived RQA functions at **curve or participant**, never independent overlapping-window rows |
 | `functional_recovery_metric_catalog` | `etr_functional_recovery_metric_catalog` | Immutable-source-pinned ordered metadata for all **27** published Python 1.2 recovery metrics |
 | `functional_recovery_metric_catalog_frame` | `etr_functional_recovery_metric_catalog_frame` | Complete 27-row recovery schema with names, quantities, directions, units, scopes and descriptions |
-| `functional_recovery_value_key` | `etr_functional_recovery_value_key` | Stable key with source name and Python zero-based component index translated to one-based display |
+| `functional_recovery_reporting_text` | `etr_functional_recovery_reporting_text` | Compact, source-aligned known-truth recovery description retaining metric family and estimator provenance |
 | `functional_recovery_assessment_frame` | `etr_functional_recovery_assessment_frame` | Native semantic recovery metrics in a tidy table, with metadata validation and no invented recovery values |
 
 The metadata file
@@ -24,6 +24,9 @@ The metadata file
 Python `src/eyetrajectoriespy/recovery.py`. A direct pinned
 `eyetrajectoriespy==1.2.0` source oracle compares the full 27-row
 frame cell-by-cell and the generated component/source flat key.
+The value-key utility is provided as an additional R helper and comes
+from the Python `eyetrajectoriespy.recovery` internal module; it is
+**not** a public root callable among the frozen 380 Python names.
 
 The numerical RQA sensitivity functions invoke pre-existing native
 `etr_windowed_rqa_trajectory_set` and
