@@ -72,13 +72,13 @@ test_that("workflow audit records reject hidden decisions and invalid values",{
   skip_if_not_installed("jsonlite")
   expect_error(etr_workflow_steps_frame(list(list(name="bad",
     `function`="fit",status="automatic",parameters=list(),
-    elapsed_seconds=0,warnings=character())),"requires")
+    elapsed_seconds=0,warnings=character()))),"requires")
   expect_error(etr_workflow_steps_frame(list(list(name="bad",
     `function`="fit",status="completed",parameters=list(),
-    elapsed_seconds=-1,warnings=character())),"requires")
+    elapsed_seconds=-1,warnings=character()))),"requires")
   expect_error(etr_workflow_steps_frame(list(list(name="bad",
     `function`="fit",status="completed",parameters=list(a=Inf),
-    elapsed_seconds=0,warnings=character())),"nonfinite")
+    elapsed_seconds=0,warnings=character()))),"nonfinite")
   expect_error(etr_workflow_decisions_frame(
     list(k=list(value=2L,source="audited_selector"))),"criterion")
   expect_error(etr_workflow_decisions_frame(
