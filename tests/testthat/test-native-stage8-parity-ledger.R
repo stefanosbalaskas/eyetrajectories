@@ -15,9 +15,9 @@ test_that("ten Stage 8 recurrence public APIs have native implementations",{
     windowed_rqa_trajectory_set="etr_windowed_rqa_trajectory_set")
   expect_equal(nrow(z),508L)
   expect_equal(sum(z$is_python_function),380L)
-  expect_equal(sum(z$named_native_candidate),200L)
-  expect_equal(sum(!z$named_native_candidate & z$is_python_function),180L)
-  expect_equal(sum(z$native_implementation_started),175L)
+  expect_equal(sum(z$named_native_candidate),206L)
+  expect_equal(sum(!z$named_native_candidate & z$is_python_function),174L)
+  expect_equal(sum(z$native_implementation_started),181L)
   expect_equal(sum(z$native_implementation_stage==8L,na.rm=TRUE),10L)
   expect_equal(sum(z$native_implementation_stage==7L,na.rm=TRUE),10L)
   for(n in names(target)){
@@ -40,7 +40,7 @@ test_that("ten Stage 8 recurrence public APIs have native implementations",{
   }
   expect_equal(sum(!is.na(z$native_representation_stage)),7L)
   expect_equal(sum(z$status==
-     "class_or_constant_native_representation_not_reviewed"),121L)
+     "class_or_constant_native_representation_not_reviewed"),127L)
   expect_true(all(!z$one_to_one_native_contract_complete))
   expect_identical(reticulate::py_available(initialize=FALSE),before)
   expect_error(etr_native_parity_catalog(require_complete=TRUE),
