@@ -13,7 +13,7 @@
       .08*cos(time+i/2)
   ids<-paste0("curve_",seq_along(dose))
   x<-etr_trajectory_set(time,values,curve_ids=ids,
-    dimension_names="x",coordinate_system="arbitrary",time_unit="s")
+    dimension_names="x",coordinate_system="unknown",time_unit="s")
   design<-data.frame(curve_id=ids,dose=dose)
   list(x=x,design=design,
     fit=etr_fit_function_on_scalar_regression(x,design,predictors="dose"))
@@ -208,7 +208,7 @@ test_that("published Python 1.2 direct FOS and conformal source oracle is opt-in
     values=reticulate::r_to_py(x$x$values),
     curve_ids=reticulate::r_to_py(as.list(x$x$curve_ids)),
     dimension_names=reticulate::r_to_py(as.list(x$x$dimension_names)),
-    coordinate_system="arbitrary",time_unit="s")
+    coordinate_system="unknown",time_unit="s")
   py_design<-pd$DataFrame(reticulate::r_to_py(as.list(x$design)))
   py_fit<-reticulate::py_call(
     etpy_get_export("fit_function_on_scalar_regression"),
