@@ -146,7 +146,7 @@ test_that("Stage 11 Lyapunov, surrogate and return-map wording remains condition
   expect_error(etr_surrogate_nonlinearity_reporting_text(sur),
     "must all be finite")
   fit<-list(neighborhood_policy="k_nearest",neighborhood_value=8L,
-    n_transitions=21L,design_condition_number=14,
+    n_transitions=27L,design_condition_number=14,
     r_squared=c(.7,.8),provenance=list(crossing_provenance=list(
       section_dimension="x",section_value=0,direction="up")))
   stability<-list(eigenvalues=c(.3+0.2i,.3-0.2i),spectral_radius=.36,
@@ -161,9 +161,9 @@ test_that("Stage 11 frozen source inventory is conservative and offline",{
   z<-etr_native_parity_catalog()
   expect_equal(nrow(z),508L)
   expect_equal(sum(z$is_python_function),380L)
-  expect_equal(sum(z$named_native_candidate),200L)
-  expect_equal(sum(z$is_python_function & !z$named_native_candidate),180L)
-  expect_equal(sum(z$native_implementation_started),175L)
+  expect_equal(sum(z$named_native_candidate),206L)
+  expect_equal(sum(z$is_python_function & !z$named_native_candidate),174L)
+  expect_equal(sum(z$native_implementation_started),181L)
   expect_equal(sum(z$native_implementation_stage==11L,na.rm=TRUE),15L)
   expect_equal(sum(!is.na(z$native_representation_stage)),7L)
   expect_true(all(!z$one_to_one_native_contract_complete))
