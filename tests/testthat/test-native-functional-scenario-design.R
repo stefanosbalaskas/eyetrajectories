@@ -53,6 +53,7 @@ test_that("explicit scenario design rejects unsupported scientific assumptions",
   expect_error(.etr_scenario_design_test_fixture(samples_per_curve=5L),
     "samples_per_curve")
   expect_error(.etr_scenario_design_test_fixture(
+    dimension_names=c("x","y"),
     measurement_noise_covariance=diag(1,1)),"must match")
   covar<-matrix(c(.04,.018,.018,.09),2L,2L)
   valid<-etr_functional_simulation_scenario(
