@@ -17,7 +17,7 @@
   list(x=x,design=data.frame(curve_id=x$curve_ids,exposure=z))
 }
 
-test_that("Stage 18 restricted mixed-moment regression has explicit provenance and PSD covariance",{
+test_that("restricted mixed-moment regression has explicit provenance and PSD covariance",{
   fixture<-.etr_mixed_moments_test_fixture()
   z<-etr_fit_functional_mixed_effects_regression(fixture$x,
     fixture$design,predictors="exposure",
@@ -48,7 +48,7 @@ test_that("Stage 18 restricted mixed-moment regression has explicit provenance a
     fixture$design,"exposure","participant_id","x"),"complete")
 })
 
-test_that("Stage 18 whitening is within-trial and uses finite positive definite covariance",{
+test_that("whitening is within-trial and uses finite positive definite covariance",{
   a<-.etr_mixed_moments_test_fixture()
   fit<-etr_fit_functional_mixed_effects_regression(a$x,a$design,
     "exposure","participant_id","x")
@@ -67,7 +67,7 @@ test_that("Stage 18 whitening is within-trial and uses finite positive definite 
     "not positive definite")
 })
 
-test_that("Stage 18 raw and whitened residual lag diagnostics preserve physical lag",{
+test_that("raw and whitened residual lag diagnostics preserve physical lag",{
   a<-.etr_mixed_moments_test_fixture()
   fit<-etr_fit_functional_mixed_effects_regression(a$x,a$design,
     "exposure","participant_id","x")
@@ -96,7 +96,7 @@ test_that("Stage 18 raw and whitened residual lag diagnostics preserve physical 
     max_lag=3L,residual_scale="random"),"residual_scale")
 })
 
-test_that("Stage 18 diagnostic and exact residual-pair frames preserve index semantics",{
+test_that("diagnostic and exact residual-pair frames preserve index semantics",{
   a<-.etr_mixed_moments_test_fixture()
   fit<-etr_fit_functional_mixed_effects_regression(a$x,a$design,
     "exposure","participant_id","x")
@@ -127,7 +127,7 @@ test_that("Stage 18 diagnostic and exact residual-pair frames preserve index sem
     "overall",curve_id="c01"),"only")
 })
 
-test_that("Stage 18 coefficient and variance frames retain native inferential boundaries",{
+test_that("coefficient and variance frames retain native inferential boundaries",{
   a<-.etr_mixed_moments_test_fixture()
   fit<-etr_fit_functional_mixed_effects_regression(a$x,a$design,
     "exposure","participant_id","x")
@@ -155,7 +155,7 @@ test_that("Stage 18 coefficient and variance frames retain native inferential bo
     model_label=""),"model_label")
 })
 
-test_that("Stage 18 frozen source map does not imply full likelihood equivalence",{
+test_that("frozen source map does not imply full likelihood equivalence",{
   before<-reticulate::py_available(initialize=FALSE)
   z<-etr_native_parity_catalog()
   expect_equal(nrow(z),508L)
@@ -171,9 +171,9 @@ test_that("Stage 18 frozen source map does not imply full likelihood equivalence
   expect_identical(before,reticulate::py_available(initialize=FALSE))
 })
 
-test_that("Stage 18 Python 1.2 reference source numerical formulas opt-in",{
+test_that("Python 1.2 reference source numerical formulas opt-in",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
-    skip("Stage 18 NumPy residual diagnostics formula oracle is opt-in")
+    skip("NumPy residual diagnostics formula oracle is opt-in")
   expect_identical(et_python_version(),"1.2.0")
   a<-.etr_mixed_moments_test_fixture()
   fit<-etr_fit_functional_mixed_effects_regression(a$x,a$design,

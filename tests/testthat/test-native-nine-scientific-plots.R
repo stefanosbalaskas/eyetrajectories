@@ -55,7 +55,7 @@
     joint=joint,win=win,sens=sens)
 }
 
-test_that("Stage 24 nine scientific visualization mappings are unique and unsigned",{
+test_that("nine scientific visualization mappings are unique and unsigned",{
   z<-etr_native_parity_catalog()
   names<-c("plot_fpca_stability","plot_fpca_influence",
     "plot_fpca_outlier_diagnostics","plot_fpca_cross_validation",
@@ -83,7 +83,7 @@ test_that("Stage 24 nine scientific visualization mappings are unique and unsign
   expect_equal(sum(z$one_to_one_native_contract_complete),0L)
 })
 
-test_that("Stage 24 matched FPC similarity boxplots keep source geometry",{
+test_that("matched FPC similarity boxplots keep source geometry",{
   x<-.etr_test_scientific_plot_fixture()
   .etr_test_scientific_plot_pdf(function(){
     m<-etr_plot_fpca_stability(x$st)
@@ -93,7 +93,7 @@ test_that("Stage 24 matched FPC similarity boxplots keep source geometry",{
   })
 })
 
-test_that("Stage 24 FPCA influence respects declared metric, groups and order",{
+test_that("FPCA influence respects declared metric, groups and order",{
   x<-.etr_test_scientific_plot_fixture()
   .etr_test_scientific_plot_pdf(function(){
     d<-etr_plot_fpca_influence(x$infl,metric="influence_score")
@@ -103,7 +103,7 @@ test_that("Stage 24 FPCA influence respects declared metric, groups and order",{
   })
 })
 
-test_that("Stage 24 FPCA review graphics preserve robust-z and score thresholds",{
+test_that("FPCA review graphics preserve robust-z and score thresholds",{
   x<-.etr_test_scientific_plot_fixture()
   .etr_test_scientific_plot_pdf(function(){
     d<-etr_plot_fpca_outlier_diagnostics(x$out)
@@ -114,7 +114,7 @@ test_that("Stage 24 FPCA review graphics preserve robust-z and score thresholds"
   })
 })
 
-test_that("Stage 24 FPCA cross-validation is tied to held-out fold errors",{
+test_that("FPCA cross-validation is tied to held-out fold errors",{
   x<-.etr_test_scientific_plot_fixture()
   .etr_test_scientific_plot_pdf(function(){
     d<-etr_plot_fpca_cross_validation(x$cv)
@@ -124,7 +124,7 @@ test_that("Stage 24 FPCA cross-validation is tied to held-out fold errors",{
   })
 })
 
-test_that("Stage 24 eigenspace metric derivation uses per-bootstrap cosine",{
+test_that("eigenspace metric derivation uses per-bootstrap cosine",{
   x<-.etr_test_scientific_plot_fixture()
   .etr_test_scientific_plot_pdf(function(){
     d<-etr_plot_fpca_subspace_stability(x$sub,
@@ -138,7 +138,7 @@ test_that("Stage 24 eigenspace metric derivation uses per-bootstrap cosine",{
   })
 })
 
-test_that("Stage 24 simultaneous mean plot preserves confidence bounds",{
+test_that("simultaneous mean plot preserves confidence bounds",{
   x<-.etr_test_scientific_plot_fixture()
   .etr_test_scientific_plot_pdf(function(){
     d<-etr_plot_functional_mean_band(x$band)
@@ -151,7 +151,7 @@ test_that("Stage 24 simultaneous mean plot preserves confidence bounds",{
   })
 })
 
-test_that("Stage 24 joint recurrence preserves source zero-based indexes",{
+test_that("joint recurrence preserves source zero-based indexes",{
   x<-.etr_test_scientific_plot_fixture()
   .etr_test_scientific_plot_pdf(function(){
     d<-etr_plot_joint_recurrence(x$joint)
@@ -165,7 +165,7 @@ test_that("Stage 24 joint recurrence preserves source zero-based indexes",{
   })
 })
 
-test_that("Stage 24 windowed RQA functional plot retains the actual source cube",{
+test_that("windowed RQA functional plot retains the actual source cube",{
   x<-.etr_test_scientific_plot_fixture()
   .etr_test_scientific_plot_pdf(function(){
     d<-etr_plot_windowed_rqa_trajectories(x$win,
@@ -179,7 +179,7 @@ test_that("Stage 24 windowed RQA functional plot retains the actual source cube"
   })
 })
 
-test_that("Stage 24 RQA sensitivity fails closed when slice not identified",{
+test_that("RQA sensitivity fails closed when slice not identified",{
   x<-.etr_test_scientific_plot_fixture()
   .etr_test_scientific_plot_pdf(function(){
     d<-etr_plot_rqa_sensitivity(x$sens,
@@ -195,7 +195,7 @@ test_that("Stage 24 RQA sensitivity fails closed when slice not identified",{
   })
 })
 
-test_that("Stage 24 direct pinned Python 1.2 plot geometry oracle is opt-in",{
+test_that("direct pinned Python 1.2 plot geometry oracle is opt-in",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("Direct published Python 1.2 Matplotlib/Axes geometry is opt-in")
   expect_identical(et_python_version(),"1.2.0")

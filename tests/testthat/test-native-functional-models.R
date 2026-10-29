@@ -20,7 +20,7 @@
   list(x=x,design=data.frame(curve_id=x$curve_ids,z=z))
 }
 
-test_that("Stage 13 pointwise function-on-scalar OLS and HC1 agree analytically",{
+test_that("pointwise function-on-scalar OLS and HC1 agree analytically",{
   f<-.etr_functional_regression_test_fixture()
   r<-etr_fit_function_on_scalar_regression(f$x,f$design,"z")
   expect_s3_class(r,"etr_function_on_scalar")
@@ -55,7 +55,7 @@ test_that("Stage 13 pointwise function-on-scalar OLS and HC1 agree analytically"
     "probability_simplex")
 })
 
-test_that("Stage 13 participant units aggregate trials without pseudoreplication",{
+test_that("participant units aggregate trials without pseudoreplication",{
   f<-.etr_functional_regression_test_fixture(participant=TRUE)
   r<-etr_fit_function_on_scalar_regression(f$x,f$design,"z",
     unit="participant",participant_column="participant_id")
@@ -77,7 +77,7 @@ test_that("Stage 13 participant units aggregate trials without pseudoreplication
     participant_column="participant_id"),"unit='curve'")
 })
 
-test_that("Stage 13 wild bootstrap is fixed-design, entire-function and reproducible",{
+test_that("wild bootstrap is fixed-design, entire-function and reproducible",{
   f<-.etr_functional_regression_test_fixture()
   r<-etr_fit_function_on_scalar_regression(f$x,f$design,"z")
   set.seed(125)
@@ -112,7 +112,7 @@ test_that("Stage 13 wild bootstrap is fixed-design, entire-function and reproduc
     confidence_level=1),"confidence_level")
 })
 
-test_that("Stage 13 delay AMI and FNN give deterministic, declared diagnostics",{
+test_that("delay AMI and FNN give deterministic, declared diagnostics",{
   t<-seq(0,5,length.out=101L)
   v<-array(0,c(1L,length(t),1L))
   v[1L,,1L]<-sin(2*pi*t)+.2*cos(6*pi*t)+.03*t
@@ -143,7 +143,7 @@ test_that("Stage 13 delay AMI and FNN give deterministic, declared diagnostics",
     delay=0L),"delay")
 })
 
-test_that("Stage 13 return-map stability classifies empirical Jacobian eigenvalues",{
+test_that("return-map stability classifies empirical Jacobian eigenvalues",{
   a<-etr_return_map_stability(list(jacobian=diag(c(.8,.7))),
     tolerance=.01)
   expect_identical(a$classification,"contracting")
@@ -160,7 +160,7 @@ test_that("Stage 13 return-map stability classifies empirical Jacobian eigenvalu
     "tolerance")
 })
 
-test_that("Stage 13 two generators return reproducible true trajectory containers",{
+test_that("two generators return reproducible true trajectory containers",{
   set.seed(400)
   rng<-.Random.seed
   x<-etr_simulate_planar_trajectories(3L,2L,11L,1,7L)
@@ -186,7 +186,7 @@ test_that("Stage 13 two generators return reproducible true trajectory container
   expect_error(etr_simulate_aoi_probability_trajectories(n_aoi=1L),"AOIs")
 })
 
-test_that("Stage 13 explicit irregular source long-grid conversion has no extrapolation",{
+test_that("explicit irregular source long-grid conversion has no extrapolation",{
   raw<-data.frame(participant=c("a","a","a","b","b","b"),
     time=c(0,1,3,1,2,3),x=c(1,2,4,4,3,2),
     y=c(3,4,5,4,3,2))
@@ -203,7 +203,7 @@ test_that("Stage 13 explicit irregular source long-grid conversion has no extrap
     "participant","time",c("x","y"),grid=0:3),"Duplicate|increasing")
 })
 
-test_that("Stage 13 508-source inventory remains fail-closed",{
+test_that("508-source inventory remains fail-closed",{
   was<-reticulate::py_available(initialize=FALSE)
   z<-etr_native_parity_catalog()
   expect_equal(nrow(z),508L)
@@ -218,9 +218,9 @@ test_that("Stage 13 508-source inventory remains fail-closed",{
   expect_identical(was,reticulate::py_available(initialize=FALSE))
 })
 
-test_that("Stage 13 pinned Python 1.2 fixed-design FOS OLS reference is opt-in",{
+test_that("pinned Python 1.2 fixed-design FOS OLS reference is opt-in",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
-    skip("Stage 13 Python 1.2 numerical FOS oracle is opt-in")
+    skip("Python 1.2 numerical FOS oracle is opt-in")
   expect_identical(et_python_version(),"1.2.0")
   f<-.etr_functional_regression_test_fixture()
   pyx<-reticulate::py_call(etpy_get_export("TrajectorySet"),
@@ -273,7 +273,7 @@ test_that("Stage 13 pinned Python 1.2 fixed-design FOS OLS reference is opt-in",
 })
 
 
-test_that("Stage 13 explicit Poincare-to-return-map pipeline is numerical and auditable",{
+test_that("explicit Poincare-to-return-map pipeline is numerical and auditable",{
   t<-seq(0,13,by=1)
   vals<-array(0,c(1L,length(t),2L))
   vals[1L,,1L]<-rep(c(-1,1),length.out=length(t))
@@ -309,9 +309,9 @@ test_that("Stage 13 explicit Poincare-to-return-map pipeline is numerical and au
     n_neighbors=5L,neighborhood_radius=1),"exactly one")
 })
 
-test_that("Stage 13 Python 1.2 Poincare crossing interpolation oracle is opt-in",{
+test_that("Python 1.2 Poincare crossing interpolation oracle is opt-in",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
-    skip("Stage 13 Python 1.2 Poincare crossing oracle is opt-in")
+    skip("Python 1.2 Poincare crossing oracle is opt-in")
   expect_identical(et_python_version(),"1.2.0")
   t<-seq(0,13,by=1)
   vals<-array(0,c(1L,length(t),2L))

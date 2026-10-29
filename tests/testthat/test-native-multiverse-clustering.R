@@ -10,7 +10,7 @@
   etr_trajectory_set(t,z,sprintf("c%02d",seq_len(n)),c("x","y"),
     time_unit="s",coordinate_system="normalized")
 }
-test_that("Stage 19 Rosenstein sensitivity retains complete declared fit grid",{
+test_that("Rosenstein sensitivity retains complete declared fit grid",{
   x<-.etr_multiverse_test_fixture()
   s<-etr_lyapunov_parameter_sensitivity(x,"c01",c("x","y"),
     embedding_dimensions=2L,delays=c(1L,2L),
@@ -36,7 +36,7 @@ test_that("Stage 19 Rosenstein sensitivity retains complete declared fit grid",{
     2L,c(1L,1L),2L,list(c(1L,4L)),7L),"distinct")
 })
 
-test_that("Stage 19 Kantz sensitivity reuses exact radius and explicit fits",{
+test_that("Kantz sensitivity reuses exact radius and explicit fits",{
   x<-.etr_multiverse_test_fixture()
   s<-etr_kantz_parameter_sensitivity(x,"c01",c("x","y"),
     embedding_dimensions=2L,delays=1L,
@@ -60,7 +60,7 @@ test_that("Stage 19 Kantz sensitivity reuses exact radius and explicit fits",{
     fit_intervals=list(c(1L,4L)),max_horizon=7L),"distinct")
 })
 
-test_that("Stage 19 fixed-radius RQA sensitivity preserves full Cartesian choices",{
+test_that("fixed-radius RQA sensitivity preserves full Cartesian choices",{
   x<-.etr_multiverse_test_fixture()
   s<-etr_rqa_parameter_sensitivity(x,"c01",c("x","y"),
     embedding_dimensions=2L,delays=1L,
@@ -82,7 +82,7 @@ test_that("Stage 19 fixed-radius RQA sensitivity preserves full Cartesian choice
     "Euclidean")
 })
 
-test_that("Stage 19 native FPCA clustering respects score geometry and isolated RNG",{
+test_that("native FPCA clustering respects score geometry and isolated RNG",{
   x<-.etr_multiverse_test_fixture()
   fit<-etr_fit_mfpca(x,n_components=3L)
   set.seed(191);before<-.Random.seed
@@ -109,7 +109,7 @@ test_that("Stage 19 native FPCA clustering respects score geometry and isolated 
     "exceeds fitted")
 })
 
-test_that("Stage 19 distance multiverse compares raw matrices and exact neighbors",{
+test_that("distance multiverse compares raw matrices and exact neighbors",{
   x<-.etr_multiverse_test_fixture()
   specs<-list(
     list(name="l2",method="functional_l2"),
@@ -147,7 +147,7 @@ test_that("Stage 19 distance multiverse compares raw matrices and exact neighbor
       list(name="same",method="discrete_frechet"))),"distinct")
 })
 
-test_that("Stage 19 frozen source remains 508 without false parity certification",{
+test_that("frozen source remains 508 without false parity certification",{
   before<-reticulate::py_available(initialize=FALSE)
   z<-etr_native_parity_catalog()
   expect_equal(nrow(z),508L)
@@ -163,9 +163,9 @@ test_that("Stage 19 frozen source remains 508 without false parity certification
   expect_identical(before,reticulate::py_available(initialize=FALSE))
 })
 
-test_that("Stage 19 pinned Python 1.2 deterministic distance and divergence oracle opt-in",{
+test_that("pinned Python 1.2 deterministic distance and divergence oracle opt-in",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
-    skip("Stage 19 pinned Python 1.2 deterministic numerical oracle opt-in")
+    skip("pinned Python 1.2 deterministic numerical oracle opt-in")
   expect_identical(et_python_version(),"1.2.0")
   x<-.etr_multiverse_test_fixture()
   pyx<-reticulate::py_call(etpy_get_export("TrajectorySet"),

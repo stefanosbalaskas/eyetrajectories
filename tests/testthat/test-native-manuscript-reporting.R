@@ -44,7 +44,7 @@
     influence=influence,subspace=subspace,cv=cv,multilevel=multilevel)
 }
 
-test_that("Stage 23 output text is deterministic and source-scope qualified",{
+test_that("output text is deterministic and source-scope qualified",{
   z<-.etr_manuscript_reporting_test_fixtures()
   a<-etr_dynamic_time_warping_reporting_text(z$dtw)
   expect_match(a,"symmetric2 step pattern")
@@ -85,7 +85,7 @@ test_that("Stage 23 output text is deterministic and source-scope qualified",{
     "60.0% of fitted trial-level variance")
 })
 
-test_that("Stage 23 reporting inputs fail closed on missing source evidence",{
+test_that("reporting inputs fail closed on missing source evidence",{
   z<-.etr_manuscript_reporting_test_fixtures()
   x<-z$outlier;x$diagnostics$review_flag[1L]<-NA
   expect_error(etr_fpca_outlier_reporting_text(x),"review_flag")
@@ -100,7 +100,7 @@ test_that("Stage 23 reporting inputs fail closed on missing source evidence",{
   expect_error(etr_multilevel_fpca_reporting_text(x),"finite")
 })
 
-test_that("Stage 23 full 508-census retains unsigned source qualification",{
+test_that("full 508-census retains unsigned source qualification",{
   before<-reticulate::py_available(initialize=FALSE)
   z<-etr_native_parity_catalog()
   n<-c("dynamic_time_warping_reporting_text",
@@ -124,7 +124,7 @@ test_that("Stage 23 full 508-census retains unsigned source qualification",{
   expect_identical(before,reticulate::py_available(initialize=FALSE))
 })
 
-test_that("Stage 23 direct published Python 1.2 reporting oracle is opt-in",{
+test_that("direct published Python 1.2 reporting oracle is opt-in",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("Published Python 1.2 text-oracle comparisons are opt-in")
   expect_identical(et_python_version(),"1.2.0")
@@ -162,7 +162,7 @@ test_that("Stage 23 direct published Python 1.2 reporting oracle is opt-in",{
     one_to_one_native_contract_complete),0L)
 })
 
-test_that("Stage 23 regular nested ALR source sequences preserve 3D geometry", {
+test_that("regular nested ALR source sequences preserve 3D geometry", {
   nested<-list(
     list(c(.2,.3,.5),c(.1,.4,.5)),
     list(c(.3,.4,.3),c(.2,.2,.6)))

@@ -11,7 +11,7 @@
     coordinate_system="arbitrary",time_unit="s")
 }
 
-test_that("Stage 26 frozen public recovery metric registry has 27 exact semantic rows",{
+test_that("frozen public recovery metric registry has 27 exact semantic rows",{
   defs<-etr_functional_recovery_metric_catalog()
   frame<-etr_functional_recovery_metric_catalog_frame()
   expect_length(defs,27L)
@@ -28,7 +28,7 @@ test_that("Stage 26 frozen public recovery metric registry has 27 exact semantic
   expect_identical(defs,etr_functional_recovery_metric_catalog())
 })
 
-test_that("Stage 26 recovery flat keys are source zero-based without mutation",{
+test_that("recovery flat keys are source zero-based without mutation",{
   m<-etr_functional_recovery_metric_catalog()[["mean_ise"]]
   v<-list(metric=m,value=.25,component=0L,source="participant")
   expect_identical(etr_functional_recovery_value_key(v),
@@ -42,7 +42,7 @@ test_that("Stage 26 recovery flat keys are source zero-based without mutation",{
   expect_error(etr_functional_recovery_value_key(v),"zero-based")
 })
 
-test_that("Stage 26 native recovery assessment preserves metric semantics and ordering",{
+test_that("native recovery assessment preserves metric semantics and ordering",{
   defs<-etr_functional_recovery_metric_catalog()
   z<-list(values=list(
     list(metric=defs[["mean_ise"]],value=.2,source="x",component=0L),
@@ -70,7 +70,7 @@ test_that("Stage 26 native recovery assessment preserves metric semantics and or
   expect_match(prose,"not an estimator-tuning input")
 })
 
-test_that("Stage 26 windowed-RQA sensitivity reports exact source reuse and centers",{
+test_that("windowed-RQA sensitivity reports exact source reuse and centers",{
   x<-.etr_test_functional_rqa_fixture()
   a<-etr_windowed_rqa_sensitivity(x,metrics="recurrence_rate",
     window_step_pairs=list(c(5L,2L),c(7L,3L)),radius=1)
@@ -114,7 +114,7 @@ test_that("Stage 26 windowed-RQA sensitivity reports exact source reuse and cent
     target_recurrence_rate=.1),"fixed-radius")
 })
 
-test_that("Stage 26 simultaneous RQA mean band uses whole independent units",{
+test_that("simultaneous RQA mean band uses whole independent units",{
   x<-.etr_test_functional_rqa_fixture()
   band<-etr_windowed_rqa_functional_mean_band(x,
     metrics="recurrence_rate",window=5L,step=2L,
@@ -143,7 +143,7 @@ test_that("Stage 26 simultaneous RQA mean band uses whole independent units",{
     "unit must")
 })
 
-test_that("Stage 26 catalog and numerical additions do not self-certify source contracts",{
+test_that("catalog and numerical additions do not self-certify source contracts",{
   z<-etr_native_parity_catalog()
   new<-c("windowed_rqa_sensitivity",
     "windowed_rqa_functional_mean_band",
@@ -168,7 +168,7 @@ test_that("Stage 26 catalog and numerical additions do not self-certify source c
   expect_equal(sum(z$one_to_one_native_contract_complete),0L)
 })
 
-test_that("Stage 26 direct published Python 1.2 recovery registry oracle is opt-in",{
+test_that("direct published Python 1.2 recovery registry oracle is opt-in",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("Published Python 1.2 recovery metadata oracle is opt-in")
   expect_identical(et_python_version(),"1.2.0")

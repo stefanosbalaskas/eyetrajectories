@@ -29,7 +29,7 @@
     provenance=list(specification_ids=c("spec_1","spec_2"))),
     class="etr_windowed_rqa_sensitivity")
 }
-test_that("Stage 28 published 41-contract registry retains every 88 API row",{
+test_that("published 41-contract registry retains every 88 API row",{
   frame<-etr_mathematical_contract_frame()
   contracts<-etr_list_mathematical_contracts()
   expect_equal(nrow(frame),88L)
@@ -58,7 +58,7 @@ test_that("Stage 28 published 41-contract registry retains every 88 API row",{
     "single string")
 })
 
-test_that("Stage 28 Kantz and Rosenstein require unambiguous full-grid slices",{
+test_that("Kantz and Rosenstein require unambiguous full-grid slices",{
   k<-.etr_test_nonlinear_sensitivity_fixture("etr_kantz_parameter_sensitivity")
   lle<-.etr_test_nonlinear_sensitivity_fixture("etr_lyapunov_parameter_sensitivity")
   .etr_test_nonlinear_diagnostic_pdf(function(){
@@ -89,7 +89,7 @@ test_that("Stage 28 Kantz and Rosenstein require unambiguous full-grid slices",{
   })
 })
 
-test_that("Stage 28 windowed RQA plot preserves every declared center grid",{
+test_that("windowed RQA plot preserves every declared center grid",{
   x<-.etr_test_window_rqa_plot_fixture()
   .etr_test_nonlinear_diagnostic_pdf(function(){
     a<-etr_plot_windowed_rqa_sensitivity(x,curve="a",
@@ -112,7 +112,7 @@ test_that("Stage 28 windowed RQA plot preserves every declared center grid",{
   })
 })
 
-test_that("Stage 28 508-source census remains strict and unsigned",{
+test_that("508-source census remains strict and unsigned",{
   z<-etr_native_parity_catalog()
   names<-c("list_mathematical_contracts",
     "get_mathematical_contract","mathematical_contract_frame",
@@ -136,7 +136,7 @@ test_that("Stage 28 508-source census remains strict and unsigned",{
   expect_equal(sum(z$one_to_one_native_contract_complete),0L)
 })
 
-test_that("Stage 28 full 88-row published Python 1.2 source oracle is opt-in",{
+test_that("full 88-row published Python 1.2 source oracle is opt-in",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("Pinned Python 1.2 complete mathematical source oracle is opt-in")
   expect_identical(et_python_version(),"1.2.0")
