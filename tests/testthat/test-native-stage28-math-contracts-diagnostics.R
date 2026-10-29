@@ -15,8 +15,11 @@
 }
 .etr28_window_fixture<-function(){
   a<-function(time,v,w,s){
+    values<-array(NA_real_,c(2L,length(time),1L))
+    values[1L,,1L]<-v
+    values[2L,,1L]<-v+.1
     tr<-list(curve_ids=c("a","b"),dimension_names="recurrence_rate",
-      time=time,values=array(c(v,v+.1),c(2L,length(time),1L)))
+      time=time,values=values)
     list(trajectories=tr,window_samples=w,step_samples=s,time_unit="s")
   }
   structure(list(analyses=list(
