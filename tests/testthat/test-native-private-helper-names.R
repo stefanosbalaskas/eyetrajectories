@@ -40,3 +40,16 @@ test_that("all parsed production and test calls use stage-free private symbols",
     all_symbols,perl=TRUE,value=TRUE)
   expect_identical(numeric_helper_refs,character())
 })
+
+test_that("active native package and CI filenames are stage-free",{
+  project_root <- normalizePath(file.path(testthat::test_path(),"..",".."),
+    mustWork=TRUE)
+  if (!dir.exists(file.path(project_root,"R")))
+    skip("development checkout is unavailable")
+  dirs <- file.path(project_root,c("R","tests/testthat","man",
+    ".github/workflows"))
+  names <- unlist(lapply(dirs[dir.exists(dirs)],function(x)
+    basename(list.files(x,all.files=FALSE,recursive=TRUE))),
+    use.names=FALSE)
+  expect_false(any(grepl("stage[0-9]+",names,ignore.case=TRUE)))
+})
