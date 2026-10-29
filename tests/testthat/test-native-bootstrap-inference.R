@@ -15,7 +15,7 @@
     metadata=md,coordinate_system="normalized",time_unit="s")
 }
 
-test_that("Stage 15 Gaussian multiplier mean is observed-grid and group-aware",{
+test_that("Gaussian multiplier mean is observed-grid and group-aware",{
   x<-.etr_bootstrap_inference_test_fixture()
   set.seed(415);rng<-.Random.seed
   curve<-etr_multiplier_functional_mean_band(x,n_multiplier=100L,
@@ -49,7 +49,7 @@ test_that("Stage 15 Gaussian multiplier mean is observed-grid and group-aware",{
     "n_multiplier")
 })
 
-test_that("Stage 15 score bootstrap refits, projects fixed targets, and sign aligns",{
+test_that("score bootstrap refits, projects fixed targets, and sign aligns",{
   x<-.etr_bootstrap_inference_test_fixture()
   target<-.etr_cv_subset(x,c(1L,3L,5L))
   z<-etr_bootstrap_fpca_score_uncertainty(x,targets=target,
@@ -83,7 +83,7 @@ test_that("Stage 15 score bootstrap refits, projects fixed targets, and sign ali
     n_bootstrap=19L),"n_bootstrap")
 })
 
-test_that("Stage 15 spectrum intervals retain shape matching vs ranked cumulative",{
+test_that("spectrum intervals retain shape matching vs ranked cumulative",{
   x<-.etr_bootstrap_inference_test_fixture()
   r<-etr_bootstrap_fpca_spectrum_uncertainty(x,
     n_bootstrap=20L,n_components=2L,
@@ -109,7 +109,7 @@ test_that("Stage 15 spectrum intervals retain shape matching vs ranked cumulativ
     n_bootstrap=20L,simultaneous_scope="invalid"),"simultaneous_scope")
 })
 
-test_that("Stage 15 component shape bands use signed matching and maxima",{
+test_that("component shape bands use signed matching and maxima",{
   x<-.etr_bootstrap_inference_test_fixture()
   res<-etr_bootstrap_fpca_component_bands(x,
     n_bootstrap=20L,n_components=2L,confidence_level=.9,
@@ -134,7 +134,7 @@ test_that("Stage 15 component shape bands use signed matching and maxima",{
     n_bootstrap=20L,on_near_tie="unknown"),"on_near_tie")
 })
 
-test_that("Stage 15 frozen 508-source register remains fail-closed",{
+test_that("frozen 508-source register remains fail-closed",{
   before<-reticulate::py_available(initialize=FALSE)
   z<-etr_native_parity_catalog()
   expect_equal(nrow(z),508L)
@@ -151,9 +151,9 @@ test_that("Stage 15 frozen 508-source register remains fail-closed",{
   expect_identical(before,reticulate::py_available(initialize=FALSE))
 })
 
-test_that("Stage 15 pinned Python 1.2 deterministic reference geometry is opt-in",{
+test_that("pinned Python 1.2 deterministic reference geometry is opt-in",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
-    skip("Stage 15 independent Python 1.2 source geometry oracle is opt-in")
+    skip("independent Python 1.2 source geometry oracle is opt-in")
   expect_identical(et_python_version(),"1.2.0")
   x<-.etr_bootstrap_inference_test_fixture(grouped=FALSE)
   pyx<-reticulate::py_call(etpy_get_export("TrajectorySet"),

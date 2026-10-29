@@ -12,7 +12,7 @@
     coordinate_system="pixels",time_unit="s")
 }
 
-test_that("Stage 9 ALR and inverse preserve the declared simplex",{
+test_that("ALR and inverse preserve the declared simplex",{
   v<-array(0,c(2L,4L,3L))
   for(i in 1:2)for(j in 1:4)
     v[i,j,]<-c(.2+.02*i,.3+.01*j,.5-.02*i-.01*j)
@@ -39,7 +39,7 @@ test_that("Stage 9 ALR and inverse preserve the declared simplex",{
   expect_equal(etr_inverse_alr(one,-1L,1L),singleton)
 })
 
-test_that("Stage 9 FPCA component curves, selection, score frames and distances",{
+test_that("FPCA component curves, selection, score frames and distances",{
   x<-.etr_diagnostics_test_fixture()
   fit<-etr_fit_fpca(x,n_components=2L)
   expect_s3_class(fit,"etr_fpca")
@@ -73,7 +73,7 @@ test_that("Stage 9 FPCA component curves, selection, score frames and distances"
   expect_error(etr_pairwise_functional_distances(y),"complete")
 })
 
-test_that("Stage 9 sparse dimensional support preserves missingness",{
+test_that("sparse dimensional support preserves missingness",{
   t<-list(c(0,1,2,4),c(.3,.7,2.1))
   v<-list(matrix(c(1,2,NA,4,1,2,3,4),ncol=2L),
           matrix(c(NA,2,3,1,1,2),ncol=2L))
@@ -89,7 +89,7 @@ test_that("Stage 9 sparse dimensional support preserves missingness",{
   expect_error(etr_sparse_dimension_summary(x,"unknown"),"Unknown")
 })
 
-test_that("Stage 9 phase displacement is explicit and not an inverse warp",{
+test_that("phase displacement is explicit and not an inverse warp",{
   x<-.etr_diagnostics_test_fixture();t<-x$time
   w<-rbind(t,t+c(0,.1,.2,.1,0),t+c(0,-.1,-.2,-.1,0),
             t+c(0,.06,-.04,.08,0))
@@ -124,7 +124,7 @@ test_that("Stage 9 phase displacement is explicit and not an inverse warp",{
   expect_error(etr_warping_displacement(bad),"increasing")
 })
 
-test_that("Stage 9 frozen 508 source register counts only native implementations",{
+test_that("frozen 508 source register counts only native implementations",{
   before<-reticulate::py_available(initialize=FALSE)
   x<-etr_native_parity_catalog()
   want<-c(
@@ -158,9 +158,9 @@ test_that("Stage 9 frozen 508 source register counts only native implementations
   expect_identical(before,reticulate::py_available(initialize=FALSE))
 })
 
-test_that("Stage 9 source-level Python 1.2 numeric oracle is opt-in",{
+test_that("source-level Python 1.2 numeric oracle is opt-in",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
-    skip("Stage 9 pinned Python numerical oracle is opt-in")
+    skip("pinned Python numerical oracle is opt-in")
   expect_identical(as.character(et_python_version()),"1.2.0")
   x<-.etr_diagnostics_test_fixture()
   v<-array(0,c(3L,4L,3L))

@@ -41,7 +41,7 @@
   fn()
 }
 
-test_that("Stage 27 four report functions have fixed source scientific language",{
+test_that("four report functions have fixed source scientific language",{
   x<-.etr_test_fpca_uncertainty_fixture()
   a<-etr_fpca_score_uncertainty_reporting_text(x$scores)
   expect_match(a,"3 curve-level bootstrap refits")
@@ -74,7 +74,7 @@ test_that("Stage 27 four report functions have fixed source scientific language"
     "digits")
 })
 
-test_that("Stage 27 target-score plot preserves source medians and envelope",{
+test_that("target-score plot preserves source medians and envelope",{
   x<-.etr_test_fpca_uncertainty_fixture()
   .etr_test_fpca_uncertainty_pdf(function(){
     d<-etr_plot_fpca_score_uncertainty(x$scores,component=0L)
@@ -92,7 +92,7 @@ test_that("Stage 27 target-score plot preserves source medians and envelope",{
   })
 })
 
-test_that("Stage 27 spectrum plot leaves unbounded bootstrap intervals intact",{
+test_that("spectrum plot leaves unbounded bootstrap intervals intact",{
   x<-.etr_test_fpca_uncertainty_fixture()
   .etr_test_fpca_uncertainty_pdf(function(){
     d<-etr_plot_fpca_spectrum_uncertainty(x$spec,
@@ -111,7 +111,7 @@ test_that("Stage 27 spectrum plot leaves unbounded bootstrap intervals intact",{
   })
 })
 
-test_that("Stage 27 component band plot returns exact observed-grid FPC source",{
+test_that("component band plot returns exact observed-grid FPC source",{
   x<-.etr_test_fpca_uncertainty_fixture()
   .etr_test_fpca_uncertainty_pdf(function(){
     out<-etr_plot_fpca_component_band(x$comp,
@@ -127,7 +127,7 @@ test_that("Stage 27 component band plot returns exact observed-grid FPC source",
   })
 })
 
-test_that("Stage 27 seven source names map uniquely, uncertified",{
+test_that("seven source names map uniquely, uncertified",{
   was<-reticulate::py_available(initialize=FALSE)
   z<-etr_native_parity_catalog()
   names<-c("fpca_score_uncertainty_reporting_text",
@@ -154,7 +154,7 @@ test_that("Stage 27 seven source names map uniquely, uncertified",{
   expect_identical(was,reticulate::py_available(initialize=FALSE))
 })
 
-test_that("Stage 27 direct pinned Python 1.2 report-text oracles are opt-in",{
+test_that("direct pinned Python 1.2 report-text oracles are opt-in",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("Pinned Python 1.2 reporting text source oracle is opt-in")
   expect_identical(et_python_version(),"1.2.0")

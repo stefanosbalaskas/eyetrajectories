@@ -14,7 +14,7 @@
     time_unit="s",coordinate_system="normalized")
 }
 
-test_that("Stage 17 multichannel delay embedding preserves exact source order",{
+test_that("multichannel delay embedding preserves exact source order",{
   x<-.etr_divergence_test_fixture()
   e<-etr_delay_embed_trajectory(x,embedding_dimension=3L,
     delay=2L,dimensions=c("y","x"))
@@ -35,7 +35,7 @@ test_that("Stage 17 multichannel delay embedding preserves exact source order",{
     delay_units="ms",dimensions="x"),"not yet qualified")
 })
 
-test_that("Stage 17 Rosenstein local divergence tracks all eligible forward pairs",{
+test_that("Rosenstein local divergence tracks all eligible forward pairs",{
   x<-.etr_divergence_test_fixture()
   e<-etr_delay_embed_trajectory(x,2L,2L,dimensions=c("x","y"))
   z<-etr_local_divergence_curve(e,curve="c01",
@@ -59,7 +59,7 @@ test_that("Stage 17 Rosenstein local divergence tracks all eligible forward pair
     "curve_id")
 })
 
-test_that("Stage 17 Kantz local divergence retains declared fixed radius and counts",{
+test_that("Kantz local divergence retains declared fixed radius and counts",{
   x<-.etr_divergence_test_fixture()
   e<-etr_delay_embed_trajectory(x,2L,2L,dimensions=c("x","y"))
   k<-etr_kantz_divergence_curve(e,"c01",radius=3,
@@ -77,7 +77,7 @@ test_that("Stage 17 Kantz local divergence retains declared fixed radius and cou
     theiler_window=3L,max_horizon=8L),"minimum neighbors")
 })
 
-test_that("Stage 17 Lyapunov fits use exact declared sample-index interval",{
+test_that("Lyapunov fits use exact declared sample-index interval",{
   x<-.etr_divergence_test_fixture()
   e<-etr_delay_embed_trajectory(x,2L,2L,dimensions=c("x","y"))
   r<-etr_local_divergence_curve(e,"c01",3L,8L)
@@ -103,7 +103,7 @@ test_that("Stage 17 Lyapunov fits use exact declared sample-index interval",{
     "etr_kantz_divergence")
 })
 
-test_that("Stage 17 whole-participant RQA mean bootstrap is deterministic and fail-closed",{
+test_that("whole-participant RQA mean bootstrap is deterministic and fail-closed",{
   x<-.etr_divergence_test_fixture()
   set.seed(172);before<-.Random.seed
   z<-etr_bootstrap_rqa_metric_means(x,dimensions=c("x","y"),
@@ -141,7 +141,7 @@ test_that("Stage 17 whole-participant RQA mean bootstrap is deterministic and fa
     "supported RQA metrics")
 })
 
-test_that("Stage 17 strict public source census remains separate from certification",{
+test_that("strict public source census remains separate from certification",{
   was<-reticulate::py_available(initialize=FALSE)
   z<-etr_native_parity_catalog()
   expect_equal(nrow(z),508L)
@@ -157,9 +157,9 @@ test_that("Stage 17 strict public source census remains separate from certificat
   expect_identical(was,reticulate::py_available(initialize=FALSE))
 })
 
-test_that("Stage 17 independent Python 1.2 numerical divergence oracle is opt-in",{
+test_that("independent Python 1.2 numerical divergence oracle is opt-in",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
-    skip("Stage 17 pinned Python 1.2 divergence numerical oracle is opt-in")
+    skip("pinned Python 1.2 divergence numerical oracle is opt-in")
   expect_identical(et_python_version(),"1.2.0")
   x<-.etr_divergence_test_fixture()
   pyx<-reticulate::py_call(etpy_get_export("TrajectorySet"),

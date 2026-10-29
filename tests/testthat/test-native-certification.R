@@ -11,7 +11,7 @@
   a
 }
 
-test_that("Stage 20 certification census never treats candidate as complete",{
+test_that("certification census never treats candidate as complete",{
   before<-reticulate::py_available(initialize=FALSE)
   z<-etr_native_parity_catalog()
   expect_equal(nrow(z),508L)
@@ -43,7 +43,7 @@ test_that("Stage 20 certification census never treats candidate as complete",{
   expect_identical(before,reticulate::py_available(initialize=FALSE))
 })
 
-test_that("Stage 20 ALR/inverse contract candidate exercises dimensions and bounds",{
+test_that("ALR/inverse contract candidate exercises dimensions and bounds",{
   v<-.etr_iaaft_simplex_test_fixture()
   for(ref in c(-1L,0L,1L,2L,5L)){
     a<-etr_alr_transform(v,reference_dimension=ref)
@@ -72,7 +72,7 @@ test_that("Stage 20 ALR/inverse contract candidate exercises dimensions and boun
     "nonfinite")
 })
 
-test_that("Stage 20 score-distance candidate preserves finite symmetric Euclidean geometry",{
+test_that("score-distance candidate preserves finite symmetric Euclidean geometry",{
   time<-seq(0,2,length.out=15L)
   v<-array(0,c(6L,length(time),2L))
   for(i in 1:6){
@@ -97,7 +97,7 @@ test_that("Stage 20 score-distance candidate preserves finite symmetric Euclidea
     "range")
 })
 
-test_that("Stage 20 native IAAFT surrogates are permutation-preserving and seed scoped",{
+test_that("native IAAFT surrogates are permutation-preserving and seed scoped",{
   signal<-sin(seq(0,6*pi,length.out=64L))+
     .17*cos(seq(0,10*pi,length.out=64L))
   set.seed(201);before<-.Random.seed
@@ -129,9 +129,9 @@ test_that("Stage 20 native IAAFT surrogates are permutation-preserving and seed 
     "wrong",2L,2L,3L,7L,1L,4L),"largest_lyapunov")
 })
 
-test_that("Stage 20 exact published Python 1.2 ALR and distance contract oracle is opt-in",{
+test_that("exact published Python 1.2 ALR and distance contract oracle is opt-in",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
-    skip("Stage 20 508-contract certification pilot Python numerical/schema oracle is opt-in")
+    skip("508-contract certification pilot Python numerical/schema oracle is opt-in")
   expect_identical(et_python_version(),"1.2.0")
   v<-.etr_iaaft_simplex_test_fixture()
   for(ref in c(-1L,0L,1L,2L,5L)){

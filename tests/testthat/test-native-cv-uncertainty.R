@@ -17,7 +17,7 @@
     metadata=md,coordinate_system="normalized",time_unit="s")
 }
 
-test_that("Stage 12 CV refits training folds and retains exact holdouts", {
+test_that("CV refits training folds and retains exact holdouts", {
   x<-.etr_cv_uncertainty_test_fixture()
   before<-reticulate::py_available(initialize=FALSE)
   res<-etr_cross_validate_fpca_reconstruction(x,
@@ -49,7 +49,7 @@ test_that("Stage 12 CV refits training folds and retains exact holdouts", {
     "n_splits")
 })
 
-test_that("Stage 12 group folds exclude whole participants and preserve RNG",{
+test_that("group folds exclude whole participants and preserve RNG",{
   x<-.etr_cv_uncertainty_test_fixture(with_groups=TRUE)
   x$metadata$participant_id<-rep(sprintf("p%02d",1:6),each=2L)
   res<-etr_cross_validate_fpca_reconstruction(x,
@@ -81,7 +81,7 @@ test_that("Stage 12 group folds exclude whole participants and preserve RNG",{
   expect_identical(shuffle$provenance$random_engine,"base_R_sample")
 })
 
-test_that("Stage 12 selection distinguishes predictive minimum and one-SE",{
+test_that("selection distinguishes predictive minimum and one-SE",{
   z<-list(fold_errors=data.frame(
     n_components=rep(1:3,each=3L),
     mean_integrated_rmse=c(.5,.6,.4,.31,.33,.35,.32,.34,.36)))
@@ -103,7 +103,7 @@ test_that("Stage 12 selection distinguishes predictive minimum and one-SE",{
   expect_error(etr_summarise_fpca_regression_cv(list()),"declared fields")
 })
 
-test_that("Stage 12 fixed-target score, spectrum and conformal frames",{
+test_that("fixed-target score, spectrum and conformal frames",{
   x<-.etr_cv_uncertainty_test_fixture()
   fit<-etr_fit_fpca(x,n_components=2L)
   ids<-c("target1","target2")
@@ -154,7 +154,7 @@ test_that("Stage 12 fixed-target score, spectrum and conformal frames",{
     dist$neighbor_overlap_table)
 })
 
-test_that("Stage 12 functional regression uncertainty tables respect ordering",{
+test_that("functional regression uncertainty tables respect ordering",{
   x<-.etr_cv_uncertainty_test_fixture();fit<-etr_fit_fpca(x,n_components=1L)
   n<-length(fit$time);d<-length(fit$dimension_names)
   a<-matrix(seq_len(n*d),n,d)/100
@@ -190,7 +190,7 @@ test_that("Stage 12 functional regression uncertainty tables respect ordering",{
     "declared dimensions")
 })
 
-test_that("Stage 12 508-source census remains fail-closed",{
+test_that("508-source census remains fail-closed",{
   before<-reticulate::py_available(initialize=FALSE)
   a<-etr_native_parity_catalog()
   expect_equal(nrow(a),508L)
@@ -204,9 +204,9 @@ test_that("Stage 12 508-source census remains fail-closed",{
   expect_identical(before,reticulate::py_available(initialize=FALSE))
 })
 
-test_that("Stage 12 pinned Python 1.2 source CV oracle is opt-in",{
+test_that("pinned Python 1.2 source CV oracle is opt-in",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
-    skip("Stage 12 independent Python 1.2 numerical CV oracle is opt-in")
+    skip("independent Python 1.2 numerical CV oracle is opt-in")
   expect_identical(et_python_version(),"1.2.0")
   x<-.etr_cv_uncertainty_test_fixture()
   pset<-reticulate::py_call(etpy_get_export("TrajectorySet"),

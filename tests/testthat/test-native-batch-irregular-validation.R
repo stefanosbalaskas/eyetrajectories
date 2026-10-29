@@ -2,7 +2,7 @@
 # The algorithms are pure R. Python is imported only inside explicitly
 # opted-in, independent oracle fixtures.
 
-test_that("Stage 7 native validation contracts preserve their scientific definitions",{
+test_that("native validation contracts preserve their scientific definitions",{
   tt <- c(0,.2,.7,1.4)
   v <- array(0,dim=c(2L,4L,3L))
   v[,,1L] <- .2; v[,,2L] <- .3; v[,,3L] <- .5
@@ -142,7 +142,7 @@ test_that("native phase landmark frame preserves signed timing deviations",{
 
 test_that("Python 1.2 independent irregular and validation oracles agree",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
-    skip("Stage 7 Python 1.2 irregular/validation reference is opt-in")
+    skip("Python 1.2 irregular/validation reference is opt-in")
   expect_identical(as.character(et_python_version()),"1.2.0")
   py_irr <- etpy_get_export("from_irregular_long_dataframe_native")
   py_interval <- etpy_get_export("common_overlap_interval")

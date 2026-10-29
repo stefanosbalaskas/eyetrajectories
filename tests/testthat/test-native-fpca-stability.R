@@ -18,7 +18,7 @@
     metadata=md,coordinate_system="normalized",time_unit="s")
 }
 
-test_that("Stage 14 principal angles ignore sign switches and rotations",{
+test_that("principal angles ignore sign switches and rotations",{
   x<-.etr_fpca_stability_test_fixture()
   a<-etr_fit_mfpca(x,n_components=3L)
   same<-etr_compare_fpca_subspaces(a,a,start_component=0L,
@@ -44,7 +44,7 @@ test_that("Stage 14 principal angles ignore sign switches and rotations",{
   expect_error(etr_compare_fpca_subspaces(a,bad,0L,2L),"time grid")
 })
 
-test_that("Stage 14 principal-angle bootstrap has independent group units",{
+test_that("principal-angle bootstrap has independent group units",{
   x<-.etr_fpca_stability_test_fixture()
   set.seed(404)
   prior<-.Random.seed
@@ -78,7 +78,7 @@ test_that("Stage 14 principal-angle bootstrap has independent group units",{
     n_bootstrap=2L,resample_unit="participant"),"participant_column")
 })
 
-test_that("Stage 14 component-bootstrap matching tracks sign and variance",{
+test_that("component-bootstrap matching tracks sign and variance",{
   x<-.etr_fpca_stability_test_fixture()
   before<-reticulate::py_available(initialize=FALSE)
   z<-etr_bootstrap_fpca_stability(x,n_bootstrap=5L,n_components=2L,
@@ -105,7 +105,7 @@ test_that("Stage 14 component-bootstrap matching tracks sign and variance",{
     "similarity_threshold")
 })
 
-test_that("Stage 14 leave-group-out FPCA influence preserves entire participants",{
+test_that("leave-group-out FPCA influence preserves entire participants",{
   x<-.etr_fpca_stability_test_fixture()
   z<-etr_leave_one_group_out_fpca_influence(x,
     group_column="participant_id",n_components=2L)
@@ -127,7 +127,7 @@ test_that("Stage 14 leave-group-out FPCA influence preserves entire participants
      group_column="participant_id",n_components=2L),"missing")
 })
 
-test_that("Stage 14 empirical FPCA outlier screening is explicit and non-exclusionary",{
+test_that("empirical FPCA outlier screening is explicit and non-exclusionary",{
   x<-.etr_fpca_stability_test_fixture()
   fit<-etr_fit_mfpca(x,n_components=2L)
   expect_error(etr_diagnose_fpca_outliers(fit,x),
@@ -151,7 +151,7 @@ test_that("Stage 14 empirical FPCA outlier screening is explicit and non-exclusi
     score_covariance="empirical"),"IDs/order")
 })
 
-test_that("Stage 14 strict inventory is distinct from scientific certification",{
+test_that("strict inventory is distinct from scientific certification",{
   was<-reticulate::py_available(initialize=FALSE)
   a<-etr_native_parity_catalog()
   expect_equal(nrow(a),508L)
@@ -168,9 +168,9 @@ test_that("Stage 14 strict inventory is distinct from scientific certification",
   expect_identical(was,reticulate::py_available(initialize=FALSE))
 })
 
-test_that("Stage 14 pinned Python 1.2 eigenspace and empirical outlier oracle is opt-in",{
+test_that("pinned Python 1.2 eigenspace and empirical outlier oracle is opt-in",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
-    skip("Stage 14 pinned Python 1.2 numerical oracle is opt-in")
+    skip("pinned Python 1.2 numerical oracle is opt-in")
   expect_identical(et_python_version(),"1.2.0")
   x<-.etr_fpca_stability_test_fixture()
   pyx<-reticulate::py_call(etpy_get_export("TrajectorySet"),

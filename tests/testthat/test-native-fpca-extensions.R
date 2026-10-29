@@ -22,7 +22,7 @@
     coordinate_system="probability_simplex",time_unit="s")
 }
 
-test_that("Stage 10 composition FPCA reconstructs into simplex without Python",{
+test_that("composition FPCA reconstructs into simplex without Python",{
   x<-.etr_fpca_simplex_test_fixture()
   comp<-etr_fit_compositional_fpca(x,reference_dimension=-1L,
     n_components=2L)
@@ -52,7 +52,7 @@ test_that("Stage 10 composition FPCA reconstructs into simplex without Python",{
   expect_error(etr_fit_compositional_fpca(two),"at least three|simplex")
 })
 
-test_that("Stage 10 component similarity is sign-aware and matching exact",{
+test_that("component similarity is sign-aware and matching exact",{
   x<-.etr_fpca_extension_test_fixture()
   a<-etr_fit_fpca(x,n_components=2L)
   b<-a
@@ -77,7 +77,7 @@ test_that("Stage 10 component similarity is sign-aware and matching exact",{
   expect_error(etr_component_similarity_matrix(a,mismatch),"dimensions")
 })
 
-test_that("Stage 10 reconstruction RMSE decreases and respects curve ID order",{
+test_that("reconstruction RMSE decreases and respects curve ID order",{
   x<-.etr_fpca_extension_test_fixture()
   fit<-etr_fit_fpca(x,n_components=3L)
   table<-etr_reconstruction_error_by_curve(fit,x,2L)
@@ -98,7 +98,7 @@ test_that("Stage 10 reconstruction RMSE decreases and respects curve ID order",{
   expect_error(etr_reconstruction_error_by_curve(fit,bad),"IDs/order")
 })
 
-test_that("Stage 10 registered sensitivity and eigengaps are descriptive",{
+test_that("registered sensitivity and eigengaps are descriptive",{
   x<-.etr_fpca_extension_test_fixture()
   reg<-etr_register_landmarks(x,
     source_landmarks=matrix(c(.42,.45,.38,.41,.44,.40),ncol=1L),
@@ -127,7 +127,7 @@ test_that("Stage 10 registered sensitivity and eigengaps are descriptive",{
     etr_fit_fpca(x,n_components=1L)),"At least two")
 })
 
-test_that("Stage 10 reporting frames and frozen source inventory",{
+test_that("reporting frames and frozen source inventory",{
   x<-.etr_fpca_extension_test_fixture()
   fit<-etr_fit_fpca(x,n_components=2L)
   info<-etr_summarise_trajectory_set(x)
@@ -166,9 +166,9 @@ test_that("Stage 10 reporting frames and frozen source inventory",{
   expect_error(etr_native_parity_catalog(require_complete=TRUE),"NOT complete")
 })
 
-test_that("Stage 10 pinned Python 1.2 direct numerical reference is opt-in",{
+test_that("pinned Python 1.2 direct numerical reference is opt-in",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
-    skip("Stage 10 Python source reference tests are opt-in")
+    skip("Python source reference tests are opt-in")
   expect_identical(as.character(et_python_version()),"1.2.0")
   x<-.etr_fpca_extension_test_fixture()
   py<-reticulate::py_call(etpy_get_export("TrajectorySet"),
