@@ -151,8 +151,11 @@ etr_functional_simulation_scenario <- function(name,truth_grid,eigenvalues,
     class="etr_functional_simulation_scenario")
 }
 
-.etr_scenario_json <- function(x,mapping=FALSE,scalar=FALSE) {
-  if(is.null(x))return(NA_character_)
+.etr_scenario_json <- function(x,mapping=FALSE,scalar=FALSE,none_as_json=FALSE) {
+  # Published Python 1.2 uses json.dumps(None) for variance and SD
+  # columns ("null"), but stores absent covariance/missingness/phase
+  # as pandas None (missing cell). These are different source contracts.
+  if(is.null(x))return(if(none_as_json)"null" else NA_character_)
   if(mapping&&is.list(x)&&!length(x))return("{}")
   # Python json.dumps(..., sort_keys=True) treats mapping scalar values as
   # scalars; R numeric sequences otherwise retain their array JSON shape.
@@ -189,10 +192,12 @@ etr_functional_simulation_scenario_frame <- function(scenarios) {
       samples_per_curve_min=counts[[1L]],
       samples_per_curve_max=counts[[length(counts)]],
       irregular_time_design=s$irregular_time_design,
-      participant_eigenvalues=.etr_scenario_json(s$participant_eigenvalues),
-      trial_eigenvalues=.etr_scenario_json(s$trial_eigenvalues),
+      participant_eigenvalues=.etr_scenario_json(s$participant_eigenvalues,
+        none_as_json=TRUE),
+      trial_eigenvalues=.etr_scenario_json(s$trial_eigenvalues,
+        none_as_json=TRUE),
       measurement_noise_sd=.etr_scenario_json(s$measurement_noise_sd,
-        scalar=length(s$measurement_noise_sd)==1L),
+        scalar=length(s$measurement_noise_sd)==1L,none_as_json=TRUE),
       measurement_noise_covariance=.etr_scenario_json(
         s$measurement_noise_covariance),
       coordinate_system=s$coordinate_system,
