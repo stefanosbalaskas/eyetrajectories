@@ -252,8 +252,16 @@ etr_plot_functional_recovery_summary <- function(summary,metric,
   graphics::plot(x,y,pch=1,xaxt="n",xlab="Scenario",
     ylab=gsub("_"," ",statistic),main=gsub("_"," ",metric),
     ylim=range(if(has_band)c(subset$q25,subset$q75) else y),...)
-  if(has_band)graphics::arrows(x,subset$q25,x,subset$q75,
-    length=.04,code=3,angle=90)
+  # A singleton source group has q25 == q75. R's arrows() warns on
+  # zero-length intervals; the plotted point already represents that case.
+  # Draw whiskers only for strictly positive interval width.
+  if(has_band) {
+    nondegenerate<-which(subset$q75>subset$q25)
+    if(length(nondegenerate))
+      graphics::arrows(x[nondegenerate],subset$q25[nondegenerate],
+        x[nondegenerate],subset$q75[nondegenerate],
+        length=.04,code=3,angle=90)
+  }
   graphics::axis(1,at=x,labels=labels,las=2)
   invisible(data.frame(label=labels,x=x,estimate=y,
     lower=if(has_band)subset$q25 else rep(NA_real_,length(y)),
