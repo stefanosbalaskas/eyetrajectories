@@ -40,7 +40,7 @@ test_that("ten Stage 8 recurrence public APIs have native implementations",{
   }
   expect_equal(sum(!is.na(z$native_representation_stage)),7L)
   expect_equal(sum(z$status==
-     "class_or_constant_native_representation_not_reviewed"),127L)
+     "class_or_constant_native_representation_not_reviewed"),121L)
   expect_true(all(!z$one_to_one_native_contract_complete))
   expect_identical(reticulate::py_available(initialize=FALSE),before)
   expect_error(etr_native_parity_catalog(require_complete=TRUE),
