@@ -88,6 +88,9 @@ test_that("recovery summaries use source sample SD and linear NumPy quantiles",{
   expect_equal(b$sd,0)
   expect_equal(b$mcse_mean,0)
   .etr_test_recovery_pdf(function(){
+    # Includes a zero-width singleton-group IQR; plotting must not warn.
+    expect_silent(etr_plot_functional_recovery_summary(out,
+      metric="mean_integrated_error",statistic="median"))
     p<-etr_plot_functional_recovery_summary(out,
       metric="mean_integrated_error",statistic="median")
     expect_equal(p$x,c(0L,1L))
