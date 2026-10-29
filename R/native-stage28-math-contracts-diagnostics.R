@@ -3,7 +3,7 @@
 # These are source-aligned scientific data contracts, not Python classes
 # or Matplotlib Axes, and no Python interpreter is initialized.
 
-.etr28_catalog_frame <- function() {
+.etr_read_math_contract_source_frame <- function() {
   file <- system.file("extdata",
     "native_mathematical_contract_frame_py120.csv",
     package="eyetrajectories")
@@ -24,7 +24,7 @@
 #' @return Ordered list of 41 named native metadata structures.
 #' @export
 etr_list_mathematical_contracts <- function() {
-  t<-.etr28_catalog_frame()
+  t<-.etr_read_math_contract_source_frame()
   keys<-unique(t$contract_key)
   ans<-lapply(keys,function(key) {
     x<-t[t$contract_key==key,,drop=FALSE]
@@ -62,9 +62,9 @@ etr_get_mathematical_contract <- function(name) {
 #' Full mathematical registry frame in published Python 1.2 order
 #' @return Auditable 88-row six-column native data.frame.
 #' @export
-etr_mathematical_contract_frame <- function() .etr28_catalog_frame()
+etr_mathematical_contract_frame <- function() .etr_read_math_contract_source_frame()
 
-.etr28_sensitivity_slice <- function(result,kind,parameter,response,
+.etr_select_nonlinear_sensitivity_slice <- function(result,kind,parameter,response,
     allowed,filters) {
   .etr_assert(inherits(result,kind)&&is.data.frame(result$table)&&
     nrow(result$table)>=1L,"result must be a native sensitivity analysis")
@@ -110,7 +110,7 @@ etr_plot_kantz_sensitivity <- function(result,parameter,
     "n_fit_points","minimum_reference_count_in_fit",
     "minimum_pair_count_in_fit","initial_supported_reference_fraction",
     "total_zero_mean_neighborhood_count_in_fit")
-  t<-.etr28_sensitivity_slice(result,"etr_kantz_parameter_sensitivity",
+  t<-.etr_select_nonlinear_sensitivity_slice(result,"etr_kantz_parameter_sensitivity",
     parameter,response,allowed,filters)
   graphics::plot(t[[parameter]],t[[response]],type="o",pch=1,
     xlab=parameter,ylab=if(response=="exponent")
@@ -133,7 +133,7 @@ etr_plot_lyapunov_sensitivity <- function(result,parameter,
   allowed<-c("exponent","r_squared","standard_error",
     "n_fit_points","minimum_pair_count_in_fit",
     "total_zero_distance_count_in_fit")
-  t<-.etr28_sensitivity_slice(result,"etr_lyapunov_parameter_sensitivity",
+  t<-.etr_select_nonlinear_sensitivity_slice(result,"etr_lyapunov_parameter_sensitivity",
     parameter,response,allowed,filters)
   graphics::plot(t[[parameter]],t[[response]],type="o",pch=1,
     xlab=parameter,ylab=if(response=="exponent")
