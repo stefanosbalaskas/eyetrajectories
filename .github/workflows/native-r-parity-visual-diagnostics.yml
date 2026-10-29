@@ -5,7 +5,7 @@ on:
       - "R/native-visual-diagnostics.R"
       - "R/native-full-parity-ledger.R"
       - "NAMESPACE"
-      - "man/etr_native_stage21_visual_diagnostics.Rd"
+      - "man/etr_native_visual_diagnostics.Rd"
       - "tests/testthat/test-native-visual-diagnostics.R"
       - "tests/testthat/test-native-source-boundaries.R"
       - ".github/workflows/native-r-parity-visual-diagnostics.yml"
