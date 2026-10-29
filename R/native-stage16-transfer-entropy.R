@@ -2,42 +2,42 @@
 # Audited against eyetrajectoriespy==1.2.0 transfer_entropy.py,
 # conditional_transfer_entropy.py, transfer_entropy_sensitivity.py.
 # No Python runtime, implicit discretization or causal interpretation.
-.etr16_states <- function(x,label){
+.etr_transfer_states <- function(x,label){
   .etr_assert(is.numeric(x) && is.null(dim(x)) && length(x)>0L &&
     all(is.finite(x)) && all(x==floor(x)) &&
     all(abs(x)<2^53),paste(label,"requires finite 1D integer-coded states"))
   as.numeric(x)
 }
-.etr16_int <- function(x,label){
+.etr_transfer_integer <- function(x,label){
   .etr_assert(is.numeric(x)&&length(x)==1L&&!is.na(x)&&is.finite(x)&&
     x==floor(x)&&x>=1L,paste(label,"must be a positive integer"))
   as.integer(x)
 }
-.etr16_key <- function(z)paste(format(z,scientific=FALSE,trim=TRUE),
+.etr_transfer_key <- function(z)paste(format(z,scientific=FALSE,trim=TRUE),
   collapse="\034")
-.etr16_count <- function(keys){
+.etr_transfer_counts <- function(keys){
   z<-table(keys)
   as.integer(z[match(keys,names(z))])
 }
-.etr16_hist <- function(x,index,history,lag=1L){
+.etr_transfer_history <- function(x,index,history,lag=1L){
   # Source uses x[t - lag - offset] for offset=0,...,history-1.
   vapply(seq_len(history),function(j)
     x[index-lag-(j-1L)],numeric(length(index)))
 }
-.etr16_data <- function(source,target,condition=NULL,target_history,
+.etr_transfer_data <- function(source,target,condition=NULL,target_history,
   source_history,source_lag,condition_history=NULL,condition_lag=NULL){
-  x<-.etr16_states(source,"source");y<-.etr16_states(target,"target")
+  x<-.etr_transfer_states(source,"source");y<-.etr_transfer_states(target,"target")
   .etr_assert(length(x)==length(y),"source and target lengths must agree")
-  kh<-.etr16_int(target_history,"target_history")
-  lh<-.etr16_int(source_history,"source_history")
-  dl<-.etr16_int(source_lag,"source_lag")
+  kh<-.etr_transfer_integer(target_history,"target_history")
+  lh<-.etr_transfer_integer(source_history,"source_history")
+  dl<-.etr_transfer_integer(source_lag,"source_lag")
   has_condition<-!is.null(condition)
   if(has_condition){
-    z<-.etr16_states(condition,"condition")
+    z<-.etr_transfer_states(condition,"condition")
     .etr_assert(length(z)==length(y),
       "source, target, and condition must have the same length")
-    ch<-.etr16_int(condition_history,"condition_history")
-    cl<-.etr16_int(condition_lag,"condition_lag")
+    ch<-.etr_transfer_integer(condition_history,"condition_history")
+    cl<-.etr_transfer_integer(condition_lag,"condition_lag")
   }else{z<-NULL;ch<-cl<-NULL}
   first<-max(kh,dl+lh-1L,
     if(has_condition)cl+ch-1L else 0L)
@@ -51,10 +51,10 @@
     Z<-matrix(0,n,ch)
     for(j in seq_len(ch))Z[,j]<-z[time-cl-(j-1L)]
   }else Z<-matrix(numeric(0),nrow=n,ncol=0L)
-  a<-vapply(seq_len(n),function(i).etr16_key(Y[i,]),character(1L))
-  b<-vapply(seq_len(n),function(i).etr16_key(X[i,]),character(1L))
+  a<-vapply(seq_len(n),function(i).etr_transfer_key(Y[i,]),character(1L))
+  b<-vapply(seq_len(n),function(i).etr_transfer_key(X[i,]),character(1L))
   c<-if(has_condition)vapply(seq_len(n),function(i)
-    .etr16_key(Z[i,]),character(1L)) else rep("",n)
+    .etr_transfer_key(Z[i,]),character(1L)) else rep("",n)
   current<-format(y[time],scientific=FALSE,trim=TRUE)
   # Joined keys have explicit field separators; integer states are atomic.
   kfull<-paste(current,a,b,c,sep="\035")
@@ -62,10 +62,10 @@
   kconditioned<-paste(current,a,c,sep="\035")
   kbase<-paste(a,c,sep="\035")
   # Convert count products to double to avoid 32-bit integer overflow.
-  local<-log2(as.double(.etr16_count(kfull))*
-    as.double(.etr16_count(kbase))/
-    (as.double(.etr16_count(khistory))*
-     as.double(.etr16_count(kconditioned))))
+  local<-log2(as.double(.etr_transfer_counts(kfull))*
+    as.double(.etr_transfer_counts(kbase))/
+    (as.double(.etr_transfer_counts(khistory))*
+     as.double(.etr_transfer_counts(kconditioned))))
   history_support<-as.integer(table(khistory))
   fields<-list(
     local=as.numeric(local),time_indices=as.integer(time-1L),
@@ -89,17 +89,17 @@
   }
   fields
 }
-.etr16_shifts <- function(shifts,n) {
+.etr_transfer_shifts <- function(shifts,n) {
   .etr_assert(is.numeric(shifts)&&is.null(dim(shifts))&&length(shifts)>0L&&
     all(is.finite(shifts))&&all(shifts==floor(shifts))&&
     all(shifts>=1L & shifts<n)&&!anyDuplicated(shifts),
     "shifts must be distinct integers satisfying 1 <= shift < series length")
   as.integer(shifts)
 }
-.etr16_roll <- function(x,k){
+.etr_transfer_roll <- function(x,k){
   n<-length(x);c(tail(x,k),head(x,n-k))
 }
-.etr16_frame <- function(result,conditional=FALSE){
+.etr_transfer_frame <- function(result,conditional=FALSE){
   local<-if(conditional)result$local_conditional_transfer_entropy_bits
     else result$local_transfer_entropy_bits
   n<-length(local)
@@ -122,7 +122,7 @@
 #' @export
 etr_discrete_transfer_entropy <- function(source,target,
     target_history,source_history,source_lag){
-  d<-.etr16_data(source,target,target_history=target_history,
+  d<-.etr_transfer_data(source,target,target_history=target_history,
     source_history=source_history,source_lag=source_lag)
   structure(c(list(transfer_entropy_bits=mean(d$local),
     local_transfer_entropy_bits=d$local),d[
@@ -142,7 +142,7 @@ etr_discrete_transfer_entropy <- function(source,target,
 etr_transfer_entropy_local_frame <- function(result){
   .etr_assert(inherits(result,"etr_discrete_transfer_entropy"),
     "result must be native discrete transfer entropy")
-  .etr16_frame(result)
+  .etr_transfer_frame(result)
 }
 #' Circular source-shift null with declared nonzero shifts
 #' @param shifts Distinct, explicitly selected circular offsets.
@@ -150,10 +150,10 @@ etr_transfer_entropy_local_frame <- function(result){
 #' @export
 etr_transfer_entropy_circular_shift_test <- function(source,target,
     target_history,source_history,source_lag,shifts){
-  x<-.etr16_states(source,"source");p<-.etr16_shifts(shifts,length(x))
+  x<-.etr_transfer_states(source,"source");p<-.etr_transfer_shifts(shifts,length(x))
   obs<-etr_discrete_transfer_entropy(x,target,target_history,source_history,source_lag)
   sur<-vapply(p,function(s)etr_discrete_transfer_entropy(
-    .etr16_roll(x,s),target,target_history,source_history,source_lag
+    .etr_transfer_roll(x,s),target,target_history,source_history,source_lag
     )$transfer_entropy_bits,numeric(1L))
   center<-mean(sur)
   structure(list(observed=obs,shifts=p,
@@ -175,7 +175,7 @@ etr_transfer_entropy_circular_shift_test <- function(source,target,
 #' @export
 etr_conditional_transfer_entropy <- function(source,target,condition,
     target_history,source_history,condition_history,source_lag,condition_lag){
-  d<-.etr16_data(source,target,condition,target_history,source_history,
+  d<-.etr_transfer_data(source,target,condition,target_history,source_history,
     source_lag,condition_history,condition_lag)
   structure(c(list(conditional_transfer_entropy_bits=mean(d$local),
     local_conditional_transfer_entropy_bits=d$local),
@@ -195,7 +195,7 @@ etr_conditional_transfer_entropy <- function(source,target,condition,
 etr_conditional_transfer_entropy_local_frame <- function(result){
   .etr_assert(inherits(result,"etr_conditional_transfer_entropy"),
     "result must be native conditional transfer entropy")
-  .etr16_frame(result,conditional=TRUE)
+  .etr_transfer_frame(result,conditional=TRUE)
 }
 #' Conditional TE source-only circular shift null
 #' @inheritParams etr_conditional_transfer_entropy
@@ -204,11 +204,11 @@ etr_conditional_transfer_entropy_local_frame <- function(result){
 etr_conditional_transfer_entropy_circular_shift_test <- function(source,
     target,condition,target_history,source_history,condition_history,
     source_lag,condition_lag,shifts){
-  x<-.etr16_states(source,"source");p<-.etr16_shifts(shifts,length(x))
+  x<-.etr_transfer_states(source,"source");p<-.etr_transfer_shifts(shifts,length(x))
   obs<-etr_conditional_transfer_entropy(x,target,condition,
     target_history,source_history,condition_history,source_lag,condition_lag)
   sur<-vapply(p,function(s)etr_conditional_transfer_entropy(
-    .etr16_roll(x,s),target,condition,target_history,source_history,
+    .etr_transfer_roll(x,s),target,condition,target_history,source_history,
     condition_history,source_lag,condition_lag
     )$conditional_transfer_entropy_bits,numeric(1L))
   center<-mean(sur)
@@ -296,12 +296,12 @@ etr_transfer_entropy_parameter_sensitivity <- function(source,target,
   }))
   structure(list(table=tab,summary_table=summ,
     parameter_columns=c("target_history","source_history","source_lag"),
-    metric_columns=metrics,source_states=.etr16_states(source,"source"),
-    target_states=.etr16_states(target,"target"),
+    metric_columns=metrics,source_states=.etr_transfer_states(source,"source"),
+    target_states=.etr_transfer_states(target,"target"),
     target_histories=as.integer(target_histories),
     source_histories=as.integer(source_histories),
     source_lags=as.integer(source_lags),
-    shifts=if(is.null(shifts))NULL else .etr16_shifts(shifts,length(source)),
+    shifts=if(is.null(shifts))NULL else .etr_transfer_shifts(shifts,length(source)),
     provenance=list(operation="transfer_entropy_parameter_sensitivity",
       design="full_cartesian_product",n_specifications=nrow(tab),
       automatic_discretization=FALSE,

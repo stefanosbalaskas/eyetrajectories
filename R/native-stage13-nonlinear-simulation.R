@@ -2,7 +2,7 @@
 # simulation implementations (no Python bridge).
 # Published source: embedding.py, return_maps.py, simulate.py (v1.2.0).
 
-.etr13_rng <- function(seed) {
+.etr_simulation_rng <- function(seed) {
   .etr_assert(is.numeric(seed)&&length(seed)==1L&&is.finite(seed)&&
     seed==as.integer(seed)&&seed>=0L,
     "random_state must be a nonnegative R seed")
@@ -15,14 +15,14 @@
       rm(".Random.seed",envir=.GlobalEnv)
   }
 }
-.etr13_regularity <- function(t) {
+.etr_series_regular_spacing <- function(t) {
   delta<-diff(t);step<-stats::median(delta)
   .etr_assert(all(abs(delta-step)<=1e-6*abs(step)+
     max(1e-12,abs(step)*1e-9)),
     "embedding diagnostics require an approximately regular temporal grid")
   step
 }
-.etr13_histogram_mi <- function(x,y,edges) {
+.etr_histogram_mutual_information <- function(x,y,edges) {
   k<-length(edges)-1L
   xi<-findInterval(x,edges,rightmost.closed=TRUE,all.inside=TRUE)
   yi<-findInterval(y,edges,rightmost.closed=TRUE,all.inside=TRUE)
@@ -47,7 +47,7 @@
 etr_embedding_delay_diagnostics <- function(trajectories,curve,dimension,
     max_lag,max_lag_units="samples",bins=16L){
   etr_validate(trajectories,require_complete=TRUE)
-  step<-.etr13_regularity(trajectories$time)
+  step<-.etr_series_regular_spacing(trajectories$time)
   .etr_assert(identical(max_lag_units,"samples"),
     "time-unit lags not yet qualified; use explicit sample lags")
   .etr_assert(is.numeric(max_lag)&&length(max_lag)==1L&&
@@ -78,7 +78,7 @@ etr_embedding_delay_diagnostics <- function(trajectories,curve,dimension,
       lag_time=trajectories$time[lag+1L]-trajectories$time[1L],
       autocorrelation=sum(centered[seq_len(n-lag)]*
         centered[(lag+1L):n])/denom,
-      average_mutual_information=.etr13_histogram_mi(
+      average_mutual_information=.etr_histogram_mutual_information(
         y[seq_len(n-lag)],y[(lag+1L):n],edges))
   }))
   minima<-rep(FALSE,nrow(tab));m<-tab$average_mutual_information
@@ -139,7 +139,7 @@ etr_simulate_planar_trajectories <- function(n_participants=20L,
     is.numeric(duration)&&length(duration)==1L&&
     is.finite(duration)&&duration>0,
     "use >=2 participants, >=1 trial, >=5 time samples and positive duration")
-  restore<-.etr13_rng(random_state);on.exit(restore(),add=TRUE)
+  restore<-.etr_simulation_rng(random_state);on.exit(restore(),add=TRUE)
   n_participants<-as.integer(n_participants)
   trials_per_participant<-as.integer(trials_per_participant)
   n_time<-as.integer(n_time)
@@ -193,7 +193,7 @@ etr_simulate_aoi_probability_trajectories <- function(n_curves=80L,
     is.numeric(duration)&&length(duration)==1L&&
     is.finite(duration)&&duration>0,
     "use >=2 curves, >=5 time points, >=2 AOIs and positive duration")
-  restore<-.etr13_rng(random_state);on.exit(restore(),add=TRUE)
+  restore<-.etr_simulation_rng(random_state);on.exit(restore(),add=TRUE)
   n_curves<-as.integer(n_curves);n_time<-as.integer(n_time);n_aoi<-as.integer(n_aoi)
   .etr_assert(as.double(n_curves)*n_time*n_aoi<=3e7,
     "simulated AOI array exceeds 30 million cells")
@@ -235,7 +235,7 @@ etr_embedding_dimension_diagnostics <- function(trajectories,curve,dimension,
     delay,delay_units="samples",max_dimension=10L,theiler_window=0L,
     theiler_window_units="samples",rtol=10,atol=2){
   etr_validate(trajectories,require_complete=TRUE)
-  step<-.etr13_regularity(trajectories$time)
+  step<-.etr_series_regular_spacing(trajectories$time)
   .etr_assert(identical(delay_units,"samples") &&
     identical(theiler_window_units,"samples"),
     "embedding FNN time-unit parameters not yet qualified; use sample units")

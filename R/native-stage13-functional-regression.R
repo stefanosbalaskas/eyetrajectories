@@ -2,7 +2,7 @@
 # bootstrap and observed-grid simultaneous bands. No Python bridge.
 # Source: eyetrajectoriespy==1.2.0 function_on_scalar.py.
 
-.etr13_fos_result <- function(x) {
+.etr_function_scalar_result_check <- function(x) {
   .etr_assert(inherits(x,"etr_function_on_scalar") &&
     is.matrix(x$design_matrix) &&
     is.array(x$coefficients) && length(dim(x$coefficients))==3L &&
@@ -145,7 +145,7 @@ etr_fit_function_on_scalar_regression <- function(trajectories,design,
 #' @export
 etr_bootstrap_function_on_scalar_coefficients <- function(result,
     n_bootstrap=1000L,multiplier="rademacher",random_state=0L){
-  .etr13_fos_result(result)
+  .etr_function_scalar_result_check(result)
   .etr_assert(is.numeric(n_bootstrap)&&length(n_bootstrap)==1L&&
     is.finite(n_bootstrap)&&n_bootstrap==as.integer(n_bootstrap)&&
     n_bootstrap>=100L,
@@ -201,7 +201,7 @@ etr_function_on_scalar_simultaneous_bands <- function(bootstrap,
     confidence_level=.95,simultaneous_scope="coefficient"){
   .etr_assert(inherits(bootstrap,"etr_function_on_scalar_bootstrap"),
     "bootstrap must be native function-on-scalar bootstrap")
-  ref<-bootstrap$reference;.etr13_fos_result(ref)
+  ref<-bootstrap$reference;.etr_function_scalar_result_check(ref)
   .etr_assert(is.numeric(confidence_level)&&length(confidence_level)==1L&&
     is.finite(confidence_level)&&confidence_level>0&&confidence_level<1,
     "confidence_level must lie in (0,1)")
@@ -253,7 +253,7 @@ etr_function_on_scalar_simultaneous_bands <- function(bootstrap,
 #' @param band Optional native band from matching exact result reference.
 #' @export
 etr_function_on_scalar_coefficient_frame <- function(result,band=NULL){
-  .etr13_fos_result(result)
+  .etr_function_scalar_result_check(result)
   if(!is.null(band))
     .etr_assert(inherits(band,"etr_function_on_scalar_band") &&
       identical(band$reference,result),

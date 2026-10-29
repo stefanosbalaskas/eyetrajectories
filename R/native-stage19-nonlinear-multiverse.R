@@ -36,7 +36,7 @@
   units<-c(delay_units,theiler_window_units,max_horizon_units,fit_units)
   .etr_assert(all(units=="samples"),
     "only sample-unit parameter sensitivity is qualified")
-  .etr17_curve(x$curve_ids,curve)
+  .etr_nonlinear_curve(x$curve_ids,curve)
 }
 .etr19_summary <- function(tab,metrics,exponent=FALSE){
   rows<-vector("list",length(metrics))
@@ -89,7 +89,7 @@ etr_lyapunov_parameter_sensitivity <- function(trajectories,curve,dimensions,
   dl<-.etr19_grid(delays,"delays",1L)
   th<-.etr19_grid(theiler_windows,"theiler_windows",0L)
   intervals<-.etr19_intervals(fit_intervals)
-  horizon<-.etr17_integer(max_horizon,1L,"max_horizon")
+  horizon<-.etr_nonlinear_integer(max_horizon,1L,"max_horizon")
   rows<-list()
   for(m in emb)for(d in dl){
     e<-.etr19_embed(trajectories,m,d,dimensions)
@@ -133,7 +133,7 @@ etr_lyapunov_parameter_sensitivity <- function(trajectories,curve,dimensions,
       "delay_samples","requested_theiler_window",
       "theiler_window_samples","requested_fit_start","requested_fit_end",
       "fit_start_samples","fit_end_samples"),
-    curve_id=trajectories$curve_ids[.etr17_curve(trajectories$curve_ids,curve)],
+    curve_id=trajectories$curve_ids[.etr_nonlinear_curve(trajectories$curve_ids,curve)],
     exponent_unit=tab$exponent_unit[1L],
     provenance=list(operation="lyapunov_parameter_sensitivity",
       cartesian_product_evaluated=TRUE,n_specifications=nrow(tab),
@@ -162,7 +162,7 @@ etr_kantz_parameter_sensitivity <- function(trajectories,curve,dimensions,
   neigh<-.etr19_grid(min_neighbors,"min_neighbors",1L)
   th<-.etr19_grid(theiler_windows,"theiler_windows",0L)
   intervals<-.etr19_intervals(fit_intervals)
-  horizon<-.etr17_integer(max_horizon,1L,"max_horizon")
+  horizon<-.etr_nonlinear_integer(max_horizon,1L,"max_horizon")
   rows<-list()
   for(m in emb)for(d in dl){
     e<-.etr19_embed(trajectories,m,d,dimensions)
@@ -215,7 +215,7 @@ etr_kantz_parameter_sensitivity <- function(trajectories,curve,dimensions,
     "n_fit_points","minimum_reference_count_in_fit",
     "initial_supported_reference_fraction")
   structure(list(table=tab,summary_table=.etr19_summary(tab,metrics,TRUE),
-    curve_id=trajectories$curve_ids[.etr17_curve(trajectories$curve_ids,curve)],
+    curve_id=trajectories$curve_ids[.etr_nonlinear_curve(trajectories$curve_ids,curve)],
     parameter_columns=c("embedding_dimension","requested_delay",
       "delay_samples","requested_radius","resolved_radius",
       "min_neighbors","requested_theiler_window",
@@ -259,7 +259,7 @@ etr_rqa_parameter_sensitivity <- function(trajectories,curve,dimensions,
       time_unit=e$time_unit,coordinate_system=e$coordinate_system)
     for(radius in rad)for(tw in th){
       rec<-tryCatch(etr_recurrence_matrix(data,
-        curve=.etr17_curve(data$curve_ids,curve),
+        curve=.etr_nonlinear_curve(data$curve_ids,curve),
         radius=radius,theiler=tw),
         error=function(e)stop(sprintf(
           "RQA sensitivity recurrence failed m=%d d=%d radius=%g theiler=%d: %s",
@@ -301,7 +301,7 @@ etr_rqa_parameter_sensitivity <- function(trajectories,curve,dimensions,
       "resolved_radius","requested_theiler_window","theiler_window_samples",
       "min_diagonal_length","min_vertical_length"),
     metric_columns=metrics,
-    curve_id=trajectories$curve_ids[.etr17_curve(trajectories$curve_ids,curve)],
+    curve_id=trajectories$curve_ids[.etr_nonlinear_curve(trajectories$curve_ids,curve)],
     provenance=list(operation="rqa_parameter_sensitivity",
       threshold_policy="fixed_radius",distance_metric="euclidean",
       cartesian_product_evaluated=TRUE,n_specifications=nrow(tab),

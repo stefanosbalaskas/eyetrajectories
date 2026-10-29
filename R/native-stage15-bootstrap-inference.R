@@ -4,32 +4,32 @@
 # Bootstrap bands describe observed-grid resampling approximations, not
 # exact finite-sample or continuous-domain coverage.
 
-.etr15_integer <- function(x,low,label) {
+.etr_bootstrap_integer <- function(x,low,label) {
   .etr_assert(is.numeric(x)&&length(x)==1L&&is.finite(x)&&
     x==as.integer(x)&&x>=low,paste(label,"must be integer >=",low))
   as.integer(x)
 }
-.etr15_prob <- function(x,label) {
+.etr_bootstrap_probability <- function(x,label) {
   .etr_assert(is.numeric(x)&&length(x)==1L&&is.finite(x)&&
     x>0&&x<1,paste(label,"must lie in (0,1)"))
   as.numeric(x)
 }
-.etr15_higher <- function(x,p) {
+.etr_bootstrap_upper_tail <- function(x,p) {
   v<-sort(as.numeric(x))
   .etr_assert(length(v)>0L&&all(is.finite(v)),
     "bootstrap calibration must be finite")
   # NumPy quantile(method='higher'): zero-based index ceil((n-1) p).
   v[1L+as.integer(ceiling((length(v)-1L)*p))]
 }
-.etr15_options <- function(x,unit,participant_column) {
+.etr_bootstrap_options <- function(x,unit,participant_column) {
   .etr_assert(is.character(unit)&&length(unit)==1L&&
     unit%in%c("curve","participant"),
     "resample_unit must be curve or participant")
   .etr_assert(is.null(participant_column)||unit=="participant",
     "participant_column must be NULL with resample_unit='curve'")
-  .etr14_scope(x,unit,participant_column)
+  .etr_fpca_stability_scope(x,unit,participant_column)
 }
-.etr15_target <- function(training,targets) {
+.etr_bootstrap_target <- function(training,targets) {
   if(is.null(targets))return(training)
   etr_validate(targets,require_complete=TRUE)
   .etr_assert(identical(training$time,targets$time),
@@ -41,7 +41,7 @@
     "target coordinate system and time unit must match training")
   targets
 }
-.etr15_calibrate <- function(samples,reference,level,scope,metric) {
+.etr_bootstrap_calibrate <- function(samples,reference,level,scope,metric) {
   .etr_assert(is.matrix(samples)&&is.numeric(samples) &&
     is.numeric(reference)&&is.null(dim(reference))&&
     ncol(samples)==length(reference)&&nrow(samples)>=2L&&
@@ -58,13 +58,13 @@
   stat<-matrix(0,nrow(samples),k)
   for(j in which(positive))stat[,j]<-abs(delta[,j]/se[j])
   critical<-if(scope=="component")
-    vapply(seq_len(k),function(j).etr15_higher(stat[,j],level),numeric(1L))
-    else rep(.etr15_higher(apply(stat,1L,max),level),k)
+    vapply(seq_len(k),function(j).etr_bootstrap_upper_tail(stat[,j],level),numeric(1L))
+    else rep(.etr_bootstrap_upper_tail(apply(stat,1L,max),level),k)
   list(se=as.numeric(se),critical=as.numeric(critical),
     lower=reference-critical*se,upper=reference+critical*se,
     max_statistics=stat)
 }
-.etr15_matrix <- function(a,k,nt,nd) {
+.etr_bootstrap_matrix <- function(a,k,nt,nd) {
   array(a,c(k,nt,nd))
 }
 
@@ -82,9 +82,9 @@ etr_multiplier_functional_mean_band <- function(trajectories,
   etr_validate(trajectories,require_complete=TRUE)
   .etr_assert(trajectories$coordinate_system!="probability_simplex",
     "simplex responses require an explicit log-ratio transform")
-  level<-.etr15_prob(confidence_level,"confidence_level")
-  b<-.etr15_integer(n_multiplier,100L,"n_multiplier")
-  .etr15_options(trajectories,unit,participant_column)
+  level<-.etr_bootstrap_probability(confidence_level,"confidence_level")
+  b<-.etr_bootstrap_integer(n_multiplier,100L,"n_multiplier")
+  .etr_bootstrap_options(trajectories,unit,participant_column)
   vals<-trajectories$values; n<-dim(vals)[1L];nt<-dim(vals)[2L];nd<-dim(vals)[3L]
   if(unit=="curve"){
     ids<-trajectories$curve_ids
@@ -108,7 +108,7 @@ etr_multiplier_functional_mean_band <- function(trajectories,
   sd_grid<-matrix(apply(unit_vals,c(2L,3L),stats::sd),nt,nd)
   se<-sd_grid/sqrt(nu)
   active<-sd_grid>.Machine$double.eps
-  restore<-.etr13_rng(random_state);on.exit(restore(),add=TRUE)
+  restore<-.etr_simulation_rng(random_state);on.exit(restore(),add=TRUE)
   stats<-numeric(b)
   if(any(active))for(i in seq_len(b)){
     w<-stats::rnorm(nu)
@@ -119,7 +119,7 @@ etr_multiplier_functional_mean_band <- function(trajectories,
     standardized[active]<-process[active]/sd_grid[active]
     stats[i]<-max(abs(standardized))
   }
-  crit<-if(any(active)).etr15_higher(stats,level) else 0
+  crit<-if(any(active)).etr_bootstrap_upper_tail(stats,level) else 0
   lower<-mu-crit*se;upper<-mu+crit*se
   structure(list(mean=mu,lower=lower,upper=upper,
     pointwise_se=se,critical_value=as.numeric(crit),
@@ -153,23 +153,23 @@ etr_bootstrap_fpca_score_uncertainty <- function(trajectories,targets=NULL,
     resample_unit="curve",participant_column=NULL,level=.95,
     random_state=0L) {
   etr_validate(trajectories,require_complete=TRUE)
-  tgt<-.etr15_target(trajectories,targets)
-  b<-.etr15_integer(n_bootstrap,20L,"n_bootstrap")
-  k<-.etr15_integer(n_components,1L,"n_components")
-  .etr15_prob(level,"level")
-  .etr15_options(trajectories,resample_unit,participant_column)
-  ref<-.etr14_fit(trajectories,k,scaling)
+  tgt<-.etr_bootstrap_target(trajectories,targets)
+  b<-.etr_bootstrap_integer(n_bootstrap,20L,"n_bootstrap")
+  k<-.etr_bootstrap_integer(n_components,1L,"n_components")
+  .etr_bootstrap_probability(level,"level")
+  .etr_bootstrap_options(trajectories,resample_unit,participant_column)
+  ref<-.etr_fpca_stability_fit(trajectories,k,scaling)
   reference_scores<-etr_transform_fpca(ref,tgt)[,seq_len(k),drop=FALSE]
   n<-length(tgt$curve_ids)
   samples<-array(0,c(b,n,k))
   assignments<-matrix(0L,b,k)
   similarities<-matrix(0,b,k)
-  restore<-.etr13_rng(random_state);on.exit(restore(),add=TRUE)
+  restore<-.etr_simulation_rng(random_state);on.exit(restore(),add=TRUE)
   for(i in seq_len(b)){
-    s<-.etr14_boot(trajectories,resample_unit,participant_column)
+    s<-.etr_fpca_stability_boot(trajectories,resample_unit,participant_column)
     .etr_assert(length(s$curve_ids)>k,
       "bootstrap sample has insufficient non-zero FPCA rank")
-    cand<-.etr14_fit(s,k,scaling)
+    cand<-.etr_fpca_stability_fit(s,k,scaling)
     match<-etr_match_fpca_components(ref,cand,k)
     cand_scores<-etr_transform_fpca(cand,tgt)
     aligned<-sweep(cand_scores[,match$assignments+1L,drop=FALSE],
@@ -216,21 +216,21 @@ etr_bootstrap_fpca_spectrum_uncertainty <- function(trajectories,
     resample_unit="curve",participant_column=NULL,
     confidence_level=.95,simultaneous_scope="component",random_state=0L){
   etr_validate(trajectories,require_complete=TRUE)
-  b<-.etr15_integer(n_bootstrap,20L,"n_bootstrap")
-  k<-.etr15_integer(n_components,1L,"n_components")
-  level<-.etr15_prob(confidence_level,"confidence_level")
+  b<-.etr_bootstrap_integer(n_bootstrap,20L,"n_bootstrap")
+  k<-.etr_bootstrap_integer(n_components,1L,"n_components")
+  level<-.etr_bootstrap_probability(confidence_level,"confidence_level")
   .etr_assert(is.character(simultaneous_scope)&&length(simultaneous_scope)==1L&&
     simultaneous_scope%in%c("component","family"),
     "simultaneous_scope must be component or family")
-  .etr15_options(trajectories,resample_unit,participant_column)
-  ref<-.etr14_fit(trajectories,k,scaling)
+  .etr_bootstrap_options(trajectories,resample_unit,participant_column)
+  ref<-.etr_fpca_stability_fit(trajectories,k,scaling)
   eig<-ratio<-cum<-matrix(0,b,k)
   assign<-matrix(0L,b,k);sims<-matrix(0,b,k)
-  restore<-.etr13_rng(random_state);on.exit(restore(),add=TRUE)
+  restore<-.etr_simulation_rng(random_state);on.exit(restore(),add=TRUE)
   for(i in seq_len(b)){
-    sample<-.etr14_boot(trajectories,resample_unit,participant_column)
+    sample<-.etr_fpca_stability_boot(trajectories,resample_unit,participant_column)
     .etr_assert(length(sample$curve_ids)>k,"bootstrap FPCA nonzero rank insufficient")
-    candidate<-.etr14_fit(sample,k,scaling)
+    candidate<-.etr_fpca_stability_fit(sample,k,scaling)
     matched<-etr_match_fpca_components(ref,candidate,k)
     ix<-matched$assignments+1L
     assign[i,]<-matched$assignments;sims[i,]<-abs(matched$signed_similarity)
@@ -239,11 +239,11 @@ etr_bootstrap_fpca_spectrum_uncertainty <- function(trajectories,
     # Cumulative variance is descending eigenvalue rank, NOT shape-aligned.
     cum[i,]<-cumsum(candidate$explained_variance_ratio[seq_len(k)])
   }
-  e<-.etr15_calibrate(eig,ref$explained_variance[seq_len(k)],
+  e<-.etr_bootstrap_calibrate(eig,ref$explained_variance[seq_len(k)],
     level,simultaneous_scope,"eigenvalue")
-  r<-.etr15_calibrate(ratio,ref$explained_variance_ratio[seq_len(k)],
+  r<-.etr_bootstrap_calibrate(ratio,ref$explained_variance_ratio[seq_len(k)],
     level,simultaneous_scope,"explained variance ratio")
-  c<-.etr15_calibrate(cum,cumsum(ref$explained_variance_ratio[seq_len(k)]),
+  c<-.etr_bootstrap_calibrate(cum,cumsum(ref$explained_variance_ratio[seq_len(k)]),
     level,simultaneous_scope,"cumulative ratio")
   structure(list(reference=ref,n_components=k,
     bootstrap_eigenvalues=eig,bootstrap_explained_variance_ratio=ratio,
@@ -283,16 +283,16 @@ etr_bootstrap_fpca_component_bands <- function(trajectories,
     confidence_level=.95,simultaneous_scope="component",
     relative_gap_threshold=NULL,on_near_tie="error",random_state=0L){
   etr_validate(trajectories,require_complete=TRUE)
-  b<-.etr15_integer(n_bootstrap,20L,"n_bootstrap")
-  k<-.etr15_integer(n_components,1L,"n_components")
-  level<-.etr15_prob(confidence_level,"confidence_level")
+  b<-.etr_bootstrap_integer(n_bootstrap,20L,"n_bootstrap")
+  k<-.etr_bootstrap_integer(n_components,1L,"n_components")
+  level<-.etr_bootstrap_probability(confidence_level,"confidence_level")
   .etr_assert(is.character(simultaneous_scope)&&length(simultaneous_scope)==1L&&
     simultaneous_scope%in%c("component","family"),
     "simultaneous_scope must be component or family")
   .etr_assert(is.character(on_near_tie)&&length(on_near_tie)==1L&&
     on_near_tie%in%c("error","warn","ignore"),
     "on_near_tie must be error, warn or ignore")
-  .etr15_options(trajectories,resample_unit,participant_column)
+  .etr_bootstrap_options(trajectories,resample_unit,participant_column)
   gaps<-rep(NA_real_,k);ties<-integer()
   if(!is.null(relative_gap_threshold)){
     .etr_assert(is.numeric(relative_gap_threshold)&&length(relative_gap_threshold)==1L&&
@@ -302,7 +302,7 @@ etr_bootstrap_fpca_component_bands <- function(trajectories,
               length(trajectories$time)*length(trajectories$dimension_names))
     .etr_assert(k+1L<=rank,
       "eigengap screening requires one extra nonzero FPCA component")
-    screen<-.etr14_fit(trajectories,k+1L,scaling)
+    screen<-.etr_fpca_stability_fit(trajectories,k+1L,scaling)
     eigenvalues<-screen$explained_variance
     for(j in seq_len(k)){
       g<- (eigenvalues[j]-eigenvalues[j+1L])/
@@ -319,16 +319,16 @@ etr_bootstrap_fpca_component_bands <- function(trajectories,
       if(on_near_tie=="warn")warning(msg,call.=FALSE)
     }
   }
-  ref<-.etr14_fit(trajectories,k,scaling)
+  ref<-.etr_fpca_stability_fit(trajectories,k,scaling)
   nt<-length(ref$time);nd<-length(ref$dimension_names)
   samples<-array(0,c(b,k,nt,nd))
   sims<-matrix(0,b,k)
-  restore<-.etr13_rng(random_state);on.exit(restore(),add=TRUE)
+  restore<-.etr_simulation_rng(random_state);on.exit(restore(),add=TRUE)
   for(i in seq_len(b)){
-    sample<-.etr14_boot(trajectories,resample_unit,participant_column)
+    sample<-.etr_fpca_stability_boot(trajectories,resample_unit,participant_column)
     .etr_assert(length(sample$curve_ids)>k,
       "bootstrap sample has insufficient FPCA rank")
-    candidate<-.etr14_fit(sample,k,scaling)
+    candidate<-.etr_fpca_stability_fit(sample,k,scaling)
     matching<-etr_match_fpca_components(ref,candidate,k)
     sims[i,]<-abs(matching$signed_similarity)
     for(j in seq_len(k))
@@ -349,8 +349,8 @@ etr_bootstrap_fpca_component_bands <- function(trajectories,
     if(positive)maxstats[,j]<-pmax(maxstats[,j],abs(delta/sigma))
   }
   critical<-if(simultaneous_scope=="component")
-    vapply(seq_len(k),function(j).etr15_higher(maxstats[,j],level),numeric(1L))
-    else rep(.etr15_higher(apply(maxstats,1L,max),level),k)
+    vapply(seq_len(k),function(j).etr_bootstrap_upper_tail(maxstats[,j],level),numeric(1L))
+    else rep(.etr_bootstrap_upper_tail(apply(maxstats,1L,max),level),k)
   lower<-upper<-array(0,c(k,nt,nd))
   for(j in seq_len(k)){
     lower[j,,]<-ref$components[j,,]-critical[j]*se[j,,]

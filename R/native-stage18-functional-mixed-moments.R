@@ -4,7 +4,7 @@
 # Residual audits follow Python 1.2 diagnostics.py conventions.
 # All production numerical operations are base R, with no Python dependency.
 
-.etr18_fit <- function(x){
+.etr_mixed_moments_fit <- function(x){
   .etr_assert(inherits(x,"etr_functional_mixed_moments") &&
     identical(x$estimator,"two_level_functional_method_of_moments") &&
     isTRUE(x$converged)&&is.matrix(x$residual_functions)&&
@@ -16,12 +16,12 @@
     "requires a finite, converged restricted native mixed-moments fit")
   invisible(x)
 }
-.etr18_psd <- function(a){
+.etr_mixed_moments_psd <- function(a){
   a<-(a+t(a))/2
   eigen<-eigen(a,symmetric=TRUE)
   eigen$vectors%*%(pmax(0,eigen$values)*t(eigen$vectors))
 }
-.etr18_cov <- function(a){
+.etr_mixed_moments_cov <- function(a){
   a<-as.matrix(a)
   .etr_assert(nrow(a)>=2L,"need at least two independent covariance records")
   crossprod(scale(a,center=TRUE,scale=FALSE))/(nrow(a)-1L)
@@ -101,9 +101,9 @@ etr_fit_functional_mixed_effects_regression <- function(trajectories,
   within_pd<-within+diag(covariance_ridge*residual_var,nt)
   # A declared, unequal-group moment approximation: E Var(mean residual)
   # includes mean(1/m_g) times the pooled within-curve covariance.
-  between<-.etr18_cov(group_means)-
+  between<-.etr_mixed_moments_cov(group_means)-
     mean(1/sizes)*within_pd
-  between<-.etr18_psd(between)
+  between<-.etr_mixed_moments_psd(between)
   blup<-matrix(0,G,nt)
   for(g in seq_len(G)){
     lhs<-between+within_pd/sizes[g]
@@ -165,7 +165,7 @@ etr_fit_functional_mixed_effects_regression <- function(trajectories,
 #' @param result Native restricted mixed-moments fit.
 #' @export
 etr_functional_mixed_effects_whitened_residuals <- function(result){
-  .etr18_fit(result)
+  .etr_mixed_moments_fit(result)
   nt<-length(result$time)
   V<-result$residual_variance*result$residual_correlation_matrix
   .etr_assert(is.matrix(V)&&identical(dim(V),c(nt,nt))&&
@@ -175,7 +175,7 @@ etr_functional_mixed_effects_whitened_residuals <- function(result){
     stop("residual covariance is not positive definite",call.=FALSE))
   t(forwardsolve(t(R),t(result$residual_functions)))
 }
-.etr18_aggregate <- function(trial,cols){
+.etr_mixed_moments_aggregate <- function(trial,cols){
   keys<-unique(trial[,cols,drop=FALSE])
   rows<-vector("list",nrow(keys))
   for(i in seq_len(nrow(keys))){
@@ -209,8 +209,8 @@ etr_functional_mixed_effects_whitened_residuals <- function(result){
 #' @export
 etr_functional_mixed_effects_residual_diagnostics <- function(result,
     max_lag,residual_scale="raw"){
-  .etr18_fit(result)
-  lag<-.etr17_integer(max_lag,1L,"max_lag")
+  .etr_mixed_moments_fit(result)
+  lag<-.etr_nonlinear_integer(max_lag,1L,"max_lag")
   nt<-length(result$time)
   .etr_assert(lag<nt,"max_lag must be smaller than n_time")
   .etr_assert(is.character(residual_scale)&&length(residual_scale)==1L&&
@@ -244,8 +244,8 @@ etr_functional_mixed_effects_residual_diagnostics <- function(result,
     }
   }
   trial<-do.call(rbind,trial)
-  participant<-.etr18_aggregate(trial,c("participant_id","lag_index"))
-  overall<-.etr18_aggregate(trial,"lag_index")
+  participant<-.etr_mixed_moments_aggregate(trial,c("participant_id","lag_index"))
+  overall<-.etr_mixed_moments_aggregate(trial,"lag_index")
   structure(list(reference=result,trial_diagnostics=trial,
     participant_diagnostics=participant,overall_diagnostics=overall,
     max_lag=lag,residual_scale=residual_scale,
@@ -298,9 +298,9 @@ etr_functional_mixed_effects_residual_pair_frame <- function(result,
     lag_index,curve_id=NULL,participant_id=NULL){
   .etr_assert(inherits(result,"etr_functional_mixed_residual_diagnostics"),
     "requires a native residual diagnostic result")
-  h<-.etr17_integer(lag_index,0L,"lag_index")
+  h<-.etr_nonlinear_integer(lag_index,0L,"lag_index")
   .etr_assert(h<=result$max_lag,"lag_index exceeds max_lag")
-  fit<-result$reference;.etr18_fit(fit)
+  fit<-result$reference;.etr_mixed_moments_fit(fit)
   resid<-if(result$residual_scale=="raw")fit$residual_functions else
     etr_functional_mixed_effects_whitened_residuals(fit)
   nt<-length(fit$time)
@@ -334,7 +334,7 @@ etr_functional_mixed_effects_residual_pair_frame <- function(result,
 #' @export
 etr_functional_mixed_effects_variance_decomposition <- function(fit,
     model_label=NULL){
-  .etr18_fit(fit)
+  .etr_mixed_moments_fit(fit)
   name<-if(is.null(model_label))"model" else model_label
   .etr_assert(is.character(name)&&length(name)==1L&&nzchar(name),
     "model_label must be nonempty")
@@ -354,7 +354,7 @@ etr_functional_mixed_effects_variance_decomposition <- function(fit,
 #' @inheritParams etr_functional_mixed_effects_whitened_residuals
 #' @export
 etr_functional_mixed_effects_coefficient_frame <- function(result,band=NULL){
-  .etr18_fit(result)
+  .etr_mixed_moments_fit(result)
   .etr_assert(is.null(band),
     "simultaneous mixed-model bootstrap bands are not yet qualified")
   names<-result$coefficient_names;nt<-length(result$time)

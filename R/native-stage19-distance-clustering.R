@@ -12,22 +12,22 @@
 etr_cluster_fpca_scores <- function(fpca,n_clusters,
     n_components=NULL,random_state=0L,n_init="auto"){
   .etr10_fit(fpca)
-  k<-.etr17_integer(n_clusters,2L,"n_clusters")
+  k<-.etr_nonlinear_integer(n_clusters,2L,"n_clusters")
   n<-length(fpca$curve_ids)
   .etr_assert(k<=n,"n_clusters must not exceed number of trajectories")
   comp<-if(is.null(n_components))fpca$n_components else
-    .etr17_integer(n_components,1L,"n_components")
+    .etr_nonlinear_integer(n_components,1L,"n_components")
   .etr_assert(comp<=fpca$n_components,
     "n_components exceeds fitted FPCA range")
   if(identical(n_init,"auto"))nstart<-1L else
-    nstart<-.etr17_integer(n_init,1L,"n_init")
+    nstart<-.etr_nonlinear_integer(n_init,1L,"n_init")
   .etr_assert(is.matrix(fpca$scores)&&is.numeric(fpca$scores)&&
     all(is.finite(fpca$scores))&&nrow(fpca$scores)==n&&
     ncol(fpca$scores)>=comp,"FPCA scores must be finite and aligned")
   scores<-fpca$scores[,seq_len(comp),drop=FALSE]
   .etr_assert(nrow(unique(scores))>=k,
     "at least n_clusters distinct FPCA score vectors are required")
-  restore<-.etr13_rng(random_state);on.exit(restore(),add=TRUE)
+  restore<-.etr_simulation_rng(random_state);on.exit(restore(),add=TRUE)
   fit<-stats::kmeans(scores,centers=k,iter.max=100L,nstart=nstart,
     algorithm="Hartigan-Wong")
   structure(list(labels=as.integer(fit$cluster-1L),
@@ -67,7 +67,7 @@ etr_cluster_fpca_scores <- function(fpca,n_clusters,
         (is.logical(s$normalize)&&length(s$normalize)==1L&&!is.na(s$normalize)),
         "DTW normalize must be Boolean")
       if(!is.null(s$window_radius))
-        .etr17_integer(s$window_radius,0L,"window_radius")
+        .etr_nonlinear_integer(s$window_radius,0L,"window_radius")
       .etr_assert(!isTRUE(s$normalize)||
         identical(if(is.null(s$step_pattern))"symmetric1" else s$step_pattern,
           "symmetric2"),"normalized DTW requires symmetric2")
@@ -99,7 +99,7 @@ etr_trajectory_distance_sensitivity<-function(trajectories,specifications,
   etr_validate(trajectories,require_complete=TRUE)
   n<-length(trajectories$curve_ids)
   .etr_assert(n>=3L,"trajectory distance sensitivity requires >=3 curves")
-  k<-.etr17_integer(neighbor_k,1L,"neighbor_k")
+  k<-.etr_nonlinear_integer(neighbor_k,1L,"neighbor_k")
   .etr_assert(k<n,"neighbor_k must be < number of curves")
   d<-if(is.null(dimensions))trajectories$dimension_names else dimensions
   .etr_assert(is.character(d)&&length(d)>0L&&!anyNA(d)&&

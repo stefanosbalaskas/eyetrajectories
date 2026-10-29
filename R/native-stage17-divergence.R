@@ -2,12 +2,12 @@
 # Python 1.2 reference: embedding.py and nonlinear_dynamics.py.
 # Numeric R-only implementations; no inference of deterministic chaos.
 
-.etr17_integer <- function(x,minimum,name) {
+.etr_nonlinear_integer <- function(x,minimum,name) {
   .etr_assert(is.numeric(x)&&length(x)==1L&&is.finite(x)&&
     x==as.integer(x)&&x>=minimum,paste(name,"must be integer >=",minimum))
   as.integer(x)
 }
-.etr17_curve <- function(ids,curve){
+.etr_nonlinear_curve <- function(ids,curve){
   if(is.character(curve)) {
     .etr_assert(length(curve)==1L&&curve%in%ids,
       "curve_id was not found")
@@ -19,7 +19,7 @@
     "curve must be a zero-based integer index or source curve_id")
   as.integer(curve)+1L
 }
-.etr17_embedding <- function(z){
+.etr_nonlinear_embedding <- function(z){
   .etr_assert(inherits(z,"etr_delay_embedding_set")&&
     is.array(z$values)&&length(dim(z$values))==3L&&
     all(is.finite(z$values))&&
@@ -42,8 +42,8 @@ etr_delay_embed_trajectory <- function(trajectories,embedding_dimension,
   etr_validate(trajectories,require_complete=TRUE)
   .etr_assert(identical(delay_units,"samples"),
     "time-unit embedding delays are not yet qualified; use samples")
-  m<-.etr17_integer(embedding_dimension,1L,"embedding_dimension")
-  lag<-.etr17_integer(delay,1L,"delay")
+  m<-.etr_nonlinear_integer(embedding_dimension,1L,"embedding_dimension")
+  lag<-.etr_nonlinear_integer(delay,1L,"delay")
   .etr_assert(is.character(dimensions)&&length(dimensions)>0L&&
     !anyNA(dimensions)&&!anyDuplicated(dimensions)&&
     all(dimensions%in%trajectories$dimension_names),
@@ -65,7 +65,7 @@ etr_delay_embed_trajectory <- function(trajectories,embedding_dimension,
       cols[col]<-sprintf("%s[t-%d*delay]",dimensions[d],j-1L)
     }
   }
-  step<-tryCatch(.etr13_regularity(trajectories$time),
+  step<-tryCatch(.etr_series_regular_spacing(trajectories$time),
     error=function(e)NA_real_)
   structure(list(values=out,time=trajectories$time[endpts],
     curve_ids=trajectories$curve_ids,
@@ -81,19 +81,19 @@ etr_delay_embed_trajectory <- function(trajectories,embedding_dimension,
       automatic_parameter_selection=FALSE,scaling="none")),
     class="etr_delay_embedding_set")
 }
-.etr17_state <- function(embedding,curve,theiler_window,max_horizon,
+.etr_nonlinear_state <- function(embedding,curve,theiler_window,max_horizon,
                         theiler_window_units,max_horizon_units){
-  .etr17_embedding(embedding)
+  .etr_nonlinear_embedding(embedding)
   .etr_assert(identical(theiler_window_units,"samples")&&
     identical(max_horizon_units,"samples"),
     "time-unit divergence parameters are not qualified; use samples")
-  th<-.etr17_integer(theiler_window,0L,"theiler_window")
-  horizon<-.etr17_integer(max_horizon,1L,"max_horizon")
-  i<-.etr17_curve(embedding$curve_ids,curve)
+  th<-.etr_nonlinear_integer(theiler_window,0L,"theiler_window")
+  horizon<-.etr_nonlinear_integer(max_horizon,1L,"max_horizon")
+  i<-.etr_nonlinear_curve(embedding$curve_ids,curve)
   n<-length(embedding$time)
   .etr_assert(horizon<n,"max_horizon must be smaller than state count")
   .etr_assert(n<=1600L,"exact nearest-neighbor divergence is capped at 1600 states")
-  step<-.etr13_regularity(embedding$time)
+  step<-.etr_series_regular_spacing(embedding$time)
   states<-matrix(embedding$values[i,,,drop=FALSE],
     nrow=n,ncol=dim(embedding$values)[3L])
   list(states=states,n=n,theiler=th,horizon=horizon,
@@ -110,7 +110,7 @@ etr_delay_embed_trajectory <- function(trajectories,embedding_dimension,
 etr_local_divergence_curve <- function(embedding,curve,
     theiler_window,max_horizon,theiler_window_units="samples",
     max_horizon_units="samples"){
-  z<-.etr17_state(embedding,curve,theiler_window,max_horizon,
+  z<-.etr_nonlinear_state(embedding,curve,theiler_window,max_horizon,
     theiler_window_units,max_horizon_units)
   n<-z$n;st<-z$states;nd<-ncol(st)
   nn<-integer(n)
@@ -160,8 +160,8 @@ etr_kantz_divergence_curve <- function(embedding,curve,radius,
     theiler_window_units="samples",max_horizon_units="samples"){
   .etr_assert(is.numeric(radius)&&length(radius)==1L&&
     is.finite(radius)&&radius>0,"radius must be positive and finite")
-  minimum<-.etr17_integer(min_neighbors,1L,"min_neighbors")
-  z<-.etr17_state(embedding,curve,theiler_window,max_horizon,
+  minimum<-.etr_nonlinear_integer(min_neighbors,1L,"min_neighbors")
+  z<-.etr_nonlinear_state(embedding,curve,theiler_window,max_horizon,
     theiler_window_units,max_horizon_units)
   n<-z$n;st<-z$states;nd<-ncol(st)
   neighbors<-vector("list",n);initial<-integer(n)
@@ -208,13 +208,13 @@ etr_kantz_divergence_curve <- function(embedding,curve,radius,
     class="etr_kantz_divergence")
 }
 
-.etr17_lyapunov <- function(divergence,kind,fit_start,fit_end,fit_units){
+.etr_nonlinear_lyapunov <- function(divergence,kind,fit_start,fit_end,fit_units){
   .etr_assert(inherits(divergence,kind),
     paste("divergence must be",kind))
   .etr_assert(identical(fit_units,"samples"),
     "time-based Lyapunov fit windows are not yet qualified; use samples")
-  first<-.etr17_integer(fit_start,0L,"fit_start")
-  last<-.etr17_integer(fit_end,1L,"fit_end")
+  first<-.etr_nonlinear_integer(fit_start,0L,"fit_start")
+  last<-.etr_nonlinear_integer(fit_end,1L,"fit_end")
   .etr_assert(last>first&&last<=divergence$max_horizon_samples,
     "fit_end must exceed fit_start and remain within computed horizon")
   ids<-which(divergence$horizons>=first&
@@ -259,7 +259,7 @@ etr_kantz_divergence_curve <- function(embedding,curve,radius,
 #' @export
 etr_estimate_largest_lyapunov_rosenstein <- function(divergence,
     fit_start,fit_end,fit_units="samples"){
-  .etr17_lyapunov(divergence,"etr_local_divergence",
+  .etr_nonlinear_lyapunov(divergence,"etr_local_divergence",
     fit_start,fit_end,fit_units)
 }
 #' Fit explicitly declared Kantz local-divergence segment
@@ -267,6 +267,6 @@ etr_estimate_largest_lyapunov_rosenstein <- function(divergence,
 #' @export
 etr_estimate_largest_lyapunov_kantz <- function(divergence,
     fit_start,fit_end,fit_units="samples"){
-  .etr17_lyapunov(divergence,"etr_kantz_divergence",
+  .etr_nonlinear_lyapunov(divergence,"etr_kantz_divergence",
     fit_start,fit_end,fit_units)
 }

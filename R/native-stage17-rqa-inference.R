@@ -3,7 +3,7 @@
 # Supports fixed Euclidean radius and sample lags; unsupported source
 # threshold/time-unit variants error rather than silently substituting.
 
-.etr17_rqa_source <- function(x,dimensions,embedding_dimension,delay,
+.etr_rqa_inference_source <- function(x,dimensions,embedding_dimension,delay,
   delay_units){
   etr_validate(x,require_complete=TRUE)
   .etr_assert(is.character(dimensions)&&length(dimensions)>0L&&
@@ -21,7 +21,7 @@
       metadata=x$metadata,coordinate_system=x$coordinate_system,
       time_unit=x$time_unit,provenance=x$provenance))
   }
-  m<-.etr17_integer(embedding_dimension,2L,"embedding_dimension")
+  m<-.etr_nonlinear_integer(embedding_dimension,2L,"embedding_dimension")
   .etr_assert(!is.null(delay),
     "delay required when embedding_dimension is specified")
   z<-etr_delay_embed_trajectory(x,m,delay,"samples",dimensions)
@@ -72,13 +72,13 @@ etr_bootstrap_rqa_metric_means <- function(trajectories,dimensions,metrics,
   .etr_assert(is.numeric(radius)&&length(radius)==1L&&
     is.finite(radius)&&radius>=0,
     "radius must be finite nonnegative")
-  th<-.etr17_integer(theiler_window,0L,"theiler_window")
-  md<-.etr17_integer(min_diagonal_length,1L,"min_diagonal_length")
-  mv<-.etr17_integer(min_vertical_length,1L,"min_vertical_length")
-  nboot<-.etr17_integer(n_bootstrap,100L,"n_bootstrap")
-  .etr15_prob(confidence_level,"confidence_level")
-  .etr15_options(trajectories,unit,participant_column)
-  data<-.etr17_rqa_source(trajectories,dimensions,
+  th<-.etr_nonlinear_integer(theiler_window,0L,"theiler_window")
+  md<-.etr_nonlinear_integer(min_diagonal_length,1L,"min_diagonal_length")
+  mv<-.etr_nonlinear_integer(min_vertical_length,1L,"min_vertical_length")
+  nboot<-.etr_nonlinear_integer(n_bootstrap,100L,"n_bootstrap")
+  .etr_bootstrap_probability(confidence_level,"confidence_level")
+  .etr_bootstrap_options(trajectories,unit,participant_column)
+  data<-.etr_rqa_inference_source(trajectories,dimensions,
     embedding_dimension,delay,delay_units)
   nr<-length(data$curve_ids)
   obs<-data.frame(curve_id=data$curve_ids,
@@ -115,7 +115,7 @@ etr_bootstrap_rqa_metric_means <- function(trajectories,dimensions,metrics,
   .etr_assert(nunit>=2L,"At least two independent RQA units required")
   vals<-as.matrix(tab[,metrics,drop=FALSE])
   observed<-colMeans(vals)
-  restore<-.etr13_rng(random_state);on.exit(restore(),add=TRUE)
+  restore<-.etr_simulation_rng(random_state);on.exit(restore(),add=TRUE)
   draws<-matrix(0,nboot,length(metrics))
   for(i in seq_len(nboot))draws[i,]<-colMeans(
     vals[sample.int(nunit,nunit,replace=TRUE),,drop=FALSE])

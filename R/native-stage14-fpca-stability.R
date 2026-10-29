@@ -4,7 +4,7 @@
 # stability.py, subspace.py. Robust MCD outlier covariance is NOT
 # implemented; this unsupported mode always fails closed.
 
-.etr14_fit <- function(x,k,scaling="none") {
+.etr_fpca_stability_fit <- function(x,k,scaling="none") {
   etr_validate(x,require_complete=TRUE)
   .etr_assert(is.numeric(k)&&length(k)==1L&&is.finite(k)&&
     k==as.integer(k)&&k>=1L&&k<length(x$curve_ids),
@@ -17,7 +17,7 @@
   else etr_fit_fpca(x,n_components=as.integer(k),scaling=scaling)
 }
 
-.etr14_boot <- function(x,unit,participant_column=NULL) {
+.etr_fpca_stability_boot <- function(x,unit,participant_column=NULL) {
   n<-length(x$curve_ids)
   if(unit=="curve"){
     selected<-sample.int(n,n,replace=TRUE)
@@ -59,7 +59,7 @@
     time_unit=x$time_unit,provenance=provenance)
 }
 
-.etr14_scope <- function(x,unit,participant_column) {
+.etr_fpca_stability_scope <- function(x,unit,participant_column) {
   .etr_assert(is.character(unit)&&length(unit)==1L&&
     unit%in%c("curve","participant"),
     "resample_unit must be curve or participant")
@@ -71,7 +71,7 @@
       "participant_column required and complete for participant bootstrap")
 }
 
-.etr14_block <- function(fit,start,stop) {
+.etr_fpca_stability_block <- function(fit,start,stop) {
   .etr10_fit(fit)
   nt<-length(fit$time);nd<-length(fit$dimension_names)
   out<-matrix(0,stop-start,nt*nd)
@@ -120,8 +120,8 @@ etr_compare_fpca_subspaces <- function(reference,candidate,
   .etr_assert(isTRUE(all.equal(reference$weights,candidate$weights,
     tolerance=1e-8,check.attributes=FALSE)),
     "quadrature weights differ")
-  a<-.etr14_block(reference,start,stop)
-  b<-.etr14_block(candidate,start,stop)
+  a<-.etr_fpca_stability_block(reference,start,stop)
+  b<-.etr_fpca_stability_block(candidate,start,stop)
   # Identical standardized bases span exactly the same subspace.
   # SVD may return 1 - machine epsilon for their self-Gram matrix;
   # acos/sqrt magnifies that harmless roundoff to about 1e-8.
@@ -166,20 +166,20 @@ etr_bootstrap_fpca_subspace_stability <- function(trajectories,
   .etr_assert(is.numeric(n_bootstrap)&&length(n_bootstrap)==1L&&
     is.finite(n_bootstrap)&&n_bootstrap==as.integer(n_bootstrap)&&
     n_bootstrap>=2L,"n_bootstrap must be integer >=2")
-  .etr14_scope(trajectories,resample_unit,participant_column)
+  .etr_fpca_stability_scope(trajectories,resample_unit,participant_column)
   stop<-as.integer(start_component+n_components)
   .etr_assert(stop<length(trajectories$curve_ids),
     "requested subspace exceeds nonzero sample FPCA rank")
-  ref<-.etr14_fit(trajectories,stop,scaling)
-  restore<-.etr13_rng(random_state);on.exit(restore(),add=TRUE)
+  ref<-.etr_fpca_stability_fit(trajectories,stop,scaling)
+  restore<-.etr_simulation_rng(random_state);on.exit(restore(),add=TRUE)
   b<-as.integer(n_bootstrap);k<-as.integer(n_components)
   cos<-ang<-matrix(0,b,k)
   distances<-normed<-numeric(b)
   for(i in seq_len(b)){
-    s<-.etr14_boot(trajectories,resample_unit,participant_column)
+    s<-.etr_fpca_stability_boot(trajectories,resample_unit,participant_column)
     .etr_assert(stop<length(s$curve_ids),
       "bootstrap replicate has insufficient nonzero sample rank")
-    fit<-.etr14_fit(s,stop,scaling)
+    fit<-.etr_fpca_stability_fit(s,stop,scaling)
     comp<-etr_compare_fpca_subspaces(ref,fit,start_component,k)
     cos[i,]<-comp$principal_cosines
     ang[i,]<-comp$principal_angles_degrees
@@ -255,7 +255,7 @@ etr_leave_one_group_out_fpca_influence <- function(trajectories,
     g<-as.character(g)
   }
   groups<-unique(g)
-  ref<-.etr14_fit(trajectories,k,scaling)
+  ref<-.etr_fpca_stability_fit(trajectories,k,scaling)
   summary_rows<-vector("list",length(groups))
   component_rows<-vector("list",length(groups))
   for(i in seq_along(groups)){
@@ -263,7 +263,7 @@ etr_leave_one_group_out_fpca_influence <- function(trajectories,
     remain<-which(g!=groups[i])
     .etr_assert(length(remain)>k,
       paste("Removing group",groups[i],"leaves too few curves for FPCA"))
-    cand<-.etr14_fit(.etr12_subset(trajectories,remain),k,scaling)
+    cand<-.etr_fpca_stability_fit(.etr12_subset(trajectories,remain),k,scaling)
     match<-etr_match_fpca_components(ref,cand,n_components=k)
     ab<-abs(match$signed_similarity)
     dr<-cand$explained_variance_ratio[match$assignments+1L]-
@@ -305,18 +305,18 @@ etr_bootstrap_fpca_stability <- function(trajectories,
     is.finite(n_components)&&n_components==as.integer(n_components)&&
     n_components>=1L&&n_components<length(trajectories$curve_ids),
     "n_components must be below source curve count")
-  .etr14_scope(trajectories,resample_unit,participant_column)
+  .etr_fpca_stability_scope(trajectories,resample_unit,participant_column)
   k<-as.integer(n_components);b<-as.integer(n_bootstrap)
-  ref<-.etr14_fit(trajectories,k,scaling)
-  restore<-.etr13_rng(random_state);on.exit(restore(),add=TRUE)
+  ref<-.etr_fpca_stability_fit(trajectories,k,scaling)
+  restore<-.etr_simulation_rng(random_state);on.exit(restore(),add=TRUE)
   sim<-signed<-explained<-matrix(0,b,k)
   assignments<-matrix(0L,b,k)
   sizes<-integer(b)
   for(i in seq_len(b)){
-    sample<-.etr14_boot(trajectories,resample_unit,participant_column)
+    sample<-.etr_fpca_stability_boot(trajectories,resample_unit,participant_column)
     .etr_assert(length(sample$curve_ids)>k,
       "bootstrap replicate has insufficient fitted sample rank")
-    cand<-.etr14_fit(sample,k,scaling)
+    cand<-.etr_fpca_stability_fit(sample,k,scaling)
     matched<-etr_match_fpca_components(ref,cand,n_components=k)
     assignments[i,]<-matched$assignments
     signed[i,]<-matched$signed_similarity

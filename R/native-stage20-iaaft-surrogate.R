@@ -68,19 +68,19 @@ etr_surrogate_nonlinearity_test <- function(trajectories,curve,
     "dimension must be an existing source dimension")
   .etr_assert(all(c(delay_units,theiler_window_units,max_horizon_units,
     fit_units)=="samples"),"sample units only are qualified")
-  m<-.etr17_integer(embedding_dimension,2L,"embedding_dimension")
-  dl<-.etr17_integer(delay,1L,"delay")
-  th<-.etr17_integer(theiler_window,0L,"theiler_window")
-  mh<-.etr17_integer(max_horizon,1L,"max_horizon")
-  start<-.etr17_integer(fit_start,0L,"fit_start")
-  end<-.etr17_integer(fit_end,1L,"fit_end")
+  m<-.etr_nonlinear_integer(embedding_dimension,2L,"embedding_dimension")
+  dl<-.etr_nonlinear_integer(delay,1L,"delay")
+  th<-.etr_nonlinear_integer(theiler_window,0L,"theiler_window")
+  mh<-.etr_nonlinear_integer(max_horizon,1L,"max_horizon")
+  start<-.etr_nonlinear_integer(fit_start,0L,"fit_start")
+  end<-.etr_nonlinear_integer(fit_end,1L,"fit_end")
   .etr_assert(end>start,"fit_end must exceed fit_start")
-  b<-.etr17_integer(n_surrogates,1L,"n_surrogates")
-  maxit<-.etr17_integer(max_iterations,1L,"max_iterations")
+  b<-.etr_nonlinear_integer(n_surrogates,1L,"n_surrogates")
+  maxit<-.etr_nonlinear_integer(max_iterations,1L,"max_iterations")
   .etr_assert(is.numeric(tolerance)&&length(tolerance)==1L&&
     is.finite(tolerance)&&tolerance>0,
     "tolerance must be finite and strictly positive")
-  ci<-.etr17_curve(trajectories$curve_ids,curve)
+  ci<-.etr_nonlinear_curve(trajectories$curve_ids,curve)
   signal<-as.numeric(trajectories$values[ci,,
     match(dimension,trajectories$dimension_names)])
   .etr_assert(all(is.finite(signal))&&stats::sd(signal)>0,
@@ -101,7 +101,7 @@ etr_surrogate_nonlinearity_test <- function(trajectories,curve,
   }
   observed<-stat(signal)
   if(!is.null(random_state)){
-    restore<-.etr13_rng(random_state)
+    restore<-.etr_simulation_rng(random_state)
     on.exit(restore(),add=TRUE)
   }
   # Without a seed, native R uses its active RNG stream; unlike Python
