@@ -1,4 +1,4 @@
-\name{etr_native_stage13_functional_models}
+\name{etr_native_functional_models}
 \alias{etr_fit_function_on_scalar_regression}
 \alias{etr_bootstrap_function_on_scalar_coefficients}
 \alias{etr_function_on_scalar_simultaneous_bands}

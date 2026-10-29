@@ -1,4 +1,4 @@
-\name{etr_native_stage14_fpca_stability}
+\name{etr_native_fpca_stability}
 \alias{etr_compare_fpca_subspaces}
 \alias{etr_bootstrap_fpca_subspace_stability}
 \alias{etr_summarise_fpca_subspace_stability}

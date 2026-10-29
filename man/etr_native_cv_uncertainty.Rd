@@ -1,4 +1,4 @@
-\name{etr_native_stage12_cv_uncertainty}
+\name{etr_native_cv_uncertainty}
 \alias{etr_cross_validate_fpca_reconstruction}
 \alias{etr_summarise_fpca_cross_validation}
 \alias{etr_select_fpca_components_cv}

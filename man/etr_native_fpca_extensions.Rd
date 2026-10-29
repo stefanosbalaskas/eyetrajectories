@@ -1,4 +1,4 @@
-\name{etr_native_stage10_fpca_extensions}
+\name{etr_native_fpca_extensions}
 \alias{etr_fit_compositional_fpca}
 \alias{etr_reconstruct_compositional_fpca}
 \alias{etr_component_similarity_matrix}

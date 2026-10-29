@@ -1,4 +1,4 @@
-\name{etr_native_stage18_functional_mixed_moments}
+\name{etr_native_functional_mixed_moments}
 \alias{etr_fit_functional_mixed_effects_regression}
 \alias{etr_functional_mixed_effects_whitened_residuals}
 \alias{etr_functional_mixed_effects_residual_diagnostics}

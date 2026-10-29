@@ -1,4 +1,4 @@
-\name{etr_native_stage19_multiverse_clustering}
+\name{etr_native_multiverse_clustering}
 \alias{etr_lyapunov_parameter_sensitivity}
 \alias{etr_kantz_parameter_sensitivity}
 \alias{etr_rqa_parameter_sensitivity}

@@ -1,4 +1,4 @@
-\name{etr_native_stage11_nonlinear_reporting}
+\name{etr_native_nonlinear_reporting}
 \alias{etr_joint_recurrence_reporting_text}
 \alias{etr_recurrence_network_reporting_text}
 \alias{etr_recurrence_radius_profile_reporting_text}

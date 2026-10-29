@@ -1,4 +1,4 @@
-\name{etr_native_stage16_transfer_entropy}
+\name{etr_native_transfer_entropy}
 \alias{etr_discrete_transfer_entropy}
 \alias{etr_transfer_entropy_local_frame}
 \alias{etr_transfer_entropy_circular_shift_test}

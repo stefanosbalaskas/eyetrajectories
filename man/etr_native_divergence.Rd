@@ -1,4 +1,4 @@
-\name{etr_native_stage17_divergence} 
+\name{etr_native_divergence} 
 \alias{etr_delay_embed_trajectory}
 \alias{etr_local_divergence_curve}
 \alias{etr_kantz_divergence_curve}

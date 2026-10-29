@@ -1,4 +1,4 @@
-\name{etr_native_stage15_bootstrap_inference}
+\name{etr_native_bootstrap_inference}
 \alias{etr_multiplier_functional_mean_band}
 \alias{etr_bootstrap_fpca_score_uncertainty}
 \alias{etr_bootstrap_fpca_spectrum_uncertainty}
