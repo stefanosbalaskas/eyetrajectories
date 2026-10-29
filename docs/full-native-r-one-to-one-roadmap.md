@@ -758,3 +758,22 @@ are authored, but execution is pending.
 and **0/508 independently fully certified public source contracts**.
 
 [Stage 26 scientific and certification review](full-native-r-stage26-functional-rqa-recovery.md).
+
+
+## Stage 27 — matched FPCA source uncertainty reporting and scientific plots
+
+Seven published Python 1.2 source names now have independent native
+R analogues covering bootstrap FPCA target-score uncertainty,
+spectrum uncertainty, simultaneous FPC component-shape bands and
+observed-grid functional mean reporting. Four manuscript-reporting
+functions have direct published Python 1.2 textual oracle tests;
+three uncertainty plots use stored source estimate and interval
+geometry rather than recomputing an estimator.
+
+**188 native implementations**, **213/380 mapped source callable names**,
+**167 unmapped public source functions** and **34 hard-blocked
+Python/R public-source behavior differences**; the count of **fully
+independently approved complete source contracts remains 0/508**.
+Draft branch and qualification tests are authored, not yet run.
+
+[Stage 27 scientific and certification scope](full-native-r-stage27-fpca-source.md).
