@@ -244,7 +244,8 @@
   workflow_steps_frame="etr_workflow_steps_frame",
   workflow_decisions_frame="etr_workflow_decisions_frame",
   workflow_summary_frame="etr_workflow_summary_frame",
-  workflow_reporting_text="etr_workflow_reporting_text"
+  workflow_reporting_text="etr_workflow_reporting_text",
+  workflow_config_to_dict="etr_workflow_config_to_dict"
 )
 
 #' Audit one-to-one Python 1.2.0 versus independent native R coverage
