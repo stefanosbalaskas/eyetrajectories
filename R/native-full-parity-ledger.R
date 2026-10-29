@@ -220,6 +220,9 @@
   plot_transfer_entropy_sensitivity="etr_plot_transfer_entropy_sensitivity",
   plot_transfer_entropy_circular_shift_test="etr_plot_transfer_entropy_circular_shift_test",
   plot_conditional_transfer_entropy_circular_shift_test="etr_plot_conditional_transfer_entropy_circular_shift_test",
+  plot_reconstruction_curve="etr_plot_reconstruction_curve",
+  plot_registration="etr_plot_registration",
+  plot_warping_functions="etr_plot_warping_functions",
   functional_recovery_assessment_frame="etr_functional_recovery_assessment_frame",
   split_conformal_fpca_anomaly="etr_split_conformal_fpca_anomalies",
   # These four new native methods are experimentally implemented here.
@@ -428,6 +431,11 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   )
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% stage29_names] <- 29L
+  # Historical implementation provenance only: never part of public function names.
+  registration_plot_names <- c("plot_reconstruction_curve",
+    "plot_registration","plot_warping_functions")
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% registration_plot_names] <- 30L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset
