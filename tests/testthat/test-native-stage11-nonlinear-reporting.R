@@ -163,7 +163,7 @@ test_that("Stage 11 frozen source inventory is conservative and offline",{
   expect_equal(sum(z$is_python_function),380L)
   expect_equal(sum(z$named_native_candidate),236L)
   expect_equal(sum(z$is_python_function & !z$named_native_candidate),144L)
-  expect_equal(sum(z$native_implementation_started),144L)
+  expect_equal(sum(z$native_implementation_started),211L)
   expect_equal(sum(z$native_implementation_stage==11L,na.rm=TRUE),15L)
   expect_equal(sum(!is.na(z$native_representation_stage)),7L)
   expect_true(all(!z$one_to_one_native_contract_complete))

@@ -197,7 +197,7 @@ test_that("Stage 12 508-source census remains fail-closed",{
   expect_equal(sum(a$is_python_function),380L)
   expect_equal(sum(a$named_native_candidate),236L)
   expect_equal(sum(a$is_python_function & !a$named_native_candidate),144L)
-  expect_equal(sum(a$native_implementation_started),144L)
+  expect_equal(sum(a$native_implementation_started),211L)
   expect_equal(sum(a$native_implementation_stage==12L,na.rm=TRUE),14L)
   expect_true(all(!a$one_to_one_native_contract_complete))
   expect_error(etr_native_parity_catalog(require_complete=TRUE),"NOT complete")

@@ -141,7 +141,7 @@ test_that("Stage 15 frozen 508-source register remains fail-closed",{
   expect_equal(sum(z$is_python_function),380L)
   expect_equal(sum(z$named_native_candidate),236L)
   expect_equal(sum(z$is_python_function & !z$named_native_candidate),144L)
-  expect_equal(sum(z$native_implementation_started),144L)
+  expect_equal(sum(z$native_implementation_started),211L)
   expect_equal(sum(z$native_implementation_stage==15L,na.rm=TRUE),5L)
   expect_equal(sum(!is.na(z$native_representation_stage)),7L)
   expect_equal(sum(!z$is_python_function &

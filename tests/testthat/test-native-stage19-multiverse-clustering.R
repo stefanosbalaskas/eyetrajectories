@@ -154,7 +154,7 @@ test_that("Stage 19 frozen source remains 508 without false parity certification
   expect_equal(sum(z$is_python_function),380L)
   expect_equal(sum(z$named_native_candidate),236L)
   expect_equal(sum(z$is_python_function & !z$named_native_candidate),144L)
-  expect_equal(sum(z$native_implementation_started),144L)
+  expect_equal(sum(z$native_implementation_started),211L)
   expect_equal(sum(z$native_implementation_stage==19L,na.rm=TRUE),5L)
   expect_equal(sum(!z$is_python_function &
     is.na(z$native_representation_stage)),121L)
