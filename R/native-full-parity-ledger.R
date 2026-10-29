@@ -211,6 +211,12 @@
   plot_fpca_score_uncertainty="etr_plot_fpca_score_uncertainty",
   plot_fpca_spectrum_uncertainty="etr_plot_fpca_spectrum_uncertainty",
   plot_fpca_component_band="etr_plot_fpca_component_band",
+  list_mathematical_contracts="etr_list_mathematical_contracts",
+  get_mathematical_contract="etr_get_mathematical_contract",
+  mathematical_contract_frame="etr_mathematical_contract_frame",
+  plot_kantz_sensitivity="etr_plot_kantz_sensitivity",
+  plot_lyapunov_sensitivity="etr_plot_lyapunov_sensitivity",
+  plot_windowed_rqa_sensitivity="etr_plot_windowed_rqa_sensitivity",
   functional_recovery_assessment_frame="etr_functional_recovery_assessment_frame",
   split_conformal_fpca_anomaly="etr_split_conformal_fpca_anomalies",
   # These four new native methods are experimentally implemented here.
@@ -402,6 +408,16 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   )
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% stage27_names] <- 27L
+  stage28_names <- c(
+    "list_mathematical_contracts",
+    "get_mathematical_contract",
+    "mathematical_contract_frame",
+    "plot_kantz_sensitivity",
+    "plot_lyapunov_sensitivity",
+    "plot_windowed_rqa_sensitivity"
+  )
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% stage28_names] <- 28L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset
