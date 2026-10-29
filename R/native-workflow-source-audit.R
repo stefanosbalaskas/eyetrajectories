@@ -39,8 +39,8 @@
     .etr_assert(is.list(step) &&
       is.character(step$name) && length(step$name)==1L &&
       !is.na(step$name) && nzchar(step$name) &&
-      is.character(step$function) && length(step$function)==1L &&
-      !is.na(step$function) && nzchar(step$function) &&
+      is.character(step[["function"]]) && length(step[["function"]])==1L &&
+      !is.na(step[["function"]]) && nzchar(step[["function"]]) &&
       is.character(step$status) && length(step$status)==1L &&
       !is.na(step$status) && step$status %in%
         c("completed","failed","skipped") &&
@@ -97,7 +97,7 @@ etr_workflow_steps_frame <- function(steps) {
     s <- steps[[i]]
     w <- if(is.null(s$warnings)) character() else s$warnings
     data.frame(order=as.integer(i),name=s$name,
-      function_name=s$function,status=s$status,
+      function_name=s[["function"]],status=s$status,
       elapsed_seconds=as.numeric(s$elapsed_seconds),
       parameters_json=.etr_workflow_json(s$parameters,
         "step.parameters",empty_mapping=TRUE),
