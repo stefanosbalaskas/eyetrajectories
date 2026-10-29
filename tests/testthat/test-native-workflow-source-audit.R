@@ -145,7 +145,10 @@ test_that("pinned published Python 1.2 workflow step and decision frames match c
       `function`="inspect",status="completed",
       parameters=reticulate::dict(alpha=1L),
       elapsed_seconds=0.125,
-      warnings=reticulate::r_to_py(c("source warning")))))
+      # A one-element R character vector converts to a Python str; the
+      # frozen dataclass then tuple(str) splits it into 14 characters.
+      # Pass a Python list containing one warning string instead.
+      warnings=reticulate::r_to_py(list("source warning")))))
   py_steps <- reticulate::py_to_r(reticulate::py_call(
     wf$workflow_steps_frame,
     steps=reticulate::r_to_py(list(source_step))))
