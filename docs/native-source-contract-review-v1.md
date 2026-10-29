@@ -18,10 +18,10 @@ This is an evidence-oriented development note, **not a certification claim**.
 
 | Domain | Number | Meaning |
 |---|---:|---|
-| Python function mappings | 244 / 380 | Names associated with native R candidates |
-| Native implementations started | 219 | Implemented operations; **not** proof of source equivalence |
-| Unmapped Python functions | 136 | No declared native candidate |
-| Known open source differences | 66 | Class, input, numerical, backend, error or scope boundaries |
+| Python function mappings | 246 / 380 | Names associated with native R candidates |
+| Native implementations started | 221 | Implemented operations; **not** proof of source equivalence |
+| Unmapped Python functions | 134 | No declared native candidate |
+| Known open source differences | 68 | Class, input, numerical, backend, error or scope boundaries |
 | Nonfunction exports for independent review | 128 | Values/classes not counted as native functions |
 | Complete independently certified public contracts | **0 / 508** | Four approval domains are not all independently signed off |
 
@@ -68,7 +68,14 @@ domains and Python result tuples remain unqualified.
 Python-1.2-opt-in source witnesses and native invalid-domain cases. Running
 these tests proves only the included fixtures, not full domain certification.
 
-\`etr_functional_recovery_qualification_scenarios()\` adds the four published\nsource-defined CI recovery designs (dense Gaussian and Student-t, native\nsparse PACE, and hierarchical source variance) but no simulation execution.\nPython frozen dataclass tuple identity and extreme integer inputs are\nnot qualified.\n\n## Local qualification on PR #46
+\`etr_functional_recovery_qualification_scenarios()\` adds the four published\nsource-defined CI recovery designs (dense Gaussian and Student-t, native\nsparse PACE, and hierarchical source variance) but no simulation execution.\nPython frozen dataclass tuple identity and extreme integer inputs are\nnot qualified.\n\nThe native R stress-design integration reproduces the fourteen published
+stress regimes and combines them with the four qualification cases in an
+eighteen-scenario catalogue. Explicit finite symmetric PSD covariance
+is now supported when independent noise SD is zero. Full-source
+Python dataclass/pandas equivalence and all accepted value types
+remain open certification gaps.
+
+## Local qualification on PR #46
 
 Use the exact Git HEAD from the draft PR before reporting test results.
 

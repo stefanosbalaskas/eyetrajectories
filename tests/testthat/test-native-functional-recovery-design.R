@@ -46,9 +46,9 @@ test_that("recovery designs are traceable and remain uncertified",{
   expect_false(row$one_to_one_native_contract_complete)
   expect_equal(nrow(etr_functional_simulation_scenario_frame(
     etr_functional_recovery_qualification_scenarios())),4L)
-  expect_equal(sum(z$is_python_function & z$named_native_candidate),244L)
-  expect_equal(sum(z$native_implementation_started),219L)
-  expect_equal(sum(z$source_contract_gap_unresolved),66L)
+  expect_equal(sum(z$is_python_function & z$named_native_candidate),246L)
+  expect_equal(sum(z$native_implementation_started),221L)
+  expect_equal(sum(z$source_contract_gap_unresolved),68L)
 })
 
 test_that("frozen Python 1.2 four recovery designs match native source metadata",{
