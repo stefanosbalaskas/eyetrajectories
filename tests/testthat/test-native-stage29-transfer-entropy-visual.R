@@ -188,9 +188,9 @@ test_that("Stage 29 published Python 1.2 source Axes geometry is opt-in",{
   py_spec<-reticulate::py_call(
     etpy_get_export("transfer_entropy_parameter_sensitivity"),
     source=py_source,target=py_target,
-    target_histories=reticulate::r_to_py(as.integer(1L)),
-    source_histories=reticulate::r_to_py(as.integer(1L)),
-    source_lags=reticulate::r_to_py(as.integer(c(1L,2L,3L))))
+    target_histories=reticulate::r_to_py(list(1L)),
+    source_histories=reticulate::r_to_py(list(1L)),
+    source_lags=reticulate::r_to_py(list(1L,2L,3L)))
   py_ax<-reticulate::py_call(
     etpy_get_export("plot_transfer_entropy_sensitivity"),
     result=py_spec,parameter="source_lag")
