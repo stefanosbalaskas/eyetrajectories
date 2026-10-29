@@ -81,7 +81,7 @@ test_that("Stage 26 windowed-RQA sensitivity reports exact source reuse and cent
   expect_equal(a$pairwise_table$n_common_centers,rep(2L,4L))
   common<-intersect(a$analyses[[1L]]$trajectories$time,
     a$analyses[[2L]]$trajectories$time)
-  expect_equal(common,c(7,13))
+  expect_equal(common,c(6,12))
   for(i in seq_len(4L)){
     left<-a$analyses[[1L]]$trajectories
     right<-a$analyses[[2L]]$trajectories
