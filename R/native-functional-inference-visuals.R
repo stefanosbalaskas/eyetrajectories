@@ -186,9 +186,16 @@ etr_plot_functional_mixed_effects_coefficient <- function(result,coefficient,...
     "native conformal calibration and target scores must be valid")
   p<-vapply(targets,function(x)
     (1+sum(cal>=x))/(length(cal)+1),numeric(1L))
+  flags<-p<=alpha
+  if("is_anomaly"%in%names(result$test)) {
+    supplied<-result$test$is_anomaly
+    .etr_assert(is.logical(supplied)&&length(supplied)==length(flags)&&
+      !anyNA(supplied)&&identical(as.logical(supplied),as.logical(flags)),
+      "native conformal flags disagree with conservative calibrated p-values")
+  }
   list(alpha=alpha,curve_ids=as.character(result$test$curve_id),
     p_values=p,n_calibration=length(cal),
-    flags=p<=alpha)
+    flags=flags)
 }
 
 #' Plot marginal split-conformal p-values from the native FPCA screen
