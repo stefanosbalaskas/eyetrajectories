@@ -240,7 +240,11 @@
   acceleration_magnitude_function="etr_acceleration_magnitude",
   distance_to_landmark_function="etr_distance_to_landmark",
   signed_curvature_function="etr_signed_curvature",
-  turning_rate_function="etr_turning_rate"
+  turning_rate_function="etr_turning_rate",
+  workflow_steps_frame="etr_workflow_steps_frame",
+  workflow_decisions_frame="etr_workflow_decisions_frame",
+  workflow_summary_frame="etr_workflow_summary_frame",
+  workflow_reporting_text="etr_workflow_reporting_text"
 )
 
 #' Audit one-to-one Python 1.2.0 versus independent native R coverage
@@ -466,6 +470,12 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   )
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% recovery_evidence_names] <- 32L
+  # Historical ledger provenance; public functions themselves are stage-free.
+  workflow_audit_names <- c("workflow_steps_frame",
+    "workflow_decisions_frame","workflow_summary_frame",
+    "workflow_reporting_text")
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% workflow_audit_names] <- 33L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset
