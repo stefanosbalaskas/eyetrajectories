@@ -2,7 +2,7 @@
 # These tests never call Python unless ET_RUN_PYTHON_TESTS="true".
 
 test_that("NumPy v1 header is parsed without Python execution", {
-  private <- eyetrajectories:::.etr6_npy_header
+  private <- eyetrajectories:::.etr_npy_header
   dictionary <- "{'descr': '<f8', 'fortran_order': False, 'shape': (2, 3), }"
   padding <- (16L-(10L+nchar(dictionary,type="bytes")+1L)%%16L)%%16L
   hdr <- paste0(dictionary,strrep(" ",padding),"\n")
@@ -23,7 +23,7 @@ test_that("NumPy v1 header is parsed without Python execution", {
 })
 
 test_that("native 64-bit NumPy integer parser preserves safe exact values", {
-  fn <- eyetrajectories:::.etr6_decode_u64
+  fn <- eyetrajectories:::.etr_npy_decode_u64
   mk <- function(number) {
     signed <- if(number<0) number+2^64 else number
     # Simple hand-built little-endian int64 known-bit fixtures
@@ -43,7 +43,7 @@ test_that("native 64-bit NumPy integer parser preserves safe exact values", {
 })
 
 test_that("typed JSON portable decoding rejects unsafe markers", {
-  decode <- eyetrajectories:::.etr6_decode
+  decode <- eyetrajectories:::.etr_portable_decode
   expect_equal(decode(list('__portable_type__'="mapping",
     entries=list(list("foo",1L),list("nested",
       list('__portable_type__'="tuple",items=list(TRUE,"item")))))),

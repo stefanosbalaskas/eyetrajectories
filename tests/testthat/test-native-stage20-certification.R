@@ -101,7 +101,7 @@ test_that("Stage 20 native IAAFT surrogates are permutation-preserving and seed 
   signal<-sin(seq(0,6*pi,length.out=64L))+
     .17*cos(seq(0,10*pi,length.out=64L))
   set.seed(201);before<-.Random.seed
-  a<-.etr20_iaaft_one(signal,20L,1)
+  a<-.etr_iaaft_single(signal,20L,1)
   expect_equal(sort(a$values),sort(signal),tolerance=0)
   expect_true(a$iterations>=2L && a$iterations<=20L)
   expect_true(is.finite(a$spectral_error))

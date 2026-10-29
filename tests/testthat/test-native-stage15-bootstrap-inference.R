@@ -51,7 +51,7 @@ test_that("Stage 15 Gaussian multiplier mean is observed-grid and group-aware",{
 
 test_that("Stage 15 score bootstrap refits, projects fixed targets, and sign aligns",{
   x<-.etr_bootstrap_inference_test_fixture()
-  target<-.etr12_subset(x,c(1L,3L,5L))
+  target<-.etr_cv_subset(x,c(1L,3L,5L))
   z<-etr_bootstrap_fpca_score_uncertainty(x,targets=target,
     n_bootstrap=20L,n_components=2L,random_state=11L)
   expect_s3_class(z,"etr_fpca_score_uncertainty")

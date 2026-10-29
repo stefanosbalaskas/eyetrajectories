@@ -24,7 +24,7 @@ test_that("Stage 21 registered public plotting names remain uncertified", {
       z$namespace=="root",,drop=FALSE]
     expect_equal(nrow(row),1L)
     expect_identical(row$native_r_candidate,mapped[i])
-    expect_identical(row$native_implementation_stage,27L)
+    expect_identical(row$native_implementation_stage,21L)
     expect_true(row$native_implementation_started)
     expect_false(row$one_to_one_native_contract_complete)
   }
