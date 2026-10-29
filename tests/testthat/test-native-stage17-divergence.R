@@ -151,7 +151,7 @@ test_that("Stage 17 strict public source census remains separate from certificat
   expect_equal(sum(z$native_implementation_started),181L)
   expect_equal(sum(z$native_implementation_stage==17L,na.rm=TRUE),6L)
   expect_equal(sum(!z$is_python_function &
-    is.na(z$native_representation_stage)),127L)
+    is.na(z$native_representation_stage)),121L)
   expect_true(all(!z$one_to_one_native_contract_complete))
   expect_error(etr_native_parity_catalog(require_complete=TRUE),"NOT complete")
   expect_identical(was,reticulate::py_available(initialize=FALSE))
