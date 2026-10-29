@@ -103,12 +103,16 @@ etr_function_on_scalar_reporting_text <- function(result,band=NULL) {
     .etr_assert(inherits(band,"etr_function_on_scalar_band")&&
       identical(band$reference,result)&&
       is.list(band$bootstrap)&&
-      is.numeric(band$bootstrap$n_bootstrap)&&
-      is.character(band$bootstrap$multiplier),
+      is.array(band$bootstrap$bootstrap_coefficients)&&
+      length(dim(band$bootstrap$bootstrap_coefficients))==4L&&
+      dim(band$bootstrap$bootstrap_coefficients)[1L]>=100L&&
+      is.character(band$bootstrap$multiplier)&&
+      length(band$bootstrap$multiplier)==1L,
       "band.reference and bootstrap metadata must match source FOS model")
+    n_bootstrap<-dim(band$bootstrap$bootstrap_coefficients)[1L]
     suffix<-sprintf(
       " Wild-bootstrap %.1f%% simultaneous coefficient bands were calibrated with %s %s multiplier replicates using %s-scope maxima over the observed grid.",
-      100*band$confidence_level,as.integer(band$bootstrap$n_bootstrap),
+      100*band$confidence_level,as.integer(n_bootstrap),
       band$bootstrap$multiplier,band$simultaneous_scope)
   }
   paste0(
