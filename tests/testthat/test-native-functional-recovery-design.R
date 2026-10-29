@@ -75,8 +75,8 @@ test_that("frozen Python 1.2 four recovery designs match native source metadata"
     for(i in seq_len(4L)){
       expect_equal(jsonlite::fromJSON(source$eigenvalues[[i]]),
         jsonlite::fromJSON(native$eigenvalues[[i]]),tolerance=0)
-      expect_identical(as.character(source$labels[[i]]),
-        as.character(native$labels[[i]]))
+      expect_equal(jsonlite::fromJSON(source$labels[[i]]),
+        jsonlite::fromJSON(native$labels[[i]]))
     }
   }
   expect_false(any(etr_native_parity_catalog()$
