@@ -76,7 +76,7 @@ Use the exact Git HEAD from the draft PR before reporting test results.
 pkgload::load_all(".", quiet = TRUE)
 Sys.unsetenv("ET_RUN_PYTHON_TESTS")
 testthat::test_local(".", filter =
-  "native-functional-scenario-design|native-private-helper-names|native-workflow-configuration|native-workflow-source-audit|full-native-r-parity-ledger|native-stage",
+  "native-functional-scenario-design|native-private-helper-names|native-workflow-configuration|native-workflow-source-audit|full-native-r-parity-ledger|native-",
   reporter = "summary")
 
 stopifnot(identical(et_python_version(), "1.2.0"))
