@@ -1206,7 +1206,7 @@ is not yet established.
 Six independent Python-free R integrations extend functional inference:
 windowed RQA sensitivity across explicit (window, step) designs,
 whole-curve/whole-participant simultaneous RQA mean bands, and
-pinned 27-metric functional-recovery catalog/assessment methods.
+pinned 27-metric functional-recovery catalog/assessment/reporting methods.
 The complete published Python 1.2 recovery catalog has a new direct
 cell-by-cell source oracle; native numerical window-center, sample-reuse
 and unit-level inference tests are authored.
