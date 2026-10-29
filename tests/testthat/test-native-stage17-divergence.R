@@ -146,9 +146,9 @@ test_that("Stage 17 strict public source census remains separate from certificat
   z<-etr_native_parity_catalog()
   expect_equal(nrow(z),508L)
   expect_equal(sum(z$is_python_function),380L)
-  expect_equal(sum(z$named_native_candidate),200L)
-  expect_equal(sum(z$is_python_function & !z$named_native_candidate),180L)
-  expect_equal(sum(z$native_implementation_started),175L)
+  expect_equal(sum(z$named_native_candidate),206L)
+  expect_equal(sum(z$is_python_function & !z$named_native_candidate),174L)
+  expect_equal(sum(z$native_implementation_started),181L)
   expect_equal(sum(z$native_implementation_stage==17L,na.rm=TRUE),6L)
   expect_equal(sum(!z$is_python_function &
     is.na(z$native_representation_stage)),121L)

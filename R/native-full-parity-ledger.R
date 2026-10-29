@@ -199,6 +199,12 @@
   plot_joint_recurrence="etr_plot_joint_recurrence",
   plot_windowed_rqa_trajectories="etr_plot_windowed_rqa_trajectories",
   plot_rqa_sensitivity="etr_plot_rqa_sensitivity",
+  windowed_rqa_sensitivity="etr_windowed_rqa_sensitivity",
+  windowed_rqa_functional_mean_band="etr_windowed_rqa_functional_mean_band",
+  functional_recovery_metric_catalog="etr_functional_recovery_metric_catalog",
+  functional_recovery_metric_catalog_frame="etr_functional_recovery_metric_catalog_frame",
+  functional_recovery_reporting_text="etr_functional_recovery_reporting_text",
+  functional_recovery_assessment_frame="etr_functional_recovery_assessment_frame",
   split_conformal_fpca_anomaly="etr_split_conformal_fpca_anomalies",
   # These four new native methods are experimentally implemented here.
   acceleration_magnitude_function="etr_acceleration_magnitude",
@@ -368,6 +374,16 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   )
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% stage24_names] <- 24L
+  stage26_names <- c(
+    "windowed_rqa_sensitivity",
+    "windowed_rqa_functional_mean_band",
+    "functional_recovery_metric_catalog",
+    "functional_recovery_metric_catalog_frame",
+    "functional_recovery_reporting_text",
+    "functional_recovery_assessment_frame"
+  )
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% stage26_names] <- 26L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset

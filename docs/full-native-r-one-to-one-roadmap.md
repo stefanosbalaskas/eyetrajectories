@@ -735,3 +735,26 @@ output classes. Plot source geometry equivalence does not certify
 backend or public return classes.
 
 [Stage 24 scientific plots and certification limits](full-native-r-stage24-nine-scientific-plots.md).
+
+
+## Stage 26 — scientific multiscale RQA and 27 recovery metric definitions
+
+Native numerical multiscale windowed RQA sensitivity now compares
+only exact shared window-center times, quantifies deterministic
+source-sample reuse and preserves predeclared (window, step) settings.
+The native whole-unit simultaneous band applies Gaussian multipliers
+to complete derived RQA curves or participant functional units,
+rather than treating overlapping windows as independent samples.
+
+Four more new source-name integrations publish the entire pinned
+**27-metric** functional-recovery catalog, its exact Python-source
+metadata frame, semantic assessment frames and manuscript
+reporting text. A separate internal Python recovery value-key helper
+has a corresponding R utility but is not counted among 380 public functions. Direct pinned Python 1.2 catalog/text oracles
+are authored, but execution is pending.
+
+**181 native R functions**, **206/380 mapped callable source names**,
+**174 unmapped source callables**, **27 hard-blocked source differences**
+and **0/508 independently fully certified public source contracts**.
+
+[Stage 26 scientific and certification review](full-native-r-stage26-functional-rqa-recovery.md).

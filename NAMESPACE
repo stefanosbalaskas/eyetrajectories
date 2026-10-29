@@ -690,3 +690,12 @@ export(etr_plot_functional_mean_band)
 export(etr_plot_joint_recurrence)
 export(etr_plot_windowed_rqa_trajectories)
 export(etr_plot_rqa_sensitivity)
+
+export(etr_windowed_rqa_sensitivity)
+export(etr_windowed_rqa_functional_mean_band)
+export(etr_functional_recovery_metric_catalog)
+export(etr_functional_recovery_metric_catalog_frame)
+export(etr_functional_recovery_value_key)
+export(etr_functional_recovery_assessment_frame)
+
+export(etr_functional_recovery_reporting_text)

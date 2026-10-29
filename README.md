@@ -1199,3 +1199,22 @@ published-source differences fail closed. Stage 24 runtime qualification
 is not yet established.
 
 [Stage 24 source contracts and testing](docs/full-native-r-stage24-nine-scientific-plots.md).
+
+
+## Stage 26: native multiscale RQA and recovery-metric registry (draft)
+
+Six independent Python-free R integrations extend functional inference:
+windowed RQA sensitivity across explicit (window, step) designs,
+whole-curve/whole-participant simultaneous RQA mean bands, and
+pinned 27-metric functional-recovery catalog/assessment/reporting methods.
+The complete published Python 1.2 recovery catalog has a new direct
+cell-by-cell source oracle; native numerical window-center, sample-reuse
+and unit-level inference tests are authored.
+
+**Authored census**: **181 native R functions**, **206/380 mapped
+Python source callables**, **174 unmapped callable names**,
+**27 documented source-domain/return divergences** and
+**0/508 fully independently certified public source contracts**.
+No merge or release; Stage 26 runtime tests pending.
+
+[Stage 26 scientific contract and test details](docs/full-native-r-stage26-functional-rqa-recovery.md).

@@ -2,7 +2,7 @@
 # Python 1.2 reference comparisons are explicit opt-in only.
 
 .etr14_fixture <- function(grouped=TRUE){
-  n<-16L;t<-seq(0,1,length.out=21L)
+  n<-16L;t<-seq(0,1,length.out=27L)
   vals<-array(0,c(n,length(t),2L))
   for(i in seq_len(n)){
     vals[i,,1L]<-sin(pi*t)*(1+i/19)+
@@ -156,9 +156,9 @@ test_that("Stage 14 strict inventory is distinct from scientific certification",
   a<-etr_native_parity_catalog()
   expect_equal(nrow(a),508L)
   expect_equal(sum(a$is_python_function),380L)
-  expect_equal(sum(a$named_native_candidate),200L)
-  expect_equal(sum(a$is_python_function & !a$named_native_candidate),180L)
-  expect_equal(sum(a$native_implementation_started),175L)
+  expect_equal(sum(a$named_native_candidate),206L)
+  expect_equal(sum(a$is_python_function & !a$named_native_candidate),174L)
+  expect_equal(sum(a$native_implementation_started),181L)
   expect_equal(sum(a$native_implementation_stage==14L,na.rm=TRUE),7L)
   expect_equal(sum(!is.na(a$native_representation_stage)),7L)
   expect_equal(sum(!a$is_python_function &
