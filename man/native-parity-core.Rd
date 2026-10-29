@@ -3,7 +3,6 @@
 \alias{etr_registration_warp_frame}
 \alias{etr_delay_embedding}
 \alias{etr_poincare_return_map}
-\alias{etr_recurrence_network}
 \alias{etr_recurrence_network_nodes}
 \alias{etr_split_conformal_threshold}
 \alias{etr_fpca_reconstruction_scores}
@@ -25,8 +24,6 @@ etr_delay_embedding(series, dimension = 2L, delay = 1L)
 
 etr_poincare_return_map(series, threshold = 0,
     direction = c("up", "down"), time = NULL)
-
-etr_recurrence_network(recurrence)
 
 etr_recurrence_network_nodes(network)
 
@@ -79,7 +76,8 @@ and have not been independently validated for equivalence.
 \code{etr_registration_warp_frame} returns its tidy warp frame;
 \code{etr_delay_embedding} returns a numeric matrix with sample indices;
 \code{etr_poincare_return_map} returns crossing times and adjacent pairs;
-\code{etr_recurrence_network} returns graph summaries;
+\code{etr_recurrence_network} returns the canonical source-aligned graph;
+the compatibility function below projects a legacy per-node table from it;
 \code{etr_recurrence_network_nodes} returns per-node metrics;
 \code{etr_split_conformal_threshold} returns threshold/rank metadata;
 \code{etr_fpca_reconstruction_scores} returns residual scores per curve;

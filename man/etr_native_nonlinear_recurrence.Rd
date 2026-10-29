@@ -66,7 +66,7 @@ Windowed RQA currently supports only Euclidean distance.}
 must contain at least three samples, and \code{step <= window}.}
 \item{window_units,step_units}{Currently only \code{"samples"}.}
 \item{radius}{Fixed finite nonnegative Euclidean recurrence radius.}
-\item{target_recurrence_rate}{Must be NULL in this Stage 8 native-R
+\item{target_recurrence_rate}{Must be NULL in this native-R
 windowed implementation; automatic target-density selection has not
 been numerically qualified.}
 \item{metrics}{Distinct named RQA metrics forming functional channels.}

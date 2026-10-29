@@ -14,7 +14,7 @@
 \alias{etr_largest_lyapunov_reporting_text}
 \alias{etr_surrogate_nonlinearity_reporting_text}
 \alias{etr_return_map_stability_reporting_text}
-\title{Stage 11 Python-free nonlinear scientific reporting}
+\title{Python-free nonlinear scientific reporting}
 \description{Independent R reporting and source-oriented structured-result adapters for published eyetrajectoriespy 1.2.0 nonlinear outputs. These functions do not run nonlinear estimators or import Python.}
 \usage{
 etr_joint_recurrence_reporting_text(result, metrics = NULL)
