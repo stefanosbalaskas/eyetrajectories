@@ -1,0 +1,70 @@
+name: Native functional recovery source evidence and Monte Carlo reporting
+on:
+  pull_request:
+    paths:
+      - "R/native-functional-recovery-evidence.R"
+      - "tests/testthat/test-native-functional-recovery-evidence.R"
+      - "R/native-full-parity-ledger.R"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "NAMESPACE"
+      - ".github/workflows/native-functional-recovery.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-r:
+    name: Native recovery MCSE and failure retention / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: "hard"
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Parse new native recovery science and test source
+        shell: bash
+        run: |
+          Rscript -e 'parse(file="R/native-functional-recovery-evidence.R"); parse(file="tests/testthat/test-native-functional-recovery-evidence.R")'
+      - name: Source counts and native recovery Monte Carlo tests
+        shell: bash
+        run: |
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-functional-recovery-evidence|native-functional-inference-visuals|native-functional-registration-plots|native-stage22-source-contract-gaps|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
+  pinned-python:
+    name: Exact typed Python 1.2 recovery tables and Matplotlib geometry
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+      MPLBACKEND: "Agg"
+    steps:
+      - uses: actions/checkout@v4
+      - id: python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: "hard"
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Source typed recovery record and summary quantile oracle
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-functional-recovery-evidence",reporter="summary",stop_on_failure=TRUE)'
