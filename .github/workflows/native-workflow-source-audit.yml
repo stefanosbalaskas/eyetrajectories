@@ -83,4 +83,4 @@ jobs:
         env:
           RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-functional-recovery-stress-design|native-functional-recovery-design|native-functional-scenario-design|native-workflow-configuration|native-workflow-source-audit",reporter="summary",stop_on_failure=TRUE)'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-functional-recovery-stress-design|native-functional-recovery-design|native-functional-scenario-design|native-workflow-configuration|native-recurrence-source-contract|native-workflow-source-audit",reporter="summary",stop_on_failure=TRUE)'
