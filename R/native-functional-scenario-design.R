@@ -134,18 +134,18 @@ etr_functional_simulation_scenario <- function(name,truth_grid,eigenvalues,
     class="etr_functional_simulation_scenario")
 }
 
-.etr_scenario_json <- function(x,mapping=FALSE) {
+.etr_scenario_json <- function(x,mapping=FALSE,scalar=FALSE) {
   if(is.null(x))return(NA_character_)
   if(mapping&&is.list(x)&&!length(x))return("{}")
   if(!requireNamespace("jsonlite",quietly=TRUE))
     stop("jsonlite required for simulation scenario source JSON",call.=FALSE)
-  as.character(jsonlite::toJSON(x,auto_unbox=FALSE,
+  as.character(jsonlite::toJSON(x,auto_unbox=scalar,
     null="null",digits=NA,pretty=FALSE))
 }
 
 #' Audit functional simulation scenario designs in a native R data frame
 #' @param scenarios Ordered list of native scenario declarations.
-#' @return Source-aligned 24-column scenario design table. Python pandas
+#' @return Source-aligned 23-column scenario design table. Python pandas
 #'   class, float formatting and Python dataclass identity remain uncertified.
 #' @export
 etr_functional_simulation_scenario_frame <- function(scenarios) {
@@ -170,7 +170,8 @@ etr_functional_simulation_scenario_frame <- function(scenarios) {
       irregular_time_design=s$irregular_time_design,
       participant_eigenvalues=.etr_scenario_json(s$participant_eigenvalues),
       trial_eigenvalues=.etr_scenario_json(s$trial_eigenvalues),
-      measurement_noise_sd=.etr_scenario_json(s$measurement_noise_sd),
+      measurement_noise_sd=.etr_scenario_json(s$measurement_noise_sd,
+        scalar=length(s$measurement_noise_sd)==1L),
       measurement_noise_covariance=NA_character_,
       coordinate_system=s$coordinate_system,
       time_unit=s$time_unit,
