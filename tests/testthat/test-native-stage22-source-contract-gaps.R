@@ -7,7 +7,7 @@ test_that("508-contract certificate gate rejects known unresolved source differe
   # Preserve the historical gap floor as later scientific methods add gaps.
   # The current exact count is independently checked by the full ledger.
   expect_gte(sum(z$source_contract_gap_known),53L)
-  expect_equal(sum(z$source_contract_gap_unresolved),57L)
+  expect_gte(sum(z$source_contract_gap_unresolved),57L)
   expect_true(all(z$source_contract_gap_unresolved[
     z$contract_certification_candidate]))
   expect_true(all(z$contract_numerical_fixture_pass[
