@@ -53,3 +53,33 @@ test_that("active native package and CI filenames are stage-free",{
     use.names=FALSE)
   expect_false(any(grepl("stage[0-9]+",names,ignore.case=TRUE)))
 })
+
+test_that("native public functions are defined once and never named by stage",{
+  source_root<-normalizePath(file.path(testthat::test_path(),"..",".."),
+    mustWork=TRUE)
+  source_dir<-file.path(source_root,"R")
+  if(!dir.exists(source_dir))skip("source checkout not available")
+  files<-list.files(source_dir,pattern="\\.R$",full.names=TRUE)
+  get_public_definitions<-function(file){
+    expr<-as.list(parse(file=file,keep.source=FALSE))
+    names<-vapply(expr,function(e){
+      if(!is.call(e)||length(e)<3L||
+         !(identical(e[[1L]],as.name("<-"))||
+           identical(e[[1L]],as.name("=")))||
+         !is.symbol(e[[2L]])||!is.call(e[[3L]])||
+         !identical(e[[3L]][[1L]],as.name("function")))
+        return(NA_character_)
+      as.character(e[[2L]])
+    },character(1L))
+    names[!is.na(names)&grepl("^etr_",names)]
+  }
+  definitions<-unlist(lapply(files,get_public_definitions),
+    use.names=FALSE)
+  duplicates<-sort(unique(definitions[duplicated(definitions)]))
+  expect_identical(duplicates,character())
+  exports<-getNamespaceExports("eyetrajectories")
+  exported_functions<-exports[vapply(exports,function(name)
+    is.function(getExportedValue("eyetrajectories",name)),logical(1L))]
+  expect_identical(grep("stage",exported_functions,
+    ignore.case=TRUE,value=TRUE),character())
+})
