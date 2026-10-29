@@ -23,3 +23,20 @@ test_that("all native package function names are stage-free",{
   expect_false(any(grepl("^\\.etr(?:s)?[0-9]+_",functions,perl=TRUE)))
   expect_false(any(grepl("stage[0-9]+",functions,ignore.case=TRUE)))
 })
+
+test_that("all parsed production and test calls use stage-free private symbols",{
+  source_root <- normalizePath(file.path(testthat::test_path(),"..",".."),
+    mustWork=TRUE)
+  if(!dir.exists(file.path(source_root,"R")))
+    skip("source files unavailable in installed-package tests")
+  rfiles <- list.files(file.path(source_root,"R"),
+    pattern="\\.R$",full.names=TRUE)
+  tfiles <- list.files(file.path(source_root,"tests","testthat"),
+    pattern="\\.R$",full.names=TRUE)
+  all_symbols <- unique(unlist(lapply(c(rfiles,tfiles),function(path)
+    all.names(parse(file=path),functions=TRUE,unique=TRUE)),
+    use.names=FALSE))
+  numeric_helper_refs <- grep("^\\.etr(?:s)?[0-9]+_",
+    all_symbols,perl=TRUE,value=TRUE)
+  expect_identical(numeric_helper_refs,character())
+})
