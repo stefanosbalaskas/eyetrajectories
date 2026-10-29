@@ -1,11 +1,11 @@
-name: Native R Stage 29 transfer entropy source visual diagnostics
+name: Native R transfer entropy source visual diagnostics
 on:
   pull_request:
     paths:
-      - "R/native-stage29-transfer-entropy-visual.R"
+      - "R/native-transfer-entropy-visual.R"
       - "R/native-full-parity-ledger.R"
       - "inst/extdata/native_source_contract_gaps_stage22.csv"
-      - "tests/testthat/test-native-stage29-transfer-entropy-visual.R"
+      - "tests/testthat/test-native-transfer-entropy-visual.R"
       - "NAMESPACE"
       - ".github/workflows/native-r-parity-stage29.yml"
   workflow_dispatch:
@@ -13,7 +13,7 @@ permissions:
   contents: read
 jobs:
   native:
-    name: Stage 29 TE native R source geometries / ${{ matrix.os }}
+    name: TE native R source geometries / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -35,13 +35,13 @@ jobs:
       - name: Parse the new source and its tests before package load
         shell: bash
         run: |
-          Rscript -e 'parse(file="R/native-stage29-transfer-entropy-visual.R"); parse(file="tests/testthat/test-native-stage29-transfer-entropy-visual.R")'
+          Rscript -e 'parse(file="R/native-transfer-entropy-visual.R"); parse(file="tests/testthat/test-native-transfer-entropy-visual.R")'
       - name: Native R TE geometry and strict 508-source certification gate
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-stage29-transfer-entropy-visual|native-stage22-source-contract-gaps|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-transfer-entropy-visual|native-source-contract-gaps|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
   pinned-python:
-    name: Stage 29 real published Python 1.2 TE Axes numerical source oracle
+    name: real published Python 1.2 TE Axes numerical source oracle
     runs-on: ubuntu-latest
     env:
       ET_RUN_PYTHON_TESTS: "true"
@@ -67,4 +67,4 @@ jobs:
         env:
           RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-stage29-transfer-entropy-visual",reporter="summary",stop_on_failure=TRUE)'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-transfer-entropy-visual",reporter="summary",stop_on_failure=TRUE)'

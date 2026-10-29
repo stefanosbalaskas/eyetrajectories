@@ -1,15 +1,15 @@
-name: Native R Stage 5 trajectory provenance and R snapshots
+name: Native R trajectory provenance and R snapshots
 
 on:
   pull_request:
     paths:
       - "R/native-trajectories.R"
-      - "R/native-stage5-trajectory-provenance.R"
-      - "R/native-stage3-preprocessing-distances.R"
+      - "R/native-trajectory-provenance.R"
+      - "R/native-preprocessing-distances.R"
       - "R/native-planar-geometry-parity.R"
       - "NAMESPACE"
       - "man/**"
-      - "tests/testthat/test-native-stage5-trajectory-provenance.R"
+      - "tests/testthat/test-native-trajectory-provenance.R"
       - ".github/workflows/native-r-parity-stage5.yml"
   workflow_dispatch:
 
@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   native-r-no-python:
-    name: Stage 5 R only / ${{ matrix.os }}
+    name: R only / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -40,14 +40,14 @@ jobs:
       - name: Native trajectory provenance and snapshot integrity
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before <- reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-stage5-trajectory-provenance",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(reticulate::py_available(initialize=FALSE),before))'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before <- reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-trajectory-provenance",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(reticulate::py_available(initialize=FALSE),before))'
       - name: Full native stage 2/3/4 backward-compatibility check
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); testthat::test_local(".",filter="native-planar-geometry-parity|native-stage3-preprocessing-distances|native-stage4-distance-contracts",reporter="summary",stop_on_failure=TRUE)'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); testthat::test_local(".",filter="native-planar-geometry-parity|native-preprocessing-distances|native-distance-contracts",reporter="summary",stop_on_failure=TRUE)'
 
   python-reference-oracle:
-    name: Stage 5 provenance semantics / Python 1.2 (Linux)
+    name: provenance semantics / Python 1.2 (Linux)
     runs-on: ubuntu-latest
     env:
       ET_RUN_PYTHON_TESTS: "true"
@@ -75,4 +75,4 @@ jobs:
         env:
           RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-stage5-trajectory-provenance",reporter="summary",stop_on_failure=TRUE)'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-trajectory-provenance",reporter="summary",stop_on_failure=TRUE)'

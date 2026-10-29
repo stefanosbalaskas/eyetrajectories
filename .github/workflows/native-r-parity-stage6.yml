@@ -1,14 +1,14 @@
-name: Native R Stage 6 Python portable-result reader
+name: Native R Python portable-result reader
 
 on:
   pull_request:
     paths:
-      - "R/native-stage6-python-portable-reader.R"
+      - "R/native-python-portable-reader.R"
       - "R/native-full-parity-ledger.R"
       - "DESCRIPTION"
       - "NAMESPACE"
-      - "tests/testthat/test-native-stage6-python-portable-reader.R"
-      - "tests/testthat/test-native-stage6-parity-ledger.R"
+      - "tests/testthat/test-native-python-portable-reader.R"
+      - "tests/testthat/test-native-portable-parity-ledger.R"
       - ".github/workflows/native-r-parity-stage6.yml"
   workflow_dispatch:
 
@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   native-r-no-python:
-    name: Stage 6 R-only parser and strict ledger / ${{ matrix.os }}
+    name: R-only parser and strict ledger / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -41,10 +41,10 @@ jobs:
       - name: No-Python NumPy header/parser validation
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); old <- reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-stage6",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(reticulate::py_available(initialize=FALSE),old))'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); old <- reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="(?:native-portable-parity-ledger|native-python-portable-reader)",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(reticulate::py_available(initialize=FALSE),old))'
 
   python-generated-portable-fixtures:
-    name: Stage 6 real Python 1.2 JSON/NPZ exports / Linux
+    name: real Python 1.2 JSON/NPZ exports / Linux
     runs-on: ubuntu-latest
     env:
       ET_RUN_PYTHON_TESTS: "true"
@@ -73,4 +73,4 @@ jobs:
         env:
           RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-stage6",reporter="summary",stop_on_failure=TRUE)'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="(?:native-portable-parity-ledger|native-python-portable-reader)",reporter="summary",stop_on_failure=TRUE)'

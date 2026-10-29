@@ -1,13 +1,13 @@
-name: Native R Stage 9 functional transformations and diagnostics
+name: Native R functional transformations and diagnostics
 
 on:
   pull_request:
     paths:
-      - "R/native-stage9-functional-diagnostics.R"
+      - "R/native-functional-diagnostics.R"
       - "R/native-parity-registration.R"
       - "R/native-full-parity-ledger.R"
       - "NAMESPACE"
-      - "tests/testthat/test-native-stage9*.R"
+      - "tests/testthat/test-(?:native-functional-diagnostics)*.R"
       - "tests/testthat/test-native-stage*-parity-ledger.R"
       - ".github/workflows/native-r-parity-stage9.yml"
   workflow_dispatch:
@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   native-r:
-    name: Stage 9 pure R / ${{ matrix.os }}
+    name: pure R / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -36,13 +36,13 @@ jobs:
           extra-packages: |
             any::pkgload
             any::testthat
-      - name: Native Stage 9 and earlier cumulative register assertions
+      - name: Native and earlier cumulative register assertions
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-stage9|native-stage[3-8]-parity-ledger|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="(?:native-functional-diagnostics)|native-stage[3-8]-parity-ledger|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))'
 
   python-reference:
-    name: Stage 9 direct Python 1.2 numeric oracle
+    name: direct Python 1.2 numeric oracle
     runs-on: ubuntu-latest
     env:
       ET_RUN_PYTHON_TESTS: "true"
@@ -69,4 +69,4 @@ jobs:
         env:
           RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-stage9-functional-diagnostics",reporter="summary",stop_on_failure=TRUE)'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-functional-diagnostics",reporter="summary",stop_on_failure=TRUE)'

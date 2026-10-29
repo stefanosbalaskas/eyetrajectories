@@ -1,13 +1,13 @@
-name: Native R Stage 3 preprocessing and trajectory distances
+name: Native R preprocessing and trajectory distances
 
 on:
   pull_request:
     paths:
-      - "R/native-stage3-preprocessing-distances.R"
+      - "R/native-preprocessing-distances.R"
       - "R/native-full-parity-ledger.R"
       - "NAMESPACE"
-      - "tests/testthat/test-native-stage3-preprocessing-distances.R"
-      - "tests/testthat/test-native-stage3-parity-ledger.R"
+      - "tests/testthat/test-native-preprocessing-distances.R"
+      - "tests/testthat/test-native-parity-ledger.R"
       - "tests/testthat/test-full-native-r-parity-ledger.R"
       - ".github/workflows/native-r-parity-stage3.yml"
   workflow_dispatch:
@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   native-r-no-python:
-    name: Native Stage 3 on ${{ matrix.os }} (no Python runtime)
+    name: Native on ${{ matrix.os }} (no Python runtime)
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -39,10 +39,10 @@ jobs:
       - name: Native preprocessing and distances (Python not initialized)
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before <- reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-stage3|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(reticulate::py_available(initialize=FALSE),before))'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before <- reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="(?:native-parity-ledger|native-preprocessing-distances)|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(reticulate::py_available(initialize=FALSE),before))'
 
   python-reference-oracle:
-    name: Native Stage 3 versus Python 1.2 / Linux
+    name: Native versus Python 1.2 / Linux
     runs-on: ubuntu-latest
     env:
       ET_RUN_PYTHON_TESTS: "true"
@@ -70,4 +70,4 @@ jobs:
         env:
           RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-stage3",reporter="summary",stop_on_failure=TRUE)'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="(?:native-parity-ledger|native-preprocessing-distances)",reporter="summary",stop_on_failure=TRUE)'

@@ -1,13 +1,13 @@
-name: Native R Stage 4 audited Frechet and DTW parity
+name: Native R audited Frechet and DTW parity
 
 on:
   pull_request:
     paths:
-      - "R/native-stage4-distance-contracts.R"
+      - "R/native-distance-contracts.R"
       - "R/native-full-parity-ledger.R"
       - "NAMESPACE"
-      - "tests/testthat/test-native-stage4-distance-contracts.R"
-      - "tests/testthat/test-native-stage4-parity-ledger.R"
+      - "tests/testthat/test-native-distance-contracts.R"
+      - "tests/testthat/test-native-distances-parity-ledger.R"
       - ".github/workflows/native-r-parity-stage4.yml"
   workflow_dispatch:
 
@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   native-r-no-python:
-    name: Native Stage 4 on ${{ matrix.os }}
+    name: Native on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -38,7 +38,7 @@ jobs:
       - name: Full native DTW/Frechet path tests and closed 508 gate
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was <- reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-stage4|full-native-r-parity-ledger|native-stage3-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(reticulate::py_available(initialize=FALSE),was))'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was <- reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="(?:native-distance-contracts|native-distances-parity-ledger)|full-native-r-parity-ledger|native-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(reticulate::py_available(initialize=FALSE),was))'
 
   python-reference-oracle:
     name: Pinned Python 1.2 path and normalized-cost oracle / Linux
@@ -69,4 +69,4 @@ jobs:
         env:
           RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-stage4",reporter="summary",stop_on_failure=TRUE)'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="(?:native-distance-contracts|native-distances-parity-ledger)",reporter="summary",stop_on_failure=TRUE)'
