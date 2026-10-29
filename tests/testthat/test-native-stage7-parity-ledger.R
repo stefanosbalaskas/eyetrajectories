@@ -17,8 +17,8 @@ test_that("ten Stage 7 public functions are independently implemented and mapped
   expect_equal(sum(catalog$is_python_function),380L)
   expect_equal(sum(catalog$named_native_candidate),236L)
   expect_equal(sum(catalog$is_python_function &
-                   !catalog$named_native_candidate),174L)
-  expect_equal(sum(catalog$native_implementation_started),144L)
+                   !catalog$named_native_candidate),144L)
+  expect_equal(sum(catalog$native_implementation_started),211L)
   expect_equal(sum(catalog$native_implementation_stage==7L,
                    na.rm=TRUE),10L)
   for(name in names(names)){
