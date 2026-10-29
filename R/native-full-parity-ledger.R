@@ -575,7 +575,11 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   review <- as.character(register$review_evidence)
   evidence_linked <- !is.na(review) &
     grepl("^https://github\\.com/[^/]+/[^/]+/commit/[0-9a-f]{40}$",review)
-  pass <- apply(register[approved],1L,all) &
+  # A signed approval cannot bypass reproducible direct-source fixtures.
+  # A passing fixture by itself never implies full-domain certification.
+  pass <- register$numerical_fixture_pass &
+    fixture_link_present &
+    apply(register[approved],1L,all) &
     register$evidence_state=="approved_and_reproducible" &
     evidence_linked
   unresolved<-api$source_contract_gap_unresolved[
