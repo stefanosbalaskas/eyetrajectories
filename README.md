@@ -1253,3 +1253,22 @@ public Python source callables**, **161 unmapped functions**,
 **0/508 independently fully certified public source contracts**.
 
 [Stage 28 scientific source-contract qualification](docs/full-native-r-stage28-mathematical-contracts.md).
+
+
+## Stage 29: transfer-entropy scientific visualizations (draft)
+
+Three additional Python-free native R graphics plot predeclared
+transfer-entropy multiverse sensitivity, analyst-declared source-only
+circular-shift TE nulls and conditional TE nulls. The direct published
+Python 1.2 source oracles use **real typed Python TE results and
+Matplotlib Axes** to test fixed-bin null counts and plotted
+sensitivity coordinates. Source estimators are not recomputed.
+Conditional source shift is not a causal-identification test.
+
+Cumulative authored inventory: **197 native implementations**,
+**222/380 mapped Python callable names**, **158 unmapped**,
+**43 explicit known full-source differences**, and
+**0/508 independently certified complete Python source contracts**.
+Stage 29 runtime verification is still pending.
+
+[Stage 29 source and statistical review](docs/full-native-r-stage29-transfer-entropy-visual.md).
