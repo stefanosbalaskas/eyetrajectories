@@ -11,7 +11,7 @@ test_that("cross-module native inference helpers use scientific names",{
     logical(1L))))
   expect_false(any(vapply(obsolete,function(x)
     exists(x,envir=namespace,inherits=FALSE),logical(1L))))
-  expect_false(any(grepl("stage[0-9]+|etr[0-9]+_",
+  expect_false(any(grepl("stage|etr[0-9]+_",
     getNamespaceExports("eyetrajectories"),ignore.case=TRUE)))
 })
 
@@ -21,7 +21,7 @@ test_that("all native package function names are stage-free",{
   functions <- symbols[vapply(symbols,function(name)
     is.function(get(name,envir=namespace,inherits=FALSE)),logical(1L))]
   expect_false(any(grepl("^\\.etr(?:s)?[0-9]+_",functions,perl=TRUE)))
-  expect_false(any(grepl("stage[0-9]+",functions,ignore.case=TRUE)))
+  expect_false(any(grepl("stage",functions,ignore.case=TRUE)))
 })
 
 test_that("all parsed production and test calls use stage-free private symbols",{
