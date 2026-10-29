@@ -211,7 +211,9 @@ test_that("Stage 24 direct pinned Python 1.2 plot geometry oracle is opt-in",{
       min_abs_component_similarity=c(.8,.5,.9)))))
   ax<-reticulate::py_call(etpy_get_export("plot_fpca_influence"),
     result=obj,metric="influence_score")
-  xy<-as.matrix(et_to_r(ax$lines[[1L]]$get_xydata()))
+  # reticulate indexes a Python list from zero; Axes.plot adds one line.
+  expect_equal(as.integer(reticulate::py_len(ax$lines)),1L)
+  xy<-as.matrix(et_to_r(ax$lines[[0L]]$get_xydata()))
   expect_equal(unname(xy[,1L]),c(0,1,2))
   expect_equal(unname(xy[,2L]),c(.2,.5,.1),tolerance=1e-12)
   grDevices::pdf(tempfile(fileext=".pdf"))
