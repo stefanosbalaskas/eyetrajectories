@@ -151,9 +151,9 @@ test_that("Stage 16 frozen public source inventory remains conservatively closed
   api<-etr_native_parity_catalog()
   expect_equal(nrow(api),508L)
   expect_equal(sum(api$is_python_function),380L)
-  expect_equal(sum(api$named_native_candidate),219L)
-  expect_equal(sum(api$is_python_function & !api$named_native_candidate),161L)
-  expect_equal(sum(api$native_implementation_started),194L)
+  expect_equal(sum(api$named_native_candidate),222L)
+  expect_equal(sum(api$is_python_function & !api$named_native_candidate),158L)
+  expect_equal(sum(api$native_implementation_started),197L)
   expect_equal(sum(api$native_implementation_stage==16L,na.rm=TRUE),12L)
   expect_equal(sum(!api$is_python_function &
     is.na(api$native_representation_stage)),121L)

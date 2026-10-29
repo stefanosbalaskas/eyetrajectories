@@ -714,3 +714,7 @@ export(etr_mathematical_contract_frame)
 export(etr_plot_kantz_sensitivity)
 export(etr_plot_lyapunov_sensitivity)
 export(etr_plot_windowed_rqa_sensitivity)
+
+export(etr_plot_transfer_entropy_sensitivity)
+export(etr_plot_transfer_entropy_circular_shift_test)
+export(etr_plot_conditional_transfer_entropy_circular_shift_test)

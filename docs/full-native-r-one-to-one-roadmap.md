@@ -797,3 +797,22 @@ reproducible, but R S3/data.frame objects are not Python frozen
 dataclasses/tuple/pandas classes. No independence review is inferred.
 
 [Stage 28 source and certification evidence](full-native-r-stage28-mathematical-contracts.md).
+
+
+## Stage 29 — TE sensitivity and source-only shift null visual diagnostics
+
+Three independent native R TE plots now preserve exact stored source
+sensitivity/numerical null values, source-specific fixed histogram
+bin counts and explicit no-aggregation multiverse slices. The pinned
+Python 1.2 oracle obtains **actual Python estimator result classes**
+and Matplotlib Axes rather than attempting to fake Python class
+identities. It compares the numeric graphics geometry without
+claiming cross-language causal identification or source RNG parity.
+
+Authored census: **197 native R implementations**, **222/380 mapped
+source public callables**, **158 unmapped callables**, **43 unresolved
+public source differences**, and **0/508 independently approved full
+source contracts**. In particular, R Sturges and NumPy automatic
+histogram binning are explicitly different.
+
+[Stage 29 scientific source and qualification scope](full-native-r-stage29-transfer-entropy-visual.md).
