@@ -46,7 +46,6 @@ etr_r_backend_catalog()
 \item{threshold}{Finite scalar crossing threshold.}
 \item{direction}{Upward or downward threshold crossing.}
 \item{time}{Optional finite strictly increasing measurement times.}
-\item{recurrence}{Native symmetric auto-recurrence object.}
 \item{network}{Native recurrence-network result.}
 \item{calibration_scores}{Nonnegative scores from held-out calibration curves.}
 \item{alpha}{Miscoverage fraction strictly between zero and one.}
@@ -57,7 +56,10 @@ etr_r_backend_catalog()
 \details{
 The registration is a deterministic piecewise-linear inverse time map, with
 endpoints fixed. It is not SRVF elastic registration or a Python parity claim.
-The recurrence network treats time samples as graph vertices. It does not
+The canonical recurrence network treats time samples as graph vertices;
+\code{etr_recurrence_network_nodes()} is an explicitly legacy R-only
+projection that uses one-based component identifiers and missing
+clustering for nodes of degree less than two. It does not
 regard recurrence nodes as independent research participants. Theiler
 exclusions remain ineligible edges. Return maps are scalar threshold-event
 maps, not Lyapunov or causal estimates.
