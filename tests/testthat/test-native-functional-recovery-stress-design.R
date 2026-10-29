@@ -59,7 +59,7 @@ test_that("source catalogue is ordered and noninferential",{
   expect_identical(tab$scenario[18L],
     "stress_correlated_multichannel_noise")
   expect_identical(tab$scientific_target[18L],"mfpca")
-  expect_true(is.na(tab$measurement_noise_sd[18L]))
+  expect_identical(tab$measurement_noise_sd[18L],"null")
   expect_equal(jsonlite::fromJSON(
     tab$measurement_noise_covariance[18L]),
     matrix(c(.04,.018,.018,.09),2L,2L))
@@ -113,9 +113,10 @@ test_that("published Python 1.2 recovery stress source and full catalogue agree"
         "missingness","phase_variation","measurement_noise_covariance")){
         p<-py_stress_frame[[col]][i]
         n<-native[[col]][i]
-        if(is.na(p)||is.na(n)){
-          expect_identical(is.na(p),is.na(n),info=paste(i,col))
-        }else expect_equal(jsonlite::fromJSON(p),
+        # Distinguish literal JSON "null" from a genuinely missing
+        # pandas cell (None); they are different source output schemas.
+        expect_identical(is.na(p),is.na(n),info=paste(i,col))
+        if(!is.na(p))expect_equal(jsonlite::fromJSON(p),
           jsonlite::fromJSON(n),info=paste(i,col))
       }
     }
