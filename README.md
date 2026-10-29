@@ -1318,3 +1318,5 @@ review: **0/508 fully independently certified public contracts**.
 The new branch still requires its first exact-head runtime tests.
 
 [Native scientific inference and source audit](docs/native-functional-inference-source-audit.md).
+
+[Four deterministic Python-source contract closure gaps and independent approval requirements](docs/native-source-contract-closure.md).
