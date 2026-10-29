@@ -239,7 +239,15 @@ etr_native_source_contract_review_queue <- function() {
     kind=z$kind,native_r_candidate=z$native_r_candidate,
     mapped=z$named_native_candidate,
     native_implementation_started=z$native_implementation_started,
+    source_sha=z$source_git_sha,
     source_gap_unresolved=z$source_contract_gap_unresolved,
+    source_gap_kind=z$source_contract_gap_kind,
+    targeted_numerical_fixture_pass=z$contract_numerical_fixture_pass,
+    full_numeric_approved=z$independent_numeric_parity_pass,
+    schema_boundary_approved=z$behavioral_schema_parity_pass,
+    scientific_scope_approved=z$scientific_inference_qualified,
+    independent_reviewer_approved=z$independent_contract_review_pass,
+    evidence_state=z$contract_certification_evidence_state,
     fully_certified=z$one_to_one_native_contract_complete,
     next_action=next_action,stringsAsFactors=FALSE)
 }
