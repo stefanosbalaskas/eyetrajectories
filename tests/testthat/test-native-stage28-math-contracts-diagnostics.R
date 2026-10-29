@@ -37,7 +37,7 @@ test_that("Stage 28 published 41-contract registry retains every 88 API row",{
     c("contract_key","title","function","latex","site_anchor","scope"))
   expect_length(contracts,41L)
   expect_identical(names(contracts),unique(frame$contract_key))
-  expect_false(anyDuplicated(frame$function)>0L)
+  expect_false(anyDuplicated(frame[["function"]])>0L)
   expect_identical(frame$contract_key[1L],"quadrature")
   expect_identical(contracts[[1L]]$public_api,
     "functional_trapezoid_weights")
