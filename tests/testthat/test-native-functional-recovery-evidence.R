@@ -161,7 +161,7 @@ test_that("real Python 1.2 recovery records verify all frames and plotted points
     name=def$name,quantity=def$quantity,direction=def$direction,
     units=def$units,scope=def$scope,description=def$description)
   rows<-lapply(native$records,function(z) {
-    values<-lapply(z$metric_values %||% list(),function(x)
+    values<-lapply(if(is.null(z$metric_values))list() else z$metric_values,function(x)
       reticulate::py_call(rec$FunctionalRecoveryValue,
         metric=pd,value=x$value,
         component=as.integer(x$component),source=x$source))
