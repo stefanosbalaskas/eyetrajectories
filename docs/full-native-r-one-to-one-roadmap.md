@@ -748,8 +748,9 @@ rather than treating overlapping windows as independent samples.
 
 Four more new source-name integrations publish the entire pinned
 **27-metric** functional-recovery catalog, its exact Python-source
-metadata frame, canonical component/source keys and semantic
-assessment frames. Direct pinned Python 1.2 catalog/text oracles
+metadata frame, semantic assessment frames and manuscript
+reporting text. A separate internal Python recovery value-key helper
+has a corresponding R utility but is not counted among 380 public functions. Direct pinned Python 1.2 catalog/text oracles
 are authored, but execution is pending.
 
 **181 native R functions**, **206/380 mapped callable source names**,
