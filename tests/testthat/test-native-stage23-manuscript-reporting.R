@@ -117,9 +117,9 @@ test_that("Stage 23 full 508-census retains unsigned source qualification",{
     expect_identical(a$native_implementation_stage,23L)
     expect_false(a$one_to_one_native_contract_complete)
   }
-  expect_equal(sum(z$native_implementation_started),181L)
-  expect_equal(sum(z$named_native_candidate & z$is_python_function),206L)
-  expect_equal(sum(z$is_python_function & !z$named_native_candidate),174L)
+  expect_equal(sum(z$native_implementation_started),188L)
+  expect_equal(sum(z$named_native_candidate & z$is_python_function),213L)
+  expect_equal(sum(z$is_python_function & !z$named_native_candidate),167L)
   expect_equal(sum(z$one_to_one_native_contract_complete),0L)
   expect_identical(before,reticulate::py_available(initialize=FALSE))
 })
