@@ -1293,3 +1293,28 @@ Cumulative authored source inventory: **200 native R implementations**,
 Current branch runtime tests remain pending.
 
 [Scientific public naming and registration plots](docs/native-public-naming-registration-plots.md).
+
+
+## Native functional inference and source-qualified geometry (research draft)
+
+Seven additional **stage-free, Python-free** public R functions
+cover function-on-scalar regression coefficient plots and
+manuscript reporting, conservative marginal FPCA conformal anomaly
+p-values and reporting, restricted mixed-model Wald coefficients,
+whole-unit RQA bootstrap percentile means, and native functional
+variance decomposition.
+
+Direct published Python 1.2 source oracles compare **real fitted**
+function-on-scalar coefficient arrays/plot coordinates and
+manuscript text, plus conservative conformal marginal p-values and
+source figure coordinates. Native whole-unit RQA and restricted
+mixed-moments tests preserve the scientific method limitations.
+
+Cumulative authored: **207 native scientific implementations**,
+**232/380 mapped Python public functions**, **148 unmapped** and
+**53 hard-blocked source contract differences**. Source content
+qualification does **not** replace independent complete-domain
+review: **0/508 fully independently certified public contracts**.
+The new branch still requires its first exact-head runtime tests.
+
+[Native scientific inference and source audit](docs/native-functional-inference-source-audit.md).
