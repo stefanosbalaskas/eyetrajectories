@@ -1,0 +1,73 @@
+name: Native workflow reporting and source contract audit
+on:
+  pull_request:
+    paths:
+      - "R/native-workflow-source-audit.R"
+      - "R/native-full-parity-ledger.R"
+      - "NAMESPACE"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/native_nonfunction_contract_review_v1.csv"
+      - "tests/testthat/test-native-workflow-source-audit.R"
+      - "tests/testthat/test-full-native-r-parity-ledger.R"
+      - ".github/workflows/native-workflow-source-audit.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline-r:
+    name: R native source audit / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: "hard"
+          extra-packages: |
+            any::pkgload
+            any::testthat
+            any::jsonlite
+      - name: Parse source-aligned workflow implementation and tests
+        shell: bash
+        run: |
+          Rscript -e 'parse(file="R/native-workflow-source-audit.R"); parse(file="tests/testthat/test-native-workflow-source-audit.R")'
+      - name: Run native audits without initializing Python
+        shell: bash
+        run: |
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-workflow-source-audit|full-native-r-parity-ledger|native-functional-recovery-evidence|native-functional-inference-visuals|native-stage22-source-contract-gaps",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
+  python-source:
+    name: Published Python 1.2 typed workflow oracle
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - id: python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: "hard"
+          extra-packages: |
+            any::pkgload
+            any::testthat
+            any::jsonlite
+      - name: Cross-check real Python dataclass frames against native R
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-workflow-source-audit",reporter="summary",stop_on_failure=TRUE)'
