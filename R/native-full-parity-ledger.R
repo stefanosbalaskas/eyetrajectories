@@ -566,7 +566,7 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     "certification evidence approvals must be explicit booleans")
   review <- as.character(register$review_evidence)
   evidence_linked <- !is.na(review) &
-    grepl("^https://github\\.com/",review)
+    grepl("^https://github\\.com/[^/]+/[^/]+/commit/[0-9a-f]{40}$",review)
   pass <- apply(register[approved],1L,all) &
     register$evidence_state=="approved_and_reproducible" &
     evidence_linked
