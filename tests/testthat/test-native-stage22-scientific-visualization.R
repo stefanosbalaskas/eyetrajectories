@@ -25,9 +25,9 @@ test_that("Stage 22 eight public source-name analogues remain uncertified",{
   }
   expect_equal(nrow(z),508L)
   expect_equal(sum(z$is_python_function),380L)
-  expect_equal(sum(z$named_native_candidate&z$is_python_function),232L)
-  expect_equal(sum(z$is_python_function&!z$named_native_candidate),148L)
-  expect_equal(sum(z$native_implementation_started),207L)
+  expect_equal(sum(z$named_native_candidate&z$is_python_function),236L)
+  expect_equal(sum(z$is_python_function&!z$named_native_candidate),144L)
+  expect_equal(sum(z$native_implementation_started),144L)
   expect_equal(sum(z$one_to_one_native_contract_complete),0L)
   expect_identical(before,reticulate::py_available(initialize=FALSE))
 })

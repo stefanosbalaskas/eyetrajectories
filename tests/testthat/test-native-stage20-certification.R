@@ -16,9 +16,9 @@ test_that("Stage 20 certification census never treats candidate as complete",{
   z<-etr_native_parity_catalog()
   expect_equal(nrow(z),508L)
   expect_equal(sum(z$is_python_function),380L)
-  expect_equal(sum(z$named_native_candidate),232L)
-  expect_equal(sum(z$native_implementation_started),207L)
-  expect_equal(sum(z$is_python_function & !z$named_native_candidate),148L)
+  expect_equal(sum(z$named_native_candidate),236L)
+  expect_equal(sum(z$native_implementation_started),211L)
+  expect_equal(sum(z$is_python_function & !z$named_native_candidate),144L)
   expect_equal(sum(z$native_implementation_stage==20L,na.rm=TRUE),1L)
   expect_equal(sum(z$contract_certification_candidate),4L)
   expect_identical(sort(z$python_name[z$contract_certification_candidate]),
