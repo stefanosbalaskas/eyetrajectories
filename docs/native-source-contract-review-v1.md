@@ -21,7 +21,7 @@ This is an evidence-oriented development note, **not a certification claim**.
 | Python function mappings | 244 / 380 | Names associated with native R candidates |
 | Native implementations started | 219 | Implemented operations; **not** proof of source equivalence |
 | Unmapped Python functions | 136 | No declared native candidate |
-| Known open source differences | 65 | Class, input, numerical, backend, error or scope boundaries |
+| Known open source differences | 66 | Class, input, numerical, backend, error or scope boundaries |
 | Nonfunction exports for independent review | 128 | Values/classes not counted as native functions |
 | Complete independently certified public contracts | **0 / 508** | Four approval domains are not all independently signed off |
 

@@ -120,7 +120,7 @@ test_that("workflow integration stays uncertified until independent full review"
   expect_equal(nrow(z),508L)
   expect_equal(sum(z$is_python_function & z$named_native_candidate),244L)
   expect_equal(sum(z$native_implementation_started),219L)
-  expect_equal(sum(z$source_contract_gap_unresolved),65L)
+  expect_equal(sum(z$source_contract_gap_unresolved),66L)
   for(name in c("workflow_steps_frame","workflow_decisions_frame",
                 "workflow_summary_frame","workflow_reporting_text")){
     row <- z[z$python_name==name & z$is_python_function,,drop=FALSE]
@@ -134,7 +134,7 @@ test_that("workflow integration stays uncertified until independent full review"
   expect_equal(nrow(queue),508L)
   expect_equal(sum(queue$mapped & queue$kind=="function"),244L)
   expect_equal(sum(queue$targeted_numerical_fixture_pass),4L)
-  expect_equal(sum(queue$source_gap_unresolved),65L)
+  expect_equal(sum(queue$source_gap_unresolved),66L)
   expect_false(any(queue$full_numeric_approved))
   expect_false(any(queue$schema_boundary_approved))
   expect_false(any(queue$scientific_scope_approved))

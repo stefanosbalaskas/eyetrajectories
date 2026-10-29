@@ -60,7 +60,7 @@ test_that("workflow configuration remains an unresolved, individually tracked so
   expect_equal(nrow(z),508L)
   expect_equal(sum(z$is_python_function & z$named_native_candidate),244L)
   expect_equal(sum(z$native_implementation_started),219L)
-  expect_equal(sum(z$source_contract_gap_unresolved),65L)
+  expect_equal(sum(z$source_contract_gap_unresolved),66L)
   exports <- getNamespaceExports("eyetrajectories")
   expect_false(any(grepl("stage[0-9]+|etr[0-9]+_",
     exports,ignore.case=TRUE)))
