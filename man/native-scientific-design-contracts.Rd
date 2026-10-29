@@ -7,6 +7,8 @@
 \alias{etr_functional_simulation_scenario_frame}
 \alias{etr_expand_functional_simulation_scenarios}
 \alias{etr_functional_recovery_qualification_scenarios}
+\alias{etr_functional_recovery_stress_scenarios}
+\alias{etr_functional_recovery_scenario_catalog_frame}
 \title{Explicit native workflow and functional simulation design contracts}
 \description{
 Python-free native R design declarations, scientific decision provenance and
@@ -38,6 +40,12 @@ etr_expand_functional_simulation_scenarios(
 etr_functional_recovery_qualification_scenarios(
   replicates = 3L, seed_start = 202800L
 )
+etr_functional_recovery_stress_scenarios(
+  replicates = 10L, seed_start = 204000L
+)
+etr_functional_recovery_scenario_catalog_frame(
+  qualification_replicates = 3L, stress_replicates = 10L
+)
 }
 \arguments{
 \item{fields}{Named JSON-compatible native workflow configuration.}
@@ -60,13 +68,15 @@ etr_functional_recovery_qualification_scenarios(
 \item{participant_eigenvalues}{Nonnegative hierarchical participant variances.}
 \item{trial_eigenvalues}{Nonnegative hierarchical trial variances.}
 \item{measurement_noise_sd}{Finite nonnegative scalar or vector SD.}
-\item{measurement_noise_covariance}{Unsupported covariance specification; fails closed in this native subset.}
+\item{measurement_noise_covariance}{Optional finite symmetric positive-semidefinite covariance, permitted only when the independent noise SD is zero.}
 \item{missingness}{Explicit JSON-compatible missing-data mechanism.}
 \item{phase_variation}{Explicit JSON-compatible phase-variation mechanism.}
 \item{score_distribution}{Normal or Student-t score source.}
 \item{score_df}{Student-t degrees of freedom; must exceed two for Student-t.}
 \item{orthonormal_tolerance}{Positive orthonormality tolerance.}
 \item{replicates}{Positive number of declared simulation replicates.}
+\item{qualification_replicates}{Number of replicates for four source qualification scenarios.}
+\item{stress_replicates}{Number of replicates for fourteen descriptive stress scenarios.}
 \item{seed_start}{Initial integer seed for the declared replicate design.}
 \item{labels}{Named JSON-compatible provenance labels.}
 \item{scenarios}{Ordered list of native simulation scenario records.}
@@ -80,7 +90,9 @@ etr_functional_recovery_qualification_scenarios(
 \code{etr_workflow_config_to_dict()} returns an R list.
 \code{etr_functional_simulation_scenario()} returns a native S3 scenario.
 \code{etr_functional_simulation_scenario_frame()} returns a data frame.
-The two expansion/catalogue functions return ordered lists of native scenarios.
+The two scenario expansion functions return ordered lists of native scenarios.
+\code{etr_functional_recovery_scenario_catalog_frame()} returns a native
+18-row descriptive data frame, not a fitted scientific model.
 }
 \details{
 The reference source is published \code{eyetrajectoriespy} 1.2.0 at commit
@@ -90,8 +102,8 @@ identity, nested JSON serialization, and every invalid-domain boundary are
 not qualified as fully equivalent. Consult \code{etr_native_parity_catalog()}
 and \code{etr_native_source_contract_review_queue()} for source-contract gaps.
 An empty preprocessing plan performs no implicit scientific operation.
-The four recovery qualification scenarios declare source-data-generating
-conditions only; they do not automatically execute any test or calibrate
-coverage.
+Four recovery qualification scenarios and fourteen stress scenarios
+declare source-data-generating conditions only. They do not execute a test,
+select calibration thresholds or establish experimental recovery coverage.
 }
 \keyword{models}
