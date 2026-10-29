@@ -15,7 +15,7 @@
     all(vapply(t,function(x)is.character(x)&&
       all(!is.na(x)&nzchar(x)),logical(1L)))&&
     length(unique(t$contract_key))==41L&&
-    !anyDuplicated(t$function),
+    !anyDuplicated(t[["function"]]),
     "published Python 1.2 mathematical contract frame has changed")
   t
 }
@@ -34,7 +34,7 @@ etr_list_mathematical_contracts <- function() {
       length(unique(x$latex))==1L,
       "published mathematical contract contains conflicting metadata")
     structure(list(key=key,title=x$title[1L],
-      public_api=as.character(x$function),
+      public_api=as.character(x[["function"]]),
       equations=strsplit(x$latex[1L],"\n\n",fixed=TRUE)[[1L]],
       site_anchor=x$site_anchor[1L],scope=x$scope[1L]),
       class="etr_mathematical_contract")
