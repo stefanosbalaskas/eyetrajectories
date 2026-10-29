@@ -697,3 +697,5 @@ export(etr_functional_recovery_metric_catalog)
 export(etr_functional_recovery_metric_catalog_frame)
 export(etr_functional_recovery_value_key)
 export(etr_functional_recovery_assessment_frame)
+
+export(etr_functional_recovery_reporting_text)
