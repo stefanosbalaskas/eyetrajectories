@@ -108,9 +108,14 @@ _gp_text=et.functional_simulation_reporting_text(_gp_sim)
   obs<-src$observations
   ids<-as.character(unlist(reticulate::py_to_r(obs$curve_ids)))
   n<-length(ids)
-  as_source_list<-function(sequence)
-    lapply(seq_len(n),function(i)
-      reticulate::py_to_r(sequence[[as.integer(i-1L)]]))
+  # Convert the whole Python sequence first. Once reticulate exposes
+  # an R list, [[ is one-based, NOT Python's zero-based indexing.
+  as_source_list<-function(sequence){
+    converted<-reticulate::py_to_r(sequence)
+    expect_true(is.list(converted))
+    expect_length(converted,n)
+    unname(converted)
+  }
   native<-list(observations=list(curve_ids=ids),
     truth=list(metadata=reticulate::py_to_r(truth$metadata),
       truth_grid=as.numeric(reticulate::py_to_r(truth$truth_grid)),
