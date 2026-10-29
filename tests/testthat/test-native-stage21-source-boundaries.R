@@ -47,9 +47,9 @@ test_that("published Python 1.2 accepts inputs that strict native R rejects",{
   expect_error(etr_inverse_alr(extreme,2L,3L),
     "overflow")
 
-  # Python reads .scores and .n_components on any compatible object,
-  # without requiring a concrete fitted FPCA dataclass. The R
-  # implementation requires a validated native etr_fpca fit.
+  # Python reads .scores and .n_components from a minimal compatible
+  # source object. Native R now supports the matching finite matrix list,
+  # while full NumPy/pandas and malformed-object domains need review.
   sc<-matrix(c(0,1,2,3,4,5),nrow=3L,ncol=2L)
   ns<-reticulate::import("types")$SimpleNamespace(
     scores=reticulate::r_to_py(sc),
@@ -59,9 +59,12 @@ test_that("published Python 1.2 accepts inputs that strict native R rejects",{
     n_components=as.integer(2L))
   expect_equal(unname(et_to_r(py_distance)),
     unname(as.matrix(stats::dist(sc))),tolerance=1e-12)
+  expect_equal(unname(etr_score_distance_matrix(
+    list(scores=sc,n_components=2L))),
+    unname(et_to_r(py_distance)),tolerance=1e-12)
   expect_error(etr_score_distance_matrix(
-    list(scores=sc,n_components=2L)),
-    "compatible native FPCA")
+    list(scores=matrix(c(1,NA_real_),nrow=1L),n_components=2L)),
+    "finite scores")
 
   z<-etr_native_parity_catalog()
   expect_equal(sum(z$one_to_one_native_contract_complete),0L)

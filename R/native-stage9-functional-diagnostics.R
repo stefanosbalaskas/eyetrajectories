@@ -167,7 +167,24 @@ etr_fpca_score_frame <- function(result,prefix="FPC") {
 #' @return Unlabelled symmetric numeric matrix.
 #' @export
 etr_score_distance_matrix <- function(fpca,n_components=NULL) {
-  .etr9_fit(fpca)
+  if(inherits(fpca,"etr_fpca")) {
+    .etr9_fit(fpca)
+  } else {
+    # Published Python 1.2 uses only .scores and .n_components, with
+    # duck-typed FPCA-compatible objects. Permit that minimal finite
+    # matrix contract without pretending all Python object types port.
+    .etr_assert(is.list(fpca)&&
+      is.matrix(fpca$scores)&&is.numeric(fpca$scores)&&
+      nrow(fpca$scores)>=1L&&ncol(fpca$scores)>=1L&&
+      all(is.finite(fpca$scores))&&
+      is.numeric(fpca$n_components)&&
+      length(fpca$n_components)==1L&&
+      is.finite(fpca$n_components)&&
+      fpca$n_components==as.integer(fpca$n_components)&&
+      fpca$n_components>=1L&&
+      fpca$n_components<=ncol(fpca$scores),
+      "fpca must provide finite scores and a compatible n_components")
+  }
   if(is.null(n_components))n_components<-fpca$n_components
   .etr_assert(is.numeric(n_components) && length(n_components)==1L &&
     is.finite(n_components) && n_components==as.integer(n_components) &&
