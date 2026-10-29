@@ -1182,3 +1182,20 @@ pending full-domain independent review. Source-aligned reporting is
 not underlying estimator certification.
 
 [Stage 23 research methods and verification](docs/full-native-r-stage23-manuscript-source-contracts.md).
+
+
+## Stage 24: nine native FPCA and nonlinear-dynamics graphics (draft)
+
+Nine additional independent Python-free R diagnostics plot native FPCA
+stability, influence, outlier review, reconstruction cross-validation,
+eigenspace stability, observed-grid simultaneous mean bands, joint
+recurrence, windowed RQA trajectories and predeclared RQA sensitivity.
+
+**Authored** native R inventory: **175 implemented scientific functions**,
+**200/380 mapped public Python functions**, **180 unmapped function names**,
+**4 targeted numerical-fixture-qualified candidate contracts** and
+**0/508 fully independent approved source contracts**. All 21 known
+published-source differences fail closed. Stage 24 runtime qualification
+is not yet established.
+
+[Stage 24 source contracts and testing](docs/full-native-r-stage24-nine-scientific-plots.md).
