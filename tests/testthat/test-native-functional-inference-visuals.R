@@ -212,13 +212,18 @@ test_that("published Python 1.2 direct FOS and conformal source oracle is opt-in
   # Published Python 1.2 rejects the native-only arbitrary label.
   # This proves the fixture uses an accepted source coordinate contract.
   expect_identical(x$x$coordinate_system,"unknown")
-  expect_error(reticulate::py_call(
+  # Source TrajectorySet construction stores metadata; scientific validation
+  # enforces the whitelist. Test the actual source validation boundary.
+  py_invalid<-reticulate::py_call(
     etpy_get_export("TrajectorySet"),
     time=reticulate::r_to_py(x$x$time),
     values=reticulate::r_to_py(x$x$values),
     curve_ids=reticulate::r_to_py(as.list(x$x$curve_ids)),
     dimension_names=reticulate::r_to_py(as.list(x$x$dimension_names)),
-    coordinate_system="arbitrary",time_unit="s"),
+    coordinate_system="arbitrary",time_unit="s")
+  expect_error(reticulate::py_call(
+    etpy_get_export("validate_trajectory_set"),
+    trajectories=py_invalid),
     "coordinate_system must be one of")
   py_design<-pd$DataFrame(reticulate::r_to_py(as.list(x$design)))
   py_fit<-reticulate::py_call(
