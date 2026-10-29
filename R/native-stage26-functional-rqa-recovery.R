@@ -97,6 +97,25 @@ etr_functional_recovery_assessment_frame <- function(assessment) {
   x<-do.call(rbind,rows);rownames(x)<-NULL;x
 }
 
+#' Compact known-truth recovery assessment text without estimator retuning
+#' @param assessment Native semantic recovery assessment with provenance.
+#' @return A deterministic manuscript-oriented source-aligned description.
+#' @export
+etr_functional_recovery_reporting_text <- function(assessment) {
+  frame<-etr_functional_recovery_assessment_frame(assessment)
+  names<-paste(sort(unique(frame$metric)),collapse=", ")
+  estimator<-if(is.null(assessment$provenance$estimator))
+    "unspecified" else assessment$provenance$estimator
+  .etr_assert(is.character(estimator)&&length(estimator)==1L&&
+    !is.na(estimator),
+    "recovery estimator provenance must be a single string")
+  paste0("Known-truth recovery was evaluated after fitting for estimator '",
+    estimator,"'. Recorded metric families: ",names,
+    ". Metric direction, units, scope, and component/source labels are ",
+    "retained explicitly. Recovery truth is an evaluation input only ",
+    "and is not an estimator-tuning input.")
+}
+
 .etr26_pairs <- function(pairs) {
   if(is.matrix(pairs)&&is.numeric(pairs)&&ncol(pairs)==2L)
     pairs<-lapply(seq_len(nrow(pairs)),function(i)as.numeric(pairs[i,]))
