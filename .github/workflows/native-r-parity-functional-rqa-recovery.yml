@@ -1,19 +1,20 @@
-name: Native R transfer entropy source visual diagnostics
+name: Native R functional RQA and published recovery metadata
 on:
   pull_request:
     paths:
-      - "R/native-transfer-entropy-visual.R"
+      - "R/native-functional-rqa-recovery.R"
       - "R/native-full-parity-ledger.R"
+      - "inst/extdata/native_recovery_metric_catalog_py120.csv"
       - "inst/extdata/native_source_contract_gaps_stage22.csv"
-      - "tests/testthat/test-native-transfer-entropy-visual.R"
+      - "tests/testthat/test-native-functional-rqa-recovery.R"
       - "NAMESPACE"
-      - ".github/workflows/native-r-parity-stage29.yml"
+      - ".github/workflows/native-r-parity-functional-rqa-recovery.yml"
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  native:
-    name: TE native R source geometries / ${{ matrix.os }}
+  native-r:
+    name: multiscale RQA numerical and recovery inventory / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -32,16 +33,12 @@ jobs:
           extra-packages: |
             any::pkgload
             any::testthat
-      - name: Parse the new source and its tests before package load
+      - name: Deterministic RQA sensitivity and whole-function multiplier band
         shell: bash
         run: |
-          Rscript -e 'parse(file="R/native-transfer-entropy-visual.R"); parse(file="tests/testthat/test-native-transfer-entropy-visual.R")'
-      - name: Native R TE geometry and strict 508-source certification gate
-        shell: bash
-        run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-transfer-entropy-visual|native-source-contract-gaps|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
-  pinned-python:
-    name: real published Python 1.2 TE Axes numerical source oracle
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-functional-rqa-recovery|native-source-contract-gaps|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
+  published-python:
+    name: pinned Python 1.2 recovery catalog value-by-value oracle
     runs-on: ubuntu-latest
     env:
       ET_RUN_PYTHON_TESTS: "true"
@@ -62,9 +59,9 @@ jobs:
           extra-packages: |
             any::pkgload
             any::testthat
-      - name: Published Python TE result classes and Matplotlib source geometry
+      - name: Pinned 27-metric schema and zero-based recovery key source oracle
         shell: bash
         env:
           RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-transfer-entropy-visual",reporter="summary",stop_on_failure=TRUE)'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-functional-rqa-recovery",reporter="summary",stop_on_failure=TRUE)'

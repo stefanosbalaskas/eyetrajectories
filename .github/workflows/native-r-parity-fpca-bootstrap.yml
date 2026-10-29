@@ -7,7 +7,7 @@ on:
       - "tests/testthat/test-native-fpca-bootstrap-source.R"
       - "inst/extdata/native_source_contract_gaps_stage22.csv"
       - "NAMESPACE"
-      - ".github/workflows/native-r-parity-stage27.yml"
+      - ".github/workflows/native-r-parity-fpca-bootstrap.yml"
   workflow_dispatch:
 permissions:
   contents: read
