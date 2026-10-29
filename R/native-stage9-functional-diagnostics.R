@@ -3,14 +3,14 @@
 # analysis.py, sparse.py, registration.py, phase.py).
 # Inputs remain native R containers; no reticulate or Python use.
 
-.etr9_index <- function(index, n, label) {
+.etr_fpca_index <- function(index, n, label) {
   .etr_assert(is.numeric(index) && length(index)==1L &&
     is.finite(index) && index==as.integer(index) && n>=1L,
     paste(label,"must be one finite integer"))
   as.integer(index %% n)+1L  # Python-style negative/zero-based reference dimension
 }
 
-.etr9_fit <- function(result) {
+.etr_fpca_diagnostic_fit <- function(result) {
   .etr_assert(inherits(result,"etr_fpca") &&
     is.matrix(result$mean) && is.array(result$components) &&
     length(dim(result$components))==3L &&
@@ -26,7 +26,7 @@
 # Python np.asarray(..., dtype=float) accepts regular nested sequences.
 # Convert one useful class of those inputs without Python/reticulate.
 # Full Python coercion and nonfinite/epsilon semantics remain unqualified.
-.etr9_simplex_nested_input <- function(values) {
+.etr_simplex_nested_input <- function(values) {
   if(!is.list(values) || is.data.frame(values) ||
      !is.null(dim(values))) return(values)
   n<-length(values)
@@ -62,13 +62,13 @@
 etr_alr_transform <- function(values,reference_dimension=-1L,epsilon=1e-8) {
   .etr_assert(is.numeric(epsilon) && length(epsilon)==1L &&
     is.finite(epsilon) && epsilon>0,"epsilon must be positive and finite")
-  values<-.etr9_simplex_nested_input(values)
+  values<-.etr_simplex_nested_input(values)
   etr_validate_simplex(values)
   d<-dim(values); k<-d[3L]
   # Published Python 1.2 accepts a one-channel simplex and returns an
   # empty last-axis ALR array; inverse_alr maps it back to all ones.
   .etr_assert(k>=1L,"ALR requires at least one simplex dimension")
-  ref<-.etr9_index(reference_dimension,k,"reference_dimension")
+  ref<-.etr_fpca_index(reference_dimension,k,"reference_dimension")
   clipped<-pmax(values,epsilon)
   totals<-apply(clipped,c(1L,2L),sum)
   clipped<-sweep(clipped,c(1L,2L),totals,"/")
@@ -95,7 +95,7 @@ etr_inverse_alr <- function(transformed,reference_dimension,n_dimensions) {
     all(is.finite(transformed)),
     "transformed data have incompatible dimensions or nonfinite values")
   d<-dim(transformed)
-  ref<-.etr9_index(reference_dimension,as.integer(n_dimensions),
+  ref<-.etr_fpca_index(reference_dimension,as.integer(n_dimensions),
                    "reference_dimension")
   others<-setdiff(seq_len(n_dimensions),ref)
   out<-array(1,c(d[1L],d[2L],as.integer(n_dimensions)))
@@ -114,7 +114,7 @@ etr_inverse_alr <- function(transformed,reference_dimension,n_dimensions) {
 #' @export
 etr_component_trajectories <- function(result,component,
     sd_multipliers=c(-2,-1,0,1,2)) {
-  .etr9_fit(result)
+  .etr_fpca_diagnostic_fit(result)
   .etr_assert(is.numeric(component) && length(component)==1L &&
     is.finite(component) && component==as.integer(component) &&
     component>=0L && component<result$n_components,
@@ -139,7 +139,7 @@ etr_component_trajectories <- function(result,component,
 #'   if the fitted components do not jointly reach the requested fraction.
 #' @export
 etr_select_n_components <- function(result,threshold=0.95) {
-  .etr9_fit(result)
+  .etr_fpca_diagnostic_fit(result)
   .etr_assert(is.numeric(threshold) && length(threshold)==1L &&
     is.finite(threshold) && threshold>0 && threshold<=1,
     "threshold must be in (0, 1]")
@@ -152,7 +152,7 @@ etr_select_n_components <- function(result,threshold=0.95) {
 #' @param prefix Single nonmissing string.
 #' @export
 etr_fpca_score_frame <- function(result,prefix="FPC") {
-  .etr9_fit(result)
+  .etr_fpca_diagnostic_fit(result)
   .etr_assert(is.character(prefix) && length(prefix)==1L && !is.na(prefix),
     "prefix must be a single nonmissing string")
   scores<-as.data.frame(result$scores)
@@ -168,7 +168,7 @@ etr_fpca_score_frame <- function(result,prefix="FPC") {
 #' @export
 etr_score_distance_matrix <- function(fpca,n_components=NULL) {
   if(inherits(fpca,"etr_fpca")) {
-    .etr9_fit(fpca)
+    .etr_fpca_diagnostic_fit(fpca)
   } else {
     # Published Python 1.2 uses only .scores and .n_components, with
     # duck-typed FPCA-compatible objects. Permit that minimal finite
@@ -211,7 +211,7 @@ etr_pairwise_functional_distances <- function(trajectories,
 #' @return One row per curve with observed and nonfinite support diagnostics.
 #' @export
 etr_sparse_dimension_summary <- function(trajectories,dimension) {
-  .etr7_validate_irregular(trajectories)
+  .etr_irregular_validate_samples(trajectories)
   .etr_assert(is.character(dimension) && length(dimension)==1L &&
     !is.na(dimension) && dimension %in% trajectories$dimension_names,
     "Unknown dimension")
@@ -237,7 +237,7 @@ etr_sparse_dimension_summary <- function(trajectories,dimension) {
 }
 
 # All phase helpers require source-orientation h_i(t), not inverse warps.
-.etr9_registration <- function(registration) {
+.etr_registration_diagnostic <- function(registration) {
   .etr_assert(is.list(registration) &&
     inherits(registration$original,"etr_trajectory_set"),
     "registration must have a native original trajectory set")
@@ -262,7 +262,7 @@ etr_sparse_dimension_summary <- function(trajectories,dimension) {
 #' @param result Native registration list with original and warping_functions.
 #' @export
 etr_warping_displacement <- function(result) {
-  .etr9_registration(result)
+  .etr_registration_diagnostic(result)
   sweep(result$warping_functions,2L,result$original$time,"-")
 }
 
@@ -282,7 +282,7 @@ etr_phase_summary <- function(result) {
 #' @export
 etr_phase_trajectory_set <- function(registration,
                                      representation="displacement") {
-  .etr9_registration(registration)
+  .etr_registration_diagnostic(registration)
   .etr_assert(is.character(representation) && length(representation)==1L &&
     !is.na(representation) &&
     representation %in% c("displacement","warping"),

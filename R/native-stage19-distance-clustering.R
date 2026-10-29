@@ -11,7 +11,7 @@
 #' @export
 etr_cluster_fpca_scores <- function(fpca,n_clusters,
     n_components=NULL,random_state=0L,n_init="auto"){
-  .etr10_fit(fpca)
+  .etr_fpca_fitted_check(fpca)
   k<-.etr_nonlinear_integer(n_clusters,2L,"n_clusters")
   n<-length(fpca$curve_ids)
   .etr_assert(k<=n,"n_clusters must not exceed number of trajectories")

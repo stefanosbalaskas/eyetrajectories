@@ -59,7 +59,7 @@ etr_plot_planar_trajectories <- function(trajectories,max_curves=40L,
 #' @export
 etr_plot_fpca_component <- function(result,component=0L,
     dimension=NULL,sd_multiplier=2,...) {
-  .etr9_fit(result)
+  .etr_fpca_diagnostic_fit(result)
   .etr_assert(is.numeric(component)&&length(component)==1L&&
     is.finite(component)&&component==as.integer(component)&&
     component>=0&&component<result$n_components,

@@ -381,7 +381,7 @@ etr_bootstrap_fpca_component_bands <- function(trajectories,
 etr_fpca_component_band_frame <- function(result) {
   .etr_assert(inherits(result,"etr_fpca_component_band"),
     "result must be native FPC component band")
-  ref<-result$reference;.etr10_fit(ref)
+  ref<-result$reference;.etr_fpca_fitted_check(ref)
   k<-ref$n_components;nt<-length(ref$time);nd<-length(ref$dimension_names)
   rows<-vector("list",k*nt*nd);p<-0L
   for(j in seq_len(k))for(d in seq_len(nd))for(t in seq_len(nt)){

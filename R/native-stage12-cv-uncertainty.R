@@ -5,29 +5,29 @@
 # regression_inference.py, similarity_sensitivity.py.
 # No reticulate/Python or estimator uncertainty bootstrap is invoked.
 
-.etr12_fields <- function(x, fields, label) {
+.etr_cv_fields <- function(x, fields, label) {
   .etr_assert(is.list(x) && all(fields %in% names(x)),
     paste(label, "requires declared fields",paste(fields,collapse=", ")))
 }
-.etr12_vector <- function(x,n,label,finite=TRUE) {
+.etr_cv_numeric_vector <- function(x,n,label,finite=TRUE) {
   .etr_assert(is.numeric(x) && is.null(dim(x)) && length(x)==n &&
     (!finite||all(is.finite(x))),
     paste(label,"requires a numeric vector of declared length"))
   as.numeric(x)
 }
-.etr12_matrix <- function(x,n,m,label) {
+.etr_cv_numeric_matrix <- function(x,n,m,label) {
   .etr_assert(is.matrix(x) && is.numeric(x) &&
     identical(dim(x),c(as.integer(n),as.integer(m))) && all(is.finite(x)),
     paste(label,"requires finite numeric matrix with declared dimensions"))
   x
 }
-.etr12_curve_ids <- function(ids) {
+.etr_cv_curve_ids <- function(ids) {
   .etr_assert(is.character(ids) && length(ids)>0L &&
     !anyNA(ids) && !anyDuplicated(ids),
     "curve identifiers must be unique and complete")
   ids
 }
-.etr12_fold_assignment <- function(x,n_splits,cv_unit,group_column,shuffle,
+.etr_cv_fold_assignment <- function(x,n_splits,cv_unit,group_column,shuffle,
                                      random_state) {
   n<-length(x$curve_ids)
   if(identical(cv_unit,"curve")) {
@@ -85,7 +85,7 @@
   list(fold=group_folds[match(gr,labels)],groups=gr)
 }
 
-.etr12_subset <- function(x,ids) {
+.etr_cv_subset <- function(x,ids) {
   d<-dim(x$values)
   arr<-array(x$values[ids,,,drop=FALSE],
              c(length(ids),d[2L],d[3L]))
@@ -127,7 +127,7 @@ etr_cross_validate_fpca_reconstruction <- function(trajectories,
   .etr_assert(is.logical(shuffle) && length(shuffle)==1L && !is.na(shuffle),
     "shuffle must be one explicit logical flag")
   n_splits<-as.integer(n_splits)
-  split<-.etr12_fold_assignment(trajectories,n_splits,cv_unit,
+  split<-.etr_cv_fold_assignment(trajectories,n_splits,cv_unit,
                                  group_column,shuffle,random_state)
   fold_errors<-vector("list",length(counts)*n_splits)
   assigns<-vector("list",n_splits)
@@ -142,8 +142,8 @@ etr_cross_validate_fpca_reconstruction <- function(trajectories,
     .etr_assert(max(counts)<=max_k,
       paste("candidate component count",max(counts),
         "exceeds training-fold maximum",max_k))
-    train<-.etr12_subset(trajectories,train_ids)
-    test<-.etr12_subset(trajectories,test_ids)
+    train<-.etr_cv_subset(trajectories,train_ids)
+    test<-.etr_cv_subset(trajectories,test_ids)
     fit<-if(length(train$dimension_names)>1L)
       etr_fit_mfpca(train,n_components=as.integer(max(counts)),
                     scaling=scaling)
@@ -151,7 +151,7 @@ etr_cross_validate_fpca_reconstruction <- function(trajectories,
                       scaling=scaling)
     scores<-etr_transform_fpca(fit,test)
     for(k in counts) {
-      reconstructed<-.etr10_scores_reconstruct(fit,scores,k)
+      reconstructed<-.etr_fpca_reconstruct_scores(fit,scores,k)
       w<-fit$weights;nd<-length(test$dimension_names)
       rmse<-vapply(seq_along(test_ids),function(i){
         total<-0
@@ -192,7 +192,7 @@ etr_cross_validate_fpca_reconstruction <- function(trajectories,
     class="etr_fpca_cv")
 }
 
-.etr12_cv_summary <- function(fold_errors,value) {
+.etr_cv_summary <- function(fold_errors,value) {
   .etr_assert(is.data.frame(fold_errors) &&
     all(c("n_components",value)%in%names(fold_errors)) &&
     nrow(fold_errors)>0L && all(is.finite(fold_errors[[value]])) &&
@@ -214,8 +214,8 @@ etr_cross_validate_fpca_reconstruction <- function(trajectories,
 #' @param result Native FPCA CV result with frozen fold errors.
 #' @export
 etr_summarise_fpca_cross_validation <- function(result) {
-  .etr12_fields(result,"fold_errors","FPCA CV")
-  x<-.etr12_cv_summary(result$fold_errors,"mean_integrated_rmse")
+  .etr_cv_fields(result,"fold_errors","FPCA CV")
+  x<-.etr_cv_summary(result$fold_errors,"mean_integrated_rmse")
   names(x)<-c("n_components","mean_rmse","sd_rmse","n_folds","se_rmse")
   rownames(x)<-NULL;x
 }
@@ -240,8 +240,8 @@ etr_select_fpca_components_cv <- function(result,rule="minimum") {
 #' @inheritParams etr_summarise_fpca_cross_validation
 #' @export
 etr_summarise_fpca_regression_cv <- function(result) {
-  .etr12_fields(result,"fold_losses","FPCA regression CV")
-  x<-.etr12_cv_summary(result$fold_losses,"loss")
+  .etr_cv_fields(result,"fold_losses","FPCA regression CV")
+  x<-.etr_cv_summary(result$fold_losses,"loss")
   names(x)<-c("n_components","mean_loss","sd_loss","n_folds","se_loss")
   rownames(x)<-NULL;x
 }
@@ -266,13 +266,13 @@ etr_select_fpca_regression_components <- function(result,rule="minimum") {
 etr_fpca_score_uncertainty_frame <- function(result) {
   fields<-c("target_curve_ids","n_components","reference_scores",
     "median","score_se","lower","upper","similarities")
-  .etr12_fields(result,fields,"score uncertainty")
-  ids<-.etr12_curve_ids(result$target_curve_ids)
+  .etr_cv_fields(result,fields,"score uncertainty")
+  ids<-.etr_cv_curve_ids(result$target_curve_ids)
   n<-length(ids);k<-as.integer(result$n_components)
   .etr_assert(length(k)==1L && !is.na(k) && k>0L,
     "n_components must be positive")
   for(field in c("reference_scores","median","score_se","lower","upper"))
-    .etr12_matrix(result[[field]],n,k,field)
+    .etr_cv_numeric_matrix(result[[field]],n,k,field)
   ss<-result$similarities
   .etr_assert(is.matrix(ss)&&is.numeric(ss)&&ncol(ss)==k&&
     nrow(ss)>0L && all(is.finite(ss)),
@@ -294,9 +294,9 @@ etr_fpca_score_uncertainty_frame <- function(result) {
 #' @inheritParams etr_fpca_score_uncertainty_frame
 #' @export
 etr_fpca_spectrum_uncertainty_frame <- function(result) {
-  .etr12_fields(result,c("reference","n_components","similarities"),
+  .etr_cv_fields(result,c("reference","n_components","similarities"),
     "spectrum uncertainty")
-  .etr10_fit(result$reference)
+  .etr_fpca_fitted_check(result$reference)
   k<-as.integer(result$n_components)
   .etr_assert(length(k)==1L&&!is.na(k)&&k>=1L&&
     k<=result$reference$n_components,"n_components outside fitted spectrum")
@@ -304,8 +304,8 @@ etr_fpca_spectrum_uncertainty_frame <- function(result) {
     "explained_variance_ratio_se","explained_variance_ratio_lower",
     "explained_variance_ratio_upper","cumulative_variance_ratio_se",
     "cumulative_variance_ratio_lower","cumulative_variance_ratio_upper")
-  .etr12_fields(result,fields,"spectrum uncertainty")
-  for(f in fields).etr12_vector(result[[f]],k,f)
+  .etr_cv_fields(result,fields,"spectrum uncertainty")
+  for(f in fields).etr_cv_numeric_vector(result[[f]],k,f)
   ss<-result$similarities
   .etr_assert(is.matrix(ss)&&is.numeric(ss)&&nrow(ss)>0L&&
     ncol(ss)==k&&all(is.finite(ss)),
@@ -332,19 +332,19 @@ etr_fpca_spectrum_uncertainty_frame <- function(result) {
 #' @inheritParams etr_fpca_score_uncertainty_frame
 #' @export
 etr_conformal_fpca_anomaly_frame <- function(result) {
-  .etr12_fields(result,c("target_curve_ids","target_scores","p_values",
+  .etr_cv_fields(result,c("target_curve_ids","target_scores","p_values",
     "alpha","review_flags","minimum_attainable_p"),
     "conformal anomaly")
-  ids<-.etr12_curve_ids(result$target_curve_ids)
+  ids<-.etr_cv_curve_ids(result$target_curve_ids)
   n<-length(ids)
-  scores<-.etr12_vector(result$target_scores,n,"target_scores")
-  pv<-.etr12_vector(result$p_values,n,"p_values")
+  scores<-.etr_cv_numeric_vector(result$target_scores,n,"target_scores")
+  pv<-.etr_cv_numeric_vector(result$p_values,n,"p_values")
   .etr_assert(all(pv>=0 & pv<=1),"conformal p-values must lie in [0,1]")
   .etr_assert(is.logical(result$review_flags)&&length(result$review_flags)==n &&
     !anyNA(result$review_flags),
     "review flags must be declared logical per target")
-  alpha<-.etr11_num(result$alpha,"alpha")
-  minp<-.etr11_num(result$minimum_attainable_p,"minimum_attainable_p")
+  alpha<-.etr_nonlinear_report_number(result$alpha,"alpha")
+  minp<-.etr_nonlinear_report_number(result$minimum_attainable_p,"minimum_attainable_p")
   .etr_assert(alpha>0&&alpha<1&&minp>0&&minp<=1,
     "alpha and minimum attainable p must be valid")
   data.frame(curve_id=ids,nonconformity_score=scores,
@@ -356,7 +356,7 @@ etr_conformal_fpca_anomaly_frame <- function(result) {
 #' @inheritParams etr_fpca_score_uncertainty_frame
 #' @export
 etr_trajectory_distance_comparison_frame <- function(result) {
-  .etr12_fields(result,"comparison_table","distance sensitivity")
+  .etr_cv_fields(result,"comparison_table","distance sensitivity")
   .etr_assert(is.data.frame(result$comparison_table),
     "comparison_table must be a data frame")
   result$comparison_table
@@ -366,7 +366,7 @@ etr_trajectory_distance_comparison_frame <- function(result) {
 #' @inheritParams etr_fpca_score_uncertainty_frame
 #' @export
 etr_trajectory_distance_neighbor_frame <- function(result) {
-  .etr12_fields(result,"neighbor_overlap_table","distance sensitivity")
+  .etr_cv_fields(result,"neighbor_overlap_table","distance sensitivity")
   .etr_assert(is.data.frame(result$neighbor_overlap_table),
     "neighbor_overlap_table must be a data frame")
   result$neighbor_overlap_table
@@ -376,17 +376,17 @@ etr_trajectory_distance_neighbor_frame <- function(result) {
 #' @inheritParams etr_fpca_score_uncertainty_frame
 #' @export
 etr_fpca_regression_slope_band_frame <- function(result) {
-  .etr12_fields(result,c("regression_uncertainty","pointwise_se",
+  .etr_cv_fields(result,c("regression_uncertainty","pointwise_se",
     "critical_values","lower","upper"),"FPCR slope band")
   base<-result$regression_uncertainty
-  .etr12_fields(base,c("reference_fpca","reference_slope"),"FPCR uncertainty")
+  .etr_cv_fields(base,c("reference_fpca","reference_slope"),"FPCR uncertainty")
   fit<-base$reference_fpca
-  .etr10_fit(fit);n<-length(fit$time);d<-length(fit$dimension_names)
+  .etr_fpca_fitted_check(fit);n<-length(fit$time);d<-length(fit$dimension_names)
   for(f in c("reference_slope"))
-    .etr12_matrix(base[[f]],n,d,f)
+    .etr_cv_numeric_matrix(base[[f]],n,d,f)
   for(f in c("pointwise_se","lower","upper"))
-    .etr12_matrix(result[[f]],n,d,f)
-  critical<-.etr12_vector(result$critical_values,d,"critical_values")
+    .etr_cv_numeric_matrix(result[[f]],n,d,f)
+  critical<-.etr_cv_numeric_vector(result$critical_values,d,"critical_values")
   rows<-vector("list",n*d);p<-0L
   for(i in seq_len(n))for(j in seq_len(d)){
     p<-p+1L
@@ -404,14 +404,14 @@ etr_fpca_regression_slope_band_frame <- function(result) {
 #' @inheritParams etr_fpca_score_uncertainty_frame
 #' @export
 etr_fpca_regression_slope_uncertainty_frame <- function(result) {
-  .etr12_fields(result,c("reference_fpca","reference_slope",
+  .etr_cv_fields(result,c("reference_fpca","reference_slope",
     "slope_median","slope_se","slope_lower","slope_upper"),
     "FPCR slope uncertainty")
   fit<-result$reference_fpca
-  .etr10_fit(fit);n<-length(fit$time);d<-length(fit$dimension_names)
+  .etr_fpca_fitted_check(fit);n<-length(fit$time);d<-length(fit$dimension_names)
   for(f in c("reference_slope","slope_median","slope_se",
              "slope_lower","slope_upper"))
-    .etr12_matrix(result[[f]],n,d,f)
+    .etr_cv_numeric_matrix(result[[f]],n,d,f)
   rows<-vector("list",n*d);p<-0L
   for(i in seq_len(n))for(j in seq_len(d)){
     p<-p+1L
@@ -430,10 +430,10 @@ etr_fpca_regression_slope_uncertainty_frame <- function(result) {
 etr_fpca_regression_prediction_uncertainty_frame <- function(result) {
   fields<-c("target_curve_ids","reference_mean_predictions",
     "prediction_median","prediction_se","prediction_lower","prediction_upper")
-  .etr12_fields(result,fields,"FPCR conditional predictions")
-  ids<-.etr12_curve_ids(result$target_curve_ids)
+  .etr_cv_fields(result,fields,"FPCR conditional predictions")
+  ids<-.etr_cv_curve_ids(result$target_curve_ids)
   n<-length(ids)
-  for(f in fields[-1L]).etr12_vector(result[[f]],n,f)
+  for(f in fields[-1L]).etr_cv_numeric_vector(result[[f]],n,f)
   data.frame(curve_id=ids,
     reference_mean_prediction=result$reference_mean_predictions,
     bootstrap_median=result$prediction_median,
@@ -445,17 +445,17 @@ etr_fpca_regression_prediction_uncertainty_frame <- function(result) {
 #' @inheritParams etr_fpca_score_uncertainty_frame
 #' @export
 etr_fpca_regression_future_prediction_frame <- function(result) {
-  .etr12_fields(result,c("regression_uncertainty","median",
+  .etr_cv_fields(result,c("regression_uncertainty","median",
     "predictive_se","lower","upper"),"FPCR future prediction")
   base<-result$regression_uncertainty
-  .etr12_fields(base,c("target_curve_ids","reference_mean_predictions",
+  .etr_cv_fields(base,c("target_curve_ids","reference_mean_predictions",
     "prediction_lower","prediction_upper"),"FPCR regression uncertainty")
-  ids<-.etr12_curve_ids(base$target_curve_ids)
+  ids<-.etr_cv_curve_ids(base$target_curve_ids)
   n<-length(ids)
   for(f in c("reference_mean_predictions","prediction_lower","prediction_upper"))
-    .etr12_vector(base[[f]],n,f)
+    .etr_cv_numeric_vector(base[[f]],n,f)
   for(f in c("median","predictive_se","lower","upper"))
-    .etr12_vector(result[[f]],n,f)
+    .etr_cv_numeric_vector(result[[f]],n,f)
   data.frame(curve_id=ids,
     reference_mean_prediction=base$reference_mean_predictions,
     mean_response_lower=base$prediction_lower,

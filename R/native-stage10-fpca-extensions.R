@@ -4,7 +4,7 @@
 # compositional.py, stability.py, phase.py, subspace.py,
 # reporting.py and inference.py. All research qualification pending.
 
-.etr10_k <- function(n,k) {
+.etr_fpca_component_count <- function(n,k) {
   if(is.null(k))return(as.integer(n))
   .etr_assert(is.numeric(k) && length(k)==1L && is.finite(k) &&
     k==as.integer(k) && k>=1L && k<=n,
@@ -12,7 +12,7 @@
   as.integer(k)
 }
 
-.etr10_fit <- function(fit) {
+.etr_fpca_fitted_check <- function(fit) {
   .etr_assert(inherits(fit,"etr_fpca") &&
     is.matrix(fit$mean) && is.array(fit$components) &&
     length(dim(fit$components))==3L &&
@@ -26,8 +26,8 @@
   invisible(TRUE)
 }
 
-.etr10_compatible_sample <- function(fit,x) {
-  .etr10_fit(fit)
+.etr_fpca_compatible_sample <- function(fit,x) {
+  .etr_fpca_fitted_check(fit)
   etr_validate(x,require_complete=TRUE)
   .etr_assert(identical(x$time,fit$time),
     "Trajectory grid must match the fitted FPCA grid")
@@ -38,8 +38,8 @@
   invisible(TRUE)
 }
 
-.etr10_scores_reconstruct <- function(fit,scores=NULL,n_components=NULL) {
-  .etr10_fit(fit)
+.etr_fpca_reconstruct_scores <- function(fit,scores=NULL,n_components=NULL) {
+  .etr_fpca_fitted_check(fit)
   if(is.null(scores))scores<-fit$scores
   if(is.numeric(scores) && is.null(dim(scores)))
     scores<-matrix(scores,nrow=1L)
@@ -47,7 +47,7 @@
     nrow(scores)>=1L && all(is.finite(scores)),
     "scores must be a finite numeric one- or two-dimensional array")
   if(is.null(n_components))n_components<-min(ncol(scores),fit$n_components)
-  k<-.etr10_k(fit$n_components,n_components)
+  k<-.etr_fpca_component_count(fit$n_components,n_components)
   .etr_assert(ncol(scores)>=k,
     "scores contain fewer columns than requested components")
   n<-nrow(scores);nt<-length(fit$time);nd<-length(fit$dimension_names)
@@ -74,7 +74,7 @@ etr_fit_compositional_fpca <- function(trajectories,
   k<-length(trajectories$dimension_names)
   .etr_assert(k>=3L,
     "compositional FPCA requires at least three simplex dimensions (ALR MFPCA)")
-  ref<-.etr9_index(reference_dimension,k,"reference_dimension")
+  ref<-.etr_fpca_index(reference_dimension,k,"reference_dimension")
   z<-etr_alr_transform(trajectories$values,ref-1L,epsilon)
   dimnames<-paste0("log(",
     trajectories$dimension_names[-ref],"/",
@@ -108,7 +108,7 @@ etr_reconstruct_compositional_fpca <- function(result,scores=NULL,
     inherits(result$fpca,"etr_fpca") &&
     length(result$original_dimension_names)>=3L,
     "result must be a native compositional FPCA fit")
-  z<-.etr10_scores_reconstruct(result$fpca,scores,n_components)
+  z<-.etr_fpca_reconstruct_scores(result$fpca,scores,n_components)
   etr_inverse_alr(z,result$reference_dimension,
     length(result$original_dimension_names))
 }
@@ -119,7 +119,7 @@ etr_reconstruct_compositional_fpca <- function(result,scores=NULL,
 #' @export
 etr_component_similarity_matrix <- function(reference,candidate,
                                               n_components=NULL) {
-  .etr10_fit(reference);.etr10_fit(candidate)
+  .etr_fpca_fitted_check(reference);.etr_fpca_fitted_check(candidate)
   .etr_assert(identical(reference$time,candidate$time),
     "FPCA results must use the same time grid")
   .etr_assert(identical(reference$dimension_names,candidate$dimension_names),
@@ -128,7 +128,7 @@ etr_component_similarity_matrix <- function(reference,candidate,
     tolerance=1e-8,check.attributes=FALSE)),
     "FPCA quadrature weights differ between results")
   common<-min(reference$n_components,candidate$n_components)
-  k<-.etr10_k(common,n_components)
+  k<-.etr_fpca_component_count(common,n_components)
   w<-reference$weights
   .etr_assert(all(is.finite(w)) && all(w>0) &&
     all(is.finite(reference$scale)) && all(reference$scale>0) &&
@@ -200,9 +200,9 @@ etr_match_fpca_components <- function(reference,candidate,
 #' @export
 etr_reconstruction_error_by_curve <- function(result,trajectories,
                                                n_components=NULL) {
-  .etr10_compatible_sample(result,trajectories)
-  k<-.etr10_k(result$n_components,n_components)
-  reconstructed<-.etr10_scores_reconstruct(result,n_components=k)
+  .etr_fpca_compatible_sample(result,trajectories)
+  k<-.etr_fpca_component_count(result$n_components,n_components)
+  reconstructed<-.etr_fpca_reconstruct_scores(result,n_components=k)
   diff<-reconstructed-trajectories$values
   n<-length(trajectories$curve_ids);nd<-length(trajectories$dimension_names)
   denom<-sum(result$weights)*nd
@@ -222,7 +222,7 @@ etr_reconstruction_error_by_curve <- function(result,trajectories,
 #' @inheritParams etr_reconstruction_error_by_curve
 #' @export
 etr_fpca_reconstruction_curve <- function(result,trajectories) {
-  .etr10_compatible_sample(result,trajectories)
+  .etr_fpca_compatible_sample(result,trajectories)
   do.call(rbind,lapply(seq_len(result$n_components),function(k) {
     err<-etr_reconstruction_error_by_curve(result,trajectories,k)
     data.frame(n_components=as.integer(k),
@@ -309,7 +309,7 @@ etr_summarise_trajectory_set <- function(trajectories) {
 #' @param result Native FPCA fit.
 #' @export
 etr_summarise_fpca <- function(result) {
-  .etr10_fit(result)
+  .etr_fpca_fitted_check(result)
   data.frame(component=seq_len(result$n_components),
     explained_variance=result$explained_variance,
     explained_variance_ratio=result$explained_variance_ratio,
@@ -321,7 +321,7 @@ etr_summarise_fpca <- function(result) {
 #' @param digits Nonnegative integer decimal places.
 #' @export
 etr_fpca_reporting_text <- function(result,digits=1L) {
-  .etr10_fit(result)
+  .etr_fpca_fitted_check(result)
   .etr_assert(is.numeric(digits) && length(digits)==1L &&
     is.finite(digits) && digits==as.integer(digits) &&
     digits>=0L && digits<=15L,
@@ -348,7 +348,7 @@ etr_fpca_reporting_text <- function(result,digits=1L) {
 #' @export
 etr_fpca_eigenvalue_gap_table <- function(result,
                                           relative_gap_threshold=NULL) {
-  .etr10_fit(result)
+  .etr_fpca_fitted_check(result)
   v<-result$explained_variance
   .etr_assert(length(v)>=2L && all(is.finite(v)) && all(v>=0),
     "At least two finite nonnegative fitted components are required")

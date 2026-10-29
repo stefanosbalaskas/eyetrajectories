@@ -2,31 +2,31 @@
 # eyetrajectoriespy==1.2.0 nonlinear_reporting.py source inspected.
 # No Python, reticulate, automatic parameter selection or estimator execution.
 
-.etr11_fields <- function(x,fields,label="result") {
+.etr_nonlinear_report_fields <- function(x,fields,label="result") {
   .etr_assert(is.list(x) && all(fields %in% names(x)),
     paste(label,"lacks required validated result fields"))
   invisible(TRUE)
 }
-.etr11_num <- function(x,label="value",positive=FALSE) {
+.etr_nonlinear_report_number <- function(x,label="value",positive=FALSE) {
   .etr_assert(is.numeric(x)&&length(x)==1L&&!is.na(x)&&
     is.finite(x)&&(!positive||x>0),
     paste(label,"must be a finite scalar"))
   as.numeric(x)
 }
-.etr11_g <- function(x,d=4L) {
+.etr_nonlinear_report_general <- function(x,d=4L) {
   if(length(x)!=1L || !(is.numeric(x)||is.integer(x)))return("nan")
   if(is.na(x)||is.nan(x))return("nan")
   if(is.infinite(x))return(if(x>0)"inf" else "-inf")
   sprintf(paste0("%.",d,"g"),x)
 }
-.etr11_f <- function(x,d=1L) {
+.etr_nonlinear_report_format <- function(x,d=1L) {
   if(length(x)!=1L||!is.numeric(x)||is.na(x)||is.nan(x))return("nan")
   if(is.infinite(x))return(if(x>0)"inf" else "-inf")
   sprintf(paste0("%.",d,"f"),x)
 }
-.etr11_repr <- function(x)paste0("'",x,"'")
-.etr11_summary <- function(result,metric) {
-  .etr11_fields(result,c("summary_table","table","curve_id"))
+.etr_nonlinear_report_repr <- function(x)paste0("'",x,"'")
+.etr_nonlinear_report_summary <- function(result,metric) {
+  .etr_nonlinear_report_fields(result,c("summary_table","table","curve_id"))
   z<-result$summary_table
   .etr_assert(is.data.frame(z) && all(c("metric","minimum","maximum") %in% names(z)),
     "summary_table must supply metric/minimum/maximum columns")
@@ -45,29 +45,29 @@ etr_joint_recurrence_reporting_text <- function(result,metrics=NULL) {
   comps<-vapply(seq_along(result$component_labels),function(i){
     x<-result$component_recurrences[[i]]
     policy<-if(!is.null(x$target_recurrence_rate))
-      paste0("target RR=",.etr11_g(x$target_recurrence_rate)) else
-      paste0("fixed radius=",.etr11_g(x$radius))
+      paste0("target RR=",.etr_nonlinear_report_general(x$target_recurrence_rate)) else
+      paste0("fixed radius=",.etr_nonlinear_report_general(x$radius))
     paste0(result$component_labels[i],": ",
       if(is.null(x$metric))"euclidean" else x$metric,", ",policy,
-      ", achieved RR=",.etr11_g(x$recurrence_rate),
+      ", achieved RR=",.etr_nonlinear_report_general(x$recurrence_rate),
       ", state dimension=",x$state_dimension)
   },character(1L))
   suffix<-""
   if(!is.null(metrics)){
-    .etr11_fields(metrics,c("min_diagonal_length","min_vertical_length",
+    .etr_nonlinear_report_fields(metrics,c("min_diagonal_length","min_vertical_length",
       "determinism","laminarity","trapping_time"),"metrics")
     suffix<-paste0(" Joint-RQA used minimum diagonal/vertical line lengths ",
       metrics$min_diagonal_length,"/",metrics$min_vertical_length,
-      "; DET=",.etr11_g(metrics$determinism),", LAM=",
-      .etr11_g(metrics$laminarity),", trapping time=",
-      .etr11_g(metrics$trapping_time),".")
+      "; DET=",.etr_nonlinear_report_general(metrics$determinism),", LAM=",
+      .etr_nonlinear_report_general(metrics$laminarity),", trapping time=",
+      .etr_nonlinear_report_general(metrics$trapping_time),".")
   }
   paste0("Joint recurrence was computed as the logical intersection of ",
     length(result$component_recurrences),
     " synchronized auto-recurrence matrices on the same time grid with a shared Theiler window of ",
     result$theiler_window_samples,
     " samples. Component contracts were ",paste(comps,collapse="; "),
-    ". The joint recurrence rate was ",.etr11_g(result$joint_recurrence_rate),
+    ". The joint recurrence rate was ",.etr_nonlinear_report_general(result$joint_recurrence_rate),
     " (",result$n_joint_recurrent_pairs,"/",result$eligible_pair_count,
     " eligible unordered pairs). No resampling, lag shifting, threshold harmonization, or automatic threshold selection was performed.",
     suffix," Joint recurrence was interpreted as coincident recurrence within the declared component systems, not as cross-recurrence between states or as evidence of causal coupling.")
@@ -80,24 +80,24 @@ etr_recurrence_network_reporting_text <- function(result) {
     "result must be native recurrence network")
   rec<-result$source_recurrence
   policy<-if(!is.null(rec$target_recurrence_rate))
-    paste0("target RR=",.etr11_g(rec$target_recurrence_rate),
-      ", achieved RR=",.etr11_g(rec$recurrence_rate))
-    else paste0("fixed radius=",.etr11_g(rec$radius),
-      ", achieved RR=",.etr11_g(rec$recurrence_rate))
+    paste0("target RR=",.etr_nonlinear_report_general(rec$target_recurrence_rate),
+      ", achieved RR=",.etr_nonlinear_report_general(rec$recurrence_rate))
+    else paste0("fixed radius=",.etr_nonlinear_report_general(rec$radius),
+      ", achieved RR=",.etr_nonlinear_report_general(rec$recurrence_rate))
   tr<-if(is.finite(result$transitivity))
-    .etr11_g(result$transitivity) else
+    .etr_nonlinear_report_general(result$transitivity) else
       "undefined because the network contained no connected triples"
   paste0("An undirected recurrence network was constructed from ",
     length(result$degree)," recurrence-state nodes using the source ",
     if(is.null(rec$metric))"euclidean" else rec$metric,
     " recurrence relation (",policy,") and a Theiler window of ",
     rec$theiler," samples. The network contained ",result$edge_count,
-    " undirected edges, graph density ",.etr11_g(result$graph_density),
-    ", mean local clustering ",.etr11_g(result$mean_local_clustering),
+    " undirected edges, graph density ",.etr_nonlinear_report_general(result$graph_density),
+    ", mean local clustering ",.etr_nonlinear_report_general(result$mean_local_clustering),
     ", and transitivity ",tr,". It had ",result$n_connected_components,
-    " connected component(s), with ",.etr11_f(100*result$largest_component_fraction),
+    " connected component(s), with ",.etr_nonlinear_report_format(100*result$largest_component_fraction),
     "% of nodes in the largest component and ",
-    .etr11_f(100*result$isolated_node_fraction),
+    .etr_nonlinear_report_format(100*result$isolated_node_fraction),
     "% isolated nodes. Graph density used all unordered node pairs, whereas the source recurrence rate used its declared eligible-pair denominator. No threshold tuning, community optimization, edge weighting, or automatic dimensionality interpretation was performed.")
 }
 
@@ -116,13 +116,13 @@ etr_recurrence_radius_profile_reporting_text <- function(result) {
   coverage<-if(full)
     "the supplied maximum radius covered the complete eligible pair-distance distribution"
     else paste0("the supplied maximum radius covered ",
-      .etr11_f(100*cov),"% of eligible pair distances")
+      .etr_nonlinear_report_format(100*cov),"% of eligible pair distances")
   paste0("Recurrence-threshold diagnostics evaluated ",nrow(tab),
-    " predeclared radii for curve ",.etr11_repr(result$curve_id),
+    " predeclared radii for curve ",.etr_nonlinear_report_repr(result$curve_id),
     " using the ",result$metric," state-space distance and a Theiler window of ",
     result$theiler_window_samples," samples. RR increased from ",
-    .etr11_g(tab$recurrence_rate[1L])," to ",
-    .etr11_g(tail(tab$recurrence_rate,1L)),"; ",coverage,
+    .etr_nonlinear_report_general(tab$recurrence_rate[1L])," to ",
+    .etr_nonlinear_report_general(tail(tab$recurrence_rate,1L)),"; ",coverage,
     ". Cumulative and shell pair counts were computed with the same eligible-pair denominator and inclusive radius rule as the base recurrence estimator. No radius was selected automatically.")
 }
 
@@ -131,40 +131,40 @@ etr_recurrence_radius_profile_reporting_text <- function(result) {
 etr_rqa_reporting_text <- function(recurrence,metrics) {
   .etr_assert(inherits(recurrence,"etr_recurrence"),
     "recurrence must be native recurrence")
-  .etr11_fields(metrics,c("min_diagonal_length","min_vertical_length",
+  .etr_nonlinear_report_fields(metrics,c("min_diagonal_length","min_vertical_length",
     "recurrence_rate","determinism","laminarity","trapping_time"),"metrics")
   policy<-if(identical(recurrence$provenance$radius_policy,
     "target_recurrence_rate"))
-      paste0("target recurrence rate ",.etr11_g(recurrence$target_recurrence_rate),
-        ", yielding radius ",.etr11_g(recurrence$radius),
-        " and achieved RR ",.etr11_g(recurrence$recurrence_rate))
-    else paste0("fixed radius ",.etr11_g(recurrence$radius))
+      paste0("target recurrence rate ",.etr_nonlinear_report_general(recurrence$target_recurrence_rate),
+        ", yielding radius ",.etr_nonlinear_report_general(recurrence$radius),
+        " and achieved RR ",.etr_nonlinear_report_general(recurrence$recurrence_rate))
+    else paste0("fixed radius ",.etr_nonlinear_report_general(recurrence$radius))
   paste0("Recurrence analysis used ",recurrence$kind," recurrence with the ",
     if(is.null(recurrence$metric))"euclidean" else recurrence$metric,
     " metric, ",policy,", and a Theiler window of ",recurrence$theiler,
     " samples. RQA used minimum diagonal and vertical line lengths of ",
     metrics$min_diagonal_length," and ",metrics$min_vertical_length,
     ", respectively. The resulting RR was ",
-    .etr11_g(metrics$recurrence_rate),", DET ",
-    .etr11_g(metrics$determinism),", LAM ",
-    .etr11_g(metrics$laminarity),", and trapping time ",
-    .etr11_g(metrics$trapping_time),".")
+    .etr_nonlinear_report_general(metrics$recurrence_rate),", DET ",
+    .etr_nonlinear_report_general(metrics$determinism),", LAM ",
+    .etr_nonlinear_report_general(metrics$laminarity),", and trapping time ",
+    .etr_nonlinear_report_general(metrics$trapping_time),".")
 }
 
 #' Descriptive report of fixed-specification RQA bootstrap means
 #' @export
 etr_rqa_metric_mean_bootstrap_reporting_text <- function(result) {
-  .etr11_fields(result,c("metrics","unit","unit_ids","n_bootstrap","confidence_level"))
-  .etr11_num(result$confidence_level,"confidence_level")
+  .etr_nonlinear_report_fields(result,c("metrics","unit","unit_ids","n_bootstrap","confidence_level"))
+  .etr_nonlinear_report_number(result$confidence_level,"confidence_level")
   unit_text<-if(identical(result$unit,"participant"))
     paste0(length(result$unit_ids)," equal-weight participant units defined by ",
-      .etr11_repr(result$participant_column),
+      .etr_nonlinear_report_repr(result$participant_column),
       "; repeated curve-level RQA metrics were averaged within participant before resampling")
     else paste0(length(result$unit_ids)," curve-level independent units")
   paste0("Population-average RQA uncertainty for ",
     paste(result$metrics,collapse=", ")," used ",result$n_bootstrap,
     " percentile bootstrap replicates at the ",
-    .etr11_f(100*result$confidence_level),
+    .etr_nonlinear_report_format(100*result$confidence_level),
     "% level and ",unit_text,
     ". Each source curve was summarized under one fixed declared RQA specification before unit-level resampling. Undefined selected curve-level metrics caused analysis failure rather than deletion or imputation. These intervals describe between-unit population sampling uncertainty conditional on the declared RQA specification; they do not estimate within-single-trajectory recurrence uncertainty, recurrence-line resampling uncertainty, or parameter-selection uncertainty.")
 }
@@ -192,7 +192,7 @@ etr_windowed_rqa_functional_reporting_text <- function(result) {
     length(result$trajectories$curve_ids)," source curve(s) using ",
     length(result$trajectories$time)," complete windows of ",
     result$window_samples," samples, advanced by ",result$step_samples,
-    " samples (",.etr11_f(100*result$overlap_fraction),
+    " samples (",.etr_nonlinear_report_format(100*result$overlap_fraction),
     "% sample overlap). Functional dimensions were ",
     paste(result$metrics,collapse=", "),
     "; the recurrence-radius policy was ",
@@ -206,7 +206,7 @@ etr_windowed_rqa_functional_reporting_text <- function(result) {
 #' Describe declared window/step sensitivity specifications
 #' @export
 etr_windowed_rqa_sensitivity_reporting_text <- function(result) {
-  .etr11_fields(result,c("analyses","design_table"))
+  .etr_nonlinear_report_fields(result,c("analyses","design_table"))
   tab<-result$design_table
   .etr_assert(is.data.frame(tab)&&nrow(tab)>0L &&
     all(c("overlap_fraction","profile_grid_spacing_time","profile_time_unit")%in%names(tab)) &&
@@ -215,11 +215,11 @@ etr_windowed_rqa_sensitivity_reporting_text <- function(result) {
     "design_table requires finite overlap and grid spacing")
   paste0("Functional RQA sensitivity was evaluated across ",
     length(result$analyses)," predeclared window/step specifications. Sample overlap ranged from ",
-    .etr11_f(100*min(tab$overlap_fraction)),"% to ",
-    .etr11_f(100*max(tab$overlap_fraction)),
+    .etr_nonlinear_report_format(100*min(tab$overlap_fraction)),"% to ",
+    .etr_nonlinear_report_format(100*max(tab$overlap_fraction)),
     "% and derived-profile grid spacing ranged from ",
-    .etr11_g(min(tab$profile_grid_spacing_time))," to ",
-    .etr11_g(max(tab$profile_grid_spacing_time))," ",
+    .etr_nonlinear_report_general(min(tab$profile_grid_spacing_time))," to ",
+    .etr_nonlinear_report_general(max(tab$profile_grid_spacing_time))," ",
     tab$profile_time_unit[1L],
     ". Overlap diagnostics quantified deterministic source-sample reuse; they were not converted into an effective independent sample size. Pairwise profile comparisons used exact shared window centers only, with no interpolation and no automatic selection of a preferred window/step specification.")
 }
@@ -227,41 +227,41 @@ etr_windowed_rqa_sensitivity_reporting_text <- function(result) {
 #' Describe independent-unit simultaneous windowed RQA mean bands
 #' @export
 etr_windowed_rqa_mean_band_reporting_text <- function(result) {
-  .etr11_fields(result,c("functional_rqa","band","unit"))
+  .etr_nonlinear_report_fields(result,c("functional_rqa","band","unit"))
   fr<-result$functional_rqa
   band<-result$band
-  .etr11_fields(fr,c("window_samples","step_samples","overlap_fraction"))
-  .etr11_fields(band,c("unit_ids","confidence_level"))
+  .etr_nonlinear_report_fields(fr,c("window_samples","step_samples","overlap_fraction"))
+  .etr_nonlinear_report_fields(band,c("unit_ids","confidence_level"))
   unit_text<-if(identical(result$unit,"participant"))
     paste0("participant-level units defined by ",
-      .etr11_repr(result$participant_column))
+      .etr_nonlinear_report_repr(result$participant_column))
     else "curve-level units"
   paste0("Windowed RQA functions used ",fr$window_samples,
     "-sample windows advanced by ",fr$step_samples," samples (",
-    .etr11_f(100*fr$overlap_fraction),
+    .etr_nonlinear_report_format(100*fr$overlap_fraction),
     "% overlap). Simultaneous observed-grid mean inference used ",
     length(band$unit_ids)," independent ",unit_text," and a ",
-    .etr11_f(100*band$confidence_level),
+    .etr_nonlinear_report_format(100*band$confidence_level),
     "% Gaussian multiplier band. Complete derived functions, not window rows, were the resampling objects, preserving within-function temporal dependence. The procedure does not provide a within-trajectory block-bootstrap guarantee or treat overlapping windows as independent observations.")
 }
 
 #' Describe RQA parameter-grid robustness with explicit outcomes
 #' @export
 etr_rqa_parameter_sensitivity_reporting_text <- function(result) {
-  det<-.etr11_summary(result,"determinism")
-  lam<-.etr11_summary(result,"laminarity")
-  rr<-.etr11_summary(result,"recurrence_rate")
+  det<-.etr_nonlinear_report_summary(result,"determinism")
+  lam<-.etr_nonlinear_report_summary(result,"laminarity")
+  rr<-.etr_nonlinear_report_summary(result,"recurrence_rate")
   controlled<-if(identical(result$provenance$threshold_policy,
                            "target_recurrence_rate"))
     " Recurrence rate was controlled by the target-rate design and was not treated as an independent robustness outcome."
     else ""
   paste0("RQA robustness was evaluated across ",nrow(result$table),
     " predeclared parameter specifications for curve ",
-    .etr11_repr(result$curve_id),". DET ranged from ",
-    .etr11_g(det$minimum)," to ",.etr11_g(det$maximum),
-    ", LAM from ",.etr11_g(lam$minimum)," to ",
-    .etr11_g(lam$maximum),", and RR from ",
-    .etr11_g(rr$minimum)," to ",.etr11_g(rr$maximum),
+    .etr_nonlinear_report_repr(result$curve_id),". DET ranged from ",
+    .etr_nonlinear_report_general(det$minimum)," to ",.etr_nonlinear_report_general(det$maximum),
+    ", LAM from ",.etr_nonlinear_report_general(lam$minimum)," to ",
+    .etr_nonlinear_report_general(lam$maximum),", and RR from ",
+    .etr_nonlinear_report_general(rr$minimum)," to ",.etr_nonlinear_report_general(rr$maximum),
     ". Every Cartesian-product specification was retained in the sensitivity table; no parameter combination was selected automatically and invalid specifications were configured to fail the analysis rather than disappear silently.",
     controlled)
 }
@@ -269,64 +269,64 @@ etr_rqa_parameter_sensitivity_reporting_text <- function(result) {
 #' Describe Kantz neighborhood divergence sensitivity
 #' @export
 etr_kantz_parameter_sensitivity_reporting_text <- function(result) {
-  ex<-.etr11_summary(result,"exponent")
-  sup<-.etr11_summary(result,"initial_supported_reference_fraction")
-  .etr11_fields(result,c("exponent_unit"))
+  ex<-.etr_nonlinear_report_summary(result,"exponent")
+  sup<-.etr_nonlinear_report_summary(result,"initial_supported_reference_fraction")
+  .etr_nonlinear_report_fields(result,c("exponent_unit"))
   .etr_assert("positive_specification_fraction" %in% names(ex),
     "exponent summary lacks positive fraction")
   paste0("Kantz local-divergence sensitivity was evaluated across ",
     nrow(result$table),
     " predeclared reconstruction, radius, minimum-neighbor, Theiler-window, and fit-interval specifications for curve ",
-    .etr11_repr(result$curve_id),". Estimated exponents ranged from ",
-    .etr11_g(ex$minimum)," to ",.etr11_g(ex$maximum),
+    .etr_nonlinear_report_repr(result$curve_id),". Estimated exponents ranged from ",
+    .etr_nonlinear_report_general(ex$minimum)," to ",.etr_nonlinear_report_general(ex$maximum),
     " ",result$exponent_unit,"; ",
-    .etr11_f(100*ex$positive_specification_fraction),
+    .etr_nonlinear_report_format(100*ex$positive_specification_fraction),
     "% of finite declared specifications had positive slopes. Initial supported-reference fractions ranged from ",
-    .etr11_f(sup$minimum,3L)," to ",.etr11_f(sup$maximum,3L),
+    .etr_nonlinear_report_format(sup$minimum,3L)," to ",.etr_nonlinear_report_format(sup$maximum,3L),
     ". These quantities describe sensitivity across the declared analysis grid, not sampling uncertainty or a probability of deterministic chaos. No radius, reconstruction, minimum-neighbor rule, or fit interval was selected automatically.")
 }
 
 #' Describe Rosenstein Lyapunov sensitivity
 #' @export
 etr_lyapunov_parameter_sensitivity_reporting_text <- function(result) {
-  ex<-.etr11_summary(result,"exponent")
-  .etr11_fields(result,c("exponent_unit"))
+  ex<-.etr_nonlinear_report_summary(result,"exponent")
+  .etr_nonlinear_report_fields(result,c("exponent_unit"))
   .etr_assert("positive_specification_fraction" %in% names(ex),
     "exponent summary lacks positive fraction")
   paste0("Rosenstein local-divergence sensitivity was evaluated across ",
     nrow(result$table),
     " predeclared reconstruction, Theiler-window, and fit-interval specifications for curve ",
-    .etr11_repr(result$curve_id),". Estimated exponents ranged from ",
-    .etr11_g(ex$minimum)," to ",.etr11_g(ex$maximum)," ",
+    .etr_nonlinear_report_repr(result$curve_id),". Estimated exponents ranged from ",
+    .etr_nonlinear_report_general(ex$minimum)," to ",.etr_nonlinear_report_general(ex$maximum)," ",
     result$exponent_unit,"; ",
-    .etr11_f(100*ex$positive_specification_fraction),
+    .etr_nonlinear_report_format(100*ex$positive_specification_fraction),
     "% of finite declared specifications had positive slopes. This percentage was reported only as descriptive sensitivity across the declared analysis grid, not as a probability of deterministic chaos. No reconstruction or fit interval was selected automatically.")
 }
 
 #' Describe a fitted local-divergence slope without claiming chaos
 #' @export
 etr_largest_lyapunov_reporting_text <- function(result) {
-  .etr11_fields(result,c("divergence","fit_start","fit_end","n_fit_points",
+  .etr_nonlinear_report_fields(result,c("divergence","fit_start","fit_end","n_fit_points",
     "exponent","exponent_unit","r_squared","standard_error"))
   div<-result$divergence
   method<-if(!is.null(div$radius) && !is.null(div$min_neighbors))
     paste0("Kantz fixed-radius neighborhood divergence (radius=",
-      .etr11_g(div$radius),", min_neighbors=",div$min_neighbors,")")
+      .etr_nonlinear_report_general(div$radius),", min_neighbors=",div$min_neighbors,")")
     else "Rosenstein nearest-neighbor divergence"
   paste0("A ",method," estimate was fitted over ",
-    .etr11_g(result$fit_start)," to ",.etr11_g(result$fit_end)," ",
+    .etr_nonlinear_report_general(result$fit_start)," to ",.etr_nonlinear_report_general(result$fit_end)," ",
     div$time_unit," using ",result$n_fit_points,
     " divergence points. The estimated largest Lyapunov exponent was ",
-    .etr11_g(result$exponent)," ",result$exponent_unit,
-    " (R^2=",.etr11_f(result$r_squared,3L),
-    ", slope SE=",.etr11_g(result$standard_error),
+    .etr_nonlinear_report_general(result$exponent)," ",result$exponent_unit,
+    " (R^2=",.etr_nonlinear_report_format(result$r_squared,3L),
+    ", slope SE=",.etr_nonlinear_report_general(result$standard_error),
     "). This quantity was interpreted as a conditional local-divergence estimate and not as standalone evidence of deterministic chaos.")
 }
 
 #' Report an explicit surrogate nonlinearity test without a chaos claim
 #' @export
 etr_surrogate_nonlinearity_reporting_text <- function(result) {
-  .etr11_fields(result,c("surrogate_statistics","n_surrogates","method",
+  .etr_nonlinear_report_fields(result,c("surrogate_statistics","n_surrogates","method",
     "statistic","alternative","p_value","random_state","spectral_errors"))
   .etr_assert(is.numeric(result$surrogate_statistics) &&
     all(is.finite(result$surrogate_statistics)) &&
@@ -338,10 +338,10 @@ etr_surrogate_nonlinearity_reporting_text <- function(result) {
     gsub("_"," ",result$statistic,fixed=TRUE),
     " statistic and a ",result$alternative,
     " alternative. A plus-one Monte Carlo p-value was used (p=",
-    .etr11_g(result$p_value),"; random_state=",
+    .etr_nonlinear_report_general(result$p_value),"; random_state=",
     if(is.null(result$random_state))"None" else result$random_state,
     "); the maximum retained final relative spectrum mismatch was ",
-    .etr11_g(max(result$spectral_errors)),
+    .etr_nonlinear_report_general(max(result$spectral_errors)),
     ". The test was interpreted relative to the declared surrogate null, not as proof of a unique nonlinear or chaotic mechanism.")
 }
 
@@ -350,16 +350,16 @@ etr_surrogate_nonlinearity_reporting_text <- function(result) {
 #' @param result Eigenvalue-based return-map stability summary.
 #' @export
 etr_return_map_stability_reporting_text <- function(fit,result) {
-  .etr11_fields(fit,c("neighborhood_policy","neighborhood_value",
+  .etr_nonlinear_report_fields(fit,c("neighborhood_policy","neighborhood_value",
     "n_transitions","design_condition_number","r_squared"))
-  .etr11_fields(result,c("eigenvalues","spectral_radius","tolerance",
+  .etr_nonlinear_report_fields(result,c("eigenvalues","spectral_radius","tolerance",
     "classification"))
   eig<-vapply(as.complex(result$eigenvalues),function(v)
     if(abs(Im(v))>1e-12)
-      paste0(.etr11_g(Re(v)),if(Im(v)>=0) "+" else "",
-        .etr11_g(Im(v)),"i")
-      else .etr11_g(Re(v)),character(1L))
-  r2<-paste(vapply(fit$r_squared,function(v).etr11_f(v,3L),
+      paste0(.etr_nonlinear_report_general(Re(v)),if(Im(v)>=0) "+" else "",
+        .etr_nonlinear_report_general(Im(v)),"i")
+      else .etr_nonlinear_report_general(Re(v)),character(1L))
+  r2<-paste(vapply(fit$r_squared,function(v).etr_nonlinear_report_format(v,3L),
     character(1L)),collapse=", ")
   crossing<-fit$provenance$crossing_provenance
   if(is.null(crossing))crossing<-list()
@@ -370,11 +370,11 @@ etr_return_map_stability_reporting_text <- function(fit,result) {
     fit$neighborhood_policy," neighborhood (",fit$neighborhood_value,
     "); ",fit$n_transitions,
     " transitions were fitted. The local design condition number was ",
-    .etr11_g(fit$design_condition_number),
+    .etr_nonlinear_report_general(fit$design_condition_number),
     " and per-state R^2 values were [",r2,
     "]. Jacobian eigenvalues were (",paste(eig,collapse=", "),
-    "), with spectral radius ",.etr11_g(result$spectral_radius),
-    " and tolerance ",.etr11_g(result$tolerance),
+    "), with spectral radius ",.etr_nonlinear_report_general(result$spectral_radius),
+    " and tolerance ",.etr_nonlinear_report_general(result$tolerance),
     "; the map was classified as ",result$classification,
     ". These eigenvalues were not interpreted as classical Floquet multipliers and the fitted Jacobian was not described as a monodromy matrix.")
 }

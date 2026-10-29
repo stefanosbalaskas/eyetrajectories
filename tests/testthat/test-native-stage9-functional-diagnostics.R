@@ -1,7 +1,7 @@
 # Stage 9: deterministic native R tests and opt-in pinned Python source oracle.
 # No Python is called unless ET_RUN_PYTHON_TESTS is explicitly true.
 
-.etr9_fixture <- function() {
+.etr_diagnostics_test_fixture <- function() {
   t<-c(0,1,2,3,4)
   v<-array(0,c(4L,length(t),2L))
   for(i in 1:4) {
@@ -40,7 +40,7 @@ test_that("Stage 9 ALR and inverse preserve the declared simplex",{
 })
 
 test_that("Stage 9 FPCA component curves, selection, score frames and distances",{
-  x<-.etr9_fixture()
+  x<-.etr_diagnostics_test_fixture()
   fit<-etr_fit_fpca(x,n_components=2L)
   expect_s3_class(fit,"etr_fpca")
   expect_equal(etr_select_n_components(fit,threshold=.01),1L)
@@ -90,7 +90,7 @@ test_that("Stage 9 sparse dimensional support preserves missingness",{
 })
 
 test_that("Stage 9 phase displacement is explicit and not an inverse warp",{
-  x<-.etr9_fixture();t<-x$time
+  x<-.etr_diagnostics_test_fixture();t<-x$time
   w<-rbind(t,t+c(0,.1,.2,.1,0),t+c(0,-.1,-.2,-.1,0),
             t+c(0,.06,-.04,.08,0))
   reg<-list(original=x,warping_functions=w,method="declared_fixture",
@@ -162,7 +162,7 @@ test_that("Stage 9 source-level Python 1.2 numeric oracle is opt-in",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("Stage 9 pinned Python numerical oracle is opt-in")
   expect_identical(as.character(et_python_version()),"1.2.0")
-  x<-.etr9_fixture()
+  x<-.etr_diagnostics_test_fixture()
   v<-array(0,c(3L,4L,3L))
   for(i in 1:3)for(j in 1:4)v[i,j,]<-c(.2+.01*i,.3+.01*j,
                                           .5-.01*i-.01*j)

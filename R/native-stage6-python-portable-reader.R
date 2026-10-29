@@ -7,20 +7,20 @@
 # bool b1, UTF-32 Unicode U, and primitive JSON-only object arrays.
 # Pickled objects and unsupported descriptors FAIL CLOSED. This is NOT a Python portable-result writer.
 
-.etr6_need <- function(package) {
+.etr_portable_require <- function(package) {
   if (!requireNamespace(package,quietly=TRUE))
     stop("Install optional native-R interoperability dependency: ",
          package,call.=FALSE)
 }
 
-.etr6_single <- function(x,label) {
+.etr_portable_single <- function(x,label) {
   .etr_assert(is.character(x) && length(x)==1L &&
                 !is.na(x) && nzchar(x),
               paste(label,"must be one nonempty string"))
   x
 }
 
-.etr6_npy_header <- function(con) {
+.etr_npy_header <- function(con) {
   magic <- readBin(con,what="raw",n=6L)
   .etr_assert(identical(magic,as.raw(c(147,78,85,77,80,89))),
               "invalid NumPy .npy magic bytes")
@@ -57,7 +57,7 @@
   list(descr=descr,fortran=identical(flag,"True"),shape=shape)
 }
 
-.etr6_decode_u64 <- function(blob,signed=TRUE) {
+.etr_npy_decode_u64 <- function(blob,signed=TRUE) {
   .etr_assert(length(blob)%%8L==0L,"truncated NumPy int64 values")
   n <- length(blob)%/%8L
   if(n==0L)return(numeric(0))
@@ -74,7 +74,7 @@
   value
 }
 
-.etr6_decode_utf32 <- function(blob,n,width) {
+.etr_npy_decode_utf32 <- function(blob,n,width) {
   .etr_assert(length(blob)==n*width*4,
               "truncated NumPy Unicode payload")
   if(n==0L)return(character(0))
@@ -95,10 +95,10 @@
   },character(1))
 }
 
-.etr6_read_npy <- function(zipfile,entry,max_array_bytes) {
+.etr_npy_read <- function(zipfile,entry,max_array_bytes) {
   con <- unz(zipfile,entry,open="rb")
   on.exit(close(con),add=TRUE)
-  hdr <- .etr6_npy_header(con)
+  hdr <- .etr_npy_header(con)
   descriptor <- hdr$descr
   .etr_assert(grepl("^[<|]",descriptor),
     "Only native little-endian or byte-independent NumPy arrays are supported")
@@ -127,13 +127,13 @@
   .etr_assert(length(bytes)==bytes_needed,
               "truncated NumPy .npy array payload")
   values <- if(typ=="U"){
-    .etr6_decode_utf32(bytes,as.integer(n),width)
+    .etr_npy_decode_utf32(bytes,as.integer(n),width)
   } else if(typ=="b"){
     .etr_assert(all(as.integer(bytes) %in% c(0L,1L)),
                 "NumPy boolean array has invalid bit values")
     as.logical(as.integer(bytes))
   } else if((typ=="u"||typ=="i") && width==8L) {
-    .etr6_decode_u64(bytes,signed=typ=="i")
+    .etr_npy_decode_u64(bytes,signed=typ=="i")
   } else if(typ %in% c("u","i") && width==4L) {
     # R's 32-bit INT_MIN is reserved for NA_integer_, so decode both
     # signed/unsigned int32 to exact doubles from bytes instead of
@@ -166,20 +166,20 @@
   aperm(a,rev(seq_along(shape)))
 }
 
-.etr6_decode <- function(value,arrays=list(),depth=0L) {
+.etr_portable_decode <- function(value,arrays=list(),depth=0L) {
   .etr_assert(depth<=64L,
               "portable payload nesting exceeds native R safety limit")
   if(is.null(value)||is.atomic(value))return(value)
   .etr_assert(is.list(value),"invalid portable payload type")
   keys <- names(value)
-  if(is.null(keys))return(lapply(value,.etr6_decode,
+  if(is.null(keys))return(lapply(value,.etr_portable_decode,
                                 arrays=arrays,depth=depth+1L))
   if(is.null(value$'__portable_type__')) {
-    return(lapply(value,.etr6_decode,arrays=arrays,depth=depth+1L))
+    return(lapply(value,.etr_portable_decode,arrays=arrays,depth=depth+1L))
   }
-  marker <- .etr6_single(value$'__portable_type__',"portable marker")
+  marker <- .etr_portable_single(value$'__portable_type__',"portable marker")
   if(marker=="ndarray") {
-    key <- .etr6_single(value$key,"NumPy archive key")
+    key <- .etr_portable_single(value$key,"NumPy archive key")
     .etr_assert(key %in% names(arrays),
                 "portable manifest references missing NumPy array key")
     out <- arrays[[key]]
@@ -191,25 +191,25 @@
     return(out)
   }
   if(marker=="tuple")return(structure(
-    lapply(value$items,.etr6_decode,arrays=arrays,depth=depth+1L),
+    lapply(value$items,.etr_portable_decode,arrays=arrays,depth=depth+1L),
     class="etr_python_tuple"))
   if(marker=="mapping") {
     out <- list()
     for(pair in value$entries) {
       .etr_assert(is.list(pair) && length(pair)==2L,
                   "invalid portable mapping entry")
-      key <- .etr6_decode(pair[[1L]],arrays,depth+1L)
+      key <- .etr_portable_decode(pair[[1L]],arrays,depth+1L)
       .etr_assert(is.character(key) && length(key)==1L &&
                     nzchar(key) && !key %in% names(out),
                     "portable mapping requires unique string keys in R")
-      out[key] <- list(.etr6_decode(pair[[2L]],arrays,depth+1L))
+      out[key] <- list(.etr_portable_decode(pair[[2L]],arrays,depth+1L))
     }
     return(out)
   }
   if(marker=="dataclass") {
     .etr_assert(is.list(value$fields) && !is.null(names(value$fields)),
                 "portable dataclass fields must be a mapping")
-    result <- lapply(value$fields,.etr6_decode,
+    result <- lapply(value$fields,.etr_portable_decode,
                      arrays=arrays,depth=depth+1L)
     return(c(list('__python_type__'=value$python_type),result))
   }
@@ -226,7 +226,7 @@
     .etr_assert(all(is.finite(shape)) && all(shape>=0) &&
        length(shape)<=6L && prod(shape)<=1048576,
        "unsupported or excessive portable JSON object-array shape")
-    items <- .etr6_decode(value$items,arrays,depth+1L)
+    items <- .etr_portable_decode(value$items,arrays,depth+1L)
     flatten <- function(x,level=0L){
       .etr_assert(level<=16L,"object array nesting exceeds limit")
       if(is.list(x) && is.null(names(x)))
@@ -258,14 +258,14 @@
   }
   if(marker %in% c("dataframe","series")) {
     cols <- if(marker=="dataframe")
-      .etr6_decode(value$columns,arrays,depth+1L) else
-      list(.etr6_decode(value$name,arrays,depth+1L))
-    index <- .etr6_decode(value$index,arrays,depth+1L)
+      .etr_portable_decode(value$columns,arrays,depth+1L) else
+      list(.etr_portable_decode(value$name,arrays,depth+1L))
+    index <- .etr_portable_decode(value$index,arrays,depth+1L)
     contents <- if(marker=="dataframe") value$data else list(value$data)
     .etr_assert(is.list(cols) && length(cols)==length(contents),
                 "portable DataFrame column count mismatch")
     v <- lapply(contents,function(field) {
-      arr <- .etr6_decode(field,arrays,depth+1L)
+      arr <- .etr_portable_decode(field,arrays,depth+1L)
       .etr_assert(is.atomic(arr) && length(dim(arr))<=1L,
                   "portable table columns must be one-dimensional arrays")
       as.vector(arr)
@@ -300,8 +300,8 @@
 #' @export
 etr_read_python_portable_result <- function(
     directory,max_array_bytes=64*1024^2,max_total_bytes=128*1024^2) {
-  .etr6_need("jsonlite")
-  .etr6_need("digest")
+  .etr_portable_require("jsonlite")
+  .etr_portable_require("digest")
   .etr_assert(is.character(directory) && length(directory)==1L &&
               !is.na(directory) && dir.exists(directory),
               "directory must be an existing Python portable-result folder")
@@ -319,7 +319,7 @@ etr_read_python_portable_result <- function(
     "unsupported Python portable-result format or schema version")
   .etr_assert(identical(manifest$arrays_file,"arrays.npz"),
               "unexpected array archive path (requires arrays.npz)")
-  expected <- .etr6_single(manifest$arrays_sha256,"arrays_sha256")
+  expected <- .etr_portable_single(manifest$arrays_sha256,"arrays_sha256")
   .etr_assert(grepl("^[0-9a-f]{64}$",expected),
               "invalid SHA-256 manifest digest")
   archive <- file.path(directory,"arrays.npz")
@@ -341,9 +341,9 @@ etr_read_python_portable_result <- function(
   arrays <- list()
   for(entry in names_in_zip) {
     key <- sub("[.]npy$","",entry)
-    arrays[[key]] <- .etr6_read_npy(archive,entry,max_array_bytes)
+    arrays[[key]] <- .etr_npy_read(archive,entry,max_array_bytes)
   }
-  payload <- .etr6_decode(manifest$payload,arrays)
+  payload <- .etr_portable_decode(manifest$payload,arrays)
   structure(list(
     result_type=manifest$result_type,
     source_package_version=manifest$source_package_version,

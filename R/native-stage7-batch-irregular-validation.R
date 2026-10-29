@@ -119,7 +119,7 @@ etr_irregular_trajectory_set <- function(
     class="etr_irregular_trajectory_set")
 }
 
-.etr7_validate_irregular <- function(x){
+.etr_irregular_validate_samples <- function(x){
   .etr_assert(inherits(x,"etr_irregular_trajectory_set") && is.list(x),
     "trajectories must be a native irregular trajectory set")
   etr_irregular_trajectory_set(x$time,x$values,x$curve_ids,
@@ -207,7 +207,7 @@ etr_from_irregular_long_native <- function(
 #' @return Numeric start/end tuple (R length-two vector).
 #' @export
 etr_common_overlap_interval <- function(x){
-  .etr7_validate_irregular(x)
+  .etr_irregular_validate_samples(x)
   lo <- max(vapply(x$time,function(t)t[1L],numeric(1L)))
   hi <- min(vapply(x$time,function(t)t[length(t)],numeric(1L)))
   .etr_assert(hi>lo,
@@ -224,7 +224,7 @@ etr_common_overlap_interval <- function(x){
 #' @export
 etr_make_common_grid <- function(x,n_time,domain="overlap",
                                  start=NULL,end=NULL){
-  .etr7_validate_irregular(x)
+  .etr_irregular_validate_samples(x)
   .etr_assert(is.numeric(n_time) && length(n_time)==1L &&
     is.finite(n_time) && n_time>=2 && n_time==as.integer(n_time),
     "n_time must be an integer at least 2")
@@ -261,7 +261,7 @@ etr_make_common_grid <- function(x,n_time,domain="overlap",
 #' @export
 etr_resample_irregular_to_grid <- function(x,grid,method="linear",
                                            max_gap=NULL) {
-  .etr7_validate_irregular(x)
+  .etr_irregular_validate_samples(x)
   .etr_assert(is.numeric(grid) && is.null(dim(grid)) &&
     length(grid)>=2L && all(is.finite(grid)) &&
     all(diff(grid)>0),"grid must be strictly increasing and finite")
@@ -310,7 +310,7 @@ etr_resample_irregular_to_common_grid <- function(x,n_time,
 #' @return One row per curve, mirroring the Python columns.
 #' @export
 etr_irregular_sampling_summary <- function(x){
-  .etr7_validate_irregular(x)
+  .etr_irregular_validate_samples(x)
   n<-length(x$time)
   data.frame(curve_id=x$curve_ids,
     n_samples=as.integer(vapply(x$time,length,integer(1L))),

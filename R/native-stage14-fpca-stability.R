@@ -72,7 +72,7 @@
 }
 
 .etr_fpca_stability_block <- function(fit,start,stop) {
-  .etr10_fit(fit)
+  .etr_fpca_fitted_check(fit)
   nt<-length(fit$time);nd<-length(fit$dimension_names)
   out<-matrix(0,stop-start,nt*nd)
   for(k in seq.int(start+1L,stop)){
@@ -96,7 +96,7 @@
 #' @export
 etr_compare_fpca_subspaces <- function(reference,candidate,
     start_component=0L,n_components=2L) {
-  .etr10_fit(reference);.etr10_fit(candidate)
+  .etr_fpca_fitted_check(reference);.etr_fpca_fitted_check(candidate)
   .etr_assert(is.numeric(start_component)&&length(start_component)==1L&&
     is.finite(start_component)&&start_component==as.integer(start_component)&&
     start_component>=0L,
@@ -263,7 +263,7 @@ etr_leave_one_group_out_fpca_influence <- function(trajectories,
     remain<-which(g!=groups[i])
     .etr_assert(length(remain)>k,
       paste("Removing group",groups[i],"leaves too few curves for FPCA"))
-    cand<-.etr_fpca_stability_fit(.etr12_subset(trajectories,remain),k,scaling)
+    cand<-.etr_fpca_stability_fit(.etr_cv_subset(trajectories,remain),k,scaling)
     match<-etr_match_fpca_components(ref,cand,n_components=k)
     ab<-abs(match$signed_similarity)
     dr<-cand$explained_variance_ratio[match$assignments+1L]-
@@ -380,10 +380,10 @@ etr_summarise_fpca_stability <- function(result,
 etr_diagnose_fpca_outliers <- function(result,trajectories,
     n_components=NULL,reconstruction_z_threshold=3.5,
     score_alpha=.99,score_covariance="robust",random_state=0L) {
-  .etr10_compatible_sample(result,trajectories)
+  .etr_fpca_compatible_sample(result,trajectories)
   .etr_assert(identical(score_covariance,"empirical"),
     "robust MinCovDet covariance is not ported; explicitly select score_covariance='empirical'")
-  k<-.etr10_k(result$n_components,n_components)
+  k<-.etr_fpca_component_count(result$n_components,n_components)
   .etr_assert(is.numeric(reconstruction_z_threshold)&&
     length(reconstruction_z_threshold)==1L&&
     is.finite(reconstruction_z_threshold)&&reconstruction_z_threshold>0,

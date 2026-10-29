@@ -3,7 +3,7 @@
 # recurrence_networks.py, joint_recurrence.py and nonlinear_types.py.
 # No Python/reticulate runtime calls. Dense research-size guard applies.
 
-.etr8_rec <- function(x,kind="auto"){
+.etr_recurrence_internal <- function(x,kind="auto"){
   .etr_assert(inherits(x,"etr_recurrence") &&
     is.matrix(x$matrix) && is.logical(x$matrix) &&
     !anyNA(x$matrix) && identical(x$kind,kind),
@@ -25,7 +25,7 @@
   invisible(x)
 }
 
-.etr8_rqa_full <- function(rec,min_diagonal_length=2L,min_vertical_length=2L){
+.etr_recurrence_quantifiers_full <- function(rec,min_diagonal_length=2L,min_vertical_length=2L){
   out<-etr_rqa_metrics(rec,min_diagonal_length,min_vertical_length)
   m<-rec$matrix
   if(identical(rec$kind,"auto")){
@@ -43,7 +43,7 @@
 #' @return etr_recurrence_network list with topology and source provenance.
 #' @export
 etr_recurrence_network <- function(recurrence){
-  .etr8_rec(recurrence,"auto")
+  .etr_recurrence_internal(recurrence,"auto")
   adj<-recurrence$matrix;n<-nrow(adj)
   .etr_assert(n<=750L,
     "native dense recurrence-network analysis limited to 750 nodes")
@@ -139,7 +139,7 @@ etr_recurrence_network_summary_frame <- function(result){
 etr_joint_recurrence_matrix <- function(recurrences,labels=NULL){
   .etr_assert(is.list(recurrences) && length(recurrences)>=2L,
     "joint recurrence requires at least two recurrence components")
-  for(x in recurrences).etr8_rec(x,"auto")
+  for(x in recurrences).etr_recurrence_internal(x,"auto")
   first<-recurrences[[1L]]
   .etr_assert(is.character(first$time_unit) &&
      length(first$time_unit)==1L && nzchar(first$time_unit),
@@ -215,7 +215,7 @@ etr_joint_rqa_metrics <- function(result,min_diagonal_length=2L,
     recurrence_rate=result$joint_recurrence_rate,
     theiler=result$theiler_window_samples,
     time=result$time,time_unit=result$time_unit),class="etr_recurrence")
-  out<-.etr8_rqa_full(rec,min_diagonal_length,min_vertical_length)
+  out<-.etr_recurrence_quantifiers_full(rec,min_diagonal_length,min_vertical_length)
   out$provenance<-list(operation="joint_rqa_metrics",
     joint_recurrence_provenance=result$provenance)
   out
@@ -227,8 +227,8 @@ etr_joint_rqa_metrics <- function(result,min_diagonal_length=2L,
 #' @export
 etr_cross_rqa_metrics <- function(recurrence,min_diagonal_length=2L,
                                   min_vertical_length=2L){
-  .etr8_rec(recurrence,"cross")
-  out<-.etr8_rqa_full(recurrence,min_diagonal_length,min_vertical_length)
+  .etr_recurrence_internal(recurrence,"cross")
+  out<-.etr_recurrence_quantifiers_full(recurrence,min_diagonal_length,min_vertical_length)
   out$provenance<-list(operation="rqa_metrics",kind="cross")
   out
 }
@@ -365,7 +365,7 @@ etr_windowed_rqa <- function(trajectories,curve=1L,window,step,
       trajectories$provenance)
     rec<-etr_recurrence_matrix(x,curve=1L,radius=radius,
                                theiler=theiler_window)
-    a<-.etr8_rqa_full(rec,min_diagonal_length,min_vertical_length)
+    a<-.etr_recurrence_quantifiers_full(rec,min_diagonal_length,min_vertical_length)
     data.frame(start_index=as.integer(i-1L),stop_index=as.integer(hi),
       start_time=x$time[1L],end_time=x$time[length(x$time)],
       center_time=(x$time[1L]+tail(x$time,1L))/2,
