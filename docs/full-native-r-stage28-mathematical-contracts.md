@@ -104,3 +104,27 @@ tryCatch(
 ```
 
 **No code or results have been approved for CRAN/PyPI release or merged.**
+
+## Independent Python-only source-content attestation (separate from R oracle)
+
+Stage 28 also includes
+`scripts/verify_stage28_math_contracts.py`, a standalone read-only
+Python 3.12 verifier that requires the *installed published*
+`eyetrajectoriespy==1.2.0` distribution. It independently compares
+all 88 CSV rows and six fields against the original Python
+`mathematical_contract_frame()`, iterates all 41 source dataclasses
+to validate equation strings, titles, scopes and lookup semantics,
+and prints a deterministic SHA-256 digest over canonical ordered
+metadata only on complete success.
+
+Run in a Python environment with the published dependency installed:
+
+```bash
+python scripts/verify_stage28_math_contracts.py
+```
+
+The pinned-Python CI now executes this **before** the separate
+`reticulate`-based R/Python oracle. It never sets an approval flag
+or writes signed independent review evidence. A successful digest
+constitutes source *content* qualification, **not** full Python
+return-class/data-type equivalence or scientific reviewer signoff.
