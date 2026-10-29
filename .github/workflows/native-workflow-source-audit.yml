@@ -6,6 +6,7 @@ on:
       - "R/native-full-parity-ledger.R"
       - "NAMESPACE"
       - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/native_nonfunction_contract_review_v1.csv"
       - "tests/testthat/test-native-workflow-source-audit.R"
       - "tests/testthat/test-full-native-r-parity-ledger.R"
       - ".github/workflows/native-workflow-source-audit.yml"
