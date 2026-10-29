@@ -4,10 +4,10 @@
 .etr_workflow_audit_fixture <- function() {
   etr_workflow_audit_result("dense_fpca",
     steps=list(
-      list(name="validate",function="inspect",status="completed",
+      list(name="validate",`function`="inspect",status="completed",
         parameters=list(alpha=1L),elapsed_seconds=0.125,
         warnings=c("source warning")),
-      list(name="fit",function="fit_fpca",status="skipped",
+      list(name="fit",`function`="fit_fpca",status="skipped",
         parameters=list(),elapsed_seconds=0,warnings=character())),
     decisions=list(
       alpha=list(value=1L,source="analyst",criterion=NULL),
@@ -62,13 +62,13 @@ test_that("workflow reporting preserves ordered steps, statuses and decisions",{
 test_that("workflow audit records reject hidden decisions and invalid values",{
   skip_if_not_installed("jsonlite")
   expect_error(etr_workflow_steps_frame(list(list(name="bad",
-    function="fit",status="automatic",parameters=list(),
+    `function`="fit",status="automatic",parameters=list(),
     elapsed_seconds=0,warnings=character())),"requires")
   expect_error(etr_workflow_steps_frame(list(list(name="bad",
-    function="fit",status="completed",parameters=list(),
+    `function`="fit",status="completed",parameters=list(),
     elapsed_seconds=-1,warnings=character())),"requires")
   expect_error(etr_workflow_steps_frame(list(list(name="bad",
-    function="fit",status="completed",parameters=list(a=Inf),
+    `function`="fit",status="completed",parameters=list(a=Inf),
     elapsed_seconds=0,warnings=character())),"nonfinite")
   expect_error(etr_workflow_decisions_frame(
     list(k=list(value=2L,source="audited_selector")),"criterion")
@@ -112,7 +112,7 @@ test_that("pinned published Python 1.2 workflow step and decision frames match c
   wf <- reticulate::import("eyetrajectoriespy.workflows",convert=FALSE)
   source_step <- do.call(reticulate::py_call,
     c(list(wf$WorkflowStepRecord),list(name="validate",
-      "function"="inspect",status="completed",
+      `function`="inspect",status="completed",
       parameters=reticulate::dict(alpha=1L),
       elapsed_seconds=0.125,
       warnings=reticulate::r_to_py(c("source warning")))))
@@ -120,7 +120,7 @@ test_that("pinned published Python 1.2 workflow step and decision frames match c
     wf$workflow_steps_frame,
     steps=reticulate::r_to_py(list(source_step))))
   native_steps <- etr_workflow_steps_frame(list(
-    list(name="validate",function="inspect",status="completed",
+    list(name="validate",`function`="inspect",status="completed",
       parameters=list(alpha=1L),elapsed_seconds=0.125,
       warnings="source warning")))
   expect_identical(names(py_steps),names(native_steps))
