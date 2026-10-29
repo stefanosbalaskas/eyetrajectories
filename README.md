@@ -1320,3 +1320,28 @@ The new branch still requires its first exact-head runtime tests.
 [Native scientific inference and source audit](docs/native-functional-inference-source-audit.md).
 
 [Four deterministic Python-source contract closure gaps and independent approval requirements](docs/native-source-contract-closure.md).
+
+
+## Functional recovery evidence and source-verified Monte Carlo summaries (draft)
+
+Four more published Python 1.2 public APIs have **stage-free,
+Python-free native R implementations** for replicate-level recovery
+metrics, explicit failure rates with binomial MCSE, descriptive
+Monte Carlo summaries and source-interval plotting. A fifth,
+native-only result constructor validates structured source/component
+metric labels and failed recovery records.
+
+Direct published Python 1.2 oracles use real immutable Python
+recovery record/result classes and compare the numerical and
+semantic source columns, quantiles and Matplotlib median coordinates.
+The native functions do not refit models, silently discard failures
+or set statistical qualification thresholds.
+
+Authored frozen inventory: **211 native mapped methods**,
+**236/380 public Python callable names mapped**, **144 unmapped**,
+**57 known complete-source differences**, and **0/508
+independently fully certified public source contracts**.
+All public function names are stage-free. Runtime qualification
+for this draft is pending.
+
+[Recovery evidence source and certification boundary](docs/native-functional-recovery-source-evidence.md).
