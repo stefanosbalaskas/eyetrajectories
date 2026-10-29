@@ -1,5 +1,5 @@
 # Stage 27: exact published Python 1.2 FPCA uncertainty text and plots.
-.etr27_fixture <- function(){
+.etr_test_fpca_uncertainty_fixture <- function(){
   sims<-matrix(c(.9,.8,.75,.85,.95,.8),nrow=3L,ncol=2L)
   scores<-structure(list(similarities=sims,n_components=2L,
     target_curve_ids=c("a","b"),
@@ -35,14 +35,14 @@
     class="etr_functional_mean_band")
   list(scores=scores,spec=spec,comp=comp,mean=mean)
 }
-.etr27_pdf <- function(fn) {
+.etr_test_fpca_uncertainty_pdf <- function(fn) {
   grDevices::pdf(tempfile(fileext=".pdf"))
   on.exit(grDevices::dev.off(),add=TRUE)
   fn()
 }
 
 test_that("Stage 27 four report functions have fixed source scientific language",{
-  x<-.etr27_fixture()
+  x<-.etr_test_fpca_uncertainty_fixture()
   a<-etr_fpca_score_uncertainty_reporting_text(x$scores)
   expect_match(a,"3 curve-level bootstrap refits")
   expect_match(a,"2 fixed external target")
@@ -75,8 +75,8 @@ test_that("Stage 27 four report functions have fixed source scientific language"
 })
 
 test_that("Stage 27 target-score plot preserves source medians and envelope",{
-  x<-.etr27_fixture()
-  .etr27_pdf(function(){
+  x<-.etr_test_fpca_uncertainty_fixture()
+  .etr_test_fpca_uncertainty_pdf(function(){
     d<-etr_plot_fpca_score_uncertainty(x$scores,component=0L)
     expect_identical(d$target_curve_id,c("a","b"))
     expect_equal(d$median,c(.2,.4))
@@ -93,8 +93,8 @@ test_that("Stage 27 target-score plot preserves source medians and envelope",{
 })
 
 test_that("Stage 27 spectrum plot leaves unbounded bootstrap intervals intact",{
-  x<-.etr27_fixture()
-  .etr27_pdf(function(){
+  x<-.etr_test_fpca_uncertainty_fixture()
+  .etr_test_fpca_uncertainty_pdf(function(){
     d<-etr_plot_fpca_spectrum_uncertainty(x$spec,
       metric="explained_variance_ratio")
     expect_equal(d$estimate,c(.6,.3))
@@ -112,8 +112,8 @@ test_that("Stage 27 spectrum plot leaves unbounded bootstrap intervals intact",{
 })
 
 test_that("Stage 27 component band plot returns exact observed-grid FPC source",{
-  x<-.etr27_fixture()
-  .etr27_pdf(function(){
+  x<-.etr_test_fpca_uncertainty_fixture()
+  .etr_test_fpca_uncertainty_pdf(function(){
     out<-etr_plot_fpca_component_band(x$comp,
       component=0L,dimension="x")
     expect_equal(out$time,c(0,.5,1))
@@ -158,7 +158,7 @@ test_that("Stage 27 direct pinned Python 1.2 report-text oracles are opt-in",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("Pinned Python 1.2 reporting text source oracle is opt-in")
   expect_identical(et_python_version(),"1.2.0")
-  x<-.etr27_fixture()
+  x<-.etr_test_fpca_uncertainty_fixture()
   types<-reticulate::import("types")
   mk<-function(...)types$SimpleNamespace(...)
   rpy<-reticulate::r_to_py
