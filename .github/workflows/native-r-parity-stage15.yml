@@ -1,18 +1,18 @@
-name: Native R Stage 15 multiplier and FPCA uncertainty
+name: Native R Bootstrap inference multiplier and FPCA uncertainty
 on:
   pull_request:
     paths:
-      - "R/native-stage15-bootstrap-inference.R"
+      - "R/native-bootstrap-inference.R"
       - "R/native-full-parity-ledger.R"
-      - "tests/testthat/test-native-stage15-bootstrap-inference.R"
+      - "tests/testthat/test-native-bootstrap-inference.R"
       - "NAMESPACE"
-      - ".github/workflows/native-r-parity-stage15.yml"
+      - ".github/workflows/native-r-parity-.yml"
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
   native-r:
-    name: Stage 15 native R / ${{ matrix.os }}
+    name: Bootstrap inference native R / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -31,12 +31,12 @@ jobs:
           extra-packages: |
             any::pkgload
             any::testthat
-      - name: Stage 15 multiplier and FPCA bootstraps
+      - name: Bootstrap inference multiplier and FPCA bootstraps
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-stage15-bootstrap-inference|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-bootstrap-inference|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))'
   python-v1-2-oracle:
-    name: Stage 15 pinned Python 1.2 source-geometry oracle
+    name: Bootstrap inference pinned Python 1.2 source-geometry oracle
     runs-on: ubuntu-latest
     env:
       ET_RUN_PYTHON_TESTS: "true"
@@ -57,9 +57,9 @@ jobs:
           extra-packages: |
             any::pkgload
             any::testthat
-      - name: Stage 15 independent Python source checks
+      - name: Bootstrap inference independent Python source checks
         shell: bash
         env:
           RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-stage15-bootstrap-inference",reporter="summary",stop_on_failure=TRUE)'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-bootstrap-inference",reporter="summary",stop_on_failure=TRUE)'

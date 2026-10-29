@@ -1,13 +1,13 @@
-name: Native R Stage 13 functional OLS and nonlinear diagnostics
+name: Native R Functional models functional OLS and nonlinear diagnostics
 
 on:
   pull_request:
     paths:
-      - "R/native-stage13-*.R"
+      - "R/(?:native-functional-models)-*.R"
       - "R/native-full-parity-ledger.R"
       - "NAMESPACE"
-      - "tests/testthat/test-native-stage13*.R"
-      - ".github/workflows/native-r-parity-stage13.yml"
+      - "tests/testthat/test-(?:native-functional-models)*.R"
+      - ".github/workflows/native-r-parity-.yml"
   workflow_dispatch:
 
 permissions:
@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   native-r:
-    name: Stage 13 native scientific methods / ${{ matrix.os }}
+    name: Functional models native scientific methods / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -37,10 +37,10 @@ jobs:
       - name: Native OLS HC1 bootstrap FNN and cumulative source ledger
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-stage13-functional-models|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-functional-models|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))'
 
   python-v1-2-fos-oracle:
-    name: Stage 13 independent pinned Python 1.2 numerical OLS oracle
+    name: Functional models independent pinned Python 1.2 numerical OLS oracle
     runs-on: ubuntu-latest
     env:
       ET_RUN_PYTHON_TESTS: "true"
@@ -66,4 +66,4 @@ jobs:
         env:
           RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-stage13-functional-models",reporter="summary",stop_on_failure=TRUE)'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-functional-models",reporter="summary",stop_on_failure=TRUE)'

@@ -1,14 +1,14 @@
-name: Native R Stage 10 compositional FPCA and diagnostics
+name: Native R FPCA extensions compositional FPCA and diagnostics
 
 on:
   pull_request:
     paths:
-      - "R/native-stage10-fpca-extensions.R"
+      - "R/native-fpca-extensions.R"
       - "R/native-full-parity-ledger.R"
       - "NAMESPACE"
-      - "tests/testthat/test-native-stage10*.R"
+      - "tests/testthat/test-(?:native-fpca-extensions)*.R"
       - "tests/testthat/test-native-stage*-parity-ledger.R"
-      - ".github/workflows/native-r-parity-stage10.yml"
+      - ".github/workflows/native-r-parity-.yml"
   workflow_dispatch:
 
 permissions:
@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   native-r:
-    name: Stage 10 native R / ${{ matrix.os }}
+    name: FPCA extensions native R / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -35,13 +35,13 @@ jobs:
           extra-packages: |
             any::pkgload
             any::testthat
-      - name: Stage 10 native R and frozen inventory regression
+      - name: FPCA extensions native R and frozen inventory regression
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); started<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-stage10|native-stage9|native-stage[3-8]-parity-ledger|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(started,reticulate::py_available(initialize=FALSE)))'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); started<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="(?:native-fpca-extensions)|(?:native-functional-diagnostics)|native-stage[3-8]-parity-ledger|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(started,reticulate::py_available(initialize=FALSE)))'
 
   python-v1-2-oracle:
-    name: Stage 10 independent Python 1.2 reference
+    name: FPCA extensions independent Python 1.2 reference
     runs-on: ubuntu-latest
     env:
       ET_RUN_PYTHON_TESTS: "true"
@@ -63,9 +63,9 @@ jobs:
           extra-packages: |
             any::pkgload
             any::testthat
-      - name: Stage 10 opt-in scientific oracle
+      - name: FPCA extensions opt-in scientific oracle
         shell: bash
         env:
           RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-stage10-fpca-extensions",reporter="summary",stop_on_failure=TRUE)'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-fpca-extensions",reporter="summary",stop_on_failure=TRUE)'

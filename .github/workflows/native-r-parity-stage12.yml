@@ -1,14 +1,14 @@
-name: Native R Stage 12 leakage-aware CV and uncertainty frames
+name: Native R Cross-validation leakage-aware CV and uncertainty frames
 
 on:
   pull_request:
     paths:
-      - "R/native-stage12-cv-uncertainty.R"
+      - "R/native-cv-uncertainty.R"
       - "R/native-full-parity-ledger.R"
       - "NAMESPACE"
-      - "tests/testthat/test-native-stage12*.R"
+      - "tests/testthat/test-(?:native-cv-uncertainty)*.R"
       - "tests/testthat/test-native-stage*-parity-ledger.R"
-      - ".github/workflows/native-r-parity-stage12.yml"
+      - ".github/workflows/native-r-parity-.yml"
   workflow_dispatch:
 
 permissions:
@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   native-r:
-    name: Stage 12 native R / ${{ matrix.os }}
+    name: Cross-validation native R / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -35,13 +35,13 @@ jobs:
           extra-packages: |
             any::pkgload
             any::testthat
-      - name: Stage 12 native numerical, grouped holdouts and ledger
+      - name: Cross-validation native numerical, grouped holdouts and ledger
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-stage12|native-stage11|native-stage10|native-stage9|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="(?:native-cv-uncertainty)|(?:native-nonlinear-reporting)|(?:native-fpca-extensions)|(?:native-functional-diagnostics)|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))'
 
   python-v1-2-cv:
-    name: Stage 12 pinned Python 1.2 heldout CV numerical oracle
+    name: Cross-validation pinned Python 1.2 heldout CV numerical oracle
     runs-on: ubuntu-latest
     env:
       ET_RUN_PYTHON_TESTS: "true"
@@ -67,4 +67,4 @@ jobs:
         env:
           RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-stage12-cv-uncertainty",reporter="summary",stop_on_failure=TRUE)'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-cv-uncertainty",reporter="summary",stop_on_failure=TRUE)'

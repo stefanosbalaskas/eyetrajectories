@@ -5,7 +5,7 @@ on:
       - "R/native-functional-inference-visuals.R"
       - "tests/testthat/test-native-functional-inference-visuals.R"
       - "R/native-full-parity-ledger.R"
-      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/native_source_contract_gaps_.csv"
       - "NAMESPACE"
       - ".github/workflows/native-functional-inference.yml"
   workflow_dispatch:
@@ -39,7 +39,7 @@ jobs:
       - name: Execute numerical source geometry and strict frozen API census
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-functional-inference-visuals|native-functional-registration-plots|native-stage22-source-contract-gaps|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-functional-inference-visuals|native-functional-registration-plots|native-source-contract-gaps|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
   python-source:
     name: Published Python 1.2 real fitted FOS and conservative conformal oracles
     runs-on: ubuntu-latest

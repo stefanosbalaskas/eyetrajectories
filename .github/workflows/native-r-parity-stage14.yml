@@ -1,19 +1,19 @@
-name: Native R Stage 14 FPCA stability and diagnostic estimators
+name: Native R FPCA stability FPCA stability and diagnostic estimators
 on:
   pull_request:
     paths:
-      - "R/native-stage14-fpca-stability.R"
+      - "R/native-fpca-stability.R"
       - "R/native-full-parity-ledger.R"
-      - "tests/testthat/test-native-stage14-fpca-stability.R"
+      - "tests/testthat/test-native-fpca-stability.R"
       - "tests/testthat/test-native-stage*-parity-ledger.R"
       - "NAMESPACE"
-      - ".github/workflows/native-r-parity-stage14.yml"
+      - ".github/workflows/native-r-parity-.yml"
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
   native-r:
-    name: Stage 14 native R / ${{ matrix.os }}
+    name: FPCA stability native R / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -35,9 +35,9 @@ jobs:
       - name: Native FPCA eigenspace and influence checks
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-stage14-fpca-stability|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-fpca-stability|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))'
   python-v1-2-oracle:
-    name: Stage 14 independent pinned Python 1.2 FPCA oracle
+    name: FPCA stability independent pinned Python 1.2 FPCA oracle
     runs-on: ubuntu-latest
     env:
       ET_RUN_PYTHON_TESTS: "true"
@@ -63,4 +63,4 @@ jobs:
         env:
           RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-stage14-fpca-stability",reporter="summary",stop_on_failure=TRUE)'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-fpca-stability",reporter="summary",stop_on_failure=TRUE)'
