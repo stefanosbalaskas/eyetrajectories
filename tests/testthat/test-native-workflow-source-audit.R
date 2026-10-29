@@ -15,6 +15,15 @@
         criterion="held-out score")))
 }
 
+test_that("native workflow summary and text have no optional JSON dependency",{
+  result <- .etr_workflow_audit_fixture()
+  out <- etr_workflow_summary_frame(result)
+  expect_equal(out$step_count,2L)
+  expect_equal(out$warning_count,1L)
+  expect_true(grepl("scientific decisions",
+    etr_workflow_reporting_text(result),fixed=TRUE))
+})
+
 test_that("workflow reporting preserves ordered steps, statuses and decisions",{
   skip_if_not_installed("jsonlite")
   result <- .etr_workflow_audit_fixture()
