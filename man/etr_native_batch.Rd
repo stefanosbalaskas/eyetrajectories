@@ -1,4 +1,4 @@
-\name{etr_native_stage7_batch}
+\name{etr_native_batch}
 \alias{etr_validate_common_grid}
 \alias{etr_validate_simplex}
 \alias{etr_validate_no_long_missing_runs}

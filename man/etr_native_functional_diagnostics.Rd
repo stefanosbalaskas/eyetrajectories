@@ -1,4 +1,4 @@
-\name{etr_native_stage9_functional_diagnostics}
+\name{etr_native_functional_diagnostics}
 \alias{etr_alr_transform}
 \alias{etr_inverse_alr}
 \alias{etr_component_trajectories}

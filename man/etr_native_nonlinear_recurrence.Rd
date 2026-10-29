@@ -1,4 +1,4 @@
-\name{etr_native_stage8_nonlinear_recurrence}
+\name{etr_native_nonlinear_recurrence}
 \alias{etr_recurrence_network}
 \alias{etr_recurrence_network_node_frame}
 \alias{etr_recurrence_network_summary_frame}

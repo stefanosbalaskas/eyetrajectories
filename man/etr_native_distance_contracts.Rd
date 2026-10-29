@@ -1,4 +1,4 @@
-\name{etr_native_stage4_distance_contracts}
+\name{etr_native_distance_contracts}
 \alias{etr_discrete_frechet}
 \alias{etr_dynamic_time_warping}
 \alias{etr_pairwise_dtw_full}

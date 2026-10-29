@@ -1,4 +1,4 @@
-\name{etr_native_stage5_trajectory_provenance}
+\name{etr_native_trajectory_provenance}
 \alias{etr_trajectory_provenance}
 \alias{etr_with_values}
 \alias{etr_trajectory_snapshot}

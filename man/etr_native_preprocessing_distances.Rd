@@ -1,4 +1,4 @@
-\name{etr_native_stage3_preprocessing_distances}
+\name{etr_native_preprocessing_distances}
 \alias{etr_normalize_coordinates}
 \alias{etr_center_on_landmark}
 \alias{etr_normalize_time_interval}
