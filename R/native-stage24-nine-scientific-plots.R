@@ -2,11 +2,11 @@
 # Source names from published eyetrajectoriespy 1.2.0 plotting.py and
 # nonlinear_plotting.py; native base R graphics are NOT Matplotlib Axes.
 
-.etr24_scalar <- function(x,label) {
+.etr_plot_validate_scalar <- function(x,label) {
   .etr_assert(is.numeric(x)&&length(x)==1L&&is.finite(x),
     paste(label,"must be a finite scalar"))
 }
-.etr24_table <- function(x,cl,cols,field="table") {
+.etr_plot_require_frame <- function(x,cl,cols,field="table") {
   t<-x[[field]]
   .etr_assert(inherits(x,cl)&&is.data.frame(t)&&nrow(t)>0L&&
     all(cols %in% names(t))&&
@@ -70,7 +70,7 @@ etr_plot_fpca_influence <- function(result,
 #' @return Invisible source diagnostic columns and thresholds.
 #' @export
 etr_plot_fpca_outlier_diagnostics <- function(result,...) {
-  t<-.etr24_table(result,"etr_fpca_outliers",
+  t<-.etr_plot_require_frame(result,"etr_fpca_outliers",
     c("reconstruction_robust_z","score_mahalanobis_sq","score_cutoff"),
     field="diagnostics")
   .etr_assert("review_flag"%in%names(t)&&
@@ -83,7 +83,7 @@ etr_plot_fpca_outlier_diagnostics <- function(result,...) {
     main="FPCA trajectory review diagnostics",...)
   threshold<-result$provenance$reconstruction_z_threshold
   if(!is.null(threshold)){
-    .etr24_scalar(threshold,"reconstruction threshold")
+    .etr_plot_validate_scalar(threshold,"reconstruction threshold")
     graphics::abline(v=threshold,lty=2)
   }
   graphics::abline(h=t$score_cutoff[1L],lty=2)

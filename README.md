@@ -1272,3 +1272,24 @@ Cumulative authored inventory: **197 native implementations**,
 Stage 29 runtime verification is still pending.
 
 [Stage 29 source and statistical review](docs/full-native-r-stage29-transfer-entropy-visual.md).
+
+
+## Stable function names: reconstruction and registration graphics (research draft)
+
+The public R function API is **scientifically named, not stage-numbered**.
+This branch also replaces development-numbered private helper
+function names in recent native methods with descriptive names,
+without changing public functions or underlying estimators.
+
+Three new Python-free exports:
+`etr_plot_reconstruction_curve()`, `etr_plot_registration()` and
+`etr_plot_warping_functions()`. Direct pinned Python 1.2
+reconstruction/time-warp plotted geometry oracles are authored.
+
+Cumulative authored source inventory: **200 native R implementations**,
+**225/380 mapped Python public callables**, **155 unmapped**,
+**46 known unresolved full-source differences** and
+**0/508 independently certified complete Python public contracts**.
+Current branch runtime tests remain pending.
+
+[Scientific public naming and registration plots](docs/native-public-naming-registration-plots.md).

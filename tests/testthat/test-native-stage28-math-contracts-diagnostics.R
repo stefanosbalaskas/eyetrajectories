@@ -1,11 +1,11 @@
 # Stage 28: complete source Python 1.2 mathematical metadata and native
 # nonlinear sensitivity visualization tests (public source approvals stay false).
-.etr28_pdf<-function(f){
+.etr_test_nonlinear_diagnostic_pdf<-function(f){
   grDevices::pdf(tempfile(fileext=".pdf"))
   on.exit(grDevices::dev.off(),add=TRUE)
   f()
 }
-.etr28_fixture<-function(kind) {
+.etr_test_nonlinear_sensitivity_fixture<-function(kind) {
   t<-data.frame(embedding_dimension=c(2,3,4),
     requested_delay=c(1,1,1),exponent=c(.12,.25,.17),
     r_squared=c(.65,.78,.72),standard_error=c(.05,.04,.05))
@@ -13,7 +13,7 @@
     curve_id="curve_1",exponent_unit="1/s"),
     class=kind)
 }
-.etr28_window_fixture<-function(){
+.etr_test_window_rqa_plot_fixture<-function(){
   a<-function(time,v,w,s){
     values<-array(NA_real_,c(2L,length(time),1L))
     values[1L,,1L]<-v
@@ -59,9 +59,9 @@ test_that("Stage 28 published 41-contract registry retains every 88 API row",{
 })
 
 test_that("Stage 28 Kantz and Rosenstein require unambiguous full-grid slices",{
-  k<-.etr28_fixture("etr_kantz_parameter_sensitivity")
-  lle<-.etr28_fixture("etr_lyapunov_parameter_sensitivity")
-  .etr28_pdf(function(){
+  k<-.etr_test_nonlinear_sensitivity_fixture("etr_kantz_parameter_sensitivity")
+  lle<-.etr_test_nonlinear_sensitivity_fixture("etr_lyapunov_parameter_sensitivity")
+  .etr_test_nonlinear_diagnostic_pdf(function(){
     a<-etr_plot_kantz_sensitivity(k,parameter="embedding_dimension")
     expect_equal(a$embedding_dimension,c(2,3,4))
     expect_equal(a$exponent,c(.12,.25,.17))
@@ -90,8 +90,8 @@ test_that("Stage 28 Kantz and Rosenstein require unambiguous full-grid slices",{
 })
 
 test_that("Stage 28 windowed RQA plot preserves every declared center grid",{
-  x<-.etr28_window_fixture()
-  .etr28_pdf(function(){
+  x<-.etr_test_window_rqa_plot_fixture()
+  .etr_test_nonlinear_diagnostic_pdf(function(){
     a<-etr_plot_windowed_rqa_sensitivity(x,curve="a",
       metric="recurrence_rate")
     expect_equal(length(a),2L)
@@ -128,10 +128,10 @@ test_that("Stage 28 508-source census remains strict and unsigned",{
   }
   expect_equal(nrow(z),508L)
   expect_equal(sum(z$is_python_function),380L)
-  expect_equal(sum(z$named_native_candidate&z$is_python_function),222L)
-  expect_equal(sum(z$native_implementation_started),197L)
-  expect_equal(sum(z$is_python_function&!z$named_native_candidate),158L)
-  expect_equal(sum(z$source_contract_gap_unresolved),43L)
+  expect_equal(sum(z$named_native_candidate&z$is_python_function),225L)
+  expect_equal(sum(z$native_implementation_started),200L)
+  expect_equal(sum(z$is_python_function&!z$named_native_candidate),155L)
+  expect_equal(sum(z$source_contract_gap_unresolved),46L)
   expect_equal(sum(z$contract_certification_candidate),4L)
   expect_equal(sum(z$one_to_one_native_contract_complete),0L)
 })

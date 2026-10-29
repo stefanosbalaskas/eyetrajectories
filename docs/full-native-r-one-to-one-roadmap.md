@@ -816,3 +816,21 @@ source contracts**. In particular, R Sturges and NumPy automatic
 histogram binning are explicitly different.
 
 [Stage 29 scientific source and qualification scope](full-native-r-stage29-transfer-entropy-visual.md).
+
+
+## Public API naming and registration visualization source alignment
+
+Public R functions use stable scientific names rather than temporary
+development stage identifiers. Recent internal numbered helpers and
+test fixtures are renamed to descriptive scientific names while
+keeping research-stage filename and ledger provenance for
+reproducibility.
+
+Three new native source-aligned graphics for FPCA reconstruction,
+original/registered curves and landmark warping or phase displacement
+raise authored total to **200 native R functions** and **225/380
+mapped public Python callables**. Remaining unmapped functions **155**;
+explicitly documented cross-language source return-type differences
+**46**; full independent public source certification remains **0/508**.
+
+[Native stable function names and source geometry](native-public-naming-registration-plots.md).

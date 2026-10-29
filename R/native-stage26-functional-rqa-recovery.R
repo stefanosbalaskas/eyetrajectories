@@ -120,7 +120,7 @@ etr_functional_recovery_reporting_text <- function(assessment) {
     "and is not an estimator-tuning input.")
 }
 
-.etr26_pairs <- function(pairs) {
+.etr_validate_rqa_window_pairs <- function(pairs) {
   if(is.matrix(pairs)&&is.numeric(pairs)&&ncol(pairs)==2L)
     pairs<-lapply(seq_len(nrow(pairs)),function(i)as.numeric(pairs[i,]))
   .etr_assert(is.list(pairs)&&length(pairs)>=1L,
@@ -149,7 +149,7 @@ etr_windowed_rqa_sensitivity <- function(trajectories,metrics,
     min_diagonal_length=2L,min_vertical_length=2L,
     undefined_policy="raise") {
   etr_validate(trajectories,require_complete=TRUE)
-  pairs<-.etr26_pairs(window_step_pairs)
+  pairs<-.etr_validate_rqa_window_pairs(window_step_pairs)
   analyses<-lapply(pairs,function(p)etr_windowed_rqa_trajectory_set(
     trajectories,metrics=metrics,window=p[1L],step=p[2L],
     window_units=window_units,step_units=step_units,radius=radius,

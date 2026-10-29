@@ -1,12 +1,12 @@
 # Stage 29: three native source TE visualization contracts, including
 # direct published Python 1.2 real-result Matplotlib geometry probes.
 
-.etr29_pdf <- function(fn){
+.etr_test_transfer_entropy_pdf <- function(fn){
   grDevices::pdf(tempfile(fileext=".pdf"))
   on.exit(grDevices::dev.off(),add=TRUE)
   fn()
 }
-.etr29_fixture <- function() {
+.etr_test_transfer_entropy_fixture <- function() {
   spec<-structure(list(
     table=data.frame(target_history=c(1L,1L,1L),
       source_history=c(1L,1L,1L),
@@ -30,8 +30,8 @@
 }
 
 test_that("Stage 29 source TE sensitivity never averages tuning specifications",{
-  z<-.etr29_fixture()
-  .etr29_pdf(function(){
+  z<-.etr_test_transfer_entropy_fixture()
+  .etr_test_transfer_entropy_pdf(function(){
     x<-etr_plot_transfer_entropy_sensitivity(z$spec,
       parameter="source_lag")
     expect_identical(x$source_lag,c(1L,2L,3L))
@@ -56,8 +56,8 @@ test_that("Stage 29 source TE sensitivity never averages tuning specifications",
 })
 
 test_that("Stage 29 source-shift TE histograms preserve declared null samples",{
-  z<-.etr29_fixture()
-  .etr29_pdf(function(){
+  z<-.etr_test_transfer_entropy_fixture()
+  .etr_test_transfer_entropy_pdf(function(){
     a<-etr_plot_transfer_entropy_circular_shift_test(z$te,bins=4L)
     expect_equal(a$surrogate,z$te$surrogate_transfer_entropy_bits)
     expect_equal(a$observed,.42)
@@ -82,8 +82,8 @@ test_that("Stage 29 source-shift TE histograms preserve declared null samples",{
 })
 
 test_that("Stage 29 null results never claim causal identification",{
-  z<-.etr29_fixture()
-  .etr29_pdf(function(){
+  z<-.etr_test_transfer_entropy_fixture()
+  .etr_test_transfer_entropy_pdf(function(){
     a<-etr_plot_transfer_entropy_circular_shift_test(z$te)
     expect_identical(a$binning,"R_Sturges_not_numpy_auto")
     expect_equal(a$surrogate,z$te$surrogate_transfer_entropy_bits)
@@ -105,10 +105,10 @@ test_that("Stage 29 three actual Python source names are mapped and unsigned",{
   }
   expect_equal(nrow(z),508L)
   expect_equal(sum(z$is_python_function),380L)
-  expect_equal(sum(z$named_native_candidate&z$is_python_function),222L)
-  expect_equal(sum(z$native_implementation_started),197L)
-  expect_equal(sum(z$is_python_function&!z$named_native_candidate),158L)
-  expect_equal(sum(z$source_contract_gap_unresolved),43L)
+  expect_equal(sum(z$named_native_candidate&z$is_python_function),225L)
+  expect_equal(sum(z$native_implementation_started),200L)
+  expect_equal(sum(z$is_python_function&!z$named_native_candidate),155L)
+  expect_equal(sum(z$source_contract_gap_unresolved),46L)
   expect_equal(sum(z$one_to_one_native_contract_complete),0L)
 })
 
@@ -147,7 +147,7 @@ test_that("Stage 29 published Python 1.2 source Axes geometry is opt-in",{
   py_counts<-vapply(0:5,function(i)
     as.numeric(et_to_r(ax$patches[[as.integer(i)]]$get_height())),
     numeric(1L))
-  .etr29_pdf(function(){
+  .etr_test_transfer_entropy_pdf(function(){
     r<-etr_plot_transfer_entropy_circular_shift_test(
       native_te,bins=6L)
     expect_equal(r$surrogate,source_null,tolerance=0)
@@ -177,7 +177,7 @@ test_that("Stage 29 published Python 1.2 source Axes geometry is opt-in",{
   py_ccounts<-vapply(0:5,function(i)
     as.numeric(et_to_r(ax_cte$patches[[as.integer(i)]]$get_height())),
     numeric(1L))
-  .etr29_pdf(function(){
+  .etr_test_transfer_entropy_pdf(function(){
     r<-etr_plot_conditional_transfer_entropy_circular_shift_test(
       native_cte,bins=6L)
     expect_equal(r$surrogate,source_cnull,tolerance=0)
@@ -200,7 +200,7 @@ test_that("Stage 29 published Python 1.2 source Axes geometry is opt-in",{
     parameter_columns=as.character(et_to_r(py_spec$parameter_columns)),
     metric_columns=as.character(et_to_r(py_spec$metric_columns))),
     class="etr_transfer_entropy_sensitivity")
-  .etr29_pdf(function(){
+  .etr_test_transfer_entropy_pdf(function(){
     tab<-etr_plot_transfer_entropy_sensitivity(native_spec,
       parameter="source_lag")
     expect_equal(as.numeric(tab$source_lag),xy[,1L],tolerance=0)

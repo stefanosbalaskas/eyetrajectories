@@ -1,5 +1,5 @@
 # Stage 26: native multiscale RQA inference and source recovery catalog.
-.etr26_fixture <- function() {
+.etr_test_functional_rqa_fixture <- function() {
   time<-0:17
   n<-4L
   values<-array(NA_real_,c(n,length(time),1L))
@@ -71,7 +71,7 @@ test_that("Stage 26 native recovery assessment preserves metric semantics and or
 })
 
 test_that("Stage 26 windowed-RQA sensitivity reports exact source reuse and centers",{
-  x<-.etr26_fixture()
+  x<-.etr_test_functional_rqa_fixture()
   a<-etr_windowed_rqa_sensitivity(x,metrics="recurrence_rate",
     window_step_pairs=list(c(5L,2L),c(7L,3L)),radius=1)
   expect_s3_class(a,"etr_windowed_rqa_sensitivity")
@@ -115,7 +115,7 @@ test_that("Stage 26 windowed-RQA sensitivity reports exact source reuse and cent
 })
 
 test_that("Stage 26 simultaneous RQA mean band uses whole independent units",{
-  x<-.etr26_fixture()
+  x<-.etr_test_functional_rqa_fixture()
   band<-etr_windowed_rqa_functional_mean_band(x,
     metrics="recurrence_rate",window=5L,step=2L,
     unit="participant",participant_column="participant",
@@ -161,10 +161,10 @@ test_that("Stage 26 catalog and numerical additions do not self-certify source c
   }
   expect_equal(nrow(z),508L)
   expect_equal(sum(z$is_python_function),380L)
-  expect_equal(sum(z$named_native_candidate&z$is_python_function),222L)
-  expect_equal(sum(z$native_implementation_started),197L)
-  expect_equal(sum(z$is_python_function&!z$named_native_candidate),158L)
-  expect_equal(sum(z$source_contract_gap_unresolved),43L)
+  expect_equal(sum(z$named_native_candidate&z$is_python_function),225L)
+  expect_equal(sum(z$native_implementation_started),200L)
+  expect_equal(sum(z$is_python_function&!z$named_native_candidate),155L)
+  expect_equal(sum(z$source_contract_gap_unresolved),46L)
   expect_equal(sum(z$one_to_one_native_contract_complete),0L)
 })
 

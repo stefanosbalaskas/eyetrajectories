@@ -1,15 +1,15 @@
 # Stage 27: seven Python-free source-aligned FPCA bootstrap reporting/plots.
 # Reporting and plotted source geometry are narrower than complete Python
 # public source contracts. No estimator is recomputed or certified here.
-.etr27_digits <- function(digits) {
+.etr_reporting_digits <- function(digits) {
   .etr_assert(is.numeric(digits)&&length(digits)==1L&&
     !is.logical(digits)&&is.finite(digits)&&
     digits==as.integer(digits)&&digits>=0L&&digits<=12L,
     "digits must be an integer between 0 and 12")
   as.integer(digits)
 }
-.etr27_fmt <- function(x,digits) sprintf(paste0("%.",digits,"f"),x)
-.etr27_similarities <- function(result,kind) {
+.etr_format_report_decimal <- function(x,digits) sprintf(paste0("%.",digits,"f"),x)
+.etr_fpca_matched_similarities <- function(result,kind) {
   .etr_assert(inherits(result,kind)&&
     is.matrix(result$similarities)&&
     is.numeric(result$similarities)&&
@@ -19,12 +19,12 @@
     paste("result must have finite matched bootstrap similarities for",kind))
   result$similarities
 }
-.etr27_medians <- function(x,digits) {
+.etr_fpca_similarity_medians_text <- function(x,digits) {
   s<-apply(x,2L,stats::median)
-  paste(paste0("FPC",seq_along(s),"=",.etr27_fmt(s,digits)),
+  paste(paste0("FPC",seq_along(s),"=",.etr_format_report_decimal(s,digits)),
     collapse=", ")
 }
-.etr27_n <- function(x,kind) {
+.etr_validate_positive_component_count <- function(x,kind) {
   .etr_assert(is.numeric(x)&&length(x)==1L&&
     is.finite(x)&&x==as.integer(x)&&x>0L,
     paste(kind,"must be positive integer"))
@@ -37,8 +37,8 @@
 #' @return Single descriptive manuscript string.
 #' @export
 etr_fpca_score_uncertainty_reporting_text <- function(result,digits=3L) {
-  digits<-.etr27_digits(digits)
-  sims<-.etr27_similarities(result,"etr_fpca_score_uncertainty")
+  digits<-.etr_reporting_digits(digits)
+  sims<-.etr_fpca_matched_similarities(result,"etr_fpca_score_uncertainty")
   .etr_assert(is.matrix(result$median)&&
     ncol(result$median)==ncol(sims)&&
     nrow(result$median)==length(result$target_curve_ids)&&
@@ -55,8 +55,8 @@ etr_fpca_score_uncertainty_reporting_text <- function(result,digits=3L) {
     result$target_source," target trajectory/trajectories. Bootstrap ",
     "components were matched and sign-aligned to the full-sample ",
     "reference (median absolute similarities: ",
-    .etr27_medians(sims,digits),"). Pointwise ",
-    .etr27_fmt(100*result$level,1L),
+    .etr_fpca_similarity_medians_text(sims,digits),"). Pointwise ",
+    .etr_format_report_decimal(100*result$level,1L),
     "% percentile envelopes summarize variation in target scores ",
     "induced by re-estimation of the FPCA basis. These envelopes do ",
     "not include target measurement error, uncertainty in a latent ",
@@ -69,8 +69,8 @@ etr_fpca_score_uncertainty_reporting_text <- function(result,digits=3L) {
 #' @param digits Numeric reporting precision.
 #' @export
 etr_fpca_spectrum_uncertainty_reporting_text <- function(result,digits=3L) {
-  digits<-.etr27_digits(digits)
-  sims<-.etr27_similarities(result,"etr_fpca_spectrum_uncertainty")
+  digits<-.etr_reporting_digits(digits)
+  sims<-.etr_fpca_matched_similarities(result,"etr_fpca_spectrum_uncertainty")
   .etr_assert(is.numeric(result$reference$explained_variance_ratio)&&
     length(result$reference$explained_variance_ratio)>0L&&
     is.finite(result$reference$explained_variance_ratio[1L])&&
@@ -87,11 +87,11 @@ etr_fpca_spectrum_uncertainty_reporting_text <- function(result,digits=3L) {
     " ",result$resampling_unit,"-level bootstrap replicates. Bootstrap ",
     "FPCs were matched to the full-sample reference before eigenvalues ",
     "and variance ratios were attached to component identities. ",
-    "Studentized ",.etr27_fmt(100*result$confidence_level,1L),
+    "Studentized ",.etr_format_report_decimal(100*result$confidence_level,1L),
     "% uncertainty intervals were calibrated ",scope,". Median ",
-    "matched absolute similarities were ",.etr27_medians(sims,digits),
+    "matched absolute similarities were ",.etr_fpca_similarity_medians_text(sims,digits),
     "; the reference FPC1 explained-variance ratio was ",
-    .etr27_fmt(result$reference$explained_variance_ratio[1L],digits),
+    .etr_format_report_decimal(result$reference$explained_variance_ratio[1L],digits),
     ". Familywise calibration, when requested, applies separately ",
     "to eigenvalues, explained-variance ratios, and cumulative ratios ",
     "rather than jointly across all three metrics. Intervals are not ",
@@ -104,7 +104,7 @@ etr_fpca_spectrum_uncertainty_reporting_text <- function(result,digits=3L) {
 #' @param digits Critical-value display precision.
 #' @export
 etr_functional_mean_band_reporting_text <- function(result,digits=3L) {
-  digits<-.etr27_digits(digits)
+  digits<-.etr_reporting_digits(digits)
   .etr_assert(inherits(result,"etr_functional_mean_band")&&
     is.numeric(result$confidence_level)&&
     length(result$confidence_level)==1L&&
@@ -124,11 +124,11 @@ etr_functional_mean_band_reporting_text <- function(result,digits=3L) {
   paste0("The functional mean was estimated from ",
     length(result$unit_ids)," ",result$unit,
     "-level inference units using estimand='",estimand,"'. A ",
-    .etr27_fmt(100*result$confidence_level,1L),
+    .etr_format_report_decimal(100*result$confidence_level,1L),
     "% simultaneous observed-grid band was calibrated with a ",
     "studentized Gaussian multiplier maximum using ",nmult,
     " multiplier replicates (critical value=",
-    .etr27_fmt(result$critical_value,digits),"). The band is ",
+    .etr_format_report_decimal(result$critical_value,digits),"). The band is ",
     "simultaneous across the observed time-by-dimension grid and ",
     "does not claim continuous-domain coverage between sampled grid points.")
 }
@@ -138,8 +138,8 @@ etr_functional_mean_band_reporting_text <- function(result,digits=3L) {
 #' @param digits Numerical display precision.
 #' @export
 etr_fpca_component_band_reporting_text <- function(result,digits=2L) {
-  digits<-.etr27_digits(digits)
-  sims<-.etr27_similarities(result,"etr_fpca_component_band")
+  digits<-.etr_reporting_digits(digits)
+  sims<-.etr_fpca_matched_similarities(result,"etr_fpca_component_band")
   .etr_assert(result$simultaneous_scope%in%c("family","component")&&
     is.numeric(result$confidence_level)&&
     length(result$confidence_level)==1L&&
@@ -153,9 +153,9 @@ etr_fpca_component_band_reporting_text <- function(result,digits=2L) {
     "-level bootstrap replicates. Replicate FPCs were matched and ",
     "sign-aligned to the full-sample reference, then studentized maximum ",
     "absolute deviations were calibrated at ",
-    .etr27_fmt(100*result$confidence_level,1L),"% ",scope,
+    .etr_format_report_decimal(100*result$confidence_level,1L),"% ",scope,
     ". Median matched absolute similarities were ",
-    .etr27_medians(sims,digits),". ")
+    .etr_fpca_similarity_medians_text(sims,digits),". ")
   if(is.null(result$relative_gap_threshold)) {
     text<-paste0(text,"No numerical near-tie threshold was imposed; ",
       "component identifiability should therefore be assessed separately ",
@@ -168,9 +168,9 @@ etr_fpca_component_band_reporting_text <- function(result,digits=2L) {
       is.finite(result$relative_gap_threshold),
       "relative-gap threshold and component gaps must be finite")
     minimum<-paste0("FPC",seq_along(gap),"=",
-      .etr27_fmt(gap,digits+1L))
+      .etr_format_report_decimal(gap,digits+1L))
     text<-paste0(text,"The pre-specified relative-gap screen used ",
-      "threshold ",.etr27_fmt(result$relative_gap_threshold,digits+1L),
+      "threshold ",.etr_format_report_decimal(result$relative_gap_threshold,digits+1L),
       " (minimum adjacent gaps: ",paste(minimum,collapse=", "),"). ")
   }
   paste0(text,"The band is calibrated over the observed grid and does ",
@@ -178,7 +178,7 @@ etr_fpca_component_band_reporting_text <- function(result,digits=2L) {
     "or substantive identifiability of a near-tied individual FPC axis.")
 }
 
-.etr27_component <- function(result,component,kind) {
+.etr_validate_fpca_plot_component <- function(result,component,kind) {
   .etr_assert(inherits(result,kind)&&is.numeric(component)&&
     length(component)==1L&&!is.logical(component)&&
     is.finite(component)&&component==as.integer(component)&&
@@ -186,7 +186,7 @@ etr_fpca_component_band_reporting_text <- function(result,digits=2L) {
     "component must identify a zero-based fitted FPC")
   as.integer(component)+1L
 }
-.etr27_interval <- function(lower,estimate,upper) {
+.etr_validate_plot_interval <- function(lower,estimate,upper) {
   .etr_assert(is.numeric(lower)&&is.numeric(estimate)&&
     is.numeric(upper)&&length(lower)==length(estimate)&&
     length(estimate)==length(upper)&&
@@ -204,7 +204,7 @@ etr_fpca_component_band_reporting_text <- function(result,digits=2L) {
 #' @export
 etr_plot_fpca_score_uncertainty <- function(result,component=0L,
     max_targets=30L,...) {
-  k<-.etr27_component(result,component,"etr_fpca_score_uncertainty")
+  k<-.etr_validate_fpca_plot_component(result,component,"etr_fpca_score_uncertainty")
   .etr_assert(is.numeric(max_targets)&&length(max_targets)==1L&&
     is.finite(max_targets)&&!is.logical(max_targets)&&
     max_targets==as.integer(max_targets)&&max_targets>=1L,
@@ -223,7 +223,7 @@ etr_plot_fpca_score_uncertainty <- function(result,component=0L,
     upper=result$upper[seq_len(n),k],
     reference=result$reference_scores[seq_len(n),k],
     stringsAsFactors=FALSE)
-  .etr27_interval(out$lower,out$median,out$upper)
+  .etr_validate_plot_interval(out$lower,out$median,out$upper)
   .etr_assert(all(is.finite(out$reference)),
     "fixed target reference scores must be finite")
   x<-seq_len(n)-1L
@@ -252,7 +252,7 @@ etr_plot_fpca_spectrum_uncertainty <- function(result,
     !is.na(metric)&&metric%in%c("eigenvalue",
       "explained_variance_ratio","cumulative_variance_ratio"),
     "metric must be eigenvalue, explained_variance_ratio or cumulative_variance_ratio")
-  n<-.etr27_n(result$n_components,"n_components")
+  n<-.etr_validate_positive_component_count(result$n_components,"n_components")
   estimate<-switch(metric,
     eigenvalue=result$reference$explained_variance[seq_len(n)],
     explained_variance_ratio=result$reference$explained_variance_ratio[seq_len(n)],
@@ -266,7 +266,7 @@ etr_plot_fpca_spectrum_uncertainty <- function(result,
     eigenvalue=result$eigenvalue_upper,
     explained_variance_ratio=result$explained_variance_ratio_upper,
     cumulative_variance_ratio=result$cumulative_variance_ratio_upper)
-  .etr27_interval(lower,estimate,upper)
+  .etr_validate_plot_interval(lower,estimate,upper)
   out<-data.frame(component=seq_len(n),estimate=as.numeric(estimate),
     lower=as.numeric(lower),upper=as.numeric(upper))
   graphics::plot(out$component,out$estimate,pch=1,
@@ -288,7 +288,7 @@ etr_plot_fpca_spectrum_uncertainty <- function(result,
 #' @export
 etr_plot_fpca_component_band <- function(result,component=0L,
     dimension=NULL,...) {
-  k<-.etr27_component(result,component,"etr_fpca_component_band")
+  k<-.etr_validate_fpca_plot_component(result,component,"etr_fpca_component_band")
   ref<-result$reference
   if(is.null(dimension))dimension<-ref$dimension_names[1L]
   .etr_assert(is.character(dimension)&&length(dimension)==1L&&
@@ -307,7 +307,7 @@ etr_plot_fpca_component_band <- function(result,component=0L,
     estimate=as.numeric(ref$components[k,,j]),
     lower=as.numeric(result$lower[k,,j]),
     upper=as.numeric(result$upper[k,,j]))
-  .etr27_interval(out$lower,out$estimate,out$upper)
+  .etr_validate_plot_interval(out$lower,out$estimate,out$upper)
   graphics::plot(out$time,out$estimate,type="l",
     ylim=range(c(out$lower,out$upper)),
     xlab=sprintf("Time (%s)",ref$time_unit),

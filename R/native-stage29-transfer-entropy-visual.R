@@ -1,7 +1,7 @@
 # Stage 29: native transfer-entropy source plots, no Python bridge.
 # These display source numerical results and do NOT establish causality.
 
-.etr29_te_plot_slice <- function(result,parameter,metric,filters) {
+.etr_select_te_plot_slice <- function(result,parameter,metric,filters) {
   .etr_assert(inherits(result,"etr_transfer_entropy_sensitivity")&&
     is.data.frame(result$table)&&nrow(result$table)>=1L&&
     is.character(parameter)&&length(parameter)==1L&&
@@ -46,14 +46,14 @@
 #' @export
 etr_plot_transfer_entropy_sensitivity <- function(result,parameter,
     metric="transfer_entropy_bits",filters=NULL,...) {
-  t<-.etr29_te_plot_slice(result,parameter,metric,filters)
+  t<-.etr_select_te_plot_slice(result,parameter,metric,filters)
   graphics::plot(t[[parameter]],t[[metric]],type="o",pch=1,
     xlab=gsub("_"," ",parameter),ylab=gsub("_"," ",metric),
     main="Transfer-entropy specification sensitivity",...)
   invisible(t)
 }
 
-.etr29_te_null_hist <- function(result,kind,field,observed_field,
+.etr_plot_te_surrogate_histogram <- function(result,kind,field,observed_field,
     title,xlab,ylab,bins,...) {
   .etr_assert(inherits(result,kind)&&is.list(result$observed)&&
     is.numeric(result[[field]])&&length(result[[field]])>=1L&&
@@ -96,7 +96,7 @@ etr_plot_transfer_entropy_sensitivity <- function(result,parameter,
 #' @export
 etr_plot_transfer_entropy_circular_shift_test <- function(
     result,bins="auto",...) {
-  .etr29_te_null_hist(result,
+  .etr_plot_te_surrogate_histogram(result,
     kind="etr_transfer_entropy_circular_shift_test",
     field="surrogate_transfer_entropy_bits",
     observed_field="transfer_entropy_bits",
@@ -113,7 +113,7 @@ etr_plot_transfer_entropy_circular_shift_test <- function(
 #' @export
 etr_plot_conditional_transfer_entropy_circular_shift_test <- function(
     result,bins="auto",...) {
-  .etr29_te_null_hist(result,
+  .etr_plot_te_surrogate_histogram(result,
     kind="etr_conditional_transfer_entropy_circular_shift_test",
     field="surrogate_conditional_transfer_entropy_bits",
     observed_field="conditional_transfer_entropy_bits",
