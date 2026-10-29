@@ -203,7 +203,7 @@
   windowed_rqa_functional_mean_band="etr_windowed_rqa_functional_mean_band",
   functional_recovery_metric_catalog="etr_functional_recovery_metric_catalog",
   functional_recovery_metric_catalog_frame="etr_functional_recovery_metric_catalog_frame",
-  functional_recovery_value_key="etr_functional_recovery_value_key",
+  functional_recovery_reporting_text="etr_functional_recovery_reporting_text",
   functional_recovery_assessment_frame="etr_functional_recovery_assessment_frame",
   split_conformal_fpca_anomaly="etr_split_conformal_fpca_anomalies",
   # These four new native methods are experimentally implemented here.
@@ -379,7 +379,7 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     "windowed_rqa_functional_mean_band",
     "functional_recovery_metric_catalog",
     "functional_recovery_metric_catalog_frame",
-    "functional_recovery_value_key",
+    "functional_recovery_reporting_text",
     "functional_recovery_assessment_frame"
   )
   api$native_implementation_stage[api$is_python_function &
