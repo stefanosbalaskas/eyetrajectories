@@ -5,7 +5,7 @@ on:
       - "R/native-workflow-source-audit.R"
       - "R/native-workflow-configuration.R"
       - "R/native-functional-scenario-design.R"
-      - "R/native-stage1*-*.R"
+      - "R/native-*.R"
       - "R/native-iaaft-surrogate.R"
       - "R/native-functional-inference-visuals.R"
       - "R/native-full-parity-ledger.R"

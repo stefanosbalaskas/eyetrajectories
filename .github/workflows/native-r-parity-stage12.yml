@@ -7,7 +7,7 @@ on:
       - "R/native-full-parity-ledger.R"
       - "NAMESPACE"
       - "tests/testthat/test-(?:native-cv-uncertainty)*.R"
-      - "tests/testthat/test-native-stage*-parity-ledger.R"
+      - "tests/testthat/test-native*parity-ledger.R"
       - ".github/workflows/native-r-parity-stage12.yml"
   workflow_dispatch:
 
