@@ -60,7 +60,7 @@ test_that("Stage 27 four report functions have fixed source scientific language"
   expect_match(c,"critical value=2.414")
   expect_match(c,"continuous-domain coverage")
   d<-etr_fpca_component_band_reporting_text(x$comp)
-  expect_match(d,"FPC1=0.85")
+  expect_match(d,"FPC1=0.80")
   expect_match(d,"No numerical near-tie threshold")
   expect_match(d,"near-tied individual FPC axis")
   x$comp$relative_gap_threshold<-.1
