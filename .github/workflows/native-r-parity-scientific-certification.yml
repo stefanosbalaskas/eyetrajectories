@@ -1,18 +1,19 @@
-name: Native R Transfer entropy exact discrete transfer entropy
+name: Native R certification pilots and IAAFT
 on:
   pull_request:
     paths:
-      - "R/native-transfer-entropy.R"
+      - "R/native-iaaft-surrogate.R"
       - "R/native-full-parity-ledger.R"
-      - "tests/testthat/test-native-transfer-entropy.R"
+      - "inst/extdata/native_contract_certification_pilots_v1.csv"
+      - "tests/testthat/test-native-certification.R"
       - "NAMESPACE"
-      - ".github/workflows/native-r-parity-stage16.yml"
+      - ".github/workflows/native-r-parity-scientific-certification.yml"
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
   native-r:
-    name: Transfer entropy independent TE / ${{ matrix.os }}
+    name: native R and certification register / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -31,12 +32,12 @@ jobs:
           extra-packages: |
             any::pkgload
             any::testthat
-      - name: Source-conditional information and frozen contract inventory
+      - name: IAAFT and pending full contract certification gate
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-transfer-entropy|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))'
-  python-v1-2-oracle:
-    name: Transfer entropy independent Python 1.2 information-theory oracle
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-certification|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))'
+  python-v1-2-source-contract:
+    name: pinned Python 1.2 full-contract candidates
     runs-on: ubuntu-latest
     env:
       ET_RUN_PYTHON_TESTS: "true"
@@ -56,9 +57,9 @@ jobs:
           extra-packages: |
             any::pkgload
             any::testthat
-      - name: Compare exact local TE, conditional TE and shift nulls
+      - name: Direct pinned public Python ALR inverse and score-matrix numeric oracle
         shell: bash
         env:
           RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-transfer-entropy",reporter="summary",stop_on_failure=TRUE)'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-certification",reporter="summary",stop_on_failure=TRUE)'

@@ -1,19 +1,20 @@
-name: Native R certification pilots and IAAFT
+name: Native R visual integration and contract ledger
 on:
   pull_request:
     paths:
-      - "R/native-iaaft-surrogate.R"
+      - "R/native-visual-diagnostics.R"
       - "R/native-full-parity-ledger.R"
-      - "inst/extdata/native_contract_certification_pilots_v1.csv"
-      - "tests/testthat/test-native-certification.R"
       - "NAMESPACE"
-      - ".github/workflows/native-r-parity-stage20.yml"
+      - "man/etr_native_stage21_visual_diagnostics.Rd"
+      - "tests/testthat/test-native-visual-diagnostics.R"
+      - "tests/testthat/test-native-source-boundaries.R"
+      - ".github/workflows/native-r-parity-visual-diagnostics.yml"
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
   native-r:
-    name: native R and certification register / ${{ matrix.os }}
+    name: Source-aligned plot geometry and ledger / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -32,12 +33,12 @@ jobs:
           extra-packages: |
             any::pkgload
             any::testthat
-      - name: IAAFT and pending full contract certification gate
+      - name: Native plots, certificate census, and Python-bridge isolation
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-certification|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))'
-  python-v1-2-source-contract:
-    name: pinned Python 1.2 full-contract candidates
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-visual-diagnostics|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))'
+  pinned-python-boundaries:
+    name: source boundary characterization / Python 1.2
     runs-on: ubuntu-latest
     env:
       ET_RUN_PYTHON_TESTS: "true"
@@ -57,9 +58,9 @@ jobs:
           extra-packages: |
             any::pkgload
             any::testthat
-      - name: Direct pinned public Python ALR inverse and score-matrix numeric oracle
+      - name: Direct published-source boundary observations (not signoff)
         shell: bash
         env:
           RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-certification",reporter="summary",stop_on_failure=TRUE)'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-source-boundaries",reporter="summary",stop_on_failure=TRUE)'

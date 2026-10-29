@@ -1,19 +1,18 @@
-name: Native R FPCA stability FPCA stability and diagnostic estimators
+name: Native R nonlinear divergence and RQA bootstrap
 on:
   pull_request:
     paths:
-      - "R/native-fpca-stability.R"
+      - "R/(?:native-divergence)-*.R"
       - "R/native-full-parity-ledger.R"
-      - "tests/testthat/test-native-fpca-stability.R"
-      - "tests/testthat/test-native*parity-ledger.R"
       - "NAMESPACE"
-      - ".github/workflows/native-r-parity-stage14.yml"
+      - "tests/testthat/test-native-divergence.R"
+      - ".github/workflows/native-r-parity-divergence-rqa.yml"
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
   native-r:
-    name: FPCA stability native R / ${{ matrix.os }}
+    name: native R / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -32,12 +31,12 @@ jobs:
           extra-packages: |
             any::pkgload
             any::testthat
-      - name: Native FPCA eigenspace and influence checks
+      - name: Native Rosenstein/Kantz and participant RQA bootstrap
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-fpca-stability|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-divergence|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))'
   python-v1-2-oracle:
-    name: FPCA stability independent pinned Python 1.2 FPCA oracle
+    name: pinned Python 1.2 numerical divergence oracle
     runs-on: ubuntu-latest
     env:
       ET_RUN_PYTHON_TESTS: "true"
@@ -47,8 +46,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install source reference
-        run: python -m pip install "eyetrajectoriespy==1.2.0"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0"
       - uses: r-lib/actions/setup-r@v2
         with:
           use-public-rspm: true
@@ -58,9 +56,9 @@ jobs:
           extra-packages: |
             any::pkgload
             any::testthat
-      - name: FPCA subspace angles and empirical outlier source parity
+      - name: Compare source embedding, local divergence and explicit slopes
         shell: bash
         env:
           RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-fpca-stability",reporter="summary",stop_on_failure=TRUE)'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-divergence",reporter="summary",stop_on_failure=TRUE)'

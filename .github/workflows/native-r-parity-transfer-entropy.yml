@@ -1,22 +1,18 @@
-name: Native R reporting contracts and source text oracles
+name: Native R Transfer entropy exact discrete transfer entropy
 on:
   pull_request:
     paths:
-      - "R/native-manuscript-reporting.R"
-      - "R/native-functional-diagnostics.R"
-      - "inst/extdata/native_contract_certification_pilots_v1.csv"
-      - "inst/extdata/native_source_contract_gaps_stage22.csv"
-      - "tests/testthat/test-native-source-boundaries.R"
+      - "R/native-transfer-entropy.R"
       - "R/native-full-parity-ledger.R"
-      - "tests/testthat/test-native-manuscript-reporting.R"
+      - "tests/testthat/test-native-transfer-entropy.R"
       - "NAMESPACE"
-      - ".github/workflows/native-r-parity-stage23.yml"
+      - ".github/workflows/native-r-parity-transfer-entropy.yml"
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
   native-r:
-    name: native reporting and 508 ledger / ${{ matrix.os }}
+    name: Transfer entropy independent TE / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -35,12 +31,12 @@ jobs:
           extra-packages: |
             any::pkgload
             any::testthat
-      - name: Native text, source ledger, and reticulate isolation
+      - name: Source-conditional information and frozen contract inventory
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-manuscript-reporting|native-source-contract-gaps|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
-  pinned-python:
-    name: direct published Python 1.2 reporting text oracle
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-transfer-entropy|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))'
+  python-v1-2-oracle:
+    name: Transfer entropy independent Python 1.2 information-theory oracle
     runs-on: ubuntu-latest
     env:
       ET_RUN_PYTHON_TESTS: "true"
@@ -60,9 +56,9 @@ jobs:
           extra-packages: |
             any::pkgload
             any::testthat
-      - name: Exact source text comparison on matched synthetic summary objects
+      - name: Compare exact local TE, conditional TE and shift nulls
         shell: bash
         env:
           RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-manuscript-reporting|native-source-boundaries|native-source-contract-gaps",reporter="summary",stop_on_failure=TRUE)'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-transfer-entropy",reporter="summary",stop_on_failure=TRUE)'

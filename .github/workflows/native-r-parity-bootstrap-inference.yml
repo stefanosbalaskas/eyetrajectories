@@ -6,7 +6,7 @@ on:
       - "R/native-full-parity-ledger.R"
       - "tests/testthat/test-native-bootstrap-inference.R"
       - "NAMESPACE"
-      - ".github/workflows/native-r-parity-stage15.yml"
+      - ".github/workflows/native-r-parity-bootstrap-inference.yml"
   workflow_dispatch:
 permissions:
   contents: read

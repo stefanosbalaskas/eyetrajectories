@@ -1,18 +1,21 @@
-name: Native R numerical multiverse and FPCA clustering
+name: Native R source-contract gaps and scientific visualization
 on:
   pull_request:
     paths:
-      - "R/(?:native-multiverse-clustering)-*.R"
+      - "R/native-scientific-visualization.R"
+      - "R/native-fpca.R"
       - "R/native-full-parity-ledger.R"
-      - "tests/testthat/test-native-multiverse-clustering.R"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "tests/testthat/test-native-scientific-visualization.R"
+      - "tests/testthat/test-native-source-contract-gaps.R"
       - "NAMESPACE"
-      - ".github/workflows/native-r-parity-stage19.yml"
+      - ".github/workflows/native-r-parity-scientific-visualization.yml"
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  native-r:
-    name: native R / ${{ matrix.os }}
+  native-geometry-and-evidence:
+    name: native plot geometry and immutable-gap gate / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -31,12 +34,12 @@ jobs:
           extra-packages: |
             any::pkgload
             any::testthat
-      - name: Native exhaustive sensitivity, FPCA K-means and strict frozen census
+      - name: Geometry, frozen API and fail-closed certificate checks
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-multiverse-clustering|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))'
-  python-v1-2-oracle:
-    name: published Python 1.2 distances and LLE numerical oracle
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-scientific-visualization|native-source-contract-gaps|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))'
+  pinned-python-source-witnesses:
+    name: Published Python 1.2 contract source witnesses
     runs-on: ubuntu-latest
     env:
       ET_RUN_PYTHON_TESTS: "true"
@@ -56,9 +59,9 @@ jobs:
           extra-packages: |
             any::pkgload
             any::testthat
-      - name: Compare raw distance matrices, neighbor identity and explicit LLE
+      - name: Direct published Python contract divergence tests
         shell: bash
         env:
           RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-multiverse-clustering",reporter="summary",stop_on_failure=TRUE)'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-source-boundaries|native-source-contract-gaps",reporter="summary",stop_on_failure=TRUE)'

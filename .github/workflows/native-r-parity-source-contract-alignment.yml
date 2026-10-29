@@ -1,20 +1,18 @@
-name: Native R visual integration and contract ledger
+name: Native R source score contract and reviewer gate
 on:
   pull_request:
     paths:
-      - "R/native-visual-diagnostics.R"
-      - "R/native-full-parity-ledger.R"
-      - "NAMESPACE"
-      - "man/etr_native_stage21_visual_diagnostics.Rd"
-      - "tests/testthat/test-native-visual-diagnostics.R"
+      - "R/native-functional-diagnostics.R"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
       - "tests/testthat/test-native-source-boundaries.R"
-      - ".github/workflows/native-r-parity-stage21.yml"
+      - "tests/testthat/test-native-source-contract-alignment.R"
+      - ".github/workflows/native-r-parity-source-contract-alignment.yml"
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  native-r:
-    name: Source-aligned plot geometry and ledger / ${{ matrix.os }}
+  native:
+    name: finite score-container source contract / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -33,15 +31,16 @@ jobs:
           extra-packages: |
             any::pkgload
             any::testthat
-      - name: Native plots, certificate census, and Python-bridge isolation
+      - name: Native score object tests and 508-source approval gate
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-visual-diagnostics|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))'
-  pinned-python-boundaries:
-    name: source boundary characterization / Python 1.2
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-source-contract-alignment|native-certification|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
+  published-source:
+    name: direct Python 1.2 score-container numerical oracle
     runs-on: ubuntu-latest
     env:
       ET_RUN_PYTHON_TESTS: "true"
+      MPLBACKEND: "Agg"
     steps:
       - uses: actions/checkout@v4
       - id: python
@@ -58,9 +57,9 @@ jobs:
           extra-packages: |
             any::pkgload
             any::testthat
-      - name: Direct published-source boundary observations (not signoff)
+      - name: Exact source score-object and ALR behavior witnesses
         shell: bash
         env:
           RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-source-boundaries",reporter="summary",stop_on_failure=TRUE)'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-source-contract-alignment|native-source-boundaries",reporter="summary",stop_on_failure=TRUE)'

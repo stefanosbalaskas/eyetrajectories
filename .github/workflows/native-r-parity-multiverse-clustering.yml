@@ -1,18 +1,18 @@
-name: Native R source score contract and reviewer gate
+name: Native R numerical multiverse and FPCA clustering
 on:
   pull_request:
     paths:
-      - "R/native-functional-diagnostics.R"
-      - "inst/extdata/native_source_contract_gaps_stage22.csv"
-      - "tests/testthat/test-native-source-boundaries.R"
-      - "tests/testthat/test-native-source-contract-alignment.R"
-      - ".github/workflows/native-r-parity-stage25.yml"
+      - "R/(?:native-multiverse-clustering)-*.R"
+      - "R/native-full-parity-ledger.R"
+      - "tests/testthat/test-native-multiverse-clustering.R"
+      - "NAMESPACE"
+      - ".github/workflows/native-r-parity-multiverse-clustering.yml"
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  native:
-    name: finite score-container source contract / ${{ matrix.os }}
+  native-r:
+    name: native R / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -31,16 +31,15 @@ jobs:
           extra-packages: |
             any::pkgload
             any::testthat
-      - name: Native score object tests and 508-source approval gate
+      - name: Native exhaustive sensitivity, FPCA K-means and strict frozen census
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-source-contract-alignment|native-certification|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
-  published-source:
-    name: direct Python 1.2 score-container numerical oracle
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-multiverse-clustering|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))'
+  python-v1-2-oracle:
+    name: published Python 1.2 distances and LLE numerical oracle
     runs-on: ubuntu-latest
     env:
       ET_RUN_PYTHON_TESTS: "true"
-      MPLBACKEND: "Agg"
     steps:
       - uses: actions/checkout@v4
       - id: python
@@ -57,9 +56,9 @@ jobs:
           extra-packages: |
             any::pkgload
             any::testthat
-      - name: Exact source score-object and ALR behavior witnesses
+      - name: Compare raw distance matrices, neighbor identity and explicit LLE
         shell: bash
         env:
           RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-source-contract-alignment|native-source-boundaries",reporter="summary",stop_on_failure=TRUE)'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-multiverse-clustering",reporter="summary",stop_on_failure=TRUE)'
