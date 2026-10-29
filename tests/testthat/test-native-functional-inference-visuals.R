@@ -142,6 +142,13 @@ test_that("conformal plot reconstructs conservative greater-or-equal marginal p"
   expect_match(text,"4 calibration trajectory")
   expect_match(text,"minimum attainable p-value was 0.200")
   expect_match(text,"At alpha=0.200, 1 of 3")
+  flagged<-x
+  flagged$test$is_anomaly<-c(FALSE,FALSE,TRUE)
+  expect_equal(etr_conformal_fpca_anomaly_reporting_text(
+    flagged,n_components=2L),text)
+  flagged$test$is_anomaly[1L]<-TRUE
+  expect_error(etr_plot_conformal_fpca_anomaly(flagged),
+    "flags disagree")
   expect_match(text,"no calibration-conditional",ignore.case=TRUE)
   expect_error(etr_conformal_fpca_anomaly_reporting_text(x),
     "n_components")
