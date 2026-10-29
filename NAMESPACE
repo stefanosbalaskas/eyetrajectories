@@ -718,3 +718,7 @@ export(etr_plot_windowed_rqa_sensitivity)
 export(etr_plot_transfer_entropy_sensitivity)
 export(etr_plot_transfer_entropy_circular_shift_test)
 export(etr_plot_conditional_transfer_entropy_circular_shift_test)
+
+export(etr_plot_reconstruction_curve)
+export(etr_plot_registration)
+export(etr_plot_warping_functions)
