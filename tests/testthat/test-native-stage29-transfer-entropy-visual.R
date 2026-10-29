@@ -105,10 +105,10 @@ test_that("Stage 29 three actual Python source names are mapped and unsigned",{
   }
   expect_equal(nrow(z),508L)
   expect_equal(sum(z$is_python_function),380L)
-  expect_equal(sum(z$named_native_candidate&z$is_python_function),222L)
-  expect_equal(sum(z$native_implementation_started),197L)
-  expect_equal(sum(z$is_python_function&!z$named_native_candidate),158L)
-  expect_equal(sum(z$source_contract_gap_unresolved),43L)
+  expect_equal(sum(z$named_native_candidate&z$is_python_function),225L)
+  expect_equal(sum(z$native_implementation_started),200L)
+  expect_equal(sum(z$is_python_function&!z$named_native_candidate),155L)
+  expect_equal(sum(z$source_contract_gap_unresolved),46L)
   expect_equal(sum(z$one_to_one_native_contract_complete),0L)
 })
 
