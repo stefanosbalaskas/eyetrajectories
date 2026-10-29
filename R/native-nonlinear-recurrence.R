@@ -7,7 +7,7 @@
   .etr_assert(inherits(x,"etr_recurrence") &&
     is.matrix(x$matrix) && is.logical(x$matrix) &&
     !anyNA(x$matrix) && identical(x$kind,kind),
-    paste(kind,"recurrence must be a native etr_recurrence"))
+    paste0(kind,"-recurrence must be a native etr_recurrence"))
   m<-x$matrix
   if(kind=="auto"){
     n<-nrow(m)
@@ -86,6 +86,16 @@ etr_recurrence_network <- function(recurrence){
     n_connected_components=as.integer(component),
     largest_component_fraction=max(sizes)/n,
     isolated_node_fraction=mean(degrees==0L),
+    # Legacy R-only aliases: retain the initial native graph API without
+    # replacing the published Python 1.2 canonical fields. These aliases,
+    # and the compatibility node table, are explicit representation gaps.
+    n_nodes=as.integer(n),n_edges=as.numeric(e),
+    density=as.numeric(density),degrees=as.numeric(degrees),
+    triangles=as.numeric(n_triangles),
+    component=as.integer(labels)+1L,
+    n_components=as.integer(component),
+    theiler=as.integer(recurrence$theiler),
+    method="undirected_binary_recurrence_network",
     source_recurrence=recurrence,
     provenance=list(operation="recurrence_network",
       network_type="undirected_unweighted_simple_graph",
@@ -93,6 +103,8 @@ etr_recurrence_network <- function(recurrence){
       source_theiler_window_samples=as.integer(recurrence$theiler),
       triangle_count=as.integer(n_triangles),
       source_recurrence_rate=recurrence$recurrence_rate,
+      legacy_R_alias_fields_present=TRUE,
+      legacy_R_node_clustering_undefined_under_degree_two=TRUE,
       automatic_threshold_selection=FALSE)
   ),class="etr_recurrence_network")
 }

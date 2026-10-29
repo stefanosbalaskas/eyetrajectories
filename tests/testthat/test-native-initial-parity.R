@@ -36,7 +36,12 @@ test_that("recurrence graph exactly counts one triangle plus isolated node", {
   adj <- matrix(FALSE, 4L, 4L)
   adj[1:3, 1:3] <- TRUE
   diag(adj) <- FALSE
-  rec <- structure(list(matrix = adj, kind = "auto", theiler = 0L),
+  # Construct a valid, time-indexed source recurrence rather than an
+  # underspecified early development fixture with no grid or threshold.
+  rec <- structure(list(matrix = adj, kind = "auto", theiler = 0L,
+                        time = as.numeric(0:3),time_unit = "s",
+                        radius = 1,recurrence_rate = 0.5,
+                        metric = "euclidean"),
                    class = "etr_recurrence")
   graph <- etr_recurrence_network(rec)
   expect_equal(graph$n_edges, 3)
@@ -48,6 +53,7 @@ test_that("recurrence graph exactly counts one triangle plus isolated node", {
   expect_equal(nodes$degree, c(2, 2, 2, 0))
   expect_true(is.na(nodes$clustering[4L]))
   rec$matrix[,] <- FALSE
+  rec$recurrence_rate <- 0
   expect_equal(etr_recurrence_network(rec)$n_components, 4L)
   rec$kind <- "cross"
   expect_error(etr_recurrence_network(rec), "auto-recurrence")
