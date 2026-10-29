@@ -58,6 +58,9 @@ test_that("Stage 26 native recovery assessment preserves metric semantics and or
   wrong<-z;wrong$values[[1L]]$metric$direction<-"higher_is_better"
   expect_error(etr_functional_recovery_assessment_frame(wrong),
     "must match the published")
+  bad_source<-z;bad_source$values[[2L]]$source<-c("x","y")
+  expect_error(etr_functional_recovery_assessment_frame(bad_source),
+    "single optional text")
   expect_error(etr_functional_recovery_assessment_frame(
     list(values=list())),"at least one")
   z$provenance<-list(estimator="fpca")
