@@ -88,6 +88,18 @@ test_that("workflow audit records reject hidden decisions and invalid values",{
   expect_error(etr_workflow_reporting_text(list()),"native workflow audit")
 })
 
+test_that("workflow JSON recursively sorts mapping keys and preserves step order",{
+  skip_if_not_installed("jsonlite")
+  z<-etr_workflow_decisions_frame(list(a=list(
+    value=list(z=1L,a=list(y=2L,b=3L)),source="analyst")))
+  expect_identical(z$value_json,'{"a":{"b":3,"y":2},"z":1}')
+  step<-list(name="inspect",`function`="inspect",status="completed",
+    parameters=list(z=1L,a=list(y=2L,b=3L)),
+    elapsed_seconds=0,warnings=character())
+  f<-etr_workflow_steps_frame(list(step))
+  expect_identical(f$parameters_json,'{"a":{"b":3,"y":2},"z":1}')
+})
+
 test_that("all 128 nonfunction source symbols require independent review",{
   path <- system.file("extdata","native_nonfunction_contract_review_v1.csv",
     package="eyetrajectories")
@@ -173,5 +185,17 @@ test_that("pinned published Python 1.2 workflow step and decision frames match c
     as.character(native_decisions$value_json))
   expect_identical(as.character(py_decisions$source),
     as.character(native_decisions$source))
+  py_map<-reticulate::dict(z=as.integer(1L),
+    a=reticulate::dict(y=as.integer(2L),b=as.integer(3L)))
+  py_nested<-reticulate::py_call(wf$WorkflowDecisionRecord,
+    value=py_map,source="analyst")
+  py_items<-reticulate::dict()
+  py_items[["nested"]]<-py_nested
+  py_sorted<-reticulate::py_to_r(reticulate::py_call(
+    wf$workflow_decisions_frame,decisions=py_items))
+  r_sorted<-etr_workflow_decisions_frame(list(nested=list(
+    value=list(z=1L,a=list(y=2L,b=3L)),source="analyst")))
+  expect_identical(as.character(py_sorted$value_json),
+    as.character(r_sorted$value_json))
   expect_false(any(etr_native_parity_catalog()$one_to_one_native_contract_complete))
 })
