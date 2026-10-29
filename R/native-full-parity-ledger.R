@@ -477,6 +477,8 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     "workflow_reporting_text")
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% workflow_audit_names] <- 33L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="workflow_config_to_dict"] <- 34L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset
