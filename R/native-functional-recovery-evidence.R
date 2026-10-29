@@ -4,7 +4,7 @@
 
 .etr_recovery_scalar <- function(x,kind,name) {
   .etr_assert(is.numeric(x)&&length(x)==1L&&!is.logical(x)&&
-    is.finite(x)&&if(kind=="integer")x==as.integer(x) else TRUE,
+    is.finite(x)&&(kind!="integer"||x==as.integer(x)),
     paste(name,"must be a finite",kind,"scalar"))
   invisible(x)
 }
@@ -58,7 +58,7 @@ etr_functional_recovery_result <- function(records,metric_definitions=list()) {
         nzchar(r$error_message),
         "failed records must have no metrics and explicit errors")
     }
-    if(!is.null(r$metric_values)) {
+    if(length(r$metric_values)>0L) {
       .etr_assert(is.list(r$metric_values),
         "metric_values must be a list of structured recovery values")
       keys<-character(length(r$metric_values))
