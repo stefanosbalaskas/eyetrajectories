@@ -30,7 +30,7 @@
 #' @param samples_per_curve For irregular designs: a count or minimum/maximum.
 #' @param participant_eigenvalues,trial_eigenvalues Nonnegative variance components.
 #' @param measurement_noise_sd Nonnegative scalar or vector SD.
-#' @param measurement_noise_covariance Covariance matrix; currently unsupported.
+#' @param measurement_noise_covariance Explicit finite symmetric positive-semidefinite noise covariance matrix.
 #' @param missingness,phase_variation Declared JSON-compatible mechanisms.
 #' @param score_distribution,score_df Declared score distribution.
 #' @param orthonormal_tolerance Strictly positive numerical tolerance.
@@ -94,14 +94,31 @@ etr_functional_simulation_scenario <- function(name,truth_grid,eigenvalues,
     "participant_eigenvalues")
   tv<-.etr_scenario_variances(trial_eigenvalues,length(eigenvalues),
     "trial_eigenvalues")
-  .etr_assert(is.null(measurement_noise_covariance),
-    "measurement_noise_covariance not yet supported by native scenario subset")
   .etr_assert(is.null(measurement_noise_sd)||
     (is.numeric(measurement_noise_sd)&&
      length(measurement_noise_sd)%in%c(1L,length(dimension_names))&&
      all(is.finite(measurement_noise_sd))&&
      all(measurement_noise_sd>=0)),
     "measurement_noise_sd must be finite nonnegative scalar or per dimension")
+  # Frozen Python _scenario_noise(): a declared covariance is permitted
+  # only with zero independent SD. Reject non-PSD and asymmetric matrices
+  # rather than silently respecifying the noise-generating mechanism.
+  if(!is.null(measurement_noise_covariance)){
+    noise<-measurement_noise_covariance
+    nd<-length(dimension_names)
+    .etr_assert(is.matrix(noise)&&is.numeric(noise)&&
+      identical(dim(noise),c(as.integer(nd),as.integer(nd))),
+      "measurement_noise_covariance must match the number of dimensions")
+    .etr_assert(all(is.finite(noise)),
+      "measurement_noise_covariance must contain finite values")
+    .etr_assert(max(abs(noise-t(noise)))<=1e-12,
+      "measurement_noise_covariance must be symmetric")
+    .etr_assert(min(eigen(noise,symmetric=TRUE,only.values=TRUE)$values)>=-1e-12,
+      "measurement_noise_covariance must be positive semidefinite")
+    .etr_assert(is.null(measurement_noise_sd)||
+      all(measurement_noise_sd==0),
+      "measurement_noise_sd and measurement_noise_covariance cannot both specify non-zero noise")
+  }
   .etr_assert(score_distribution %in% c("normal","student_t")&&
     length(score_distribution)==1L&&!is.na(score_distribution),
     "score_distribution must be normal or student_t")
@@ -126,7 +143,7 @@ etr_functional_simulation_scenario <- function(name,truth_grid,eigenvalues,
     irregular_time_design=irregular_time_design,
     participant_eigenvalues=pv,trial_eigenvalues=tv,
     measurement_noise_sd=measurement_noise_sd,
-    measurement_noise_covariance=NULL,
+    measurement_noise_covariance=measurement_noise_covariance,
     missingness=missingness,phase_variation=phase_variation,
     score_distribution=score_distribution,score_df=as.numeric(score_df),
     orthonormal_tolerance=as.numeric(orthonormal_tolerance),
@@ -176,7 +193,8 @@ etr_functional_simulation_scenario_frame <- function(scenarios) {
       trial_eigenvalues=.etr_scenario_json(s$trial_eigenvalues),
       measurement_noise_sd=.etr_scenario_json(s$measurement_noise_sd,
         scalar=length(s$measurement_noise_sd)==1L),
-      measurement_noise_covariance=NA_character_,
+      measurement_noise_covariance=.etr_scenario_json(
+        s$measurement_noise_covariance),
       coordinate_system=s$coordinate_system,
       time_unit=s$time_unit,
       missingness=.etr_scenario_json(s$missingness,mapping=TRUE),
