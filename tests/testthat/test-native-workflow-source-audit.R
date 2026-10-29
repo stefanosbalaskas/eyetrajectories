@@ -88,6 +88,21 @@ test_that("workflow audit records reject hidden decisions and invalid values",{
   expect_error(etr_workflow_reporting_text(list()),"native workflow audit")
 })
 
+test_that("all 128 nonfunction source symbols require independent review",{
+  path <- system.file("extdata","native_nonfunction_contract_review_v1.csv",
+    package="eyetrajectories")
+  expect_true(nzchar(path))
+  other <- utils::read.csv(path,stringsAsFactors=FALSE)
+  expect_equal(nrow(other),128L)
+  expect_equal(length(unique(paste(other$namespace,other$python_name))),128L)
+  expect_true(all(other$evidence_state=="not_reviewed"))
+  for(key in c("numerical_or_value_approved","schema_boundary_approved",
+               "scientific_scope_approved","independent_reviewer_approved"))
+    expect_false(any(other[[key]]))
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})
+
 test_that("workflow integration stays uncertified until independent full review",{
   z <- etr_native_parity_catalog()
   expect_equal(nrow(z),508L)
