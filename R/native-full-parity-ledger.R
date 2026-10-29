@@ -245,7 +245,9 @@
   workflow_decisions_frame="etr_workflow_decisions_frame",
   workflow_summary_frame="etr_workflow_summary_frame",
   workflow_reporting_text="etr_workflow_reporting_text",
-  workflow_config_to_dict="etr_workflow_config_to_dict"
+  workflow_config_to_dict="etr_workflow_config_to_dict",
+  functional_simulation_scenario_frame="etr_functional_simulation_scenario_frame",
+  expand_functional_simulation_scenarios="etr_expand_functional_simulation_scenarios"
 )
 
 #' Audit one-to-one Python 1.2.0 versus independent native R coverage
@@ -479,6 +481,9 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     api$python_name %in% workflow_audit_names] <- 33L
   api$native_implementation_stage[api$is_python_function &
     api$python_name=="workflow_config_to_dict"] <- 34L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% c("functional_simulation_scenario_frame",
+      "expand_functional_simulation_scenarios")] <- 35L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset
