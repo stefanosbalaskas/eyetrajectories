@@ -1,10 +1,10 @@
 # Stage 24: native scientific plot geometry and published Python shape witnesses.
-.etr24_pdf <- function(f) {
+.etr_test_scientific_plot_pdf <- function(f) {
   grDevices::pdf(tempfile(fileext=".pdf"))
   on.exit(grDevices::dev.off(),add=TRUE)
   f()
 }
-.etr24_fixture <- function(){
+.etr_test_scientific_plot_fixture <- function(){
   st<-structure(list(similarities=matrix(c(.9,.8,.95,.7,.75,.8),3L,2L),
     reference=list(n_components=2L)),class="etr_fpca_stability")
   infl<-structure(list(summary=data.frame(group=c("a","b","c"),
@@ -84,8 +84,8 @@ test_that("Stage 24 nine scientific visualization mappings are unique and unsign
 })
 
 test_that("Stage 24 matched FPC similarity boxplots keep source geometry",{
-  x<-.etr24_fixture()
-  .etr24_pdf(function(){
+  x<-.etr_test_scientific_plot_fixture()
+  .etr_test_scientific_plot_pdf(function(){
     m<-etr_plot_fpca_stability(x$st)
     expect_equal(m,x$st$similarities,tolerance=0)
     y<-x$st;y$similarities[1L,1L]<-1.2
@@ -94,8 +94,8 @@ test_that("Stage 24 matched FPC similarity boxplots keep source geometry",{
 })
 
 test_that("Stage 24 FPCA influence respects declared metric, groups and order",{
-  x<-.etr24_fixture()
-  .etr24_pdf(function(){
+  x<-.etr_test_scientific_plot_fixture()
+  .etr_test_scientific_plot_pdf(function(){
     d<-etr_plot_fpca_influence(x$infl,metric="influence_score")
     expect_identical(d$group,c("a","b","c"))
     expect_equal(d$value,c(.2,.5,.1))
@@ -104,8 +104,8 @@ test_that("Stage 24 FPCA influence respects declared metric, groups and order",{
 })
 
 test_that("Stage 24 FPCA review graphics preserve robust-z and score thresholds",{
-  x<-.etr24_fixture()
-  .etr24_pdf(function(){
+  x<-.etr_test_scientific_plot_fixture()
+  .etr_test_scientific_plot_pdf(function(){
     d<-etr_plot_fpca_outlier_diagnostics(x$out)
     expect_equal(d$reconstruction_robust_z,c(.1,3,1))
     expect_equal(d$score_cutoff,c(7,7,7))
@@ -115,8 +115,8 @@ test_that("Stage 24 FPCA review graphics preserve robust-z and score thresholds"
 })
 
 test_that("Stage 24 FPCA cross-validation is tied to held-out fold errors",{
-  x<-.etr24_fixture()
-  .etr24_pdf(function(){
+  x<-.etr_test_scientific_plot_fixture()
+  .etr_test_scientific_plot_pdf(function(){
     d<-etr_plot_fpca_cross_validation(x$cv)
     expect_equal(d$n_components,c(1L,2L))
     expect_equal(d$mean_rmse,c(.55,.325))
@@ -125,8 +125,8 @@ test_that("Stage 24 FPCA cross-validation is tied to held-out fold errors",{
 })
 
 test_that("Stage 24 eigenspace metric derivation uses per-bootstrap cosine",{
-  x<-.etr24_fixture()
-  .etr24_pdf(function(){
+  x<-.etr_test_scientific_plot_fixture()
+  .etr_test_scientific_plot_pdf(function(){
     d<-etr_plot_fpca_subspace_stability(x$sub,
       metric="min_principal_cosine")
     expect_equal(d$value,apply(x$sub$principal_cosines,1L,min))
@@ -139,8 +139,8 @@ test_that("Stage 24 eigenspace metric derivation uses per-bootstrap cosine",{
 })
 
 test_that("Stage 24 simultaneous mean plot preserves confidence bounds",{
-  x<-.etr24_fixture()
-  .etr24_pdf(function(){
+  x<-.etr_test_scientific_plot_fixture()
+  .etr_test_scientific_plot_pdf(function(){
     d<-etr_plot_functional_mean_band(x$band)
     expect_equal(d$time,c(0,.5,1))
     expect_equal(d$mean,c(1,2,3))
@@ -152,8 +152,8 @@ test_that("Stage 24 simultaneous mean plot preserves confidence bounds",{
 })
 
 test_that("Stage 24 joint recurrence preserves source zero-based indexes",{
-  x<-.etr24_fixture()
-  .etr24_pdf(function(){
+  x<-.etr_test_scientific_plot_fixture()
+  .etr_test_scientific_plot_pdf(function(){
     d<-etr_plot_joint_recurrence(x$joint)
     expect_equal(nrow(d),sum(x$joint$matrix))
     expect_true(all(d$row_index>=0L & d$row_index<3L))
@@ -166,8 +166,8 @@ test_that("Stage 24 joint recurrence preserves source zero-based indexes",{
 })
 
 test_that("Stage 24 windowed RQA functional plot retains the actual source cube",{
-  x<-.etr24_fixture()
-  .etr24_pdf(function(){
+  x<-.etr_test_scientific_plot_fixture()
+  .etr_test_scientific_plot_pdf(function(){
     d<-etr_plot_windowed_rqa_trajectories(x$win,
       metric="recurrence_rate",show_mean=TRUE,max_curves=1L)
     expect_equal(d$time,c(1,2,3))
@@ -180,8 +180,8 @@ test_that("Stage 24 windowed RQA functional plot retains the actual source cube"
 })
 
 test_that("Stage 24 RQA sensitivity fails closed when slice not identified",{
-  x<-.etr24_fixture()
-  .etr24_pdf(function(){
+  x<-.etr_test_scientific_plot_fixture()
+  .etr_test_scientific_plot_pdf(function(){
     d<-etr_plot_rqa_sensitivity(x$sens,
       parameter="embedding_dimension",metric="recurrence_rate")
     expect_equal(d$embedding_dimension,c(2L,3L,4L))
@@ -199,7 +199,7 @@ test_that("Stage 24 direct pinned Python 1.2 plot geometry oracle is opt-in",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("Direct published Python 1.2 Matplotlib/Axes geometry is opt-in")
   expect_identical(et_python_version(),"1.2.0")
-  x<-.etr24_fixture()
+  x<-.etr_test_scientific_plot_fixture()
   plt<-reticulate::import("matplotlib.pyplot")
   on.exit(plt$close("all"),add=TRUE)
   types<-reticulate::import("types")
