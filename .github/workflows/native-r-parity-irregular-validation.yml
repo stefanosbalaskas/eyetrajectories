@@ -7,7 +7,7 @@ on:
       - "R/native-full-parity-ledger.R"
       - "NAMESPACE"
       - "tests/testthat/test-(?:native-batch-irregular-validation|native-irregular-parity-ledger)*.R"
-      - ".github/workflows/native-r-parity-stage7.yml"
+      - ".github/workflows/native-r-parity-irregular-validation.yml"
   workflow_dispatch:
 
 permissions:

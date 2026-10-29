@@ -1,22 +1,23 @@
-name: Native R Cross-validation leakage-aware CV and uncertainty frames
+name: Native R Python portable-result reader
 
 on:
   pull_request:
     paths:
-      - "R/native-cv-uncertainty.R"
+      - "R/native-python-portable-reader.R"
       - "R/native-full-parity-ledger.R"
+      - "DESCRIPTION"
       - "NAMESPACE"
-      - "tests/testthat/test-(?:native-cv-uncertainty)*.R"
-      - "tests/testthat/test-native*parity-ledger.R"
-      - ".github/workflows/native-r-parity-stage12.yml"
+      - "tests/testthat/test-native-python-portable-reader.R"
+      - "tests/testthat/test-native-portable-parity-ledger.R"
+      - ".github/workflows/native-r-parity-portable-reader.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  native-r:
-    name: Cross-validation native R / ${{ matrix.os }}
+  native-r-no-python:
+    name: R-only parser and strict ledger / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -35,23 +36,26 @@ jobs:
           extra-packages: |
             any::pkgload
             any::testthat
-      - name: Cross-validation native numerical, grouped holdouts and ledger
+            any::jsonlite
+            any::digest
+      - name: No-Python NumPy header/parser validation
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="(?:native-cv-uncertainty)|(?:native-nonlinear-reporting)|(?:native-fpca-extensions)|(?:native-functional-diagnostics)|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); old <- reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="(?:native-portable-parity-ledger|native-python-portable-reader)",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(reticulate::py_available(initialize=FALSE),old))'
 
-  python-v1-2-cv:
-    name: Cross-validation pinned Python 1.2 heldout CV numerical oracle
+  python-generated-portable-fixtures:
+    name: real Python 1.2 JSON/NPZ exports / Linux
     runs-on: ubuntu-latest
     env:
       ET_RUN_PYTHON_TESTS: "true"
+      MPLBACKEND: Agg
     steps:
       - uses: actions/checkout@v4
       - id: python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install published reference
+      - name: Install exact Python 1.2 oracle
         run: python -m pip install "eyetrajectoriespy==1.2.0"
       - uses: r-lib/actions/setup-r@v2
         with:
@@ -62,9 +66,11 @@ jobs:
           extra-packages: |
             any::pkgload
             any::testthat
-      - name: Compare heldout errors with independent Python reference
+            any::jsonlite
+            any::digest
+      - name: Cross-language Python-generated array/metadata checks
         shell: bash
         env:
           RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-cv-uncertainty",reporter="summary",stop_on_failure=TRUE)'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="(?:native-portable-parity-ledger|native-python-portable-reader)",reporter="summary",stop_on_failure=TRUE)'

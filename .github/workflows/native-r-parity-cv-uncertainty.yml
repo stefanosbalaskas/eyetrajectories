@@ -1,22 +1,22 @@
-name: Native R audited Frechet and DTW parity
+name: Native R Cross-validation leakage-aware CV and uncertainty frames
 
 on:
   pull_request:
     paths:
-      - "R/native-distance-contracts.R"
+      - "R/native-cv-uncertainty.R"
       - "R/native-full-parity-ledger.R"
       - "NAMESPACE"
-      - "tests/testthat/test-native-distance-contracts.R"
-      - "tests/testthat/test-native-distances-parity-ledger.R"
-      - ".github/workflows/native-r-parity-stage4.yml"
+      - "tests/testthat/test-(?:native-cv-uncertainty)*.R"
+      - "tests/testthat/test-native*parity-ledger.R"
+      - ".github/workflows/native-r-parity-cv-uncertainty.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  native-r-no-python:
-    name: Native on ${{ matrix.os }}
+  native-r:
+    name: Cross-validation native R / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -35,25 +35,23 @@ jobs:
           extra-packages: |
             any::pkgload
             any::testthat
-      - name: Full native DTW/Frechet path tests and closed 508 gate
+      - name: Cross-validation native numerical, grouped holdouts and ledger
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was <- reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="(?:native-distance-contracts|native-distances-parity-ledger)|full-native-r-parity-ledger|native-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(reticulate::py_available(initialize=FALSE),was))'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="(?:native-cv-uncertainty)|(?:native-nonlinear-reporting)|(?:native-fpca-extensions)|(?:native-functional-diagnostics)|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))'
 
-  python-reference-oracle:
-    name: Pinned Python 1.2 path and normalized-cost oracle / Linux
+  python-v1-2-cv:
+    name: Cross-validation pinned Python 1.2 heldout CV numerical oracle
     runs-on: ubuntu-latest
     env:
       ET_RUN_PYTHON_TESTS: "true"
-      MPLBACKEND: Agg
     steps:
       - uses: actions/checkout@v4
-      - name: Setup exact Python interpreter
-        id: python
+      - id: python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install stable Python 1.2 oracle
+      - name: Install published reference
         run: python -m pip install "eyetrajectoriespy==1.2.0"
       - uses: r-lib/actions/setup-r@v2
         with:
@@ -64,9 +62,9 @@ jobs:
           extra-packages: |
             any::pkgload
             any::testthat
-      - name: Compare R and Python costs, paths, step weights and pairwise matrices
+      - name: Compare heldout errors with independent Python reference
         shell: bash
         env:
           RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="(?:native-distance-contracts|native-distances-parity-ledger)",reporter="summary",stop_on_failure=TRUE)'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-cv-uncertainty",reporter="summary",stop_on_failure=TRUE)'

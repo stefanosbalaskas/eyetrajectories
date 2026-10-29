@@ -10,7 +10,7 @@ on:
       - "NAMESPACE"
       - "man/**"
       - "tests/testthat/test-native-trajectory-provenance.R"
-      - ".github/workflows/native-r-parity-stage5.yml"
+      - ".github/workflows/native-r-parity-trajectory-provenance.yml"
   workflow_dispatch:
 
 permissions:

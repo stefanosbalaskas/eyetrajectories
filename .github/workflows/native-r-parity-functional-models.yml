@@ -7,7 +7,7 @@ on:
       - "R/native-full-parity-ledger.R"
       - "NAMESPACE"
       - "tests/testthat/test-(?:native-functional-models)*.R"
-      - ".github/workflows/native-r-parity-stage13.yml"
+      - ".github/workflows/native-r-parity-functional-models.yml"
   workflow_dispatch:
 
 permissions:

@@ -9,7 +9,7 @@ on:
       - "NAMESPACE"
       - "tests/testthat/test-(?:native-functional-diagnostics)*.R"
       - "tests/testthat/test-native*parity-ledger.R"
-      - ".github/workflows/native-r-parity-stage9.yml"
+      - ".github/workflows/native-r-parity-functional-diagnostics.yml"
   workflow_dispatch:
 
 permissions:

@@ -8,7 +8,7 @@ on:
       - "NAMESPACE"
       - "tests/testthat/test-native-planar-geometry-parity.R"
       - "tests/testthat/test-full-native-r-parity-ledger.R"
-      - ".github/workflows/native-r-parity-stage2.yml"
+      - ".github/workflows/native-r-parity-kinematics.yml"
   workflow_dispatch:
 
 permissions:

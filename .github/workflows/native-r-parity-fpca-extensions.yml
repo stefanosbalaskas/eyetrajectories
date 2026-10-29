@@ -1,23 +1,22 @@
-name: Native R preprocessing and trajectory distances
+name: Native R FPCA extensions compositional FPCA and diagnostics
 
 on:
   pull_request:
     paths:
-      - "R/native-preprocessing-distances.R"
+      - "R/native-fpca-extensions.R"
       - "R/native-full-parity-ledger.R"
       - "NAMESPACE"
-      - "tests/testthat/test-native-preprocessing-distances.R"
-      - "tests/testthat/test-native-parity-ledger.R"
-      - "tests/testthat/test-full-native-r-parity-ledger.R"
-      - ".github/workflows/native-r-parity-stage3.yml"
+      - "tests/testthat/test-(?:native-fpca-extensions)*.R"
+      - "tests/testthat/test-native*parity-ledger.R"
+      - ".github/workflows/native-r-parity-fpca-extensions.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  native-r-no-python:
-    name: Native on ${{ matrix.os }} (no Python runtime)
+  native-r:
+    name: FPCA extensions native R / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -36,25 +35,24 @@ jobs:
           extra-packages: |
             any::pkgload
             any::testthat
-      - name: Native preprocessing and distances (Python not initialized)
+      - name: FPCA extensions native R and frozen inventory regression
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before <- reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="(?:native-parity-ledger|native-preprocessing-distances)|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(reticulate::py_available(initialize=FALSE),before))'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); started<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="(?:native-fpca-extensions)|(?:native-functional-diagnostics)|native-(?:parity-ledger|distances-parity-ledger|trajectory-parity-ledger|portable-parity-ledger|irregular-parity-ledger|recurrence-parity-ledger)|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(started,reticulate::py_available(initialize=FALSE)))'
 
-  python-reference-oracle:
-    name: Native versus Python 1.2 / Linux
+  python-v1-2-oracle:
+    name: FPCA extensions independent Python 1.2 reference
     runs-on: ubuntu-latest
     env:
       ET_RUN_PYTHON_TESTS: "true"
       MPLBACKEND: Agg
     steps:
       - uses: actions/checkout@v4
-      - name: Set exact published Python reference version
-        id: python
+      - id: python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Pin Python backend
+      - name: Install pinned source
         run: python -m pip install "eyetrajectoriespy==1.2.0"
       - uses: r-lib/actions/setup-r@v2
         with:
@@ -65,9 +63,9 @@ jobs:
           extra-packages: |
             any::pkgload
             any::testthat
-      - name: Compare seven native algorithms and schemas against Python
+      - name: FPCA extensions opt-in scientific oracle
         shell: bash
         env:
           RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="(?:native-parity-ledger|native-preprocessing-distances)",reporter="summary",stop_on_failure=TRUE)'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-fpca-extensions",reporter="summary",stop_on_failure=TRUE)'
