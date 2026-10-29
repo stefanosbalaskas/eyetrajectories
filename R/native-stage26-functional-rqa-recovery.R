@@ -80,6 +80,10 @@ etr_functional_recovery_assessment_frame <- function(assessment) {
       z$metric$name%in%names(defs)&&
       is.numeric(z$value)&&length(z$value)==1L,
       "assessment values must carry a known metric and numeric scalar")
+    .etr_assert(is.null(z$source)||
+      (is.character(z$source)&&length(z$source)==1L&&
+       !is.na(z$source)),
+      "recovery source must be a single optional text label")
     def<-defs[[z$metric$name]]
     .etr_assert(identical(z$metric,unclass(def))||
       identical(z$metric,def),
