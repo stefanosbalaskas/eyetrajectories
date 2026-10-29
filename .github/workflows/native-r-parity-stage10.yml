@@ -8,7 +8,7 @@ on:
       - "NAMESPACE"
       - "tests/testthat/test-(?:native-fpca-extensions)*.R"
       - "tests/testthat/test-native-stage*-parity-ledger.R"
-      - ".github/workflows/native-r-parity-.yml"
+      - ".github/workflows/native-r-parity-stage10.yml"
   workflow_dispatch:
 
 permissions:

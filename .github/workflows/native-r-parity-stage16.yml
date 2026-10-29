@@ -6,7 +6,7 @@ on:
       - "R/native-full-parity-ledger.R"
       - "tests/testthat/test-native-transfer-entropy.R"
       - "NAMESPACE"
-      - ".github/workflows/native-r-parity-.yml"
+      - ".github/workflows/native-r-parity-stage16.yml"
   workflow_dispatch:
 permissions:
   contents: read
