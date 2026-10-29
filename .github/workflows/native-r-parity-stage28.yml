@@ -34,6 +34,10 @@ jobs:
           extra-packages: |
             any::pkgload
             any::testthat
+      - name: Parse native R sources and tests before loading package
+        shell: bash
+        run: |
+          Rscript -e 'parse(file="R/native-stage28-math-contracts-diagnostics.R"); parse(file="tests/testthat/test-native-stage28-math-contracts-diagnostics.R")'
       - name: Exact public export inventory and native scientific geometry
         shell: bash
         run: |
