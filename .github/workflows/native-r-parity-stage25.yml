@@ -1,18 +1,18 @@
-name: Native R Stage 25 source score contract and reviewer gate
+name: Native R source score contract and reviewer gate
 on:
   pull_request:
     paths:
-      - "R/native-stage9-functional-diagnostics.R"
+      - "R/native-functional-diagnostics.R"
       - "inst/extdata/native_source_contract_gaps_stage22.csv"
-      - "tests/testthat/test-native-stage21-source-boundaries.R"
-      - "tests/testthat/test-native-stage25-source-contract-alignment.R"
+      - "tests/testthat/test-native-source-boundaries.R"
+      - "tests/testthat/test-native-source-contract-alignment.R"
       - ".github/workflows/native-r-parity-stage25.yml"
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
   native:
-    name: Stage 25 finite score-container source contract / ${{ matrix.os }}
+    name: finite score-container source contract / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -34,9 +34,9 @@ jobs:
       - name: Native score object tests and 508-source approval gate
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-stage25-source-contract-alignment|native-stage20-certification|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-source-contract-alignment|native-certification|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
   published-source:
-    name: Stage 25 direct Python 1.2 score-container numerical oracle
+    name: direct Python 1.2 score-container numerical oracle
     runs-on: ubuntu-latest
     env:
       ET_RUN_PYTHON_TESTS: "true"
@@ -62,4 +62,4 @@ jobs:
         env:
           RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-stage25-source-contract-alignment|native-stage21-source-boundaries",reporter="summary",stop_on_failure=TRUE)'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-source-contract-alignment|native-source-boundaries",reporter="summary",stop_on_failure=TRUE)'

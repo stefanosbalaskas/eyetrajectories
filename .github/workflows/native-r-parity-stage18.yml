@@ -1,10 +1,10 @@
-name: Native R Stage 18 restricted mixed functional diagnostics
+name: Native R restricted mixed functional diagnostics
 on:
   pull_request:
     paths:
-      - "R/native-stage18-functional-mixed-moments.R"
+      - "R/native-functional-mixed-moments.R"
       - "R/native-full-parity-ledger.R"
-      - "tests/testthat/test-native-stage18-mixed-diagnostics.R"
+      - "tests/testthat/test-native-mixed-diagnostics.R"
       - "NAMESPACE"
       - ".github/workflows/native-r-parity-stage18.yml"
   workflow_dispatch:
@@ -12,7 +12,7 @@ permissions:
   contents: read
 jobs:
   native-r:
-    name: Stage 18 native R / ${{ matrix.os }}
+    name: native R / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -34,9 +34,9 @@ jobs:
       - name: Native restricted mixed moments and residual numerical tests
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-stage18-mixed-diagnostics|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-mixed-diagnostics|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))'
   python-v1-2-oracle:
-    name: Stage 18 pinned NumPy/Python 1.2 residual formula oracle
+    name: pinned NumPy/Python 1.2 residual formula oracle
     runs-on: ubuntu-latest
     env:
       ET_RUN_PYTHON_TESTS: "true"
@@ -61,4 +61,4 @@ jobs:
         env:
           RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-stage18-mixed-diagnostics",reporter="summary",stop_on_failure=TRUE)'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-mixed-diagnostics",reporter="summary",stop_on_failure=TRUE)'

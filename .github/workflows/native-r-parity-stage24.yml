@@ -1,12 +1,12 @@
-name: Native R Stage 24 nine scientific graphics and certification gate
+name: Native R nine scientific graphics and certification gate
 on:
   pull_request:
     paths:
-      - "R/native-stage24-nine-scientific-plots.R"
+      - "R/native-nine-scientific-plots.R"
       - "R/native-full-parity-ledger.R"
       - "inst/extdata/native_source_contract_gaps_stage22.csv"
-      - "tests/testthat/test-native-stage24-nine-scientific-plots.R"
-      - "tests/testthat/test-native-stage22-source-contract-gaps.R"
+      - "tests/testthat/test-native-nine-scientific-plots.R"
+      - "tests/testthat/test-native-source-contract-gaps.R"
       - "NAMESPACE"
       - ".github/workflows/native-r-parity-stage24.yml"
   workflow_dispatch:
@@ -14,7 +14,7 @@ permissions:
   contents: read
 jobs:
   native-r:
-    name: Stage 24 plot geometry and 508-source parity ledger / ${{ matrix.os }}
+    name: plot geometry and 508-source parity ledger / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -36,9 +36,9 @@ jobs:
       - name: Nine native plots, hard source gaps and frozen parity catalog
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-stage24-nine-scientific-plots|native-stage22-source-contract-gaps|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-nine-scientific-plots|native-source-contract-gaps|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
   python-source-oracle:
-    name: Stage 24 pinned Python 1.2 matplotlib geometry oracle
+    name: pinned Python 1.2 matplotlib geometry oracle
     runs-on: ubuntu-latest
     env:
       ET_RUN_PYTHON_TESTS: "true"
@@ -64,4 +64,4 @@ jobs:
         env:
           RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-stage24-nine-scientific-plots",reporter="summary",stop_on_failure=TRUE)'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-nine-scientific-plots",reporter="summary",stop_on_failure=TRUE)'

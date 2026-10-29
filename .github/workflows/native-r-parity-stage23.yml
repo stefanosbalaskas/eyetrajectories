@@ -1,14 +1,14 @@
-name: Native R Stage 23 reporting contracts and source text oracles
+name: Native R reporting contracts and source text oracles
 on:
   pull_request:
     paths:
-      - "R/native-stage23-manuscript-reporting.R"
-      - "R/native-stage9-functional-diagnostics.R"
+      - "R/native-manuscript-reporting.R"
+      - "R/native-functional-diagnostics.R"
       - "inst/extdata/native_contract_certification_pilots_v1.csv"
       - "inst/extdata/native_source_contract_gaps_stage22.csv"
-      - "tests/testthat/test-native-stage21-source-boundaries.R"
+      - "tests/testthat/test-native-source-boundaries.R"
       - "R/native-full-parity-ledger.R"
-      - "tests/testthat/test-native-stage23-manuscript-reporting.R"
+      - "tests/testthat/test-native-manuscript-reporting.R"
       - "NAMESPACE"
       - ".github/workflows/native-r-parity-stage23.yml"
   workflow_dispatch:
@@ -16,7 +16,7 @@ permissions:
   contents: read
 jobs:
   native-r:
-    name: Stage 23 native reporting and 508 ledger / ${{ matrix.os }}
+    name: native reporting and 508 ledger / ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -38,9 +38,9 @@ jobs:
       - name: Native text, source ledger, and reticulate isolation
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-stage23-manuscript-reporting|native-stage22-source-contract-gaps|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-manuscript-reporting|native-source-contract-gaps|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
   pinned-python:
-    name: Stage 23 direct published Python 1.2 reporting text oracle
+    name: direct published Python 1.2 reporting text oracle
     runs-on: ubuntu-latest
     env:
       ET_RUN_PYTHON_TESTS: "true"
@@ -65,4 +65,4 @@ jobs:
         env:
           RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-stage23-manuscript-reporting|native-stage21-source-boundaries|native-stage22-source-contract-gaps",reporter="summary",stop_on_failure=TRUE)'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-manuscript-reporting|native-source-boundaries|native-source-contract-gaps",reporter="summary",stop_on_failure=TRUE)'
