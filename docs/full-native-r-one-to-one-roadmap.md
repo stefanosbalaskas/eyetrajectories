@@ -855,3 +855,26 @@ candidates remain awaiting full-domain and reviewer signoff.
 No function name contains a development-stage identifier.
 
 [Functional scientific source and partial-contract evidence](native-functional-inference-source-audit.md).
+
+
+## Functional recovery Monte Carlo evidence and source-qualified reports
+
+New stable native R source functions reconstruct published Python
+functional recovery record/metric frames, failures with binomial
+MCSE, grouped descriptive Monte Carlo statistics and metric-specific
+plots. The direct Python 1.2 oracle uses real typed recovery source
+objects and compares all available output fields, including
+zero-based source component to one-based reporting and preserving
+failure events; no performance qualification threshold is imposed.
+
+A new, **native-only** source-constrained recovery record
+constructor is not counted toward Python callable source mappings.
+
+Cumulative authored **211 native R source implementations**,
+**236/380** mapped public Python functions, **144** unmapped public
+callables and **57** explicit unresolved full Python-source contract
+differences. **0/508** full independent source certifications;
+four narrower previously passed numerical fixtures remain unsigned.
+Public function names contain no stage identifiers.
+
+[Recovery scientific source evidence](native-functional-recovery-source-evidence.md).

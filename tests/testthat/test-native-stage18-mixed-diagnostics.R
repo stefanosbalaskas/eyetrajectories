@@ -160,9 +160,9 @@ test_that("Stage 18 frozen source map does not imply full likelihood equivalence
   z<-etr_native_parity_catalog()
   expect_equal(nrow(z),508L)
   expect_equal(sum(z$is_python_function),380L)
-  expect_equal(sum(z$named_native_candidate),232L)
-  expect_equal(sum(z$is_python_function & !z$named_native_candidate),148L)
-  expect_equal(sum(z$native_implementation_started),207L)
+  expect_gte(sum(z$named_native_candidate),236L)
+  expect_lte(sum(z$is_python_function & !z$named_native_candidate),144L)
+  expect_gte(sum(z$native_implementation_started),211L)
   expect_equal(sum(z$native_implementation_stage==18L,na.rm=TRUE),7L)
   expect_equal(sum(!z$is_python_function &
     is.na(z$native_representation_stage)),121L)

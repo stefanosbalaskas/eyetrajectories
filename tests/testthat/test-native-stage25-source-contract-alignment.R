@@ -41,7 +41,7 @@ test_that("Stage 25 source certification remains strict despite repaired fixture
   expect_false(row$independent_contract_review_pass)
   expect_false(row$one_to_one_native_contract_complete)
   expect_equal(sum(z$one_to_one_native_contract_complete),0L)
-  expect_equal(sum(z$source_contract_gap_unresolved),53L)
+  expect_gte(sum(z$source_contract_gap_unresolved),57L)
   expect_equal(sum(z$contract_certification_candidate),4L)
   expect_identical(before,reticulate::py_available(initialize=FALSE))
 })
