@@ -699,3 +699,11 @@ export(etr_functional_recovery_value_key)
 export(etr_functional_recovery_assessment_frame)
 
 export(etr_functional_recovery_reporting_text)
+
+export(etr_fpca_score_uncertainty_reporting_text)
+export(etr_fpca_spectrum_uncertainty_reporting_text)
+export(etr_functional_mean_band_reporting_text)
+export(etr_fpca_component_band_reporting_text)
+export(etr_plot_fpca_score_uncertainty)
+export(etr_plot_fpca_spectrum_uncertainty)
+export(etr_plot_fpca_component_band)
