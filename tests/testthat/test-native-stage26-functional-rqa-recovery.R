@@ -161,10 +161,10 @@ test_that("Stage 26 catalog and numerical additions do not self-certify source c
   }
   expect_equal(nrow(z),508L)
   expect_equal(sum(z$is_python_function),380L)
-  expect_equal(sum(z$named_native_candidate&z$is_python_function),206L)
-  expect_equal(sum(z$native_implementation_started),181L)
-  expect_equal(sum(z$is_python_function&!z$named_native_candidate),174L)
-  expect_equal(sum(z$source_contract_gap_unresolved),27L)
+  expect_equal(sum(z$named_native_candidate&z$is_python_function),213L)
+  expect_equal(sum(z$native_implementation_started),188L)
+  expect_equal(sum(z$is_python_function&!z$named_native_candidate),167L)
+  expect_equal(sum(z$source_contract_gap_unresolved),34L)
   expect_equal(sum(z$one_to_one_native_contract_complete),0L)
 })
 
