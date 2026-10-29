@@ -1,0 +1,74 @@
+name: Native R Stage 28 exact mathematical source registry and nonlinear plots
+on:
+  pull_request:
+    paths:
+      - "R/native-stage28-math-contracts-diagnostics.R"
+      - "R/native-full-parity-ledger.R"
+      - "inst/extdata/native_mathematical_contract_frame_py120.csv"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "tests/testthat/test-native-stage28-math-contracts-diagnostics.R"
+      - "scripts/verify_stage28_math_contracts.py"
+      - "NAMESPACE"
+      - ".github/workflows/native-r-parity-stage28.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native:
+    name: Stage 28 native scientific registry and nonlinear geometry / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: "hard"
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Parse native R sources and tests before loading package
+        shell: bash
+        run: |
+          Rscript -e 'parse(file="R/native-stage28-math-contracts-diagnostics.R"); parse(file="tests/testthat/test-native-stage28-math-contracts-diagnostics.R")'
+      - name: Exact public export inventory and native scientific geometry
+        shell: bash
+        run: |
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-stage28-math-contracts-diagnostics|native-stage22-source-contract-gaps|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
+  published-python:
+    name: All 41 contracts and 88 rows against published Python 1.2
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+      MPLBACKEND: "Agg"
+    steps:
+      - uses: actions/checkout@v4
+      - id: python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0"
+      - name: Pure Python published-source 41-contract 88-row content attestation
+        run: python scripts/verify_stage28_math_contracts.py
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: "hard"
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Complete public mathematical metadata string-by-string Python oracle
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-stage28-math-contracts-diagnostics",reporter="summary",stop_on_failure=TRUE)'

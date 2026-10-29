@@ -156,9 +156,9 @@ test_that("Stage 14 strict inventory is distinct from scientific certification",
   a<-etr_native_parity_catalog()
   expect_equal(nrow(a),508L)
   expect_equal(sum(a$is_python_function),380L)
-  expect_equal(sum(a$named_native_candidate),213L)
-  expect_equal(sum(a$is_python_function & !a$named_native_candidate),167L)
-  expect_equal(sum(a$native_implementation_started),188L)
+  expect_equal(sum(a$named_native_candidate),219L)
+  expect_equal(sum(a$is_python_function & !a$named_native_candidate),161L)
+  expect_equal(sum(a$native_implementation_started),194L)
   expect_equal(sum(a$native_implementation_stage==14L,na.rm=TRUE),7L)
   expect_equal(sum(!is.na(a$native_representation_stage)),7L)
   expect_equal(sum(!a$is_python_function &

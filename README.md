@@ -1236,3 +1236,20 @@ review; **0/508 full Python public source contracts** are approved.
 Stage 27 runtime verification remains pending.
 
 [Stage 27 source and science limitations](docs/full-native-r-stage27-fpca-source.md).
+
+
+## Stage 28: complete mathematical source registry and nonlinear diagnostics (draft)
+
+Six more native Python-free source API analogues include the
+**entire published Python 1.2 mathematical-contract registry**:
+41 ordered scientific contracts and 88 exact function-level LaTeX
+metadata rows, plus Kantz, Lyapunov and multiscale windowed-RQA
+sensitivity plots without hidden aggregation. An exhaustive pinned
+Python 1.2 text/schema oracle is authored, not yet executed.
+
+Authored cumulative: **194 native R functions**, **219/380 mapped
+public Python source callables**, **161 unmapped functions**,
+**40 explicit unresolved full-source behavior differences**, and
+**0/508 independently fully certified public source contracts**.
+
+[Stage 28 scientific source-contract qualification](docs/full-native-r-stage28-mathematical-contracts.md).

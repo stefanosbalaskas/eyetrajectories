@@ -777,3 +777,23 @@ independently approved complete source contracts remains 0/508**.
 Draft branch and qualification tests are authored, not yet run.
 
 [Stage 27 scientific and certification scope](full-native-r-stage27-fpca-source.md).
+
+
+## Stage 28 — exact 41 mathematical source contracts, 88 semantic rows
+
+Three new native read-only scientific metadata functions reproduce the
+published Python 1.2 mathematical contract registry in source order,
+including exact LaTeX strings and scientific scopes. Three more base R
+scientific plots cover Kantz, Lyapunov and multiscale windowed RQA
+sensitivity without interpolating data or averaging ambiguous grid
+slices. Direct pinned Python source comparison is authored for
+**all 41 contracts and all 88 metadata rows**, not just a pilot fixture.
+
+Authored parity census: **194 native methods**, **219/380 mapped Python
+function names**, **161 unmapped public callables**, **40 explicit known
+full-source differences**, and **0/508 independently fully certified
+public Python source contracts**. Semantic source metadata is
+reproducible, but R S3/data.frame objects are not Python frozen
+dataclasses/tuple/pandas classes. No independence review is inferred.
+
+[Stage 28 source and certification evidence](full-native-r-stage28-mathematical-contracts.md).
