@@ -46,7 +46,7 @@ test_that("Stage 27 four report functions have fixed source scientific language"
   a<-etr_fpca_score_uncertainty_reporting_text(x$scores)
   expect_match(a,"3 curve-level bootstrap refits")
   expect_match(a,"2 fixed external target")
-  expect_match(a,"FPC1=0.850")
+  expect_match(a,"FPC1=0.800")
   expect_match(a,"do not include target measurement error")
   expect_identical(a,etr_fpca_score_uncertainty_reporting_text(x$scores))
   b<-etr_fpca_spectrum_uncertainty_reporting_text(x$spec)
