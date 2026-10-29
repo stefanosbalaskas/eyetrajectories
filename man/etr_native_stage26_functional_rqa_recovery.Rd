@@ -4,10 +4,12 @@
 \alias{etr_functional_recovery_metric_catalog}
 \alias{etr_functional_recovery_metric_catalog_frame}
 \alias{etr_functional_recovery_value_key}
+\alias{etr_functional_recovery_reporting_text}
 \alias{etr_functional_recovery_assessment_frame}
 \title{Native windowed-recurrence functional sensitivity and source-pinned recovery metadata}
 \description{
-Six independent Python-free R source-name integrations: fixed-radius
+Six mapped public Python-source integrations plus the optional
+native value-key helper: fixed-radius
 multiscale windowed RQA sensitivity, unit-level simultaneous derived
 RQA mean bands, and metadata and recovery-value catalog utilities
 pinned to the published Python 1.2.0 source.
@@ -31,6 +33,7 @@ etr_functional_recovery_metric_catalog()
 etr_functional_recovery_metric_catalog_frame()
 etr_functional_recovery_value_key(value)
 etr_functional_recovery_assessment_frame(assessment)
+etr_functional_recovery_reporting_text(assessment)
 }
 \arguments{
 \item{trajectories}{Complete native functional trajectories, with
@@ -69,7 +72,8 @@ pairwise exact shared-center discrepancy table, without interpolation.
 whole-unit simultaneous mean band for derived RQA functions.
 The recovery catalog returns 27 ordered named S3 definitions or an
 auditable six-column native data frame; value-key returns one string,
-and assessment-frame returns a native semantic value data frame.
+assessment-frame returns a native semantic value data frame, and
+reporting-text returns a compact source-aligned manuscript description.
 }
 \details{
 The published Python 1.2 source handles additional window units,
