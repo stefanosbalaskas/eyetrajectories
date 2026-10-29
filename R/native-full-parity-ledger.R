@@ -250,7 +250,9 @@
   expand_functional_simulation_scenarios="etr_expand_functional_simulation_scenarios",
   functional_recovery_qualification_scenarios="etr_functional_recovery_qualification_scenarios",
   functional_recovery_stress_scenarios="etr_functional_recovery_stress_scenarios",
-  functional_recovery_scenario_catalog_frame="etr_functional_recovery_scenario_catalog_frame"
+  functional_recovery_scenario_catalog_frame="etr_functional_recovery_scenario_catalog_frame",
+  functional_simulation_truth_frame="etr_functional_simulation_truth_frame",
+  functional_simulation_reporting_text="etr_functional_simulation_reporting_text"
 )
 
 #' Audit one-to-one Python 1.2.0 versus independent native R coverage
@@ -492,6 +494,9 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% c("functional_recovery_stress_scenarios",
       "functional_recovery_scenario_catalog_frame")] <- 37L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% c("functional_simulation_truth_frame",
+      "functional_simulation_reporting_text")] <- 38L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset

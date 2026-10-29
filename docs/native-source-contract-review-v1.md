@@ -18,10 +18,10 @@ This is an evidence-oriented development note, **not a certification claim**.
 
 | Domain | Number | Meaning |
 |---|---:|---|
-| Python function mappings | 246 / 380 | Names associated with native R candidates |
-| Native implementations started | 221 | Implemented operations; **not** proof of source equivalence |
-| Unmapped Python functions | 134 | No declared native candidate |
-| Known open source differences | 68 | Class, input, numerical, backend, error or scope boundaries |
+| Python function mappings | 248 / 380 | Names associated with native R candidates |
+| Native implementations started | 223 | Implemented operations; **not** proof of source equivalence |
+| Unmapped Python functions | 132 | No declared native candidate |
+| Known open source differences | 70 | Class, input, numerical, backend, error or scope boundaries |
 | Nonfunction exports for independent review | 128 | Values/classes not counted as native functions |
 | Complete independently certified public contracts | **0 / 508** | Four approval domains are not all independently signed off |
 
@@ -74,6 +74,11 @@ eighteen-scenario catalogue. Explicit finite symmetric PSD covariance
 is now supported when independent noise SD is zero. Full-source
 Python dataclass/pandas equivalence and all accepted value types
 remain open certification gaps.
+
+Two newly mapped Python 1.2 read-only simulation audit adapters provide
+source-ordered realized-truth frames and manuscript reporting without
+native simulation. The full Python dataclass/pandas return contract and
+significant-digit/error domain remain unqualified.
 
 ## Local qualification on PR #46
 

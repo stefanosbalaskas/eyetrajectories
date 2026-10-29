@@ -9,6 +9,8 @@
 \alias{etr_functional_recovery_qualification_scenarios}
 \alias{etr_functional_recovery_stress_scenarios}
 \alias{etr_functional_recovery_scenario_catalog_frame}
+\alias{etr_functional_simulation_truth_frame}
+\alias{etr_functional_simulation_reporting_text}
 \title{Explicit native workflow and functional simulation design contracts}
 \description{
 Python-free native R design declarations, scientific decision provenance and
@@ -46,8 +48,12 @@ etr_functional_recovery_stress_scenarios(
 etr_functional_recovery_scenario_catalog_frame(
   qualification_replicates = 3L, stress_replicates = 10L
 )
+etr_functional_simulation_truth_frame(result)
+etr_functional_simulation_reporting_text(result, digits = 3L)
 }
 \arguments{
+\item{result}{Named record carrying realized simulation truth and observations.}
+\item{digits}{Number of significant digits for reporting.}
 \item{fields}{Named JSON-compatible native workflow configuration.}
 \item{function_name}{Nonempty explicitly declared preprocessing operation.}
 \item{parameters}{Named JSON-compatible preprocessing arguments.}
@@ -102,6 +108,8 @@ identity, nested JSON serialization, and every invalid-domain boundary are
 not qualified as fully equivalent. Consult \code{etr_native_parity_catalog()}
 and \code{etr_native_source_contract_review_queue()} for source-contract gaps.
 An empty preprocessing plan performs no implicit scientific operation.
+The source-aligned truth frame and reporting text consume realized records;
+they cannot generate observations or validate simulation recovery.
 Four recovery qualification scenarios and fourteen stress scenarios
 declare source-data-generating conditions only. They do not execute a test,
 select calibration thresholds or establish experimental recovery coverage.
