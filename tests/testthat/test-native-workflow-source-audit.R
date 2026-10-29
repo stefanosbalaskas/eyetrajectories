@@ -80,9 +80,9 @@ test_that("workflow audit records reject hidden decisions and invalid values",{
     `function`="fit",status="completed",parameters=list(a=Inf),
     elapsed_seconds=0,warnings=character())),"nonfinite")
   expect_error(etr_workflow_decisions_frame(
-    list(k=list(value=2L,source="audited_selector")),"criterion")
+    list(k=list(value=2L,source="audited_selector"))),"criterion")
   expect_error(etr_workflow_decisions_frame(
-    list(k=list(value=NaN,source="analyst")),"nonfinite")
+    list(k=list(value=NaN,source="analyst"))),"nonfinite")
   expect_error(etr_workflow_audit_result(""),"nonempty")
   expect_error(etr_workflow_summary_frame(list()),"native workflow audit")
   expect_error(etr_workflow_reporting_text(list()),"native workflow audit")
