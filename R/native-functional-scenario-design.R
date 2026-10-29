@@ -137,9 +137,13 @@ etr_functional_simulation_scenario <- function(name,truth_grid,eigenvalues,
 .etr_scenario_json <- function(x,mapping=FALSE,scalar=FALSE) {
   if(is.null(x))return(NA_character_)
   if(mapping&&is.list(x)&&!length(x))return("{}")
+  # Python json.dumps(..., sort_keys=True) treats mapping scalar values as
+  # scalars; R numeric sequences otherwise retain their array JSON shape.
+  if(mapping&&is.list(x)&&length(x))
+    x<-x[order(names(x),method="radix")]
   if(!requireNamespace("jsonlite",quietly=TRUE))
     stop("jsonlite required for simulation scenario source JSON",call.=FALSE)
-  as.character(jsonlite::toJSON(x,auto_unbox=scalar,
+  as.character(jsonlite::toJSON(x,auto_unbox=(scalar||mapping),
     null="null",digits=NA,pretty=FALSE))
 }
 
