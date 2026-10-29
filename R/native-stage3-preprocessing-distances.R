@@ -3,7 +3,7 @@
 # preprocessing.py, kinematics.py, analysis.py.
 # Python remains optional ONLY for independently run oracle tests.
 
-.etr_s3_scalar <- function(x,label,strict_positive=FALSE) {
+.etr_preprocessing_scalar <- function(x,label,strict_positive=FALSE) {
   .etr_assert(is.numeric(x) && !is.logical(x) && length(x)==1L &&
                 !is.na(x) && is.finite(x) &&
                 (!strict_positive || x>0),
@@ -12,14 +12,14 @@
   as.numeric(x)
 }
 
-.etr_s3_landmarks <- function(values,n,label) {
+.etr_preprocessing_landmarks <- function(values,n,label) {
   .etr_assert(is.numeric(values) && !is.logical(values) &&
     length(values) %in% c(1L,n) && all(is.finite(values)),
     paste(label,"must be a finite scalar or one finite value per curve"))
   rep_len(as.numeric(values),n)
 }
 
-.etr_s3_copy <- function(x,values=x$values,time=x$time,
+.etr_preprocessing_copy <- function(x,values=x$values,time=x$time,
                          coordinate_system=x$coordinate_system,
                          time_unit=x$time_unit,provenance_update=NULL) {
   etr_with_values(x,values=values,time=time,
@@ -38,13 +38,13 @@
 #' @export
 etr_normalize_coordinates <- function(x,width,height) {
   etr_validate(x)
-  width <- .etr_s3_scalar(width,"width",strict_positive=TRUE)
-  height <- .etr_s3_scalar(height,"height",strict_positive=TRUE)
+  width <- .etr_preprocessing_scalar(width,"width",strict_positive=TRUE)
+  height <- .etr_preprocessing_scalar(height,"height",strict_positive=TRUE)
   .etr_assert(dim(x$values)[3L]>=2L,"At least two channels required")
   values <- x$values
   values[,,1L] <- values[,,1L]/width
   values[,,2L] <- values[,,2L]/height
-  .etr_s3_copy(x,values=values,coordinate_system="normalized",
+  .etr_preprocessing_copy(x,values=values,coordinate_system="normalized",
     provenance_update=list(coordinate_normalization=list(
       width=width,height=height)))
 }
@@ -61,14 +61,14 @@ etr_center_on_landmark <- function(x,landmark_x,landmark_y) {
   etr_validate(x)
   n <- dim(x$values)[1L]
   .etr_assert(dim(x$values)[3L]>=2L,"At least two channels required")
-  lx <- .etr_s3_landmarks(landmark_x,n,"landmark_x")
-  ly <- .etr_s3_landmarks(landmark_y,n,"landmark_y")
+  lx <- .etr_preprocessing_landmarks(landmark_x,n,"landmark_x")
+  ly <- .etr_preprocessing_landmarks(landmark_y,n,"landmark_y")
   values <- x$values
   for (i in seq_len(n)) {
     values[i,,1L] <- values[i,,1L]-lx[i]
     values[i,,2L] <- values[i,,2L]-ly[i]
   }
-  .etr_s3_copy(x,values=values,coordinate_system="landmark_relative",
+  .etr_preprocessing_copy(x,values=values,coordinate_system="landmark_relative",
     provenance_update=list(landmark_centering=list(per_curve=TRUE)))
 }
 
@@ -82,12 +82,12 @@ etr_center_on_landmark <- function(x,landmark_x,landmark_y) {
 #' @export
 etr_normalize_time_interval <- function(x,start=0,end=1) {
   etr_validate(x)
-  start <- .etr_s3_scalar(start,"start")
-  end <- .etr_s3_scalar(end,"end")
+  start <- .etr_preprocessing_scalar(start,"start")
+  end <- .etr_preprocessing_scalar(end,"end")
   .etr_assert(end>start,"end must be greater than start")
   old <- x$time
   time <- start+(old-old[1L])/(old[length(old)]-old[1L])*(end-start)
-  .etr_s3_copy(x,time=time,time_unit="normalized",
+  .etr_preprocessing_copy(x,time=time,time_unit="normalized",
     provenance_update=list(time_normalization=list(
       original_start=as.numeric(old[1L]),
       original_end=as.numeric(old[length(old)]),
@@ -165,7 +165,7 @@ etr_trajectory_tortuosity_frame <- function(
   out
 }
 
-.etr_s3_dimensions <- function(x,dimensions=NULL) {
+.etr_preprocessing_dimensions <- function(x,dimensions=NULL) {
   etr_validate(x,require_complete=TRUE)
   if(is.null(dimensions)) return(seq_along(x$dimension_names))
   .etr_assert(is.character(dimensions) && length(dimensions)>=1L &&
@@ -188,7 +188,7 @@ etr_trajectory_tortuosity_frame <- function(
 #' @export
 etr_pairwise_frechet <- function(x,dimensions=NULL,
                                  dimension_weights=NULL) {
-  idx <- .etr_s3_dimensions(x,dimensions)
+  idx <- .etr_preprocessing_dimensions(x,dimensions)
   if(is.null(dimension_weights)) {
     weights <- rep(1,length(idx))
   } else {

@@ -1,5 +1,5 @@
 # Stage 17 source-oriented exact embedding and local divergence tests.
-.etr17_fixture <- function(){
+.etr_divergence_test_fixture <- function(){
   t<-seq(0,4.5,length.out=91L);n<-8L
   a<-array(0,c(n,length(t),2L))
   for(i in seq_len(n)){
@@ -15,7 +15,7 @@
 }
 
 test_that("Stage 17 multichannel delay embedding preserves exact source order",{
-  x<-.etr17_fixture()
+  x<-.etr_divergence_test_fixture()
   e<-etr_delay_embed_trajectory(x,embedding_dimension=3L,
     delay=2L,dimensions=c("y","x"))
   expect_s3_class(e,"etr_delay_embedding_set")
@@ -36,7 +36,7 @@ test_that("Stage 17 multichannel delay embedding preserves exact source order",{
 })
 
 test_that("Stage 17 Rosenstein local divergence tracks all eligible forward pairs",{
-  x<-.etr17_fixture()
+  x<-.etr_divergence_test_fixture()
   e<-etr_delay_embed_trajectory(x,2L,2L,dimensions=c("x","y"))
   z<-etr_local_divergence_curve(e,curve="c01",
     theiler_window=3L,max_horizon=8L)
@@ -60,7 +60,7 @@ test_that("Stage 17 Rosenstein local divergence tracks all eligible forward pair
 })
 
 test_that("Stage 17 Kantz local divergence retains declared fixed radius and counts",{
-  x<-.etr17_fixture()
+  x<-.etr_divergence_test_fixture()
   e<-etr_delay_embed_trajectory(x,2L,2L,dimensions=c("x","y"))
   k<-etr_kantz_divergence_curve(e,"c01",radius=3,
     theiler_window=3L,max_horizon=8L,min_neighbors=2L)
@@ -78,7 +78,7 @@ test_that("Stage 17 Kantz local divergence retains declared fixed radius and cou
 })
 
 test_that("Stage 17 Lyapunov fits use exact declared sample-index interval",{
-  x<-.etr17_fixture()
+  x<-.etr_divergence_test_fixture()
   e<-etr_delay_embed_trajectory(x,2L,2L,dimensions=c("x","y"))
   r<-etr_local_divergence_curve(e,"c01",3L,8L)
   k<-etr_kantz_divergence_curve(e,"c01",3,3L,8L)
@@ -104,7 +104,7 @@ test_that("Stage 17 Lyapunov fits use exact declared sample-index interval",{
 })
 
 test_that("Stage 17 whole-participant RQA mean bootstrap is deterministic and fail-closed",{
-  x<-.etr17_fixture()
+  x<-.etr_divergence_test_fixture()
   set.seed(172);before<-.Random.seed
   z<-etr_bootstrap_rqa_metric_means(x,dimensions=c("x","y"),
     metrics="recurrence_rate",radius=.6,theiler_window=1L,
@@ -161,7 +161,7 @@ test_that("Stage 17 independent Python 1.2 numerical divergence oracle is opt-in
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("Stage 17 pinned Python 1.2 divergence numerical oracle is opt-in")
   expect_identical(et_python_version(),"1.2.0")
-  x<-.etr17_fixture()
+  x<-.etr_divergence_test_fixture()
   pyx<-reticulate::py_call(etpy_get_export("TrajectorySet"),
     time=reticulate::r_to_py(x$time),
     values=reticulate::r_to_py(x$values),

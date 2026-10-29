@@ -2,7 +2,7 @@
 # Source of record: eyetrajectoriespy v1.2.0, analysis.py and types.py.
 # Python/reticulate are used only by opt-in tests, not any function here.
 
-.etr_s4_inputs <- function(a,b,dimension_weights=NULL,operation="distance") {
+.etr_distances_inputs <- function(a,b,dimension_weights=NULL,operation="distance") {
   a <- .etr_points(a,"a")
   b <- .etr_points(b,"b")
   .etr_assert(ncol(a)==ncol(b),
@@ -25,7 +25,7 @@
   list(a=a,b=b,weights=w,n_a=nrow(a),n_b=nrow(b),d=d)
 }
 
-.etr_s4_local <- function(a,b,weights) {
+.etr_dtw_local_cost <- function(a,b,weights) {
   m <- nrow(a); n <- nrow(b)
   out <- matrix(0,m,n)
   for(i in seq_len(m)) for(j in seq_len(n)) {
@@ -34,7 +34,7 @@
   out
 }
 
-.etr_s4_backtrack <- function(pi,pj,local,weights=NULL) {
+.etr_dtw_backtrack <- function(pi,pj,local,weights=NULL) {
   i <- nrow(pi); j <- ncol(pi)
   out <- list()
   w <- numeric()
@@ -71,8 +71,8 @@ etr_discrete_frechet <- function(a,b,dimension_weights=NULL,
   .etr_assert(is.logical(return_coupling) &&
     length(return_coupling)==1L && !is.na(return_coupling),
     "return_coupling must be TRUE or FALSE")
-  x <- .etr_s4_inputs(a,b,dimension_weights,"discrete Frechet")
-  local <- .etr_s4_local(x$a,x$b,x$weights)
+  x <- .etr_distances_inputs(a,b,dimension_weights,"discrete Frechet")
+  local <- .etr_dtw_local_cost(x$a,x$b,x$weights)
   n <- x$n_a; m <- x$n_b
   cum <- matrix(Inf,n,m)
   pi <- pj <- matrix(0L,n,m)
@@ -99,7 +99,7 @@ etr_discrete_frechet <- function(a,b,dimension_weights=NULL,
   }
   distance <- as.numeric(cum[n,m])
   if(!return_coupling) return(distance)
-  coupling <- .etr_s4_backtrack(pi,pj,local)
+  coupling <- .etr_dtw_backtrack(pi,pj,local)
   .etr_assert(isTRUE(all.equal(max(coupling$local_distances),distance,
                                  tolerance=1e-11)),
               "Frechet coupling maximum does not match distance")
@@ -149,7 +149,7 @@ etr_dynamic_time_warping <- function(
     !is.na(return_path),"return_path must be TRUE or FALSE")
   .etr_assert(!normalize || step_pattern=="symmetric2",
               "normalize=TRUE is available only for symmetric2")
-  x <- .etr_s4_inputs(a,b,dimension_weights,"DTW")
+  x <- .etr_distances_inputs(a,b,dimension_weights,"DTW")
   n <- x$n_a; m <- x$n_b
   if(!is.null(window_radius)){
     .etr_assert(is.numeric(window_radius) && !is.logical(window_radius) &&
@@ -160,7 +160,7 @@ etr_dynamic_time_warping <- function(
     .etr_assert(window_radius>=abs(n-m),
                 "window_radius is too small to connect the sequence endpoints")
   }
-  local <- .etr_s4_local(x$a,x$b,x$weights)
+  local <- .etr_dtw_local_cost(x$a,x$b,x$weights)
   cum <- matrix(Inf,n,m)
   pi <- pj <- matrix(0L,n,m)
   trans <- matrix(NA_real_,n,m)
@@ -206,7 +206,7 @@ etr_dynamic_time_warping <- function(
   scaled <- if(is.null(denom))NULL else raw/denom
   dist <- if(normalize)scaled else raw
   if(!return_path) return(as.numeric(dist))
-  alignment <- .etr_s4_backtrack(pi,pj,local,trans)
+  alignment <- .etr_dtw_backtrack(pi,pj,local,trans)
   weighted <- alignment$local_distances*alignment$step_weights
   .etr_assert(isTRUE(all.equal(sum(weighted),raw,tolerance=1e-10)),
               "DTW path audit does not reproduce cumulative cost")
@@ -263,7 +263,7 @@ etr_dynamic_time_warping <- function(
 etr_pairwise_dtw_full <- function(
     x,dimensions=NULL,dimension_weights=NULL,window_radius=NULL,
     step_pattern="symmetric1",normalize=FALSE) {
-  idx <- .etr_s3_dimensions(x,dimensions)
+  idx <- .etr_preprocessing_dimensions(x,dimensions)
   .etr_assert(is.character(step_pattern) &&
     length(step_pattern)==1L && !is.na(step_pattern) &&
     step_pattern %in% c("symmetric1","symmetric2"),

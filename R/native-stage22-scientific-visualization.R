@@ -1,7 +1,7 @@
 # Stage 22: eight source-aligned, Python-free descriptive scientific plots.
 # Important: graphics device + invisible R data != Matplotlib Axes.
 # Consequently these are implementations, NOT 508-source full certifications.
-.etr22_table <- function(x,kind,fields) {
+.etr_visualization_table <- function(x,kind,fields) {
   .etr_assert(inherits(x,kind)&&is.data.frame(x$table)&&
     all(fields%in%names(x$table))&&nrow(x$table)>=1L,
     paste("result must be",kind,"with a complete plot table"))
@@ -17,7 +17,7 @@
 #' @return Invisible geometry including source time, AMI, ACF and marked minima.
 #' @export
 etr_plot_embedding_delay_diagnostics <- function(result,...) {
-  t<-.etr22_table(result,"etr_embedding_delay_diagnostics",
+  t<-.etr_visualization_table(result,"etr_embedding_delay_diagnostics",
     c("lag_time","average_mutual_information","autocorrelation"))
   .etr_assert("first_ami_local_minimum"%in%names(t)&&
     is.logical(t$first_ami_local_minimum)&&
@@ -52,7 +52,7 @@ etr_plot_embedding_delay_diagnostics <- function(result,...) {
 #' @return Invisibly, the source table used to render the curve.
 #' @export
 etr_plot_embedding_dimension_diagnostics <- function(result,...) {
-  t<-.etr22_table(result,"etr_embedding_dimension_diagnostics",
+  t<-.etr_visualization_table(result,"etr_embedding_dimension_diagnostics",
     c("embedding_dimension","false_neighbor_fraction"))
   .etr_assert(all(is.finite(t$embedding_dimension))&&
     all(t$embedding_dimension>=1)&&
@@ -99,7 +99,7 @@ etr_plot_recurrence_network_degree <- function(result,normalized=TRUE,...) {
 #' @return Invisibly, the exact source profile table.
 #' @export
 etr_plot_recurrence_rate_curve <- function(result,...) {
-  t<-.etr22_table(result,"etr_recurrence_radius_profile",
+  t<-.etr_visualization_table(result,"etr_recurrence_radius_profile",
     c("radius","recurrence_rate"))
   .etr_assert(all(is.finite(t$radius))&&all(t$radius>=0)&&
     all(is.finite(t$recurrence_rate))&&

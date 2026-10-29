@@ -1,6 +1,6 @@
 # Stage 18 restricted native functional mixed-effects moments and diagnostics.
 
-.etr18_fixture<-function(){
+.etr_mixed_moments_test_fixture<-function(){
   n<-18L;t<-seq(0,1,length.out=17L)
   groups<-rep(sprintf("p%02d",1:6),each=3L)
   z<-rep(c(-1,0,1),6L)+rep((1:6-3.5)/10,each=3L)
@@ -18,7 +18,7 @@
 }
 
 test_that("Stage 18 restricted mixed-moment regression has explicit provenance and PSD covariance",{
-  fixture<-.etr18_fixture()
+  fixture<-.etr_mixed_moments_test_fixture()
   z<-etr_fit_functional_mixed_effects_regression(fixture$x,
     fixture$design,predictors="exposure",
     participant_column="participant_id",dimension="x")
@@ -49,7 +49,7 @@ test_that("Stage 18 restricted mixed-moment regression has explicit provenance a
 })
 
 test_that("Stage 18 whitening is within-trial and uses finite positive definite covariance",{
-  a<-.etr18_fixture()
+  a<-.etr_mixed_moments_test_fixture()
   fit<-etr_fit_functional_mixed_effects_regression(a$x,a$design,
     "exposure","participant_id","x")
   w<-etr_functional_mixed_effects_whitened_residuals(fit)
@@ -68,7 +68,7 @@ test_that("Stage 18 whitening is within-trial and uses finite positive definite 
 })
 
 test_that("Stage 18 raw and whitened residual lag diagnostics preserve physical lag",{
-  a<-.etr18_fixture()
+  a<-.etr_mixed_moments_test_fixture()
   fit<-etr_fit_functional_mixed_effects_regression(a$x,a$design,
     "exposure","participant_id","x")
   r<-etr_functional_mixed_effects_residual_diagnostics(fit,
@@ -97,7 +97,7 @@ test_that("Stage 18 raw and whitened residual lag diagnostics preserve physical 
 })
 
 test_that("Stage 18 diagnostic and exact residual-pair frames preserve index semantics",{
-  a<-.etr18_fixture()
+  a<-.etr_mixed_moments_test_fixture()
   fit<-etr_fit_functional_mixed_effects_regression(a$x,a$design,
     "exposure","participant_id","x")
   d<-etr_functional_mixed_effects_residual_diagnostics(fit,3L)
@@ -128,7 +128,7 @@ test_that("Stage 18 diagnostic and exact residual-pair frames preserve index sem
 })
 
 test_that("Stage 18 coefficient and variance frames retain native inferential boundaries",{
-  a<-.etr18_fixture()
+  a<-.etr_mixed_moments_test_fixture()
   fit<-etr_fit_functional_mixed_effects_regression(a$x,a$design,
     "exposure","participant_id","x")
   cf<-etr_functional_mixed_effects_coefficient_frame(fit)
@@ -175,7 +175,7 @@ test_that("Stage 18 Python 1.2 reference source numerical formulas opt-in",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("Stage 18 NumPy residual diagnostics formula oracle is opt-in")
   expect_identical(et_python_version(),"1.2.0")
-  a<-.etr18_fixture()
+  a<-.etr_mixed_moments_test_fixture()
   fit<-etr_fit_functional_mixed_effects_regression(a$x,a$design,
     "exposure","participant_id","x")
   R<-fit$residual_functions[1L,]

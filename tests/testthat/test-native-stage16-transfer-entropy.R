@@ -1,6 +1,6 @@
 # Stage 16: deterministic source-level TE and conditional TE qualification.
 
-.etr16_fixture <- function(n=96L){
+.etr_transfer_entropy_test_fixture <- function(n=96L){
   i<-seq_len(n)-1L
   source<-as.integer((i^2+3L*i+floor(i/7L))%%3L)
   condition<-as.integer((2L*i+floor(i/5L))%%2L)
@@ -10,7 +10,7 @@
 }
 
 test_that("Stage 16 discrete TE exact plug-in estimand and local contributions",{
-  a<-.etr16_fixture()
+  a<-.etr_transfer_entropy_test_fixture()
   old<-reticulate::py_available(initialize=FALSE)
   fit<-etr_discrete_transfer_entropy(a$x,a$y,
     target_history=2L,source_history=2L,source_lag=1L)
@@ -46,7 +46,7 @@ test_that("Stage 16 discrete TE exact plug-in estimand and local contributions",
 })
 
 test_that("Stage 16 source-only TE circular null uses exact declared shifts",{
-  a<-.etr16_fixture()
+  a<-.etr_transfer_entropy_test_fixture()
   z<-etr_transfer_entropy_circular_shift_test(a$x,a$y,
     target_history=1L,source_history=2L,source_lag=1L,shifts=c(3L,7L,13L))
   expect_s3_class(z,"etr_transfer_entropy_circular_shift_test")
@@ -68,7 +68,7 @@ test_that("Stage 16 source-only TE circular null uses exact declared shifts",{
 })
 
 test_that("Stage 16 conditional TE retains all exact conditioning histories",{
-  a<-.etr16_fixture()
+  a<-.etr_transfer_entropy_test_fixture()
   z<-etr_conditional_transfer_entropy(a$x,a$y,a$z,
     target_history=2L,source_history=2L,condition_history=2L,
     source_lag=1L,condition_lag=2L)
@@ -95,7 +95,7 @@ test_that("Stage 16 conditional TE retains all exact conditioning histories",{
 })
 
 test_that("Stage 16 conditional source-only shifts preserve fixed confounder",{
-  a<-.etr16_fixture()
+  a<-.etr_transfer_entropy_test_fixture()
   z<-etr_conditional_transfer_entropy_circular_shift_test(
     a$x,a$y,a$z,1L,2L,1L,1L,1L,shifts=c(4L,12L,20L))
   expect_s3_class(z,"etr_conditional_transfer_entropy_circular_shift_test")
@@ -114,7 +114,7 @@ test_that("Stage 16 conditional source-only shifts preserve fixed confounder",{
 })
 
 test_that("Stage 16 Cartesian sensitivity retains every declared specification",{
-  a<-.etr16_fixture()
+  a<-.etr_transfer_entropy_test_fixture()
   z<-etr_transfer_entropy_parameter_sensitivity(a$x,a$y,
     target_histories=c(1L,2L),source_histories=c(1L,2L),
     source_lags=c(1L,3L))
@@ -166,7 +166,7 @@ test_that("Stage 16 exact Python 1.2 local TE and conditional oracle is opt-in",
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("Stage 16 pinned Python 1.2 empirical TE oracle is opt-in")
   expect_identical(et_python_version(),"1.2.0")
-  a<-.etr16_fixture()
+  a<-.etr_transfer_entropy_test_fixture()
   py<-reticulate::py_call(etpy_get_export("discrete_transfer_entropy"),
     source=reticulate::r_to_py(a$x),target=reticulate::r_to_py(a$y),
     target_history=as.integer(2),source_history=as.integer(2),

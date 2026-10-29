@@ -2,7 +2,7 @@
 # Published Python v1.2.0 nonlinear_dynamics.py; independent base R FFT.
 # RNG streams differ; no claim of identical Monte Carlo realizations.
 
-.etr20_iaaft_one <- function(signal,max_iterations,tolerance) {
+.etr_iaaft_single <- function(signal,max_iterations,tolerance) {
   n<-length(signal)
   target<-sort(signal)
   amps<-Mod(stats::fft(signal))[seq_len(floor(n/2)+1L)]
@@ -109,7 +109,7 @@ etr_surrogate_nonlinearity_test <- function(trajectories,curve,
   sur<-iter<-errors<-numeric(b)
   for(i in seq_len(b)){
     trial<-tryCatch({
-      candidate<-.etr20_iaaft_one(signal,maxit,tolerance)
+      candidate<-.etr_iaaft_single(signal,maxit,tolerance)
       list(value=stat(candidate$values),niter=candidate$iterations,
         err=candidate$spectral_error)
     },error=function(e)stop(sprintf(

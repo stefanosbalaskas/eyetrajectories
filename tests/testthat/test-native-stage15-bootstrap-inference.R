@@ -1,6 +1,6 @@
 # Stage 15: independent numerical bootstrap estimation and Python source checks.
 
-.etr15_fixture<-function(grouped=TRUE){
+.etr_bootstrap_inference_test_fixture<-function(grouped=TRUE){
   n<-12L;t<-seq(0,1,length.out=11L)
   z<-array(0,c(n,length(t),2L))
   for(i in seq_len(n)){
@@ -16,7 +16,7 @@
 }
 
 test_that("Stage 15 Gaussian multiplier mean is observed-grid and group-aware",{
-  x<-.etr15_fixture()
+  x<-.etr_bootstrap_inference_test_fixture()
   set.seed(415);rng<-.Random.seed
   curve<-etr_multiplier_functional_mean_band(x,n_multiplier=100L,
     confidence_level=.9,random_state=12L)
@@ -50,7 +50,7 @@ test_that("Stage 15 Gaussian multiplier mean is observed-grid and group-aware",{
 })
 
 test_that("Stage 15 score bootstrap refits, projects fixed targets, and sign aligns",{
-  x<-.etr15_fixture()
+  x<-.etr_bootstrap_inference_test_fixture()
   target<-.etr12_subset(x,c(1L,3L,5L))
   z<-etr_bootstrap_fpca_score_uncertainty(x,targets=target,
     n_bootstrap=20L,n_components=2L,random_state=11L)
@@ -84,7 +84,7 @@ test_that("Stage 15 score bootstrap refits, projects fixed targets, and sign ali
 })
 
 test_that("Stage 15 spectrum intervals retain shape matching vs ranked cumulative",{
-  x<-.etr15_fixture()
+  x<-.etr_bootstrap_inference_test_fixture()
   r<-etr_bootstrap_fpca_spectrum_uncertainty(x,
     n_bootstrap=20L,n_components=2L,
     simultaneous_scope="family",random_state=9L)
@@ -110,7 +110,7 @@ test_that("Stage 15 spectrum intervals retain shape matching vs ranked cumulativ
 })
 
 test_that("Stage 15 component shape bands use signed matching and maxima",{
-  x<-.etr15_fixture()
+  x<-.etr_bootstrap_inference_test_fixture()
   res<-etr_bootstrap_fpca_component_bands(x,
     n_bootstrap=20L,n_components=2L,confidence_level=.9,
     simultaneous_scope="family",random_state=7L)
@@ -155,7 +155,7 @@ test_that("Stage 15 pinned Python 1.2 deterministic reference geometry is opt-in
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("Stage 15 independent Python 1.2 source geometry oracle is opt-in")
   expect_identical(et_python_version(),"1.2.0")
-  x<-.etr15_fixture(grouped=FALSE)
+  x<-.etr_bootstrap_inference_test_fixture(grouped=FALSE)
   pyx<-reticulate::py_call(etpy_get_export("TrajectorySet"),
     time=reticulate::r_to_py(x$time),
     values=reticulate::r_to_py(x$values),

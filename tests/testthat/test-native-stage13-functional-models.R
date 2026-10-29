@@ -1,7 +1,7 @@
 # Stage 13: native scientific estimator and simulation tests.
 # Pinned Python numerical reference is opt-in and source-verified.
 
-.etr13_fixture<-function(participant=FALSE){
+.etr_functional_regression_test_fixture<-function(participant=FALSE){
   t<-seq(0,1,length.out=15L)
   z<-rep(seq(-1.5,1.5,length.out=8L),each=if(participant)2L else 1L)
   n<-length(z)
@@ -21,7 +21,7 @@
 }
 
 test_that("Stage 13 pointwise function-on-scalar OLS and HC1 agree analytically",{
-  f<-.etr13_fixture()
+  f<-.etr_functional_regression_test_fixture()
   r<-etr_fit_function_on_scalar_regression(f$x,f$design,"z")
   expect_s3_class(r,"etr_function_on_scalar")
   expect_equal(dim(r$coefficients),c(2L,15L,2L))
@@ -56,7 +56,7 @@ test_that("Stage 13 pointwise function-on-scalar OLS and HC1 agree analytically"
 })
 
 test_that("Stage 13 participant units aggregate trials without pseudoreplication",{
-  f<-.etr13_fixture(participant=TRUE)
+  f<-.etr_functional_regression_test_fixture(participant=TRUE)
   r<-etr_fit_function_on_scalar_regression(f$x,f$design,"z",
     unit="participant",participant_column="participant_id")
   expect_identical(r$unit,"participant")
@@ -78,7 +78,7 @@ test_that("Stage 13 participant units aggregate trials without pseudoreplication
 })
 
 test_that("Stage 13 wild bootstrap is fixed-design, entire-function and reproducible",{
-  f<-.etr13_fixture()
+  f<-.etr_functional_regression_test_fixture()
   r<-etr_fit_function_on_scalar_regression(f$x,f$design,"z")
   set.seed(125)
   before<-.Random.seed
@@ -222,7 +222,7 @@ test_that("Stage 13 pinned Python 1.2 fixed-design FOS OLS reference is opt-in",
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("Stage 13 Python 1.2 numerical FOS oracle is opt-in")
   expect_identical(et_python_version(),"1.2.0")
-  f<-.etr13_fixture()
+  f<-.etr_functional_regression_test_fixture()
   pyx<-reticulate::py_call(etpy_get_export("TrajectorySet"),
     time=reticulate::r_to_py(f$x$time),
     values=reticulate::r_to_py(f$x$values),
@@ -252,7 +252,7 @@ test_that("Stage 13 pinned Python 1.2 fixed-design FOS OLS reference is opt-in",
     tolerance=1e-8)
   # Separately evaluate participant-level samples to guard against
   # treating repeated trials as independent units.
-  f<-.etr13_fixture(participant=TRUE)
+  f<-.etr_functional_regression_test_fixture(participant=TRUE)
   pyx<-reticulate::py_call(etpy_get_export("TrajectorySet"),
     time=reticulate::r_to_py(f$x$time),
     values=reticulate::r_to_py(f$x$values),

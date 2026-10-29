@@ -1,7 +1,7 @@
 # Stage 14 native FPCA eigenspace/bootstrap/outlier scientific tests.
 # Python 1.2 reference comparisons are explicit opt-in only.
 
-.etr14_fixture <- function(grouped=TRUE){
+.etr_fpca_stability_test_fixture <- function(grouped=TRUE){
   n<-16L;t<-seq(0,1,length.out=27L)
   vals<-array(0,c(n,length(t),2L))
   for(i in seq_len(n)){
@@ -19,7 +19,7 @@
 }
 
 test_that("Stage 14 principal angles ignore sign switches and rotations",{
-  x<-.etr14_fixture()
+  x<-.etr_fpca_stability_test_fixture()
   a<-etr_fit_mfpca(x,n_components=3L)
   same<-etr_compare_fpca_subspaces(a,a,start_component=0L,
                                    n_components=2L)
@@ -45,7 +45,7 @@ test_that("Stage 14 principal angles ignore sign switches and rotations",{
 })
 
 test_that("Stage 14 principal-angle bootstrap has independent group units",{
-  x<-.etr14_fixture()
+  x<-.etr_fpca_stability_test_fixture()
   set.seed(404)
   prior<-.Random.seed
   res<-etr_bootstrap_fpca_subspace_stability(x,
@@ -79,7 +79,7 @@ test_that("Stage 14 principal-angle bootstrap has independent group units",{
 })
 
 test_that("Stage 14 component-bootstrap matching tracks sign and variance",{
-  x<-.etr14_fixture()
+  x<-.etr_fpca_stability_test_fixture()
   before<-reticulate::py_available(initialize=FALSE)
   z<-etr_bootstrap_fpca_stability(x,n_bootstrap=5L,n_components=2L,
       scaling="none",random_state=17L)
@@ -106,7 +106,7 @@ test_that("Stage 14 component-bootstrap matching tracks sign and variance",{
 })
 
 test_that("Stage 14 leave-group-out FPCA influence preserves entire participants",{
-  x<-.etr14_fixture()
+  x<-.etr_fpca_stability_test_fixture()
   z<-etr_leave_one_group_out_fpca_influence(x,
     group_column="participant_id",n_components=2L)
   expect_s3_class(z,"etr_fpca_influence")
@@ -128,7 +128,7 @@ test_that("Stage 14 leave-group-out FPCA influence preserves entire participants
 })
 
 test_that("Stage 14 empirical FPCA outlier screening is explicit and non-exclusionary",{
-  x<-.etr14_fixture()
+  x<-.etr_fpca_stability_test_fixture()
   fit<-etr_fit_mfpca(x,n_components=2L)
   expect_error(etr_diagnose_fpca_outliers(fit,x),
     "robust MinCovDet")
@@ -172,7 +172,7 @@ test_that("Stage 14 pinned Python 1.2 eigenspace and empirical outlier oracle is
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("Stage 14 pinned Python 1.2 numerical oracle is opt-in")
   expect_identical(et_python_version(),"1.2.0")
-  x<-.etr14_fixture()
+  x<-.etr_fpca_stability_test_fixture()
   pyx<-reticulate::py_call(etpy_get_export("TrajectorySet"),
     time=reticulate::r_to_py(x$time),
     values=reticulate::r_to_py(x$values),

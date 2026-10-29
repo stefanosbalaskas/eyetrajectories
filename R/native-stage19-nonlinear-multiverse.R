@@ -4,7 +4,7 @@
 # analysis.py, similarity_sensitivity.py.
 # No automatic specification selection, chaos inference or Python bridge.
 
-.etr19_grid <- function(x,name,minimum=0L,integer=TRUE,strict=FALSE) {
+.etr_multiverse_grid <- function(x,name,minimum=0L,integer=TRUE,strict=FALSE) {
   .etr_assert(is.numeric(x)&&is.null(dim(x))&&length(x)>0L&&
     all(is.finite(x))&&all(x>=minimum)&&
     (!strict||all(x>minimum))&&
@@ -13,7 +13,7 @@
       "values within the declared bounds"))
   if(integer)as.integer(x)else as.numeric(x)
 }
-.etr19_intervals <- function(x) {
+.etr_multiverse_intervals <- function(x) {
   .etr_assert(is.list(x)&&length(x)>0L,
     "fit_intervals must be a nonempty list of declared start/end pairs")
   for(i in seq_along(x)){
@@ -26,7 +26,7 @@
   .etr_assert(!anyDuplicated(names),"fit intervals must be distinct")
   lapply(x,as.integer)
 }
-.etr19_inputs <- function(x,curve,dimensions,delay_units,
+.etr_multiverse_inputs <- function(x,curve,dimensions,delay_units,
   theiler_window_units,max_horizon_units=NULL,fit_units=NULL){
   etr_validate(x,require_complete=TRUE)
   .etr_assert(is.character(dimensions)&&length(dimensions)>0L&&
@@ -38,7 +38,7 @@
     "only sample-unit parameter sensitivity is qualified")
   .etr_nonlinear_curve(x$curve_ids,curve)
 }
-.etr19_summary <- function(tab,metrics,exponent=FALSE){
+.etr_multiverse_summary <- function(tab,metrics,exponent=FALSE){
   rows<-vector("list",length(metrics))
   for(j in seq_along(metrics)){
     metric<-metrics[j];v<-as.numeric(tab[[metric]])
@@ -57,13 +57,13 @@
   }
   do.call(rbind,rows)
 }
-.etr19_rowbind <- function(rows) {
+.etr_multiverse_rowbind <- function(rows) {
   .etr_assert(length(rows)>0L,"parameter grid must not be empty")
   z<-do.call(rbind,rows);rownames(z)<-NULL
   z$specification_id<-sprintf("spec_%d",seq_len(nrow(z)))
   z[,c("specification_id",setdiff(names(z),"specification_id")),drop=FALSE]
 }
-.etr19_embed <- function(x,m,d,dimensions){
+.etr_multiverse_embed <- function(x,m,d,dimensions){
   tryCatch(etr_delay_embed_trajectory(x,embedding_dimension=m,
     delay=d,dimensions=dimensions),error=function(e)
       stop(sprintf("embedding_dimension=%d delay=%d: %s",
@@ -83,16 +83,16 @@ etr_lyapunov_parameter_sensitivity <- function(trajectories,curve,dimensions,
     embedding_dimensions,delays,theiler_windows,fit_intervals,max_horizon,
     delay_units="samples",theiler_window_units="samples",
     fit_units="samples",max_horizon_units="samples"){
-  .etr19_inputs(trajectories,curve,dimensions,delay_units,
+  .etr_multiverse_inputs(trajectories,curve,dimensions,delay_units,
     theiler_window_units,max_horizon_units,fit_units)
-  emb<-.etr19_grid(embedding_dimensions,"embedding_dimensions",2L)
-  dl<-.etr19_grid(delays,"delays",1L)
-  th<-.etr19_grid(theiler_windows,"theiler_windows",0L)
-  intervals<-.etr19_intervals(fit_intervals)
+  emb<-.etr_multiverse_grid(embedding_dimensions,"embedding_dimensions",2L)
+  dl<-.etr_multiverse_grid(delays,"delays",1L)
+  th<-.etr_multiverse_grid(theiler_windows,"theiler_windows",0L)
+  intervals<-.etr_multiverse_intervals(fit_intervals)
   horizon<-.etr_nonlinear_integer(max_horizon,1L,"max_horizon")
   rows<-list()
   for(m in emb)for(d in dl){
-    e<-.etr19_embed(trajectories,m,d,dimensions)
+    e<-.etr_multiverse_embed(trajectories,m,d,dimensions)
     for(tw in th){
       div<-tryCatch(etr_local_divergence_curve(e,curve,tw,horizon),
         error=function(e)stop(sprintf(
@@ -124,11 +124,11 @@ etr_lyapunov_parameter_sensitivity <- function(trajectories,curve,dimensions,
       }
     }
   }
-  tab<-.etr19_rowbind(rows)
+  tab<-.etr_multiverse_rowbind(rows)
   metrics<-c("exponent","r_squared","standard_error",
     "n_fit_points","minimum_pair_count_in_fit",
     "total_zero_distance_count_in_fit")
-  structure(list(table=tab,summary_table=.etr19_summary(tab,metrics,TRUE),
+  structure(list(table=tab,summary_table=.etr_multiverse_summary(tab,metrics,TRUE),
     parameter_columns=c("embedding_dimension","requested_delay",
       "delay_samples","requested_theiler_window",
       "theiler_window_samples","requested_fit_start","requested_fit_end",
@@ -154,18 +154,18 @@ etr_kantz_parameter_sensitivity <- function(trajectories,curve,dimensions,
     fit_intervals,max_horizon,delay_units="samples",
     theiler_window_units="samples",fit_units="samples",
     max_horizon_units="samples"){
-  .etr19_inputs(trajectories,curve,dimensions,delay_units,
+  .etr_multiverse_inputs(trajectories,curve,dimensions,delay_units,
     theiler_window_units,max_horizon_units,fit_units)
-  emb<-.etr19_grid(embedding_dimensions,"embedding_dimensions",2L)
-  dl<-.etr19_grid(delays,"delays",1L)
-  rad<-.etr19_grid(radii,"radii",0L,FALSE,TRUE)
-  neigh<-.etr19_grid(min_neighbors,"min_neighbors",1L)
-  th<-.etr19_grid(theiler_windows,"theiler_windows",0L)
-  intervals<-.etr19_intervals(fit_intervals)
+  emb<-.etr_multiverse_grid(embedding_dimensions,"embedding_dimensions",2L)
+  dl<-.etr_multiverse_grid(delays,"delays",1L)
+  rad<-.etr_multiverse_grid(radii,"radii",0L,FALSE,TRUE)
+  neigh<-.etr_multiverse_grid(min_neighbors,"min_neighbors",1L)
+  th<-.etr_multiverse_grid(theiler_windows,"theiler_windows",0L)
+  intervals<-.etr_multiverse_intervals(fit_intervals)
   horizon<-.etr_nonlinear_integer(max_horizon,1L,"max_horizon")
   rows<-list()
   for(m in emb)for(d in dl){
-    e<-.etr19_embed(trajectories,m,d,dimensions)
+    e<-.etr_multiverse_embed(trajectories,m,d,dimensions)
     for(radius in rad)for(minimum in neigh)for(tw in th){
       divergence<-tryCatch(etr_kantz_divergence_curve(
         e,curve,radius,tw,horizon,minimum),
@@ -210,11 +210,11 @@ etr_kantz_parameter_sensitivity <- function(trajectories,curve,dimensions,
       }
     }
   }
-  tab<-.etr19_rowbind(rows)
+  tab<-.etr_multiverse_rowbind(rows)
   metrics<-c("exponent","r_squared","standard_error",
     "n_fit_points","minimum_reference_count_in_fit",
     "initial_supported_reference_fraction")
-  structure(list(table=tab,summary_table=.etr19_summary(tab,metrics,TRUE),
+  structure(list(table=tab,summary_table=.etr_multiverse_summary(tab,metrics,TRUE),
     curve_id=trajectories$curve_ids[.etr_nonlinear_curve(trajectories$curve_ids,curve)],
     parameter_columns=c("embedding_dimension","requested_delay",
       "delay_samples","requested_radius","resolved_radius",
@@ -240,21 +240,21 @@ etr_rqa_parameter_sensitivity <- function(trajectories,curve,dimensions,
     min_diagonal_lengths,min_vertical_lengths,
     radii=NULL,target_recurrence_rates=NULL,delay_units="samples",
     theiler_window_units="samples",distance_metric="euclidean"){
-  .etr19_inputs(trajectories,curve,dimensions,delay_units,
+  .etr_multiverse_inputs(trajectories,curve,dimensions,delay_units,
     theiler_window_units)
   .etr_assert(identical(distance_metric,"euclidean"),
     "only Euclidean fixed-radius sensitivity is supported")
   .etr_assert(is.null(target_recurrence_rates)&&!is.null(radii),
     "adaptive target_recurrence_rates are unsupported; supply radii")
-  emb<-.etr19_grid(embedding_dimensions,"embedding_dimensions",2L)
-  dl<-.etr19_grid(delays,"delays",1L)
-  th<-.etr19_grid(theiler_windows,"theiler_windows",0L)
-  minD<-.etr19_grid(min_diagonal_lengths,"min_diagonal_lengths",1L)
-  minV<-.etr19_grid(min_vertical_lengths,"min_vertical_lengths",1L)
-  rad<-.etr19_grid(radii,"radii",0L,FALSE,TRUE)
+  emb<-.etr_multiverse_grid(embedding_dimensions,"embedding_dimensions",2L)
+  dl<-.etr_multiverse_grid(delays,"delays",1L)
+  th<-.etr_multiverse_grid(theiler_windows,"theiler_windows",0L)
+  minD<-.etr_multiverse_grid(min_diagonal_lengths,"min_diagonal_lengths",1L)
+  minV<-.etr_multiverse_grid(min_vertical_lengths,"min_vertical_lengths",1L)
+  rad<-.etr_multiverse_grid(radii,"radii",0L,FALSE,TRUE)
   rows<-list()
   for(m in emb)for(d in dl){
-    e<-.etr19_embed(trajectories,m,d,dimensions)
+    e<-.etr_multiverse_embed(trajectories,m,d,dimensions)
     data<-etr_trajectory_set(e$time,e$values,e$curve_ids,e$state_names,
       time_unit=e$time_unit,coordinate_system=e$coordinate_system)
     for(radius in rad)for(tw in th){
@@ -291,11 +291,11 @@ etr_rqa_parameter_sensitivity <- function(trajectories,curve,dimensions,
       }
     }
   }
-  tab<-.etr19_rowbind(rows)
+  tab<-.etr_multiverse_rowbind(rows)
   metrics<-c("recurrence_rate","determinism",
     "mean_diagonal_length","max_diagonal_length","diagonal_entropy",
     "laminarity","trapping_time","max_vertical_length")
-  structure(list(table=tab,summary_table=.etr19_summary(tab,metrics),
+  structure(list(table=tab,summary_table=.etr_multiverse_summary(tab,metrics),
     parameter_columns=c("embedding_dimension","requested_delay",
       "delay_samples","threshold_policy","requested_radius",
       "resolved_radius","requested_theiler_window","theiler_window_samples",

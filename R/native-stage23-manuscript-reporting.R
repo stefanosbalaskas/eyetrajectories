@@ -3,17 +3,17 @@
 # eyetrajectoriespy 1.2.0 reporting.py, not full type-system equivalence.
 # A reporting string never upgrades an estimator's scientific validation.
 
-.etr23_digits <- function(digits) {
+.etr_manuscript_digits <- function(digits) {
   .etr_assert(is.numeric(digits)&&!is.logical(digits)&&
     length(digits)==1L&&is.finite(digits)&&
     digits==as.integer(digits)&&digits>=0L&&digits<=15L,
     "digits must be a finite nonnegative integer up to 15")
   as.integer(digits)
 }
-.etr23_num <- function(value,digits) {
+.etr_manuscript_number <- function(value,digits) {
   sprintf(paste0("%.",digits,"f"),value)
 }
-.etr23_check <- function(x,name) {
+.etr_manuscript_check <- function(x,name) {
   .etr_assert(is.numeric(x)&&length(x)>=1L&&
     all(is.finite(x)),paste(name,"must contain finite numeric values"))
 }
@@ -24,7 +24,7 @@
 #' @return A manuscript-ready text string; descriptive only.
 #' @export
 etr_dynamic_time_warping_reporting_text <- function(result,digits=3L) {
-  d<-.etr23_digits(digits)
+  d<-.etr_manuscript_digits(digits)
   .etr_assert(inherits(result,"etr_dtw_result")&&
     is.matrix(result$path)&&ncol(result$path)==2L&&
     is.numeric(result$distance)&&length(result$distance)==1L&&
@@ -36,12 +36,12 @@ etr_dynamic_time_warping_reporting_text <- function(result,digits=3L) {
   window<-if(is.null(result$window_radius)) "unconstrained" else
     sprintf("Sakoe-Chiba radius=%d sample indices",result$window_radius)
   dt<-if(is.null(result$normalized_distance))paste0(
-    "raw cumulative distance=",.etr23_num(result$raw_distance,d),
+    "raw cumulative distance=",.etr_manuscript_number(result$raw_distance,d),
     "; no path-independent normalization is defined for symmetric1")
     else paste0("raw cumulative distance=",
-      .etr23_num(result$raw_distance,d),
+      .etr_manuscript_number(result$raw_distance,d),
       ", N+M-normalized distance=",
-      .etr23_num(result$normalized_distance,d))
+      .etr_manuscript_number(result$normalized_distance,d))
   returned<-if(isTRUE(result$provenance$normalization_requested))
     "normalized" else "raw cumulative"
   paste0("Dynamic time warping used the ",result$step_pattern,
@@ -60,7 +60,7 @@ etr_dynamic_time_warping_reporting_text <- function(result,digits=3L) {
 #' @export
 etr_trajectory_distance_sensitivity_reporting_text <- function(result,
     digits=3L) {
-  d<-.etr23_digits(digits)
+  d<-.etr_manuscript_digits(digits)
   .etr_assert(inherits(result,"etr_trajectory_distance_sensitivity")&&
     is.data.frame(result$comparison_table)&&
     all(c("spearman_rank_correlation",
@@ -78,12 +78,12 @@ etr_trajectory_distance_sensitivity_reporting_text <- function(result,
   nearest<-c$nearest_neighbor_identity_agreement_fraction
   .etr_assert(is.numeric(rho)&&all(is.finite(rho)|is.nan(rho)),
     "Spearman correlations must be finite or NaN when undefined")
-  .etr23_check(j,"Jaccard agreement")
-  .etr23_check(nearest,"nearest neighbor agreement")
+  .etr_manuscript_check(j,"Jaccard agreement")
+  .etr_manuscript_check(nearest,"nearest neighbor agreement")
   rho<-rho[is.finite(rho)]
   rho_text<-if(!length(rho))
     "undefined for at least one constant pair-distance vector"
-    else paste0(.etr23_num(min(rho),d)," to ",.etr23_num(max(rho),d))
+    else paste0(.etr_manuscript_number(min(rho),d)," to ",.etr_manuscript_number(max(rho),d))
   ties<-sum(result$neighbor_cutoff_ties)
   .etr_assert(is.finite(ties)&&ties>=0,"cutoff ties must be countable")
   paste0("Trajectory-similarity robustness was evaluated across ",
@@ -96,9 +96,9 @@ etr_trajectory_distance_sensitivity_reporting_text <- function(result,
     "Across specification pairs, descriptive Spearman rank agreement ",
     "ranged from ",rho_text,". Mean top-",result$neighbor_k,
     " neighbor-set Jaccard agreement ranged from ",
-    .etr23_num(min(j),d)," to ",.etr23_num(max(j),d),
+    .etr_manuscript_number(min(j),d)," to ",.etr_manuscript_number(max(j),d),
     ", and nearest-neighbor identity agreement ranged from ",
-    .etr23_num(min(nearest),d)," to ",.etr23_num(max(nearest),d),
+    .etr_manuscript_number(min(nearest),d)," to ",.etr_manuscript_number(max(nearest),d),
     ". ",ties,
     " specification-by-curve neighborhood cutoff ties were flagged. ",
     "These quantities describe sensitivity to the declared distance ",
@@ -113,7 +113,7 @@ etr_trajectory_distance_sensitivity_reporting_text <- function(result,
 #' @export
 etr_fpca_stability_reporting_text <- function(result,
     similarity_threshold=.80,digits=2L) {
-  d<-.etr23_digits(digits)
+  d<-.etr_manuscript_digits(digits)
   .etr_assert(inherits(result,"etr_fpca_stability")&&
     is.matrix(result$similarities)&&is.numeric(result$similarities)&&
     nrow(result$similarities)>=1L&&ncol(result$similarities)>=1L&&
@@ -128,9 +128,9 @@ etr_fpca_stability_reporting_text <- function(result,
   values<-result$similarities
   pieces<-vapply(seq_len(ncol(values)),function(k)
     paste0("FPC",k,": median |similarity|=",
-      .etr23_num(stats::median(values[,k]),d),
-      ", fraction >= ",.etr23_num(similarity_threshold,d),"=",
-      .etr23_num(mean(values[,k]>=similarity_threshold),d)),
+      .etr_manuscript_number(stats::median(values[,k]),d),
+      ", fraction >= ",.etr_manuscript_number(similarity_threshold,d),"=",
+      .etr_manuscript_number(mean(values[,k]>=similarity_threshold),d)),
     character(1L))
   paste0("Bootstrap FPCA stability used ",nrow(values)," ",
     result$resampling_unit,
@@ -162,15 +162,15 @@ etr_fpca_outlier_reporting_text <- function(result) {
 #' @param digits Display precision.
 #' @export
 etr_fpca_influence_reporting_text <- function(result,digits=2L) {
-  d<-.etr23_digits(digits)
+  d<-.etr_manuscript_digits(digits)
   .etr_assert(inherits(result,"etr_fpca_influence")&&
     is.data.frame(result$summary)&&nrow(result$summary)>0L&&
     all(c("group","min_abs_component_similarity",
       "influence_score")%in%names(result$summary)),
     "influence summary is empty or incomplete")
   s<-result$summary
-  .etr23_check(s$influence_score,"influence score")
-  .etr23_check(s$min_abs_component_similarity,"minimum similarity")
+  .etr_manuscript_check(s$influence_score,"influence score")
+  .etr_manuscript_check(s$min_abs_component_similarity,"minimum similarity")
   i<-which.max(s$influence_score)
   unit<-if(is.null(result$group_column))"curve_id" else
     result$group_column
@@ -179,7 +179,7 @@ etr_fpca_influence_reporting_text <- function(result,digits=2L) {
     " omission fits. The largest observed influence was for '",
     as.character(s$group[i]),
     "', with minimum matched component similarity ",
-    .etr23_num(s$min_abs_component_similarity[i],d),
+    .etr_manuscript_number(s$min_abs_component_similarity[i],d),
     ". Influence diagnostics were used for sensitivity assessment ",
     "rather than automatic exclusion.")
 }
@@ -189,7 +189,7 @@ etr_fpca_influence_reporting_text <- function(result,digits=2L) {
 #' @param digits Display precision.
 #' @export
 etr_fpca_subspace_stability_reporting_text <- function(result,digits=3L) {
-  d<-.etr23_digits(digits)
+  d<-.etr_manuscript_digits(digits)
   .etr_assert(inherits(result,"etr_fpca_subspace_stability")&&
     is.matrix(result$principal_cosines)&&
     nrow(result$principal_cosines)>=1L&&
@@ -201,11 +201,11 @@ etr_fpca_subspace_stability_reporting_text <- function(result,digits=3L) {
     row$component_start,"\u2013FPC",row$component_end," using ",
     nrow(result$principal_cosines)," ",result$resampling_unit,
     "-level resamples. The median minimum principal cosine was ",
-    .etr23_num(row$median_min_principal_cosine,d),
+    .etr_manuscript_number(row$median_min_principal_cosine,d),
     ", the median maximum principal angle was ",
-    .etr23_num(row$median_max_principal_angle_degrees,d),
+    .etr_manuscript_number(row$median_max_principal_angle_degrees,d),
     " degrees, and the median normalized projector distance was ",
-    .etr23_num(row$median_normalized_projector_distance,d),
+    .etr_manuscript_number(row$median_normalized_projector_distance,d),
     ". These are descriptive eigenspace-stability summaries; they ",
     "do not establish identifiability of individual FPC labels within ",
     "the selected block.")
@@ -218,7 +218,7 @@ etr_fpca_subspace_stability_reporting_text <- function(result,digits=3L) {
 #' @export
 etr_fpca_cross_validation_reporting_text <- function(result,
     rule="minimum",digits=3L) {
-  d<-.etr23_digits(digits)
+  d<-.etr_manuscript_digits(digits)
   .etr_assert(inherits(result,"etr_fpca_cv")&&
     result$cv_unit%in%c("group","curve")&&
     is.numeric(result$n_splits)&&length(result$n_splits)==1L,
@@ -235,8 +235,8 @@ etr_fpca_cross_validation_reporting_text <- function(result,
     "-fold ",unit," held-out reconstruction cross-validation, with FPCA ",
     "refitted inside every training fold. The explicit '",rule,
     "' rule selected ",selected," component(s) (mean integrated RMSE=",
-    .etr23_num(row$mean_rmse,d),
-    ", SE=",.etr23_num(row$se_rmse,d),").",suffix)
+    .etr_manuscript_number(row$mean_rmse,d),
+    ", SE=",.etr_manuscript_number(row$se_rmse,d),").",suffix)
 }
 
 #' Two-level between/within native FPCA variance description
@@ -244,7 +244,7 @@ etr_fpca_cross_validation_reporting_text <- function(result,
 #' @param digits Display precision.
 #' @export
 etr_multilevel_fpca_reporting_text <- function(result,digits=1L) {
-  d<-.etr23_digits(digits)
+  d<-.etr_manuscript_digits(digits)
   .etr_assert(inherits(result,"etr_multilevel_fpca")&&
     is.numeric(result$between$explained_variance_ratio)&&
     is.numeric(result$within$explained_variance_ratio),
@@ -255,8 +255,8 @@ etr_multilevel_fpca_reporting_text <- function(result,digits=1L) {
     "fitted cumulative component proportions must be finite")
   paste0("Two-level functional decomposition separated participant-level ",
     "from within-participant trial variation. The retained participant ",
-    "components explained ",.etr23_num(p,d),
+    "components explained ",.etr_manuscript_number(p,d),
     "% of fitted participant-level variance; the retained trial ",
-    "components explained ",.etr23_num(t,d),
+    "components explained ",.etr_manuscript_number(t,d),
     "% of fitted trial-level variance.")
 }

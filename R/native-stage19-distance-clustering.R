@@ -42,7 +42,7 @@ etr_cluster_fpca_scores <- function(fpca,n_clusters,
       label_permutation_identifiable=FALSE)),
     class="etr_fpca_clusters")
 }
-.etr19_distance_spec <- function(x){
+.etr_cluster_distance_spec <- function(x){
   .etr_assert(is.list(x)&&length(x)>=2L,
     "specifications must contain at least two declared distance contracts")
   names<-character(length(x))
@@ -77,7 +77,7 @@ etr_cluster_fpca_scores <- function(fpca,n_clusters,
     "distance specification names must be distinct")
   x
 }
-.etr19_distance_val<-function(a,b,time,weights,s){
+.etr_cluster_distance_value<-function(a,b,time,weights,s){
   switch(s$method,
     functional_l2=etr_l2_distance(a,b,time,dimension_weights=weights),
     discrete_frechet=etr_discrete_frechet(a,b,dimension_weights=weights),
@@ -109,7 +109,7 @@ etr_trajectory_distance_sensitivity<-function(trajectories,specifications,
   .etr_assert(is.numeric(w)&&length(w)==length(d)&&all(is.finite(w))&&
     all(w>=0)&&any(w>0),
     "dimension_weights must be finite nonnegative and have positive support")
-  specs<-.etr19_distance_spec(specifications)
+  specs<-.etr_cluster_distance_spec(specifications)
   ns<-length(specs);arrays<-array(0,c(ns,n,n))
   cols<-match(d,trajectories$dimension_names)
   pts<-lapply(seq_len(n),function(i)matrix(
@@ -124,7 +124,7 @@ etr_trajectory_distance_sensitivity<-function(trajectories,specifications,
     m<-matrix(0,n,n)
     for(i in seq_len(np)){
       a<-idx[i,1L];b<-idx[i,2L]
-      val<-.etr19_distance_val(pts[[a]],pts[[b]],
+      val<-.etr_cluster_distance_value(pts[[a]],pts[[b]],
         trajectories$time,w,specs[[s]])
       .etr_assert(length(val)==1L&&is.finite(val)&&val>=0,
         "distance contract returned nonfinite/negative value")

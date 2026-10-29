@@ -29,7 +29,7 @@
     metadata=x$metadata,coordinate_system=x$coordinate_system,
     time_unit=x$time_unit,provenance=z$provenance)
 }
-.etr17_rqa_metrics <- c("recurrence_rate","determinism",
+.etr_rqa_bootstrap_metrics <- c("recurrence_rate","determinism",
  "mean_diagonal_length","max_diagonal_length","diagonal_entropy",
  "laminarity","trapping_time","max_vertical_length")
 
@@ -67,7 +67,7 @@ etr_bootstrap_rqa_metric_means <- function(trajectories,dimensions,metrics,
     "theiler_window_units must be samples")
   .etr_assert(is.character(metrics)&&length(metrics)>0L&&
     !anyNA(metrics)&&!anyDuplicated(metrics)&&
-    all(metrics%in%.etr17_rqa_metrics),
+    all(metrics%in%.etr_rqa_bootstrap_metrics),
     "metrics must be nonempty distinct supported RQA metrics")
   .etr_assert(is.numeric(radius)&&length(radius)==1L&&
     is.finite(radius)&&radius>=0,

@@ -3,7 +3,7 @@
 # R base graphics does NOT return a matplotlib.axes.Axes object.
 # Source contract status: native implementation, not complete parity.
 
-.etr21_plot_count <- function(max_curves,n) {
+.etr_visualization_plot_count <- function(max_curves,n) {
   if(is.null(max_curves))return(as.integer(n))
   .etr_assert(is.numeric(max_curves) && length(max_curves)==1L &&
     is.finite(max_curves) && max_curves>=1 &&
@@ -26,7 +26,7 @@ etr_plot_planar_trajectories <- function(trajectories,max_curves=40L,
   etr_validate(trajectories,require_complete=TRUE)
   .etr_assert(length(trajectories$dimension_names)>=2L,
     "planar plotting requires at least two dimensions")
-  n<-.etr21_plot_count(max_curves,length(trajectories$curve_ids))
+  n<-.etr_visualization_plot_count(max_curves,length(trajectories$curve_ids))
   .etr_assert(n>=1L,"no curves available for planar plotting")
   .etr_assert(is.numeric(alpha)&&length(alpha)==1L&&
     is.finite(alpha)&&alpha>0&&alpha<=1,
