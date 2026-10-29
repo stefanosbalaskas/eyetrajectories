@@ -53,7 +53,36 @@ test_that("explicit scenario design rejects unsupported scientific assumptions",
   expect_error(.etr_scenario_design_test_fixture(samples_per_curve=5L),
     "samples_per_curve")
   expect_error(.etr_scenario_design_test_fixture(
-    measurement_noise_covariance=diag(1,1)),"not yet supported")
+    measurement_noise_covariance=diag(1,1)),"must match")
+  covar<-matrix(c(.04,.018,.018,.09),2L,2L)
+  valid<-etr_functional_simulation_scenario(
+    name="two_channel",truth_grid=c(0,.5,1),
+    eigenvalues=c(1,.35),n_participants=12L,
+    dimension_names=c("x","y"),measurement_noise_sd=NULL,
+    measurement_noise_covariance=covar)
+  expect_equal(valid$measurement_noise_covariance,covar,tolerance=0)
+  expect_equal(jsonlite::fromJSON(
+    etr_functional_simulation_scenario_frame(
+      list(valid))$measurement_noise_covariance),
+    covar,tolerance=0)
+  expect_error(etr_functional_simulation_scenario(
+    name="bad_covariance",truth_grid=c(0,.5,1),
+    eigenvalues=c(1,.35),n_participants=12L,
+    dimension_names=c("x","y"),
+    measurement_noise_covariance=matrix(c(1,2,0,1),2L)),
+    "symmetric")
+  expect_error(etr_functional_simulation_scenario(
+    name="bad_psd",truth_grid=c(0,.5,1),
+    eigenvalues=c(1,.35),n_participants=12L,
+    dimension_names=c("x","y"),
+    measurement_noise_covariance=matrix(c(1,2,2,1),2L)),
+    "positive semidefinite")
+  expect_error(etr_functional_simulation_scenario(
+    name="confounded_noise",truth_grid=c(0,.5,1),
+    eigenvalues=c(1,.35),n_participants=12L,
+    dimension_names=c("x","y"),measurement_noise_sd=.2,
+    measurement_noise_covariance=covar),
+    "cannot both specify")
   expect_error(.etr_scenario_design_test_fixture(score_distribution="student_t",
     score_df=2),"score_df")
   expect_error(.etr_scenario_design_test_fixture(
