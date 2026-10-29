@@ -3,11 +3,17 @@ on:
   pull_request:
     paths:
       - "R/native-workflow-source-audit.R"
+      - "R/native-workflow-configuration.R"
+      - "R/native-stage1*-*.R"
+      - "R/native-stage20-iaaft-surrogate.R"
+      - "R/native-functional-inference-visuals.R"
       - "R/native-full-parity-ledger.R"
       - "NAMESPACE"
       - "inst/extdata/native_source_contract_gaps_stage22.csv"
       - "inst/extdata/native_nonfunction_contract_review_v1.csv"
       - "tests/testthat/test-native-workflow-source-audit.R"
+      - "tests/testthat/test-native-workflow-configuration.R"
+      - "tests/testthat/test-native-private-helper-names.R"
       - "tests/testthat/test-full-native-r-parity-ledger.R"
       - ".github/workflows/native-workflow-source-audit.yml"
   workflow_dispatch:
@@ -38,11 +44,11 @@ jobs:
       - name: Parse source-aligned workflow implementation and tests
         shell: bash
         run: |
-          Rscript -e 'parse(file="R/native-workflow-source-audit.R"); parse(file="tests/testthat/test-native-workflow-source-audit.R")'
+          Rscript -e 'parse(file="R/native-workflow-source-audit.R"); parse(file="R/native-workflow-configuration.R"); parse(file="tests/testthat/test-native-workflow-source-audit.R"); parse(file="tests/testthat/test-native-workflow-configuration.R"); parse(file="tests/testthat/test-native-private-helper-names.R")'
       - name: Run native audits without initializing Python
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-workflow-source-audit|full-native-r-parity-ledger|native-functional-recovery-evidence|native-functional-inference-visuals|native-stage22-source-contract-gaps",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-workflow-configuration|native-private-helper-names|native-workflow-source-audit|full-native-r-parity-ledger|native-functional-recovery-evidence|native-functional-inference-visuals|native-stage22-source-contract-gaps",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
   python-source:
     name: Published Python 1.2 typed workflow oracle
     runs-on: ubuntu-latest
@@ -70,4 +76,4 @@ jobs:
         env:
           RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-workflow-source-audit",reporter="summary",stop_on_failure=TRUE)'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-workflow-configuration|native-workflow-source-audit",reporter="summary",stop_on_failure=TRUE)'
