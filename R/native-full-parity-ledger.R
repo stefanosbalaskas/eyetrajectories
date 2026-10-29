@@ -204,6 +204,13 @@
   functional_recovery_metric_catalog="etr_functional_recovery_metric_catalog",
   functional_recovery_metric_catalog_frame="etr_functional_recovery_metric_catalog_frame",
   functional_recovery_reporting_text="etr_functional_recovery_reporting_text",
+  fpca_score_uncertainty_reporting_text="etr_fpca_score_uncertainty_reporting_text",
+  fpca_spectrum_uncertainty_reporting_text="etr_fpca_spectrum_uncertainty_reporting_text",
+  functional_mean_band_reporting_text="etr_functional_mean_band_reporting_text",
+  fpca_component_band_reporting_text="etr_fpca_component_band_reporting_text",
+  plot_fpca_score_uncertainty="etr_plot_fpca_score_uncertainty",
+  plot_fpca_spectrum_uncertainty="etr_plot_fpca_spectrum_uncertainty",
+  plot_fpca_component_band="etr_plot_fpca_component_band",
   functional_recovery_assessment_frame="etr_functional_recovery_assessment_frame",
   split_conformal_fpca_anomaly="etr_split_conformal_fpca_anomalies",
   # These four new native methods are experimentally implemented here.
@@ -384,6 +391,17 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   )
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% stage26_names] <- 26L
+  stage27_names <- c(
+    "fpca_score_uncertainty_reporting_text",
+    "fpca_spectrum_uncertainty_reporting_text",
+    "functional_mean_band_reporting_text",
+    "fpca_component_band_reporting_text",
+    "plot_fpca_score_uncertainty",
+    "plot_fpca_spectrum_uncertainty",
+    "plot_fpca_component_band"
+  )
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% stage27_names] <- 27L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset
