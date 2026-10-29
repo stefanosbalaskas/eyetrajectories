@@ -109,6 +109,19 @@ test_that("source FOS reporting does not invent mixed-model or continuous bands"
   expect_identical(text,etr_function_on_scalar_reporting_text(x$fit))
   expect_error(etr_function_on_scalar_reporting_text(x$fit,band=list()),
     "band.reference")
+  bootstrap<-etr_bootstrap_function_on_scalar_coefficients(
+    x$fit,n_bootstrap=100L,random_state=71L)
+  band<-etr_function_on_scalar_simultaneous_bands(
+    bootstrap,confidence_level=.9,simultaneous_scope="coefficient")
+  words<-etr_function_on_scalar_reporting_text(x$fit,band=band)
+  expect_match(words,"100 rademacher multiplier replicates")
+  expect_match(words,"90.0% simultaneous coefficient bands")
+  .etr_test_inference_pdf(function(){
+    image<-etr_plot_function_on_scalar_coefficients(
+      x$fit,coefficient="dose",band=band)
+    expect_equal(image$lower,as.numeric(band$lower[2L,,1L]))
+    expect_equal(image$upper,as.numeric(band$upper[2L,,1L]))
+  })
 })
 
 test_that("conformal plot reconstructs conservative greater-or-equal marginal p",{
