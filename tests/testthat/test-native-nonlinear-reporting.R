@@ -11,7 +11,7 @@
     coordinate_system="normalized",time_unit="s")
 }
 
-test_that("Stage 11 native recurrence report adapters preserve study specifications",{
+test_that("native recurrence report adapters preserve study specifications",{
   x<-.etr_nonlinear_reporting_test_fixture()
   a<-etr_recurrence_matrix(x,curve=1L,radius=1.5,theiler=0L)
   b<-etr_recurrence_matrix(x,curve=2L,radius=1.5,theiler=0L)
@@ -41,7 +41,7 @@ test_that("Stage 11 native recurrence report adapters preserve study specificati
   expect_error(etr_recurrence_network_reporting_text(a),"network")
 })
 
-test_that("Stage 11 native radius and windows report complete-time support",{
+test_that("native radius and windows report complete-time support",{
   x<-.etr_nonlinear_reporting_test_fixture()
   rp<-etr_recurrence_radius_profile(x,1L,radii=c(.1,1,2))
   text<-etr_recurrence_radius_profile_reporting_text(rp)
@@ -63,7 +63,7 @@ test_that("Stage 11 native radius and windows report complete-time support",{
     "native functional")
 })
 
-test_that("Stage 11 schema reporting is conditional on declared bootstrap units",{
+test_that("schema reporting is conditional on declared bootstrap units",{
   b<-list(metrics=c("determinism","laminarity"),
     unit="participant",unit_ids=c("P1","P2"),
     participant_column="participant",n_bootstrap=199L,
@@ -96,7 +96,7 @@ test_that("Stage 11 schema reporting is conditional on declared bootstrap units"
   expect_true(grepl("not window rows",bt,fixed=TRUE))
 })
 
-test_that("Stage 11 sensitivity reports report declared ranges, not inferential probability",{
+test_that("sensitivity reports report declared ranges, not inferential probability",{
   summary<-data.frame(metric=c("determinism","laminarity","recurrence_rate"),
     minimum=c(.1,.2,.3),maximum=c(.6,.7,.8))
   data<-list(summary_table=summary,table=data.frame(index=1:4),
@@ -125,7 +125,7 @@ test_that("Stage 11 sensitivity reports report declared ranges, not inferential 
     fixed=TRUE))
 })
 
-test_that("Stage 11 Lyapunov, surrogate and return-map wording remains conditional",{
+test_that("Lyapunov, surrogate and return-map wording remains conditional",{
   ly<-list(divergence=list(time_unit="s"),
     fit_start=.1,fit_end=.4,n_fit_points=5L,exponent=.3,
     exponent_unit="1/s",r_squared=.8,standard_error=.04)
@@ -156,7 +156,7 @@ test_that("Stage 11 Lyapunov, surrogate and return-map wording remains condition
   expect_true(grepl("not interpreted as classical Floquet",report,fixed=TRUE))
 })
 
-test_that("Stage 11 frozen source inventory is conservative and offline",{
+test_that("frozen source inventory is conservative and offline",{
   was<-reticulate::py_available(initialize=FALSE)
   z<-etr_native_parity_catalog()
   expect_equal(nrow(z),508L)
@@ -171,9 +171,9 @@ test_that("Stage 11 frozen source inventory is conservative and offline",{
   expect_identical(was,reticulate::py_available(initialize=FALSE))
 })
 
-test_that("Stage 11 pinned Python 1.2 windowed-RQA reporting oracle is opt-in",{
+test_that("pinned Python 1.2 windowed-RQA reporting oracle is opt-in",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
-    skip("Stage 11 pinned Python 1.2 reporting oracle is opt-in")
+    skip("pinned Python 1.2 reporting oracle is opt-in")
   expect_identical(et_python_version(),"1.2.0")
   x<-.etr_nonlinear_reporting_test_fixture()
   w<-etr_windowed_rqa(x,curve=1L,window=4L,step=2L,radius=1.5)

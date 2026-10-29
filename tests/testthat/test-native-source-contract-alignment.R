@@ -1,7 +1,7 @@
 # Stage 25: direct source-schema improvements for minimal FPCA-score objects.
 # Matching these finite fixtures is not full public source certification.
 
-test_that("Stage 25 minimal score-bearing R list matches native FPCA geometry",{
+test_that("minimal score-bearing R list matches native FPCA geometry",{
   sc<-matrix(c(0,1,2,3,4,5),nrow=3L,ncol=2L)
   source_like<-list(scores=sc,n_components=2L)
   result<-etr_score_distance_matrix(source_like)
@@ -27,7 +27,7 @@ test_that("Stage 25 minimal score-bearing R list matches native FPCA geometry",{
   expect_error(etr_score_distance_matrix(list()),"compatible")
 })
 
-test_that("Stage 25 source certification remains strict despite repaired fixture",{
+test_that("source certification remains strict despite repaired fixture",{
   before<-reticulate::py_available(initialize=FALSE)
   z<-etr_native_parity_catalog()
   row<-z[z$python_name=="score_distance_matrix",,drop=FALSE]
@@ -46,7 +46,7 @@ test_that("Stage 25 source certification remains strict despite repaired fixture
   expect_identical(before,reticulate::py_available(initialize=FALSE))
 })
 
-test_that("Stage 25 published Python 1.2 score object oracle is opt-in",{
+test_that("published Python 1.2 score object oracle is opt-in",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("Published Python 1.2 score-container oracle is opt-in")
   expect_identical(et_python_version(),"1.2.0")

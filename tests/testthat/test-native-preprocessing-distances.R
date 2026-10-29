@@ -168,7 +168,7 @@ test_that("nearest functional neighbors return Python-style zero-based indices",
 
 test_that("stage3 randomized Python reference checks match on complete and incomplete inputs",{
   if (!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
-    skip("Stage 3 independent Python 1.2 numerical oracle is opt-in")
+    skip("independent Python 1.2 numerical oracle is opt-in")
   expect_identical(as.character(et_python_version()),"1.2.0")
 
   had_seed <- exists(".Random.seed",envir=.GlobalEnv,inherits=FALSE)

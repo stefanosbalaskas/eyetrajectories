@@ -1,6 +1,6 @@
 # Stage 6: preserve the entire fail-closed inventory while mapping exactly
 # one new Python 1.2 callable to a deliberately limited native R reader.
-test_that("Stage 6 maps Python portable-result loader only as a candidate", {
+test_that("maps Python portable-result loader only as a candidate", {
   was <- reticulate::py_available(initialize=FALSE)
   register <- etr_native_parity_catalog()
   expect_equal(nrow(register),508L)

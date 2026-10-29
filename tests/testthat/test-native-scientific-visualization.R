@@ -7,7 +7,7 @@
   f()
 }
 
-test_that("Stage 22 eight public source-name analogues remain uncertified",{
+test_that("eight public source-name analogues remain uncertified",{
   before<-reticulate::py_available(initialize=FALSE)
   z<-etr_native_parity_catalog()
   names<-c("plot_embedding_delay_diagnostics",
@@ -32,7 +32,7 @@ test_that("Stage 22 eight public source-name analogues remain uncertified",{
   expect_identical(before,reticulate::py_available(initialize=FALSE))
 })
 
-test_that("Stage 22 AMI and ACF plots retain separate source axes",{
+test_that("AMI and ACF plots retain separate source axes",{
   x<-structure(list(table=data.frame(
     lag_time=c(.1,.2,.3,.4),
     average_mutual_information=c(.6,.2,.27,.3),
@@ -51,7 +51,7 @@ test_that("Stage 22 AMI and ACF plots retain separate source axes",{
   })
 })
 
-test_that("Stage 22 FNN curve uses exact dimension/fractonal pairs",{
+test_that("FNN curve uses exact dimension/fractonal pairs",{
   x<-structure(list(table=data.frame(
     embedding_dimension=c(2L,3L,4L),
     false_neighbor_fraction=c(.5,.25,.1)),
@@ -66,7 +66,7 @@ test_that("Stage 22 FNN curve uses exact dimension/fractonal pairs",{
   })
 })
 
-test_that("Stage 22 network degree plot preserves sample index and normalization",{
+test_that("network degree plot preserves sample index and normalization",{
   x<-structure(list(degree=c(1,2,1),
     normalized_degree=c(.5,1,.5),graph_density=2/3),
     class="etr_recurrence_network")
@@ -81,7 +81,7 @@ test_that("Stage 22 network degree plot preserves sample index and normalization
   })
 })
 
-test_that("Stage 22 radius profile reports exact radius and rate",{
+test_that("radius profile reports exact radius and rate",{
   x<-structure(list(table=data.frame(radius=c(.1,.2,.3),
     recurrence_rate=c(.1,.4,.8)),
     metric="euclidean",curve_id="test"),
@@ -94,7 +94,7 @@ test_that("Stage 22 radius profile reports exact radius and rate",{
   })
 })
 
-test_that("Stage 22 windowed RQA uses declared metrics and physical center times",{
+test_that("windowed RQA uses declared metrics and physical center times",{
   x<-structure(list(table=data.frame(center_time=1:4,
     recurrence_rate=c(.2,.3,.4,.6),
     determinism=c(.5,.6,.6,.7),
@@ -112,7 +112,7 @@ test_that("Stage 22 windowed RQA uses declared metrics and physical center times
   })
 })
 
-test_that("Stage 22 source LLE fit uses declared time window and physical units",{
+test_that("source LLE fit uses declared time window and physical units",{
   div<-structure(list(time_lags=c(0,1,2,3,4),
     mean_log_divergence=c(-2,-1.5,-1,-.5,0),
     time_unit="ms",curve_id="test",
@@ -133,7 +133,7 @@ test_that("Stage 22 source LLE fit uses declared time window and physical units"
   })
 })
 
-test_that("Stage 22 IAAFT histogram returns counts but not Matplotlib parity",{
+test_that("IAAFT histogram returns counts but not Matplotlib parity",{
   x<-structure(list(surrogate_statistics=c(1.1,1.3,1.8,2.0,2.2),
     observed_statistic=1.9,p_value=.3,statistic="largest_lyapunov",
     method="iaaft"),class="etr_surrogate_nonlinearity")
@@ -147,7 +147,7 @@ test_that("Stage 22 IAAFT histogram returns counts but not Matplotlib parity",{
   })
 })
 
-test_that("Stage 22 Poincare return plot keeps observed transitions",{
+test_that("Poincare return plot keeps observed transitions",{
   crossings<-structure(list(states=matrix(c(1,1.4,1.8,1.5),ncol=1L),
     state_dimensions="x"),class="etr_poincare_crossings")
   fit<-structure(list(reference_state=1.5,intercept=.2,
