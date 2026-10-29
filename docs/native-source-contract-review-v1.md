@@ -18,10 +18,10 @@ This is an evidence-oriented development note, **not a certification claim**.
 
 | Domain | Number | Meaning |
 |---|---:|---|
-| Python function mappings | 251 / 380 | Names associated with native R candidates |
-| Native implementations started | 226 | Implemented operations; **not** proof of source equivalence |
-| Unmapped Python functions | 129 | No declared native candidate |
-| Known open source differences | 73 | Class, input, numerical, backend, error or scope boundaries |
+| Python function mappings | 257 / 380 | Names associated with native R candidates |
+| Native implementations started | 232 | Implemented operations; **not** proof of source equivalence |
+| Unmapped Python functions | 123 | No declared native candidate |
+| Known open source differences | 79 | Class, input, numerical, backend, error or scope boundaries |
 | Nonfunction exports for independent review | 128 | Values/classes not counted as native functions |
 | Complete independently certified public contracts | **0 / 508** | Four approval domains are not all independently signed off |
 
@@ -85,6 +85,13 @@ cover curve truth audits, phase warps and score-source variance bars.
 Population score variances use NumPy ddof=0. Returned R geometry remains
 scientifically distinct from Python Matplotlib Axes and is recorded as a
 known unresolved contract difference pending direct reviewer approval.
+
+Six additional source-aligned audit frames cover participant and nested-trial
+random effects, whole-participant and nested-trial full-refit bootstrap
+identities, FPCA truncation scan metadata and target-specific selections.
+All source identities are kept in source order and zero-based where published
+Python uses zero-based indices. Python frozen dataclass/pandas return
+semantics and accepted input domains remain explicitly unresolved.
 
 ## Local qualification on PR #46
 

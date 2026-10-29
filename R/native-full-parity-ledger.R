@@ -255,7 +255,13 @@
   functional_simulation_reporting_text="etr_functional_simulation_reporting_text",
   plot_functional_simulation_curve="etr_plot_functional_simulation_curve",
   plot_functional_simulation_phase_warps="etr_plot_functional_simulation_phase_warps",
-  plot_functional_simulation_score_variances="etr_plot_functional_simulation_score_variances"
+  plot_functional_simulation_score_variances="etr_plot_functional_simulation_score_variances",
+  functional_random_effect_frame="etr_functional_random_effect_frame",
+  functional_trial_random_effect_frame="etr_functional_trial_random_effect_frame",
+  functional_mixed_effects_full_refit_audit_frame="etr_functional_mixed_effects_full_refit_audit_frame",
+  functional_mixed_effects_full_refit_trial_audit_frame="etr_functional_mixed_effects_full_refit_trial_audit_frame",
+  fpca_wild_bootstrap_truncation_scan_frame="etr_fpca_wild_bootstrap_truncation_scan_frame",
+  fpca_wild_bootstrap_truncation_selection_frame="etr_fpca_wild_bootstrap_truncation_selection_frame"
 )
 
 #' Audit one-to-one Python 1.2.0 versus independent native R coverage
@@ -504,6 +510,14 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     api$python_name %in% c("plot_functional_simulation_curve",
       "plot_functional_simulation_phase_warps",
       "plot_functional_simulation_score_variances")] <- 39L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% c(
+      "functional_random_effect_frame",
+      "functional_trial_random_effect_frame",
+      "functional_mixed_effects_full_refit_audit_frame",
+      "functional_mixed_effects_full_refit_trial_audit_frame",
+      "fpca_wild_bootstrap_truncation_scan_frame",
+      "fpca_wild_bootstrap_truncation_selection_frame")] <- 40L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset
