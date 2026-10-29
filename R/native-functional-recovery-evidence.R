@@ -40,11 +40,11 @@ etr_functional_recovery_result <- function(records,metric_definitions=list()) {
     .etr_recovery_scalar(r$replicate,"integer","replicate")
     .etr_recovery_scalar(r$seed,"integer","seed")
     .etr_assert(r$replicate>=0L,"replicate index must be nonnegative")
-    .etr_assert(is.numeric(r$metrics)&&!is.null(names(r$metrics))&&
+    .etr_assert(is.numeric(r$metrics)&&
+      (length(r$metrics)==0L||!is.null(names(r$metrics)))&&
       !anyDuplicated(names(r$metrics))&&
-      all(nzchar(names(r$metrics)))&&
-      all(is.finite(r$metrics)),
-      "record metrics must be a finite named numeric vector")
+      all(nzchar(names(r$metrics)))&&all(is.finite(r$metrics)),
+      "record metrics must be finite named numeric or empty on failure")
     if(r$status=="ok") {
       .etr_assert(length(r$metrics)>=1L,
         "successful records require at least one metric")
