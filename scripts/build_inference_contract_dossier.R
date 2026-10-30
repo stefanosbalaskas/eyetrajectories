@@ -69,7 +69,7 @@ source_file[23L]<-"src/eyetrajectoriespy/generalized_function_on_scalar.py"
 source_file[24L]<-"src/eyetrajectoriespy/functional_mixed_effects_diagnostics.py"
 source_file[25L]<-"src/eyetrajectoriespy/sparse_multivariate.py"
 source_file[26L]<-"src/eyetrajectoriespy/reporting.py"
-fixture_state<-ifelse(seq_along(source_names)<=11L,
+fixture_state<-ifelse(seq_along(source_names)<=22L,
   "user_reported_local_native_and_python_1_2_pass_2026_10_30_unarchived",
   "new_tests_pending_local_native_and_python_oracle")
 stopifnot(all(file.exists(source_test)))
