@@ -127,6 +127,7 @@ _pscan=_gp_record(et.FPCAWildBootstrapTruncationScanResult,
     widths=_pwidth,centers=_pcenter)
 _psel=_gp_record(et.FPCAWildBootstrapTruncationSelectionResult,
     scan=_pscan,selected_components=np.array([2.,np.nan]))
+_p_cv_summary=et.summarise_fpca_regression_cv(_pcv)
 _paxes=[
     et.plot_fpca_regression_cv(_pcv),
     et.plot_nested_fpca_regression_cv(_pnested),
@@ -164,6 +165,14 @@ for ax in _paxes:
     expect_equal(native[[i]]$line$y,as.numeric(source[[i]]$y),
       tolerance=1e-12,info=paste("y",i))
   }
+  py_summary<-reticulate::py_to_r(reticulate::py_get_attr(
+    reticulate::py,"_p_cv_summary"))
+  native_summary<-native[[1L]]$summary
+  expect_identical(names(native_summary),names(py_summary))
+  expect_equal(nrow(native_summary),nrow(py_summary))
+  for(col in names(py_summary))
+    expect_equal(as.numeric(native_summary[[col]]),
+      as.numeric(py_summary[[col]]),tolerance=1e-12,info=paste("cv",col))
   expect_equal(source[[4L]]$n_lines,2L)
   expect_equal(source[[5L]]$n_lines,1L)
 })
