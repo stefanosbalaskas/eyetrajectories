@@ -21,10 +21,10 @@ This is an evidence-oriented development note, **not a certification claim**.
 
 | Domain | Number | Meaning |
 |---|---:|---|
-| Python function mappings | 311 / 380 | Names associated with native R candidates |
-| Native implementations started | 286 | Implemented operations; **not** proof of source equivalence |
-| Unmapped Python functions | 69 | No declared native candidate |
-| Known open source differences | 133 | Class, input, numerical, backend, error or scope boundaries |
+| Python function mappings | 318 / 380 | Names associated with native R candidates |
+| Native implementations started | 293 | Implemented operations; **not** proof of source equivalence |
+| Unmapped Python functions | 62 | No declared native candidate |
+| Known open source differences | 140 | Class, input, numerical, backend, error or scope boundaries |
 | Nonfunction exports for independent review | 128 | Values/classes not counted as native functions |
 | Complete independently certified public contracts | **0 / 508** | Four approval domains are not all independently signed off |
 
@@ -165,6 +165,24 @@ and reviewer fields, and cannot modify the authoritative 508-export
 certification register. Reviewer sign-off must refer to immutable
 test logs, accepted-domain boundaries and a full source commit,
 rather than relying on the CSV alone.
+
+## Generalized FoSR and mixed-effects scientific source plots
+
+Seven new native scientific graphics endpoints cover generalized FoSR
+fixed-profile marginal mean predictions and bands, profile contrasts,
+link-scale coefficients, predeclared covariance-sensitivity coefficient
+differences and band-width ratios, and physical-lag residual ACF and
+variogram diagnostics. Validation is on explicitly declared observed
+grids, fitted profiles, source ordering and nonautomatic model choices.
+Plotting never creates new coefficients, calibrates bands or selects a
+residual covariance family. Unlike Python 1.2.0 Matplotlib Axes, the
+native base-R APIs invisibly return numerical plot geometry.
+
+The source-contract review queue now contains **44** unsigned candidates.
+Only the preceding 37 have user-reported successful dual-mode local
+qualification. The seven new Matplotlib line-data oracles are opt-in;
+all seven remain uncertified due to wider source-domain and graphical
+backend differences.
 
 ## Seven source-derived sparse scientific visualizations
 
