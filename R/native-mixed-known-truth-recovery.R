@@ -78,7 +78,7 @@ etr_evaluate_functional_mixed_effects_recovery <- function(
   .etr_assert(is.numeric(result$time)&&is.null(dim(result$time))&&
     identical(as.numeric(result$time),as.numeric(grid)),
     "recovery evaluation requires the fitted grid to equal truth.truth_grid exactly")
-  .etr_assert(is.null(result$random_slope_predictor),
+  .etr_assert(is.null(result[["random_slope_predictor",exact=TRUE]]),
     "mixed-effects recovery supports functional random intercepts only")
   dimensions<-truth$dimension_names
   coefficients<-result$coefficient_names
@@ -148,7 +148,10 @@ etr_evaluate_functional_mixed_effects_recovery <- function(
   values<-c(values,assess_source("participant",participant,
     truth$participant_eigenvalues))
   has_trial_truth<-any(truth$trial_eigenvalues>0)
-  trial_kind<-result$trial_random_effect
+  # Never use partial matching: when the optional name is absent, R can
+  # match trial_random_effect_covariance and misread a covariance matrix
+  # as a random-effect type. Python None is semantically distinct.
+  trial_kind<-result[["trial_random_effect",exact=TRUE]]
   .etr_assert(is.null(trial_kind)||identical(trial_kind,"functional_intercept"),
     "unsupported trial_random_effect in mixed-effects recovery")
   if(identical(trial_kind,"functional_intercept")){

@@ -39,6 +39,12 @@ test_that("source variance decomposition supports univariate intercept-only and 
   expect_identical(unique(out$component),
     c("participant_intercept_variance","residual_variance"))
   expect_identical(nrow(out),6L)
+  retained<-.etr_variance_source_fixture(TRUE,TRUE)
+  retained$trial_random_effect<-NULL
+  expect_false("trial_random_effect" %in% names(retained))
+  expect_true("trial_random_effect_covariance" %in% names(retained))
+  without_trial<-etr_functional_mixed_effects_variance_decomposition(retained)
+  expect_false("trial_variance" %in% without_trial$component)
   bad<-.etr_variance_source_fixture()
   bad$random_intercept_slope_covariance<-NULL
   expect_error(etr_functional_mixed_effects_variance_decomposition(bad),

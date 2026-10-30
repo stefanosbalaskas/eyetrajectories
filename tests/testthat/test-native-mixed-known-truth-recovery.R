@@ -45,6 +45,9 @@ test_that("nested trial variance uses its own functional covariance, not scalar 
   expect_identical(vapply(a$values,function(x)x$source,character(1L))[5:7],
     rep("trial",3L))
   z$fit$trial_random_effect<-NULL
+  # Retain the longer covariance field to witness R partial matching.
+  expect_true("trial_random_effect_covariance" %in% names(z$fit))
+  expect_false("trial_random_effect" %in% names(z$fit))
   expect_error(etr_evaluate_functional_mixed_effects_recovery(z$fit,z$truth),
     "truth contains trial functional variance")
   z$truth$trial_eigenvalues[]<-0

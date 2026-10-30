@@ -378,18 +378,20 @@ etr_functional_mixed_effects_variance_decomposition <- function(fit,
     add("participant_intercept_variance",
       quadratic(B,fit$random_intercept_covariance,
         "participant intercept"),"variance")
-    if(!is.null(fit$random_slope_covariance)){
+    if(!is.null(fit[["random_slope_covariance",exact=TRUE]])){
       add("participant_slope_variance",
         quadratic(B,fit$random_slope_covariance,
           "participant slope"),"variance")
-      .etr_assert(!is.null(fit$random_intercept_slope_covariance),
+      .etr_assert(!is.null(fit[["random_intercept_slope_covariance",exact=TRUE]]),
         "random slope covariance is present without intercept/slope cross-covariance")
       # Source emits a signed covariance, not a variance or percentage.
       add("participant_intercept_slope_cross_covariance",
         quadratic(B,fit$random_intercept_slope_covariance,
           "participant intercept/slope"),"covariance")
     }
-    trial<-fit$trial_random_effect
+    # An absent short optional field must not match the longer
+    # trial_random_effect_covariance field.
+    trial<-fit[["trial_random_effect",exact=TRUE]]
     if(!is.null(trial)){
       .etr_assert(identical(trial,"functional_intercept"),
         "unsupported source trial_random_effect")
