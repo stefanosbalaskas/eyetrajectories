@@ -68,9 +68,8 @@
 #' @return Invisible source-aligned per-profile numerical drawing geometry.
 #' @export
 etr_plot_generalized_function_on_scalar_predictions <- function(result) {
-  .etr_scientific_frame_fields(result,c("reference","profile_ids",
-    "mean_functions","extrapolation_flags","prediction_scale"),
-    "prediction or band",)
+  .etr_assert(is.list(result) && !is.data.frame(result),
+    "result must be a native prediction or prediction-band record")
   # A native band record nests the prediction in result$prediction.
   if("prediction"%in%names(result)){
     band<-result
