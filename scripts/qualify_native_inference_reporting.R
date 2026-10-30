@@ -17,7 +17,7 @@ qualifying_filter <- paste(
 
 Sys.unsetenv("ET_RUN_PYTHON_TESTS")
 cat("\n=== Native R offline scientific reporting qualification ===\n")
-testthat::test_local(".",filter=qualifying_filter,reporter="summary")
+testthat::test_local(".",filter=qualifying_filter,reporter="summary",stop_on_failure=TRUE)
 invisible(stopifnot(sum(etr_native_parity_catalog()$
   one_to_one_native_contract_complete)==0L))
 
@@ -25,7 +25,7 @@ cat("\n=== Pinned published Python 1.2.0 direct-source oracle ===\n")
 stopifnot(identical(et_python_version(),"1.2.0"))
 Sys.setenv(ET_RUN_PYTHON_TESTS="true")
 tryCatch(
-  testthat::test_local(".",filter=qualifying_filter,reporter="summary"),
+  testthat::test_local(".",filter=qualifying_filter,reporter="summary",stop_on_failure=TRUE),
   finally=Sys.unsetenv("ET_RUN_PYTHON_TESTS")
 )
 cat("\nQualification suites finished. This does NOT sign off full contracts.\n")
