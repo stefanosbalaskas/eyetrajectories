@@ -32,6 +32,7 @@
   functional_mixed_effects_simultaneous_bands="etr_functional_mixed_effects_simultaneous_bands",
   evaluate_hierarchy_truth_recovery="etr_evaluate_hierarchy_truth_recovery",
   evaluate_registration_recovery="etr_evaluate_registration_recovery",
+  evaluate_functional_mixed_effects_recovery="etr_evaluate_functional_mixed_effects_recovery",
   validate_common_grid="etr_validate_common_grid",
   validate_simplex="etr_validate_simplex",
   validate_no_long_missing_runs="etr_validate_no_long_missing_runs",
@@ -745,6 +746,8 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     api$python_name=="generalized_function_on_scalar_simultaneous_bands"] <- 66L
   api$native_implementation_stage[api$is_python_function &
     api$python_name=="functional_mixed_effects_simultaneous_bands"] <- 67L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="evaluate_functional_mixed_effects_recovery"] <- 68L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # TrajectorySet native representation covers key fields and with_values/subset
