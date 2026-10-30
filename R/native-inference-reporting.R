@@ -15,7 +15,8 @@
 }
 .etr_inference_report_integer <- function(x,what,minimum=1L) {
   .etr_assert(is.numeric(x) && !is.logical(x) && length(x)==1L &&
-    is.finite(x) && x==floor(x) && x>=minimum,
+    is.finite(x) && x==floor(x) && x>=minimum &&
+    x<=.Machine$integer.max,
     paste0(what," must be an integer >= ",minimum))
   as.integer(x)
 }
