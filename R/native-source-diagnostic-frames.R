@@ -29,7 +29,8 @@
 }
 .etr_diagnostic_traces <- function(x) {
   n<-dim(x)[1L];k<-dim(x)[2L]
-  vapply(seq_len(n),function(i)sum(x[i,,][diag(k)]),numeric(1L))
+  vapply(seq_len(n),function(i)
+    sum(diag(matrix(x[i,,],nrow=k,ncol=k))),numeric(1L))
 }
 .etr_diagnostic_frobenius <- function(x) {
   vapply(seq_len(dim(x)[1L]),function(i)
