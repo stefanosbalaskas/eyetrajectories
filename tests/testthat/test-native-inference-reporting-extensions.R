@@ -46,6 +46,9 @@ test_that("new inference summaries fail on scientifically invalid records",{
   bad<-z$truncation;bad$width_threshold<--.1
   expect_error(etr_fpca_wild_bootstrap_truncation_reporting_text(bad),
     "width_threshold")
+  bad<-z$truncation;bad$stability_run<-.Machine$integer.max
+  expect_error(etr_fpca_wild_bootstrap_truncation_reporting_text(bad),
+    "stability_run requires")
   bad<-z$truncation;bad$selected_components<-c(4.5,NaN)
   expect_error(etr_fpca_wild_bootstrap_truncation_reporting_text(bad),
     "candidate integers")
