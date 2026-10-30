@@ -113,7 +113,7 @@ etr_fpca_wild_bootstrap_truncation_reporting_text <- function(
     is.finite(center) && center>=0,
     "center_threshold must be nonnegative finite scalar")
   run<-.etr_inference_report_integer(result$stability_run,"stability_run",0L)
-  .etr_assert(run+1L<length(h),
+  .etr_assert(run<length(h)-1L,
     "stability_run requires at least run+1 transitions")
   n<-sum(ok)
   selection<-if(n>0L)paste0("Selected h ranged from ",
