@@ -37,6 +37,17 @@ test_that("retained conditional/full-refit comparison follows source row order",
   expect_identical(nrow(family),6L)
   expect_identical(unique(family$simultaneous_scope),"family")
 })
+test_that("zero-width fixed covariance bands produce source-defined infinite ratios",{
+  z<-.etr_compare_mixed_bootstrap_fixture()
+  for(b in seq_len(dim(z$fixed$bootstrap_coefficient_functions)[1L]))
+    z$fixed$bootstrap_coefficient_functions[b,,]<-z$fixed$bootstrap_mean
+  a<-etr_compare_functional_mixed_effects_bootstraps(z$fixed,z$full,
+    confidence_level=.5)
+  expect_true(all(a$fixed_covariance_band_width==0))
+  expect_true(all(a$full_refit_band_width>0))
+  expect_true(all(is.infinite(a$full_refit_to_fixed_covariance_width_ratio)))
+})
+
 test_that("bootstrap comparison refuses mismatched reference or provenance",{
   z<-.etr_compare_mixed_bootstrap_fixture()
   bad<-z$full;bad$reference$time[2L]<-.6
@@ -84,7 +95,16 @@ _cm_comparison={
   scope:et.compare_functional_mixed_effects_bootstraps(
     _cm_fixed,_cm_full,confidence_level=.5,simultaneous_scope=scope)
     for scope in ('coefficient','family')}
+_cm_zero_draws=np.broadcast_to(
+    _cm_base['bootstrap_mean'],_cm_draws.shape).copy()
+_cm_zero=_cm_obj(et.FunctionalMixedEffectsBootstrapResult,
+    **dict(_cm_base,bootstrap_coefficient_functions=_cm_zero_draws))
+_cm_zero_ratio=et.compare_functional_mixed_effects_bootstraps(
+    _cm_zero,_cm_full,confidence_level=.5
+)['full_refit_to_fixed_covariance_width_ratio'].to_numpy()
 ")
+  expect_true(all(is.infinite(as.numeric(reticulate::py_eval(
+    "_cm_zero_ratio",convert=TRUE)))))
   z<-.etr_compare_mixed_bootstrap_fixture()
   for(scope in c("coefficient","family")){
     actual<-etr_compare_functional_mixed_effects_bootstraps(z$fixed,z$full,
