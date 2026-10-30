@@ -141,7 +141,7 @@ _rp=NS(upper=np.array([1.2,2.4]),lower=np.array([.8,1.6]),
     reference_se=np.array([.1,.2]),n_bootstrap=101,
     multiplier='rademacher',residual_components=2,
     inference_components=1,confidence_level=.95,
-    independent_unit_column=None)
+    independent_unit_column=None,n_targets=2)
 _rf=NS(upper=np.array([1.5,2.5]),lower=np.array([.5,1.5]),
     centered_residuals=np.array([-1.,0.,1.]),
     n_bootstrap=101,n_targets=2,confidence_level=.95)
@@ -160,17 +160,17 @@ _rn=NS(outer_folds=pd.DataFrame({
     selection_rule='minimum',loss='rmse')
 _rfamily=_report_record(et.FPCAWildBootstrapFamilyTestResult,
     projection_result=_rp,reject_familywise=np.array([True,False]),
-    n_targets=2,pvalue_correction='plus_one',
+    pvalue_correction='plus_one',
     significance_level=.05,global_statistic=2.3,global_p_value=.1)
 _rmonte=_report_record(et.FPCAWildBootstrapMonteCarloDiagnosticResult,
     family_test_result=_rfamily,adjusted_decision_stable=np.array(
-    [True,False]),n_bootstrap=101,confidence_level=.95,
+    [True,False]),confidence_level=.95,
     global_tail_probability=.1,global_interval_lower=.05,
-    global_interval_upper=.2,n_targets=2)
+    global_interval_upper=.2)
 _rsim=_report_record(et.FPCAWildBootstrapSimultaneousResult,
     projection_result=_rp,lower=np.array([.7,1.5]),
     upper=np.array([1.3,2.5]),confidence_level=.95,
-    n_targets=2,critical_value=2.5)
+    critical_value=2.5)
 _report_strings=dict(
     projection=et.fpca_wild_bootstrap_projection_reporting_text(_rp),
     future=et.fpca_regression_future_prediction_reporting_text(_rf),
