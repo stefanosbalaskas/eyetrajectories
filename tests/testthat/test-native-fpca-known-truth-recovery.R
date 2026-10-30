@@ -104,9 +104,24 @@ for ndim in (1,2):
     key<-paste0("_fpcr_oracle[",ndim,"]")
     expect_identical(vapply(x$values,function(v)v$metric$name,character(1L)),
       as.character(reticulate::py_eval(paste0(key,"['names']"),convert=TRUE)))
-    expect_equal(vapply(x$values,function(v)v$value,numeric(1L)),
-      as.numeric(reticulate::py_eval(paste0(key,"['values']"),convert=TRUE)),
-      tolerance=1e-12)
+    # NumPy computes one-mode principal angles from QR + SVD of a
+  # weighted subspace, while native R uses the equivalent one-mode
+  # normalized inner product. Near cosine=1, acos amplifies machine
+  # roundoff into about 1e-6 degrees; scientific metrics, including the
+  # principal cosine, must still match to 1e-12.
+  actual_values<-vapply(x$values,function(v)v$value,numeric(1L))
+  python_values<-as.numeric(reticulate::py_eval(paste0(key,"['values']"),convert=TRUE))
+  angle_pos<-which(vapply(x$values,function(v)
+    v$metric$name=="subspace_principal_angle_degrees",logical(1L)))
+  expect_identical(length(angle_pos),1L)
+  expect_equal(actual_values[-angle_pos],python_values[-angle_pos],
+    tolerance=1e-12)
+  # Bound only the ill-conditioned angular transform by a numerical
+  # estimate proportional to sqrt(machine epsilon), not a blanket
+  # tolerance on all scientific outputs.
+  angle_roundoff_degrees<-2*(180/pi)*sqrt(2*.Machine$double.eps)
+  expect_lte(abs(actual_values[angle_pos]-python_values[angle_pos]),
+    angle_roundoff_degrees)
     expected_components<-as.integer(reticulate::py_eval(
       paste0(key,"['components']"),convert=TRUE))
     native_components<-vapply(x$values,function(v)

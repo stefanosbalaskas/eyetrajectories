@@ -114,9 +114,19 @@ _sp_source_provenance=dict(_sp_source.provenance)
   a<-etr_evaluate_sparse_fpca_recovery(z$fit,z$truth)
   expect_identical(vapply(a$values,function(v)v$metric$name,character(1L)),
     as.character(reticulate::py_eval("_sp_source_names",convert=TRUE)))
-  expect_equal(vapply(a$values,function(v)v$value,numeric(1L)),
-    as.numeric(reticulate::py_eval("_sp_source_values",convert=TRUE)),
+  # Principal-angle degrees at an exactly matched subspace are
+  # ill-conditioned at cosine 1. Check all other scientific values at
+  # machine precision, then use a sqrt(epsilon) angular bound.
+  actual_values<-vapply(a$values,function(v)v$value,numeric(1L))
+  python_values<-as.numeric(
+    reticulate::py_eval("_sp_source_values",convert=TRUE))
+  angle_pos<-which(vapply(a$values,function(v)
+    v$metric$name=="subspace_principal_angle_degrees",logical(1L)))
+  expect_identical(length(angle_pos),1L)
+  expect_equal(actual_values[-angle_pos],python_values[-angle_pos],
     tolerance=1e-12)
+  expect_lte(abs(actual_values[angle_pos]-python_values[angle_pos]),
+    2*(180/pi)*sqrt(2*.Machine$double.eps))
   metric_fields<-reticulate::py_eval("_sp_source_metadata",convert=TRUE)
   for(i in seq_along(a$values))
     expect_identical(unname(unlist(a$values[[i]]$metric,use.names=FALSE)),

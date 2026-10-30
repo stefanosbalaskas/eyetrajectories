@@ -123,9 +123,11 @@ _spm_provenance=dict(_spm_py.provenance)
   expect_equal(vapply(result$values,function(v)v$value,numeric(1L)),
     as.numeric(reticulate::py_eval("_spm_values",convert=TRUE)),
     tolerance=1e-12)
+  # Python slice [1:5] already contains exactly the four
+  # cxx/cxy/cyx/cyy block labels; do not drop cxx again in R.
   expect_identical(vapply(result$values[2:5],function(v)v$source,character(1L)),
     as.character(reticulate::py_eval("_spm_sources[1:5]",
-      convert=TRUE))[-1L])
+      convert=TRUE)))
   expect_identical(result$provenance$measurement_error_truth_supplied,
     reticulate::py_eval("_spm_provenance['measurement_error_truth_supplied']",
       convert=TRUE))
