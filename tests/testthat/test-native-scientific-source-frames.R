@@ -107,9 +107,12 @@ test_that("native science frames reject invalid identifiers, shape, uncertainty 
   bad<-z$fit;bad$exposure[1,1]<-0
   expect_error(etr_generalized_function_on_scalar_exposure_frame(bad),
     "exposure")
-  bad<-z$fit;bad$exposure<-NULL
+  bad<-z$fit;bad["exposure"]<-list(NULL)
   expect_error(etr_generalized_function_on_scalar_exposure_frame(bad),
     "does not contain")
+  bad<-z$fit;bad$exposure<-NULL
+  expect_error(etr_generalized_function_on_scalar_exposure_frame(bad),
+    "explicit native R record")
   bad<-z$sparse;bad$metadata$curve_id<-c("a","b")
   expect_error(etr_sparse_fpca_score_frame(bad),"overwrite")
   bad<-z$sparse;bad$scores[1,2]<-Inf
