@@ -11,9 +11,9 @@ test_that("all 508 published exports receive a fail-closed evidence queue",{
   expect_identical(readiness$fully_certified,
     api$one_to_one_native_contract_complete)
   expect_equal(sum(readiness$native_mapping_present[
-    api$is_python_function]),324L)
+    api$is_python_function]),326L)
   expect_equal(sum(readiness$native_implementation_started[
-    api$is_python_function]),299L)
+    api$is_python_function]),301L)
   expect_equal(sum(readiness$published_source_difference_open),148L)
   expect_equal(sum(readiness$fully_certified),0L)
   expect_true(all(nzchar(readiness$first_unresolved_requirement)))
