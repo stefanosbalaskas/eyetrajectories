@@ -69,7 +69,7 @@ etr_native_certification_readiness_frame <- function(
     character(1L))
   approved<-as.logical(api$one_to_one_native_contract_complete)
   first[approved]<-"complete"
-  data.frame(namespace=api$namespace,python_name=api$python_name,
+  ans<-data.frame(namespace=api$namespace,python_name=api$python_name,
     kind=api$kind,native_r_candidate=api$native_r_candidate,
     frozen_source_sha=api$source_git_sha,
     native_mapping_present=api$named_native_candidate,
@@ -81,10 +81,8 @@ etr_native_certification_readiness_frame <- function(
     independent_reviewer_approved=api$independent_contract_review_pass,
     fully_certified=approved,
     first_unresolved_requirement=first,all_unresolved_requirements=all,
-    stringsAsFactors=FALSE)[
-      if(include_nonfunctions)rep(TRUE,nrow(api))
-        else api$is_python_function,
-      ,drop=FALSE] -> ans
+    stringsAsFactors=FALSE)
+  if(!include_nonfunctions)ans<-ans[api$is_python_function,,drop=FALSE]
   if(only_unapproved)ans<-ans[!ans$fully_certified,,drop=FALSE]
   rownames(ans)<-NULL
   ans
