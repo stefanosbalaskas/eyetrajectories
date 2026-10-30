@@ -5,8 +5,8 @@
 
 .etr_source_text_word <- function(x,name) {
   .etr_scientific_frame_string(x,name)
-  .etr_assert(!grepl("['\"\\]",x),
-    paste(name,"must not contain quote or escape delimiters"))
+  .etr_assert(!grepl("[^[:alnum:] _.-]",x),
+    paste(name,"must contain only safe identifier characters"))
   x
 }
 .etr_source_text_int <- function(x,name,min=0L) {
