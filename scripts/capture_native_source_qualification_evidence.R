@@ -22,6 +22,7 @@ if(length(missing_scientific_tests))stop(
   paste(missing_scientific_tests,collapse=", "),
   ". Switch to the research/native-generalized-fosr-prediction-20261030 branch.",
   call.=FALSE)
+source("scripts/preflight_native_source_syntax.R",local=TRUE)
 pkgload::load_all(".",quiet=TRUE)
 stopifnot(identical(et_python_version(),"1.2.0"))
 stopifnot(nrow(etr_native_parity_catalog())==508L)

@@ -7,6 +7,18 @@ test_that("native source qualification evidence runner parses", {
   )
   expect_true(file.exists(runner))
   expect_silent(parse(file = runner, keep.source = FALSE))
+  syntax_preflight<-testthat::test_path("..","..","scripts",
+    "preflight_native_source_syntax.R")
+  expect_true(file.exists(syntax_preflight))
+  expect_silent(parse(file=syntax_preflight,keep.source=FALSE))
+  for(name in c("qualify_native_current_contracts.R",
+    "capture_native_source_qualification_evidence.R")){
+    script<-readLines(testthat::test_path("..","..","scripts",name),
+      warn=FALSE)
+    expect_true(any(grepl(
+      'source("scripts/preflight_native_source_syntax.R",local=TRUE)',
+      script,fixed=TRUE)))
+  }
   lines <- readLines(runner, warn = FALSE)
   expect_false(any(trimws(lines) == "else"))
   expect_true(any(grepl("qualify_once(FALSE)",lines,fixed=TRUE)))
