@@ -22,6 +22,9 @@ qualifying_filter <- paste(
   "native-wild-monte-carlo-source-contracts",
   "native-wild-simultaneous-source-calibration",
   "native-fpcr-slope-source-calibration",
+  "native-generalized-fosr-prediction",
+  "native-mixed-model-source-text",
+  "native-source-environment",
   "native-source-contract-gaps",
   "full-native-r-parity-ledger",
   sep="|"

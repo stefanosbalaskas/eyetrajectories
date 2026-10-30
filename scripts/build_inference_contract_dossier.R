@@ -60,9 +60,11 @@ source_names<-c(
   "plot_fpca_wild_bootstrap_monte_carlo_diagnostics",
   "plot_fpca_wild_bootstrap_simultaneous_interval",
   "fpca_wild_bootstrap_projection_simultaneous_interval",
-  "fpca_regression_slope_simultaneous_band"
+  "fpca_regression_slope_simultaneous_band",
+  "generalized_function_on_scalar_predict",
+  "functional_mixed_effects_reporting_text"
 )
-stopifnot(length(source_names)==53L,!anyDuplicated(source_names))
+stopifnot(length(source_names)==55L,!anyDuplicated(source_names))
 idx<-match(source_names,readiness$python_name)
 stopifnot(!anyNA(idx),all(readiness$kind[idx]=="function"),
   all(readiness$native_mapping_present[idx]),
@@ -98,6 +100,8 @@ source_test<-ifelse(seq_along(source_names)<=8L,
                     ifelse(seq_along(source_names)<=52L,
                       "tests/testthat/test-native-wild-simultaneous-source-calibration.R",
                       "tests/testthat/test-native-fpcr-slope-source-calibration.R"))))))))))))
+source_test[54L]<-"tests/testthat/test-native-generalized-fosr-prediction.R"
+source_test[55L]<-"tests/testthat/test-native-mixed-model-source-text.R"
 source_file<-rep("src/eyetrajectoriespy/reporting.py",length(source_names))
 source_file[12L]<-"src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py"
 source_file[13L]<-"src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py"
@@ -128,8 +132,10 @@ source_file[49L]<-"src/eyetrajectoriespy/wild_testing.py"
 source_file[50:51]<-"src/eyetrajectoriespy/plotting.py"
 source_file[52L]<-"src/eyetrajectoriespy/wild_simultaneous.py"
 source_file[53L]<-"src/eyetrajectoriespy/regression_inference.py"
-fixture_state<-ifelse(seq_along(source_names)<=37L,
-  "user_reported_local_native_and_python_1_2_pass_2026_10_30_unarchived",
+source_file[54L]<-"src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py"
+source_file[55L]<-"src/eyetrajectoriespy/reporting.py"
+fixture_state<-ifelse(seq_along(source_names)<=53L,
+  "user_reported_native_and_python_1_2_qualification_pass_20261030T222420_not_independent",
   "new_tests_pending_local_native_and_python_oracle")
 stopifnot(all(file.exists(source_test)))
 data<-data.frame(
@@ -152,11 +158,11 @@ data<-data.frame(
   missing_evidence=readiness$all_unresolved_requirements[idx],
   stringsAsFactors=FALSE
 )
-stopifnot(nrow(data)==53L,!any(data$fully_certified))
+stopifnot(nrow(data)==55L,!any(data$fully_certified))
 output_dir<-file.path("artifacts","native_inference_contract_review")
 dir.create(output_dir,recursive=TRUE,showWarnings=FALSE)
 output<-file.path(output_dir,"python_1_2_scientific_contract_review_queue.csv")
 utils::write.csv(data,output,row.names=FALSE,na="")
 message("Wrote unsigned source-contract review queue: ",
   normalizePath(output,winslash="/",mustWork=TRUE))
-message("All 53 contracts remain uncertified pending full-domain and independent review.")
+message("All 55 contracts remain uncertified pending full-domain and independent review.")

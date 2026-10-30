@@ -6,7 +6,9 @@
 
 .etr_fmixed_report_string <- function(x,name) {
   .etr_assert(is.character(x)&&length(x)==1L&&!is.na(x)&&
-    nzchar(x)&&!grepl("[\\r\\n'\\\\]",x),
+    nzchar(x)&&!grepl("'",x,fixed=TRUE)&&
+    !grepl("\\",x,fixed=TRUE)&&!grepl("\\n",x,fixed=TRUE)&&
+    !grepl("\\r",x,fixed=TRUE),
     paste(name,"must be a source-compatible nonempty plain string"))
   x
 }

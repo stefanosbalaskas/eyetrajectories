@@ -13,3 +13,20 @@ test_that("native source qualification evidence runner parses", {
     lines, fixed = TRUE)))
   expect_true(any(grepl("} else {", lines, fixed = TRUE)))
 })
+
+test_that("new scientific source oracles are included in both qualification modes",{
+  root<-testthat::test_path("..","..")
+  runner<-readLines(file.path(root,"scripts",
+    "capture_native_source_qualification_evidence.R"),warn=FALSE)
+  dossier<-readLines(file.path(root,"scripts",
+    "build_inference_contract_dossier.R"),warn=FALSE)
+  for(name in c("native-generalized-fosr-prediction",
+    "native-mixed-model-source-text","native-source-environment")){
+    expect_true(any(grepl(name,runner,fixed=TRUE)))
+  }
+  for(name in c("generalized_function_on_scalar_predict",
+    "functional_mixed_effects_reporting_text")){
+    expect_true(any(grepl(name,dossier,fixed=TRUE)))
+  }
+  expect_true(any(grepl("nrow(queue)==55L",runner,fixed=TRUE)))
+})

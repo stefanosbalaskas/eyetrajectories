@@ -12,7 +12,7 @@ queue_path<-file.path("artifacts","native_inference_contract_review",
   "python_1_2_scientific_contract_review_queue.csv")
 queue<-utils::read.csv(queue_path,stringsAsFactors=FALSE,
   check.names=FALSE)
-stopifnot(nrow(queue)==53L,!anyDuplicated(queue$python_name),
+stopifnot(nrow(queue)==55L,!anyDuplicated(queue$python_name),
   all(!queue$fully_certified),
   all(queue$source_difference_open),
   all(file.exists(queue$oracle_test)))
@@ -32,6 +32,9 @@ filter<-paste(c(
   "native-wild-monte-carlo-source-contracts",
   "native-wild-simultaneous-source-calibration",
   "native-fpcr-slope-source-calibration",
+  "native-generalized-fosr-prediction",
+  "native-mixed-model-source-text",
+  "native-source-environment",
   "native-source-evidence-runner",
   "native-private-helper-names"),collapse="|")
 git_exe<-Sys.which("git")
@@ -96,6 +99,12 @@ source_files<-unique(c(
   "R/native-wild-monte-carlo-source-contracts.R",
   "R/native-wild-simultaneous-source-calibration.R",
   "R/native-fpcr-slope-source-calibration.R",
+  "R/native-generalized-fosr-prediction.R",
+  "R/native-mixed-model-source-text.R",
+  "R/native-source-environment.R",
+  "tests/testthat/test-native-source-environment.R",
+  "tests/testthat/test-native-generalized-fosr-prediction.R",
+  "tests/testthat/test-native-mixed-model-source-text.R",
   "tests/testthat/test-native-fpcr-slope-source-calibration.R",
   "tests/testthat/test-native-wild-simultaneous-source-calibration.R",
   "tests/testthat/test-native-wild-monte-carlo-source-contracts.R",
