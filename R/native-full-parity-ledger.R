@@ -308,7 +308,14 @@
   multivariate_iaaft_diagnostics_frame="etr_multivariate_iaaft_diagnostics_frame",
   functional_mixed_effects_variance_bootstrap_frame="etr_functional_mixed_effects_variance_bootstrap_frame",
   plot_multivariate_iaaft_diagnostics="etr_plot_multivariate_iaaft_diagnostics",
-  plot_multivariate_surrogate_nonlinearity="etr_plot_multivariate_surrogate_nonlinearity"
+  plot_multivariate_surrogate_nonlinearity="etr_plot_multivariate_surrogate_nonlinearity",
+  plot_sparse_fpca_covariance="etr_plot_sparse_fpca_covariance",
+  plot_sparse_fpca_component="etr_plot_sparse_fpca_component",
+  plot_sparse_mfpca_component="etr_plot_sparse_mfpca_component",
+  plot_sparse_mfpca_covariance_blocks="etr_plot_sparse_mfpca_covariance_blocks",
+  plot_sparse_mfpca_cross_covariance="etr_plot_sparse_mfpca_cross_covariance",
+  plot_sparse_mfpca_score_diagnostics="etr_plot_sparse_mfpca_score_diagnostics",
+  plot_sparse_irregular_dimension="etr_plot_sparse_irregular_dimension"
 )
 
 #' Audit one-to-one Python 1.2.0 versus independent native R coverage
@@ -640,6 +647,17 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   )
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% source_diagnostic_port_names] <- 50L
+  sparse_graphics_native_names <- c(
+    "plot_sparse_fpca_covariance",
+    "plot_sparse_fpca_component",
+    "plot_sparse_mfpca_component",
+    "plot_sparse_mfpca_covariance_blocks",
+    "plot_sparse_mfpca_cross_covariance",
+    "plot_sparse_mfpca_score_diagnostics",
+    "plot_sparse_irregular_dimension"
+  )
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% sparse_graphics_native_names] <- 51L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # TrajectorySet native representation covers key fields and with_values/subset
