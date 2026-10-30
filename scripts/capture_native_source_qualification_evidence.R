@@ -49,7 +49,6 @@ qualify_once<-function(python=FALSE){
       reporter="summary",stop_on_failure=TRUE),type="output"),
     error=function(e){failed<<-conditionMessage(e);character()})
   path<-file.path(output_dir,paste0(label,".txt"))
-  utils::write.table # reference base namespace without side effects
   writeLines(c(output,if(!is.null(failed))
       paste0("QUALIFICATION ERROR: ",failed) else
       "QUALIFICATION COMPLETED WITHOUT TEST FAILURES"),
