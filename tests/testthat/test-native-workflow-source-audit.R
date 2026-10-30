@@ -118,9 +118,9 @@ test_that("all 128 nonfunction source symbols require independent review",{
 test_that("workflow integration stays uncertified until independent full review",{
   z <- etr_native_parity_catalog()
   expect_equal(nrow(z),508L)
-  expect_equal(sum(z$is_python_function & z$named_native_candidate),322L)
-  expect_equal(sum(z$native_implementation_started),297L)
-  expect_equal(sum(z$source_contract_gap_unresolved),144L)
+  expect_equal(sum(z$is_python_function & z$named_native_candidate),321L)
+  expect_equal(sum(z$native_implementation_started),296L)
+  expect_equal(sum(z$source_contract_gap_unresolved),143L)
   for(name in c("workflow_steps_frame","workflow_decisions_frame",
                 "workflow_summary_frame","workflow_reporting_text")){
     row <- z[z$python_name==name & z$is_python_function,,drop=FALSE]
@@ -132,9 +132,9 @@ test_that("workflow integration stays uncertified until independent full review"
   }
   queue <- etr_native_source_contract_review_queue()
   expect_equal(nrow(queue),508L)
-  expect_equal(sum(queue$mapped & queue$kind=="function"),322L)
+  expect_equal(sum(queue$mapped & queue$kind=="function"),321L)
   expect_equal(sum(queue$targeted_numerical_fixture_pass),4L)
-  expect_equal(sum(queue$source_gap_unresolved),144L)
+  expect_equal(sum(queue$source_gap_unresolved),143L)
   expect_false(any(queue$full_numeric_approved))
   expect_false(any(queue$schema_boundary_approved))
   expect_false(any(queue$scientific_scope_approved))
