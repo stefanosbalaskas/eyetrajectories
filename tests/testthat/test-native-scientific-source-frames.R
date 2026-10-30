@@ -218,8 +218,8 @@ _sf_python={
   for(name in names(r)){
     # Python None columns are object dtype; reticulate may convert them
     # differently from native NA_real_. Compare non-null fields directly.
-    p<-reticulate::py_to_r(reticulate::py_eval(
-      paste0("_sf_python['",name,"']")))
+    p<-reticulate::py_eval(
+      paste0("_sf_python['",name,"']"),convert=TRUE)
     expect_identical(names(r[[name]]),names(p),info=name)
     for(column in names(p)){
       if(name=="prediction" && column%in%
@@ -230,8 +230,8 @@ _sf_python={
         tolerance=1e-12,ignore_attr=TRUE,info=paste(name,column))
     }
   }
-  audit<-reticulate::py_to_r(reticulate::py_eval(
-    "_sf_python['exposure'].attrs['exposure_audit']"))
+  audit<-reticulate::py_eval(
+    "_sf_python['exposure'].attrs['exposure_audit']",convert=TRUE)
   for(key in names(attr(r$exposure,"exposure_audit")))
     expect_equal(attr(r$exposure,"exposure_audit")[[key]],
       audit[[key]],tolerance=1e-12,info=key)
