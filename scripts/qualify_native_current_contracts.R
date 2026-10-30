@@ -5,6 +5,7 @@ if(!file.exists("DESCRIPTION")||!dir.exists("tests/testthat"))
        call.=FALSE)
 required<-c("native-generalized-fosr-prediction",
   "native-generalized-fosr-bootstrap-source",
+  "native-generalized-fosr-contrast-source",
   "native-mixed-model-source-text","native-source-environment")
 test_files<-file.path("tests","testthat",paste0("test-",required,".R"))
 git<-Sys.which("git")

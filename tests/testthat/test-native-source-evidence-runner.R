@@ -22,14 +22,16 @@ test_that("new scientific source oracles are included in both qualification mode
     "build_inference_contract_dossier.R"),warn=FALSE)
   for(name in c("native-generalized-fosr-prediction",
     "native-generalized-fosr-bootstrap-source",
+    "native-generalized-fosr-contrast-source",
     "native-mixed-model-source-text","native-source-environment")){
     expect_true(any(grepl(name,runner,fixed=TRUE)))
   }
   for(name in c("generalized_function_on_scalar_predict",
     "functional_mixed_effects_reporting_text",
     "bootstrap_generalized_function_on_scalar_predictions",
-    "generalized_function_on_scalar_prediction_bands")){
+    "generalized_function_on_scalar_prediction_bands",
+    "generalized_function_on_scalar_mean_difference_band")){
     expect_true(any(grepl(name,dossier,fixed=TRUE)))
   }
-  expect_true(any(grepl("nrow(queue)==57L",runner,fixed=TRUE)))
+  expect_true(any(grepl("nrow(queue)==58L",runner,fixed=TRUE)))
 })

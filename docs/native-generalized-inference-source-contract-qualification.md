@@ -47,3 +47,19 @@ or independent source reviewer sign-off. **FULL certification is 0/508.**
 
 No estimator, model-selection rule, bootstrap law or reported scientific
 hypothesis-test decision is altered by these two ports.
+
+## Additional native fixed-profile contrast
+
+\`etr_generalized_function_on_scalar_mean_difference_band()\` constructs
+one **predeclared** contrast from retained bootstrap predictions, using source
+sample standard deviations and NumPy higher quantiles of observed-grid
+maximum standardized deviations. It distinguishes binomial probability
+difference, Poisson expected-count difference, rate difference and log-scale
+rate ratio and never clips physical bounds.
+
+Direct published-Python source numerical oracles are in
+\`tests/testthat/test-native-generalized-fosr-contrast-source.R\`.
+The unsigned candidate review queue now includes **58** functions; all
+remain blocked from FULL certification until complete accepted-domain,
+error-schema, upstream-estimator provenance, scientific inference and
+independent reviewer evidence are approved.
