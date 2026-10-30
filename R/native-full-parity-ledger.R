@@ -325,7 +325,6 @@
   plot_functional_mixed_effects_residual_variogram="etr_plot_functional_mixed_effects_residual_variogram",
   compare_functional_mixed_effects_residual_diagnostics="etr_compare_functional_mixed_effects_residual_diagnostics",
   plot_fpca_component_envelope="etr_plot_fpca_component_envelope",
-  plot_sparse_fpca_score_diagnostics="etr_plot_sparse_fpca_score_diagnostics",
   plot_fpca_wild_bootstrap_family_test="etr_plot_fpca_wild_bootstrap_family_test"
 )
 
@@ -686,7 +685,6 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     api$python_name %in% native_mixed_residual_sensitivity_name] <- 53L
   native_fpca_inference_graphics_names <- c(
     "plot_fpca_component_envelope",
-    "plot_sparse_fpca_score_diagnostics",
     "plot_fpca_wild_bootstrap_family_test"
   )
   api$native_implementation_stage[api$is_python_function &
