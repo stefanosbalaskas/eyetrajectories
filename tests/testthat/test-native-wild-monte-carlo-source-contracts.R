@@ -38,9 +38,13 @@ test_that("exact native Monte Carlo precision reuses fixed bootstrap roots",{
   expect_equal(a$global_tail_probability,.5)
   expect_equal(a$targetwise_mcse,
     sqrt(c(.5*.5,.5*.5,.75*.25)/4))
-  expect_identical(a$targetwise_decision_stable,c(FALSE,FALSE,FALSE))
-  expect_identical(a$adjusted_decision_stable,c(FALSE,FALSE,FALSE))
-  expect_identical(a$global_decision_stable,FALSE)
+  expect_identical(a$targetwise_decision_stable,c(TRUE,TRUE,TRUE))
+  expect_identical(a$adjusted_decision_stable,c(TRUE,TRUE,TRUE))
+  expect_identical(a$global_decision_stable,TRUE)
+  # For k=2 successes in B=4, exact CP lower is above alpha=.05.
+  # Reported non-rejections therefore remain stable; these are not
+  # scientific-effect confidence intervals and do not change decisions.
+  expect_gt(stats::qbeta(.025,2,3),z$family$significance_level)
   expect_equal(a$targetwise_interval_lower[1L],
     stats::qbeta(.025,2,3),tolerance=1e-12)
   expect_equal(a$adjusted_interval_upper[3L],1)
@@ -175,9 +179,9 @@ _mc_oracle={
     'adjusted_interval_upper':_mc_result.adjusted_interval_upper,
     'targetwise_decision_stable':_mc_result.targetwise_decision_stable,
     'adjusted_decision_stable':_mc_result.adjusted_decision_stable,
-    'plot_adjusted':_mc_ax.lines[0].get_ydata(),
-    'plot_targetwise':_mc_ax.lines[1].get_ydata(),
-    'plot_projection':_mc_ax2.lines[0].get_ydata()
+    'plot_adjusted':_mc_ax.containers[0].lines[0].get_ydata(),
+    'plot_targetwise':_mc_ax.containers[1].lines[0].get_ydata(),
+    'plot_projection':_mc_ax2.containers[0].lines[0].get_ydata()
 }
 plt.close('all')
 ")
