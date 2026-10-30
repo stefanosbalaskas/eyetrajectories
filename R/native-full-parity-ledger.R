@@ -38,6 +38,7 @@
   evaluate_sparse_fpca_recovery="etr_evaluate_sparse_fpca_recovery",
   evaluate_sparse_mfpca_recovery="etr_evaluate_sparse_mfpca_recovery",
   fpca_regression_future_prediction_interval="etr_fpca_regression_future_prediction_interval",
+  cross_validate_fpca_regression="etr_cross_validate_fpca_regression",
   validate_common_grid="etr_validate_common_grid",
   validate_simplex="etr_validate_simplex",
   validate_no_long_missing_runs="etr_validate_no_long_missing_runs",
@@ -765,6 +766,8 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     api$python_name=="evaluate_sparse_mfpca_recovery"] <- 73L
   api$native_implementation_stage[api$is_python_function &
     api$python_name=="fpca_regression_future_prediction_interval"] <- 74L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="cross_validate_fpca_regression"] <- 75L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # TrajectorySet native representation covers key fields and with_values/subset
