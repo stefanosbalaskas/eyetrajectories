@@ -43,24 +43,31 @@ qualify_once<-function(python=FALSE){
   if(python)Sys.setenv(ET_RUN_PYTHON_TESTS="true") else
     Sys.unsetenv("ET_RUN_PYTHON_TESTS")
   on.exit(Sys.unsetenv("ET_RUN_PYTHON_TESTS"),add=TRUE)
-  failed<-NULL
-  output<-tryCatch(
-    capture.output(testthat::test_local(".",filter=filter,
-      reporter="summary",stop_on_failure=TRUE),type="output"),
-    error=function(e){failed<<-conditionMessage(e);character()})
   path<-file.path(output_dir,paste0(label,".txt"))
-  writeLines(c(output,if(!is.null(failed))
-      paste0("QUALIFICATION ERROR: ",failed) else
-      "QUALIFICATION COMPLETED WITHOUT TEST FAILURES"),
-    con=path,useBytes=TRUE)
+  failed<-NULL
+  tryCatch(
+    capture.output(
+      testthat::test_local(".",filter=filter,
+        reporter="summary",stop_on_failure=TRUE),
+      file=path,type="output"),
+    error=function(e){failed<<-conditionMessage(e);invisible(NULL)})
+  outcome<-if(is.null(failed)) {
+    "QUALIFICATION COMPLETED WITHOUT TEST FAILURES"
+  } else {
+    paste0("QUALIFICATION ERROR: ",failed)
+  }
+  cat(outcome,"\n",file=path,append=TRUE,sep="")
   list(label=label,success=is.null(failed),log_file=path,
     error=if(is.null(failed))"" else failed)
 }
 results<-list(qualify_once(FALSE))
-if(results[[1L]]$success)
+if(isTRUE(results[[1L]]$success)) {
   results[[2L]]<-qualify_once(TRUE)
-else results[[2L]]<-list(label="python_1_2_direct_source",
-  success=FALSE,log_file="",error="Not attempted after offline failure")
+} else {
+  results[[2L]]<-list(
+    label="python_1_2_direct_source",success=FALSE,
+    log_file="",error="Not attempted after offline failure")
+}
 source_files<-unique(c(
   queue$oracle_test,
   "R/native-source-diagnostic-frames.R",
