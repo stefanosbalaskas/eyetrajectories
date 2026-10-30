@@ -56,9 +56,9 @@ test_that("mixed random graphics are not incorrectly fully certified",{
     expect_true(a$source_contract_gap_unresolved)
     expect_false(a$one_to_one_native_contract_complete)
   }
-  expect_equal(sum(z$is_python_function&z$named_native_candidate),285L)
-  expect_equal(sum(z$native_implementation_started),260L)
-  expect_equal(sum(z$source_contract_gap_unresolved),107L)
+  expect_equal(sum(z$is_python_function&z$named_native_candidate),291L)
+  expect_equal(sum(z$native_implementation_started),266L)
+  expect_equal(sum(z$source_contract_gap_unresolved),113L)
 })
 
 test_that("Python 1.2 participant and trial axes line values equal native",{
