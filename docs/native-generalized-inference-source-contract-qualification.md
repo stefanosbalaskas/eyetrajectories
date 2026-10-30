@@ -232,3 +232,22 @@ fit object by identity**; R source-shaped lists can check structural
 equality but cannot certify Python object identity. This remains an
 explicit unresolved source gap. The evidence queue now contains
 **67 unsigned candidates**, with no certification promotion.
+
+## Sparse bivariate MFPCA known-truth recovery: one-mode source domain
+
+\`etr_evaluate_sparse_mfpca_recovery()\` introduces the frozen
+\`recovery.py::evaluate_sparse_mfpca_recovery\` numerical **one-mode**
+domain, retaining four named covariance blocks (cxx, cxy, cyx, cyy)
+as separate quadrature-weighted operator errors and the exact
+joint total cxx+cxy+cyx+cyy. It also preserves single-component sign
+alignment, score comparisons, retained sparse-PACE diagnostic rates,
+finite condition-number statistics, PSD-repair signals, and the distinction
+between measurement-error covariance supplied and recovered.
+
+The source's multi-component Hungarian assignment, near-tied
+eigenvalue subspace geometry, Procrustes-aligned score error, all
+typed dataclass and error domains remain unresolved; the port
+refuses unsupported source modes rather than inventing componentwise
+recovery precision. Native tests and an opt-in pinned Python direct
+numerical fixture cover the bounded domain. The review queue now
+has **68 explicitly unsigned scientific source contracts**.

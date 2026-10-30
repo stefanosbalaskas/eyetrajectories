@@ -33,6 +33,7 @@ qualifying_filter <- paste(
   "native-fpca-known-truth-recovery",
   "native-sparse-known-truth-recovery",
   "native-mixed-bootstrap-width-comparison",
+  "native-sparse-mfpca-known-truth-recovery",
   "native-mixed-model-source-text",
   "native-source-environment",
   "native-source-contract-gaps",
