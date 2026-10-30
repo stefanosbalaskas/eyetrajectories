@@ -21,10 +21,10 @@ This is an evidence-oriented development note, **not a certification claim**.
 
 | Domain | Number | Meaning |
 |---|---:|---|
-| Python function mappings | 263 / 380 | Names associated with native R candidates |
-| Native implementations started | 238 | Implemented operations; **not** proof of source equivalence |
-| Unmapped Python functions | 117 | No declared native candidate |
-| Known open source differences | 85 | Class, input, numerical, backend, error or scope boundaries |
+| Python function mappings | 269 / 380 | Names associated with native R candidates |
+| Native implementations started | 244 | Implemented operations; **not** proof of source equivalence |
+| Unmapped Python functions | 111 | No declared native candidate |
+| Known open source differences | 91 | Class, input, numerical, backend, error or scope boundaries |
 | Nonfunction exports for independent review | 128 | Values/classes not counted as native functions |
 | Complete independently certified public contracts | **0 / 508** | Four approval domains are not all independently signed off |
 
@@ -114,6 +114,13 @@ unmapped functions, incomplete native integrations, published-source gaps,
 numerical-oracle approval, schema, scientific scope, reviewer approval and
 reproducible published-source evidence. Existing explicit certification
 gates remain unchanged; no additional contracts have been promoted.
+
+Six additional source-aligned read-only plots cover FPCR projection,
+conditional mean, future-outcome and observed-grid slope uncertainty plus
+sparse PACE conditioning diagnostics. Source oracles compare numerical
+interval and line coordinates and PACE scatter masks. Native R named-list
+inputs and base graphics are not Python dataclass and Matplotlib Axes
+return contracts; all six differences remain open.
 
 ## Local qualification on PR #46
 
