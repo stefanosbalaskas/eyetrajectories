@@ -21,10 +21,10 @@ This is an evidence-oriented development note, **not a certification claim**.
 
 | Domain | Number | Meaning |
 |---|---:|---|
-| Python function mappings | 291 / 380 | Names associated with native R candidates |
-| Native implementations started | 266 | Implemented operations; **not** proof of source equivalence |
-| Unmapped Python functions | 89 | No declared native candidate |
-| Known open source differences | 113 | Class, input, numerical, backend, error or scope boundaries |
+| Python function mappings | 296 / 380 | Names associated with native R candidates |
+| Native implementations started | 271 | Implemented operations; **not** proof of source equivalence |
+| Unmapped Python functions | 84 | No declared native candidate |
+| Known open source differences | 118 | Class, input, numerical, backend, error or scope boundaries |
 | Nonfunction exports for independent review | 128 | Values/classes not counted as native functions |
 | Complete independently certified public contracts | **0 / 508** | Four approval domains are not all independently signed off |
 
@@ -147,6 +147,22 @@ implementations use conservative validated list records, with opt-in
 Python 1.2.0 exact-text oracles, explicit scientific-scope boundaries and
 unresolved typed-source-contract gaps. No numerical certification flags
 are automatically promoted.
+
+## Five scientific interpretation reporters
+
+Five more source-aligned, native-only reporting functions now cover
+generalized function-on-scalar prediction, paired response-scale
+contrasts, covariance-structure sensitivity, multivariate IAAFT
+surrogates and surrogate-based nonlinearity inference. These reporters
+do not estimate models or certify a family of confidence bands.
+Scientific language explicitly retains the source limitations on
+extrapolation, between-grid inference, covariance-model selection,
+Monte Carlo p-values and deterministic-chaos interpretations.
+
+`tests/testthat/test-native-source-text-inference.R` carries native
+fail-closed boundaries and opt-in Python 1.2 exact-string witnesses.
+All five have unresolved input/type/source scope differences. No
+certification approval is set automatically.
 
 ## Six source-ordered scientific observation frames
 
