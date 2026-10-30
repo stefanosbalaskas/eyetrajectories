@@ -260,9 +260,9 @@ etr_fpca_wild_bootstrap_family_test_reporting_text <- function(
   p<-.etr_inference_report_numeric(result$global_p_value,"global_p_value")
   .etr_assert(length(v)==1L && length(p)==1L && p>=0 && p<=1,
     "global statistic/p-value must be scalars and p within [0,1]")
-  .etr_assert(result$pvalue_correction %in% c("plus_one","raw") &&
+  .etr_assert(result$pvalue_correction %in% c("plus_one","none") &&
     length(result$pvalue_correction)==1L,
-    "pvalue_correction must be plus_one or raw")
+    "pvalue_correction must be plus_one or none")
   correction<-if(result$pvalue_correction=="plus_one")
     "(exceedances + 1)/(B + 1)" else "empirical exceedance proportion"
   paste0("Two-sided fixed-target Gaussian FPCR projection hypotheses ",
