@@ -21,10 +21,10 @@ This is an evidence-oriented development note, **not a certification claim**.
 
 | Domain | Number | Meaning |
 |---|---:|---|
-| Python function mappings | 319 / 380 | Names associated with native R candidates |
-| Native implementations started | 294 | Implemented operations; **not** proof of source equivalence |
-| Unmapped Python functions | 61 | No declared native candidate |
-| Known open source differences | 141 | Class, input, numerical, backend, error or scope boundaries |
+| Python function mappings | 322 / 380 | Names associated with native R candidates |
+| Native implementations started | 297 | Implemented operations; **not** proof of source equivalence |
+| Unmapped Python functions | 58 | No declared native candidate |
+| Known open source differences | 144 | Class, input, numerical, backend, error or scope boundaries |
 | Nonfunction exports for independent review | 128 | Values/classes not counted as native functions |
 | Complete independently certified public contracts | **0 / 508** | Four approval domains are not all independently signed off |
 
@@ -165,6 +165,23 @@ and reviewer fields, and cannot modify the authoritative 508-export
 certification register. Reviewer sign-off must refer to immutable
 test logs, accepted-domain boundaries and a full source commit,
 rather than relying on the CSV alone.
+
+## Native FPCA scientific graphics beyond descriptive reporting
+
+Three additional native graphics return observed-grid numerical geometry
+for component-bootstrap pointwise envelopes, sparse PACE score-system
+conditioning, and fixed-target FPCR wild-bootstrap familywise p-values.
+The original frozen-source intervals and tail probabilities are displayed,
+not re-estimated or re-calibrated. Inputs are validated conservatively.
+Native R returns numeric geometry, not Matplotlib Axes, so backend and
+source typed-object contracts remain explicitly open. Frozen Python
+1.2.0 plot-data witnesses are opt-in.
+
+The review queue now contains **48 unsigned candidates**. The
+2026-10-30 user-provided 44-contract oracle failed due to an incomplete
+Python source fixture for generalized FoSR bands. Both missing
+`confidence_level` fields are patched; renewed Python qualification
+has not yet been reported.
 
 ## Restricted native mixed-effects residual sensitivity comparison
 
