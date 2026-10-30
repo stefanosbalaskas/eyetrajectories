@@ -97,6 +97,8 @@ etr_functional_mixed_effects_variance_bootstrap_frame <- function(bootstrap) {
     "random_effect_covariance_eigenvalues")
   .etr_diagnostic_covariance(bootstrap$random_effect_covariances,
     n,"random_effect_covariances")
+  .etr_assert(ncol(eigen)==dim(bootstrap$random_effect_covariances)[2L],
+    "random_effect_covariance_eigenvalues dimension must match covariance")
   .etr_diagnostic_covariance(bootstrap$random_intercept_covariances,
     n,"random_intercept_covariances")
   .etr_assert(is.list(bootstrap$backend_warnings)&&
@@ -145,6 +147,9 @@ etr_functional_mixed_effects_variance_bootstrap_frame <- function(bootstrap) {
     .etr_diagnostic_matrix(
       bootstrap$trial_random_effect_covariance_eigenvalues,n,
       "trial_random_effect_covariance_eigenvalues")
+    .etr_assert(ncol(bootstrap$trial_random_effect_covariance_eigenvalues)==
+      dim(bootstrap$trial_random_effect_covariances)[2L],
+      "trial covariance eigenvalue dimension must match covariance")
     .etr_diagnostic_number(
       bootstrap$trial_random_effect_covariance_condition_numbers,n,
       "trial_random_effect_covariance_condition_numbers")
