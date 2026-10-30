@@ -150,3 +150,25 @@ Source numerical fixtures and direct pinned Python 1.2 oracle:
 Known Python dataclass, missing-field, full accepted-domain and error-class
 differences remain independently uncertified. The unsigned source queue is
 now **63**. No evidence/approval flags are promoted by this addition.
+
+## Source mixed-effects variance decomposition
+
+The existing \`etr_functional_mixed_effects_variance_decomposition()\` now
+preserves its historical \`etr_functional_mixed_moments\` behavior **while
+adding a separate source-shaped frozen Python 1.2 Gaussian mixed-fit
+branch**. The latter evaluates participant functional intercept variance,
+functional slope variance and signed intercept/slope covariance separately.
+If present, a nested trial functional intercept contributes its own
+variance curve. Scalar residual variance is reported independently.
+
+There is no automatic ranking, percentage allocation, model fitting or
+covariance selection, and a signed cross-covariance is **not clipped** to
+a nonnegative variance. The numerical source contract is checked with
+direct Python 1.2 row-by-row oracles in
+\`tests/testthat/test-native-mixed-variance-decomposition-source.R\`.
+These checks do not certify the older restricted moments estimator as
+equivalent to Python REML/GLS.
+
+The scientific review inventory now contains **64 unsigned candidates**
+and **160 unresolved source contract differences**. Source class identity,
+full accepted inputs/errors and independent reviewer approval remain open.

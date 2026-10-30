@@ -1,4 +1,4 @@
-# Stage 18 — restricted native functional repeated-measures model.
+# Restricted native functional repeated-measures model.
 # The estimator below is explicitly a two-level METHOD-OF-MOMENTS model,
 # NOT the spline-based likelihood/reml/GLS backend in Python 1.2.
 # Residual audits follow Python 1.2 diagnostics.py conventions.
