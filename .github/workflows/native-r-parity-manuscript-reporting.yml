@@ -11,6 +11,7 @@ on:
       - "R/native-source-diagnostic-frames.R"
       - "R/native-sparse-scientific-graphics.R"
       - "R/native-generalized-mixed-source-graphics.R"
+      - "R/native-mixed-residual-comparison.R"
       - "man/etr_native_inference_reporting.Rd"
       - "R/native-functional-diagnostics.R"
       - "inst/extdata/native_contract_certification_pilots_v1.csv"
@@ -27,6 +28,8 @@ on:
       - "tests/testthat/test-native-source-evidence-runner.R"
       - "tests/testthat/test-native-sparse-scientific-graphics.R"
       - "tests/testthat/test-native-generalized-mixed-source-graphics.R"
+      - "tests/testthat/test-native-mixed-residual-comparison.R"
+      - "man/etr_native_mixed_residual_comparison.Rd"
       - "man/etr_native_generalized_mixed_source_graphics.Rd"
       - "man/etr_native_sparse_scientific_graphics.Rd"
       - "man/etr_native_source_diagnostic_frames.Rd"
@@ -63,11 +66,11 @@ jobs:
       - name: Parse inference source and oracle fixtures
         shell: bash
         run: |
-          Rscript -e 'parse(file="R/native-inference-reporting.R"); parse(file="R/native-inference-reporting-extensions.R"); parse(file="R/native-scientific-source-frames.R"); parse(file="R/native-source-text-inference.R"); parse(file="R/native-source-model-reports.R"); parse(file="R/native-source-diagnostic-frames.R"); parse(file="R/native-sparse-scientific-graphics.R"); parse(file="R/native-generalized-mixed-source-graphics.R"); parse(file="scripts/capture_native_source_qualification_evidence.R"); parse(file="tests/testthat/test-native-inference-reporting.R"); parse(file="tests/testthat/test-native-inference-reporting-extensions.R"); parse(file="tests/testthat/test-native-scientific-source-frames.R"); parse(file="tests/testthat/test-native-source-text-inference.R"); parse(file="tests/testthat/test-native-source-model-reports.R"); parse(file="tests/testthat/test-native-source-diagnostic-frames.R"); parse(file="tests/testthat/test-native-source-evidence-runner.R"); parse(file="tests/testthat/test-native-sparse-scientific-graphics.R"); parse(file="tests/testthat/test-native-generalized-mixed-source-graphics.R")'
+          Rscript -e 'parse(file="R/native-inference-reporting.R"); parse(file="R/native-inference-reporting-extensions.R"); parse(file="R/native-scientific-source-frames.R"); parse(file="R/native-source-text-inference.R"); parse(file="R/native-source-model-reports.R"); parse(file="R/native-source-diagnostic-frames.R"); parse(file="R/native-sparse-scientific-graphics.R"); parse(file="R/native-generalized-mixed-source-graphics.R"); parse(file="R/native-mixed-residual-comparison.R"); parse(file="scripts/capture_native_source_qualification_evidence.R"); parse(file="tests/testthat/test-native-inference-reporting.R"); parse(file="tests/testthat/test-native-inference-reporting-extensions.R"); parse(file="tests/testthat/test-native-scientific-source-frames.R"); parse(file="tests/testthat/test-native-source-text-inference.R"); parse(file="tests/testthat/test-native-source-model-reports.R"); parse(file="tests/testthat/test-native-source-diagnostic-frames.R"); parse(file="tests/testthat/test-native-source-evidence-runner.R"); parse(file="tests/testthat/test-native-sparse-scientific-graphics.R"); parse(file="tests/testthat/test-native-generalized-mixed-source-graphics.R"); parse(file="tests/testthat/test-native-mixed-residual-comparison.R")'
       - name: Native text, source ledger, and reticulate isolation
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-inference-reporting|native-scientific-source-frames|native-source-text-inference|native-source-model-reports|native-source-diagnostic-frames|native-source-evidence-runner|native-sparse-scientific-graphics|native-generalized-mixed-source-graphics|native-manuscript-reporting|native-source-contract-gaps|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-inference-reporting|native-scientific-source-frames|native-source-text-inference|native-source-model-reports|native-source-diagnostic-frames|native-source-evidence-runner|native-sparse-scientific-graphics|native-generalized-mixed-source-graphics|native-mixed-residual-comparison|native-manuscript-reporting|native-source-contract-gaps|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
   pinned-python:
     name: direct published Python 1.2 reporting text oracle
     runs-on: ubuntu-latest
@@ -94,4 +97,4 @@ jobs:
         env:
           RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-inference-reporting|native-scientific-source-frames|native-source-text-inference|native-source-model-reports|native-source-diagnostic-frames|native-source-evidence-runner|native-sparse-scientific-graphics|native-generalized-mixed-source-graphics|native-manuscript-reporting|native-source-boundaries|native-source-contract-gaps",reporter="summary",stop_on_failure=TRUE)'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-inference-reporting|native-scientific-source-frames|native-source-text-inference|native-source-model-reports|native-source-diagnostic-frames|native-source-evidence-runner|native-sparse-scientific-graphics|native-generalized-mixed-source-graphics|native-mixed-residual-comparison|native-manuscript-reporting|native-source-boundaries|native-source-contract-gaps",reporter="summary",stop_on_failure=TRUE)'
