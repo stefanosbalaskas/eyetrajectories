@@ -4,6 +4,10 @@
 \alias{etr_functional_mixed_effects_covariance_sensitivity_reporting_text}
 \alias{etr_multivariate_iaaft_reporting_text}
 \alias{etr_multivariate_surrogate_nonlinearity_reporting_text}
+\alias{etr_generalized_function_on_scalar_reporting_text}
+\alias{etr_functional_mixed_effects_residual_reporting_text}
+\alias{etr_sparse_mfpca_reporting_text}
+\alias{etr_sparse_fpca_reporting_text}
 \title{Scientific interpretation reports aligned to frozen Python 1.2.0}
 \description{
 Five Python-free, strictly descriptive reporting functions for generalized
@@ -17,8 +21,14 @@ etr_generalized_function_on_scalar_mean_difference_reporting_text(result)
 etr_functional_mixed_effects_covariance_sensitivity_reporting_text(result)
 etr_multivariate_iaaft_reporting_text(result)
 etr_multivariate_surrogate_nonlinearity_reporting_text(result)
+etr_generalized_function_on_scalar_reporting_text(result, band = NULL)
+etr_functional_mixed_effects_residual_reporting_text(result)
+etr_sparse_mfpca_reporting_text(result, digits = 3L)
+etr_sparse_fpca_reporting_text(result, digits = 3L)
 }
 \arguments{
+\item{band}{Optional predeclared generalized function-on-scalar coefficient band.}
+\item{digits}{Nonnegative scientific reporting precision; restricted to 15 digits in R.}
 \item{result}{A validated native R list representing the relevant source
 result, containing explicit scalar identifiers, scientific metadata and
 inference diagnostics.}
