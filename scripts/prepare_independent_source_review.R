@@ -198,7 +198,7 @@ etr_prepare_independent_source_review<-function(
   instructions<-c(
     "# Frozen Python 1.2: independent scientific contract review",
     "",
-    paste0("Captured R commit: \`",recorded_heads,"\`"),
+    paste0("Captured R commit: `",recorded_heads,"`"),
     paste0("Checkout matches captured evidence: **",
       if(exact_head)"yes" else "NO — historical evidence", "**"),
     paste0("Native suite: **",if(passed[[1L]])"PASS" else "FAIL","**"),
