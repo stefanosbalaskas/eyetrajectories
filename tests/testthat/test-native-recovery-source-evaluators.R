@@ -23,6 +23,10 @@ test_that("hierarchy truth audit uses population variance and source order",{
   expect_identical(vapply(a$values,function(v)v$source,character(1L)),
     c(rep("curve",4L),rep("participant",2L),"trial"))
   expect_identical(a$provenance$ddof,0L)
+  expect_identical(names(a$values[[1L]]$metric),c(
+    "name","quantity","direction","units","scope","description"))
+  expect_identical(a$values[[1L]]$metric$direction,"lower_is_better")
+  expect_identical(a$values[[1L]]$metric$scope,"hierarchy")
   bad<-truth;bad$curve_scores[1,1]<-NA_real_
   expect_error(etr_evaluate_hierarchy_truth_recovery(bad),"finite")
 })

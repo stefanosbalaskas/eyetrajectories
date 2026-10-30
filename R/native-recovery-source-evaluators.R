@@ -34,7 +34,9 @@
       scope="hierarchy",
       description="Absolute score-source variance error divided by declared variance."),
     stop("unknown source metric",call.=FALSE))
-  c(list(name=name,direction="lower_is_better"),defs)
+  # Match the published Python FunctionalRecoveryMetric field ordering.
+  list(name=name,quantity=defs$quantity,direction="lower_is_better",
+    units=defs$units,scope=defs$scope,description=defs$description)
 }
 .etr_recovery_source_value <- function(name,value,component=NULL,source=NULL) {
   .etr_assert(is.numeric(value)&&length(value)==1L&&is.finite(value),
