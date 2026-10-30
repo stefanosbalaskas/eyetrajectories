@@ -4,6 +4,7 @@ on:
     paths:
       - "R/native-manuscript-reporting.R"
       - "R/native-inference-reporting.R"
+      - "R/native-inference-reporting-extensions.R"
       - "man/etr_native_inference_reporting.Rd"
       - "R/native-functional-diagnostics.R"
       - "inst/extdata/native_contract_certification_pilots_v1.csv"
@@ -12,6 +13,7 @@ on:
       - "R/native-full-parity-ledger.R"
       - "tests/testthat/test-native-manuscript-reporting.R"
       - "tests/testthat/test-native-inference-reporting.R"
+      - "tests/testthat/test-native-inference-reporting-extensions.R"
       - "NAMESPACE"
       - ".github/workflows/native-r-parity-manuscript-reporting.yml"
   workflow_dispatch:
@@ -41,7 +43,7 @@ jobs:
       - name: Parse inference source and oracle fixtures
         shell: bash
         run: |
-          Rscript -e 'parse(file="R/native-inference-reporting.R"); parse(file="tests/testthat/test-native-inference-reporting.R")'
+          Rscript -e 'parse(file="R/native-inference-reporting.R"); parse(file="R/native-inference-reporting-extensions.R"); parse(file="tests/testthat/test-native-inference-reporting.R"); parse(file="tests/testthat/test-native-inference-reporting-extensions.R")'
       - name: Native text, source ledger, and reticulate isolation
         shell: bash
         run: |
