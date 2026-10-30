@@ -112,6 +112,30 @@ etr_fpca_wild_bootstrap_family_test_monte_carlo_diagnostics <- function(
   stable_t<-ifelse(reject_t,mt$upper<alpha,mt$lower>alpha)
   stable_a<-ifelse(reject_a,ma$upper<alpha,ma$lower>alpha)
   stable_g<-if(reject_g)mg$upper[1L]<alpha else mg$lower[1L]>alpha
+  # Match the published Python 1.2 nested provenance record. Preserve
+  # pre-existing source provenance without changing hypothesis decisions.
+  prior<-result$provenance
+  if(is.null(prior))prior<-list()
+  .etr_assert(is.list(prior) &&
+    (!length(prior) || (!is.null(names(prior)) &&
+       !anyNA(names(prior)) && all(nzchar(names(prior))))),
+    "family-test provenance must be a named record")
+  prior[["fpca_wild_bootstrap_monte_carlo_diagnostics"]]<-list(
+    method="binomial_monte_carlo_precision_diagnostic",
+    interval_method="clopper_pearson_exact_binomial",
+    confidence_level=level,n_bootstrap=B,
+    exceedance_model="binomial_conditional_on_observed_statistic_and_bootstrap_design",
+    tail_probability_estimator="exceedances_over_B",
+    monte_carlo_standard_error="sqrt(qhat*(1-qhat)/B)",
+    reported_test_pvalue_correction=correction,
+    reported_test_minimum_attainable_p=if(correction=="plus_one")1/(B+1) else 0,
+    decision_stability_rule="complete_monte_carlo_interval_on_reported_decision_side_of_alpha",
+    changes_reported_test_decisions=FALSE,
+    additional_bootstrap_draws=FALSE,bootstrap_roots_reused=TRUE,
+    scientific_sampling_uncertainty_quantified=FALSE,
+    monte_carlo_sampling_uncertainty_quantified=TRUE,
+    strong_fwer_claim_added=FALSE,clustered_wild_bootstrap=FALSE,
+    component_selection_uncertainty_included=FALSE)
   structure(list(
     family_test_result=result,confidence_level=level,
     targetwise_exceedances=as.integer(counts_t),
@@ -132,14 +156,7 @@ etr_fpca_wild_bootstrap_family_test_monte_carlo_diagnostics <- function(
     targetwise_decision_stable=as.logical(stable_t),
     adjusted_decision_stable=as.logical(stable_a),
     global_decision_stable=as.logical(stable_g),
-    provenance=list(
-      method="binomial_monte_carlo_precision_diagnostic",
-      interval_method="clopper_pearson_exact_binomial",
-      bootstrap_roots_reused=TRUE,additional_bootstrap_draws=FALSE,
-      changes_reported_test_decisions=FALSE,
-      scientific_sampling_uncertainty_quantified=FALSE,
-      strong_fwer_claim_added=FALSE,
-      reported_test_pvalue_correction=correction)),
+    provenance=prior),
     class="etr_fpca_wild_mc_diagnostics")
 }
 
