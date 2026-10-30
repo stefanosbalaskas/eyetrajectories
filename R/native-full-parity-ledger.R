@@ -362,12 +362,12 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
               api$python_name %in% integration_group_7_names,7L,
               ifelse(api$is_python_function &
                 api$python_name %in% integration_group_8_names,8L,NA_integer_))))))
-  s9 <- c("alr_transform","inverse_alr","component_trajectories",
+  composition_and_score_integration_names <- c("alr_transform","inverse_alr","component_trajectories",
     "select_n_components","fpca_score_frame","score_distance_matrix",
     "pairwise_functional_distances","sparse_dimension_summary",
     "warping_displacement","phase_summary","phase_trajectory_set",
     "fit_phase_fpca")
-  api$native_implementation_stage[api$python_name %in% s9 &
+  api$native_implementation_stage[api$python_name %in% composition_and_score_integration_names &
     api$is_python_function] <- 9L
   integration_group_10_names <- c("fit_compositional_fpca","reconstruct_compositional_fpca",
     "component_similarity_matrix","match_fpca_components",
@@ -578,7 +578,7 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     api$python_name %in% inference_reporting_names] <- 45L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
-  # Stage 5 represents key TrajectorySet fields and with_values/subset
+  # TrajectorySet native representation covers key fields and with_values/subset
   # provenance behavior in R, but not all source class/schema contracts.
   api$native_representation_stage <- ifelse(
     !api$is_python_function & api$namespace=="root" &
@@ -758,4 +758,3 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   api
 }
 
-# Stage 9 implementation inventory pending registration.
