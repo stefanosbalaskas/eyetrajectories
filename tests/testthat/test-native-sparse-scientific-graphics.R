@@ -1,0 +1,199 @@
+# Frozen Python 1.2.0 sparse scientific geometry and graphics integration.
+.etr_sparse_visual_fixtures <- function() {
+  grid<-c(0,.5,1)
+  uni<-list(evaluation_grid=grid,
+    mean=c(1,2,3),
+    covariance=matrix(c(2,1,0,1,2,1,0,1,2),3,3),
+    eigenfunctions=matrix(c(1,0,-1,.5,0,-.5),2,3,byrow=TRUE),
+    eigenvalues=c(4,1),n_components=2L,
+    dimension="x",time_unit="seconds")
+  multi<-list(evaluation_grid=grid,
+    mean=cbind(x=c(1,2,3),y=c(3,2,1)),
+    eigenfunctions=array(0,dim=c(2L,3L,2L)),
+    eigenvalues=c(4,1),n_components=2L,
+    dimensions=c("x","y"),time_unit="seconds")
+  multi$eigenfunctions[1L,,1L]<-c(1,0,-1)
+  multi$eigenfunctions[1L,,2L]<-c(-1,0,1)
+  multi$eigenfunctions[2L,,1L]<-c(.5,1,.5)
+  multi$eigenfunctions[2L,,2L]<-c(.5,0,-.5)
+  multi$covariance_cxx<-diag(c(1,2,3))
+  multi$covariance_cxy<-matrix(c(0,1,2,3,4,5,6,7,8),3,3)
+  multi$covariance_cyx<-t(multi$covariance_cxy)
+  multi$covariance_cyy<-diag(c(2,3,4))
+  multi$smoothed_cxx<-multi$covariance_cxx/2
+  multi$smoothed_cxy<-multi$covariance_cxy/2
+  multi$smoothed_cyx<-multi$covariance_cyx/2
+  multi$smoothed_cyy<-multi$covariance_cyy/2
+  multi$score_diagnostics<-data.frame(
+    n_time_points=c(3,4,5,6),
+    condition_number=c(4,2,Inf,8),
+    status_code=c("ok","failed","failed","ok"))
+  irregular<-list(dimension_names=c("x","y"),
+    curve_ids=c("A","B"),time_unit="seconds",
+    time=list(c(0,.5,1),c(.1,.7)),
+    values=list(matrix(c(0,2,1,3,2,4),3,2,byrow=TRUE),
+      matrix(c(5,6,7,8),2,2,byrow=TRUE)))
+  list(univariate=uni,multivariate=multi,irregular=irregular)
+}
+.etr_sparse_visual_pdf <- function(expr) {
+  path<-tempfile(fileext=".pdf")
+  grDevices::pdf(path)
+  on.exit({
+    if(grDevices::dev.cur()>1L)grDevices::dev.off()
+    unlink(path)
+  },add=TRUE)
+  force(expr)
+}
+test_that("seven native sparse graphics preserve scientific source coordinates",{
+  z<-.etr_sparse_visual_fixtures()
+  .etr_sparse_visual_pdf({
+    a<-etr_plot_sparse_fpca_covariance(z$univariate)
+    expect_equal(a$grid,c(0,.5,1))
+    expect_equal(a$covariance,z$univariate$covariance)
+    b<-etr_plot_sparse_fpca_component(z$univariate,component=0L)
+    expect_equal(b$mean,c(1,2,3))
+    expect_equal(b$upper,c(5,2,-1))
+    expect_equal(b$lower,c(-3,2,7))
+    c<-etr_plot_sparse_mfpca_component(z$multivariate)
+    expect_equal(c$x$upper,c(5,2,-1))
+    expect_equal(c$y$upper,c(-1,2,5))
+    d<-etr_plot_sparse_mfpca_covariance_blocks(z$multivariate)
+    expect_identical(names(d),c("xx","xy","yx","yy"))
+    expect_equal(d$xy,z$multivariate$covariance_cxy)
+    e<-etr_plot_sparse_mfpca_cross_covariance(z$multivariate,
+      source="smoothed")
+    expect_equal(e$xy,z$multivariate$smoothed_cxy)
+    expect_equal(e$yx,t(e$xy))
+    f<-etr_plot_sparse_mfpca_score_diagnostics(z$multivariate)
+    expect_equal(nrow(f$finite),3L)
+    expect_equal(f$nonfinite_count,1L)
+    g<-etr_plot_sparse_irregular_dimension(z$irregular,"x")
+    expect_identical(g$curve_ids,c("A","B"))
+    expect_equal(g$time[[2L]],c(.1,.7))
+    expect_equal(g$values[[2L]],c(5,7))
+  })
+})
+test_that("sparse graphics reject bad geometry and ambiguous source requests",{
+  z<-.etr_sparse_visual_fixtures()
+  .etr_sparse_visual_pdf({
+    expect_error(etr_plot_sparse_fpca_component(z$univariate,
+      component=2L),"component")
+    expect_error(etr_plot_sparse_mfpca_component(z$multivariate,
+      sd_multiplier=0),"sd_multiplier")
+    expect_error(etr_plot_sparse_mfpca_covariance_blocks(z$multivariate,
+      source="calibrated"),"source")
+    bad<-z$multivariate;bad$covariance_cxx<-matrix(NA_real_,3,3)
+    expect_error(etr_plot_sparse_mfpca_covariance_blocks(bad),
+      "covariance_cxx")
+    bad<-z$univariate;bad$evaluation_grid<-c(0,1,.5)
+    expect_error(etr_plot_sparse_fpca_covariance(bad),
+      "evaluation_grid")
+    bad<-z$irregular;bad$time[[1L]]<-c(1,.5,0)
+    expect_error(etr_plot_sparse_irregular_dimension(bad,"x"),
+      "time")
+    expect_error(etr_plot_sparse_irregular_dimension(z$irregular,"z"),
+      "Unknown dimension")
+  })
+})
+test_that("seven new graphics map to frozen source without asserting backend parity",{
+  names<-c("plot_sparse_fpca_covariance","plot_sparse_fpca_component",
+    "plot_sparse_mfpca_component","plot_sparse_mfpca_covariance_blocks",
+    "plot_sparse_mfpca_cross_covariance",
+    "plot_sparse_mfpca_score_diagnostics","plot_sparse_irregular_dimension")
+  p<-etr_native_parity_catalog()
+  x<-p[p$is_python_function&p$python_name%in%names,,drop=FALSE]
+  expect_equal(nrow(x),7L)
+  expect_identical(sort(x$native_r_candidate),
+    sort(paste0("etr_",names)))
+  expect_true(all(x$native_implementation_started))
+  expect_true(all(x$source_contract_gap_unresolved))
+  expect_false(any(x$one_to_one_native_contract_complete))
+  expect_equal(sum(p$is_python_function&p$named_native_candidate),311L)
+  expect_equal(sum(p$native_implementation_started),286L)
+  expect_equal(sum(p$source_contract_gap_unresolved),133L)
+})
+test_that("sparse graphics curves and matrices match frozen Python plot data",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("published Python Matplotlib plotting geometry oracle is opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  reticulate::py_run_string("
+import numpy as np
+import pandas as pd
+import matplotlib
+matplotlib.use('Agg',force=True)
+import matplotlib.pyplot as plt
+import eyetrajectoriespy as et
+def _vs_new(cls,**fields):
+    obj=object.__new__(cls)
+    for name,value in fields.items(): object.__setattr__(obj,name,value)
+    return obj
+_vs_grid=np.array([0.,.5,1.])
+_vs_uni=_vs_new(et.SparseFPCAResult,
+    evaluation_grid=_vs_grid,mean=np.array([1.,2.,3.]),
+    covariance=np.array([[2.,1.,0.],[1.,2.,1.],[0.,1.,2.]]),
+    eigenfunctions=np.array([[1.,0.,-1.],[.5,0.,-.5]]),
+    eigenvalues=np.array([4.,1.]),n_components=2,
+    dimension='x',time_unit='seconds')
+_vs_mean=np.array([[1.,3.],[2.,2.],[3.,1.]])
+_vs_modes=np.zeros((2,3,2))
+_vs_modes[0,:,0]=[1.,0.,-1.]
+_vs_modes[0,:,1]=[-1.,0.,1.]
+_vs_modes[1,:,0]=[.5,1.,.5]
+_vs_modes[1,:,1]=[.5,0.,-.5]
+_vs_xy=np.arange(9.,dtype=float).reshape((3,3),order='F')
+_vs_mf=_vs_new(et.SparseMFPCAResult,
+    evaluation_grid=_vs_grid,mean=_vs_mean,
+    eigenfunctions=_vs_modes,eigenvalues=np.array([4.,1.]),
+    n_components=2,dimensions=('x','y'),time_unit='seconds',
+    covariance_cxx=np.diag([1.,2.,3.]),
+    covariance_cxy=_vs_xy,covariance_cyx=_vs_xy.T,
+    covariance_cyy=np.diag([2.,3.,4.]),
+    smoothed_cxx=np.diag([1.,2.,3.])/2,
+    smoothed_cxy=_vs_xy/2,smoothed_cyx=_vs_xy.T/2,
+    smoothed_cyy=np.diag([2.,3.,4.])/2,
+    score_diagnostics=pd.DataFrame({
+      'n_time_points':[3,4,5,6],
+      'condition_number':[4.,2.,np.inf,8.],
+      'status_code':['ok','failed','failed','ok']}))
+_vs_ir=_vs_new(et.IrregularTrajectorySet,
+    dimension_names=('x','y'),curve_ids=('A','B'),time_unit='seconds',
+    time=(np.array([0.,.5,1.]),np.array([.1,.7])),
+    values=(np.array([[0.,2.],[1.,3.],[2.,4.]]),
+      np.array([[5.,6.],[7.,8.]])))
+_vs_fpca=et.plot_sparse_fpca_component(_vs_uni)
+_vs_mfpca=et.plot_sparse_mfpca_component(_vs_mf)
+_vs_blocks=et.plot_sparse_mfpca_covariance_blocks(_vs_mf)
+_vs_cross=et.plot_sparse_mfpca_cross_covariance(_vs_mf,stage='smoothed')
+_vs_irreg=et.plot_sparse_irregular_dimension(_vs_ir,dimension='x')
+_vs_python={
+  'fpca_mean':_vs_fpca.lines[0].get_ydata(),
+  'fpca_lower':_vs_fpca.lines[1].get_ydata(),
+  'fpca_upper':_vs_fpca.lines[2].get_ydata(),
+  'mfpca_x_upper':_vs_mfpca[0].lines[1].get_ydata(),
+  'mfpca_y_upper':_vs_mfpca[1].lines[1].get_ydata(),
+  'xy':_vs_blocks[0,1].images[0].get_array().data,
+  'yx':_vs_cross[1].images[0].get_array().data,
+  'irreg_b_x':_vs_irreg.lines[1].get_ydata()
+}
+plt.close('all')
+")
+  z<-.etr_sparse_visual_fixtures()
+  .etr_sparse_visual_pdf({
+    a<-etr_plot_sparse_fpca_component(z$univariate)
+    b<-etr_plot_sparse_mfpca_component(z$multivariate)
+    c<-etr_plot_sparse_mfpca_covariance_blocks(z$multivariate)
+    d<-etr_plot_sparse_mfpca_cross_covariance(z$multivariate,
+      source="smoothed")
+    e<-etr_plot_sparse_irregular_dimension(z$irregular,"x")
+    actual<-list(fpca_mean=a$mean,fpca_lower=a$lower,
+      fpca_upper=a$upper,mfpca_x_upper=b$x$upper,
+      mfpca_y_upper=b$y$upper,xy=c$xy,yx=d$yx,
+      irreg_b_x=e$values[[2L]])
+    for(n in names(actual)){
+      py<-reticulate::py_eval(paste0("_vs_python['",n,"']"),
+        convert=TRUE)
+      expect_equal(actual[[n]],py,tolerance=1e-12,
+        ignore_attr=TRUE,info=paste("Python plotted geometry",n))
+    }
+  })
+})
