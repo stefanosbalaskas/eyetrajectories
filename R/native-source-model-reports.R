@@ -158,7 +158,7 @@ etr_functional_mixed_effects_residual_reporting_text <- function(result) {
   f<-function(v){
     value<-format(round(v,digits),scientific=FALSE,trim=TRUE,
       nsmall=0L)
-    if(!grepl("[.]",value,fixed=TRUE))paste0(value,".") else value
+    if(!grepl(".",value,fixed=TRUE))paste0(value,".") else value
   }
   rows<-apply(x,1L,function(v)paste(vapply(v,f,character(1L)),
     collapse=", "))
