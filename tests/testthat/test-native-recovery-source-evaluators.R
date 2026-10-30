@@ -39,7 +39,9 @@ test_that("inverse simulator warps are evaluated without interpolation of fitted
     c(0,0),tolerance=1e-12)
   fit$warping_functions[1,2]<-fit$warping_functions[1,2]+.1
   changed<-etr_evaluate_registration_recovery(fit,truth)
-  expect_equal(changed$values[[1L]]$value,.005,tolerance=1e-12)
+  # Trapezoid weight at the middle knot is 0.5; the metric averages
+  # curve ISE across two curves, including the unperturbed second curve.
+  expect_equal(changed$values[[1L]]$value,.1^2*.5/2,tolerance=1e-12)
   expect_equal(changed$values[[2L]]$value,.1,tolerance=1e-12)
   expect_identical(changed$provenance$truth_target,"inverse_phase_warp")
   fit$original$time<-c(0,.4,1)
