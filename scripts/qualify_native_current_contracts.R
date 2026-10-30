@@ -40,12 +40,46 @@ for(path in test_files)parse(file=path,keep.source=FALSE)
 source("scripts/preflight_native_source_syntax.R",local=TRUE)
 pkgload::load_all(".",quiet=TRUE)
 filter<-paste(required,collapse="|")
-Sys.unsetenv("ET_RUN_PYTHON_TESTS")
-testthat::test_local(".",filter=filter,reporter="summary",
-  stop_on_failure=TRUE)
-stopifnot(identical(et_python_version(),"1.2.0"))
-Sys.setenv(ET_RUN_PYTHON_TESTS="true")
-tryCatch(testthat::test_local(".",filter=filter,
-    reporter="summary",stop_on_failure=TRUE),
-  finally=Sys.unsetenv("ET_RUN_PYTHON_TESTS"))
-message("Candidate source oracles passed; no full-contract certification was inferred.")
+# Run both evidence modes even when one fails. Merely skipping a Python
+# oracle cannot be reported as a Python parity pass.
+.etr_qualify_current_once<-function(python=FALSE){
+  original<-Sys.getenv("ET_RUN_PYTHON_TESTS",unset=NA_character_)
+  on.exit({
+    if(is.na(original))Sys.unsetenv("ET_RUN_PYTHON_TESTS")
+    else Sys.setenv(ET_RUN_PYTHON_TESTS=original)
+  },add=TRUE)
+  if(python)Sys.setenv(ET_RUN_PYTHON_TESTS="true")
+  else Sys.unsetenv("ET_RUN_PYTHON_TESTS")
+  mode<-if(python)"pinned Python 1.2 direct-source" else "offline native R"
+  message("Qualifying ",mode," (candidate contracts remain unsigned).")
+  tryCatch({
+    testthat::test_local(".",filter=filter,reporter="summary",
+      stop_on_failure=TRUE)
+    message(mode,": PASS")
+    TRUE
+  },error=function(e){
+    message(mode,": FAIL: ",conditionMessage(e))
+    FALSE
+  })
+}
+native_pass<-.etr_qualify_current_once(FALSE)
+python_version<-tryCatch(et_python_version(),error=function(e){
+  message("Pinned Python 1.2 availability error: ",conditionMessage(e))
+  NA_character_
+})
+python_pass<-if(identical(python_version,"1.2.0")){
+  .etr_qualify_current_once(TRUE)
+}else{
+  message("pinned Python 1.2 direct-source: NOT QUALIFIED; detected version: ",
+    if(length(python_version)==1L&&!is.na(python_version))
+      python_version else "<unavailable>")
+  FALSE
+}
+if(!native_pass||!python_pass){
+  stop("Source candidate qualification failed: native_r=",
+    if(native_pass)"PASS" else "FAIL",
+    "; pinned_python_1_2=",
+    if(python_pass)"PASS" else "FAIL_OR_UNAVAILABLE",
+    "; no source contracts certified.",call.=FALSE)
+}
+message("Both candidate source modes passed; this does not establish full-domain independent certification.")

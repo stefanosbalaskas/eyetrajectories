@@ -23,6 +23,14 @@ test_that("native source qualification evidence runner parses", {
   expect_false(any(trimws(lines) == "else"))
   expect_true(any(grepl("qualify_once(FALSE)",lines,fixed=TRUE)))
   expect_true(any(grepl("qualify_once(TRUE)",lines,fixed=TRUE)))
+  current<-readLines(testthat::test_path("..","..","scripts",
+    "qualify_native_current_contracts.R"),warn=FALSE)
+  expect_true(any(grepl(".etr_qualify_current_once(FALSE)",
+    current,fixed=TRUE)))
+  expect_true(any(grepl(".etr_qualify_current_once(TRUE)",
+    current,fixed=TRUE)))
+  expect_true(any(grepl("no source contracts certified",
+    current,fixed=TRUE)))
   expect_false(any(grepl(
     "NOT ATTEMPTED: offline qualification failed",lines,fixed=TRUE)))
 })
