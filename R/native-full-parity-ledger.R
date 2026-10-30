@@ -748,6 +748,8 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     api$python_name=="functional_mixed_effects_simultaneous_bands"] <- 67L
   api$native_implementation_stage[api$is_python_function &
     api$python_name=="evaluate_functional_mixed_effects_recovery"] <- 68L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="functional_mixed_effects_variance_decomposition"] <- 69L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # TrajectorySet native representation covers key fields and with_values/subset
