@@ -172,3 +172,22 @@ equivalent to Python REML/GLS.
 The scientific review inventory now contains **64 unsigned candidates**
 and **160 unresolved source contract differences**. Source class identity,
 full accepted inputs/errors and independent reviewer approval remain open.
+
+## FPCA known-truth recovery (restricted one-component source domain)
+
+The new \`etr_evaluate_fpca_recovery()\` ports source \`recovery.py\`'s
+exact grid, dimension, unit scaling and one-component known-truth checks.
+For a single fitted and single generating functional component, it
+evaluates population mean and covariance operator ISE, signed weighted
+mode similarity, aligned latent score correlation/RMSE, functional subspace
+principal angle and mean reconstructed latent curve ISE. Time-major
+flattening preserves source NumPy covariance quadrature geometry.
+
+It refuses multi-component inputs rather than manufacturing a
+matched-eigenspace claim: the frozen Python general source instead
+uses optimal component assignment and SVD principal angles, neither of
+which has yet been ported and independently certified for all cases.
+The single-mode numerical subset has an opt-in pinned Python 1.2 oracle
+for both one-dimensional and two-dimensional functional trajectories.
+All type/domain/exception differences remain in the unresolved gap
+register. This raises the review queue to 65 **unsigned** contracts.

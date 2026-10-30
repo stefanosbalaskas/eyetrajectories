@@ -29,6 +29,7 @@ test_that("new scientific source oracles are included in both qualification mode
     "native-mixed-coefficient-bands-source",
     "native-mixed-known-truth-recovery",
     "native-mixed-variance-decomposition-source",
+    "native-fpca-known-truth-recovery",
     "native-mixed-model-source-text","native-source-environment")){
     expect_true(any(grepl(name,runner,fixed=TRUE)))
   }
@@ -42,8 +43,9 @@ test_that("new scientific source oracles are included in both qualification mode
     "generalized_function_on_scalar_simultaneous_bands",
     "functional_mixed_effects_simultaneous_bands",
     "evaluate_functional_mixed_effects_recovery",
-    "functional_mixed_effects_variance_decomposition")){
+    "functional_mixed_effects_variance_decomposition",
+    "evaluate_fpca_recovery")){
     expect_true(any(grepl(name,dossier,fixed=TRUE)))
   }
-  expect_true(any(grepl("nrow(queue)==64L",runner,fixed=TRUE)))
+  expect_true(any(grepl("nrow(queue)==65L",runner,fixed=TRUE)))
 })
