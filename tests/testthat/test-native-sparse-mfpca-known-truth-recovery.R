@@ -124,7 +124,7 @@ _spm_provenance=dict(_spm_py.provenance)
     as.numeric(reticulate::py_eval("_spm_values",convert=TRUE)),
     tolerance=1e-12)
   expect_identical(vapply(result$values[2:5],function(v)v$source,character(1L)),
-    as.character(reticulate::py_eval("_spm_sources[1:5][1:]",
+    as.character(reticulate::py_eval("_spm_sources[1:5]",
       convert=TRUE))[-1L])
   expect_identical(result$provenance$measurement_error_truth_supplied,
     reticulate::py_eval("_spm_provenance['measurement_error_truth_supplied']",
