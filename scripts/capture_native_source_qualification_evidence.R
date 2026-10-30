@@ -12,7 +12,7 @@ queue_path<-file.path("artifacts","native_inference_contract_review",
   "python_1_2_scientific_contract_review_queue.csv")
 queue<-utils::read.csv(queue_path,stringsAsFactors=FALSE,
   check.names=FALSE)
-stopifnot(nrow(queue)==30L,!anyDuplicated(queue$python_name),
+stopifnot(nrow(queue)==37L,!anyDuplicated(queue$python_name),
   all(!queue$fully_certified),
   all(queue$source_difference_open),
   all(file.exists(queue$oracle_test)))
@@ -25,6 +25,8 @@ filter<-paste(c(
   "native-source-model-reports",
   "native-source-text-inference",
   "native-source-diagnostic-frames",
+  "native-sparse-scientific-graphics",
+  "native-source-evidence-runner",
   "native-private-helper-names"),collapse="|")
 git_exe<-Sys.which("git")
 head_sha<-if(nzchar(git_exe)){
@@ -71,6 +73,8 @@ if(isTRUE(results[[1L]]$success)) {
 source_files<-unique(c(
   queue$oracle_test,
   "R/native-source-diagnostic-frames.R",
+  "R/native-sparse-scientific-graphics.R",
+  "scripts/capture_native_source_qualification_evidence.R",
   "R/native-scientific-source-frames.R",
   "R/native-source-model-reports.R",
   "R/native-source-text-inference.R",
