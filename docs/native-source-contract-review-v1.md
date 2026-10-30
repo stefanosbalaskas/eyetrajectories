@@ -164,9 +164,9 @@ Run `source("scripts/qualify_native_inference_reporting.R")` locally to
 exercise both offline and Python source tests, including
 `test-native-scientific-source-frames.R`.
 
-## Reproducible full-contract review dossier for eleven reporting ports
+## Reproducible full-contract review dossier for seventeen scientific ports
 
-The eleven source-aligned inference reporting functions have an explicit
+The eleven source-aligned inference reporting functions and six native scientific frame adapters have an explicit
 independent-review handoff, with source commit, test file, unresolved
 requirements, and unapproved evidence columns:
 
@@ -174,7 +174,7 @@ requirements, and unapproved evidence columns:
 source("scripts/build_inference_contract_dossier.R")
 ```
 
-This writes `artifacts/native_inference_contract_review/python_1_2_reporting_contract_review_queue.csv`.
+This writes `artifacts/native_inference_contract_review/python_1_2_scientific_contract_review_queue.csv`.
 It does **not** mark any full source contract certified. Local RStudio
 assertions, an exact-string Python oracle, and independent documentation
 of complete type/error domain and scientific scope are separate requirements.
