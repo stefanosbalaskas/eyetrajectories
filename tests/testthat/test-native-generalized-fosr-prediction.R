@@ -17,11 +17,21 @@
 test_that("fixed binomial profiles use full robust parameter covariance",{
   z<-.etr_gfosr_predict_fixture()
   p<-etr_generalized_function_on_scalar_predict(z$fit,z$profiles)
-  expected<-outer(c(0,1,2),c(.5,.75,1),
-    function(x,t).2+x*.5+(.1+x*.25)*(t- .5))
   # Verify independent direct scalar design evaluation (not link-scale averaging).
   expect_equal(p$linear_predictor_functions[1,],c(.2,.25,.3))
   expect_equal(p$linear_predictor_functions[2,],c(.7,.875,1.05))
+  expect_equal(p$linear_predictor_standard_errors[1,1],sqrt(.04))
+  expect_equal(p$linear_predictor_standard_errors[2,1],sqrt(.13))
+  correlated<-z$fit
+  correlated$parameter_covariance[1,3]<-.005
+  correlated$parameter_covariance[3,1]<-.005
+  correlated_result<-etr_generalized_function_on_scalar_predict(
+    correlated,z$profiles)
+  expect_equal(correlated_result$linear_predictor_standard_errors[2,1],
+    sqrt(.14),tolerance=1e-12)
+  frame<-etr_generalized_function_on_scalar_prediction_frame(p)
+  expect_equal(nrow(frame),9L)
+  expect_identical(frame$profile_id,rep(c("A","B","C"),each=3L))
   expect_equal(p$mean_functions,plogis(p$linear_predictor_functions))
   expect_identical(p$extrapolation_flags,c(FALSE,FALSE,TRUE))
   expect_true(all(p$linear_predictor_standard_errors>=0))
@@ -79,6 +89,10 @@ test_that("generalized source prediction rejects unsupported shapes and inputs",
     "basis_coefficients")
   expect_error(etr_generalized_function_on_scalar_predict(z$fit,
     z$profiles,prediction_scale="rate"),"binomial")
+  over<-.etr_gfosr_predict_fixture(family="poisson",exposed=FALSE)
+  over$fit$basis_coefficients[1,1]<-1000
+  expect_error(etr_generalized_function_on_scalar_predict(
+    over$fit,over$profiles),"overflowed")
 })
 
 test_that("published Python 1.2 and native fixed profile predictions agree",{
