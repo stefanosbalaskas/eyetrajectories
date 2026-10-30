@@ -108,9 +108,9 @@ test_that("seven new graphics map to frozen source without asserting backend par
   expect_true(all(x$native_implementation_started))
   expect_true(all(x$source_contract_gap_unresolved))
   expect_false(any(x$one_to_one_native_contract_complete))
-  expect_equal(sum(p$is_python_function&p$named_native_candidate),325L)
-  expect_equal(sum(p$native_implementation_started),300L)
-  expect_equal(sum(p$source_contract_gap_unresolved),147L)
+  expect_equal(sum(p$is_python_function&p$named_native_candidate),326L)
+  expect_equal(sum(p$native_implementation_started),301L)
+  expect_equal(sum(p$source_contract_gap_unresolved),148L)
 })
 test_that("sparse graphics curves and matrices match frozen Python plot data",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
