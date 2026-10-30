@@ -351,9 +351,15 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     sum(api$kind!="function")==128L,
     "Unexpected frozen Python public API; refresh manifest before porting")
   analogues <- .etr_known_native_analogues()
-  .etr_assert(!anyDuplicated(names(analogues)) &&
-    all(names(analogues) %in% api$python_name[api$kind=="function"]),
-    "Native analogy map contains duplicate or unknown public Python functions")
+  repeated_names <- unique(names(analogues)[duplicated(names(analogues))])
+  missing_names <- setdiff(names(analogues),
+    api$python_name[api$kind=="function"])
+  .etr_assert(length(repeated_names)==0L && length(missing_names)==0L,
+    paste0("Native analogy map contains duplicate or unknown public Python functions",
+      if(length(repeated_names))
+        paste0("; duplicate: ",paste(repeated_names,collapse=", ")) else "",
+      if(length(missing_names))
+        paste0("; unknown: ",paste(missing_names,collapse=", ")) else ""))
   exports <- getNamespaceExports("eyetrajectories")
   .etr_assert(all(unname(analogues) %in% exports),
     "A declared native candidate is not exported by the R package")
