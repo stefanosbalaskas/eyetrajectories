@@ -76,9 +76,10 @@ source_names<-c(
   "evaluate_sparse_fpca_recovery",
   "compare_functional_mixed_effects_bootstraps",
   "evaluate_sparse_mfpca_recovery",
-  "fpca_regression_future_prediction_interval"
+  "fpca_regression_future_prediction_interval",
+  "cross_validate_fpca_regression"
 )
-stopifnot(length(source_names)==69L,!anyDuplicated(source_names))
+stopifnot(length(source_names)==70L,!anyDuplicated(source_names))
 idx<-match(source_names,readiness$python_name)
 stopifnot(!anyNA(idx),all(readiness$kind[idx]=="function"),
   all(readiness$native_mapping_present[idx]),
@@ -128,6 +129,7 @@ source_test[66L]<-"tests/testthat/test-native-sparse-known-truth-recovery.R"
 source_test[67L]<-"tests/testthat/test-native-mixed-bootstrap-width-comparison.R"
 source_test[68L]<-"tests/testthat/test-native-sparse-mfpca-known-truth-recovery.R"
 source_test[69L]<-"tests/testthat/test-native-fpcr-future-prediction-interval.R"
+source_test[70L]<-"tests/testthat/test-native-fpcr-regression-cross-validation.R"
 source_file<-rep("src/eyetrajectoriespy/reporting.py",length(source_names))
 source_file[12L]<-"src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py"
 source_file[13L]<-"src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py"
@@ -172,6 +174,7 @@ source_file[66L]<-"src/eyetrajectoriespy/recovery.py"
 source_file[67L]<-"src/eyetrajectoriespy/functional_mixed_effects_full_refit.py"
 source_file[68L]<-"src/eyetrajectoriespy/recovery.py"
 source_file[69L]<-"src/eyetrajectoriespy/regression_inference.py"
+source_file[70L]<-"src/eyetrajectoriespy/prediction.py"
 fixture_state<-ifelse(seq_along(source_names)<=53L,
   "user_reported_native_and_python_1_2_qualification_pass_20261030T222420_not_independent",
   "new_tests_pending_local_native_and_python_oracle")
@@ -196,11 +199,11 @@ data<-data.frame(
   missing_evidence=readiness$all_unresolved_requirements[idx],
   stringsAsFactors=FALSE
 )
-stopifnot(nrow(data)==69L,!any(data$fully_certified))
+stopifnot(nrow(data)==70L,!any(data$fully_certified))
 output_dir<-file.path("artifacts","native_inference_contract_review")
 dir.create(output_dir,recursive=TRUE,showWarnings=FALSE)
 output<-file.path(output_dir,"python_1_2_scientific_contract_review_queue.csv")
 utils::write.csv(data,output,row.names=FALSE,na="")
 message("Wrote unsigned source-contract review queue: ",
   normalizePath(output,winslash="/",mustWork=TRUE))
-message("All 69 contracts remain uncertified pending full-domain and independent review.")
+message("All 70 contracts remain uncertified pending full-domain and independent review.")

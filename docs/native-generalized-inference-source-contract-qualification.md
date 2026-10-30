@@ -275,3 +275,26 @@ the caller RNG state for an explicit R seed. Scientific tests and
 opt-in Python 1.2.0 fixed-draw oracles verify the numerical law.
 This adds a **69th unsigned contract**, with cross-language RNG and
 typed-dataclass source differences still open.
+
+## Native source Gaussian FPCR prediction cross-validation: no shuffle
+
+\`etr_cross_validate_fpca_regression()\` provides the exact mathematical
+estimation targets of the published Python 1.2 source
+\`prediction.py::cross_validate_fpca_regression\` in a bounded Gaussian,
+curve-wise **unshuffled KFold** domain without covariates:
+- fit all candidate unsupervised FPCA scores on the **training** fold only,
+  then project each held-out curve into that training basis;
+- fit a separate Gaussian OLS scalar-on-FPC model for each candidate
+  inside that training fold, with RMSE/MAE held-out losses;
+- preserve Python source fold, candidate, curve and output-row order,
+  sorted integer candidate components, metadata warnings and per-curve
+  predicted and observed values.
+- Refuse shuffled sklearn KFold RNG, grouped GroupKFold, binomial
+  GLMs, and covariates explicitly. These remain open source contract
+  domains, along with full Python typed object/error behavior.
+- Check source numerical fold predictions and losses against pinned
+  Python 1.2.0 independently in the opt-in oracle test.
+
+This adds the **70th unsigned** scientific review candidate, but
+nothing is independently certified without full-domain verification
+and a genuine independent reviewer.

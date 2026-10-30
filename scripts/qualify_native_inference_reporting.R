@@ -35,6 +35,7 @@ qualifying_filter <- paste(
   "native-mixed-bootstrap-width-comparison",
   "native-sparse-mfpca-known-truth-recovery",
   "native-fpcr-future-prediction-interval",
+  "native-fpcr-regression-cross-validation",
   "native-mixed-model-source-text",
   "native-source-environment",
   "native-source-contract-gaps",
