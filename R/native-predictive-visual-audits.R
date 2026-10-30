@@ -50,8 +50,12 @@ etr_plot_fpca_regression_cv <- function(result) {
     xlab="Retained functional principal components",
     ylab=paste0("Held-out ",result$loss),
     main=paste0("Predictive FPCA regression CV (",result$family,")"))
-  graphics::arrows(candidates,means-summary$se_loss,
-    candidates,means+summary$se_loss,angle=90,code=3,length=.05)
+  # A single-fold group has zero source SE; base R arrows on a zero
+  # segment may warn. Preserve zero-width bounds in returned geometry.
+  nonzero<-which(summary$se_loss>0)
+  if(length(nonzero))graphics::arrows(candidates[nonzero],
+    means[nonzero]-summary$se_loss[nonzero],candidates[nonzero],
+    means[nonzero]+summary$se_loss[nonzero],angle=90,code=3,length=.05)
   invisible(list(summary=summary,
     line=data.frame(x=candidates,y=means),
     errorbar=data.frame(x=candidates,
