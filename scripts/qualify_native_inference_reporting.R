@@ -14,6 +14,7 @@ qualifying_filter <- paste(
   "native-source-diagnostic-frames",
   "native-certification-readiness",
   "native-private-helper-names",
+  "native-source-evidence-runner",
   "native-source-contract-gaps",
   "full-native-r-parity-ledger",
   sep="|"
