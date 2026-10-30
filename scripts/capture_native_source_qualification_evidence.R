@@ -60,6 +60,16 @@ qualify_once<-function(python=FALSE){
     paste0("QUALIFICATION ERROR: ",failed)
   }
   cat(outcome,"\n",file=path,append=TRUE,sep="")
+  message(label, ": ",outcome," (",path,")")
+  if(!is.null(failed)) {
+    lines<-readLines(path,warn=FALSE)
+    # Print the diagnostic tail on the console as well as preserving
+    # the complete per-mode artifact. No files outside artifacts change.
+    diagnostic<-tail(lines,100L)
+    message("===== ",label," failure details =====")
+    for(line in diagnostic)message(line)
+    message("===== Full failure log: ",path," =====")
+  }
   list(label=label,success=is.null(failed),log_file=path,
     error=if(is.null(failed))"" else failed)
 }
@@ -116,6 +126,12 @@ utils::write.csv(status,file.path(output_dir,
 message("Saved pinned-source qualification evidence under ",
   normalizePath(output_dir,winslash="/",mustWork=TRUE))
 message("These are test execution records, not independent full-contract certification.")
-if(!all(vapply(results,function(x)isTRUE(x$success),logical(1L))))
-  stop("Native/Python qualification failed: preserved evidence in ",
-    output_dir,call.=FALSE)
+if(!all(vapply(results,function(x)isTRUE(x$success),logical(1L)))) {
+  failed_labels<-vapply(results,function(x)
+    if(isTRUE(x$success))"" else x$label,character(1L))
+  stop("Native/Python qualification failed (",
+    paste(failed_labels[nzchar(failed_labels)],collapse=", "),
+    "). Evidence preserved in ",output_dir,
+    ". The preceding console output contains the test failures.",
+    call.=FALSE)
+}
