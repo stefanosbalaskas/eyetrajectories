@@ -21,10 +21,10 @@ This is an evidence-oriented development note, **not a certification claim**.
 
 | Domain | Number | Meaning |
 |---|---:|---|
-| Python function mappings | 321 / 380 | Names associated with native R candidates |
-| Native implementations started | 296 | Implemented operations; **not** proof of source equivalence |
-| Unmapped Python functions | 59 | No declared native candidate |
-| Known open source differences | 143 | Class, input, numerical, backend, error or scope boundaries |
+| Python function mappings | 324 / 380 | Names associated with native R candidates |
+| Native implementations started | 299 | Implemented operations; **not** proof of source equivalence |
+| Unmapped Python functions | 56 | No declared native candidate |
+| Known open source differences | 146 | Class, input, numerical, backend, error or scope boundaries |
 | Nonfunction exports for independent review | 128 | Values/classes not counted as native functions |
 | Complete independently certified public contracts | **0 / 508** | Four approval domains are not all independently signed off |
 
@@ -165,6 +165,26 @@ and reviewer fields, and cannot modify the authoritative 508-export
 certification register. Reviewer sign-off must refer to immutable
 test logs, accepted-domain boundaries and a full source commit,
 rather than relying on the CSV alone.
+
+## Exact finite-bootstrap Monte Carlo precision and fixed-family inference graphics
+
+Three further native source-derived operations now provide exact
+Clopper-Pearson intervals from retained bootstrap roots and maxT statistics,
+a Monte Carlo diagnostic plot, and familywise simultaneous FPCR projection
+interval plots. No bootstrap multipliers are redrawn, hypothesis-test decisions
+are overwritten, or uncertainty beyond the observed scientific target
+family is asserted.
+
+The Monte Carlo intervals describe finite-bootstrap numerical precision,
+not confidence intervals for the scientific effect. The exact recorded
+bootstrap exceedance counts, raw tail probabilities, MCSE and strict
+decision-stability rules are compared against pinned Python 1.2.0.
+Numerical and plot-data witnesses are opt-in; full dataclass, Matplotlib,
+and error-domain contracts remain unsigned.
+
+The source-review dossier is now **51 unsigned candidates**. The previous
+48-contract targeted scientific suite was reported locally green; these
+three functions still require their own native and pinned-source run.
 
 ## Native FPCA scientific graphics beyond descriptive reporting
 
