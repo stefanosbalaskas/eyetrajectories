@@ -64,8 +64,10 @@ etr_evaluate_functional_mixed_effects_recovery <- function(
   .etr_recovery_source_fields(result,c(
     "time","random_slope_predictor","dimension_name",
     "coefficient_names","coefficient_functions",
-    "random_basis","random_intercept_covariance",
-    "trial_random_effect"),"mixed-effects fit")
+    "random_basis","random_intercept_covariance"),"mixed-effects fit")
+  # trial_random_effect defaults to None in frozen Python 1.2.
+  # R x$trial_random_effect <- NULL removes a list element rather than
+  # retaining a named NULL; absence must therefore mean no trial effect.
   .etr_recovery_source_fields(truth,c(
     "truth_grid","dimension_names","mean","eigenfunctions",
     "participant_eigenvalues","trial_eigenvalues"),"simulation truth")
@@ -92,8 +94,8 @@ etr_evaluate_functional_mixed_effects_recovery <- function(
   d<-match(result$dimension_name,dimensions)
   .etr_assert(length(d)==1L&&!is.na(d),
     "mixed-effects response dimension is absent from generating truth")
-  c<-match(intercept_name,coefficients)
-  .etr_assert(length(c)==1L&&!is.na(c),
+  intercept_index<-match(intercept_name,coefficients)
+  .etr_assert(length(intercept_index)==1L&&!is.na(intercept_index),
     "intercept_name is absent from fitted model")
   nt<-length(grid)
   .etr_assert(is.matrix(truth$mean)&&is.numeric(truth$mean)&&
@@ -119,7 +121,7 @@ etr_evaluate_functional_mixed_effects_recovery <- function(
       paste(name,"must contain finite nonnegative simulator mode variances"))
   }
   weights<-etr_trapezoid_weights(grid)
-  mean_difference<-fit_coeff[c,]-truth$mean[,d]
+  mean_difference<-fit_coeff[intercept_index,]-truth$mean[,d]
   values<-list(.etr_mixed_recovery_value("coefficient_function_ise",
     sum(mean_difference^2*weights),"intercept"))
   truth_modes<-matrix(eigenfunctions[,,d,drop=FALSE],nrow=nk,ncol=nt)

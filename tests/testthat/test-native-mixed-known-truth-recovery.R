@@ -47,6 +47,11 @@ test_that("nested trial variance uses its own functional covariance, not scalar 
   z$fit$trial_random_effect<-NULL
   expect_error(etr_evaluate_functional_mixed_effects_recovery(z$fit,z$truth),
     "truth contains trial functional variance")
+  z$truth$trial_eigenvalues[]<-0
+  no_trial<-etr_evaluate_functional_mixed_effects_recovery(z$fit,z$truth)
+  expect_identical(length(no_trial$values),4L)
+  expect_identical(no_trial$provenance$trial_variance_target,
+    "time_domain_variance_function")
 })
 
 test_that("multidimensional truth contracts keep source variance in the selected channel",{
