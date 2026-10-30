@@ -21,10 +21,10 @@ This is an evidence-oriented development note, **not a certification claim**.
 
 | Domain | Number | Meaning |
 |---|---:|---|
-| Python function mappings | 322 / 380 | Names associated with native R candidates |
-| Native implementations started | 297 | Implemented operations; **not** proof of source equivalence |
-| Unmapped Python functions | 58 | No declared native candidate |
-| Known open source differences | 144 | Class, input, numerical, backend, error or scope boundaries |
+| Python function mappings | 321 / 380 | Names associated with native R candidates |
+| Native implementations started | 296 | Implemented operations; **not** proof of source equivalence |
+| Unmapped Python functions | 59 | No declared native candidate |
+| Known open source differences | 143 | Class, input, numerical, backend, error or scope boundaries |
 | Nonfunction exports for independent review | 128 | Values/classes not counted as native functions |
 | Complete independently certified public contracts | **0 / 508** | Four approval domains are not all independently signed off |
 
@@ -168,14 +168,21 @@ rather than relying on the CSV alone.
 
 ## Native FPCA scientific graphics beyond descriptive reporting
 
-Three additional native graphics return observed-grid numerical geometry
-for component-bootstrap pointwise envelopes, sparse PACE score-system
-conditioning, and fixed-target FPCR wild-bootstrap familywise p-values.
+Two additional native graphics return observed-grid numerical geometry
+for component-bootstrap pointwise envelopes and fixed-target FPCR
+wild-bootstrap familywise p-values. The existing sparse PACE score-system
+conditioning plot is retained and added to the frozen-source review.
 The original frozen-source intervals and tail probabilities are displayed,
 not re-estimated or re-calibrated. Inputs are validated conservatively.
 Native R returns numeric geometry, not Matplotlib Axes, so backend and
 source typed-object contracts remain explicitly open. Frozen Python
 1.2.0 plot-data witnesses are opt-in.
+
+The frozen-source audit found and removed one accidental duplicate
+native implementation, Python mapping, NAMESPACE export, and source-gap
+row for `etr_plot_sparse_fpca_score_diagnostics()`. Existing base-R
+geometry and caller expectations were preserved. The authoritative
+native function catalog is now 321 distinct mappings.
 
 The review queue now contains **48 unsigned candidates**. The
 2026-10-30 user-provided 44-contract oracle failed due to an incomplete
