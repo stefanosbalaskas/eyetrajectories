@@ -106,9 +106,9 @@ test_that("six FPCR/PACE plots map to the frozen source but remain unapproved",{
     expect_true(row$source_contract_gap_unresolved)
     expect_false(row$one_to_one_native_contract_complete)
   }
-  expect_equal(sum(z$is_python_function&z$named_native_candidate),325L)
-  expect_equal(sum(z$native_implementation_started),300L)
-  expect_equal(sum(z$source_contract_gap_unresolved),147L)
+  expect_equal(sum(z$is_python_function&z$named_native_candidate),326L)
+  expect_equal(sum(z$native_implementation_started),301L)
+  expect_equal(sum(z$source_contract_gap_unresolved),148L)
 })
 
 test_that("published Python 1.2 axes geometry agrees with native FPCR/PACE",{
