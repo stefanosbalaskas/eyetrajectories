@@ -10,10 +10,11 @@
 \alias{etr_sparse_fpca_reporting_text}
 \title{Scientific interpretation reports aligned to frozen Python 1.2.0}
 \description{
-Five Python-free, strictly descriptive reporting functions for generalized
+Nine Python-free, strictly descriptive reporting functions for generalized
 function-on-scalar regression predictions and profile contrasts, functional
 mixed-effects covariance sensitivity, multivariate IAAFT generation, and
-surrogate-based multivariate nonlinearity inference.
+surrogate-based multivariate nonlinearity inference, marginal generalized FoSR fitting,
+within-trial mixed-effects diagnostics and sparse univariate/multivariate PACE.
 }
 \usage{
 etr_generalized_function_on_scalar_prediction_reporting_text(result)
