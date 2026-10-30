@@ -234,3 +234,165 @@ etr_sparse_mfpca_reporting_text <- function(result,digits=3L) {
     failure,"'. Raw sparse trajectories were not pre-interpolated; ",
     "population functions were evaluated at retained native times.")
 }
+
+
+.etr_sparse_univariate_repr <- function(x,name) {
+  if(is.null(x))return("None")
+  paste0("'",.etr_source_text_word(x,name),"'")
+}
+.etr_sparse_univariate_scalar <- function(x,name,zero=TRUE) {
+  val<-.etr_source_text_number(x,name,min=if(zero)0 else .Machine$double.eps)
+  format(val,scientific=FALSE,trim=TRUE)
+}
+.etr_sparse_univariate_bounds <- function(x,name) {
+  .etr_assert(is.numeric(x)&&length(x)==2L&&all(is.finite(x))&&
+    x[1L]<x[2L],
+    paste(name,"must declare finite increasing endpoints"))
+  paste0("[",format(x[1L],scientific=FALSE,trim=TRUE),", ",
+    format(x[2L],scientific=FALSE,trim=TRUE),"]")
+}
+
+#' Frozen-source sparse univariate PACE reporting for native or FDApy records
+#' @param result Explicit sparse FPCA record with eigenvalues and recorded
+#'   native or FDApy fitting diagnostics.
+#' @param digits Decimal output precision for eigenvalue and PSD audit values.
+#' @return Exact-source descriptive manuscript text on declared R domains.
+#' @export
+etr_sparse_fpca_reporting_text <- function(result,digits=3L) {
+  d<-.etr_manuscript_digits(digits)
+  .etr_scientific_frame_fields(result,c("dimension","n_components",
+    "eigenvalues","provenance"),"sparse_fpca")
+  dimension<-.etr_source_text_word(result$dimension,"dimension")
+  k<-.etr_source_text_int(result$n_components,"n_components",min=1L)
+  eigen<-.etr_source_text_vector(result$eigenvalues,"eigenvalues")
+  .etr_assert(length(eigen)==k&&all(eigen>=0),
+    "eigenvalues must contain one nonnegative finite number per component")
+  .etr_scientific_frame_fields(result$provenance,c("sparse_fpca"),
+    "provenance")
+  sparse<-result$provenance$sparse_fpca
+  .etr_assert(is.list(sparse),"sparse_fpca provenance must be a list")
+  count<-sparse$sample_counts
+  if(is.null(count)||length(count)==0L)sample_range<-"not recorded"
+  else{
+    .etr_assert(is.numeric(count)&&all(is.finite(count))&&
+      all(count>=1)&&all(count==floor(count)),
+      "sample_counts must be positive whole counts")
+    sample_range<-paste0(min(count),"\u2013",max(count))
+  }
+  eigentext<-paste(vapply(eigen,function(x)
+    .etr_manuscript_number(x,d),character(1L)),collapse=", ")
+  grid<-sparse$evaluation_grid
+  grid_text<-if(is.null(grid)||length(grid)==0L)
+    "backend-default evaluation points" else {
+      .etr_assert(is.numeric(grid)&&length(grid)>=2L&&
+        all(is.finite(grid))&&all(diff(grid)>0),
+        "evaluation_grid must be finite increasing values")
+      paste0(length(grid)," points over [",
+        format(grid[1L],scientific=FALSE,trim=TRUE),", ",
+        format(tail(grid,1L),scientific=FALSE,trim=TRUE),"]")
+    }
+  if(identical(sparse$backend,"native")){
+    psd<-sparse$covariance_psd
+    if(is.null(psd))psd<-list()
+    .etr_assert(is.list(psd),"covariance_psd must be a list")
+    correction<-if(is.null(psd$applied_action))"unknown" else
+      .etr_source_text_word(psd$applied_action,"applied_action")
+    noise<-if(is.null(sparse$noise_variance_method))"unknown" else
+      .etr_source_text_word(sparse$noise_variance_method,
+        "noise_variance_method")
+    ridge<-if(is.null(sparse$score_ridge))0 else
+      .etr_source_text_number(sparse$score_ridge,"score_ridge",min=0)
+    support_text<-""
+    if(!is.null(sparse$analysis_support)){
+      x<-.etr_sparse_univariate_bounds(
+        sparse$analysis_support,"analysis_support")
+      action<-if(is.null(sparse$analysis_support_action))"unknown" else
+        .etr_source_text_word(sparse$analysis_support_action,
+          "analysis_support_action")
+      outside<-if(is.null(sparse$outside_observation_count))0L else
+        .etr_source_text_int(sparse$outside_observation_count,
+          "outside_observation_count")
+      support_text<-paste0(" The declared analysis support was ",x,
+        " with support action '",action,"'; ",outside,
+        " observations lay outside it.")
+    }
+    noise_text<-if(is.null(sparse$noise_support))"" else paste0(
+      " Diagonal-difference noise estimation used support ",
+      .etr_sparse_univariate_bounds(sparse$noise_support,"noise_support"),".")
+    relative<-psd$relative_operator_correction_frobenius_norm
+    repair_text<-if(is.null(relative))"" else {
+      rel<-.etr_source_text_number(relative,
+        "relative_operator_correction_frobenius_norm",min=0)
+      paste0(" The relative quadrature-weighted PSD-repair magnitude was ",
+        sprintf(paste0("%.",d,"g"),rel),".")
+    }
+    score_text<-""
+    diagnostics<-result$score_diagnostics
+    if(!is.null(diagnostics)){
+      .etr_assert(is.data.frame(diagnostics),
+        "score_diagnostics must be a data frame")
+      if(nrow(diagnostics)>0L){
+        if("status_code"%in%names(diagnostics)){
+          .etr_assert(!anyNA(diagnostics$status_code),
+            "status_code cannot be missing")
+          failed<-sum(as.character(diagnostics$status_code)!="ok")
+          score_text<-paste0(score_text,
+            " PACE scoring returned ",failed,
+            " non-ok systems among ",nrow(diagnostics)," curves.")
+        }
+        if("condition_number"%in%names(diagnostics)){
+          conditions<-suppressWarnings(as.numeric(
+            diagnostics$condition_number))
+          finite<-conditions[is.finite(conditions)&conditions>0]
+          if(length(finite)>0L)
+            score_text<-paste0(score_text,
+              " The median finite conditional covariance condition ",
+              "number was ",sprintf(paste0("%.",d,"g"),
+                stats::median(finite)),".")
+        }
+      }
+    }
+    return(paste0(
+      "Sparse univariate FPCA was fitted natively to the '",dimension,
+      "' trajectory dimension using explicit local-linear pooled mean ",
+      "and covariance smoothing (",k," components; per-curve sample-count ",
+      "range=",sample_range,"; retained eigenvalues=",eigentext,"). ",
+      "Raw sparse trajectories were not interpolated to a common grid. ",
+      "Population functions were represented on ",grid_text," and ",
+      "evaluated at each curve's native observation times for PACE ",
+      "scoring. The conditional score system used the full fitted ",
+      "covariance surface plus measurement-error variance rather than ",
+      "the retained-rank covariance reconstruction.",support_text,
+      " Measurement-error variance used '",noise,"'.",noise_text,
+      " Covariance PSD handling applied '",correction,
+      "'; the declared score ridge was ",
+      format(ridge,scientific=FALSE,trim=TRUE),".",repair_text,
+      score_text," The analysis was univariate and did not model ",
+      "cross-channel covariance."))
+  }
+  .etr_scientific_frame_fields(result,
+    c("fit_smoothing","tolerance","score_smoothing"),
+    "FDApy sparse FPCA")
+  fit_text<-.etr_sparse_univariate_repr(result$fit_smoothing,
+    "fit_smoothing")
+  smooth_text<-.etr_sparse_univariate_repr(result$score_smoothing,
+    "score_smoothing")
+  tol<-.etr_sparse_univariate_scalar(result$tolerance,
+    "tolerance")
+  custom<-length(sparse$kwargs_mean)>0L||
+    length(sparse$kwargs_covariance)>0L
+  custom_text<-if(custom)
+    " Custom mean/covariance smoothing parameters were supplied." else ""
+  paste0(
+    "Sparse univariate FPCA was fitted to the '",dimension,
+    "' trajectory dimension using FDApy's covariance-operator estimator, ",
+    "with ",fit_text," fitting smoothness and PACE conditional-expectation ",
+    "scores (",k," components; per-curve sample-count range=",
+    sample_range,"; retained eigenvalues=",eigentext,
+    "). eyetrajectoriespy did not pre-interpolate raw sparse curves ",
+    "before passing them to FDApy; the FDApy irregular PACE backend ",
+    "may smooth/interpolate internally as part of its score path. ",
+    "Eigenfunctions/covariance were evaluated on ",grid_text,
+    ". PACE tolerance was ",tol," and score smoothing was ",
+    smooth_text,".",custom_text)
+}
