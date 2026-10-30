@@ -83,3 +83,10 @@ test_that("native public functions are defined once and never named by stage",{
   expect_identical(grep("stage",exported_functions,
     ignore.case=TRUE,value=TRUE),character())
 })
+
+test_that("parity ledger never restores stage-numbered function locals",{
+  identifiers<-all.names(body(etr_native_parity_catalog),
+    functions=TRUE,unique=TRUE)
+  expect_false(any(grepl("^stage[0-9]+_names$",identifiers)))
+  expect_false(any(grepl("^stage[0-9]+_",identifiers)))
+})
