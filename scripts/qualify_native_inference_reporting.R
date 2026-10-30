@@ -28,6 +28,7 @@ qualifying_filter <- paste(
   "native-recovery-source-evaluators",
   "native-generalized-fosr-coefficient-bands",
   "native-mixed-coefficient-bands-source",
+  "native-mixed-known-truth-recovery",
   "native-mixed-model-source-text",
   "native-source-environment",
   "native-source-contract-gaps",

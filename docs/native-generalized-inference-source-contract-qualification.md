@@ -122,3 +122,31 @@ source("scripts/capture_native_source_qualification_evidence.R")
   unsigned independent review.
 
 The review queue has **62** source contracts; **all remain uncertified**.
+
+## Functional mixed-effects known-truth recovery: time-domain source contract
+
+\`etr_evaluate_functional_mixed_effects_recovery()\` adds an explicit
+source-shaped evaluator for retained Gaussian functional mixed-effects fits.
+The estimator must have no functional random slope, the response dimension
+and fixed intercept must be declared, and the time grid must match latent
+truth **exactly**.
+
+The evaluator scores the fitted intercept and participant random-intercept
+time-domain variance \`diag(B Sigma B^T)\` against the latent generating
+variance \`sum_k lambda_k phi_k(t)^2\` with trapezoidal integration. A
+declared trial functional intercept is evaluated independently; a truth
+with positive trial variance but no fitted trial effect fails closed.
+
+The two source scientific distinctions are retained:
+
+1. Basis-coefficient covariance parameters are **not** treated as directly
+   comparable to simulator KL eigenvalues.
+2. Curve-level functional KL variation is **not** treated as scalar
+   independent residual variance.
+
+Source numerical fixtures and direct pinned Python 1.2 oracle:
+\`tests/testthat/test-native-mixed-known-truth-recovery.R\`.
+
+Known Python dataclass, missing-field, full accepted-domain and error-class
+differences remain independently uncertified. The unsigned source queue is
+now **63**. No evidence/approval flags are promoted by this addition.
