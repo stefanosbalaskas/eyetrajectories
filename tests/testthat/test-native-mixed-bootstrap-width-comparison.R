@@ -52,7 +52,7 @@ test_that("bootstrap comparison refuses mismatched reference or provenance",{
   z<-.etr_compare_mixed_bootstrap_fixture()
   bad<-z$full;bad$reference$time[2L]<-.6
   expect_error(etr_compare_functional_mixed_effects_bootstraps(z$fixed,bad),
-    "same reference fit")
+    "both bootstrap objects must share the exact reference fit",fixed=TRUE)
   bad<-z$full;bad$bootstrap_type<-"conditional_covariance"
   expect_error(etr_compare_functional_mixed_effects_bootstraps(z$fixed,bad),
     "full-refit bootstrap")
