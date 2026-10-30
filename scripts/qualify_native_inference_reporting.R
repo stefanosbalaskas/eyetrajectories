@@ -17,6 +17,7 @@ qualifying_filter <- paste(
   "native-source-evidence-runner",
   "native-sparse-scientific-graphics",
   "native-generalized-mixed-source-graphics",
+  "native-mixed-residual-comparison",
   "native-source-contract-gaps",
   "full-native-r-parity-ledger",
   sep="|"
