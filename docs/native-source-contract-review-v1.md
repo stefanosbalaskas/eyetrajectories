@@ -21,10 +21,10 @@ This is an evidence-oriented development note, **not a certification claim**.
 
 | Domain | Number | Meaning |
 |---|---:|---|
-| Python function mappings | 304 / 380 | Names associated with native R candidates |
-| Native implementations started | 279 | Implemented operations; **not** proof of source equivalence |
-| Unmapped Python functions | 76 | No declared native candidate |
-| Known open source differences | 126 | Class, input, numerical, backend, error or scope boundaries |
+| Python function mappings | 311 / 380 | Names associated with native R candidates |
+| Native implementations started | 286 | Implemented operations; **not** proof of source equivalence |
+| Unmapped Python functions | 69 | No declared native candidate |
+| Known open source differences | 133 | Class, input, numerical, backend, error or scope boundaries |
 | Nonfunction exports for independent review | 128 | Values/classes not counted as native functions |
 | Complete independently certified public contracts | **0 / 508** | Four approval domains are not all independently signed off |
 
@@ -165,6 +165,23 @@ and reviewer fields, and cannot modify the authoritative 508-export
 certification register. Reviewer sign-off must refer to immutable
 test logs, accepted-domain boundaries and a full source commit,
 rather than relying on the CSV alone.
+
+## Seven source-derived sparse scientific visualizations
+
+Seven new native graphics functions implement fitted sparse FPCA covariance,
+mean-plus/minus-component variation, multivariate component variation,
+four-block covariance, directional cross-covariance, joint PACE score
+diagnostics and original irregular curve observations. Data coordinates
+and covariance surfaces come from the native fitted result; no estimator,
+smoothing or calibration is silently rerun.
+
+The published Python 1.2.0 Matplotlib axes API is not source-equivalent to
+base-R graphics objects. The native functions therefore return invisible
+numerical geometry for reproducibility. Covariance selection uses the R
+argument `source="used"` or `source="smoothed"`, avoiding historical
+terminology in the function interface. The selected Python rendering and
+data-geometry witnesses are opt-in; full plotting input and output contracts
+remain open. The unsigned dossier now covers **37** candidates.
 
 ## Frozen-source numerical diagnostics and R-native visualizations
 
