@@ -16,6 +16,7 @@ qualifying_filter <- paste(
   "native-private-helper-names",
   "native-source-evidence-runner",
   "native-sparse-scientific-graphics",
+  "native-generalized-mixed-source-graphics",
   "native-source-contract-gaps",
   "full-native-r-parity-ledger",
   sep="|"
