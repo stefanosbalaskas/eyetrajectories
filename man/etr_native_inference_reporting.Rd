@@ -7,6 +7,9 @@
 \alias{etr_fpca_wild_bootstrap_family_test_reporting_text}
 \alias{etr_fpca_wild_bootstrap_monte_carlo_reporting_text}
 \alias{etr_fpca_wild_bootstrap_simultaneous_reporting_text}
+\alias{etr_fpca_regression_cv_reporting_text}
+\alias{etr_fpca_component_envelope_reporting_text}
+\alias{etr_fpca_wild_bootstrap_truncation_reporting_text}
 \title{Native FPCR inference and wild-bootstrap manuscript reporting}
 \description{
 Eight Python-free functions construct explicit scientific reporting strings
@@ -22,6 +25,9 @@ etr_fpca_nested_regression_cv_reporting_text(result, digits = 3L)
 etr_fpca_wild_bootstrap_family_test_reporting_text(result, digits = 3L)
 etr_fpca_wild_bootstrap_monte_carlo_reporting_text(result, digits = 3L)
 etr_fpca_wild_bootstrap_simultaneous_reporting_text(result, digits = 3L)
+etr_fpca_regression_cv_reporting_text(result, rule = "minimum", digits = 3L)
+etr_fpca_component_envelope_reporting_text(result, digits = 2L)
+etr_fpca_wild_bootstrap_truncation_reporting_text(result, digits = 3L)
 }
 \arguments{
 \item{result}{An explicit named R list containing the scientifically defined
@@ -29,6 +35,7 @@ results and source-aligned fields needed by the selected reporting method.
 Objects must already have been computed. No automatic coercion to a Python
 dataclass is attempted.}
 \item{digits}{Nonnegative integer decimal precision for the output.}
+\item{rule}{Explicit minimum or one-standard-error selection rule for FPCA regression CV reporting.}
 }
 \value{
 A character scalar containing descriptive manuscript wording. The wording
