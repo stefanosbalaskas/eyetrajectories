@@ -85,9 +85,9 @@ test_that("three plot mappings remain uncertified with explicit backend gaps",{
     expect_true(row$source_contract_gap_unresolved)
     expect_false(row$one_to_one_native_contract_complete)
   }
-  expect_equal(sum(a$is_python_function&a$named_native_candidate),321L)
-  expect_equal(sum(a$native_implementation_started),296L)
-  expect_equal(sum(a$source_contract_gap_unresolved),143L)
+  expect_equal(sum(a$is_python_function&a$named_native_candidate),324L)
+  expect_equal(sum(a$native_implementation_started),299L)
+  expect_equal(sum(a$source_contract_gap_unresolved),146L)
 })
 
 test_that("Python 1.2 phase plot line points and population variance bars agree",{
