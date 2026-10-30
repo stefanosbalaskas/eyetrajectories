@@ -75,7 +75,9 @@ _mix_source=dict(predictor_names=('dose',),
     residual_correlation_independence_limit_fit=False,
     backend_warnings=(),random_slope_predictor=None,
     random_basis_size=3,residual_correlation='iid',dimension_name='x',
-    fixed_basis_size=4,spline_degree=3,n_curves=8,n_participants=4,
+    fixed_basis_size=4,spline_degree=3,
+    source_curve_ids=tuple(f'curve{i}' for i in range(8)),
+    participant_ids=tuple(f'participant{i}' for i in range(4)),
     reml=True,method='lbfgs',
     random_effect_covariance_condition_number=7.123)
 _mix_py0=et.functional_mixed_effects_reporting_text(
@@ -86,7 +88,8 @@ _mix_other.update(boundary_fit=True,random_effect_singular=True,
     residual_correlation='ar1',residual_correlation_parameter=.25,
     random_slope_predictor='dose',random_effect_dimension=6,
     random_effect_covariance_parameter_count=21,
-    trial_random_effect='functional_intercept',n_trials=8,
+    trial_random_effect='functional_intercept',
+    trial_ids=tuple(f'trial{i}' for i in range(8)),
     trial_random_basis_size=2,
     trial_random_effect_covariance_parameter_count=3)
 _mix_py1=et.functional_mixed_effects_reporting_text(
