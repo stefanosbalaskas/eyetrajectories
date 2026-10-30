@@ -15,6 +15,7 @@ qualifying_filter <- paste(
   "native-certification-readiness",
   "native-private-helper-names",
   "native-source-evidence-runner",
+  "native-sparse-scientific-graphics",
   "native-source-contract-gaps",
   "full-native-r-parity-ledger",
   sep="|"
