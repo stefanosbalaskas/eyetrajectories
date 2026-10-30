@@ -87,6 +87,12 @@ test_that("native inference reporting rejects undeclared or unsafe inputs",{
   bad<-z$nested;bad$outer_folds$selected_n_components[1]<-1.5
   expect_error(etr_fpca_nested_regression_cv_reporting_text(bad),
     "positive whole")
+  alternate<-z$family;alternate$pvalue_correction<-"none"
+  expect_match(etr_fpca_wild_bootstrap_family_test_reporting_text(
+    alternate),"empirical exceedance proportion")
+  bad<-z$family;bad$pvalue_correction<-"raw"
+  expect_error(etr_fpca_wild_bootstrap_family_test_reporting_text(bad),
+    "plus_one or none")
   bad<-z$family;bad$reject_familywise[1]<-NA
   expect_error(etr_fpca_wild_bootstrap_family_test_reporting_text(bad),
     "reject_familywise")
