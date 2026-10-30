@@ -124,9 +124,13 @@ _pi_provenance=dict(
   expected_prov<-reticulate::py_to_r(reticulate::py_eval(
     "_pi_provenance",convert=FALSE))
   native_prov<-a$provenance$fpca_regression_future_prediction_interval
-  for(name in names(expected_prov))
+  # Compare all source scientific claims except stream identity:
+  # fixed replayed draws do NOT establish that R uses NumPy SeedSequence.
+  for(name in setdiff(names(expected_prov),"residual_rng_stream"))
     expect_equal(native_prov[[name]],expected_prov[[name]],
       info=paste("source predictive inference provenance",name))
   expect_identical(a$native_rng_source,
     "externally_retained_python_source_indices")
+  expect_identical(native_prov$residual_rng_stream,
+    "externally_supplied_indices_no_rng_identity_claim")
 })
