@@ -25,6 +25,7 @@ on:
       - "man/etr_native_source_diagnostic_frames.Rd"
       - "man/etr_native_source_text_inference.Rd"
       - "scripts/build_inference_contract_dossier.R"
+      - "scripts/capture_native_source_qualification_evidence.R"
       - "man/etr_native_scientific_source_frames.Rd"
       - "NAMESPACE"
       - ".github/workflows/native-r-parity-manuscript-reporting.yml"
@@ -55,7 +56,7 @@ jobs:
       - name: Parse inference source and oracle fixtures
         shell: bash
         run: |
-          Rscript -e 'parse(file="R/native-inference-reporting.R"); parse(file="R/native-inference-reporting-extensions.R"); parse(file="R/native-scientific-source-frames.R"); parse(file="R/native-source-text-inference.R"); parse(file="R/native-source-model-reports.R"); parse(file="R/native-source-diagnostic-frames.R"); parse(file="tests/testthat/test-native-inference-reporting.R"); parse(file="tests/testthat/test-native-inference-reporting-extensions.R"); parse(file="tests/testthat/test-native-scientific-source-frames.R"); parse(file="tests/testthat/test-native-source-text-inference.R"); parse(file="tests/testthat/test-native-source-model-reports.R"); parse(file="tests/testthat/test-native-source-diagnostic-frames.R")'
+          Rscript -e 'parse(file="R/native-inference-reporting.R"); parse(file="R/native-inference-reporting-extensions.R"); parse(file="R/native-scientific-source-frames.R"); parse(file="R/native-source-text-inference.R"); parse(file="R/native-source-model-reports.R"); parse(file="R/native-source-diagnostic-frames.R"); parse(file="scripts/capture_native_source_qualification_evidence.R"); parse(file="tests/testthat/test-native-inference-reporting.R"); parse(file="tests/testthat/test-native-inference-reporting-extensions.R"); parse(file="tests/testthat/test-native-scientific-source-frames.R"); parse(file="tests/testthat/test-native-source-text-inference.R"); parse(file="tests/testthat/test-native-source-model-reports.R"); parse(file="tests/testthat/test-native-source-diagnostic-frames.R")'
       - name: Native text, source ledger, and reticulate isolation
         shell: bash
         run: |
