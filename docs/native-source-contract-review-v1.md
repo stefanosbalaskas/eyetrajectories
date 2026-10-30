@@ -21,10 +21,10 @@ This is an evidence-oriented development note, **not a certification claim**.
 
 | Domain | Number | Meaning |
 |---|---:|---|
-| Python function mappings | 324 / 380 | Names associated with native R candidates |
-| Native implementations started | 299 | Implemented operations; **not** proof of source equivalence |
-| Unmapped Python functions | 56 | No declared native candidate |
-| Known open source differences | 146 | Class, input, numerical, backend, error or scope boundaries |
+| Python function mappings | 325 / 380 | Names associated with native R candidates |
+| Native implementations started | 300 | Implemented operations; **not** proof of source equivalence |
+| Unmapped Python functions | 55 | No declared native candidate |
+| Known open source differences | 147 | Class, input, numerical, backend, error or scope boundaries |
 | Nonfunction exports for independent review | 128 | Values/classes not counted as native functions |
 | Complete independently certified public contracts | **0 / 508** | Four approval domains are not all independently signed off |
 
@@ -165,6 +165,24 @@ and reviewer fields, and cannot modify the authoritative 508-export
 certification register. Reviewer sign-off must refer to immutable
 test logs, accepted-domain boundaries and a full source commit,
 rather than relying on the CSV alone.
+
+## Native fixed-target simultaneous wild-bootstrap calibration
+
+A new numerical function `etr_fpca_wild_bootstrap_projection_simultaneous_interval()`
+reuses the precomputed B-by-target studentized roots to compute one
+max-absolute statistic across the **entire fixed target family**. It uses
+NumPy's exact `quantile(method="higher")` order-statistic rule, not
+a superficially similar R quantile type that differs for small B.
+Observed-projection intervals and targetwise critical values are
+source-aligned and covered by a pinned Python 1.2 direct numerical
+oracle. No FPCA, regression or bootstrap is rerun, and no future-outcome
+or continuous-time coverage is claimed. The Python dataclass/provenance
+return contract is still an unsigned documented boundary.
+
+The new **52-contract** source queue includes the earlier Monte Carlo
+precision and plotting witnesses; they need full offline and opt-in
+source qualification after the latest fixes. The source-level review
+will not be marked independent or complete on fixture success alone.
 
 ## Exact finite-bootstrap Monte Carlo precision and fixed-family inference graphics
 
