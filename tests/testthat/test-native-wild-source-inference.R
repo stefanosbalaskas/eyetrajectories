@@ -245,3 +245,72 @@ _frames=[
         info=paste("frame",i,col))
   }
 })
+
+test_that("72 randomized frozen Python 1.2 selection grids match native",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("72 published Python 1.2 randomized selection witnesses are opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  reticulate::py_run_string("
+import numpy as np
+import eyetrajectoriespy as et
+_rng=np.random.default_rng(73173)
+_selection_stress=[]
+for k in range(72):
+    h=np.arange(2,7+(k%4),dtype=int)
+    n_targets=1+(k%3)
+    w=np.maximum(.01,2+np.cumsum(
+        _rng.normal(0,.18,size=(len(h),n_targets)),axis=0))
+    c=np.cumsum(_rng.normal(0,.11,size=(len(h),n_targets)),axis=0)
+    ids=tuple('target_'+str(j) for j in range(n_targets))
+    scan=object.__new__(et.FPCAWildBootstrapTruncationScanResult)
+    record={
+        'candidate_components':tuple(int(x) for x in h),
+        'target_curve_ids':ids,
+        'widths':w,'centers':c,
+        'lower':c-w/2,'upper':c+w/2,
+        'studentized_roots':np.zeros((len(h),2,n_targets)),
+        'provenance':{}}
+    for key,value in record.items():
+        object.__setattr__(scan,key,value)
+    wt=(.04,.16,.33)[k%3]
+    ct=(.03,.11,.23)[(k//3)%3]
+    rr=(k//9)%3
+    selected=et.select_fpca_wild_bootstrap_truncation(
+        scan,width_threshold=wt,center_threshold=ct,
+        stability_run=rr,on_failure='ignore')
+    _selection_stress.append({
+        'scan':record,'width_threshold':wt,
+        'center_threshold':ct,'stability_run':rr,
+        'indices':selected.selected_candidate_indices,
+        'components':selected.selected_components,
+        'centers':selected.selected_centers,
+        'widths':selected.selected_widths,
+        'lower':selected.selected_lower,
+        'upper':selected.selected_upper,
+        'stable_both':selected.stable_both})
+",convert=FALSE)
+  cases<-reticulate::py_to_r(
+    reticulate::py_get_attr(reticulate::py,"_selection_stress"))
+  expect_length(cases,72L)
+  for(i in seq_along(cases)){
+    v<-cases[[i]];scan<-v$scan
+    got<-etr_select_fpca_wild_bootstrap_truncation(
+      scan,width_threshold=v$width_threshold,
+      center_threshold=v$center_threshold,
+      stability_run=v$stability_run,on_failure="ignore")
+    for(pair in list(
+      c("selected_candidate_indices","indices"),
+      c("selected_components","components"),
+      c("selected_centers","centers"),
+      c("selected_widths","widths"),
+      c("selected_lower","lower"),
+      c("selected_upper","upper"),
+      c("stable_both","stable_both"))){
+      expect_equal(got[[pair[[1L]]]],v[[pair[[2L]]]],
+        tolerance=1e-11,info=paste("case",i,pair[[1L]]))
+    }
+    expect_true(all(got$selected_candidate_indices>=-1L))
+    expect_false(any(is.finite(got$selected_components)&
+      got$selected_candidate_indices<0L))
+  }
+})
