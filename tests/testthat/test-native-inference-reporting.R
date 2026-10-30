@@ -83,7 +83,7 @@ test_that("native inference reporting rejects undeclared or unsafe inputs",{
     "bounds")
   bad<-z$slope_band;bad$critical_values<-1
   expect_error(etr_fpca_regression_slope_band_reporting_text(bad),
-    "dimensions")
+    "critical values must match distinct functional dimension names")
   bad<-z$nested;bad$outer_folds$selected_n_components[1]<-1.5
   expect_error(etr_fpca_nested_regression_cv_reporting_text(bad),
     "positive whole")
