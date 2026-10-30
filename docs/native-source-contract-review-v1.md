@@ -21,10 +21,10 @@ This is an evidence-oriented development note, **not a certification claim**.
 
 | Domain | Number | Meaning |
 |---|---:|---|
-| Python function mappings | 282 / 380 | Names associated with native R candidates |
-| Native implementations started | 257 | Implemented operations; **not** proof of source equivalence |
-| Unmapped Python functions | 98 | No declared native candidate |
-| Known open source differences | 104 | Class, input, numerical, backend, error or scope boundaries |
+| Python function mappings | 285 / 380 | Names associated with native R candidates |
+| Native implementations started | 260 | Implemented operations; **not** proof of source equivalence |
+| Unmapped Python functions | 95 | No declared native candidate |
+| Known open source differences | 107 | Class, input, numerical, backend, error or scope boundaries |
 | Nonfunction exports for independent review | 128 | Values/classes not counted as native functions |
 | Complete independently certified public contracts | **0 / 508** | Four approval domains are not all independently signed off |
 
@@ -139,6 +139,14 @@ fixed-family simultaneous intervals. These return scientifically qualified
 strings from explicit finite R records and have opt-in Python 1.2 exact-text
 oracles. Native list acceptance is narrower than published Python dataclasses;
 **all eight remain source-contract gaps, not independent certifications**.
+
+Three additional read-only reporting integrations summarize held-out FPCA
+regression CV, descriptive matched-component bootstrap envelopes and the
+shared-multiplier stabilized-volatility truncation scan. Their native R
+implementations use conservative validated list records, with opt-in
+Python 1.2.0 exact-text oracles, explicit scientific-scope boundaries and
+unresolved typed-source-contract gaps. No numerical certification flags
+are automatically promoted.
 
 ## One-command local qualification of the latest reporting batch
 
