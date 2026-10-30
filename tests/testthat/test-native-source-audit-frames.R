@@ -117,9 +117,9 @@ test_that("six source frames are mapped with explicit noncertified boundaries",{
     expect_false(row$one_to_one_native_contract_complete)
   }
   expect_equal(sum(catalog$is_python_function&
-    catalog$named_native_candidate),321L)
-  expect_equal(sum(catalog$native_implementation_started),296L)
-  expect_equal(sum(catalog$source_contract_gap_unresolved),143L)
+    catalog$named_native_candidate),324L)
+  expect_equal(sum(catalog$native_implementation_started),299L)
+  expect_equal(sum(catalog$source_contract_gap_unresolved),146L)
 })
 
 test_that("pinned published Python source frame oracle agrees on six fixtures",{
