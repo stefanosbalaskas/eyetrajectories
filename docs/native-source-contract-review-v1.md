@@ -182,9 +182,10 @@ decision-stability rules are compared against pinned Python 1.2.0.
 Numerical and plot-data witnesses are opt-in; full dataclass, Matplotlib,
 and error-domain contracts remain unsigned.
 
-The source-review dossier is now **51 unsigned candidates**. The previous
-48-contract targeted scientific suite was reported locally green; these
-three functions still require their own native and pinned-source run.
+The source-review dossier is now **51 unsigned candidates**. The previous five targeted native/parity suites were reported locally
+without failures or skips; this did not run the complete 48-contract
+qualification. These three new functions still require both native
+and pinned-Python numerical qualification.
 
 ## Native FPCA scientific graphics beyond descriptive reporting
 
