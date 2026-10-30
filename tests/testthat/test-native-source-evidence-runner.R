@@ -31,6 +31,14 @@ test_that("native source qualification evidence runner parses", {
     current,fixed=TRUE)))
   expect_true(any(grepl("no source contracts certified",
     current,fixed=TRUE)))
+  packet<-testthat::test_path("..","..","scripts",
+    "prepare_independent_source_review.R")
+  expect_true(file.exists(packet))
+  expect_silent(parse(file=packet,keep.source=FALSE))
+  expect_true(any(grepl("native-independent-source-review-packet",
+    lines,fixed=TRUE)))
+  expect_true(any(grepl("scripts/prepare_independent_source_review.R",
+    lines,fixed=TRUE)))
   expect_false(any(grepl(
     "NOT ATTEMPTED: offline qualification failed",lines,fixed=TRUE)))
 })

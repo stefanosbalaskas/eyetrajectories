@@ -71,6 +71,7 @@ filter<-paste(c(
   "native-mixed-model-source-text",
   "native-source-environment",
   "native-source-evidence-runner",
+  "native-independent-source-review-packet",
   "native-private-helper-names"),collapse="|")
 git_exe<-Sys.which("git")
 head_sha<-if(nzchar(git_exe)){
@@ -170,6 +171,8 @@ source_files<-unique(c(
   "tests/testthat/test-native-mixed-residual-comparison.R",
   "tests/testthat/test-native-generalized-mixed-source-graphics.R",
   "scripts/capture_native_source_qualification_evidence.R",
+  "scripts/prepare_independent_source_review.R",
+  "tests/testthat/test-native-independent-source-review-packet.R",
   "R/native-scientific-source-frames.R",
   "R/native-source-model-reports.R",
   "R/native-source-text-inference.R",
