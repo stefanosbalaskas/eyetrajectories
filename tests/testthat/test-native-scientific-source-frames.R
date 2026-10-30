@@ -133,9 +133,9 @@ test_that("six adapter mappings retain open typed-Python source gaps",{
   expect_true(all(rows$native_implementation_started))
   expect_true(all(rows$source_contract_gap_unresolved))
   expect_false(any(rows$one_to_one_native_contract_complete))
-  expect_equal(sum(p$is_python_function & p$named_native_candidate),296L)
-  expect_equal(sum(p$native_implementation_started),271L)
-  expect_equal(sum(p$source_contract_gap_unresolved),118L)
+  expect_equal(sum(p$is_python_function & p$named_native_candidate),300L)
+  expect_equal(sum(p$native_implementation_started),275L)
+  expect_equal(sum(p$source_contract_gap_unresolved),122L)
 })
 
 test_that("six observation frames match published Python 1.2 source records",{
