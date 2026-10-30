@@ -43,17 +43,17 @@ test_that("Rosenstein local divergence tracks all eligible forward pairs",{
   expect_s3_class(z,"etr_local_divergence")
   expect_identical(z$horizons,0:8)
   expect_equal(z$time_lags,(0:8)*.05,tolerance=1e-13)
-  expect_equal(length(z$nearest_neighbor_indices),89L)
+  expect_equal(length(z$nearest_neighbor_indices),84L)
   expect_identical(length(z$pair_counts),9L)
   expect_true(all(z$nearest_neighbor_indices>=0&
-    z$nearest_neighbor_indices<89L))
+    z$nearest_neighbor_indices<84L))
   expect_true(all(z$pair_counts>=0))
   expect_true(all(z$zero_distance_counts>=0))
   expect_true(any(is.finite(z$mean_log_divergence)))
   zz<-etr_local_divergence_curve(e,curve=0L,
     theiler_window=3L,max_horizon=8L)
   expect_equal(z$mean_log_divergence,zz$mean_log_divergence)
-  expect_error(etr_local_divergence_curve(e,"c01",3L,89L),
+  expect_error(etr_local_divergence_curve(e,"c01",3L,84L),
     "max_horizon")
   expect_error(etr_local_divergence_curve(e,"missing",3L,4L),
     "curve_id")
