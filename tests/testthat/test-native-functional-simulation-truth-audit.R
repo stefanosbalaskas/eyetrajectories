@@ -76,9 +76,9 @@ test_that("realized truth/source report are explicit unresolved contracts",{
     expect_false(row$one_to_one_native_contract_complete)
   }
   expect_equal(sum(catalog$is_python_function&
-    catalog$named_native_candidate),318L)
-  expect_equal(sum(catalog$native_implementation_started),293L)
-  expect_equal(sum(catalog$source_contract_gap_unresolved),140L)
+    catalog$named_native_candidate),319L)
+  expect_equal(sum(catalog$native_implementation_started),294L)
+  expect_equal(sum(catalog$source_contract_gap_unresolved),141L)
 })
 
 test_that("direct Python 1.2 realized truth audit and reporting text agree",{
