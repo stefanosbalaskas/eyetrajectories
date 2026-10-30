@@ -25,6 +25,8 @@
   capture_environment="etr_capture_environment",
   generalized_function_on_scalar_predict="etr_generalized_function_on_scalar_predict",
   functional_mixed_effects_reporting_text="etr_functional_mixed_effects_reporting_text",
+  bootstrap_generalized_function_on_scalar_predictions="etr_bootstrap_generalized_function_on_scalar_predictions",
+  generalized_function_on_scalar_prediction_bands="etr_generalized_function_on_scalar_prediction_bands",
   validate_common_grid="etr_validate_common_grid",
   validate_simplex="etr_validate_simplex",
   validate_no_long_missing_runs="etr_validate_no_long_missing_runs",
@@ -724,6 +726,10 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     api$python_name=="generalized_function_on_scalar_predict"] <- 59L
   api$native_implementation_stage[api$is_python_function &
     api$python_name=="functional_mixed_effects_reporting_text"] <- 60L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="bootstrap_generalized_function_on_scalar_predictions"] <- 61L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="generalized_function_on_scalar_prediction_bands"] <- 62L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # TrajectorySet native representation covers key fields and with_values/subset
