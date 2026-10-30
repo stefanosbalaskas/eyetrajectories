@@ -19,6 +19,7 @@ qualifying_filter <- paste(
   "native-generalized-mixed-source-graphics",
   "native-mixed-residual-comparison",
   "native-fpca-inference-source-graphics",
+  "native-wild-monte-carlo-source-contracts",
   "native-source-contract-gaps",
   "full-native-r-parity-ledger",
   sep="|"
