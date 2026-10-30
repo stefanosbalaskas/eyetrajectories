@@ -123,9 +123,9 @@ test_that("eight frozen reports map but remain uncertified",{
   expect_identical(sort(candidates$native_r_candidate),
     sort(paste0("etr_",expected)))
   expect_false(any(candidates$one_to_one_native_contract_complete))
-  expect_equal(sum(api$is_python_function & api$named_native_candidate),325L)
-  expect_equal(sum(api$native_implementation_started),300L)
-  expect_equal(sum(api$source_contract_gap_unresolved),147L)
+  expect_equal(sum(api$is_python_function & api$named_native_candidate),326L)
+  expect_equal(sum(api$native_implementation_started),301L)
+  expect_equal(sum(api$source_contract_gap_unresolved),148L)
   expect_false(any(api$one_to_one_native_contract_complete))
 })
 
