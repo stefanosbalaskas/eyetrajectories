@@ -21,10 +21,10 @@ This is an evidence-oriented development note, **not a certification claim**.
 
 | Domain | Number | Meaning |
 |---|---:|---|
-| Python function mappings | 299 / 380 | Names associated with native R candidates |
-| Native implementations started | 274 | Implemented operations; **not** proof of source equivalence |
-| Unmapped Python functions | 81 | No declared native candidate |
-| Known open source differences | 121 | Class, input, numerical, backend, error or scope boundaries |
+| Python function mappings | 300 / 380 | Names associated with native R candidates |
+| Native implementations started | 275 | Implemented operations; **not** proof of source equivalence |
+| Unmapped Python functions | 80 | No declared native candidate |
+| Known open source differences | 122 | Class, input, numerical, backend, error or scope boundaries |
 | Nonfunction exports for independent review | 128 | Values/classes not counted as native functions |
 | Complete independently certified public contracts | **0 / 508** | Four approval domains are not all independently signed off |
 
@@ -147,6 +147,16 @@ implementations use conservative validated list records, with opt-in
 Python 1.2.0 exact-text oracles, explicit scientific-scope boundaries and
 unresolved typed-source-contract gaps. No numerical certification flags
 are automatically promoted.
+
+## Sparse univariate native/FDApy reporting
+
+The `etr_sparse_fpca_reporting_text()` source port covers both the
+published native sparse PACE report and the historical FDApy reporting
+branch, including evaluator grids, counts, retained eigenvalues,
+PSD/noise diagnostics and scoring status. The accompanying Python 1.2.0
+opt-in fixtures exercise both backend-specific report paths. This is a
+validated conservative input and formatting subset, **not** complete
+source-domain/type parity.
 
 ## Three additional scientific model source reporters
 
