@@ -27,6 +27,13 @@ test_that("source-shaped mixed-effect manuscript wording does not overclaim",{
   bad<-x;bad$boundary_fit<-NA
   expect_error(etr_functional_mixed_effects_reporting_text(bad),
     "boundary_fit")
+  bad<-x;bad$n_curves<-2^40
+  expect_error(etr_functional_mixed_effects_reporting_text(bad),
+    "representable integer")
+  bad<-x;bad$residual_correlation<-"ar1"
+  bad$residual_correlation_parameter<-NaN
+  expect_error(etr_functional_mixed_effects_reporting_text(bad),
+    "residual_correlation_parameter")
 })
 test_that("mixed source report preserves warnings and declared covariance",{
   x<-.etr_mixed_text_fixture()

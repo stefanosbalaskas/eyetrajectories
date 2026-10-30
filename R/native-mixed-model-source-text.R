@@ -19,7 +19,8 @@
 }
 .etr_fmixed_report_count <- function(x,name) {
   .etr_assert(is.numeric(x)&&length(x)==1L&&is.finite(x)&&
-    x>=1&&x==floor(x),"source count must be positive integer")
+    x>=1&&x==floor(x)&&x<=.Machine$integer.max,
+    "source count must be a positive representable integer")
   as.integer(x)
 }
 .etr_fmixed_report_repr <- function(x,name)paste0("'",
@@ -142,6 +143,11 @@ etr_functional_mixed_effects_reporting_text <- function(result,band=NULL){
   }
   corr<-.etr_fmixed_report_string(result$residual_correlation,
     "residual_correlation")
+  if(corr%in%c("ar1","exponential"))
+    .etr_assert(is.numeric(result$residual_correlation_parameter)&&
+      length(result$residual_correlation_parameter)==1L&&
+      is.finite(result$residual_correlation_parameter),
+      "residual_correlation_parameter must be finite numeric")
   residual_text<-switch(corr,
     iid="Grid-level residuals were conditionally iid Gaussian within each source curve/trial.",
     exponential={
