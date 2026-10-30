@@ -58,9 +58,9 @@ test_that("workflow configuration remains an unresolved, individually tracked so
   expect_true(row$source_contract_gap_unresolved)
   expect_false(row$one_to_one_native_contract_complete)
   expect_equal(nrow(z),508L)
-  expect_equal(sum(z$is_python_function & z$named_native_candidate),285L)
-  expect_equal(sum(z$native_implementation_started),260L)
-  expect_equal(sum(z$source_contract_gap_unresolved),107L)
+  expect_equal(sum(z$is_python_function & z$named_native_candidate),291L)
+  expect_equal(sum(z$native_implementation_started),266L)
+  expect_equal(sum(z$source_contract_gap_unresolved),113L)
   exports <- getNamespaceExports("eyetrajectories")
   expect_false(any(grepl("stage[0-9]+|etr[0-9]+_",
     exports,ignore.case=TRUE)))
