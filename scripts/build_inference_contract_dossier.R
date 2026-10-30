@@ -29,9 +29,13 @@ source_names<-c(
   "generalized_function_on_scalar_mean_difference_reporting_text",
   "functional_mixed_effects_covariance_sensitivity_reporting_text",
   "multivariate_iaaft_reporting_text",
-  "multivariate_surrogate_nonlinearity_reporting_text"
+  "multivariate_surrogate_nonlinearity_reporting_text",
+  "generalized_function_on_scalar_reporting_text",
+  "functional_mixed_effects_residual_reporting_text",
+  "sparse_mfpca_reporting_text",
+  "sparse_fpca_reporting_text"
 )
-stopifnot(length(source_names)==22L,!anyDuplicated(source_names))
+stopifnot(length(source_names)==26L,!anyDuplicated(source_names))
 idx<-match(source_names,readiness$python_name)
 stopifnot(!anyNA(idx),all(readiness$kind[idx]=="function"),
   all(readiness$native_mapping_present[idx]),
@@ -48,7 +52,9 @@ source_test<-ifelse(seq_along(source_names)<=8L,
     "tests/testthat/test-native-inference-reporting-extensions.R",
     ifelse(seq_along(source_names)<=17L,
       "tests/testthat/test-native-scientific-source-frames.R",
-      "tests/testthat/test-native-source-text-inference.R")))
+      ifelse(seq_along(source_names)<=22L,
+      "tests/testthat/test-native-source-text-inference.R",
+      "tests/testthat/test-native-source-model-reports.R"))))
 source_file<-rep("src/eyetrajectoriespy/reporting.py",length(source_names))
 source_file[12L]<-"src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py"
 source_file[13L]<-"src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py"
@@ -59,6 +65,10 @@ source_file[17L]<-"src/eyetrajectoriespy/sparse_multivariate.py"
 source_file[18:19]<-"src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py"
 source_file[20L]<-"src/eyetrajectoriespy/functional_mixed_effects_covariance_sensitivity.py"
 source_file[21:22]<-"src/eyetrajectoriespy/nonlinear_reporting.py"
+source_file[23L]<-"src/eyetrajectoriespy/generalized_function_on_scalar.py"
+source_file[24L]<-"src/eyetrajectoriespy/functional_mixed_effects_diagnostics.py"
+source_file[25L]<-"src/eyetrajectoriespy/sparse_multivariate.py"
+source_file[26L]<-"src/eyetrajectoriespy/reporting.py"
 fixture_state<-ifelse(seq_along(source_names)<=11L,
   "user_reported_local_native_and_python_1_2_pass_2026_10_30_unarchived",
   "new_tests_pending_local_native_and_python_oracle")
@@ -83,11 +93,11 @@ data<-data.frame(
   missing_evidence=readiness$all_unresolved_requirements[idx],
   stringsAsFactors=FALSE
 )
-stopifnot(nrow(data)==22L,!any(data$fully_certified))
+stopifnot(nrow(data)==26L,!any(data$fully_certified))
 output_dir<-file.path("artifacts","native_inference_contract_review")
 dir.create(output_dir,recursive=TRUE,showWarnings=FALSE)
 output<-file.path(output_dir,"python_1_2_scientific_contract_review_queue.csv")
 utils::write.csv(data,output,row.names=FALSE,na="")
 message("Wrote unsigned source-contract review queue: ",
   normalizePath(output,winslash="/",mustWork=TRUE))
-message("All 22 contracts remain uncertified pending full-domain and independent review.")
+message("All 26 contracts remain uncertified pending full-domain and independent review.")
