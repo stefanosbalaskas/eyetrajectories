@@ -63,3 +63,38 @@ The unsigned candidate review queue now includes **58** functions; all
 remain blocked from FULL certification until complete accepted-domain,
 error-schema, upstream-estimator provenance, scientific inference and
 independent reviewer evidence are approved.
+
+## Known-truth recovery evaluator source contracts
+
+The new stage-free native functions \`etr_evaluate_hierarchy_truth_recovery()\`
+and \`etr_evaluate_registration_recovery()\` read retained simulator truth;
+neither simulates, refits, selects a model or alters the observed data.
+
+- The hierarchy audit reproduces Python 1.2.0 population variance (ddof=0)
+  across curve, participant and trial score sources. It retains component
+  indexes as **zero-based** scientific metadata and omits relative errors
+  for declared variances <= 0 as in the source.
+- The registration audit compares fitted h(t) to the inverse of source
+  generating phase warp w(t) on an **exactly matching grid**, using
+  source-equivalent trapezoidal weights, and returns integrated and maximum
+  absolute inverse-warp errors.
+- Both now carry source-shaped metric metadata, numeric and structure
+  fixtures, and direct Python 1.2.0 oracles in
+  \`tests/testthat/test-native-recovery-source-evaluators.R\`.
+- The explicit Python source-dataclass identity, interpolation boundary
+  behavior for nonmonotone/repeated warp positions, accepted input domain,
+  Python exceptions and full independent review are unresolved.
+  Do **not** report these as FULL certified source contracts.
+
+The dual-mode evidence queue contains **60** candidate scientific contracts.
+The frozen API has **334/380** named native function mappings and
+**156** registered unresolved source-difference entries.
+Every contract remains unsigned pending full-domain independent assessment.
+
+From the PR #48 checkout run:
+
+\`\`\`r
+pkgload::load_all(".", quiet = TRUE)
+source("scripts/qualify_native_current_contracts.R")
+source("scripts/capture_native_source_qualification_evidence.R")
+\`\`\`
