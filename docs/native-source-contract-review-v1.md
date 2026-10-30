@@ -21,10 +21,10 @@ This is an evidence-oriented development note, **not a certification claim**.
 
 | Domain | Number | Meaning |
 |---|---:|---|
-| Python function mappings | 285 / 380 | Names associated with native R candidates |
-| Native implementations started | 260 | Implemented operations; **not** proof of source equivalence |
-| Unmapped Python functions | 95 | No declared native candidate |
-| Known open source differences | 107 | Class, input, numerical, backend, error or scope boundaries |
+| Python function mappings | 291 / 380 | Names associated with native R candidates |
+| Native implementations started | 266 | Implemented operations; **not** proof of source equivalence |
+| Unmapped Python functions | 89 | No declared native candidate |
+| Known open source differences | 113 | Class, input, numerical, backend, error or scope boundaries |
 | Nonfunction exports for independent review | 128 | Values/classes not counted as native functions |
 | Complete independently certified public contracts | **0 / 508** | Four approval domains are not all independently signed off |
 
@@ -147,6 +147,22 @@ implementations use conservative validated list records, with opt-in
 Python 1.2.0 exact-text oracles, explicit scientific-scope boundaries and
 unresolved typed-source-contract gaps. No numerical certification flags
 are automatically promoted.
+
+## Six source-ordered scientific observation frames
+
+Added native R extraction for generalized function-on-scalar coefficient,
+prediction, mean-difference and exposure records, together with sparse
+univariate FPCA and sparse multivariate FPCA score frames. These are
+read-only, strongly validated list-data adapters, not new estimators.
+Band columns, nullable Poisson fields, profile-by-time ordering and the
+exposure_audit provenance attribute are included. A pinned Python 1.2
+typed-object comparison covers source column schemas, cell values and
+exposure audit. Broader Python dataclass/dtype acceptance is **not**
+certified; six unresolved source differences remain tracked.
+
+Run `source("scripts/qualify_native_inference_reporting.R")` locally to
+exercise both offline and Python source tests, including
+`test-native-scientific-source-frames.R`.
 
 ## Reproducible full-contract review dossier for eleven reporting ports
 
