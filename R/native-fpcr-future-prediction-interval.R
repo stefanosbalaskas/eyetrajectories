@@ -121,7 +121,10 @@ etr_fpca_regression_future_prediction_interval<-function(
     residual_method=residual_method,
     residual_source="full_sample_reference_fpcr_fit",
     residuals_centered=TRUE,
-    residual_rng_stream="spawned_domain_separated_stream",
+    residual_rng_stream=if(identical(rng_source,
+      "externally_retained_python_source_indices"))
+      "spawned_domain_separated_stream" else
+      "r_native_random_stream_not_numpy_seedsequence",
     residual_exchangeability_assumed=TRUE,
     heteroscedasticity_robust=FALSE,
     future_outcome_prediction_interval=TRUE,

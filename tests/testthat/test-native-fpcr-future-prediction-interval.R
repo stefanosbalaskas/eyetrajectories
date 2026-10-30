@@ -71,6 +71,9 @@ test_that("R-only independent residual draws preserve seed and caller RNG state"
   expect_identical(a$sampled_residuals,b$sampled_residuals)
   expect_identical(a$native_rng_source,
     "r_native_random_draws_not_numpy_seedsequence")
+  expect_identical(a$provenance$
+    fpca_regression_future_prediction_interval$residual_rng_stream,
+    "r_native_random_stream_not_numpy_seedsequence")
 })
 test_that("pinned Python 1.2 future-outcome predictive distribution matches fixed draws",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
