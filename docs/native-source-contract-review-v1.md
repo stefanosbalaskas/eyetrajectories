@@ -21,10 +21,10 @@ This is an evidence-oriented development note, **not a certification claim**.
 
 | Domain | Number | Meaning |
 |---|---:|---|
-| Python function mappings | 325 / 380 | Names associated with native R candidates |
-| Native implementations started | 300 | Implemented operations; **not** proof of source equivalence |
-| Unmapped Python functions | 55 | No declared native candidate |
-| Known open source differences | 147 | Class, input, numerical, backend, error or scope boundaries |
+| Python function mappings | 326 / 380 | Names associated with native R candidates |
+| Native implementations started | 301 | Implemented operations; **not** proof of source equivalence |
+| Unmapped Python functions | 54 | No declared native candidate |
+| Known open source differences | 148 | Class, input, numerical, backend, error or scope boundaries |
 | Nonfunction exports for independent review | 128 | Values/classes not counted as native functions |
 | Complete independently certified public contracts | **0 / 508** | Four approval domains are not all independently signed off |
 
@@ -165,6 +165,21 @@ and reviewer fields, and cannot modify the authoritative 508-export
 certification register. Reviewer sign-off must refer to immutable
 test logs, accepted-domain boundaries and a full source commit,
 rather than relying on the CSV alone.
+
+## Paired-bootstrap FPCR slope simultaneous bands
+
+The native `etr_fpca_regression_slope_simultaneous_band()` ports the
+frozen Python 1.2.0 observed-grid maximum-deviation procedure for
+precomputed Gaussian FPCR bootstrap slope replicates. It distinguishes
+one global time-by-dimension critical value from per-dimension maxima,
+uses sample bootstrap SD for cellwise studentization, and rejects
+zero-SD cells with material nonzero reference discrepancies.
+
+This is not an operator-scaled FPCR test and provides no confidence
+guarantee between observed grid points. Numerical parity on selected
+global and dimension-scope fixtures is opt-in; full Python dataclass,
+error and inference contracts remain independently unsigned. The
+current source-contract dossier contains **53** review candidates.
 
 ## Native fixed-target simultaneous wild-bootstrap calibration
 
