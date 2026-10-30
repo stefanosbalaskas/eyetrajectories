@@ -82,8 +82,8 @@ if(isTRUE(results[[1L]]$success)) {
   results[[2L]]<-qualify_once(TRUE)
 } else {
   results[[2L]]<-list(
-    label="python_1_2_direct_source",success=FALSE,
-    log_file="",error="Not attempted after offline failure")
+    label="python_1_2_direct_source",success=NA,
+    log_file="",error="NOT ATTEMPTED: offline qualification failed")
 }
 source_files<-unique(c(
   queue$oracle_test,
@@ -140,10 +140,16 @@ message("Saved pinned-source qualification evidence under ",
 message("These are test execution records, not independent full-contract certification.")
 if(!all(vapply(results,function(x)isTRUE(x$success),logical(1L)))) {
   failed_labels<-vapply(results,function(x)
-    if(isTRUE(x$success))"" else x$label,character(1L))
-  stop("Native/Python qualification failed (",
+    if(identical(x$success,FALSE))x$label else "",character(1L))
+  skipped_labels<-vapply(results,function(x)
+    if(is.na(x$success))x$label else "",character(1L))
+  stop("Source qualification failure: ",
     paste(failed_labels[nzchar(failed_labels)],collapse=", "),
-    "). Evidence preserved in ",output_dir,
+    if(any(nzchar(skipped_labels)))
+      paste0("; NOT ATTEMPTED: ",
+        paste(skipped_labels[nzchar(skipped_labels)],collapse=", "))
+    else "",
+    ". Evidence preserved in ",output_dir,
     ". The preceding console output contains the test failures.",
     call.=FALSE)
 }
