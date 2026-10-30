@@ -148,6 +148,24 @@ Python 1.2.0 exact-text oracles, explicit scientific-scope boundaries and
 unresolved typed-source-contract gaps. No numerical certification flags
 are automatically promoted.
 
+## Capturing reproducible source-contract evidence
+
+The prior 26 integrations passed both the local offline and published
+Python 1.2.0 fixture tests in the user-reported October 30 RStudio run.
+Use `source("scripts/capture_native_source_qualification_evidence.R")`
+after updating the draft branch to run both qualifications again and
+write a SHA-identified evidence folder under
+`artifacts/native_source_contract_evidence/`. It includes frozen
+source hashes, current R Git commit, R version, the tested release,
+per-mode logs, and 30 per-function unsigned fixture summaries.
+
+Passing fixtures are **not** approved full-domain source contracts.
+The manifest has explicit FALSE independent domain, scientific-scope
+and reviewer fields, and cannot modify the authoritative 508-export
+certification register. Reviewer sign-off must refer to immutable
+test logs, accepted-domain boundaries and a full source commit,
+rather than relying on the CSV alone.
+
 ## Frozen-source numerical diagnostics and R-native visualizations
 
 Four source counterpart functions extend the release beyond report text:
