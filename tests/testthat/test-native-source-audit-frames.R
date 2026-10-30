@@ -148,6 +148,9 @@ _a_trial=_et_record(et.FunctionalMixedEffectsResult,
     time=np.array([0.,.5,1.]),trial_random_effect='functional_intercept',
     trial_random_effect_functions=np.arange(1.,7.).reshape((2,3),order='F')/5.)
 _a_boot=_et_record(et.FunctionalMixedEffectsFullRefitBootstrapResult,
+    # The frozen Python dataclass computes n_bootstrap from this field;
+    # sampling history alone does not satisfy its published source property.
+    bootstrap_coefficient_functions=np.zeros((2,1,1),dtype=float),
     sampled_participant_indices=np.array([[1,0],[0,1]],dtype=int),
     sampled_source_participant_ids=(('p2','p1'),('p1','p2')),
     bootstrap_participant_ids=(('b0','b1'),('b2','b3')),
