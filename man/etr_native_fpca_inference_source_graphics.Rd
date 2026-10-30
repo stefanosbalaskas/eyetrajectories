@@ -1,17 +1,16 @@
 \name{etr_plot_fpca_component_envelope}
 \alias{etr_plot_fpca_component_envelope}
-\alias{etr_plot_sparse_fpca_score_diagnostics}
 \alias{etr_plot_fpca_wild_bootstrap_family_test}
-\title{Frozen-source FPCA matched envelope and sparse PACE inference graphics}
+\title{Frozen-source FPCA matched-envelope and familywise inference graphics}
 \description{
 Native base-R visualization of precomputed matched bootstrap FPCA component
-envelopes, PACE conditional covariance conditioning, and familywise
-fixed-target wild-bootstrap tail probabilities on their declared scopes.
+envelopes and familywise fixed-target wild-bootstrap tail probabilities
+on their declared scientific scopes. Existing PACE score diagnostics retain
+separate prior documentation.
 }
 \usage{
 etr_plot_fpca_component_envelope(
   result, component = 0L, dimension = NULL)
-etr_plot_sparse_fpca_score_diagnostics(result)
 etr_plot_fpca_wild_bootstrap_family_test(
   result, max_targets = 30L, show_targetwise = TRUE)
 }
