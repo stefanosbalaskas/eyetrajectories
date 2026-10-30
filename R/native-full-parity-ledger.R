@@ -289,7 +289,13 @@
   fpca_wild_bootstrap_simultaneous_reporting_text="etr_fpca_wild_bootstrap_simultaneous_reporting_text",
   fpca_regression_cv_reporting_text="etr_fpca_regression_cv_reporting_text",
   fpca_component_envelope_reporting_text="etr_fpca_component_envelope_reporting_text",
-  fpca_wild_bootstrap_truncation_reporting_text="etr_fpca_wild_bootstrap_truncation_reporting_text"
+  fpca_wild_bootstrap_truncation_reporting_text="etr_fpca_wild_bootstrap_truncation_reporting_text",
+  generalized_function_on_scalar_prediction_frame="etr_generalized_function_on_scalar_prediction_frame",
+  generalized_function_on_scalar_mean_difference_frame="etr_generalized_function_on_scalar_mean_difference_frame",
+  generalized_function_on_scalar_coefficient_frame="etr_generalized_function_on_scalar_coefficient_frame",
+  generalized_function_on_scalar_exposure_frame="etr_generalized_function_on_scalar_exposure_frame",
+  sparse_fpca_score_frame="etr_sparse_fpca_score_frame",
+  sparse_mfpca_score_frame="etr_sparse_mfpca_score_frame"
 )
 
 #' Audit one-to-one Python 1.2.0 versus independent native R coverage
@@ -586,6 +592,16 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   )
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% descriptive_inference_reporting_names] <- 46L
+  source_frame_adapter_names <- c(
+    "generalized_function_on_scalar_prediction_frame",
+    "generalized_function_on_scalar_mean_difference_frame",
+    "generalized_function_on_scalar_coefficient_frame",
+    "generalized_function_on_scalar_exposure_frame",
+    "sparse_fpca_score_frame",
+    "sparse_mfpca_score_frame"
+  )
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% source_frame_adapter_names] <- 47L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # TrajectorySet native representation covers key fields and with_values/subset
