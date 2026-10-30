@@ -295,7 +295,12 @@
   generalized_function_on_scalar_coefficient_frame="etr_generalized_function_on_scalar_coefficient_frame",
   generalized_function_on_scalar_exposure_frame="etr_generalized_function_on_scalar_exposure_frame",
   sparse_fpca_score_frame="etr_sparse_fpca_score_frame",
-  sparse_mfpca_score_frame="etr_sparse_mfpca_score_frame"
+  sparse_mfpca_score_frame="etr_sparse_mfpca_score_frame",
+  generalized_function_on_scalar_prediction_reporting_text="etr_generalized_function_on_scalar_prediction_reporting_text",
+  generalized_function_on_scalar_mean_difference_reporting_text="etr_generalized_function_on_scalar_mean_difference_reporting_text",
+  functional_mixed_effects_covariance_sensitivity_reporting_text="etr_functional_mixed_effects_covariance_sensitivity_reporting_text",
+  multivariate_iaaft_reporting_text="etr_multivariate_iaaft_reporting_text",
+  multivariate_surrogate_nonlinearity_reporting_text="etr_multivariate_surrogate_nonlinearity_reporting_text"
 )
 
 #' Audit one-to-one Python 1.2.0 versus independent native R coverage
@@ -602,6 +607,15 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   )
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% source_frame_adapter_names] <- 47L
+  new_source_text_inference_names <- c(
+    "generalized_function_on_scalar_prediction_reporting_text",
+    "generalized_function_on_scalar_mean_difference_reporting_text",
+    "functional_mixed_effects_covariance_sensitivity_reporting_text",
+    "multivariate_iaaft_reporting_text",
+    "multivariate_surrogate_nonlinearity_reporting_text"
+  )
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% new_source_text_inference_names] <- 48L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # TrajectorySet native representation covers key fields and with_values/subset
