@@ -81,9 +81,9 @@ test_that("three new reporters remain mapped but not full-domain certified",{
   expect_true(all(x$native_implementation_started))
   expect_true(all(x$source_contract_gap_unresolved))
   expect_false(any(x$one_to_one_native_contract_complete))
-  expect_equal(sum(p$is_python_function&p$named_native_candidate),299L)
-  expect_equal(sum(p$native_implementation_started),274L)
-  expect_equal(sum(p$source_contract_gap_unresolved),121L)
+  expect_equal(sum(p$is_python_function&p$named_native_candidate),300L)
+  expect_equal(sum(p$native_implementation_started),275L)
+  expect_equal(sum(p$source_contract_gap_unresolved),122L)
 })
 
 test_that("three source model reports match Python 1.2 exact-string oracles",{
