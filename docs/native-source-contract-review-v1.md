@@ -140,6 +140,19 @@ strings from explicit finite R records and have opt-in Python 1.2 exact-text
 oracles. Native list acceptance is narrower than published Python dataclasses;
 **all eight remain source-contract gaps, not independent certifications**.
 
+## One-command local qualification of the latest reporting batch
+
+Run from the repository root in RStudio:
+
+```r
+source("scripts/qualify_native_inference_reporting.R")
+```
+
+The script first runs native R tests with Python disabled, then requires
+`eyetrajectoriespy==1.2.0` and executes pinned Python direct-source
+reporting oracles. It stops on any failure; passing does not mark any of
+the 508 full contracts independently certified.
+
 ## Local qualification on PR #46
 
 Use the exact Git HEAD from the draft PR before reporting test results.
