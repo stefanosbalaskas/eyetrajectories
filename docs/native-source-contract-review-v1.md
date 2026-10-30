@@ -21,10 +21,10 @@ This is an evidence-oriented development note, **not a certification claim**.
 
 | Domain | Number | Meaning |
 |---|---:|---|
-| Python function mappings | 318 / 380 | Names associated with native R candidates |
-| Native implementations started | 293 | Implemented operations; **not** proof of source equivalence |
-| Unmapped Python functions | 62 | No declared native candidate |
-| Known open source differences | 140 | Class, input, numerical, backend, error or scope boundaries |
+| Python function mappings | 319 / 380 | Names associated with native R candidates |
+| Native implementations started | 294 | Implemented operations; **not** proof of source equivalence |
+| Unmapped Python functions | 61 | No declared native candidate |
+| Known open source differences | 141 | Class, input, numerical, backend, error or scope boundaries |
 | Nonfunction exports for independent review | 128 | Values/classes not counted as native functions |
 | Complete independently certified public contracts | **0 / 508** | Four approval domains are not all independently signed off |
 
@@ -165,6 +165,25 @@ and reviewer fields, and cannot modify the authoritative 508-export
 certification register. Reviewer sign-off must refer to immutable
 test logs, accepted-domain boundaries and a full source commit,
 rather than relying on the CSV alone.
+
+## Restricted native mixed-effects residual sensitivity comparison
+
+The native `etr_compare_functional_mixed_effects_residual_diagnostics()`
+adds a strictly matched, observed-grid model-pair diagnostic table with
+source-ordered lag-exposure keys, pair counts and comparison-minus-reference
+autocovariance, autocorrelation and semivariance. It requires both fits
+to be converged native *two-level method-of-moments* records with
+identical curve order, participant mapping, response channel and times.
+This is **not** the Python 1.2.0 MixedLM estimator, and does not establish
+scientific model equivalence. The source difference is separately tracked;
+the review queue now comprises 45 unsigned candidates.
+
+The latest user-provided R evidence-capture run for 44 candidates
+(`qualification_20261030T205758`) failed, and its detailed mode-specific
+logs have not been supplied. The evidence runner now prints the final 100
+failure-log lines in RStudio, making the next failure auditable. Do
+not treat the 44- or 45-contract runs as passed until their logs confirm
+completion and their full source-domain reviews are independently signed.
 
 ## Generalized FoSR and mixed-effects scientific source plots
 
