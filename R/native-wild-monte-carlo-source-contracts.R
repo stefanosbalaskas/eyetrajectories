@@ -101,7 +101,7 @@ etr_fpca_wild_bootstrap_family_test_monte_carlo_diagnostics <- function(
   .etr_assert(correction%in%c("plus_one","none"),
     "pvalue_correction must be 'plus_one' or 'none'")
   counts_t<-colSums(abs(roots)>=matrix(rep(abs(obs),each=B),B,n))
-  counts_a<-vapply(abs(obs),function(x)sum(maximum>=x),integer(1L))
+  counts_a<-vapply(abs(obs),function(x)as.integer(sum(maximum>=x)),integer(1L))
   count_g<-sum(maximum>=result$global_statistic)
   tail_t<-as.numeric(counts_t)/B
   tail_a<-as.numeric(counts_a)/B
@@ -141,14 +141,6 @@ etr_fpca_wild_bootstrap_family_test_monte_carlo_diagnostics <- function(
       strong_fwer_claim_added=FALSE,
       reported_test_pvalue_correction=correction)),
     class="etr_fpca_wild_mc_diagnostics")
-}
-
-.etr_wild_mc_interval_plot <- function(x,lo,hi,
-    pch=1L,col="black") {
-  graphics::segments(x,lo,x,hi,col=col)
-  graphics::segments(x-.075,lo,x+.075,lo,col=col)
-  graphics::segments(x-.075,hi,x+.075,hi,col=col)
-  graphics::points(x,(lo+hi)/2,pch=pch,col=col)
 }
 
 #' Plot precomputed finite-bootstrap Monte Carlo precision for FPCR tests
