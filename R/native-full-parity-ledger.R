@@ -263,7 +263,11 @@
   fpca_wild_bootstrap_truncation_scan_frame="etr_fpca_wild_bootstrap_truncation_scan_frame",
   fpca_wild_bootstrap_truncation_selection_frame="etr_fpca_wild_bootstrap_truncation_selection_frame",
   plot_functional_random_effects="etr_plot_functional_random_effects",
-  plot_functional_trial_random_effects="etr_plot_functional_trial_random_effects"
+  plot_functional_trial_random_effects="etr_plot_functional_trial_random_effects",
+  plot_fpca_regression_cv="etr_plot_fpca_regression_cv",
+  plot_nested_fpca_regression_cv="etr_plot_nested_fpca_regression_cv",
+  plot_functional_mixed_effects_bootstrap_comparison="etr_plot_functional_mixed_effects_bootstrap_comparison",
+  plot_fpca_wild_bootstrap_truncation_scan="etr_plot_fpca_wild_bootstrap_truncation_scan"
 )
 
 #' Audit one-to-one Python 1.2.0 versus independent native R coverage
@@ -523,6 +527,11 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% c("plot_functional_random_effects",
       "plot_functional_trial_random_effects")] <- 41L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% c("plot_fpca_regression_cv",
+      "plot_nested_fpca_regression_cv",
+      "plot_functional_mixed_effects_bootstrap_comparison",
+      "plot_fpca_wild_bootstrap_truncation_scan")] <- 42L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset

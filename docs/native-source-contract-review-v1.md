@@ -18,10 +18,10 @@ This is an evidence-oriented development note, **not a certification claim**.
 
 | Domain | Number | Meaning |
 |---|---:|---|
-| Python function mappings | 259 / 380 | Names associated with native R candidates |
-| Native implementations started | 234 | Implemented operations; **not** proof of source equivalence |
-| Unmapped Python functions | 121 | No declared native candidate |
-| Known open source differences | 81 | Class, input, numerical, backend, error or scope boundaries |
+| Python function mappings | 263 / 380 | Names associated with native R candidates |
+| Native implementations started | 238 | Implemented operations; **not** proof of source equivalence |
+| Unmapped Python functions | 117 | No declared native candidate |
+| Known open source differences | 85 | Class, input, numerical, backend, error or scope boundaries |
 | Nonfunction exports for independent review | 128 | Values/classes not counted as native functions |
 | Complete independently certified public contracts | **0 / 508** | Four approval domains are not all independently signed off |
 
@@ -97,6 +97,13 @@ Two additional source-aligned native R graphics functions now visualize
 participant and nested-trial functional random effects without fitting.
 Their base graphics results do not reproduce Python Matplotlib Axes and
 therefore remain documented open full-source contracts.
+
+Four predictive/CV and bootstrap sensitivity plots now expose exact
+source diagnostic coordinates, including ddof=1 CV standard errors,
+nested outer fold loss, sorted mixed band-width ratios and selected
+wild-bootstrap truncation h. R returns base graphics and audit records,
+not Python Matplotlib Axes or typed dataclass objects; those complete
+source contract differences remain unapproved.
 
 ## Local qualification on PR #46
 
