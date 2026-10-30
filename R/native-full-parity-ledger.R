@@ -286,7 +286,10 @@
   fpca_nested_regression_cv_reporting_text="etr_fpca_nested_regression_cv_reporting_text",
   fpca_wild_bootstrap_family_test_reporting_text="etr_fpca_wild_bootstrap_family_test_reporting_text",
   fpca_wild_bootstrap_monte_carlo_reporting_text="etr_fpca_wild_bootstrap_monte_carlo_reporting_text",
-  fpca_wild_bootstrap_simultaneous_reporting_text="etr_fpca_wild_bootstrap_simultaneous_reporting_text"
+  fpca_wild_bootstrap_simultaneous_reporting_text="etr_fpca_wild_bootstrap_simultaneous_reporting_text",
+  fpca_regression_cv_reporting_text="etr_fpca_regression_cv_reporting_text",
+  fpca_component_envelope_reporting_text="etr_fpca_component_envelope_reporting_text",
+  fpca_wild_bootstrap_truncation_reporting_text="etr_fpca_wild_bootstrap_truncation_reporting_text"
 )
 
 #' Audit one-to-one Python 1.2.0 versus independent native R coverage
@@ -576,6 +579,13 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   )
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% inference_reporting_names] <- 45L
+  descriptive_inference_reporting_names <- c(
+    "fpca_regression_cv_reporting_text",
+    "fpca_component_envelope_reporting_text",
+    "fpca_wild_bootstrap_truncation_reporting_text"
+  )
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% descriptive_inference_reporting_names] <- 46L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # TrajectorySet native representation covers key fields and with_values/subset
