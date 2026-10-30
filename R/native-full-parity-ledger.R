@@ -29,6 +29,7 @@
   generalized_function_on_scalar_prediction_bands="etr_generalized_function_on_scalar_prediction_bands",
   generalized_function_on_scalar_mean_difference_band="etr_generalized_function_on_scalar_mean_difference_band",
   generalized_function_on_scalar_simultaneous_bands="etr_generalized_function_on_scalar_simultaneous_bands",
+  functional_mixed_effects_simultaneous_bands="etr_functional_mixed_effects_simultaneous_bands",
   evaluate_hierarchy_truth_recovery="etr_evaluate_hierarchy_truth_recovery",
   evaluate_registration_recovery="etr_evaluate_registration_recovery",
   validate_common_grid="etr_validate_common_grid",
@@ -742,6 +743,8 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     api$python_name=="evaluate_registration_recovery"] <- 65L
   api$native_implementation_stage[api$is_python_function &
     api$python_name=="generalized_function_on_scalar_simultaneous_bands"] <- 66L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="functional_mixed_effects_simultaneous_bands"] <- 67L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # TrajectorySet native representation covers key fields and with_values/subset
