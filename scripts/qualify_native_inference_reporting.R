@@ -21,6 +21,7 @@ qualifying_filter <- paste(
   "native-fpca-inference-source-graphics",
   "native-wild-monte-carlo-source-contracts",
   "native-wild-simultaneous-source-calibration",
+  "native-fpcr-slope-source-calibration",
   "native-source-contract-gaps",
   "full-native-r-parity-ledger",
   sep="|"
