@@ -191,3 +191,25 @@ The single-mode numerical subset has an opt-in pinned Python 1.2 oracle
 for both one-dimensional and two-dimensional functional trajectories.
 All type/domain/exception differences remain in the unresolved gap
 register. This raises the review queue to 65 **unsigned** contracts.
+
+## Sparse FPCA/PACE known-truth recovery (bounded one-mode source domain)
+
+\`etr_evaluate_sparse_fpca_recovery()\` extends the existing exact-grid
+source population recovery audit with a **direct fitted sparse covariance**
+operator ISE (rather than implicitly substituting a reconstructed FPCA
+operator). It retains sign-aligned score recovery, any recorded score
+failure rate, finite score-system condition-number median/q95/max,
+explicit covariance PSD-repair evidence, and optional measurement-noise
+absolute and relative recovery error.
+
+This port is limited to **one retained and generating mode**, one selected
+sparse response dimension, finite scores and source-shaped native lists.
+The source \`recovery.py\` general multi-mode and missing-score domain,
+Python dataclass identity and full numerical/error contract remain
+unresolved. Native fixtures and the frozen Python 1.2.0 oracle in
+\`tests/testthat/test-native-sparse-known-truth-recovery.R\` exercise
+independent estimated covariance, PACE diagnostics, PSD provenance,
+measurement noise and exact scientific metadata.
+
+The scientific review queue now includes **66 unsigned contracts**,
+with no certified claims from these source subset fixtures.
