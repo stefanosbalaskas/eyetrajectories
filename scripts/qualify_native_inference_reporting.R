@@ -11,6 +11,7 @@ qualifying_filter <- paste(
   "native-scientific-source-frames",
   "native-source-text-inference",
   "native-source-model-reports",
+  "native-source-diagnostic-frames",
   "native-certification-readiness",
   "native-private-helper-names",
   "native-source-contract-gaps",
