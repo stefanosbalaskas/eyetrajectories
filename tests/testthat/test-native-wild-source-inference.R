@@ -141,9 +141,9 @@ test_that("five true source operations remain explicitly uncertified",{
     expect_true(row$source_contract_gap_unresolved)
     expect_false(row$one_to_one_native_contract_complete)
   }
-  expect_equal(sum(z$is_python_function&z$named_native_candidate),291L)
-  expect_equal(sum(z$native_implementation_started),266L)
-  expect_equal(sum(z$source_contract_gap_unresolved),113L)
+  expect_equal(sum(z$is_python_function&z$named_native_candidate),296L)
+  expect_equal(sum(z$native_implementation_started),271L)
+  expect_equal(sum(z$source_contract_gap_unresolved),118L)
 })
 
 test_that("frozen Python 1.2 selection and four inference tables agree",{
