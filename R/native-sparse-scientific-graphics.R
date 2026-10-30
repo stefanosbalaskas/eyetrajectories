@@ -100,6 +100,8 @@
 }
 .etr_sparse_visual_heatmap <- function(grid,z,label,xlab,ylab,range) {
   # Python imshow(origin='lower') has rows along y, columns along x.
+  if(range[1L]==range[2L])
+    range<-range+c(-.05,.05)*max(1,abs(range[1L]))
   graphics::image(x=grid,y=grid,z=t(z),xlab=xlab,ylab=ylab,
     main=label,zlim=range,col=grDevices::hcl.colors(64,"Blue-Red 3"))
 }
