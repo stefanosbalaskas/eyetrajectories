@@ -49,6 +49,35 @@ test_that("nested trial variance uses its own functional covariance, not scalar 
     "truth contains trial functional variance")
 })
 
+test_that("multidimensional truth contracts keep source variance in the selected channel",{
+  grid<-c(0,.5,1)
+  modes<-array(0,c(2L,3L,2L))
+  modes[1L,,]<-1
+  modes[2L,,1L]<-grid
+  modes[2L,,2L]<- -grid
+  truth<-list(truth_grid=grid,dimension_names=c("x","y"),
+    mean=cbind(c(.2,.3,.4),c(.5,.6,.7)),
+    eigenfunctions=modes,
+    participant_eigenvalues=c(.4,.2),
+    trial_eigenvalues=c(0,0))
+  fit<-list(time=grid,dimension_name="y",
+    coefficient_names="Intercept",
+    coefficient_functions=matrix(c(.55,.65,.75),nrow=1L),
+    random_slope_predictor=NULL,
+    random_basis=cbind(rep(1,3L),grid),
+    random_intercept_covariance=diag(c(.4,.2)),
+    trial_random_effect=NULL)
+  a<-etr_evaluate_functional_mixed_effects_recovery(fit,truth)
+  expect_identical(length(a$values),4L)
+  expect_equal(vapply(a$values,function(v)v$value,numeric(1L)),
+    c(.0025,0,0,0),tolerance=1e-12)
+  expect_identical(a$provenance$dimension,"y")
+  truth$participant_eigenvalues<-c(.2,.4)
+  b<-etr_evaluate_functional_mixed_effects_recovery(fit,truth)
+  expect_true(b$values[[2L]]$value>0)
+  expect_true(b$values[[3L]]$value>0)
+})
+
 test_that("mixed source recovery rejects silent truth interpolation and unsupported slopes",{
   z<-.etr_mixed_truth_fixture()
   z$fit$random_slope_predictor<-"dose"
