@@ -14,6 +14,7 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-mixed-variance-decomposition-source",
     "native-fpca-known-truth-recovery",
     "native-sparse-known-truth-recovery",
+    "native-mixed-bootstrap-width-comparison",
     "native-mixed-model-source-text"),".R"))
 missing_scientific_tests<-required_scientific_tests[
   !file.exists(required_scientific_tests)]
@@ -32,7 +33,7 @@ queue_path<-file.path("artifacts","native_inference_contract_review",
   "python_1_2_scientific_contract_review_queue.csv")
 queue<-utils::read.csv(queue_path,stringsAsFactors=FALSE,
   check.names=FALSE)
-stopifnot(nrow(queue)==66L,!anyDuplicated(queue$python_name),
+stopifnot(nrow(queue)==67L,!anyDuplicated(queue$python_name),
   all(!queue$fully_certified),
   all(queue$source_difference_open),
   all(file.exists(queue$oracle_test)))
@@ -62,6 +63,7 @@ filter<-paste(c(
   "native-mixed-variance-decomposition-source",
   "native-fpca-known-truth-recovery",
   "native-sparse-known-truth-recovery",
+  "native-mixed-bootstrap-width-comparison",
   "native-mixed-model-source-text",
   "native-source-environment",
   "native-source-evidence-runner",
@@ -136,6 +138,7 @@ source_files<-unique(c(
   "R/native-mixed-known-truth-recovery.R",
   "R/native-fpca-known-truth-recovery.R",
   "R/native-sparse-known-truth-recovery.R",
+  "R/native-mixed-bootstrap-width-comparison.R",
   "R/native-functional-mixed-moments.R",
   "R/native-mixed-model-source-text.R",
   "R/native-source-environment.R",
@@ -150,6 +153,7 @@ source_files<-unique(c(
   "tests/testthat/test-native-mixed-variance-decomposition-source.R",
   "tests/testthat/test-native-fpca-known-truth-recovery.R",
   "tests/testthat/test-native-sparse-known-truth-recovery.R",
+  "tests/testthat/test-native-mixed-bootstrap-width-comparison.R",
   "tests/testthat/test-native-mixed-model-source-text.R",
   "tests/testthat/test-native-fpcr-slope-source-calibration.R",
   "tests/testthat/test-native-wild-simultaneous-source-calibration.R",

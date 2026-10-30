@@ -213,3 +213,22 @@ measurement noise and exact scientific metadata.
 
 The scientific review queue now includes **66 unsigned contracts**,
 with no certified claims from these source subset fixtures.
+
+## Retained mixed-effects bootstrap width comparison
+
+\`etr_compare_functional_mixed_effects_bootstraps()\` implements the
+published Python 1.2 \`functional_mixed_effects_full_refit.py\`
+comparison of already retained fixed-covariance and full-refit
+participant-cluster bootstrap simultaneous bands. Band maxima and
+widths reuse the published-source-aligned native calibration
+function, with coefficient-then-observed-time row ordering and
+\`Inf\` when the fixed-covariance band has zero width.
+
+There is no full model refit, resampling or covariance structure
+selection in this comparison. The oracle checks both coefficient
+and family simultaneous scopes directly against pinned Python 1.2.0.
+Python requires both bootstrap objects to share the **same reference
+fit object by identity**; R source-shaped lists can check structural
+equality but cannot certify Python object identity. This remains an
+explicit unresolved source gap. The evidence queue now contains
+**67 unsigned candidates**, with no certification promotion.

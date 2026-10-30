@@ -13,6 +13,7 @@ required<-c("native-generalized-fosr-prediction",
   "native-mixed-variance-decomposition-source",
   "native-fpca-known-truth-recovery",
   "native-sparse-known-truth-recovery",
+  "native-mixed-bootstrap-width-comparison",
   "native-mixed-model-source-text","native-source-environment")
 test_files<-file.path("tests","testthat",paste0("test-",required,".R"))
 git<-Sys.which("git")
