@@ -90,7 +90,12 @@ for ndim in (1,2):
     _fpcr_oracle[ndim]=dict(
       names=[v.metric.name for v in assessment.values],
       values=[float(v.value) for v in assessment.values],
-      components=[v.component for v in assessment.values],
+      components=[-1 if v.component is None else int(v.component)
+                  for v in assessment.values],
+      metric_fields=[(v.metric.name,v.metric.quantity,
+                      v.metric.direction,v.metric.units,
+                      v.metric.scope,v.metric.description)
+                     for v in assessment.values],
       provenance=dict(assessment.provenance))
 ")
   for(ndim in 1:2){
@@ -102,6 +107,20 @@ for ndim in (1,2):
     expect_equal(vapply(x$values,function(v)v$value,numeric(1L)),
       as.numeric(reticulate::py_eval(paste0(key,"['values']"),convert=TRUE)),
       tolerance=1e-12)
+    expected_components<-as.integer(reticulate::py_eval(
+      paste0(key,"['components']"),convert=TRUE))
+    native_components<-vapply(x$values,function(v)
+      if(is.null(v$component))-1L else as.integer(v$component),
+      integer(1L))
+    expect_identical(native_components,expected_components)
+    expected_metric<-reticulate::py_eval(
+      paste0(key,"['metric_fields']"),convert=TRUE)
+    for(j in seq_along(x$values)){
+      metric<-x$values[[j]]$metric
+      expect_identical(unname(unlist(metric,use.names=FALSE)),
+        as.character(unlist(expected_metric[[j]],use.names=FALSE)),
+        info=paste("published metric metadata",ndim,j))
+    }
     expect_identical(x$provenance$multivariate,ndim>1L)
     expect_equal(x$provenance$alignment_signs,
       as.numeric(reticulate::py_eval(paste0(key,
