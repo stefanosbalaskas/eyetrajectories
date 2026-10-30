@@ -21,10 +21,10 @@ This is an evidence-oriented development note, **not a certification claim**.
 
 | Domain | Number | Meaning |
 |---|---:|---|
-| Python function mappings | 274 / 380 | Names associated with native R candidates |
-| Native implementations started | 249 | Implemented operations; **not** proof of source equivalence |
-| Unmapped Python functions | 106 | No declared native candidate |
-| Known open source differences | 96 | Class, input, numerical, backend, error or scope boundaries |
+| Python function mappings | 282 / 380 | Names associated with native R candidates |
+| Native implementations started | 257 | Implemented operations; **not** proof of source equivalence |
+| Unmapped Python functions | 98 | No declared native candidate |
+| Known open source differences | 104 | Class, input, numerical, backend, error or scope boundaries |
 | Nonfunction exports for independent review | 128 | Values/classes not counted as native functions |
 | Complete independently certified public contracts | **0 / 508** | Four approval domains are not all independently signed off |
 
@@ -129,6 +129,16 @@ candidate with r+1 consecutive stable transitions, reports missing targets,
 and cannot silently choose the largest h. Frozen Python dataclass/pandas
 type contracts and full accepted-domain/schema behavior remain explicit
 open certification differences. Numerical source-oracle testing is opt-in.
+
+
+Eight additional source-aligned native manuscript-reporting functions now
+cover FPCR wild projections, future-outcome intervals, paired bootstrap
+uncertainty, observed-grid simultaneous slope bands, nested CV performance,
+familywise fixed-target tests, finite-bootstrap Monte Carlo diagnostics and
+fixed-family simultaneous intervals. These return scientifically qualified
+strings from explicit finite R records and have opt-in Python 1.2 exact-text
+oracles. Native list acceptance is narrower than published Python dataclasses;
+**all eight remain source-contract gaps, not independent certifications**.
 
 ## Local qualification on PR #46
 
