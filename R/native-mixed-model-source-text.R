@@ -1,7 +1,7 @@
 # Frozen Python 1.2.0 manuscript reporter:
 # eyetrajectoriespy.reporting.functional_mixed_effects_reporting_text
 # source c1cd95ad718327550f7e55393ff38582872f7a94
-# Native R text-only subset for a declared source-shaped fit, WITHOUT a band.
+# Native source-shaped fit and declared bootstrap-band text.
 # It does not fit MixedLM, certify estimator parity or claim coverage.
 
 .etr_fmixed_report_string <- function(x,name) {
@@ -28,16 +28,42 @@
 
 #' Manuscript wording for a declared functional mixed-effects fit
 #'
-#' Reproduces published Python 1.2.0 pointwise-Wald, no-band wording
-#' for validated source-shaped fit records without fitting or resampling.
-#' Bootstrap band reporting is explicitly not implemented and fails closed.
-#' @param result Source-shaped native functional mixed-effects result record.
-#' @param band Must be NULL; source bootstrap-band reporting is not ported.
+#' Reproduces Python 1.2.0 no-band pointwise-Wald wording and declared
+#' conditional-covariance and full-refit participant bootstrap wording.
+#' @param result Native source-shaped functional mixed-effects fit record.
+#' @param band Optional native source-shaped mixed-effects simultaneous band
+#'   sharing the supplied reference and declaring its bootstrap type.
 #' @return Character scalar of qualified-subset manuscript wording.
 #' @export
 etr_functional_mixed_effects_reporting_text <- function(result,band=NULL){
-  .etr_assert(is.null(band),
-    "band bootstrap source contract is not implemented in native R")
+  if(!is.null(band)){
+    .etr_scientific_frame_fields(band,c("reference","bootstrap",
+      "confidence_level","simultaneous_scope"),"mixed band")
+    .etr_assert(identical(band$reference,result),
+      "band.reference must be the supplied result record")
+    .etr_scientific_frame_fields(band$bootstrap,
+      c("bootstrap_type","bootstrap_coefficient_functions"),
+      "mixed band bootstrap")
+    kind<-band$bootstrap$bootstrap_type
+    .etr_assert(is.character(kind)&&length(kind)==1L&&
+      !is.na(kind)&&kind%in%c("conditional_covariance","full_refit"),
+      "bootstrap_type must be conditional_covariance or full_refit")
+    .etr_assert(is.numeric(band$confidence_level)&&
+      length(band$confidence_level)==1L&&
+      is.finite(band$confidence_level)&&
+      band$confidence_level>0&&band$confidence_level<1,
+      "band confidence_level must be in (0,1)")
+    .etr_assert(is.character(band$simultaneous_scope)&&
+      length(band$simultaneous_scope)==1L&&
+      !is.na(band$simultaneous_scope)&&
+      band$simultaneous_scope%in%c("coefficient","family"),
+      "band simultaneous_scope must be coefficient or family")
+    draws<-band$bootstrap$bootstrap_coefficient_functions
+    .etr_assert(is.array(draws)&&is.numeric(draws)&&
+      length(dim(draws))==3L&&dim(draws)[1L]>=1L&&
+      all(is.finite(draws)),
+      "band bootstrap requires finite coefficient draws")
+  }
   required<-c("predictor_names","boundary_fit","trial_random_effect",
     "random_effect_singular","trial_random_effect_singular",
     "random_effect_complexity_warning",
@@ -173,6 +199,35 @@ etr_functional_mixed_effects_reporting_text <- function(result,band=NULL){
     " Reported 95% coefficient intervals are pointwise Wald intervals; ",
     "simultaneous functional coverage and variance-component uncertainty ",
     "are not claimed.")
+  if(!is.null(band)){
+    level_text<-sprintf("%.1f",100*band$confidence_level)
+    scope<-band$simultaneous_scope
+    n_boot<-dim(draws)[1L]
+    has_trial<-!is.null(result$trial_random_effect)
+    if(identical(kind,"full_refit")){
+      inference_text<-paste0(
+        " Full-refit participant bootstrap ",level_text,
+        "% simultaneous coefficient bands used ",n_boot,
+        " whole-participant resamples with ",scope,
+        "-scope maxima over the observed time grid. Every sampled participant occurrence received a distinct bootstrap group identity, and each replicate refitted fixed coefficients, the participant random-effect covariance",
+        if(has_trial)", the shared trial random-effect covariance" else "",
+        ", residual variance",
+        if(corr!="iid")paste0(", and the ",corr,
+          " residual-correlation parameter") else "",
+        " under the unchanged declared model specification. Basis sizes, preprocessing, predictors, random-slope structure, REML/ML choice, and optimizer were not reselected. The bands therefore include variance-component re-estimation across participant bootstrap samples but not model-selection, preprocessing, or basis-selection uncertainty, and they do not claim simultaneous coverage between unsampled grid points.")
+    }else{
+      inference_text<-paste0(
+        " Participant-cluster bootstrap ",level_text,
+        "% simultaneous coefficient bands used ",n_boot,
+        " whole-participant resamples with ",scope,
+        "-scope maxima over the observed time grid. Fixed coefficient functions were re-estimated by GLS in every resample while the fitted participant random-effect covariance",
+        if(has_trial)", shared trial random-effect covariance" else "",
+        ", residual variance",
+        if(corr!="iid")paste0(", and the fitted ",corr,
+          " residual correlation") else "",
+        " were held fixed. Thus the bands target participant-sampling variability conditional on the declared basis and fitted covariance model; they do not include variance-component or basis-selection uncertainty and do not claim simultaneous coverage between unsampled grid points.")
+    }
+  }
   paste0(
     "A Gaussian functional mixed-effects regression was fitted jointly ",
     "over all curve-by-time observations for dimension ",
