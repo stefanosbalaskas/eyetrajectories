@@ -1,0 +1,162 @@
+# Evidence hand-off for independent full source-contract review.
+# Run from package root after refreshing PR #46:
+# source("scripts/build_inference_contract_dossier.R")
+# This creates an explicit READ-ONLY review queue. It does not approve a
+# contract, alter the authoritative 508-export register, or initialize Python.
+stopifnot(file.exists("DESCRIPTION"))
+pkgload::load_all(".",quiet=TRUE)
+api<-etr_native_parity_catalog()
+readiness<-etr_native_certification_readiness_frame()
+source_names<-c(
+  "fpca_wild_bootstrap_projection_reporting_text",
+  "fpca_regression_future_prediction_reporting_text",
+  "fpca_regression_uncertainty_reporting_text",
+  "fpca_regression_slope_band_reporting_text",
+  "fpca_nested_regression_cv_reporting_text",
+  "fpca_wild_bootstrap_family_test_reporting_text",
+  "fpca_wild_bootstrap_monte_carlo_reporting_text",
+  "fpca_wild_bootstrap_simultaneous_reporting_text",
+  "fpca_regression_cv_reporting_text",
+  "fpca_component_envelope_reporting_text",
+  "fpca_wild_bootstrap_truncation_reporting_text",
+  "generalized_function_on_scalar_prediction_frame",
+  "generalized_function_on_scalar_mean_difference_frame",
+  "generalized_function_on_scalar_coefficient_frame",
+  "generalized_function_on_scalar_exposure_frame",
+  "sparse_fpca_score_frame",
+  "sparse_mfpca_score_frame",
+  "generalized_function_on_scalar_prediction_reporting_text",
+  "generalized_function_on_scalar_mean_difference_reporting_text",
+  "functional_mixed_effects_covariance_sensitivity_reporting_text",
+  "multivariate_iaaft_reporting_text",
+  "multivariate_surrogate_nonlinearity_reporting_text",
+  "generalized_function_on_scalar_reporting_text",
+  "functional_mixed_effects_residual_reporting_text",
+  "sparse_mfpca_reporting_text",
+  "sparse_fpca_reporting_text",
+  "multivariate_iaaft_diagnostics_frame",
+  "functional_mixed_effects_variance_bootstrap_frame",
+  "plot_multivariate_iaaft_diagnostics",
+  "plot_multivariate_surrogate_nonlinearity",
+  "plot_sparse_fpca_covariance",
+  "plot_sparse_fpca_component",
+  "plot_sparse_mfpca_component",
+  "plot_sparse_mfpca_covariance_blocks",
+  "plot_sparse_mfpca_cross_covariance",
+  "plot_sparse_mfpca_score_diagnostics",
+  "plot_sparse_irregular_dimension",
+  "plot_generalized_function_on_scalar_predictions",
+  "plot_generalized_function_on_scalar_mean_difference",
+  "plot_generalized_function_on_scalar_coefficients",
+  "plot_covariance_sensitivity_coefficients",
+  "plot_covariance_sensitivity_band_widths",
+  "plot_functional_mixed_effects_residual_acf",
+  "plot_functional_mixed_effects_residual_variogram",
+  "compare_functional_mixed_effects_residual_diagnostics",
+  "plot_fpca_component_envelope",
+  "plot_sparse_fpca_score_diagnostics",
+  "plot_fpca_wild_bootstrap_family_test",
+  "fpca_wild_bootstrap_family_test_monte_carlo_diagnostics",
+  "plot_fpca_wild_bootstrap_monte_carlo_diagnostics",
+  "plot_fpca_wild_bootstrap_simultaneous_interval",
+  "fpca_wild_bootstrap_projection_simultaneous_interval",
+  "fpca_regression_slope_simultaneous_band"
+)
+stopifnot(length(source_names)==53L,!anyDuplicated(source_names))
+idx<-match(source_names,readiness$python_name)
+stopifnot(!anyNA(idx),all(readiness$kind[idx]=="function"),
+  all(readiness$native_mapping_present[idx]),
+  all(readiness$native_implementation_started[idx]),
+  all(readiness$published_source_difference_open[idx]),
+  !any(readiness$fully_certified[idx]))
+source_idx<-match(source_names,api$python_name)
+stopifnot(!anyNA(source_idx),all(api$source_git_sha[source_idx]==
+  "7bb9b8c74c0e708efe0669aa7e4265ea8ff13eed"),
+  !any(api$one_to_one_native_contract_complete[source_idx]))
+source_test<-ifelse(seq_along(source_names)<=8L,
+  "tests/testthat/test-native-inference-reporting.R",
+  ifelse(seq_along(source_names)<=11L,
+    "tests/testthat/test-native-inference-reporting-extensions.R",
+    ifelse(seq_along(source_names)<=17L,
+      "tests/testthat/test-native-scientific-source-frames.R",
+      ifelse(seq_along(source_names)<=22L,
+      "tests/testthat/test-native-source-text-inference.R",
+      ifelse(seq_along(source_names)<=26L,
+        "tests/testthat/test-native-source-model-reports.R",
+        ifelse(seq_along(source_names)<=30L,
+          "tests/testthat/test-native-source-diagnostic-frames.R",
+          ifelse(seq_along(source_names)<=37L,
+            "tests/testthat/test-native-sparse-scientific-graphics.R",
+            ifelse(seq_along(source_names)<=44L,
+              "tests/testthat/test-native-generalized-mixed-source-graphics.R",
+              ifelse(seq_along(source_names)<=45L,
+                "tests/testthat/test-native-mixed-residual-comparison.R",
+                ifelse(seq_along(source_names)<=48L,
+                  "tests/testthat/test-native-fpca-inference-source-graphics.R",
+                  ifelse(seq_along(source_names)<=51L,
+                    "tests/testthat/test-native-wild-monte-carlo-source-contracts.R",
+                    ifelse(seq_along(source_names)<=52L,
+                      "tests/testthat/test-native-wild-simultaneous-source-calibration.R",
+                      "tests/testthat/test-native-fpcr-slope-source-calibration.R"))))))))))))
+source_file<-rep("src/eyetrajectoriespy/reporting.py",length(source_names))
+source_file[12L]<-"src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py"
+source_file[13L]<-"src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py"
+source_file[14L]<-"src/eyetrajectoriespy/generalized_function_on_scalar.py"
+source_file[15L]<-"src/eyetrajectoriespy/generalized_function_on_scalar.py"
+source_file[16L]<-"src/eyetrajectoriespy/sparse.py"
+source_file[17L]<-"src/eyetrajectoriespy/sparse_multivariate.py"
+source_file[18:19]<-"src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py"
+source_file[20L]<-"src/eyetrajectoriespy/functional_mixed_effects_covariance_sensitivity.py"
+source_file[21:22]<-"src/eyetrajectoriespy/nonlinear_reporting.py"
+source_file[23L]<-"src/eyetrajectoriespy/generalized_function_on_scalar.py"
+source_file[24L]<-"src/eyetrajectoriespy/functional_mixed_effects_diagnostics.py"
+source_file[25L]<-"src/eyetrajectoriespy/sparse_multivariate.py"
+source_file[26L]<-"src/eyetrajectoriespy/reporting.py"
+source_file[27L]<-"src/eyetrajectoriespy/multivariate_surrogates.py"
+source_file[28L]<-"src/eyetrajectoriespy/functional_mixed_effects_full_refit.py"
+source_file[29:30]<-"src/eyetrajectoriespy/nonlinear_plotting.py"
+source_file[31:32]<-"src/eyetrajectoriespy/plotting.py"
+source_file[33:36]<-"src/eyetrajectoriespy/sparse_multivariate_plotting.py"
+source_file[37L]<-"src/eyetrajectoriespy/plotting.py"
+source_file[38:39]<-"src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py"
+source_file[40L]<-"src/eyetrajectoriespy/generalized_function_on_scalar.py"
+source_file[41:42]<-"src/eyetrajectoriespy/functional_mixed_effects_covariance_sensitivity.py"
+source_file[43:44]<-"src/eyetrajectoriespy/functional_mixed_effects_diagnostics.py"
+source_file[45L]<-"src/eyetrajectoriespy/functional_mixed_effects_diagnostics.py"
+source_file[46:48]<-"src/eyetrajectoriespy/plotting.py"
+source_file[49L]<-"src/eyetrajectoriespy/wild_testing.py"
+source_file[50:51]<-"src/eyetrajectoriespy/plotting.py"
+source_file[52L]<-"src/eyetrajectoriespy/wild_simultaneous.py"
+source_file[53L]<-"src/eyetrajectoriespy/regression_inference.py"
+fixture_state<-ifelse(seq_along(source_names)<=37L,
+  "user_reported_local_native_and_python_1_2_pass_2026_10_30_unarchived",
+  "new_tests_pending_local_native_and_python_oracle")
+stopifnot(all(file.exists(source_test)))
+data<-data.frame(
+  python_name=source_names,
+  native_r_function=readiness$native_r_candidate[idx],
+  python_release="1.2.0",
+  source_commit="c1cd95ad718327550f7e55393ff38582872f7a94",
+  source_file=source_file,
+  oracle_test=source_test,
+  mapped=readiness$native_mapping_present[idx],
+  native_implementation_started=readiness$native_implementation_started[idx],
+  source_difference_open=readiness$published_source_difference_open[idx],
+  source_oracle_fixture_test_state=fixture_state,
+  accepted_input_domain_review="not_approved",
+  output_and_error_schema_review="not_approved",
+  numerical_text_oracle_review="not_approved",
+  scientific_scope_review="not_approved",
+  independent_reviewer_signoff="not_approved",
+  fully_certified=readiness$fully_certified[idx],
+  missing_evidence=readiness$all_unresolved_requirements[idx],
+  stringsAsFactors=FALSE
+)
+stopifnot(nrow(data)==53L,!any(data$fully_certified))
+output_dir<-file.path("artifacts","native_inference_contract_review")
+dir.create(output_dir,recursive=TRUE,showWarnings=FALSE)
+output<-file.path(output_dir,"python_1_2_scientific_contract_review_queue.csv")
+utils::write.csv(data,output,row.names=FALSE,na="")
+message("Wrote unsigned source-contract review queue: ",
+  normalizePath(output,winslash="/",mustWork=TRUE))
+message("All 53 contracts remain uncertified pending full-domain and independent review.")

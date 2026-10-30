@@ -1,0 +1,50 @@
+test_that("all 508 published exports receive a fail-closed evidence queue",{
+  api<-etr_native_parity_catalog()
+  readiness<-etr_native_certification_readiness_frame()
+  expect_identical(nrow(readiness),508L)
+  expect_identical(nrow(etr_native_certification_readiness_frame(
+    include_nonfunctions=FALSE)),380L)
+  expect_identical(nrow(etr_native_certification_readiness_frame(
+    only_unapproved=TRUE)),508L)
+  expect_identical(readiness$python_name,api$python_name)
+  expect_identical(readiness$kind,api$kind)
+  expect_identical(readiness$fully_certified,
+    api$one_to_one_native_contract_complete)
+  expect_equal(sum(readiness$native_mapping_present[
+    api$is_python_function]),326L)
+  expect_equal(sum(readiness$native_implementation_started[
+    api$is_python_function]),301L)
+  expect_equal(sum(readiness$published_source_difference_open),148L)
+  expect_equal(sum(readiness$fully_certified),0L)
+  expect_true(all(nzchar(readiness$first_unresolved_requirement)))
+  expect_true(all(nzchar(readiness$all_unresolved_requirements)))
+  mapped<-readiness[readiness$python_name%in%
+    c("plot_fpca_regression_cv","plot_nested_fpca_regression_cv",
+      "plot_functional_mixed_effects_bootstrap_comparison",
+      "plot_fpca_wild_bootstrap_truncation_scan"),,drop=FALSE]
+  expect_identical(nrow(mapped),4L)
+  expect_true(all(mapped$native_mapping_present))
+  expect_true(all(mapped$native_implementation_started))
+  expect_true(all(mapped$published_source_difference_open))
+  expect_true(all(mapped$first_unresolved_requirement==
+    "unresolved_published_source_difference"))
+  expect_true(all(grepl("independent_review_approval_missing",
+    mapped$all_unresolved_requirements,fixed=TRUE)))
+  missing<-readiness[readiness$python_name==
+    "simulate_functional_process",,drop=FALSE]
+  expect_equal(nrow(missing),1L)
+  expect_identical(missing$first_unresolved_requirement,
+    "native_mapping_missing")
+  expect_true(any(readiness$kind!="function"))
+})
+
+test_that("source certification readiness rejects malformed controls",{
+  expect_error(etr_native_certification_readiness_frame(
+    include_nonfunctions=NA),"include_nonfunctions")
+  expect_error(etr_native_certification_readiness_frame(
+    only_unapproved=1L),"only_unapproved")
+  expect_error(etr_native_certification_readiness_frame(
+    include_nonfunctions=c(TRUE,FALSE)),"include_nonfunctions")
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})

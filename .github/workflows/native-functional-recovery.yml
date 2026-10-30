@@ -5,7 +5,7 @@ on:
       - "R/native-functional-recovery-evidence.R"
       - "tests/testthat/test-native-functional-recovery-evidence.R"
       - "R/native-full-parity-ledger.R"
-      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/native_source_contract_gaps_.csv"
       - "NAMESPACE"
       - ".github/workflows/native-functional-recovery.yml"
   workflow_dispatch:
@@ -39,7 +39,7 @@ jobs:
       - name: Source counts and native recovery Monte Carlo tests
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-functional-recovery-evidence|native-functional-inference-visuals|native-functional-registration-plots|native-stage22-source-contract-gaps|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-functional-recovery-evidence|native-functional-inference-visuals|native-functional-registration-plots|native-source-contract-gaps|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
   pinned-python:
     name: Exact typed Python 1.2 recovery tables and Matplotlib geometry
     runs-on: ubuntu-latest

@@ -4,11 +4,11 @@ on:
     paths:
       - "R/native-functional-registration-plots.R"
       - "tests/testthat/test-native-functional-registration-plots.R"
-      - "R/native-stage24-nine-scientific-plots.R"
-      - "R/native-stage26-functional-rqa-recovery.R"
-      - "R/native-stage27-fpca-bootstrap-source.R"
-      - "R/native-stage28-math-contracts-diagnostics.R"
-      - "R/native-stage29-transfer-entropy-visual.R"
+      - "R/native-nine-scientific-plots.R"
+      - "R/native-functional-rqa-recovery.R"
+      - "R/native-fpca-bootstrap-source.R"
+      - "R/native-math-contracts-diagnostics.R"
+      - "R/native-transfer-entropy-visual.R"
       - "R/native-full-parity-ledger.R"
       - "NAMESPACE"
       - ".github/workflows/native-functional-registration.yml"
@@ -43,7 +43,7 @@ jobs:
       - name: Complete registration plot and historical parity test contexts
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); prev<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-functional-registration-plots|native-stage24-nine-scientific-plots|native-stage26-functional-rqa-recovery|native-stage27-fpca-bootstrap-source|native-stage28-math-contracts-diagnostics|native-stage29-transfer-entropy-visual|native-stage22-source-contract-gaps|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(prev,reticulate::py_available(initialize=FALSE)))'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); prev<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-functional-registration-plots|native-nine-scientific-plots|native-functional-rqa-recovery|native-fpca-bootstrap-source|native-math-contracts-diagnostics|native-transfer-entropy-visual|native-source-contract-gaps|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(prev,reticulate::py_available(initialize=FALSE)))'
   python-source:
     name: Published Python 1.2 reconstruction and warping source geometry
     runs-on: ubuntu-latest

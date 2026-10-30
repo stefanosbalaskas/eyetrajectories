@@ -25,7 +25,7 @@
   invisible(text)
 }
 .etr_native_fos_geometry <- function(result,coefficient,dimension,band) {
-  .etr13_fos_result(result)
+  .etr_function_scalar_result_check(result)
   k<-.etr_choose_named_component(result$coefficient_names,coefficient)
   if(is.null(dimension))dimension<-result$dimension_names[1L]
   .etr_assert(is.character(dimension)&&length(dimension)==1L&&
@@ -85,7 +85,7 @@ etr_plot_function_on_scalar_coefficients <- function(result,coefficient,
 #' @return Manuscript-ready limited observational-grid model statement.
 #' @export
 etr_function_on_scalar_reporting_text <- function(result,band=NULL) {
-  .etr13_fos_result(result)
+  .etr_function_scalar_result_check(result)
   .etr_valid_report_fields(result$predictor_names,"predictors")
   .etr_valid_report_fields(result$dimension_names,"dimensions")
   .etr_assert(result$unit%in%c("curve","participant")&&
@@ -139,7 +139,7 @@ etr_function_on_scalar_reporting_text <- function(result,band=NULL) {
 #' @return Invisible pointwise 95 percent Wald numerical geometry.
 #' @export
 etr_plot_functional_mixed_effects_coefficient <- function(result,coefficient,...) {
-  .etr18_fit(result)
+  .etr_mixed_moments_fit(result)
   k<-.etr_choose_named_component(result$coefficient_names,coefficient)
   nt<-length(result$time)
   estimate<-as.numeric(result$coefficient_functions[k,])
@@ -297,7 +297,7 @@ etr_plot_rqa_metric_mean_bootstrap <- function(result,metrics=NULL,...) {
 #' @return Invisible complete time/component source frame.
 #' @export
 etr_plot_functional_variance_decomposition <- function(result,...) {
-  .etr18_fit(result)
+  .etr_mixed_moments_fit(result)
   frame<-etr_functional_mixed_effects_variance_decomposition(result)
   .etr_assert(is.data.frame(frame)&&
     all(c("time","value","component")%in%names(frame))&&

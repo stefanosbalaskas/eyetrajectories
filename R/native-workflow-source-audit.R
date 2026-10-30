@@ -31,7 +31,16 @@
   if (empty_mapping && is.list(value) && !length(value)) return("{}")
   if (!requireNamespace("jsonlite",quietly=TRUE))
     stop("jsonlite is required to serialize workflow JSON",call.=FALSE)
-  as.character(jsonlite::toJSON(value,auto_unbox=TRUE,
+  # Frozen Python workflows/_core.py calls json.dumps(sort_keys=True),
+  # including nested mappings. Preserve sequence order but lexically sort
+  # every mapping, while retaining the documented class/float-type gaps.
+  source_sorted <- function(x) {
+    if (!is.list(x)) return(x)
+    nm <- names(x)
+    if (!is.null(nm)) x <- x[order(nm,method="radix")]
+    lapply(x,source_sorted)
+  }
+  as.character(jsonlite::toJSON(source_sorted(value),auto_unbox=TRUE,
     null="null",na="null",digits=NA,pretty=FALSE))
 }
 

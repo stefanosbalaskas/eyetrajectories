@@ -1,0 +1,112 @@
+name: Native R reporting contracts and source text oracles
+on:
+  pull_request:
+    paths:
+      - "R/native-manuscript-reporting.R"
+      - "R/native-inference-reporting.R"
+      - "R/native-inference-reporting-extensions.R"
+      - "R/native-scientific-source-frames.R"
+      - "R/native-source-text-inference.R"
+      - "R/native-source-model-reports.R"
+      - "R/native-source-diagnostic-frames.R"
+      - "R/native-sparse-scientific-graphics.R"
+      - "R/native-generalized-mixed-source-graphics.R"
+      - "R/native-mixed-residual-comparison.R"
+      - "R/native-fpca-inference-source-graphics.R"
+      - "R/native-wild-monte-carlo-source-contracts.R"
+      - "R/native-wild-simultaneous-source-calibration.R"
+      - "R/native-fpcr-slope-source-calibration.R"
+      - "man/etr_native_inference_reporting.Rd"
+      - "R/native-functional-diagnostics.R"
+      - "inst/extdata/native_contract_certification_pilots_v1.csv"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "tests/testthat/test-native-source-boundaries.R"
+      - "R/native-full-parity-ledger.R"
+      - "tests/testthat/test-native-manuscript-reporting.R"
+      - "tests/testthat/test-native-inference-reporting.R"
+      - "tests/testthat/test-native-inference-reporting-extensions.R"
+      - "tests/testthat/test-native-scientific-source-frames.R"
+      - "tests/testthat/test-native-source-text-inference.R"
+      - "tests/testthat/test-native-source-model-reports.R"
+      - "tests/testthat/test-native-source-diagnostic-frames.R"
+      - "tests/testthat/test-native-source-evidence-runner.R"
+      - "tests/testthat/test-native-sparse-scientific-graphics.R"
+      - "tests/testthat/test-native-generalized-mixed-source-graphics.R"
+      - "tests/testthat/test-native-mixed-residual-comparison.R"
+      - "tests/testthat/test-native-fpca-inference-source-graphics.R"
+      - "tests/testthat/test-native-wild-monte-carlo-source-contracts.R"
+      - "tests/testthat/test-native-wild-simultaneous-source-calibration.R"
+      - "tests/testthat/test-native-fpcr-slope-source-calibration.R"
+      - "man/etr_native_fpcr_slope_source_calibration.Rd"
+      - "man/etr_native_wild_simultaneous_source_calibration.Rd"
+      - "man/etr_native_wild_monte_carlo_source_contracts.Rd"
+      - "man/etr_native_fpca_inference_source_graphics.Rd"
+      - "man/etr_native_mixed_residual_comparison.Rd"
+      - "man/etr_native_generalized_mixed_source_graphics.Rd"
+      - "man/etr_native_sparse_scientific_graphics.Rd"
+      - "man/etr_native_source_diagnostic_frames.Rd"
+      - "man/etr_native_source_text_inference.Rd"
+      - "scripts/build_inference_contract_dossier.R"
+      - "scripts/capture_native_source_qualification_evidence.R"
+      - "man/etr_native_scientific_source_frames.Rd"
+      - "NAMESPACE"
+      - ".github/workflows/native-r-parity-manuscript-reporting.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-r:
+    name: native reporting and 508 ledger / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: "hard"
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Parse inference source and oracle fixtures
+        shell: bash
+        run: |
+          Rscript -e 'parse(file="R/native-inference-reporting.R"); parse(file="R/native-inference-reporting-extensions.R"); parse(file="R/native-scientific-source-frames.R"); parse(file="R/native-source-text-inference.R"); parse(file="R/native-source-model-reports.R"); parse(file="R/native-source-diagnostic-frames.R"); parse(file="R/native-sparse-scientific-graphics.R"); parse(file="R/native-generalized-mixed-source-graphics.R"); parse(file="R/native-mixed-residual-comparison.R"); parse(file="R/native-fpca-inference-source-graphics.R"); parse(file="R/native-wild-monte-carlo-source-contracts.R"); parse(file="R/native-wild-simultaneous-source-calibration.R"); parse(file="R/native-fpcr-slope-source-calibration.R"); parse(file="scripts/capture_native_source_qualification_evidence.R"); parse(file="tests/testthat/test-native-inference-reporting.R"); parse(file="tests/testthat/test-native-inference-reporting-extensions.R"); parse(file="tests/testthat/test-native-scientific-source-frames.R"); parse(file="tests/testthat/test-native-source-text-inference.R"); parse(file="tests/testthat/test-native-source-model-reports.R"); parse(file="tests/testthat/test-native-source-diagnostic-frames.R"); parse(file="tests/testthat/test-native-source-evidence-runner.R"); parse(file="tests/testthat/test-native-sparse-scientific-graphics.R"); parse(file="tests/testthat/test-native-generalized-mixed-source-graphics.R"); parse(file="tests/testthat/test-native-mixed-residual-comparison.R"); parse(file="tests/testthat/test-native-fpca-inference-source-graphics.R"); parse(file="tests/testthat/test-native-wild-monte-carlo-source-contracts.R"); parse(file="tests/testthat/test-native-wild-simultaneous-source-calibration.R"); parse(file="tests/testthat/test-native-fpcr-slope-source-calibration.R")'
+      - name: Native text, source ledger, and reticulate isolation
+        shell: bash
+        run: |
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-inference-reporting|native-scientific-source-frames|native-source-text-inference|native-source-model-reports|native-source-diagnostic-frames|native-source-evidence-runner|native-sparse-scientific-graphics|native-generalized-mixed-source-graphics|native-mixed-residual-comparison|native-fpca-inference-source-graphics|native-wild-monte-carlo-source-contracts|native-wild-simultaneous-source-calibration|native-fpcr-slope-source-calibration|native-manuscript-reporting|native-source-contract-gaps|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
+  pinned-python:
+    name: direct published Python 1.2 reporting text oracle
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - id: python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: "hard"
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Exact source text comparison on matched synthetic summary objects
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-inference-reporting|native-scientific-source-frames|native-source-text-inference|native-source-model-reports|native-source-diagnostic-frames|native-source-evidence-runner|native-sparse-scientific-graphics|native-generalized-mixed-source-graphics|native-mixed-residual-comparison|native-fpca-inference-source-graphics|native-wild-monte-carlo-source-contracts|native-wild-simultaneous-source-calibration|native-fpcr-slope-source-calibration|native-manuscript-reporting|native-source-boundaries|native-source-contract-gaps",reporter="summary",stop_on_failure=TRUE)'

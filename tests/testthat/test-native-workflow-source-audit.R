@@ -88,6 +88,18 @@ test_that("workflow audit records reject hidden decisions and invalid values",{
   expect_error(etr_workflow_reporting_text(list()),"native workflow audit")
 })
 
+test_that("workflow JSON recursively sorts mapping keys and preserves step order",{
+  skip_if_not_installed("jsonlite")
+  z<-etr_workflow_decisions_frame(list(a=list(
+    value=list(z=1L,a=list(y=2L,b=3L)),source="analyst")))
+  expect_identical(z$value_json,'{"a":{"b":3,"y":2},"z":1}')
+  step<-list(name="inspect",`function`="inspect",status="completed",
+    parameters=list(z=1L,a=list(y=2L,b=3L)),
+    elapsed_seconds=0,warnings=character())
+  f<-etr_workflow_steps_frame(list(step))
+  expect_identical(f$parameters_json,'{"a":{"b":3,"y":2},"z":1}')
+})
+
 test_that("all 128 nonfunction source symbols require independent review",{
   path <- system.file("extdata","native_nonfunction_contract_review_v1.csv",
     package="eyetrajectories")
@@ -106,9 +118,9 @@ test_that("all 128 nonfunction source symbols require independent review",{
 test_that("workflow integration stays uncertified until independent full review",{
   z <- etr_native_parity_catalog()
   expect_equal(nrow(z),508L)
-  expect_equal(sum(z$is_python_function & z$named_native_candidate),240L)
-  expect_equal(sum(z$native_implementation_started),215L)
-  expect_equal(sum(z$source_contract_gap_unresolved),61L)
+  expect_equal(sum(z$is_python_function & z$named_native_candidate),326L)
+  expect_equal(sum(z$native_implementation_started),301L)
+  expect_equal(sum(z$source_contract_gap_unresolved),148L)
   for(name in c("workflow_steps_frame","workflow_decisions_frame",
                 "workflow_summary_frame","workflow_reporting_text")){
     row <- z[z$python_name==name & z$is_python_function,,drop=FALSE]
@@ -120,9 +132,9 @@ test_that("workflow integration stays uncertified until independent full review"
   }
   queue <- etr_native_source_contract_review_queue()
   expect_equal(nrow(queue),508L)
-  expect_equal(sum(queue$mapped & queue$kind=="function"),240L)
+  expect_equal(sum(queue$mapped & queue$kind=="function"),326L)
   expect_equal(sum(queue$targeted_numerical_fixture_pass),4L)
-  expect_equal(sum(queue$source_gap_unresolved),61L)
+  expect_equal(sum(queue$source_gap_unresolved),148L)
   expect_false(any(queue$full_numeric_approved))
   expect_false(any(queue$schema_boundary_approved))
   expect_false(any(queue$scientific_scope_approved))
@@ -173,5 +185,17 @@ test_that("pinned published Python 1.2 workflow step and decision frames match c
     as.character(native_decisions$value_json))
   expect_identical(as.character(py_decisions$source),
     as.character(native_decisions$source))
+  py_map<-reticulate::dict(z=as.integer(1L),
+    a=reticulate::dict(y=as.integer(2L),b=as.integer(3L)))
+  py_nested<-reticulate::py_call(wf$WorkflowDecisionRecord,
+    value=py_map,source="analyst")
+  py_items<-reticulate::dict()
+  py_items[["nested"]]<-py_nested
+  py_sorted<-reticulate::py_to_r(reticulate::py_call(
+    wf$workflow_decisions_frame,decisions=py_items))
+  r_sorted<-etr_workflow_decisions_frame(list(nested=list(
+    value=list(z=1L,a=list(y=2L,b=3L)),source="analyst")))
+  expect_identical(as.character(py_sorted$value_json),
+    as.character(r_sorted$value_json))
   expect_false(any(etr_native_parity_catalog()$one_to_one_native_contract_complete))
 })

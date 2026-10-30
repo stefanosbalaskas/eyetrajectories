@@ -1,0 +1,72 @@
+name: Native R functional transformations and diagnostics
+
+on:
+  pull_request:
+    paths:
+      - "R/native-functional-diagnostics.R"
+      - "R/native-parity-registration.R"
+      - "R/native-full-parity-ledger.R"
+      - "NAMESPACE"
+      - "tests/testthat/test-(?:native-functional-diagnostics)*.R"
+      - "tests/testthat/test-native*parity-ledger.R"
+      - ".github/workflows/native-r-parity-functional-diagnostics.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native-r:
+    name: pure R / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: "hard"
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Native and earlier cumulative register assertions
+        shell: bash
+        run: |
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="(?:native-functional-diagnostics)|native-(?:parity-ledger|distances-parity-ledger|trajectory-parity-ledger|portable-parity-ledger|irregular-parity-ledger|recurrence-parity-ledger)|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))'
+
+  python-reference:
+    name: direct Python 1.2 numeric oracle
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - id: python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install exactly the frozen source version
+        run: python -m pip install "eyetrajectoriespy==1.2.0"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: "hard"
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Opt-in native versus Python oracle
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); stopifnot(identical(et_python_version(),"1.2.0")); testthat::test_local(".",filter="native-functional-diagnostics",reporter="summary",stop_on_failure=TRUE)'

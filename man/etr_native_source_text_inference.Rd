@@ -1,0 +1,48 @@
+\name{etr_generalized_function_on_scalar_prediction_reporting_text}
+\alias{etr_generalized_function_on_scalar_prediction_reporting_text}
+\alias{etr_generalized_function_on_scalar_mean_difference_reporting_text}
+\alias{etr_functional_mixed_effects_covariance_sensitivity_reporting_text}
+\alias{etr_multivariate_iaaft_reporting_text}
+\alias{etr_multivariate_surrogate_nonlinearity_reporting_text}
+\alias{etr_generalized_function_on_scalar_reporting_text}
+\alias{etr_functional_mixed_effects_residual_reporting_text}
+\alias{etr_sparse_mfpca_reporting_text}
+\alias{etr_sparse_fpca_reporting_text}
+\title{Scientific interpretation reports aligned to frozen Python 1.2.0}
+\description{
+Nine Python-free, strictly descriptive reporting functions for generalized
+function-on-scalar regression predictions and profile contrasts, functional
+mixed-effects covariance sensitivity, multivariate IAAFT generation, and
+surrogate-based multivariate nonlinearity inference, marginal generalized FoSR fitting,
+within-trial mixed-effects diagnostics and sparse univariate/multivariate PACE.
+}
+\usage{
+etr_generalized_function_on_scalar_prediction_reporting_text(result)
+etr_generalized_function_on_scalar_mean_difference_reporting_text(result)
+etr_functional_mixed_effects_covariance_sensitivity_reporting_text(result)
+etr_multivariate_iaaft_reporting_text(result)
+etr_multivariate_surrogate_nonlinearity_reporting_text(result)
+etr_generalized_function_on_scalar_reporting_text(result, band = NULL)
+etr_functional_mixed_effects_residual_reporting_text(result)
+etr_sparse_mfpca_reporting_text(result, digits = 3L)
+etr_sparse_fpca_reporting_text(result, digits = 3L)
+}
+\arguments{
+\item{band}{Optional predeclared generalized function-on-scalar coefficient band.}
+\item{digits}{Nonnegative scientific reporting precision; restricted to 15 digits in R.}
+\item{result}{A validated native R list representing the relevant source
+result, containing explicit scalar identifiers, scientific metadata and
+inference diagnostics.}
+}
+\value{
+A manuscript-oriented character scalar; no statistical estimator, bootstrap,
+interval or model selection is recalculated.
+}
+\details{
+Scientific limitations are preserved: no between-grid simultaneous coverage
+claims, no automatic covariance model selection, and rejection of a declared
+surrogate null is not proof of deterministic chaos. Input acceptance is a
+conservative native R record subset rather than the full Python frozen
+dataclass and NumPy domain. Source-contract differences remain unresolved
+and no full certification is inferred from matching example text.
+}
