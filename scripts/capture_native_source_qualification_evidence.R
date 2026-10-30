@@ -103,14 +103,13 @@ qualify_once<-function(python=FALSE){
   list(label=label,success=is.null(failed),log_file=path,
     error=if(is.null(failed))"" else failed)
 }
-results<-list(qualify_once(FALSE))
-if(isTRUE(results[[1L]]$success)) {
-  results[[2L]]<-qualify_once(TRUE)
-} else {
-  results[[2L]]<-list(
-    label="python_1_2_direct_source",success=NA,
-    log_file="",error="NOT ATTEMPTED: offline qualification failed")
-}
+# Record both independently: an offline R census failure must not
+# suppress direct pinned Python numerical/source witnesses. Overall status
+# remains FAIL whenever either mode fails. These logs are not signoffs.
+results<-list(
+  qualify_once(FALSE),
+  qualify_once(TRUE)
+)
 source_files<-unique(c(
   queue$oracle_test,
   "R/native-source-diagnostic-frames.R",

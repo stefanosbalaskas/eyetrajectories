@@ -9,9 +9,10 @@ test_that("native source qualification evidence runner parses", {
   expect_silent(parse(file = runner, keep.source = FALSE))
   lines <- readLines(runner, warn = FALSE)
   expect_false(any(trimws(lines) == "else"))
-  expect_true(any(grepl("if(isTRUE(results[[1L]]$success)) {",
-    lines, fixed = TRUE)))
-  expect_true(any(grepl("} else {", lines, fixed = TRUE)))
+  expect_true(any(grepl("qualify_once(FALSE)",lines,fixed=TRUE)))
+  expect_true(any(grepl("qualify_once(TRUE)",lines,fixed=TRUE)))
+  expect_false(any(grepl(
+    "NOT ATTEMPTED: offline qualification failed",lines,fixed=TRUE)))
 })
 
 test_that("new scientific source oracles are included in both qualification modes",{
