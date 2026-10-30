@@ -98,9 +98,9 @@ test_that("five reporting candidates remain unmapped-to-certificate gaps",{
   expect_true(all(rows$native_implementation_started))
   expect_true(all(rows$source_contract_gap_unresolved))
   expect_false(any(rows$one_to_one_native_contract_complete))
-  expect_equal(sum(p$is_python_function & p$named_native_candidate),311L)
-  expect_equal(sum(p$native_implementation_started),286L)
-  expect_equal(sum(p$source_contract_gap_unresolved),133L)
+  expect_equal(sum(p$is_python_function & p$named_native_candidate),318L)
+  expect_equal(sum(p$native_implementation_started),293L)
+  expect_equal(sum(p$source_contract_gap_unresolved),140L)
 })
 
 test_that("five reporting summaries match pinned Python 1.2 exact source strings",{
