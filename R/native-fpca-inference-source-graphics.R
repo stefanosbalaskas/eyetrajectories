@@ -87,46 +87,8 @@ etr_plot_fpca_component_envelope <- function(result,component=0L,
     upper=upper,reference=estimate))
 }
 
-#' Visualize sparse PACE conditional covariance conditioning diagnostics
-#' @param result Native sparse FPCA result with per-curve diagnostics.
-#' @return Invisibly finite positive-condition diagnostic points and flags.
-#' @export
-etr_plot_sparse_fpca_score_diagnostics <- function(result) {
-  .etr_scientific_frame_fields(result,c("score_diagnostics"),
-    "sparse result")
-  d<-result$score_diagnostics
-  fields<-c("n_samples","condition_number","status_code")
-  .etr_assert(is.data.frame(d)&&nrow(d)>=1L&&
-    all(fields%in%names(d)),
-    "result does not contain complete PACE score diagnostics")
-  .etr_assert(is.numeric(d$n_samples)&&is.numeric(d$condition_number)&&
-    is.character(d$status_code)&&!anyNA(d$status_code),
-    "PACE score diagnostics need numeric sample counts, conditions and status")
-  valid<-is.finite(d$n_samples)&d$n_samples>=1&
-    is.finite(d$condition_number)&d$condition_number>0
-  .etr_assert(any(valid),
-    "score diagnostics do not contain positive finite condition numbers")
-  frame<-d[valid,fields,drop=FALSE]
-  ok<-frame$status_code=="ok"
-  ylim<-range(frame$condition_number)
-  if(ylim[1L]==ylim[2L])ylim<-ylim*c(.8,1.2)
-  xlim<-range(frame$n_samples)
-  if(xlim[1L]==xlim[2L])xlim<-xlim+c(-.5,.5)
-  graphics::plot(frame$n_samples,frame$condition_number,
-    type="n",log="y",xlim=xlim,ylim=ylim,
-    xlab="Observed samples used for PACE score",
-    ylab="Conditional covariance condition number",
-    main="Sparse PACE score-system conditioning")
-  if(any(ok))graphics::points(frame$n_samples[ok],
-    frame$condition_number[ok],pch=1L)
-  if(any(!ok))graphics::points(frame$n_samples[!ok],
-    frame$condition_number[!ok],pch=4L)
-  if(any(!ok))graphics::legend("topright",
-    legend=c("score system ok","flagged/failed score system"),
-    pch=c(1L,4L),bty="n")
-  invisible(list(finite=frame,n_missing=sum(!valid),
-    n_ok=sum(ok),n_flagged=sum(!ok)))
-}
+# Sparse PACE diagnostics already have an authoritative native implementation
+# in native-fpcr-inference-plots.R. Do not redefine it here.
 
 #' Plot fixed-family FPCR wild-bootstrap tail probabilities
 #' @param result Precalibrated familywise bootstrap diagnostic result.
