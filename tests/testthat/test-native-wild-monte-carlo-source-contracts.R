@@ -50,9 +50,14 @@ test_that("exact native Monte Carlo precision reuses fixed bootstrap roots",{
   expect_equal(a$adjusted_interval_upper[3L],1)
   expect_equal(a$adjusted_interval_lower[3L],
     stats::qbeta(.025,4,1),tolerance=1e-12)
-  expect_false(a$provenance$additional_bootstrap_draws)
-  expect_false(a$provenance$changes_reported_test_decisions)
-  expect_false(a$provenance$strong_fwer_claim_added)
+  provenance<-a$provenance$fpca_wild_bootstrap_monte_carlo_diagnostics
+  expect_identical(provenance$n_bootstrap,4L)
+  expect_equal(provenance$reported_test_minimum_attainable_p,1/5)
+  expect_identical(provenance$exceedance_model,
+    "binomial_conditional_on_observed_statistic_and_bootstrap_design")
+  expect_false(provenance$additional_bootstrap_draws)
+  expect_false(provenance$changes_reported_test_decisions)
+  expect_false(provenance$strong_fwer_claim_added)
 })
 test_that("source wild-bootstrap visuals preserve fixed targets and uncertainty",{
   z<-.etr_wild_mc_fixture()
@@ -124,9 +129,9 @@ test_that("three new source functions remain independently uncertified",{
   expect_true(all(x$native_implementation_started))
   expect_true(all(x$source_contract_gap_unresolved))
   expect_false(any(x$one_to_one_native_contract_complete))
-  expect_equal(sum(p$is_python_function & p$named_native_candidate),325L)
-  expect_equal(sum(p$native_implementation_started),300L)
-  expect_equal(sum(p$source_contract_gap_unresolved),147L)
+  expect_equal(sum(p$is_python_function & p$named_native_candidate),327L)
+  expect_equal(sum(p$native_implementation_started),302L)
+  expect_equal(sum(p$source_contract_gap_unresolved),149L)
 })
 test_that("direct frozen Python 1.2 exact binomial and plot coordinates agree",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
@@ -181,7 +186,13 @@ _mc_oracle={
     'adjusted_decision_stable':_mc_result.adjusted_decision_stable,
     'plot_adjusted':_mc_ax.containers[0].lines[0].get_ydata(),
     'plot_targetwise':_mc_ax.containers[1].lines[0].get_ydata(),
-    'plot_projection':_mc_ax2.containers[0].lines[0].get_ydata()
+    'plot_projection':_mc_ax2.containers[0].lines[0].get_ydata(),
+    'reported_test_minimum_attainable_p': _mc_result.provenance[
+        'fpca_wild_bootstrap_monte_carlo_diagnostics'
+    ]['reported_test_minimum_attainable_p'],
+    'bootstrap_roots_reused': _mc_result.provenance[
+        'fpca_wild_bootstrap_monte_carlo_diagnostics'
+    ]['bootstrap_roots_reused']
 }
 plt.close('all')
 ")
@@ -206,7 +217,13 @@ plt.close('all')
       targetwise_decision_stable=a$targetwise_decision_stable,
       adjusted_decision_stable=a$adjusted_decision_stable,
       plot_adjusted=b$adjusted,plot_targetwise=b$targetwise,
-      plot_projection=c$reference_projection)
+      plot_projection=c$reference_projection,
+      reported_test_minimum_attainable_p=
+        a$provenance$fpca_wild_bootstrap_monte_carlo_diagnostics$
+        reported_test_minimum_attainable_p,
+      bootstrap_roots_reused=
+        a$provenance$fpca_wild_bootstrap_monte_carlo_diagnostics$
+        bootstrap_roots_reused)
     for(n in names(actual)){
       py<-reticulate::py_eval(paste0("_mc_oracle['",n,"']"),
         convert=TRUE)

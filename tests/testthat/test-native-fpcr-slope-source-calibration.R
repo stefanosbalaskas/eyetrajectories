@@ -60,9 +60,9 @@ test_that("source FPCR slope bands remain unsigned pending complete review",{
   expect_true(x$native_implementation_started)
   expect_true(x$source_contract_gap_unresolved)
   expect_false(x$one_to_one_native_contract_complete)
-  expect_equal(sum(p$is_python_function&p$named_native_candidate),326L)
-  expect_equal(sum(p$native_implementation_started),301L)
-  expect_equal(sum(p$source_contract_gap_unresolved),148L)
+  expect_equal(sum(p$is_python_function&p$named_native_candidate),327L)
+  expect_equal(sum(p$native_implementation_started),302L)
+  expect_equal(sum(p$source_contract_gap_unresolved),149L)
 })
 test_that("pinned Python 1.2 FPCR slope bands agree on both maxima scopes",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
