@@ -21,10 +21,10 @@ This is an evidence-oriented development note, **not a certification claim**.
 
 | Domain | Number | Meaning |
 |---|---:|---|
-| Python function mappings | 269 / 380 | Names associated with native R candidates |
-| Native implementations started | 244 | Implemented operations; **not** proof of source equivalence |
-| Unmapped Python functions | 111 | No declared native candidate |
-| Known open source differences | 91 | Class, input, numerical, backend, error or scope boundaries |
+| Python function mappings | 274 / 380 | Names associated with native R candidates |
+| Native implementations started | 249 | Implemented operations; **not** proof of source equivalence |
+| Unmapped Python functions | 106 | No declared native candidate |
+| Known open source differences | 96 | Class, input, numerical, backend, error or scope boundaries |
 | Nonfunction exports for independent review | 128 | Values/classes not counted as native functions |
 | Complete independently certified public contracts | **0 / 508** | Four approval domains are not all independently signed off |
 
@@ -121,6 +121,14 @@ sparse PACE conditioning diagnostics. Source oracles compare numerical
 interval and line coordinates and PACE scatter masks. Native R named-list
 inputs and base graphics are not Python dataclass and Matplotlib Axes
 return contracts; all six differences remain open.
+
+A source-exact native stabilized-volatility FPCR truncation selector is now
+implemented alongside four read-only projection, simultaneous family-test
+and Monte Carlo precision audit tables. The algorithm applies the earliest
+candidate with r+1 consecutive stable transitions, reports missing targets,
+and cannot silently choose the largest h. Frozen Python dataclass/pandas
+type contracts and full accepted-domain/schema behavior remain explicit
+open certification differences. Numerical source-oracle testing is opt-in.
 
 ## Local qualification on PR #46
 

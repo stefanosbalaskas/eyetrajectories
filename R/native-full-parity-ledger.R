@@ -273,7 +273,12 @@
   plot_fpca_regression_mean_prediction_uncertainty="etr_plot_fpca_regression_mean_prediction_uncertainty",
   plot_fpca_regression_slope_band="etr_plot_fpca_regression_slope_band",
   plot_fpca_regression_slope_uncertainty="etr_plot_fpca_regression_slope_uncertainty",
-  plot_sparse_fpca_score_diagnostics="etr_plot_sparse_fpca_score_diagnostics"
+  plot_sparse_fpca_score_diagnostics="etr_plot_sparse_fpca_score_diagnostics",
+  select_fpca_wild_bootstrap_truncation="etr_select_fpca_wild_bootstrap_truncation",
+  fpca_wild_bootstrap_projection_frame="etr_fpca_wild_bootstrap_projection_frame",
+  fpca_wild_bootstrap_simultaneous_frame="etr_fpca_wild_bootstrap_simultaneous_frame",
+  fpca_wild_bootstrap_family_test_frame="etr_fpca_wild_bootstrap_family_test_frame",
+  fpca_wild_bootstrap_monte_carlo_diagnostic_frame="etr_fpca_wild_bootstrap_monte_carlo_diagnostic_frame"
 )
 
 #' Audit one-to-one Python 1.2.0 versus independent native R coverage
@@ -545,6 +550,12 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
       "plot_fpca_regression_slope_band",
       "plot_fpca_regression_slope_uncertainty",
       "plot_sparse_fpca_score_diagnostics")] <- 43L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% c("select_fpca_wild_bootstrap_truncation",
+      "fpca_wild_bootstrap_projection_frame",
+      "fpca_wild_bootstrap_simultaneous_frame",
+      "fpca_wild_bootstrap_family_test_frame",
+      "fpca_wild_bootstrap_monte_carlo_diagnostic_frame")] <- 44L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset
