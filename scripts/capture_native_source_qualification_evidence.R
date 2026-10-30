@@ -3,6 +3,17 @@
 # Run from package root:
 # source("scripts/capture_native_source_qualification_evidence.R")
 stopifnot(file.exists("DESCRIPTION"))
+required_scientific_tests<-file.path("tests","testthat",paste0(
+  "test-",c("native-generalized-fosr-prediction",
+    "native-generalized-fosr-bootstrap-source",
+    "native-mixed-model-source-text"),".R"))
+missing_scientific_tests<-required_scientific_tests[
+  !file.exists(required_scientific_tests)]
+if(length(missing_scientific_tests))stop(
+  "Missing required PR #48 scientific test files in the active checkout: ",
+  paste(missing_scientific_tests,collapse=", "),
+  ". Switch to the research/native-generalized-fosr-prediction-20261030 branch.",
+  call.=FALSE)
 pkgload::load_all(".",quiet=TRUE)
 stopifnot(identical(et_python_version(),"1.2.0"))
 stopifnot(nrow(etr_native_parity_catalog())==508L)
@@ -12,7 +23,7 @@ queue_path<-file.path("artifacts","native_inference_contract_review",
   "python_1_2_scientific_contract_review_queue.csv")
 queue<-utils::read.csv(queue_path,stringsAsFactors=FALSE,
   check.names=FALSE)
-stopifnot(nrow(queue)==55L,!anyDuplicated(queue$python_name),
+stopifnot(nrow(queue)==57L,!anyDuplicated(queue$python_name),
   all(!queue$fully_certified),
   all(queue$source_difference_open),
   all(file.exists(queue$oracle_test)))
@@ -33,6 +44,7 @@ filter<-paste(c(
   "native-wild-simultaneous-source-calibration",
   "native-fpcr-slope-source-calibration",
   "native-generalized-fosr-prediction",
+  "native-generalized-fosr-bootstrap-source",
   "native-mixed-model-source-text",
   "native-source-environment",
   "native-source-evidence-runner",
@@ -100,10 +112,12 @@ source_files<-unique(c(
   "R/native-wild-simultaneous-source-calibration.R",
   "R/native-fpcr-slope-source-calibration.R",
   "R/native-generalized-fosr-prediction.R",
+  "R/native-generalized-fosr-bootstrap-source.R",
   "R/native-mixed-model-source-text.R",
   "R/native-source-environment.R",
   "tests/testthat/test-native-source-environment.R",
   "tests/testthat/test-native-generalized-fosr-prediction.R",
+  "tests/testthat/test-native-generalized-fosr-bootstrap-source.R",
   "tests/testthat/test-native-mixed-model-source-text.R",
   "tests/testthat/test-native-fpcr-slope-source-calibration.R",
   "tests/testthat/test-native-wild-simultaneous-source-calibration.R",

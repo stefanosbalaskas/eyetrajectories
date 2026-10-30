@@ -1,14 +1,24 @@
 # Source: eyetrajectoriespy==1.2.0 fixed-profile bootstrap source.
 .etr_gfosr_bootstrap_fixture<-function(family="binomial",exposed=FALSE){
-  z<-.etr_gfosr_predict_fixture(family=family,exposed=exposed)
+  fit<-list(time=c(0,.5,1),family=family,
+    link=if(family=="binomial")"logit" else "log",
+    predictor_names="treatment",
+    basis=cbind(c(1,1,1),c(0,.5,1)),
+    basis_coefficients=matrix(c(.2,.1,.5,.25),2,2,byrow=TRUE),
+    parameter_covariance=diag(c(.04,.01,.09,.04)),
+    scalar_design_matrix=rbind(c(1,0),c(1,1)),
+    exposure=if(exposed)matrix(2,2,3) else NULL,
+    provenance=list(audit="frozen"))
+  profiles<-data.frame(profile_id=c("A","B","C"),
+    treatment=c(0,1,2))
   draws<-array(NA_real_,c(4L,2L,3L))
   draws[1L,,]<-rbind(c(.10,.20,.25),c(.35,.55,.65))
   draws[2L,,]<-rbind(c(.22,.26,.32),c(.48,.58,.68))
   draws[3L,,]<-rbind(c(.27,.29,.38),c(.51,.59,.73))
   draws[4L,,]<-rbind(c(.32,.36,.42),c(.65,.80,.85))
-  list(bootstrap=list(reference=z$fit,
+  list(bootstrap=list(reference=fit,
     bootstrap_coefficient_functions=draws,
-    provenance=list(source="retained")),profiles=z$profiles)
+    provenance=list(source="retained")),profiles=profiles)
 }
 
 test_that("fixed participant coefficient draws project without resampling",{
