@@ -42,10 +42,10 @@ test_that("FPCA component, PACE score and familywise tail plots retain source da
       dimension="y")
     expect_equal(b$reference,c(.5,0,-.5))
     score<-etr_plot_sparse_fpca_score_diagnostics(x$sparse)
-    expect_equal(nrow(score$finite),3L)
-    expect_equal(score$n_missing,1L)
-    expect_equal(score$n_ok,2L)
-    expect_equal(score$n_flagged,1L)
+    expect_equal(sum(score$geometry$finite),3L)
+    expect_equal(sum(!score$geometry$finite),1L)
+    expect_equal(sum(score$geometry$ok),2L)
+    expect_equal(sum(score$geometry$flagged),1L)
     fam<-etr_plot_fpca_wild_bootstrap_family_test(x$family,
       max_targets=2L,show_targetwise=TRUE)
     expect_identical(fam$target_curve_id,c("a","b"))
@@ -88,9 +88,9 @@ test_that("three new FPCA scientific graphic mappings retain unsigned gaps",{
   expect_true(all(z$native_implementation_started))
   expect_true(all(z$source_contract_gap_unresolved))
   expect_false(any(z$one_to_one_native_contract_complete))
-  expect_equal(sum(p$is_python_function&p$named_native_candidate),322L)
-  expect_equal(sum(p$native_implementation_started),297L)
-  expect_equal(sum(p$source_contract_gap_unresolved),144L)
+  expect_equal(sum(p$is_python_function&p$named_native_candidate),321L)
+  expect_equal(sum(p$native_implementation_started),296L)
+  expect_equal(sum(p$source_contract_gap_unresolved),143L)
 })
 test_that("FPCA plot geometries agree with pinned Python 1.2 Matplotlib data",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
@@ -156,10 +156,8 @@ plt.close('all')
       component_reference=a$reference,
       family_adjusted=c$adjusted_p_value,
       family_targetwise=c$targetwise_p_value,
-      sparse_good=b$finite$condition_number[
-        b$finite$status_code=="ok"],
-      sparse_flagged=b$finite$condition_number[
-        b$finite$status_code!="ok"])
+      sparse_good=b$geometry$condition_number[b$geometry$ok],
+      sparse_flagged=b$geometry$condition_number[b$geometry$flagged])
     for(n in names(actual)){
       expected<-reticulate::py_eval(
         paste0("_iv_oracle['",n,"']"),convert=TRUE)
