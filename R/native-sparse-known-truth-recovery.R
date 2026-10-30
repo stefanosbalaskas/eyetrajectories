@@ -193,10 +193,8 @@ etr_evaluate_sparse_fpca_recovery<-function(result,truth){
   structure(list(values=values,provenance=list(
     estimator="native_sparse_fpca_pace",
     truth_grid_match="exact",dimension=result$dimension,
-    noise_variance_method=sparse_prov[
-      ["noise_variance_method",exact=TRUE]],
-    measurement_error_variance_supplied=sparse_prov[
-      ["measurement_error_variance_supplied",exact=TRUE]],
+    noise_variance_method=sparse_prov[["noise_variance_method",exact=TRUE]],
+    measurement_error_variance_supplied=sparse_prov[["measurement_error_variance_supplied",exact=TRUE]],
     matched_truth_components=0L,
     alignment_signs=parent$provenance$alignment_signs)),
     class="etr_functional_recovery_assessment")
