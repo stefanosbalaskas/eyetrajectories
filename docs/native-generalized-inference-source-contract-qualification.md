@@ -251,3 +251,27 @@ refuses unsupported source modes rather than inventing componentwise
 recovery precision. Native tests and an opt-in pinned Python direct
 numerical fixture cover the bounded domain. The review queue now
 has **68 explicitly unsigned scientific source contracts**.
+
+## Marginal future-outcome FPCR predictive intervals
+
+\`etr_fpca_regression_future_prediction_interval()\` ports the
+published \`regression_inference.py\` centered-empirical-residual
+**future-outcome** uncertainty calculation from retained Gaussian
+FPCR paired-bootstrap conditional-mean predictions, including marginal
+per-target linear percentile quantiles, centered training residuals
+and sample-standard-deviation predictive uncertainty. It never
+substitutes a conditional-mean confidence interval for a noisy future
+outcome prediction interval and makes no simultaneous/joint target
+coverage or heteroscedastic-robustness claim.
+
+The source independently generates residual indices with
+\`SeedSequence(...).spawn(1)[0]\` and NumPy's RNG, whereas R has
+a different pseudorandom stream. Optional explicit zero-based
+\`residual_indices\` make Python's frozen draws reproducible
+numerically in native R without falsely asserting seed stream
+identity. Without supplied indices, native R draws independently
+from the same centered empirical residual distribution and preserves
+the caller RNG state for an explicit R seed. Scientific tests and
+opt-in Python 1.2.0 fixed-draw oracles verify the numerical law.
+This adds a **69th unsigned contract**, with cross-language RNG and
+typed-dataclass source differences still open.
