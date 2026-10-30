@@ -148,3 +148,91 @@ _sr_oracle={
       info=paste("published Python 1.2.0:",key))
   }
 })
+
+
+.etr_source_sparse_reporting_fixture <- function(backend="native") {
+  list(dimension="pupil",n_components=2L,eigenvalues=c(.333,.111),
+    provenance=list(sparse_fpca=list(
+      backend=backend,sample_counts=c(3,6),
+      evaluation_grid=c(0,.5,1),
+      covariance_psd=list(
+        applied_action="none",
+        relative_operator_correction_frobenius_norm=.001),
+      noise_variance_method="diagonal_difference",
+      noise_support=c(0,1),score_ridge=.001,
+      analysis_support=c(0,1),analysis_support_action="reject",
+      outside_observation_count=0L,kwargs_mean=list(),
+      kwargs_covariance=list())),
+    score_diagnostics=data.frame(status_code=c("ok","failed"),
+      condition_number=c(1.5,2.5)),
+    fit_smoothing=NULL,score_smoothing=NULL,tolerance=.0001)
+}
+
+test_that("sparse univariate source reporting preserves native/FDApy boundaries",{
+  native<-.etr_source_sparse_reporting_fixture()
+  text<-etr_sparse_fpca_reporting_text(native)
+  expect_match(text,"per-curve sample-count range=3–6")
+  expect_match(text,"Raw sparse trajectories were not interpolated")
+  expect_match(text,"1 non-ok systems among 2 curves")
+  expect_match(text,"The analysis was univariate")
+  fdapy<-.etr_source_sparse_reporting_fixture("fdapy")
+  x<-etr_sparse_fpca_reporting_text(fdapy)
+  expect_match(x,"using FDApy's covariance-operator estimator")
+  expect_match(x,"score smoothing was None")
+  expect_false(grepl("joint PACE",x,fixed=TRUE))
+  bad<-native;bad$eigenvalues[1L]<--1
+  expect_error(etr_sparse_fpca_reporting_text(bad),"eigenvalues")
+  bad<-native;bad$provenance$sparse_fpca$evaluation_grid<-c(1,0)
+  expect_error(etr_sparse_fpca_reporting_text(bad),"evaluation_grid")
+  bad<-native;bad$provenance$sparse_fpca$noise_support<-c(1,0)
+  expect_error(etr_sparse_fpca_reporting_text(bad),"noise_support")
+})
+
+test_that("sparse PACE narratives match pinned Python 1.2 on both branches",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("source sparse-FPCA reporting numerical-text oracle is opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  reticulate::py_run_string("
+import numpy as np
+import pandas as pd
+import eyetrajectoriespy as et
+def _su_obj(**kw):
+    x=object.__new__(et.SparseFPCAResult)
+    for k,v in kw.items(): object.__setattr__(x,k,v)
+    return x
+_su_prov={'backend':'native','sample_counts':[3,6],
+    'evaluation_grid':[0.,.5,1.],
+    'covariance_psd':{
+      'applied_action':'none',
+      'relative_operator_correction_frobenius_norm':.001},
+    'noise_variance_method':'diagonal_difference',
+    'noise_support':[0.,1.],'score_ridge':.001,
+    'analysis_support':[0.,1.],'analysis_support_action':'reject',
+    'outside_observation_count':0,
+    'kwargs_mean':{},'kwargs_covariance':{}}
+_su_common=dict(dimension='pupil',n_components=2,
+    eigenvalues=np.array([.333,.111]),
+    score_diagnostics=pd.DataFrame({
+       'status_code':['ok','failed'],
+       'condition_number':[1.5,2.5]}),
+    fit_smoothing=None,score_smoothing=None,tolerance=.0001)
+_su_native=_su_obj(**_su_common,provenance={'sparse_fpca':_su_prov})
+_su_fdapy=_su_obj(**_su_common,provenance={
+    'sparse_fpca':dict(_su_prov,backend='fdapy')})
+_su_oracle={
+    'native':et.sparse_fpca_reporting_text(_su_native),
+    'fdapy':et.sparse_fpca_reporting_text(_su_fdapy)
+}
+")
+  actual<-list(
+    native=etr_sparse_fpca_reporting_text(
+      .etr_source_sparse_reporting_fixture("native")),
+    fdapy=etr_sparse_fpca_reporting_text(
+      .etr_source_sparse_reporting_fixture("fdapy")))
+  for(key in names(actual)) {
+    expected<-reticulate::py_eval(paste0("_su_oracle['",key,"']"),
+      convert=TRUE)
+    expect_identical(actual[[key]],expected,
+      info=paste("published Python sparse FPCA",key))
+  }
+})
