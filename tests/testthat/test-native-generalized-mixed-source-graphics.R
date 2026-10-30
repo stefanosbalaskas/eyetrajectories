@@ -125,9 +125,9 @@ test_that("new seven sources are mapped without unearned full certification",{
   expect_true(all(z$native_implementation_started))
   expect_true(all(z$source_contract_gap_unresolved))
   expect_false(any(z$one_to_one_native_contract_complete))
-  expect_equal(sum(p$is_python_function&p$named_native_candidate),324L)
-  expect_equal(sum(p$native_implementation_started),299L)
-  expect_equal(sum(p$source_contract_gap_unresolved),146L)
+  expect_equal(sum(p$is_python_function&p$named_native_candidate),325L)
+  expect_equal(sum(p$native_implementation_started),300L)
+  expect_equal(sum(p$source_contract_gap_unresolved),147L)
 })
 test_that("seven generalized/mixed plots match frozen Python 1.2 drawing data",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
