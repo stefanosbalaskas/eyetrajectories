@@ -315,7 +315,14 @@
   plot_sparse_mfpca_covariance_blocks="etr_plot_sparse_mfpca_covariance_blocks",
   plot_sparse_mfpca_cross_covariance="etr_plot_sparse_mfpca_cross_covariance",
   plot_sparse_mfpca_score_diagnostics="etr_plot_sparse_mfpca_score_diagnostics",
-  plot_sparse_irregular_dimension="etr_plot_sparse_irregular_dimension"
+  plot_sparse_irregular_dimension="etr_plot_sparse_irregular_dimension",
+  plot_generalized_function_on_scalar_predictions="etr_plot_generalized_function_on_scalar_predictions",
+  plot_generalized_function_on_scalar_mean_difference="etr_plot_generalized_function_on_scalar_mean_difference",
+  plot_generalized_function_on_scalar_coefficients="etr_plot_generalized_function_on_scalar_coefficients",
+  plot_covariance_sensitivity_coefficients="etr_plot_covariance_sensitivity_coefficients",
+  plot_covariance_sensitivity_band_widths="etr_plot_covariance_sensitivity_band_widths",
+  plot_functional_mixed_effects_residual_acf="etr_plot_functional_mixed_effects_residual_acf",
+  plot_functional_mixed_effects_residual_variogram="etr_plot_functional_mixed_effects_residual_variogram"
 )
 
 #' Audit one-to-one Python 1.2.0 versus independent native R coverage
@@ -658,6 +665,17 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   )
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% sparse_graphics_native_names] <- 51L
+  generalized_mixed_visual_names <- c(
+    "plot_generalized_function_on_scalar_predictions",
+    "plot_generalized_function_on_scalar_mean_difference",
+    "plot_generalized_function_on_scalar_coefficients",
+    "plot_covariance_sensitivity_coefficients",
+    "plot_covariance_sensitivity_band_widths",
+    "plot_functional_mixed_effects_residual_acf",
+    "plot_functional_mixed_effects_residual_variogram"
+  )
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% generalized_mixed_visual_names] <- 52L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # TrajectorySet native representation covers key fields and with_values/subset
