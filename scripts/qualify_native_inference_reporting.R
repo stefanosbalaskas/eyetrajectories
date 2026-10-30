@@ -10,6 +10,7 @@ qualifying_filter <- paste(
   "native-inference-reporting",
   "native-scientific-source-frames",
   "native-source-text-inference",
+  "native-source-model-reports",
   "native-certification-readiness",
   "native-private-helper-names",
   "native-source-contract-gaps",
