@@ -74,7 +74,7 @@ etr_cross_validate_fpca_regression<-function(
     NULL,FALSE,NULL)$fold
   fold_rows<-vector("list",ns*length(components))
   assign_rows<-vector("list",ns)
-  predict_rows<-vector("list",n*length(components))
+  prediction_rows<-vector("list",n*length(components))
   pos<-0L;prediction_pos<-0L
   for(fold in 0:(ns-1L)){
     testing<-which(folds==fold)

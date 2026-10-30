@@ -23,9 +23,9 @@ test_that("independent source-review packet is safe and fully unsigned",{
   }
   # The packet builder may never alter the authoritative approval registers.
   expect_false(any(grepl(
-    "write.csv(.*native_contract_certification_pilots_v1",
+    "write\\.csv\\(.*native_contract_certification_pilots_v1",
     source_lines)))
   expect_false(any(grepl(
-    "write.csv(.*native_nonfunction_contract_review_v1",
+    "write\\.csv\\(.*native_nonfunction_contract_review_v1",
     source_lines)))
 })
