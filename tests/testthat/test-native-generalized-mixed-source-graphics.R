@@ -157,7 +157,8 @@ _gm_pred=_gm_obj(et.GeneralizedFunctionOnScalarPredictionResult,
     prediction_scale='rate')
 _gm_band=_gm_obj(et.GeneralizedFunctionOnScalarPredictionBandResult,
     prediction=_gm_pred,mean_lower=_gm_pred.mean_functions-.5,
-    mean_upper=_gm_pred.mean_functions+.5)
+    mean_upper=_gm_pred.mean_functions+.5,
+    confidence_level=.95)
 _gm_diff=_gm_obj(et.GeneralizedFunctionOnScalarMeanDifferenceResult,
     prediction_bootstrap=_gm_obj(
       et.GeneralizedFunctionOnScalarPredictionBootstrapResult,
@@ -168,7 +169,8 @@ _gm_diff=_gm_obj(et.GeneralizedFunctionOnScalarMeanDifferenceResult,
     confidence_level=.95,contrast_scale='rate_ratio',
     profile_a='A',profile_b='B')
 _gm_cband=_gm_obj(et.GeneralizedFunctionOnScalarBandResult,
-    reference=_gm_fit,lower=_gm_coeff-.2,upper=_gm_coeff+.2)
+    reference=_gm_fit,lower=_gm_coeff-.2,upper=_gm_coeff+.2,
+    confidence_level=.95)
 _gm_sens=_gm_obj(et.FunctionalMixedEffectsCovarianceSensitivityResult,
     specifications=(
       _gm_obj(et.FunctionalMixedEffectsCovarianceSpecification,name='base'),
