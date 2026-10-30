@@ -25,6 +25,7 @@ qualifying_filter <- paste(
   "native-generalized-fosr-prediction",
   "native-generalized-fosr-bootstrap-source",
   "native-generalized-fosr-contrast-source",
+  "native-recovery-source-evaluators",
   "native-mixed-model-source-text",
   "native-source-environment",
   "native-source-contract-gaps",
