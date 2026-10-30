@@ -303,7 +303,8 @@
   multivariate_surrogate_nonlinearity_reporting_text="etr_multivariate_surrogate_nonlinearity_reporting_text",
   generalized_function_on_scalar_reporting_text="etr_generalized_function_on_scalar_reporting_text",
   functional_mixed_effects_residual_reporting_text="etr_functional_mixed_effects_residual_reporting_text",
-  sparse_mfpca_reporting_text="etr_sparse_mfpca_reporting_text"
+  sparse_mfpca_reporting_text="etr_sparse_mfpca_reporting_text",
+  sparse_fpca_reporting_text="etr_sparse_fpca_reporting_text"
 )
 
 #' Audit one-to-one Python 1.2.0 versus independent native R coverage
@@ -622,7 +623,8 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   fitted_model_reporting_names <- c(
     "generalized_function_on_scalar_reporting_text",
     "functional_mixed_effects_residual_reporting_text",
-    "sparse_mfpca_reporting_text"
+    "sparse_mfpca_reporting_text",
+    "sparse_fpca_reporting_text"
   )
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% fitted_model_reporting_names] <- 49L
