@@ -39,6 +39,9 @@ test_that("native source qualification evidence runner parses", {
     lines,fixed=TRUE)))
   expect_true(any(grepl("scripts/prepare_independent_source_review.R",
     lines,fixed=TRUE)))
+  expect_true(any(grepl(
+    'source("scripts/prepare_independent_source_review.R",local=TRUE)',
+    lines,fixed=TRUE)))
   expect_false(any(grepl(
     "NOT ATTEMPTED: offline qualification failed",lines,fixed=TRUE)))
 })

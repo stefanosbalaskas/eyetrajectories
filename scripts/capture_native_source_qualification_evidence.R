@@ -215,6 +215,10 @@ utils::write.csv(status,file.path(output_dir,
 message("Saved pinned-source qualification evidence under ",
   normalizePath(output_dir,winslash="/",mustWork=TRUE))
 message("These are test execution records, not independent full-contract certification.")
+# Build an UNSIGNED per-contract reviewer hand-off against this exact run.
+# The packet checks the captured git commit and all listed MD5 hashes; a
+# passing suite cannot sign its own scientific contracts.
+source("scripts/prepare_independent_source_review.R",local=TRUE)
 if(!all(vapply(results,function(x)isTRUE(x$success),logical(1L)))) {
   failed_labels<-vapply(results,function(x)
     if(identical(x$success,FALSE))x$label else "",character(1L))

@@ -298,3 +298,24 @@ curve-wise **unshuffled KFold** domain without covariates:
 This adds the **70th unsigned** scientific review candidate, but
 nothing is independently certified without full-domain verification
 and a genuine independent reviewer.
+
+
+## Independent review hand-off with historical safety
+
+\`scripts/prepare_independent_source_review.R\` reads the latest saved
+native-R and pinned-Python qualification run and prepares a per-contract
+**unsigned** independent-review packet automatically whenever
+\`scripts/capture_native_source_qualification_evidence.R\` completes.
+The packet includes a same-commit and file-MD5 manifest integrity recheck,
+both global suite verdicts, every source-path/test/gap pairing, and a
+reviewer-assignment CSV with **all 70 decisions set to PENDING**.
+
+The review packet expressly does **not** equate an aggregate test PASS
+with per-contract full-domain coverage, external reproduction or
+independent scientific review. If the checkout differs from the captured
+R commit, the packet reports **historical evidence**, never current
+certification. Reviewers must reproduce the published source, including
+accepted and invalid input types, numerical and RNG domain, estimands
+and error semantics, and sign against a full immutable reviewed commit.
+No code here self-approves a reviewer signature or alters the full
+508-export certification flags.
