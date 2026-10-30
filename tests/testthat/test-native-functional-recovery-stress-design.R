@@ -78,9 +78,9 @@ test_that("new stress source contracts remain blocked from full certification",{
     expect_true(row$source_contract_gap_unresolved)
     expect_false(row$one_to_one_native_contract_complete)
   }
-  expect_equal(sum(z$is_python_function & z$named_native_candidate),324L)
-  expect_equal(sum(z$native_implementation_started),299L)
-  expect_equal(sum(z$source_contract_gap_unresolved),146L)
+  expect_equal(sum(z$is_python_function & z$named_native_candidate),325L)
+  expect_equal(sum(z$native_implementation_started),300L)
+  expect_equal(sum(z$source_contract_gap_unresolved),147L)
   expect_equal(nrow(z),508L)
 })
 
