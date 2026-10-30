@@ -92,6 +92,27 @@ test_that("three new FPCA scientific graphic mappings retain unsigned gaps",{
   expect_equal(sum(p$native_implementation_started),296L)
   expect_equal(sum(p$source_contract_gap_unresolved),143L)
 })
+test_that("sparse PACE plotting has exactly one mapped native definition", {
+  analogues<-eyetrajectories:::.etr_known_native_analogues()
+  expect_equal(sum(names(analogues)=="plot_sparse_fpca_score_diagnostics"),1L)
+  expect_equal(anyDuplicated(names(analogues)),0L)
+  candidates<-getNamespaceExports("eyetrajectories")
+  expect_equal(sum(candidates=="etr_plot_sparse_fpca_score_diagnostics"),1L)
+  # Preserve the previously published geometry contract rather than
+  # replacing it with an incompatible native return structure.
+  d<-.etr_fpca_inference_visual_fixture()$sparse
+  path<-tempfile(fileext=".pdf")
+  grDevices::pdf(path)
+  on.exit({
+    if(grDevices::dev.cur()>1L)grDevices::dev.off()
+    unlink(path)
+  },add=TRUE)
+  record<-etr_plot_sparse_fpca_score_diagnostics(d)
+  expect_identical(names(record),c("geometry","provenance"))
+  expect_true(all(c("finite","ok","flagged")%in%
+    names(record$geometry)))
+  expect_false(record$provenance$python_axes_return_equivalence)
+})
 test_that("FPCA plot geometries agree with pinned Python 1.2 Matplotlib data",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("source FPCA/PACE/family graphic oracle is opt-in")
