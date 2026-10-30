@@ -15,7 +15,9 @@ test_that("independent source-review packet is safe and fully unsigned",{
     "file_integrity_manifest.csv",
     "native_r_offline.txt",
     "python_1_2_direct_source.txt",
-    "native_source_contract_gaps_stage22.csv","head")){
+    "native_source_contract_gaps_stage22.csv","head",
+    "four_numerical_pilots_external_review_priority.csv",
+    "nrow(pilot)==4L")){
     expect_true(any(grepl(term,source_lines,fixed=TRUE)),
       info=paste("expected independent evidence safeguard",term))
   }

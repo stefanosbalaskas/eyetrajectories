@@ -159,6 +159,42 @@ etr_prepare_independent_source_review<-function(
     "independent_contract_review_queue.csv"),row.names=FALSE,na="")
   utils::write.csv(integrity,file.path(output_dir,
     "file_integrity_recheck.csv"),row.names=FALSE,na="")
+  # Four simpler pilot contracts already have user-reported fixture
+  # evidence in the authoritative register, but still lack independent
+  # numerical/schema/scientific/reviewer approvals. Surface them separately,
+  # not as additional fully qualified members of the 70-contract queue.
+  pilot_path<-file.path(root,"inst","extdata",
+    "native_contract_certification_pilots_v1.csv")
+  .checked(file.exists(pilot_path),"Missing four-contract pilot register")
+  pilot<-utils::read.csv(pilot_path,stringsAsFactors=FALSE,
+    check.names=FALSE)
+  .checked(nrow(pilot)==4L&&
+    all(c("python_name","source_path","native_r_candidate",
+      "numerical_fixture_pass","numerical_oracle_approved",
+      "schema_boundary_approved","scientific_scope_approved",
+      "independent_reviewer_approved")%in%names(pilot)),
+    "Expected four original numerical pilot source contracts")
+  .checked(all(pilot$numerical_fixture_pass)&&
+    !any(pilot$numerical_oracle_approved)&&
+    !any(pilot$schema_boundary_approved)&&
+    !any(pilot$scientific_scope_approved)&&
+    !any(pilot$independent_reviewer_approved),
+    "Pilot contracts must not be silently auto-promoted")
+  pilot_packet<-data.frame(
+    priority=seq_len(nrow(pilot)),
+    python_name=pilot$python_name,
+    native_r_candidate=pilot$native_r_candidate,
+    frozen_python_source=pilot$source_path,
+    original_numeric_fixture_pass=pilot$numerical_fixture_pass,
+    full_accepted_input_domain_approved=FALSE,
+    complete_error_semantics_approved=FALSE,
+    scientific_scope_approved=FALSE,
+    independent_reviewer_approved=FALSE,
+    independent_review_decision="PENDING_INDEPENDENT_REVIEW",
+    stringsAsFactors=FALSE)
+  utils::write.csv(pilot_packet,file.path(output_dir,
+    "four_numerical_pilots_external_review_priority.csv"),
+    row.names=FALSE,na="")
   instructions<-c(
     "# Frozen Python 1.2: independent scientific contract review",
     "",
@@ -170,6 +206,13 @@ etr_prepare_independent_source_review<-function(
       if(passed[[2L]])"PASS" else "FAIL","**"),
     paste0("Recorded integrity manifest matches current checkout: **",
       if(all(identical_hash))"yes" else "NO","**"),
+    "",
+    "## Suggested first independent reviews",
+    "",
+    "Start with the four previously fixture-tested source contracts:",
+    "alr_transform, inverse_alr, score_distance_matrix and",
+    "functional_trapezoid_weights (separate priority CSV). The original",
+    "fixture PASS does not imply full-domain source correctness or approval.",
     "",
     "## Reviewer requirements",
     "",
