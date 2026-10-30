@@ -7,6 +7,8 @@ required<-c("native-generalized-fosr-prediction",
   "native-generalized-fosr-bootstrap-source",
   "native-generalized-fosr-contrast-source",
   "native-recovery-source-evaluators",
+  "native-generalized-fosr-coefficient-bands",
+  "native-mixed-coefficient-bands-source",
   "native-mixed-model-source-text","native-source-environment")
 test_files<-file.path("tests","testthat",paste0("test-",required,".R"))
 git<-Sys.which("git")

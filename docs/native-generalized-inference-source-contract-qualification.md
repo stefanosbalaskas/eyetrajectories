@@ -98,3 +98,27 @@ pkgload::load_all(".", quiet = TRUE)
 source("scripts/qualify_native_current_contracts.R")
 source("scripts/capture_native_source_qualification_evidence.R")
 \`\`\`
+
+## Coefficient-band source calibration, frozen Python 1.2.0
+
+- \`etr_generalized_function_on_scalar_simultaneous_bands()\` projects
+  retained whole-participant coefficient draws onto observed-grid
+  link-scale coefficient bands. For source coefficient SE cells <=
+  machine epsilon, the published Python implementation excludes those
+  coordinates from standardized maxima; the native code preserves this
+  behavior and is explicitly tested for large deviations in zero-width cells.
+- \`etr_functional_mixed_effects_simultaneous_bands()\` instead requires
+  strictly positive bootstrap standard errors, studentizes about the
+  **bootstrap mean**, and centers calibrated endpoints about the original
+  fitted coefficient functions. It requires a declared source
+  \`bootstrap_type\` representing the fixed-covariance or full-refit
+  Python result class; the full-refit provenance flag is not inferred.
+- Both use frozen Python's higher empirical quantiles of standardized
+  observed-grid coefficient-wise or family-wise maxima. Both have
+  opt-in direct published Python 1.2.0 numerical comparison tests.
+- Neither path generates new bootstrap replicates or changes estimated
+  model coefficients. Source typed-class acceptance, covariance-uncertainty
+  interpretation, error schemas and accepted input boundaries remain under
+  unsigned independent review.
+
+The review queue has **62** source contracts; **all remain uncertified**.
