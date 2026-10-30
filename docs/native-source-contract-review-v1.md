@@ -21,10 +21,10 @@ This is an evidence-oriented development note, **not a certification claim**.
 
 | Domain | Number | Meaning |
 |---|---:|---|
-| Python function mappings | 296 / 380 | Names associated with native R candidates |
-| Native implementations started | 271 | Implemented operations; **not** proof of source equivalence |
-| Unmapped Python functions | 84 | No declared native candidate |
-| Known open source differences | 118 | Class, input, numerical, backend, error or scope boundaries |
+| Python function mappings | 299 / 380 | Names associated with native R candidates |
+| Native implementations started | 274 | Implemented operations; **not** proof of source equivalence |
+| Unmapped Python functions | 81 | No declared native candidate |
+| Known open source differences | 121 | Class, input, numerical, backend, error or scope boundaries |
 | Nonfunction exports for independent review | 128 | Values/classes not counted as native functions |
 | Complete independently certified public contracts | **0 / 508** | Four approval domains are not all independently signed off |
 
@@ -147,6 +147,24 @@ implementations use conservative validated list records, with opt-in
 Python 1.2.0 exact-text oracles, explicit scientific-scope boundaries and
 unresolved typed-source-contract gaps. No numerical certification flags
 are automatically promoted.
+
+## Three additional scientific model source reporters
+
+The native R source now includes fit-level marginal generalized
+function-on-scalar reporting (including optional participant bootstrap
+coefficient bands), within-trial mixed-effects residual dependence
+reporting, and native sparse multivariate PACE scientific reporting.
+Each preserves the published source's caveats about independent
+participants, simultaneous-grid inference, residual covariance,
+covariance-PSD repair, scoring failures and missing uncertainty terms.
+The residual text intentionally preserves the frozen Python 1.2.0
+source's repeated wording to permit strict, literal comparison.
+
+`tests/testthat/test-native-source-model-reports.R` adds native
+validation and opt-in pinned-source typed-object exact-string oracles.
+Numeric array formatting for sparse measurement-error covariance
+is deliberately restricted and remains an unresolved source contract.
+None of these reporting functions performs a fit or calibrates bands.
 
 ## Five scientific interpretation reporters
 
