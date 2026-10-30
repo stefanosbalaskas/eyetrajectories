@@ -76,6 +76,12 @@ _rec_reg=_recovery_obj(et.RegistrationResult,
     warping_functions=np.array([[0.,2./3.,1.],[0.,1./3.,1.]]))
 _rec_h=et.evaluate_hierarchy_truth_recovery(_rec_truth)
 _rec_r=et.evaluate_registration_recovery(_rec_reg,_rec_truth)
+_rec_perturbed=_recovery_obj(et.RegistrationResult,
+    original=SimpleNamespace(time=_rec_grid),
+    warping_functions=np.array([[0.,2./3.+.1,1.],[0.,1./3.,1.]]))
+_rec_r_perturbed=et.evaluate_registration_recovery(
+    _rec_perturbed,_rec_truth)
+_rec_r_perturbed_values=[float(v.value) for v in _rec_r_perturbed.values]
 _rec_names_h=[v.metric.name for v in _rec_h.values]
 _rec_values_h=[float(v.value) for v in _rec_h.values]
 _rec_names_r=[v.metric.name for v in _rec_r.values]
@@ -84,6 +90,13 @@ _rec_values_r=[float(v.value) for v in _rec_r.values]
   truth<-.etr_truth_audit_fixture()
   fit<-list(original=list(time=truth$truth_grid),
     warping_functions=rbind(c(0,2/3,1),c(0,1/3,1)))
+  changed<-fit
+  changed$warping_functions[1L,2L]<-
+    changed$warping_functions[1L,2L]+.1
+  perturbed<-etr_evaluate_registration_recovery(changed,truth)
+  expect_equal(vapply(perturbed$values,function(v)v$value,numeric(1L)),
+    as.numeric(unlist(reticulate::py_eval("_rec_r_perturbed_values",
+      convert=TRUE),use.names=FALSE)),tolerance=1e-12)
   for(pair in list(list(name="h",result=etr_evaluate_hierarchy_truth_recovery(truth)),
     list(name="r",result=etr_evaluate_registration_recovery(fit,truth)))){
     actual<-pair$result$values
