@@ -24,6 +24,7 @@
   load_portable_result="etr_read_python_portable_result",
   capture_environment="etr_capture_environment",
   generalized_function_on_scalar_predict="etr_generalized_function_on_scalar_predict",
+  functional_mixed_effects_reporting_text="etr_functional_mixed_effects_reporting_text",
   validate_common_grid="etr_validate_common_grid",
   validate_simplex="etr_validate_simplex",
   validate_no_long_missing_runs="etr_validate_no_long_missing_runs",
@@ -721,6 +722,8 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     api$python_name=="capture_environment"] <- 58L
   api$native_implementation_stage[api$is_python_function &
     api$python_name=="generalized_function_on_scalar_predict"] <- 59L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="functional_mixed_effects_reporting_text"] <- 60L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # TrajectorySet native representation covers key fields and with_values/subset
