@@ -21,10 +21,10 @@ This is an evidence-oriented development note, **not a certification claim**.
 
 | Domain | Number | Meaning |
 |---|---:|---|
-| Python function mappings | 300 / 380 | Names associated with native R candidates |
-| Native implementations started | 275 | Implemented operations; **not** proof of source equivalence |
-| Unmapped Python functions | 80 | No declared native candidate |
-| Known open source differences | 122 | Class, input, numerical, backend, error or scope boundaries |
+| Python function mappings | 304 / 380 | Names associated with native R candidates |
+| Native implementations started | 279 | Implemented operations; **not** proof of source equivalence |
+| Unmapped Python functions | 76 | No declared native candidate |
+| Known open source differences | 126 | Class, input, numerical, backend, error or scope boundaries |
 | Nonfunction exports for independent review | 128 | Values/classes not counted as native functions |
 | Complete independently certified public contracts | **0 / 508** | Four approval domains are not all independently signed off |
 
@@ -147,6 +147,25 @@ implementations use conservative validated list records, with opt-in
 Python 1.2.0 exact-text oracles, explicit scientific-scope boundaries and
 unresolved typed-source-contract gaps. No numerical certification flags
 are automatically promoted.
+
+## Frozen-source numerical diagnostics and R-native visualizations
+
+Four source counterpart functions extend the release beyond report text:
+`etr_multivariate_iaaft_diagnostics_frame()` retains 0-based
+surrogate IDs, iterations, maximum and mean power-/cross-spectrum errors;
+`etr_functional_mixed_effects_variance_bootstrap_frame()` retains
+replicate-specific covariance traces, eigenvalues, condition numbers,
+fit warnings, and optional residual/trial/slope submodels;
+`etr_plot_multivariate_iaaft_diagnostics()` and
+`etr_plot_multivariate_surrogate_nonlinearity()` provide source-inspired
+R base-graphics diagnostics.
+
+Both numeric frames have opt-in direct Python 1.2 typed-object dataframe
+oracles, including a full-refit diagnostic record with all optional
+covariance diagnostics. The plots are base-R graphic outputs rather than
+Matplotlib Axes; **do not claim exact rendering/return-type parity**.
+Source-domain limitations and four open differences are recorded in the
+source-gap inventory, and certification stays unsigned.
 
 ## Sparse univariate native/FDApy reporting
 
