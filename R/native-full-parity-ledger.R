@@ -307,19 +307,19 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   api$python_bridge_available <-
     ifelse(api$is_python_function,
       nzchar(api$r_wrapper),TRUE)  # classes/constants use etpy_get_export
-  stage2_names <- c("acceleration_magnitude_function",
+  integration_group_2_names <- c("acceleration_magnitude_function",
                     "distance_to_landmark_function",
                     "signed_curvature_function","turning_rate_function")
-  stage3_names <- c("normalize_coordinates","center_on_landmark",
+  integration_group_3_names <- c("normalize_coordinates","center_on_landmark",
                     "normalize_time","heading_function",
                     "trajectory_tortuosity",
                     "pairwise_discrete_frechet_distances",
                     "nearest_trajectory_indices")
-  stage4_names <- c("discrete_frechet_distance",
+  integration_group_4_names <- c("discrete_frechet_distance",
                     "dynamic_time_warping_distance",
                     "pairwise_dynamic_time_warping_distances")
-  stage6_names <- "load_portable_result"
-  stage7_names <- c(
+  integration_group_6_names <- "load_portable_result"
+  integration_group_7_names <- c(
     "validate_common_grid","validate_simplex",
     "validate_no_long_missing_runs",
     "from_irregular_long_dataframe_native",
@@ -327,7 +327,7 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     "resample_irregular_to_grid",
     "resample_irregular_to_common_grid",
     "irregular_sampling_summary","phase_landmark_frame")
-  stage8_names <- c(
+  integration_group_8_names <- c(
     "recurrence_network","recurrence_network_node_frame",
     "recurrence_network_summary_frame",
     "joint_recurrence_matrix","joint_recurrence_component_frame",
@@ -335,14 +335,14 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     "recurrence_radius_profile","windowed_rqa",
     "windowed_rqa_trajectory_set")
   api$native_implementation_stage <- ifelse(
-      api$is_python_function & api$python_name %in% stage2_names,2L,
-      ifelse(api$is_python_function & api$python_name %in% stage3_names,3L,
-        ifelse(api$is_python_function & api$python_name %in% stage4_names,4L,
-          ifelse(api$is_python_function & api$python_name %in% stage6_names,
+      api$is_python_function & api$python_name %in% integration_group_2_names,2L,
+      ifelse(api$is_python_function & api$python_name %in% integration_group_3_names,3L,
+        ifelse(api$is_python_function & api$python_name %in% integration_group_4_names,4L,
+          ifelse(api$is_python_function & api$python_name %in% integration_group_6_names,
             6L,ifelse(api$is_python_function &
-              api$python_name %in% stage7_names,7L,
+              api$python_name %in% integration_group_7_names,7L,
               ifelse(api$is_python_function &
-                api$python_name %in% stage8_names,8L,NA_integer_))))))
+                api$python_name %in% integration_group_8_names,8L,NA_integer_))))))
   s9 <- c("alr_transform","inverse_alr","component_trajectories",
     "select_n_components","fpca_score_frame","score_distance_matrix",
     "pairwise_functional_distances","sparse_dimension_summary",
@@ -350,7 +350,7 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     "fit_phase_fpca")
   api$native_implementation_stage[api$python_name %in% s9 &
     api$is_python_function] <- 9L
-  stage10_names <- c("fit_compositional_fpca","reconstruct_compositional_fpca",
+  integration_group_10_names <- c("fit_compositional_fpca","reconstruct_compositional_fpca",
     "component_similarity_matrix","match_fpca_components",
     "reconstruction_error_by_curve","fpca_reconstruction_curve",
     "compare_registered_unregistered_fpca","registration_sensitivity_frame",
@@ -358,43 +358,43 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     "fpca_eigenvalue_gap_table","fpca_eigengap_reporting_text",
     "registration_sensitivity_reporting_text","functional_mean_band_frame")
   api$native_implementation_stage[api$is_python_function &
-    api$python_name %in% stage10_names] <- 10L
-  stage11_names <- c("joint_recurrence_reporting_text","recurrence_network_reporting_text","recurrence_radius_profile_reporting_text","rqa_reporting_text","rqa_metric_mean_bootstrap_reporting_text","windowed_rqa_reporting_text","windowed_rqa_functional_reporting_text","windowed_rqa_sensitivity_reporting_text","windowed_rqa_mean_band_reporting_text","rqa_parameter_sensitivity_reporting_text","kantz_parameter_sensitivity_reporting_text","lyapunov_parameter_sensitivity_reporting_text","largest_lyapunov_reporting_text","surrogate_nonlinearity_reporting_text","return_map_stability_reporting_text")
+    api$python_name %in% integration_group_10_names] <- 10L
+  integration_group_11_names <- c("joint_recurrence_reporting_text","recurrence_network_reporting_text","recurrence_radius_profile_reporting_text","rqa_reporting_text","rqa_metric_mean_bootstrap_reporting_text","windowed_rqa_reporting_text","windowed_rqa_functional_reporting_text","windowed_rqa_sensitivity_reporting_text","windowed_rqa_mean_band_reporting_text","rqa_parameter_sensitivity_reporting_text","kantz_parameter_sensitivity_reporting_text","lyapunov_parameter_sensitivity_reporting_text","largest_lyapunov_reporting_text","surrogate_nonlinearity_reporting_text","return_map_stability_reporting_text")
   api$native_implementation_stage[api$is_python_function &
-    api$python_name %in% stage11_names] <- 11L
-  stage12_names <- c("cross_validate_fpca_reconstruction","summarise_fpca_cross_validation","select_fpca_components_cv","summarise_fpca_regression_cv","select_fpca_regression_components","fpca_score_uncertainty_frame","fpca_spectrum_uncertainty_frame","conformal_fpca_anomaly_frame","trajectory_distance_comparison_frame","trajectory_distance_neighbor_frame","fpca_regression_slope_band_frame","fpca_regression_slope_uncertainty_frame","fpca_regression_prediction_uncertainty_frame","fpca_regression_future_prediction_frame")
+    api$python_name %in% integration_group_11_names] <- 11L
+  integration_group_12_names <- c("cross_validate_fpca_reconstruction","summarise_fpca_cross_validation","select_fpca_components_cv","summarise_fpca_regression_cv","select_fpca_regression_components","fpca_score_uncertainty_frame","fpca_spectrum_uncertainty_frame","conformal_fpca_anomaly_frame","trajectory_distance_comparison_frame","trajectory_distance_neighbor_frame","fpca_regression_slope_band_frame","fpca_regression_slope_uncertainty_frame","fpca_regression_prediction_uncertainty_frame","fpca_regression_future_prediction_frame")
   api$native_implementation_stage[api$is_python_function &
-    api$python_name %in% stage12_names] <- 12L
-  stage13_names <- c("poincare_crossings","fit_local_return_map","fit_function_on_scalar_regression","bootstrap_function_on_scalar_coefficients","function_on_scalar_simultaneous_bands","function_on_scalar_coefficient_frame","embedding_delay_diagnostics","embedding_dimension_diagnostics","return_map_stability","simulate_planar_trajectories","simulate_aoi_probability_trajectories","from_irregular_long_dataframe")
+    api$python_name %in% integration_group_12_names] <- 12L
+  integration_group_13_names <- c("poincare_crossings","fit_local_return_map","fit_function_on_scalar_regression","bootstrap_function_on_scalar_coefficients","function_on_scalar_simultaneous_bands","function_on_scalar_coefficient_frame","embedding_delay_diagnostics","embedding_dimension_diagnostics","return_map_stability","simulate_planar_trajectories","simulate_aoi_probability_trajectories","from_irregular_long_dataframe")
   api$native_implementation_stage[api$is_python_function &
-    api$python_name %in% stage13_names] <- 13L
-  stage14_names <- c("compare_fpca_subspaces","bootstrap_fpca_subspace_stability","summarise_fpca_subspace_stability","leave_one_group_out_fpca_influence","bootstrap_fpca_stability","summarise_fpca_stability","diagnose_fpca_outliers")
+    api$python_name %in% integration_group_13_names] <- 13L
+  integration_group_14_names <- c("compare_fpca_subspaces","bootstrap_fpca_subspace_stability","summarise_fpca_subspace_stability","leave_one_group_out_fpca_influence","bootstrap_fpca_stability","summarise_fpca_stability","diagnose_fpca_outliers")
   api$native_implementation_stage[api$is_python_function &
-    api$python_name %in% stage14_names] <- 14L
-  stage15_names <- c("multiplier_functional_mean_band","bootstrap_fpca_score_uncertainty","bootstrap_fpca_spectrum_uncertainty","bootstrap_fpca_component_bands","fpca_component_band_frame")
+    api$python_name %in% integration_group_14_names] <- 14L
+  integration_group_15_names <- c("multiplier_functional_mean_band","bootstrap_fpca_score_uncertainty","bootstrap_fpca_spectrum_uncertainty","bootstrap_fpca_component_bands","fpca_component_band_frame")
   api$native_implementation_stage[api$is_python_function &
-    api$python_name %in% stage15_names] <- 15L
-  stage16_names <- c("discrete_transfer_entropy","transfer_entropy_local_frame","transfer_entropy_circular_shift_test","conditional_transfer_entropy","conditional_transfer_entropy_local_frame","conditional_transfer_entropy_circular_shift_test","transfer_entropy_parameter_sensitivity","transfer_entropy_reporting_text","transfer_entropy_circular_shift_reporting_text","conditional_transfer_entropy_reporting_text","conditional_transfer_entropy_circular_shift_reporting_text","transfer_entropy_parameter_sensitivity_reporting_text")
+    api$python_name %in% integration_group_15_names] <- 15L
+  integration_group_16_names <- c("discrete_transfer_entropy","transfer_entropy_local_frame","transfer_entropy_circular_shift_test","conditional_transfer_entropy","conditional_transfer_entropy_local_frame","conditional_transfer_entropy_circular_shift_test","transfer_entropy_parameter_sensitivity","transfer_entropy_reporting_text","transfer_entropy_circular_shift_reporting_text","conditional_transfer_entropy_reporting_text","conditional_transfer_entropy_circular_shift_reporting_text","transfer_entropy_parameter_sensitivity_reporting_text")
   api$native_implementation_stage[api$is_python_function &
-    api$python_name %in% stage16_names] <- 16L
-  stage17_names <- c("delay_embed_trajectory","local_divergence_curve","kantz_divergence_curve","estimate_largest_lyapunov_rosenstein","estimate_largest_lyapunov_kantz","bootstrap_rqa_metric_means")
+    api$python_name %in% integration_group_16_names] <- 16L
+  integration_group_17_names <- c("delay_embed_trajectory","local_divergence_curve","kantz_divergence_curve","estimate_largest_lyapunov_rosenstein","estimate_largest_lyapunov_kantz","bootstrap_rqa_metric_means")
   api$native_implementation_stage[api$is_python_function &
-    api$python_name %in% stage17_names] <- 17L
-  stage18_names <- c("fit_functional_mixed_effects_regression","functional_mixed_effects_whitened_residuals","functional_mixed_effects_residual_diagnostics","functional_mixed_effects_residual_diagnostic_frame","functional_mixed_effects_residual_pair_frame","functional_mixed_effects_variance_decomposition","functional_mixed_effects_coefficient_frame")
+    api$python_name %in% integration_group_17_names] <- 17L
+  integration_group_18_names <- c("fit_functional_mixed_effects_regression","functional_mixed_effects_whitened_residuals","functional_mixed_effects_residual_diagnostics","functional_mixed_effects_residual_diagnostic_frame","functional_mixed_effects_residual_pair_frame","functional_mixed_effects_variance_decomposition","functional_mixed_effects_coefficient_frame")
   api$native_implementation_stage[api$is_python_function &
-    api$python_name %in% stage18_names] <- 18L
-  stage19_names <- c("lyapunov_parameter_sensitivity","kantz_parameter_sensitivity","rqa_parameter_sensitivity","cluster_fpca_scores","trajectory_distance_sensitivity")
+    api$python_name %in% integration_group_18_names] <- 18L
+  integration_group_19_names <- c("lyapunov_parameter_sensitivity","kantz_parameter_sensitivity","rqa_parameter_sensitivity","cluster_fpca_scores","trajectory_distance_sensitivity")
   api$native_implementation_stage[api$is_python_function &
-    api$python_name %in% stage19_names] <- 19L
-  stage20_names <- "surrogate_nonlinearity_test"
+    api$python_name %in% integration_group_19_names] <- 19L
+  integration_group_20_names <- "surrogate_nonlinearity_test"
   api$native_implementation_stage[api$is_python_function &
-    api$python_name %in% stage20_names] <- 20L
-  stage21_names <- c("plot_planar_trajectories","plot_fpca_component",
+    api$python_name %in% integration_group_20_names] <- 20L
+  integration_group_21_names <- c("plot_planar_trajectories","plot_fpca_component",
     "plot_dynamic_time_warping_alignment",
     "plot_trajectory_distance_rank_correlations")
   api$native_implementation_stage[api$is_python_function &
-    api$python_name %in% stage21_names] <- 21L
-  stage22_names <- c(
+    api$python_name %in% integration_group_21_names] <- 21L
+  integration_group_22_names <- c(
     "plot_embedding_delay_diagnostics",
     "plot_embedding_dimension_diagnostics",
     "plot_recurrence_network_degree",
@@ -405,8 +405,8 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     "plot_poincare_return_map"
   )
   api$native_implementation_stage[api$is_python_function &
-    api$python_name %in% stage22_names] <- 22L
-  stage23_names <- c(
+    api$python_name %in% integration_group_22_names] <- 22L
+  integration_group_23_names <- c(
     "dynamic_time_warping_reporting_text",
     "trajectory_distance_sensitivity_reporting_text",
     "fpca_stability_reporting_text",
@@ -417,8 +417,8 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     "multilevel_fpca_reporting_text"
   )
   api$native_implementation_stage[api$is_python_function &
-    api$python_name %in% stage23_names] <- 23L
-  stage24_names <- c(
+    api$python_name %in% integration_group_23_names] <- 23L
+  integration_group_24_names <- c(
     "plot_fpca_stability",
     "plot_fpca_influence",
     "plot_fpca_outlier_diagnostics",
@@ -430,8 +430,8 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     "plot_rqa_sensitivity"
   )
   api$native_implementation_stage[api$is_python_function &
-    api$python_name %in% stage24_names] <- 24L
-  stage26_names <- c(
+    api$python_name %in% integration_group_24_names] <- 24L
+  integration_group_26_names <- c(
     "windowed_rqa_sensitivity",
     "windowed_rqa_functional_mean_band",
     "functional_recovery_metric_catalog",
@@ -440,8 +440,8 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     "functional_recovery_assessment_frame"
   )
   api$native_implementation_stage[api$is_python_function &
-    api$python_name %in% stage26_names] <- 26L
-  stage27_names <- c(
+    api$python_name %in% integration_group_26_names] <- 26L
+  integration_group_27_names <- c(
     "fpca_score_uncertainty_reporting_text",
     "fpca_spectrum_uncertainty_reporting_text",
     "functional_mean_band_reporting_text",
@@ -451,8 +451,8 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     "plot_fpca_component_band"
   )
   api$native_implementation_stage[api$is_python_function &
-    api$python_name %in% stage27_names] <- 27L
-  stage28_names <- c(
+    api$python_name %in% integration_group_27_names] <- 27L
+  integration_group_28_names <- c(
     "list_mathematical_contracts",
     "get_mathematical_contract",
     "mathematical_contract_frame",
@@ -461,14 +461,14 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     "plot_windowed_rqa_sensitivity"
   )
   api$native_implementation_stage[api$is_python_function &
-    api$python_name %in% stage28_names] <- 28L
-  stage29_names <- c(
+    api$python_name %in% integration_group_28_names] <- 28L
+  integration_group_29_names <- c(
     "plot_transfer_entropy_sensitivity",
     "plot_transfer_entropy_circular_shift_test",
     "plot_conditional_transfer_entropy_circular_shift_test"
   )
   api$native_implementation_stage[api$is_python_function &
-    api$python_name %in% stage29_names] <- 29L
+    api$python_name %in% integration_group_29_names] <- 29L
   # Historical implementation provenance only: never part of public function names.
   registration_plot_names <- c("plot_reconstruction_curve",
     "plot_registration","plot_warping_functions")
