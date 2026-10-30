@@ -122,9 +122,9 @@ test_that("two numeric diagnostics tables remain unsigned native counterparts",{
   expect_true(all(rows$native_implementation_started))
   expect_true(all(rows$source_contract_gap_unresolved))
   expect_false(any(rows$one_to_one_native_contract_complete))
-  expect_equal(sum(p$is_python_function&p$named_native_candidate),319L)
-  expect_equal(sum(p$native_implementation_started),294L)
-  expect_equal(sum(p$source_contract_gap_unresolved),141L)
+  expect_equal(sum(p$is_python_function&p$named_native_candidate),322L)
+  expect_equal(sum(p$native_implementation_started),297L)
+  expect_equal(sum(p$source_contract_gap_unresolved),144L)
 })
 
 test_that("two diagnostic frames exactly match frozen Python 1.2 data tables",{
