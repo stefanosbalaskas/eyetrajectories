@@ -323,7 +323,10 @@
   plot_covariance_sensitivity_band_widths="etr_plot_covariance_sensitivity_band_widths",
   plot_functional_mixed_effects_residual_acf="etr_plot_functional_mixed_effects_residual_acf",
   plot_functional_mixed_effects_residual_variogram="etr_plot_functional_mixed_effects_residual_variogram",
-  compare_functional_mixed_effects_residual_diagnostics="etr_compare_functional_mixed_effects_residual_diagnostics"
+  compare_functional_mixed_effects_residual_diagnostics="etr_compare_functional_mixed_effects_residual_diagnostics",
+  plot_fpca_component_envelope="etr_plot_fpca_component_envelope",
+  plot_sparse_fpca_score_diagnostics="etr_plot_sparse_fpca_score_diagnostics",
+  plot_fpca_wild_bootstrap_family_test="etr_plot_fpca_wild_bootstrap_family_test"
 )
 
 #' Audit one-to-one Python 1.2.0 versus independent native R coverage
@@ -681,6 +684,13 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     "compare_functional_mixed_effects_residual_diagnostics"
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% native_mixed_residual_sensitivity_name] <- 53L
+  native_fpca_inference_graphics_names <- c(
+    "plot_fpca_component_envelope",
+    "plot_sparse_fpca_score_diagnostics",
+    "plot_fpca_wild_bootstrap_family_test"
+  )
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% native_fpca_inference_graphics_names] <- 54L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # TrajectorySet native representation covers key fields and with_values/subset
