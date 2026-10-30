@@ -11,6 +11,9 @@ This is an evidence-oriented development note, **not a certification claim**.
 - Auditable R inventory: `etr_native_parity_catalog()`.
 - Actionable per-export review queue:
   `etr_native_source_contract_review_queue()`.
+- First/all missing evidence for each of the 508 contracts:
+  `etr_native_certification_readiness_frame()`. This is a read-only
+  status report, not an auto-approval or source-equivalence claim.
 - Separately tracked source differences:
   `inst/extdata/native_source_contract_gaps_stage22.csv`.
 
@@ -104,6 +107,13 @@ nested outer fold loss, sorted mixed band-width ratios and selected
 wild-bootstrap truncation h. R returns base graphics and audit records,
 not Python Matplotlib Axes or typed dataclass objects; those complete
 source contract differences remain unapproved.
+
+The fail-closed `etr_native_certification_readiness_frame()` gives every
+frozen export its first/all missing evidence requirements, separating
+unmapped functions, incomplete native integrations, published-source gaps,
+numerical-oracle approval, schema, scientific scope, reviewer approval and
+reproducible published-source evidence. Existing explicit certification
+gates remain unchanged; no additional contracts have been promoted.
 
 ## Local qualification on PR #46
 
