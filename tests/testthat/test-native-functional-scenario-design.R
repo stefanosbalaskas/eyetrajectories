@@ -132,9 +132,9 @@ test_that("new simulation scenario contracts remain unapproved without independe
     expect_false(row$one_to_one_native_contract_complete)
   }
   expect_equal(nrow(z),508L)
-  expect_equal(sum(z$is_python_function & z$named_native_candidate),304L)
-  expect_equal(sum(z$native_implementation_started),279L)
-  expect_equal(sum(z$source_contract_gap_unresolved),126L)
+  expect_equal(sum(z$is_python_function & z$named_native_candidate),311L)
+  expect_equal(sum(z$native_implementation_started),286L)
+  expect_equal(sum(z$source_contract_gap_unresolved),133L)
 })
 
 test_that("published Python 1.2 scenario design and seed expansion source witnesses",{
