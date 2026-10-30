@@ -148,6 +148,23 @@ Python 1.2.0 exact-text oracles, explicit scientific-scope boundaries and
 unresolved typed-source-contract gaps. No numerical certification flags
 are automatically promoted.
 
+## Reproducible full-contract review dossier for eleven reporting ports
+
+The eleven source-aligned inference reporting functions have an explicit
+independent-review handoff, with source commit, test file, unresolved
+requirements, and unapproved evidence columns:
+
+```r
+source("scripts/build_inference_contract_dossier.R")
+```
+
+This writes `artifacts/native_inference_contract_review/python_1_2_reporting_contract_review_queue.csv`.
+It does **not** mark any full source contract certified. Local RStudio
+assertions, an exact-string Python oracle, and independent documentation
+of complete type/error domain and scientific scope are separate requirements.
+A reviewer must provide exact SHA-linked signoff; never substitute a passing
+fixture or a model-authored status statement for that approval.
+
 ## One-command local qualification of the latest reporting batch
 
 Run from the repository root in RStudio:
