@@ -18,10 +18,10 @@ This is an evidence-oriented development note, **not a certification claim**.
 
 | Domain | Number | Meaning |
 |---|---:|---|
-| Python function mappings | 257 / 380 | Names associated with native R candidates |
-| Native implementations started | 232 | Implemented operations; **not** proof of source equivalence |
-| Unmapped Python functions | 123 | No declared native candidate |
-| Known open source differences | 79 | Class, input, numerical, backend, error or scope boundaries |
+| Python function mappings | 259 / 380 | Names associated with native R candidates |
+| Native implementations started | 234 | Implemented operations; **not** proof of source equivalence |
+| Unmapped Python functions | 121 | No declared native candidate |
+| Known open source differences | 81 | Class, input, numerical, backend, error or scope boundaries |
 | Nonfunction exports for independent review | 128 | Values/classes not counted as native functions |
 | Complete independently certified public contracts | **0 / 508** | Four approval domains are not all independently signed off |
 
@@ -92,6 +92,11 @@ identities, FPCA truncation scan metadata and target-specific selections.
 All source identities are kept in source order and zero-based where published
 Python uses zero-based indices. Python frozen dataclass/pandas return
 semantics and accepted input domains remain explicitly unresolved.
+
+Two additional source-aligned native R graphics functions now visualize
+participant and nested-trial functional random effects without fitting.
+Their base graphics results do not reproduce Python Matplotlib Axes and
+therefore remain documented open full-source contracts.
 
 ## Local qualification on PR #46
 

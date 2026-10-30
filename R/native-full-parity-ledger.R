@@ -261,7 +261,9 @@
   functional_mixed_effects_full_refit_audit_frame="etr_functional_mixed_effects_full_refit_audit_frame",
   functional_mixed_effects_full_refit_trial_audit_frame="etr_functional_mixed_effects_full_refit_trial_audit_frame",
   fpca_wild_bootstrap_truncation_scan_frame="etr_fpca_wild_bootstrap_truncation_scan_frame",
-  fpca_wild_bootstrap_truncation_selection_frame="etr_fpca_wild_bootstrap_truncation_selection_frame"
+  fpca_wild_bootstrap_truncation_selection_frame="etr_fpca_wild_bootstrap_truncation_selection_frame",
+  plot_functional_random_effects="etr_plot_functional_random_effects",
+  plot_functional_trial_random_effects="etr_plot_functional_trial_random_effects"
 )
 
 #' Audit one-to-one Python 1.2.0 versus independent native R coverage
@@ -518,6 +520,9 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
       "functional_mixed_effects_full_refit_trial_audit_frame",
       "fpca_wild_bootstrap_truncation_scan_frame",
       "fpca_wild_bootstrap_truncation_selection_frame")] <- 40L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% c("plot_functional_random_effects",
+      "plot_functional_trial_random_effects")] <- 41L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # Stage 5 represents key TrajectorySet fields and with_values/subset
