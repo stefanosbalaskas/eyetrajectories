@@ -329,7 +329,8 @@
   fpca_wild_bootstrap_family_test_monte_carlo_diagnostics="etr_fpca_wild_bootstrap_family_test_monte_carlo_diagnostics",
   plot_fpca_wild_bootstrap_monte_carlo_diagnostics="etr_plot_fpca_wild_bootstrap_monte_carlo_diagnostics",
   plot_fpca_wild_bootstrap_simultaneous_interval="etr_plot_fpca_wild_bootstrap_simultaneous_interval",
-  fpca_wild_bootstrap_projection_simultaneous_interval="etr_fpca_wild_bootstrap_projection_simultaneous_interval"
+  fpca_wild_bootstrap_projection_simultaneous_interval="etr_fpca_wild_bootstrap_projection_simultaneous_interval",
+  fpca_regression_slope_simultaneous_band="etr_fpca_regression_slope_simultaneous_band"
 )
 
 #' Audit one-to-one Python 1.2.0 versus independent native R coverage
@@ -710,6 +711,10 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     "fpca_wild_bootstrap_projection_simultaneous_interval"
   api$native_implementation_stage[api$is_python_function &
     api$python_name %in% native_wild_simultaneous_name] <- 56L
+  native_fpcr_slope_band_name <-
+    "fpca_regression_slope_simultaneous_band"
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% native_fpcr_slope_band_name] <- 57L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # TrajectorySet native representation covers key fields and with_values/subset
