@@ -49,10 +49,12 @@ test_that("bounded FPCR CV explicitly rejects unsupported published domains",{
     "does not accept covariates")
   expect_error(f(z$trajectories,z$outcome,candidate_components=99L,
     n_splits=3L),"training-fold maximum")
-  expect_error(f(z$trajectories,z$outcome,outcome=z$outcome),
-    "unused argument")
   expect_error(f(z$trajectories,c(z$outcome,NA_real_)),
     "one finite scalar")
+  expect_error(f(z$trajectories,z$outcome,n_splits=1L),
+    "n_splits must be an integer")
+  expect_error(f(z$trajectories,z$outcome,loss="log_loss"),
+    "gaussian loss")
 })
 test_that("published Python 1.2 unshuffled Gaussian FPCR folds and losses match",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
