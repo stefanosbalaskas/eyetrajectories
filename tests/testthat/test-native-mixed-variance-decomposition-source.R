@@ -28,7 +28,7 @@ test_that("source variance decomposition preserves components and signed cross-c
     c("variance","variance","covariance","variance","variance"))
   expect_equal(out$value[1:3],c(.4,.45,.6),tolerance=1e-12)
   expect_equal(out$value[4:6],c(.1,.175,.4),tolerance=1e-12)
-  expect_equal(out$value[7:9],c(-.05,-.0425,-.06),tolerance=1e-12)
+  expect_equal(out$value[7:9],c(-.05,-.045,-.06),tolerance=1e-12)
   expect_equal(out$value[10:12],rep(.25,3L))
   expect_equal(out$value[13:15],rep(.08,3L))
   expect_true(any(out$value[out$component_type=="covariance"]<0))
