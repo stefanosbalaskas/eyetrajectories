@@ -12,7 +12,7 @@ queue_path<-file.path("artifacts","native_inference_contract_review",
   "python_1_2_scientific_contract_review_queue.csv")
 queue<-utils::read.csv(queue_path,stringsAsFactors=FALSE,
   check.names=FALSE)
-stopifnot(nrow(queue)==45L,!anyDuplicated(queue$python_name),
+stopifnot(nrow(queue)==48L,!anyDuplicated(queue$python_name),
   all(!queue$fully_certified),
   all(queue$source_difference_open),
   all(file.exists(queue$oracle_test)))
@@ -28,6 +28,7 @@ filter<-paste(c(
   "native-sparse-scientific-graphics",
   "native-generalized-mixed-source-graphics",
   "native-mixed-residual-comparison",
+  "native-fpca-inference-source-graphics",
   "native-source-evidence-runner",
   "native-private-helper-names"),collapse="|")
 git_exe<-Sys.which("git")
@@ -88,6 +89,8 @@ source_files<-unique(c(
   "R/native-sparse-scientific-graphics.R",
   "R/native-generalized-mixed-source-graphics.R",
   "R/native-mixed-residual-comparison.R",
+  "R/native-fpca-inference-source-graphics.R",
+  "tests/testthat/test-native-fpca-inference-source-graphics.R",
   "tests/testthat/test-native-mixed-residual-comparison.R",
   "tests/testthat/test-native-generalized-mixed-source-graphics.R",
   "scripts/capture_native_source_qualification_evidence.R",
