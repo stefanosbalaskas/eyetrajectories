@@ -208,9 +208,9 @@ Run `source("scripts/qualify_native_inference_reporting.R")` locally to
 exercise both offline and Python source tests, including
 `test-native-scientific-source-frames.R`.
 
-## Reproducible full-contract review dossier for twenty-two scientific ports
+## Reproducible full-contract review dossier for twenty-six scientific ports
 
-The eleven source-aligned inference reporting functions and six native scientific frame adapters plus five source-interpretation reports have an explicit
+The eleven source-aligned inference reporting functions and six native scientific frame adapters plus nine source-interpretation/model reporters have an explicit
 independent-review handoff, with source commit, test file, unresolved
 requirements, and unapproved evidence columns:
 
