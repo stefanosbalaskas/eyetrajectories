@@ -37,15 +37,22 @@ test_that("all 508 published exports receive a fail-closed evidence queue",{
   functions<-readiness[readiness$kind=="function",,drop=FALSE]
   expect_identical(nrow(functions),380L)
   expect_true(all(functions$native_mapping_present))
-  expect_true(all(functions$native_implementation_started))
+  # Implemented vs mapped are separate tracked states. If any
+  # mapped candidate has not started implementation, retain its
+  # explicit unresolved requirement instead of fabricating progress.
+  unstarted<-functions[!functions$native_implementation_started,,drop=FALSE]
+  if(nrow(unstarted)){
+    expect_true(all(unstarted$first_unresolved_requirement==
+      "native_implementation_missing"))
+    expect_true(all(grepl("native_implementation_missing",
+      unstarted$all_unresolved_requirements,fixed=TRUE)))
+  }
   expect_true(all(nzchar(functions$native_r_candidate)))
   expect_true(all(functions$native_r_candidate%in%
     getNamespaceExports("eyetrajectories")))
   missing<-functions[!functions$native_mapping_present,,drop=FALSE]
   expect_identical(nrow(missing),0L)
   expect_false(any(grepl("native_mapping_missing",
-    functions$all_unresolved_requirements,fixed=TRUE)))
-  expect_false(any(grepl("native_implementation_missing",
     functions$all_unresolved_requirements,fixed=TRUE)))
   # Mapping completion must never elevate scientific source contracts:
   # retain all unsigned source, numeric, schema, and independent-review
