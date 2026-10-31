@@ -52,6 +52,36 @@ declared in a referenced fixture. Older evidence bundles lacking a saved
 filter are readable but explicitly report that selection was not recorded;
 coverage is not invented.
 
+## Expansion of directly attributable public-source calls
+
+The owner-verified baseline `qualification_20261101T002012` at
+`f5834982d10cb3018063551428b9723e8e2697b6` found 111/111 selected
+test files but only four literal Python-export references. The original
+reporting tests called Python public functions inside `py_run_string`,
+which produced numerical/text evidence but was invisible to the initial R
+syntax attribution scanner.
+
+The following four existing tests now additionally invoke their **20
+distinct** selected Python public functions through explicit
+`etpy_get_export("...")` calls and compare the resulting source outputs
+to native R results and the already-existing frozen Python fixtures:
+
+- `test-native-inference-reporting.R`: eight inference report contracts
+- `test-native-inference-reporting-extensions.R`: three other reports
+- `test-native-source-text-inference.R`: five FoSR/covariance/surrogate reports
+- `test-native-source-model-reports.R`: four sparse/mixed-model reporters
+
+A fail-closed `test-native-direct-source-report-attribution.R` checks all
+20 literal references, their frozen Python names and outstanding source gaps.
+It runs in the offline and Python source qualification modes. The expected
+static direct-reference count therefore rises from **4 to at least 24 of
+111**, but this must be confirmed by an exact-HEAD RStudio run; do not
+promote this expectation to a verified number before that run.
+
+This improves **audit attribution**, not complete-domain behavior or
+independent numerical/scientific approval. The source-gap register and
+all independent approval flags remain unchanged.
+
 ## Remaining evidence needed for a genuine per-export certification
 
 1. Independently rerun the frozen Python and native R repositories at their
