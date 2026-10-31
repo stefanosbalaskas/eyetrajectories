@@ -390,6 +390,12 @@ message("Review triage: ",nrow(triage)," public exports; ",
   nrow(gap_review)," recorded source differences; ",
   sum(triage$backend_or_estimand_distinct),
   " alternative backends/estimands; zero independent approvals.")
+message("Static source-fixture attribution: ",
+  sum(fixture_attribution$fixture_filename_selected_in_both_suite_modes),
+  "/",nrow(fixture_attribution)," mapped to captured test filename filter; ",
+  sum(fixture_attribution$literal_etpy_get_export_call_for_this_contract),
+  " with a direct literal frozen Python export reference. ",
+  "These are file-level indicators, NOT individual executed-case approvals.")
 
 if(!all(vapply(results,function(x)isTRUE(x$success),logical(1L)))) {
   failed_labels<-vapply(results,function(x)
