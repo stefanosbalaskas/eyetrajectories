@@ -190,9 +190,28 @@ _df_oracle={
       z$bootstrap),
     extended=etr_functional_mixed_effects_variance_bootstrap_frame(
       .etr_source_diagnostic_fixtures(TRUE)$bootstrap))
+  # Attribute the two distinct public Python data-table functions to
+  # direct frozen-source execution, including the extended covariance case.
+  direct<-list(
+    surrogate=reticulate::py_call(
+      etpy_get_export("multivariate_iaaft_diagnostics_frame"),
+      result=reticulate::py_eval("_df_surrogate",convert=FALSE)),
+    base=reticulate::py_call(
+      etpy_get_export("functional_mixed_effects_variance_bootstrap_frame"),
+      bootstrap=reticulate::py_eval("_df_full",convert=FALSE)),
+    extended=reticulate::py_call(
+      etpy_get_export("functional_mixed_effects_variance_bootstrap_frame"),
+      bootstrap=reticulate::py_eval("_df_extended",convert=FALSE))
+  )
+  expect_identical(names(direct),names(outputs))
   for(n in names(outputs)){
     py<-reticulate::py_eval(paste0("_df_oracle['",n,"']"),
       convert=TRUE)
+    direct_frame<-et_to_r(direct[[n]])
+    expect_identical(names(direct_frame),names(py))
+    for(column in names(py))
+      expect_equal(direct_frame[[column]],py[[column]],
+        tolerance=1e-12,ignore_attr=TRUE)
     expect_identical(names(py),names(outputs[[n]]),info=n)
     expect_equal(nrow(py),nrow(outputs[[n]]),info=n)
     for(column in names(py)) {
