@@ -203,3 +203,40 @@ test_that("finite numeric-string simplex arrays match the source ALR contract",{
   expect_true(etr_native_parity_catalog()$source_contract_gap_unresolved[
     etr_native_parity_catalog()$python_name=="alr_transform"])
 })
+
+test_that("Boolean ALR and inverse arrays match published numeric coercion",{
+  simplex<-array(FALSE,c(2L,3L,2L))
+  simplex[,,1L]<-TRUE
+  simplex[1L,2L,1L]<-FALSE
+  simplex[1L,2L,2L]<-TRUE
+  numeric_simplex<-array(as.numeric(simplex),dim(simplex))
+  logits<-array(c(TRUE,FALSE,TRUE,FALSE),c(1L,2L,2L))
+  numeric_logits<-array(as.numeric(logits),dim(logits))
+  for(ref in c(0L,1L)) {
+    native<-etr_alr_transform(simplex,reference_dimension=ref)
+    expect_equal(native,
+      etr_alr_transform(numeric_simplex,reference_dimension=ref),
+      tolerance=0)
+    inverse<-etr_inverse_alr(logits,reference_dimension=ref,
+      n_dimensions=3L)
+    expect_equal(inverse,etr_inverse_alr(numeric_logits,
+      reference_dimension=ref,n_dimensions=3L),tolerance=0)
+    if(identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true")) {
+      expect_identical(et_python_version(),"1.2.0")
+      source_alr<-reticulate::py_call(etpy_get_export("alr_transform"),
+        values=reticulate::r_to_py(simplex),
+        reference_dimension=as.integer(ref))
+      source_inverse<-reticulate::py_call(
+        etpy_get_export("inverse_alr"),
+        transformed=reticulate::r_to_py(logits),
+        reference_dimension=as.integer(ref),
+        n_dimensions=as.integer(3L))
+      expect_equal(unname(native),unname(et_to_r(source_alr)),
+        tolerance=1e-12)
+      expect_equal(unname(inverse),unname(et_to_r(source_inverse)),
+        tolerance=1e-12)
+    }
+  }
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})
