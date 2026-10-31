@@ -82,6 +82,45 @@ This improves **audit attribution**, not complete-domain behavior or
 independent numerical/scientific approval. The source-gap register and
 all independent approval flags remain unchanged.
 
+## Verified 24-source baseline and further 15 direct public functions
+
+Exact-head owner RStudio verification at `e2a61a1e7f3df6996e690a9416bc8902635b3fc4`
+on 1 November 2026 completed native R and Python 1.2 suites without test
+failures and wrote complete `qualification_20261101T004201` evidence.
+It confirmed **111/111 fixture files selected** and **24/111 direct literal
+Python exported calls**. All 508 full source contracts remain unsigned.
+
+The next research patch extends executable pinned-source attribution to
+**15 more distinct public Python functions** using only existing, known
+source fixtures (no claims of new validated input domains):
+
+- `test-native-scientific-source-frames.R`: six source frame functions,
+  including generalized FoSR coefficient, prediction, contrast, exposure,
+  and univariate/multivariate sparse FPCA score tables. Existing typed
+  Python `DataFrame` results remain the numerical reference.
+- `test-native-source-diagnostic-frames.R`: two public data-table
+  functions, including standard and extended mixed full-refit covariance
+  diagnostics; each direct Python table is checked against the original
+  source `DataFrame`.
+- `test-native-generalized-mixed-source-graphics.R`: seven public source
+  Matplotlib plotting functions. Source line data from each new direct
+  returned `Axes` is checked against the original frozen Python oracle;
+  the native R base-graphics geometry is independently compared to that
+  same retained numerical witness.
+
+Two new static guards check the exact public exported function names and
+keep all corresponding source gap/independent approval flags open:
+`test-native-direct-source-frame-attribution.R` and
+`test-native-direct-source-plot-attribution.R`. The normal qualification
+and evidence capture filters run the source-frame, diagnostic-frame and
+mixed graphics tests in both native-only and pinned Python modes. The
+capture integrity manifest includes the new guards.
+
+**Expected next direct source-reference count: at least 39/111, not yet
+verified by RStudio.** This is executable source traceability on selected
+fixtures, not independent full-domain certification. The distinction
+between native R graphics and Python Matplotlib remains explicitly open.
+
 ## Remaining evidence needed for a genuine per-export certification
 
 1. Independently rerun the frozen Python and native R repositories at their
