@@ -100,9 +100,12 @@ source_names<-c(
   "bootstrap_generalized_function_on_scalar_coefficients",
   "export_workflow_bundle",
   "wild_bootstrap_fpca_projection",
-  "scan_wild_bootstrap_fpca_truncations"
+  "scan_wild_bootstrap_fpca_truncations",
+  "functional_mixed_effects_covariance_sensitivity",
+  "bootstrap_functional_mixed_effects_coefficients",
+  "bootstrap_functional_mixed_effects_full_refit"
 )
-stopifnot(length(source_names)==93L,!anyDuplicated(source_names))
+stopifnot(length(source_names)==96L,!anyDuplicated(source_names))
 idx<-match(source_names,readiness$python_name)
 stopifnot(!anyNA(idx),all(readiness$kind[idx]=="function"),
   all(readiness$native_mapping_present[idx]),
@@ -171,6 +174,8 @@ source_test[90L]<-"tests/testthat/test-native-generalized-gee-bootstrap.R"
 source_test[91L]<-"tests/testthat/test-native-workflow-bundle-export.R"
 source_test[92L]<-"tests/testthat/test-native-wild-bootstrap-projection.R"
 source_test[93L]<-"tests/testthat/test-native-wild-bootstrap-truncation-scan.R"
+source_test[94L]<-"tests/testthat/test-native-mixed-covariance-sensitivity.R"
+source_test[95:96]<-"tests/testthat/test-native-mixed-participant-bootstraps.R"
 source_file<-rep("src/eyetrajectoriespy/reporting.py",length(source_names))
 source_file[12L]<-"src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py"
 source_file[13L]<-"src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py"
@@ -235,6 +240,9 @@ source_file[90L]<-"src/eyetrajectoriespy/generalized_function_on_scalar.py"
 source_file[91L]<-"src/eyetrajectoriespy/workflows/_core.py"
 source_file[92L]<-"src/eyetrajectoriespy/wild_regression.py"
 source_file[93L]<-"src/eyetrajectoriespy/wild_selection.py"
+source_file[94L]<-"src/eyetrajectoriespy/functional_mixed_effects_covariance_sensitivity.py"
+source_file[95L]<-"src/eyetrajectoriespy/functional_mixed_effects_inference.py"
+source_file[96L]<-"src/eyetrajectoriespy/functional_mixed_effects_full_refit.py"
 # Owner RStudio evidence at exact older commit c8084bb
 # (2026-10-31T132748) confirms BOTH full source qualification modes,
 # package checkout/file integrity TRUE and all first 91 review candidates
@@ -264,7 +272,7 @@ data<-data.frame(
   missing_evidence=readiness$all_unresolved_requirements[idx],
   stringsAsFactors=FALSE
 )
-stopifnot(nrow(data)==93L,!any(data$fully_certified))
+stopifnot(nrow(data)==96L,!any(data$fully_certified))
 output_dir<-file.path("artifacts","native_inference_contract_review")
 dir.create(output_dir,recursive=TRUE,showWarnings=FALSE)
 output<-file.path(output_dir,"python_1_2_scientific_contract_review_queue.csv")

@@ -42,6 +42,9 @@
   export_workflow_bundle="etr_export_workflow_bundle",
   wild_bootstrap_fpca_projection="etr_wild_bootstrap_fpca_projection",
   scan_wild_bootstrap_fpca_truncations="etr_scan_wild_bootstrap_fpca_truncations",
+  functional_mixed_effects_covariance_sensitivity="etr_functional_mixed_effects_covariance_sensitivity",
+  bootstrap_functional_mixed_effects_coefficients="etr_bootstrap_functional_mixed_effects_coefficients",
+  bootstrap_functional_mixed_effects_full_refit="etr_bootstrap_functional_mixed_effects_full_refit",
   capture_environment="etr_capture_environment",
   generalized_function_on_scalar_predict="etr_generalized_function_on_scalar_predict",
   functional_mixed_effects_reporting_text="etr_functional_mixed_effects_reporting_text",
@@ -837,6 +840,12 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     api$python_name=="wild_bootstrap_fpca_projection"] <- 97L
   api$native_implementation_stage[api$is_python_function &
     api$python_name=="scan_wild_bootstrap_fpca_truncations"] <- 98L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="functional_mixed_effects_covariance_sensitivity"] <- 99L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="bootstrap_functional_mixed_effects_coefficients"] <- 100L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="bootstrap_functional_mixed_effects_full_refit"] <- 101L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # TrajectorySet native representation covers key fields and with_values/subset
