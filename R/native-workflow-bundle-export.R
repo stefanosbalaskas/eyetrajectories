@@ -188,8 +188,7 @@ etr_export_workflow_bundle<-function(result,directory,overwrite=FALSE){
     digest::digest(file.path(temp,rel),algo="sha256",file=TRUE),
     character(1L))
   .etr_native_bundle_write_text(
-    paste0(paste0(sums,"  ",all),collapse="\n")|>
-      paste0("\n"),
+    paste0(paste0(paste0(sums,"  ",all),collapse="\n"),"\n"),
     file.path(temp,"SHA256SUMS"))
   .etr_assert(!file.exists(directory)&&!dir.exists(directory),
     "bundle destination became occupied during export")
