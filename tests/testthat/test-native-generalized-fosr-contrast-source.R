@@ -119,6 +119,7 @@ _c_coef=np.array([
   [[.32,.36,.42],[.65,.80,.85]]
 ])
 _c_oracles={}
+_c_inputs={}
 for _key,_family,_exposed,_count,_scale in (
     ('binomial','binomial',False,False,None),
     ('poisson','poisson',False,False,None),
@@ -136,6 +137,7 @@ for _key,_family,_exposed,_count,_scale in (
         'exposure_profiles':np.array([2.,3.,4.])} if _count else {}
     _prediction=et.bootstrap_generalized_function_on_scalar_predictions(
         _boost,_c_profiles,**_kw)
+    _c_inputs[_key]=_prediction
     _c_oracles[_key]=et.generalized_function_on_scalar_mean_difference_band(
         _prediction,profile_a='B',profile_b='A',
         confidence_level=.5,contrast_scale=_scale)
@@ -151,6 +153,14 @@ for _key,_family,_exposed,_count,_scale in (
       "expected_count_difference")) key else NULL
     native<-etr_generalized_function_on_scalar_mean_difference_band(
       b,"B","A",confidence_level=.5,contrast_scale=specified)
+    py_args<-list(
+      bootstrap=reticulate::py_eval(
+        paste0("_c_inputs['",key,"']"),convert=FALSE),
+      profile_a="B",profile_b="A",confidence_level=.5)
+    if(!is.null(specified))py_args$contrast_scale<-specified
+    direct<-do.call(reticulate::py_call,c(
+      list(etpy_get_export("generalized_function_on_scalar_mean_difference_band")),
+      py_args))
     fields<-c("estimate","standard_error","lower","upper",
       "bootstrap_estimates","max_statistics","critical_value",
       "interval_exceeds_physical_bounds","contrast_scale","inference_scale")
@@ -159,6 +169,8 @@ for _key,_family,_exposed,_count,_scale in (
         convert=TRUE)
       expect_equal(native[[field]],py,ignore_attr=TRUE,tolerance=1e-10,
         info=paste(key,field))
+      expect_equal(et_to_r(reticulate::py_get_attr(direct,field)),
+        py,ignore_attr=TRUE,tolerance=1e-10)
     }
   }
 })
