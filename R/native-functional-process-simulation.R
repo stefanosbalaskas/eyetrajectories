@@ -177,7 +177,8 @@ etr_simulate_functional_process<-function(
     observation_design="dense",
     raw_dense_to_irregular_interpolation_performed=FALSE,
     measurement_noise_sd=noise_sd,
-    measurement_noise_covariance=diag(noise_sd^2,nrow=nd,ncol=nd),
+    measurement_noise_covariance=lapply(seq_len(nd),function(i)
+      as.numeric(diag(noise_sd^2,nrow=nd,ncol=nd)[i,])),
     participant_eigenvalues=pv,trial_eigenvalues=tv,
     phase_variation_kind="none",missingness_kind="none",
     score_distribution="normal",n_components=k,
