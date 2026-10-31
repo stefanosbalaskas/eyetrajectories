@@ -466,7 +466,10 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
               api$python_name %in% integration_group_7_names,7L,
               ifelse(api$is_python_function &
                 api$python_name %in% integration_group_8_names,8L,NA_integer_))))))
-  composition_and_score_integration_names <- c("alr_transform","inverse_alr","component_trajectories",
+  # Quadrature weights are a tested native implementation, not only an
+  # exported mapping; include this source pilot in the implementation ledger.
+  composition_and_score_integration_names <- c("functional_trapezoid_weights",
+    "alr_transform","inverse_alr","component_trajectories",
     "select_n_components","fpca_score_frame","score_distance_matrix",
     "pairwise_functional_distances","sparse_dimension_summary",
     "warping_displacement","phase_summary","phase_trajectory_set",
