@@ -85,6 +85,39 @@ _py_wild_scan={
  'widths':scan.widths,
  'roots':scan.studentized_roots}
 ")
+  # Repeat source scan with the same 20 multipliers, preserving
+  # the Python test-oracle random-draw boundary and checking source arrays.
+  reticulate::py_run_string("
+def _source_public_scan_replay(fn):
+    original=wildsel._draw_wild_multipliers
+    position=[0]
+    def draw(rng,*,n,multiplier):
+        if n!=24 or position[0]>=len(draws):
+            raise AssertionError('source scan wild multiplier count mismatch')
+        z=draws[position[0]].copy()
+        position[0]+=1
+        return z
+    try:
+        wildsel._draw_wild_multipliers=draw
+        result=fn(traj,scalary,candidate_components=(2,3),
+            n_bootstrap=20,residual_components=2,confidence_level=.95)
+        if position[0]!=20:
+            raise AssertionError('source scan did not consume all fixed draws')
+        return result
+    finally:
+        wildsel._draw_wild_multipliers=original
+")
+  direct<-reticulate::py_call(
+    reticulate::py_eval("_source_public_scan_replay",convert=FALSE),
+    etpy_get_export("scan_wild_bootstrap_fpca_truncations"))
+  saved<-reticulate::py_eval("scan",convert=FALSE)
+  for(field in c("reference_projections","reference_se",
+    "critical_values","centers","widths","studentized_roots")){
+    expect_equal(et_to_r(reticulate::py_get_attr(direct,field)),
+      et_to_r(reticulate::py_get_attr(saved,field)),
+      tolerance=1e-12,ignore_attr=TRUE,
+      info=paste("exact source wild scan replay",field))
+  }
   oracle<-reticulate::py_to_r(reticulate::py_eval(
     "_py_wild_scan",convert=FALSE))
   f<-.etr_wild_projection_fixture()
