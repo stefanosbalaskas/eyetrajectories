@@ -37,6 +37,6 @@ test_that("all newly mapped scientific alternatives remain explicitly uncertifie
   gap<-utils::read.csv(gap_path,stringsAsFactors=FALSE,
     check.names=FALSE)
   expect_true(all(recent%in%gap$python_name))
-  expect_true(all(gap$source_difference_open))
+  expect_true(all(gap$unresolved_source_gap))
   expect_identical(length(unique(gap$python_name)),nrow(gap))
 })
