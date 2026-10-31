@@ -218,18 +218,14 @@ source_file[83:84]<-"src/eyetrajectoriespy/workflows/_plotting.py"
 source_file[85L]<-"src/eyetrajectoriespy/wild_testing.py"
 source_file[86L]<-"src/eyetrajectoriespy/workflows/_dense_regression.py"
 source_file[87L]<-"src/eyetrajectoriespy/workflows/_sparse_fpca.py"
-# The first 71 contracts were user-qualified at exactly R commit 73503aa9
-# (2026-10-31T102737); the 72nd integration has no user-side R verdict.
-# Historical qualification is NOT evidence for this newer checkout.
-fixture_state<-ifelse(seq_along(source_names)<=71L,
-  "historical_user_R_and_Python_1_2_suite_PASS_at_73503aa9_20261031T102737_not_independent",
-  ifelse(seq_along(source_names)<=75L,
-    "owner_R_and_Python_1_2_qualification_PASS_at_638985b_20261031T113301_not_independent",
-    ifelse(seq_along(source_names)<=79L,
-      "owner_R_and_Python_1_2_qualification_PASS_at_2e0e0f0_20261031T120751_not_independent",
-      ifelse(seq_along(source_names)<=82L,
-        "owner_scoped_R_and_Python_1_2_qualification_PASS_at_33b4228_20261031T122204_full_evidence_failed_stale_readiness_not_independent",
-        "new_tests_pending_local_native_and_python_oracle"))))
+# Owner RStudio evidence at the exact, older c9c6c50 checkout
+# (2026-10-31T123054) confirms BOTH complete qualification modes and all
+# 84 source review candidate rows without test failures. This is historical
+# owner-run evidence, NOT an independent full-domain reviewer signoff.
+# The additional candidates at this newer head have NOT been owner-run.
+fixture_state<-ifelse(seq_along(source_names)<=84L,
+  "owner_full_R_and_Python_1_2_qualification_PASS_at_c9c6c50_20261031T123054_not_independent",
+  "new_tests_pending_local_native_and_python_oracle")
 stopifnot(all(file.exists(source_test)))
 data<-data.frame(
   python_name=source_names,
