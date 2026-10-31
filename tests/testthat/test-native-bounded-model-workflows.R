@@ -70,6 +70,8 @@ test_that("native sparse workflow rejects source Python estimator conflation",{
 })
 
 test_that("explicit fdapace workflow can fit native irregular observations",{
+  if(!identical(Sys.getenv("ET_RUN_FDAPACE_TESTS"),"true"))
+    skip("optional R fdapace numerical backend smoke test is opt-in")
   if(!requireNamespace("fdapace",quietly=TRUE))
     skip("optional independent R fdapace backend not installed")
   grid<-seq(0,1,length.out=25L)
