@@ -20,6 +20,7 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-fpcr-regression-cross-validation",
     "native-fpcr-nested-cross-validation",
     "native-multivariate-iaaft-generator",
+    "native-multivariate-surrogate-nonlinearity",
     "native-mixed-model-source-text"),".R"))
 missing_scientific_tests<-required_scientific_tests[
   !file.exists(required_scientific_tests)]
@@ -38,7 +39,7 @@ queue_path<-file.path("artifacts","native_inference_contract_review",
   "python_1_2_scientific_contract_review_queue.csv")
 queue<-utils::read.csv(queue_path,stringsAsFactors=FALSE,
   check.names=FALSE)
-stopifnot(nrow(queue)==72L,!anyDuplicated(queue$python_name),
+stopifnot(nrow(queue)==73L,!anyDuplicated(queue$python_name),
   all(!queue$fully_certified),
   all(queue$source_difference_open),
   all(file.exists(queue$oracle_test)))
@@ -74,6 +75,7 @@ filter<-paste(c(
   "native-fpcr-regression-cross-validation",
   "native-fpcr-nested-cross-validation",
   "native-multivariate-iaaft-generator",
+  "native-multivariate-surrogate-nonlinearity",
   "native-mixed-model-source-text",
   "native-source-environment",
   "native-source-evidence-runner",
@@ -155,6 +157,7 @@ source_files<-unique(c(
   "R/native-fpcr-regression-cross-validation.R",
   "R/native-fpcr-nested-cross-validation.R",
   "R/native-multivariate-iaaft-generator.R",
+  "R/native-multivariate-surrogate-nonlinearity.R",
   "R/native-functional-mixed-moments.R",
   "R/native-mixed-model-source-text.R",
   "R/native-source-environment.R",
@@ -175,6 +178,7 @@ source_files<-unique(c(
   "tests/testthat/test-native-fpcr-regression-cross-validation.R",
   "tests/testthat/test-native-fpcr-nested-cross-validation.R",
   "tests/testthat/test-native-multivariate-iaaft-generator.R",
+  "tests/testthat/test-native-multivariate-surrogate-nonlinearity.R",
   "tests/testthat/test-native-mixed-model-source-text.R",
   "tests/testthat/test-native-fpcr-slope-source-calibration.R",
   "tests/testthat/test-native-wild-simultaneous-source-calibration.R",

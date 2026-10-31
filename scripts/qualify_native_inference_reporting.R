@@ -38,6 +38,7 @@ qualifying_filter <- paste(
   "native-fpcr-regression-cross-validation",
   "native-fpcr-nested-cross-validation",
   "native-multivariate-iaaft-generator",
+  "native-multivariate-surrogate-nonlinearity",
   "native-mixed-model-source-text",
   "native-source-environment",
   "native-source-contract-gaps",

@@ -68,6 +68,7 @@ test_that("new scientific source oracles are included in both qualification mode
     "native-fpcr-regression-cross-validation",
     "native-fpcr-nested-cross-validation",
     "native-multivariate-iaaft-generator",
+    "native-multivariate-surrogate-nonlinearity",
     "native-mixed-model-source-text","native-source-environment")){
     expect_true(any(grepl(name,runner,fixed=TRUE)))
   }
@@ -89,8 +90,9 @@ test_that("new scientific source oracles are included in both qualification mode
     "fpca_regression_future_prediction_interval",
     "cross_validate_fpca_regression",
     "nested_cross_validate_fpca_regression",
-    "generate_multivariate_iaaft_surrogates")){
+    "generate_multivariate_iaaft_surrogates",
+    "multivariate_surrogate_nonlinearity_test")){
     expect_true(any(grepl(name,dossier,fixed=TRUE)))
   }
-  expect_true(any(grepl("nrow(queue)==72L",runner,fixed=TRUE)))
+  expect_true(any(grepl("nrow(queue)==73L",runner,fixed=TRUE)))
 })

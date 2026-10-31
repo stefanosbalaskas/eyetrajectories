@@ -361,3 +361,22 @@ errors using Python's actual private `_spectrum_errors` and verifies
 scientific rank conservation against the native and Python generator.
 This is the **72nd unsigned** source-contract review candidate.
 No independent full scientific certification is implied.
+
+## Multivariate IAAFT Lyapunov source-bounded null testing
+
+`etr_multivariate_surrogate_nonlinearity_test()` now composes
+the source-mapped native multivariate IAAFT generator with the existing
+R delay embedding, nearest-neighbor divergence and Rosenstein
+largest-Lyapunov estimate. It preserves the Python 1.2 source
+`multivariate_surrogate_nonlinearity_test` estimand and supports its
+three source p-value alternatives: greater, less, two-sided.
+The plus-one tails and doubled minimum two-sided tail are reported
+without mid-p adjustments or unearned chaos claims.
+
+The only currently qualified time parameters are explicit sample units.
+R MIAAFT random streams are not NumPy PCG64-identical, and Python typed
+object, complete error and full stochastic inference domains remain
+outstanding. The opt-in frozen Python source oracle independently
+checks each language's result against the actual source p-value
+formula; it does not pretend the RNG replicates are identical.
+This is the **73rd unsigned** contract review candidate.
