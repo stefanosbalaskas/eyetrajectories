@@ -114,6 +114,7 @@ def _mrec_obj(cls,**kw):
     for k,v in kw.items(): object.__setattr__(z,k,v)
     return z
 _mrec_py={}
+_mrec_inputs={}
 for trial in (False,True):
     truth=_mrec_obj(FunctionalSimulationTruth,
         truth_grid=np.array([0.,.5,1.]),
@@ -133,6 +134,7 @@ for trial in (False,True):
         args['trial_random_basis']=np.ones((3,1))
         args['trial_random_effect_covariance']=np.array([[.75]])
     fit=_mrec_obj(et.FunctionalMixedEffectsResult,**args)
+    _mrec_inputs[trial]=(fit,truth)
     result=et.evaluate_functional_mixed_effects_recovery(fit,truth)
     _mrec_py[trial]=dict(
       names=[v.metric.name for v in result.values],
@@ -144,6 +146,20 @@ for trial in (False,True):
     z<-.etr_mixed_truth_fixture(trial)
     x<-etr_evaluate_functional_mixed_effects_recovery(z$fit,z$truth)
     py<-if(trial)"_mrec_py[True]" else "_mrec_py[False]"
+    input_key<-if(trial)"True" else "False"
+    direct<-reticulate::py_call(
+      etpy_get_export("evaluate_functional_mixed_effects_recovery"),
+      result=reticulate::py_eval(
+        paste0("_mrec_inputs[",input_key,"][0]"),convert=FALSE),
+      truth=reticulate::py_eval(
+        paste0("_mrec_inputs[",input_key,"][1]"),convert=FALSE))
+    get_values<-reticulate::py_eval(
+      "lambda z: [float(v.value) for v in z.values]",convert=FALSE)
+    expected_values<-reticulate::py_eval(
+      paste0(py,"['value']"),convert=TRUE)
+    expect_equal(as.numeric(et_to_r(
+      reticulate::py_call(get_values,direct))),
+      as.numeric(expected_values),tolerance=1e-12)
     actual_names<-vapply(x$values,function(v)v$metric$name,character(1L))
     actual_source<-vapply(x$values,function(v)v$source,character(1L))
     actual_values<-vapply(x$values,function(v)v$value,numeric(1L))
