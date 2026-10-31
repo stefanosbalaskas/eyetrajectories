@@ -89,6 +89,15 @@ etr_inverse_alr <- function(transformed,reference_dimension,n_dimensions) {
     is.finite(n_dimensions) && n_dimensions>=1L &&
     n_dimensions==as.integer(n_dimensions),
     "n_dimensions must be an integer >= 1")
+  # Frozen Python np.asarray(..., dtype=float) accepts numeric-string
+  # arrays. Convert that finite, rectangular domain without expanding
+  # the native overflow/nonfinite scientific contract.
+  if(is.array(transformed) && is.character(transformed) &&
+      length(dim(transformed))==3L) {
+    numeric_values<-suppressWarnings(as.numeric(transformed))
+    if(all(is.finite(numeric_values)))
+      transformed<-array(numeric_values,dim=dim(transformed))
+  }
   .etr_assert(is.array(transformed) && is.numeric(transformed) &&
     length(dim(transformed))==3L &&
     dim(transformed)[3L]==n_dimensions-1L &&
