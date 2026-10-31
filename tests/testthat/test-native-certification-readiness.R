@@ -43,7 +43,7 @@ test_that("all 508 published exports receive a fail-closed evidence queue",{
     ,drop=FALSE]
   expect_identical(nrow(weights),1L)
   expect_true(weights$native_implementation_started)
-  expect_false(weights$published_source_difference_open==FALSE)
+  expect_true(weights$published_source_difference_open)
   expect_false(weights$fully_certified)
   # Implemented vs mapped are separate tracked states. If any
   # mapped candidate has not started implementation, retain its
