@@ -69,6 +69,23 @@ res=et.multivariate_surrogate_nonlinearity_test(
 ref_p=min(1.,2*min((np.sum(res.surrogate_statistics>=res.observed_statistic)+1)/4,
                       (np.sum(res.surrogate_statistics<=res.observed_statistic)+1)/4))
 ")
+  # Replay the public source surrogate test under a fixed Python seed;
+  # the native R p-value is checked by its plus-one inference rule only.
+  direct<-reticulate::py_call(
+    etpy_get_export("multivariate_surrogate_nonlinearity_test"),
+    trajectories=reticulate::py_eval("x",convert=FALSE),
+    curve="example",dimensions=reticulate::py_eval(
+      "('x','y','z')",convert=FALSE),reference_dimension="y",
+    statistic="largest_lyapunov",embedding_dimension=2L,delay=2L,
+    theiler_window=3L,max_horizon=7L,fit_start=1L,fit_end=4L,
+    n_surrogates=3L,max_iterations=100L,tolerance=.7,
+    alternative="two-sided",random_state=17L)
+  for(field in c("observed_statistic","surrogate_statistics","p_value")){
+    replay<-et_to_r(reticulate::py_get_attr(direct,field))
+    source<-reticulate::py_eval(paste0("res.",field),convert=TRUE)
+    expect_equal(replay,source,tolerance=1e-12,ignore_attr=TRUE,
+      info=paste("replayed nonlinear source",field))
+  }
   expected<-as.numeric(reticulate::py_to_r(
     reticulate::py_eval("ref_p",convert=FALSE)))
   actual<-as.numeric(reticulate::py_to_r(
