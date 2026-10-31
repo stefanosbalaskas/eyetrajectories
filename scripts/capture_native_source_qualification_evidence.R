@@ -110,7 +110,7 @@ qualify_once<-function(python=FALSE){
   tryCatch(
     capture.output(
       testthat::test_local(".",filter=filter,
-        reporter="summary",stop_on_failure=TRUE),
+        reporter="summary",stop_on_failure=TRUE,stop_on_warning=TRUE),
       file=path,type="output"),
     error=function(e){failed<<-conditionMessage(e);invisible(NULL)})
   outcome<-if(is.null(failed)) {

@@ -64,7 +64,7 @@ filter<-paste(required,collapse="|")
   message("Qualifying ",mode," (candidate contracts remain unsigned).")
   tryCatch({
     testthat::test_local(".",filter=filter,reporter="summary",
-      stop_on_failure=TRUE)
+      stop_on_failure=TRUE,stop_on_warning=TRUE)
     message(mode,": PASS")
     TRUE
   },error=function(e){
