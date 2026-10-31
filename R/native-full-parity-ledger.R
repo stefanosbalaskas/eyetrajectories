@@ -468,6 +468,30 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
                 api$python_name %in% integration_group_8_names,8L,NA_integer_))))))
   # Quadrature weights are a tested native implementation, not only an
   # exported mapping; include this source pilot in the implementation ledger.
+  # Baseline native R algorithms predate the later integration inventory.
+  # Each has an exported R implementation. This marks implementation
+  # started ONLY; it provides no Python source-contract certification.
+  baseline_native_names <- c(
+    "plot_recurrence", "recurrence_matrix", "rqa_metrics",
+    "cross_recurrence_matrix", "from_long_dataframe",
+    "validate_trajectory_set", "resample_to_grid",
+    "interpolate_short_gaps", "smooth_trajectories",
+    "fit_fpca", "fit_mfpca", "transform_fpca",
+    "reconstruct_fpca", "register_to_landmarks",
+    "fit_multilevel_fpca", "differentiate_trajectories",
+    "speed_function", "cumulative_path_length",
+    "functional_l2_distance", "fit_scalar_on_function_regression",
+    "split_conformal_fpca_anomaly", "plot_trajectory_overlay",
+    "plot_fpca_variance", "fit_sparse_fpca"
+  )
+  .etr_assert(length(baseline_native_names)==24L &&
+    !anyDuplicated(baseline_native_names) &&
+    all(baseline_native_names %in%
+      api$python_name[api$is_python_function]) &&
+    all(nzchar(unname(analogues[baseline_native_names]))),
+    "baseline native implementation inventory is inconsistent")
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% baseline_native_names] <- 1L
   composition_and_score_integration_names <- c("functional_trapezoid_weights",
     "alr_transform","inverse_alr","component_trajectories",
     "select_n_components","fpca_score_frame","score_distance_matrix",
