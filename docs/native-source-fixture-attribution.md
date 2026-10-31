@@ -1,0 +1,72 @@
+# Source-contract fixture attribution and independent-review boundaries
+
+Frozen source: `eyetrajectoriespy==1.2.0` at Python commit
+`c1cd95ad718327550f7e55393ff38582872f7a94`.
+
+The 508 public Python exports (380 functions and 128 nonfunctions) are
+inventoried separately from the 111 selected, **unsigned** source-oracle
+candidate functions. Passing native R and pinned Python source test suites
+is a necessary development qualification, **not** independent certification.
+
+## New evidence captured on each exact R commit
+
+Run in the R package root:
+
+```r
+source("scripts/qualify_native_current_contracts.R")
+source("scripts/capture_native_source_qualification_evidence.R")
+```
+
+In `artifacts/native_source_contract_evidence/qualification_<timestamp>/`:
+- `native_r_offline.txt` and `python_1_2_direct_source.txt`: complete
+  testthat logs, plus their aggregate verdicts.
+- `test_selection_regex.txt`: the exact testthat filename filter used by
+  both captured test modes. Reviewers must not assume all package tests ran.
+- `unsigned_contract_fixture_evidence.csv`: 111 candidate rows, all
+  noncertifying with independent per-contract approval flags FALSE.
+- `file_integrity_manifest.csv`: source and test file checksums.
+
+In `artifacts/native_independent_review_packets/qualification_<timestamp>/`:
+- `selected_111_fixture_static_attribution.csv`: one row per selected
+  candidate with the source-fixture file's MD5, the recorded filter's
+  MD5, whether the fixture filename was selected by the captured test
+  filter, the number of **all** declared `test_that` cases in that file,
+  and whether its parsed R syntax contains a direct literal call
+  `etpy_get_export("<this-python-export>")`. The last two are
+  **file-level static evidence**, not the executed number of cases for
+  the named Python export. A FALSE literal-reference field may mean an
+  indirect source oracle; it is not proof that no oracle exists.
+- `all_508_public_export_independent_review_scope.csv`: 508 export rows,
+  now showing selected test-file and literal-reference evidence while
+  retaining all per-export independent review fields FALSE.
+- `all_508_contract_review_priority.csv`: complete triage by candidate
+  oracle, distinct backend/estimand, open source gap, nonselected function,
+  and nonfunction contracts.
+- `known_source_gap_resolution_queue.csv`: every declared open difference
+  with its source witness and required resolution.
+- `review_lane_counts.csv` and the four initial source pilot priorities.
+
+New capture fails closed if a selected candidate's fixture test file is
+absent from the recorded test-selection filter or no `test_that` cases are
+declared in a referenced fixture. Older evidence bundles lacking a saved
+filter are readable but explicitly report that selection was not recorded;
+coverage is not invented.
+
+## Remaining evidence needed for a genuine per-export certification
+
+1. Independently rerun the frozen Python and native R repositories at their
+   exact commits; preserve environment lockfiles, log files and hashes.
+2. Attribute an actual Python and R test case, each with a pass/fail/skip
+   outcome, to a specific public export—not merely to a shared file.
+3. Cover input containers, coercion, accepted/rejected values, error behavior,
+   output class/shape and numerical tolerances across the complete source
+   domain. Inspect each scientifically distinct estimator or backend.
+4. Independently verify source implementation, numerical oracle and
+   scientifically relevant interpretation, then collect signed review and
+   immutable supporting evidence. Full-source certification requires the
+   explicit gap-resolution and approval gates to pass.
+5. Never auto-promote a contract based on owner-run tests, static AST scans,
+   aggregate suite PASS, source-name mapping, or package load.
+
+**All 508 full-domain independent source contracts remain unsigned until
+actual third-party review and explicit approval.**
