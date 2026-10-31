@@ -283,6 +283,7 @@ source_files<-unique(c(
   "R/native-inference-reporting.R",
   "R/native-inference-reporting-extensions.R",
   "R/native-full-parity-ledger.R",
+  "R/native-certification-readiness.R",
   "inst/extdata/native_source_contract_gaps_stage22.csv",
   "scripts/build_inference_contract_dossier.R",
   "scripts/qualify_native_inference_reporting.R"))

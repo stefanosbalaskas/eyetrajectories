@@ -58,6 +58,16 @@ test_that("all 508 published exports receive a fail-closed evidence queue",{
   # retain all unsigned source, numeric, schema, and independent-review
   # gates, including the 128 nonfunction exports.
   expect_identical(sum(readiness$fully_certified),0L)
+  # A full-source certificate is impossible for explicitly declared
+  # native method/backend alternatives until the source algorithm and its
+  # input/output domain are independently reviewed and implemented.
+  alternatives<-readiness[readiness$native_backend_or_estimand_differs,,drop=FALSE]
+  expect_gte(nrow(alternatives),19L)
+  expect_true(all(alternatives$native_mapping_present))
+  expect_false(any(alternatives$fully_certified))
+  expect_true(all(grepl("native_backend_or_estimand_not_source_equivalent",
+    alternatives$all_unresolved_requirements,fixed=TRUE)))
+
   expect_true(all(grepl("independent_review_approval_missing",
     readiness$all_unresolved_requirements,fixed=TRUE)))
   expect_true(all(grepl("approved_numerical_oracle_missing",
