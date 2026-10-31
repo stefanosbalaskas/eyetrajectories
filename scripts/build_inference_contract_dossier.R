@@ -202,7 +202,9 @@ source_file[78L]<-"src/eyetrajectoriespy/regression_inference.py"
 # Historical qualification is NOT evidence for this newer checkout.
 fixture_state<-ifelse(seq_along(source_names)<=71L,
   "historical_user_R_and_Python_1_2_suite_PASS_at_73503aa9_20261031T102737_not_independent",
-  "new_tests_pending_local_native_and_python_oracle")
+  ifelse(seq_along(source_names)<=75L,
+    "owner_R_and_Python_1_2_qualification_PASS_at_638985b_20261031T113301_not_independent",
+    "new_tests_pending_local_native_and_python_oracle"))
 stopifnot(all(file.exists(source_test)))
 data<-data.frame(
   python_name=source_names,

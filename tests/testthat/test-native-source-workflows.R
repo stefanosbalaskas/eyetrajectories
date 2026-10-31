@@ -14,6 +14,7 @@ test_that("native FPCA workflow does not silently preprocess or select models",{
   z<-.etr_source_workflow_fixture()
   out<-etr_run_fpca_workflow(z$x,
     config=list(n_components=1L,scaling="none",preprocessing=list()))
+  expect_s3_class(etr_run_fpca_workflow(z$x),"etr_fpca_workflow")
   expect_s3_class(out,"etr_fpca_workflow")
   expect_s3_class(out$fit,"etr_fpca")
   expect_identical(out$workflow_contract,"fpca:v1")
@@ -79,6 +80,6 @@ _native_w3_oracle={
   source<-reticulate::py_to_r(reticulate::py_eval(
     "_native_w3_oracle",convert=FALSE))
   expect_equal(as.integer(source$fpca),1L)
-  expect_identical(source$fos_predictors,"treatment")
+  expect_identical(as.character(unlist(source$fos_predictors)),"treatment")
   expect_equal(as.integer(source$empty_plan),0L)
 })

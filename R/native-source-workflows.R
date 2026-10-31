@@ -4,8 +4,9 @@
 
 .etr_source_workflow_config <- function(config,defaults,required=character()){
   .etr_assert(is.list(config)&&!is.data.frame(config)&&
-    !is.null(names(config))&&!anyNA(names(config))&&
-    all(nzchar(names(config)))&&!anyDuplicated(names(config)),
+    (length(config)==0L||(!is.null(names(config))&&
+      !anyNA(names(config))&&all(nzchar(names(config)))&&
+      !anyDuplicated(names(config)))),
     "config must be a named list with distinct keys")
   .etr_assert(all(names(config)%in%names(defaults)),
     "config contains unsupported fields; no implicit workflow actions")
