@@ -174,9 +174,10 @@ etr_score_distance_matrix <- function(fpca,n_components=NULL) {
     # duck-typed FPCA-compatible objects. Permit that minimal finite
     # matrix contract without pretending all Python object types port.
     .etr_assert(is.list(fpca)&&
-      is.matrix(fpca$scores)&&is.numeric(fpca$scores)&&
+      is.matrix(fpca$scores)&&
+      (is.numeric(fpca$scores)||is.character(fpca$scores))&&
       nrow(fpca$scores)>=1L&&ncol(fpca$scores)>=1L&&
-      all(is.finite(fpca$scores))&&
+      all(is.finite(suppressWarnings(as.numeric(fpca$scores))))&&
       is.numeric(fpca$n_components)&&
       length(fpca$n_components)==1L&&
       is.finite(fpca$n_components)&&
@@ -190,7 +191,12 @@ etr_score_distance_matrix <- function(fpca,n_components=NULL) {
     is.finite(n_components) && n_components==as.integer(n_components) &&
     n_components>=1L && n_components<=fpca$n_components,
     "n_components is outside the fitted range")
-  x<-fpca$scores[,seq_len(n_components),drop=FALSE]
+  # sklearn pairwise_distances accepts numeric-string score arrays.
+  # Do not coerce the caller's object, nor accept NaN, Inf or bad strings.
+  scores<-if(is.character(fpca$scores))
+    matrix(suppressWarnings(as.numeric(fpca$scores)),
+      nrow=nrow(fpca$scores),ncol=ncol(fpca$scores)) else fpca$scores
+  x<-scores[,seq_len(n_components),drop=FALSE]
   out<-as.matrix(stats::dist(x,method="euclidean"))
   unname(out)
 }
