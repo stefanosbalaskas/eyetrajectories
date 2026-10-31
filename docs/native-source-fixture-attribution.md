@@ -210,6 +210,49 @@ result structures, optimizer choices, scientific backend distinctions
 or independent signoff. The 203 recorded source differences and 19
 distinct backend/estimand alternatives are still open.
 
+## Exact-head source evidence reaches 60, with nine estimator replays added
+
+The owner verified `ac8203ccc99aca879764281db4105106a47cc338`
+in RStudio: syntax preflight **307 source R files PASS**; offline native R
+test mode **PASS**; pinned Python 1.2 direct source mode **PASS**; evidence
+capture `qualification_20261101T013237` **PASS**; checkout hash and file
+integrity **TRUE**. All 111 source candidate fixtures were included in
+the recorded test selector; **60/111** contained direct literal public
+Python export calls. No contract was independently approved.
+
+The next research patch adds **nine distinct typed Python source replays**
+to eight existing scientific test files, leaving their original native
+R comparisons and frozen Python fixture data unchanged:
+
+- `bootstrap_generalized_function_on_scalar_predictions` and
+  `generalized_function_on_scalar_prediction_bands`: binomial, Poisson,
+  exposed rate and expected-count projections, plus profile/family bands
+- `generalized_function_on_scalar_predict`: four fixed-profile
+  marginal-response cases including expected-count exposure
+- `compare_functional_mixed_effects_bootstraps`: conditional versus
+  full-refit uncertainty width ratios under both simultaneous scopes
+- `evaluate_sparse_fpca_recovery`,
+  `evaluate_sparse_mfpca_recovery`, and `evaluate_fpca_recovery`:
+  original known-truth assessment metrics and one-/two-channel cases
+- `cross_validate_fpca_regression` and
+  `nested_cross_validate_fpca_regression`: original Gaussian folds,
+  held-out predictions and minimum/one-SE nested selection rules
+
+The new `test-native-direct-source-estimator-attribution.R` guards all
+nine public names and requires their source-difference and independent
+approval fields remain explicitly open. The normal qualification and
+evidence capture scripts include the actual eight test files and the
+additional guard in both native and Python modes; evidence integrity
+hashes the new guard. New source calls use the existing recorded Python
+inputs, output fields, fixed folds and original comparison tolerances.
+No new source-domain or Python↔R RNG-stream identity is claimed.
+
+**Expected after next owner exact-HEAD run: >=69/111 direct literal
+source references (currently unverified).** This attribution is not an
+independently certified per-case pass count. The 203 recorded source
+differences and 19 known scientific backend/estimand differences remain
+open; all 508 independent certification approvals remain FALSE.
+
 ## Remaining evidence needed for a genuine per-export certification
 
 1. Independently rerun the frozen Python and native R repositories at their
