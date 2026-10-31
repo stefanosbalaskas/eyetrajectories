@@ -144,7 +144,9 @@ etr_export_python_portable_result <- function(result,directory,
         data=lapply(md,add_array)),
       coordinate_system=result$coordinate_system,
       time_unit=result$time_unit,
-      provenance=.etr_portable_writer_json(result$provenance)))
+      provenance=if(!length(result$provenance))
+        list('__portable_type__'='mapping',entries=list())
+      else .etr_portable_writer_json(result$provenance)))
   archive <- file.path(temp,"arrays.npz")
   zip::zipr(zipfile=archive,files=saved,root=temp,compression_level=6L)
   .etr_assert(file.exists(archive),"portable NPZ archive was not created")
@@ -152,7 +154,7 @@ etr_export_python_portable_result <- function(result,directory,
     schema_version=1L,
     format="eyetrajectoriespy-portable-scientific-result",
     source_package_version=paste0("R-native-eyetrajectories-",
-      as.character(utils::packageVersion("eyetrajectories"))),
+      as.character(getNamespaceVersion("eyetrajectories"))),
     result_type="eyetrajectoriespy.types.TrajectorySet",
     portable_scope=paste(
       "Scientific arrays, identifiers, specifications, units, diagnostics",

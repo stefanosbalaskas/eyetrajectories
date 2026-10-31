@@ -42,6 +42,9 @@ if(length(missing))
     paste(missing,collapse=", "),
     ". Fetch and check out the PR #48 branch ",
     "'research/native-generalized-fosr-prediction-20261030'.",call.=FALSE)
+if(!all(vapply(c("zip","jsonlite","digest"),
+    requireNamespace,logical(1L),quietly=TRUE)))
+  stop("Source portable-writer qualification needs zip, jsonlite and digest; install.packages(c('zip','jsonlite','digest')) before running.",call.=FALSE)
 for(path in test_files)parse(file=path,keep.source=FALSE)
 source("scripts/preflight_native_source_syntax.R",local=TRUE)
 pkgload::load_all(".",quiet=TRUE)

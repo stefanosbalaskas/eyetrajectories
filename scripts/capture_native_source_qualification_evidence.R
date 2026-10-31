@@ -30,6 +30,9 @@ if(length(missing_scientific_tests))stop(
   paste(missing_scientific_tests,collapse=", "),
   ". Switch to the research/native-generalized-fosr-prediction-20261030 branch.",
   call.=FALSE)
+if(!all(vapply(c("zip","jsonlite","digest"),
+    requireNamespace,logical(1L),quietly=TRUE)))
+  stop("Source portable-writer qualification needs zip, jsonlite and digest; install.packages(c('zip','jsonlite','digest')) before running.",call.=FALSE)
 source("scripts/preflight_native_source_syntax.R",local=TRUE)
 pkgload::load_all(".",quiet=TRUE)
 stopifnot(identical(et_python_version(),"1.2.0"))
