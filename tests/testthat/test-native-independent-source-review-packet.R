@@ -19,6 +19,7 @@ test_that("independent source-review packet is safe and fully unsigned",{
     "four_numerical_pilots_external_review_priority.csv",
     "all_508_public_export_independent_review_scope.csv",
     "nrow(readiness)==508L",
+    "backend_or_estimand_distinct=readiness$native_backend_or_estimand_differs",
     "sum(readiness$kind==\"function\")==380L",
     "sum(readiness$kind!=\"function\")==128L",
     "per_export_complete_domain_review=FALSE",

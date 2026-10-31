@@ -32,6 +32,9 @@ test_that("all newly mapped scientific alternatives remain explicitly uncertifie
   expect_true(all(f$is_python_function))
   expect_true(all(f$named_native_candidate))
   expect_false(any(f$one_to_one_native_contract_complete))
+  # A native substitute never automatically receives a full-domain source
+  # certificate just because an R name has been mapped and exported.
+  expect_true(all(f$native_backend_or_estimand_differs_from_python))
   gap_path<-testthat::test_path("..","..","inst","extdata",
     "native_source_contract_gaps_stage22.csv")
   gap<-utils::read.csv(gap_path,stringsAsFactors=FALSE,

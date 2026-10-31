@@ -195,6 +195,7 @@ etr_prepare_independent_source_review<-function(
     evidence_r_git_head=rep(recorded_heads,nrow(readiness)),
     mapped_native_function=readiness$kind=="function"&
       readiness$native_mapping_present,
+    backend_or_estimand_distinct=readiness$native_backend_or_estimand_differs,
     source_difference_open=readiness$published_source_difference_open,
     source_gap_kind=ifelse(is.na(gidx),"",
       gaps$gap_kind[gidx]),

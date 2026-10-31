@@ -881,6 +881,37 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     api$python_name=="run_sparse_prediction_workflow"] <- 112L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
+  # A mapped R analogue may use a scientifically DIFFERENT estimator or
+  # optional backend. This non-parity flag is independent of source-gap
+  # row status and permanently blocks source certification until the
+  # implementation and review inventory are deliberately revised.
+  different_backend_or_estimand<-c(
+    "fit_elastic_fpca",
+    "fit_sparse_mfpca",
+    "run_sparse_mfpca_workflow",
+    "run_sparse_mfpca_async_workflow",
+    "run_sparse_multilevel_workflow",
+    "run_sparse_prediction_workflow",
+    "functional_mixed_effects_covariance_sensitivity",
+    "bootstrap_functional_mixed_effects_coefficients",
+    "bootstrap_functional_mixed_effects_full_refit",
+    "to_skfda_grid",
+    "to_skfda_basis",
+    "detect_functional_outliers_skfda",
+    "to_fdapy_irregular",
+    "fit_sparse_fpca_fdapy",
+    "fit_sparse_fpca",
+    "fit_functional_mixed_effects_regression",
+    "fit_multilevel_fpca",
+    "run_functional_mixed_effects_workflow",
+    "run_sparse_fpca_workflow"
+  )
+  .etr_assert(all(different_backend_or_estimand %in% names(analogues))&&
+    !anyDuplicated(different_backend_or_estimand),
+    "native scientific-alternative source registry is malformed")
+  api$native_backend_or_estimand_differs_from_python <-
+    api$is_python_function &
+    api$python_name %in% different_backend_or_estimand
   # TrajectorySet native representation covers key fields and with_values/subset
   # provenance behavior in R, but not all source class/schema contracts.
   api$native_representation_stage <- ifelse(
@@ -1001,6 +1032,9 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   api$one_to_one_native_contract_complete <- FALSE
   api$one_to_one_native_contract_complete[match(register$python_name,
     api$python_name)] <- pass
+  .etr_assert(!any(api$one_to_one_native_contract_complete &
+    api$native_backend_or_estimand_differs_from_python),
+    "scientifically different native estimator or backend cannot receive a full Python 1.2 source certificate")
   # The 508-symbol certificate includes 128 non-function exports.
   # Classes/constants have a separate FULL-domain schema/value and reviewer
   # evidence register. This never treats a class as an R callable mapping.
