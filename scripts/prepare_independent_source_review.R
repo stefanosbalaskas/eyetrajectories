@@ -480,6 +480,13 @@ etr_prepare_independent_source_review<-function(
     "  with the source witness, required scientific resolution and",
     "  selected-oracle/alternative-backend flags.",
     "- review_lane_counts.csv: noncertifying inventory totals by lane.",
+    "- selected_111_fixture_static_attribution.csv: matched fixture test",
+    "  filenames from the captured testthat filter, number of declared",
+    "  test_that cases in each file and literal etpy_get_export calls.",
+    "  This is a STATIC file-level attribution, not an executed per-case",
+    "  pass, an independent replay, or a full-source-domain approval.",
+    "  Missing test_selection_regex.txt in an older bundle is reported",
+    "  as selector not recorded rather than inventing test coverage.",
     "All rows default to unsigned, unresolved and pending independent review.",
     "Do not treat a passing aggregate suite as per-contract approval.",
     "")
