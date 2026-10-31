@@ -130,12 +130,21 @@ design=pd.DataFrame({'curve_id':[f'curve{i:02d}' for i in ordered],
 pygee=fit_generalized_function_on_scalar_regression(tr,design,
  ['treatment'],participant_column='participant_id',
  dimension='outcome',family='poisson',basis_size=4,spline_degree=3)
+try:
+ fit_generalized_function_on_scalar_regression(tr,design.iloc[::-1].reset_index(drop=True),
+  ['treatment'],participant_column='participant_id',
+  dimension='outcome',family='poisson',basis_size=4,spline_degree=3)
+ _pygee_reordered_rejected=False
+except ValueError:
+ _pygee_reordered_rejected=True
 _pygee_oracle={'basis':pygee.basis,
  'coef':pygee.coefficient_functions,
  'se':pygee.coefficient_standard_errors,
  'mean':pygee.mean_functions,
  'cov':pygee.parameter_covariance}
 ")
+  expect_true(reticulate::py_to_r(reticulate::py_eval(
+    "_pygee_reordered_rejected",convert=FALSE)))
   py<-reticulate::py_to_r(reticulate::py_eval("_pygee_oracle",
     convert=FALSE))
   f<-.etr_native_gee_fixture()
