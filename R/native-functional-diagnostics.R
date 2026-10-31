@@ -64,7 +64,7 @@ etr_alr_transform <- function(values,reference_dimension=-1L,epsilon=1e-8) {
     is.finite(epsilon) && epsilon>0,"epsilon must be positive and finite")
   values<-.etr_simplex_nested_input(values)
   # NumPy's published np.asarray(values, dtype=float) also accepts 3-D
-  # numeric-string arrays. Retain native fail-closed checks for nonfinite
+  # numeric-string and Boolean arrays. Retain native fail-closed checks for nonfinite
   # and malformed values; conversion alone never approves full parity.
   if(is.array(values) &&
       (is.character(values)||is.logical(values)) &&
@@ -100,7 +100,7 @@ etr_inverse_alr <- function(transformed,reference_dimension,n_dimensions) {
     n_dimensions==as.integer(n_dimensions),
     "n_dimensions must be an integer >= 1")
   # Frozen Python np.asarray(..., dtype=float) accepts numeric-string
-  # arrays. Convert that finite, rectangular domain without expanding
+  # and Boolean arrays. Convert that finite, rectangular domain without expanding
   # the native overflow/nonfinite scientific contract.
   if(is.array(transformed) &&
       (is.character(transformed)||is.logical(transformed)) &&
@@ -212,7 +212,7 @@ etr_score_distance_matrix <- function(fpca,n_components=NULL) {
     is.finite(n_components) && n_components==as.integer(n_components) &&
     n_components>=1L && n_components<=fpca$n_components,
     "n_components is outside the fitted range")
-  # sklearn pairwise_distances accepts numeric-string score arrays.
+  # sklearn pairwise_distances accepts numeric-string and Boolean score arrays.
   # Do not coerce the caller's object, nor accept NaN, Inf or bad strings.
   scores<-if(is.character(fpca$scores)||is.logical(fpca$scores))
     matrix(suppressWarnings(as.numeric(fpca$scores)),
