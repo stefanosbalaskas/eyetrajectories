@@ -167,6 +167,8 @@ etr_prepare_independent_source_review<-function(
     x$cases,integer(1L))
   .checked(all(fixture_case_counts>=1L),
     "One or more source fixture files define no test_that test cases")
+  selector_md5<-if(selector_recorded)
+    unname(tools::md5sum(selector_file)) else ""
   fixture_selected<-if(selector_recorded)
     grepl(selector,basename(records$fixture_test)) else
       rep(FALSE,nrow(records))
@@ -185,6 +187,7 @@ etr_prepare_independent_source_review<-function(
     fixture_file_md5=unname(tools::md5sum(
       file.path(root,records$fixture_test))),
     test_selection_regex_recorded=rep(selector_recorded,nrow(records)),
+    test_selection_regex_md5=rep(selector_md5,nrow(records)),
     fixture_filename_selected_in_both_suite_modes=fixture_selected,
     test_that_cases_declared_in_entire_fixture_file=
       fixture_case_counts[fixture_idx],
@@ -287,6 +290,15 @@ etr_prepare_independent_source_review<-function(
       passed[[1L]]),
     selected_suite_python_pass=ifelse(is.na(queued_idx),FALSE,
       passed[[2L]]),
+    selected_fixture_file_in_capture_filter=ifelse(
+      is.na(queued_idx),FALSE,
+      attribution$fixture_filename_selected_in_both_suite_modes[queued_idx]),
+    selected_fixture_literal_python_export_call=ifelse(
+      is.na(queued_idx),FALSE,
+      attribution$literal_etpy_get_export_call_for_this_contract[queued_idx]),
+    selected_fixture_file_declared_test_cases=ifelse(
+      is.na(queued_idx),0L,
+      attribution$test_that_cases_declared_in_entire_fixture_file[queued_idx]),
     per_export_complete_domain_review=FALSE,
     per_export_independent_oracle_replay=FALSE,
     per_export_schema_error_review=FALSE,
@@ -332,6 +344,10 @@ etr_prepare_independent_source_review<-function(
     unresolved_source_difference=has_gap,
     source_gap_kind=review_scope$source_gap_kind,
     source_oracle_test=review_scope$selected_oracle_file,
+    fixture_file_selected_in_capture_filter=
+      review_scope$selected_fixture_file_in_capture_filter,
+    fixture_literal_python_export_call_found=
+      review_scope$selected_fixture_literal_python_export_call,
     recorded_r_commit=rep(recorded_heads,nrow(review_scope)),
     developer_suite_native_pass=review_scope$selected_suite_native_pass,
     developer_suite_python_pass=review_scope$selected_suite_python_pass,
