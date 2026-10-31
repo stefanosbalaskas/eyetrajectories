@@ -40,6 +40,9 @@ required<-c("native-generalized-fosr-prediction",
   "native-thirdparty-functional-analogues",
   "native-final-sparse-elastic-analogues",
   "native-all-function-mapping-complete",
+  "native-certification-readiness",
+  "full-native-r-parity-ledger",
+  "native-private-helper-names",
   "native-mixed-model-source-text","native-source-environment")
 test_files<-file.path("tests","testthat",paste0("test-",required,".R"))
 git<-Sys.which("git")
