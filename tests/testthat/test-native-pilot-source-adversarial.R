@@ -126,6 +126,13 @@ test_that("frozen Python 1.2 first-pilot boundary differences remain explicit",{
     reference_dimension=as.integer(0L),n_dimensions=as.integer(3L))
   expect_true(any(!is.finite(et_to_r(py_inverse))))
   expect_error(etr_inverse_alr(z,0L,3L),"overflowed")
+  # NumPy's epsilon<=0 check admits NaN, which propagates NaN
+  # ratios. The native estimator deliberately rejects an invalid floor.
+  v<-.etr_pilot_adversarial_simplex()
+  py_nan_eps<-reticulate::py_call(etpy_get_export("alr_transform"),
+    values=reticulate::r_to_py(v),epsilon=NaN)
+  expect_true(all(is.nan(et_to_r(py_nan_eps))))
+  expect_error(etr_alr_transform(v,epsilon=NaN),"epsilon")
   # A new numerical alignment is not a full-domain source certification.
   differences<-etr_native_parity_catalog()
   pilot_names<-c("functional_trapezoid_weights","inverse_alr",
