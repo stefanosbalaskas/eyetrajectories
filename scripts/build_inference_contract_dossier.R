@@ -219,7 +219,9 @@ fixture_state<-ifelse(seq_along(source_names)<=71L,
     "owner_R_and_Python_1_2_qualification_PASS_at_638985b_20261031T113301_not_independent",
     ifelse(seq_along(source_names)<=79L,
       "owner_R_and_Python_1_2_qualification_PASS_at_2e0e0f0_20261031T120751_not_independent",
-      "new_tests_pending_local_native_and_python_oracle")))
+      ifelse(seq_along(source_names)<=82L,
+        "owner_scoped_R_and_Python_1_2_qualification_PASS_at_33b4228_20261031T122204_full_evidence_failed_stale_readiness_not_independent",
+        "new_tests_pending_local_native_and_python_oracle"))))
 stopifnot(all(file.exists(source_test)))
 data<-data.frame(
   python_name=source_names,
