@@ -46,6 +46,11 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-source-contract-alignment",
     "native-source-fixture-static-attribution",
     "native-direct-source-report-attribution",
+    "native-direct-source-frame-attribution",
+    "native-direct-source-plot-attribution",
+    "native-scientific-source-frames",
+    "native-source-diagnostic-frames",
+    "native-generalized-mixed-source-graphics",
     "native-pilot-source-adversarial",
     "native-mixed-model-source-text"),".R"))
 missing_scientific_tests<-required_scientific_tests[
@@ -136,6 +141,8 @@ filter<-paste(c(
   "native-source-contract-alignment",
   "native-source-fixture-static-attribution",
   "native-direct-source-report-attribution",
+  "native-direct-source-frame-attribution",
+  "native-direct-source-plot-attribution",
   "native-pilot-source-adversarial"),collapse="|")
 git_exe<-Sys.which("git")
 head_sha<-if(nzchar(git_exe)){
@@ -233,6 +240,8 @@ source_files<-unique(c(
   "tests/testthat/test-native-source-contract-alignment.R",
   "tests/testthat/test-native-source-fixture-static-attribution.R",
   "tests/testthat/test-native-direct-source-report-attribution.R",
+  "tests/testthat/test-native-direct-source-frame-attribution.R",
+  "tests/testthat/test-native-direct-source-plot-attribution.R",
   "scripts/source_fixture_static_attribution.R",
   "R/native-fpca.R",
   "R/native-fpca-extensions.R",
