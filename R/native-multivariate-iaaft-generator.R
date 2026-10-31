@@ -150,7 +150,14 @@ etr_generate_multivariate_iaaft_surrogates<-function(
     random_state=random_state,
     provenance=list(
       operation="generate_multivariate_iaaft_surrogates",
+      source_provenance=trajectories$provenance,
+      curve_id=trajectories$curve_ids[[ci]],
+      dimensions=as.list(dimensions),
+      reference_dimension=reference_dimension,
       method="reference_anchored_multivariate_IAAFT",
+      fourier_constraint=paste0(
+        "original_per_dimension_amplitudes_plus_original_",
+        "inter_dimension_phase_differences"),
       marginal_constraint="exact_per_dimension_empirical_rank_distribution",
       cross_spectral_preservation=
         "approximate_after_final_rank_remapping_with_error_retained",
@@ -158,8 +165,15 @@ etr_generate_multivariate_iaaft_surrogates<-function(
       sampling_grid="regular_common_grid",
       sampling_step=steps[[1L]],
       time_unit=trajectories$time_unit,
+      dimension_scaling=FALSE,
+      smoothing=FALSE,interpolation=FALSE,
       random_engine="base_R_sample_not_NumPy_PCG64",
       source_python_equivalent_stochastic_draws=FALSE,
-      failed_surrogate_policy="raise")),
+      failed_surrogate_policy="raise",
+      interpretation_boundary=paste(
+        "Surrogates target a multivariate linear-stochastic null",
+        "with retained marginal distributions and approximate",
+        "auto/cross-spectral structure; they do not preserve nonlinear",
+        "cross-dependence by construction"))),
     class="etr_multivariate_iaaft")
 }
