@@ -121,9 +121,13 @@ test_that("frozen Python 1.2 first-pilot boundary differences remain explicit",{
   # Source inverse uses unguarded exp; at very large finite logits it
   # returns nonfinite output. The native contract fails closed instead.
   z<-array(c(1000,-1),c(1L,1L,2L))
-  py_inverse<-reticulate::py_call(etpy_get_export("inverse_alr"),
-    transformed=reticulate::r_to_py(z),
-    reference_dimension=as.integer(0L),n_dimensions=as.integer(3L))
+  # Scope suppression to the two EXPECTED NumPy floating-point warnings,
+  # leaving Python exceptions and testthat failures fully observable.
+  np<-reticulate::import("numpy",convert=FALSE)
+  py_inverse<-with(np$errstate(over="ignore",invalid="ignore"),
+    reticulate::py_call(etpy_get_export("inverse_alr"),
+      transformed=reticulate::r_to_py(z),
+      reference_dimension=as.integer(0L),n_dimensions=as.integer(3L)))
   expect_true(any(!is.finite(et_to_r(py_inverse))))
   expect_error(etr_inverse_alr(z,0L,3L),"overflowed")
   # NumPy's epsilon<=0 check admits NaN, which propagates NaN
