@@ -20,10 +20,16 @@
     width <- max(1L,vapply(order,function(z)length(utf8ToInt(z)),
       integer(1L)),na.rm=TRUE)
     descr <- paste0("<U",width)
-  } else if(is.logical(x)) descr <- "|b1"
-  else descr <- "<f8"
-  shape_text <- if(length(shape)==1L) paste0(shape[[1L]],",")
-    else paste(shape,collapse=", ")
+  } else if(is.logical(x)) {
+    descr <- "|b1"
+  } else {
+    descr <- "<f8"
+  }
+  shape_text <- if(length(shape)==1L) {
+    paste0(shape[[1L]],",")
+  } else {
+    paste(shape,collapse=", ")
+  }
   header <- sprintf("{'descr': '%s', 'fortran_order': False, 'shape': (%s), }",
     descr,shape_text)
   padding <- (16L-(10L+nchar(header,type="bytes")+1L)%%16L)%%16L
@@ -49,9 +55,14 @@
       "portable numeric arrays must not contain infinity or NaN")
     writeBin(as.double(order),con,size=8L,endian="little")
   }
-  list(dtype=if(is.character(x)) paste0("str",width)
-    else if(is.logical(x)) "bool" else "float64",
-    shape=as.list(as.integer(shape)))
+  dtype <- if(is.character(x)) {
+    paste0("str",width)
+  } else if(is.logical(x)) {
+    "bool"
+  } else {
+    "float64"
+  }
+  list(dtype=dtype,shape=as.list(as.integer(shape)))
 }
 
 .etr_portable_writer_json <- function(x,depth=0L) {
