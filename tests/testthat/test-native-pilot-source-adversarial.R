@@ -71,15 +71,15 @@ test_that("four pinned Python 1.2 pilot public source numerical witnesses match"
       reference_dimension=as.integer(ref),epsilon=epsilon)
     expect_equal(unname(rz),unname(et_to_r(pz)),tolerance=1e-12)
     ri<-etr_inverse_alr(rz,reference_dimension=ref,n_dimensions=3L)
-    pi<-reticulate::py_call(etpy_get_export("inverse_alr"),
+    py_inverse<-reticulate::py_call(etpy_get_export("inverse_alr"),
       transformed=pz,reference_dimension=as.integer(ref),
       n_dimensions=as.integer(3L))
-    expect_equal(unname(ri),unname(et_to_r(pi)),tolerance=1e-12)
+    expect_equal(unname(ri),unname(et_to_r(py_inverse)),tolerance=1e-12)
   }
   t<-seq(0,1,length.out=9L);v<-array(0,c(5L,9L,2L))
   for(i in 1:5){
-    v[i,,1L]<-sin(2*pi*t)+i*.07*cos(pi*t)
-    v[i,,2L]<-cos(2*pi*t)+i*.04*sin(pi*t)
+    v[i,,1L]<-sin(2*base::pi*t)+i*.07*cos(base::pi*t)
+    v[i,,2L]<-cos(2*base::pi*t)+i*.04*sin(base::pi*t)
   }
   tr<-etr_trajectory_set(t,v,paste0("curve",seq_len(5L)),c("x","y"))
   fit<-etr_fit_mfpca(tr,n_components=2L)
