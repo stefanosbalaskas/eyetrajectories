@@ -164,7 +164,7 @@ etr_prepare_independent_source_review<-function(
     "file_integrity_recheck.csv"),row.names=FALSE,na="")
   # Scope the independent-review undertaking across ALL 508 frozen
   # public exports (380 functions + 128 classes/configs/constants).
-  # The 107-row source fixture packet is a SELECTED subset, never a
+  # The 111-row source fixture packet is a SELECTED subset, never a
   # claim that other exports were reviewed or even fully exercised.
   if(!exists("etr_native_certification_readiness_frame",
       mode="function",inherits=TRUE)){
@@ -226,7 +226,7 @@ etr_prepare_independent_source_review<-function(
   # Four simpler pilot contracts already have user-reported fixture
   # evidence in the authoritative register, but still lack independent
   # numerical/schema/scientific/reviewer approvals. Surface them separately,
-  # not as additional fully qualified members of the 70-contract queue.
+  # not as additional certified members of the selected source-review queue.
   pilot_path<-file.path(root,"inst","extdata",
     "native_contract_certification_pilots_v1.csv")
   .checked(file.exists(pilot_path),"Missing four-contract pilot register")

@@ -117,7 +117,7 @@ test_that("new scientific source oracles are included in both qualification mode
     "multivariate_surrogate_nonlinearity_test")){
     expect_true(any(grepl(name,dossier,fixed=TRUE)))
   }
-  expect_true(any(grepl("nrow(queue)==107L",runner,fixed=TRUE)))
+  expect_true(any(grepl("nrow(queue)==111L",runner,fixed=TRUE)))
   begin<-grep('^filter<-paste\\(c\\(',runner)
   finish<-which(grepl('collapse="|"',runner,fixed=TRUE))
   expect_identical(length(begin),1L)
@@ -137,7 +137,10 @@ test_that("new scientific source oracles are included in both qualification mode
     "native-mixed-participant-bootstraps",
     "native-thirdparty-functional-analogues",
     "native-final-sparse-elastic-analogues",
-    "native-all-function-mapping-complete")){
+    "native-all-function-mapping-complete",
+    "native-certification",
+    "native-source-contract-gaps",
+    "native-pilot-source-adversarial")){
     expect_true(any(grepl(paste0('"',name,'"'),
       filter_lines,fixed=TRUE)),
       info=paste("source evidence capture does not execute",name))

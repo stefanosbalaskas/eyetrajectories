@@ -114,9 +114,13 @@ source_names<-c(
   "run_sparse_mfpca_async_workflow",
   "run_sparse_mfpca_workflow",
   "run_sparse_multilevel_workflow",
-  "run_sparse_prediction_workflow"
+  "run_sparse_prediction_workflow",
+  "alr_transform",
+  "inverse_alr",
+  "score_distance_matrix",
+  "functional_trapezoid_weights"
 )
-stopifnot(length(source_names)==107L,!anyDuplicated(source_names))
+stopifnot(length(source_names)==111L,!anyDuplicated(source_names))
 idx<-match(source_names,readiness$python_name)
 stopifnot(!anyNA(idx),all(readiness$kind[idx]=="function"),
   all(readiness$native_mapping_present[idx]),
@@ -189,6 +193,7 @@ source_test[94L]<-"tests/testthat/test-native-mixed-covariance-sensitivity.R"
 source_test[95:96]<-"tests/testthat/test-native-mixed-participant-bootstraps.R"
 source_test[97:101]<-"tests/testthat/test-native-thirdparty-functional-analogues.R"
 source_test[102:107]<-"tests/testthat/test-native-final-sparse-elastic-analogues.R"
+source_test[108:111]<-"tests/testthat/test-native-pilot-source-adversarial.R"
 source_file<-rep("src/eyetrajectoriespy/reporting.py",length(source_names))
 source_file[12L]<-"src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py"
 source_file[13L]<-"src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py"
@@ -264,15 +269,18 @@ source_file[104L]<-"src/eyetrajectoriespy/workflows/_sparse_async.py"
 source_file[105L]<-"src/eyetrajectoriespy/workflows/_sparse_mfpca.py"
 source_file[106L]<-"src/eyetrajectoriespy/workflows/_sparse_multilevel.py"
 source_file[107L]<-"src/eyetrajectoriespy/workflows/_sparse_prediction.py"
+source_file[108:109]<-"src/eyetrajectoriespy/compositional.py"
+source_file[110L]<-"src/eyetrajectoriespy/analysis.py"
+source_file[111L]<-"src/eyetrajectoriespy/fpca.py"
 # Reported owner RStudio evidence at c61e14f (2026-10-31T210921):
 # both offline native R and pinned Python 1.2 source suite verdicts PASS,
 # exact checkout and file-integrity TRUE, 107 selected candidate dossiers.
 # This is a HISTORICAL aggregate suite result, not individually adjudicated
 # full-domain oracles and not an independent reviewer approval. New commits
 # require a fresh exact-head execution/capture; NEVER inherit certified PASS.
-fixture_state<-rep(
+fixture_state<-ifelse(seq_along(source_names)<=107L,
   "historical_owner_aggregate_both_modes_PASS_at_c61e14f_not_per_contract_adjudicated_not_independent",
-  length(source_names))
+  "new_pilot_boundary_tests_not_yet_owner_run_on_current_commit")
 stopifnot(all(file.exists(source_test)))
 data<-data.frame(
   python_name=source_names,
@@ -294,7 +302,7 @@ data<-data.frame(
   missing_evidence=readiness$all_unresolved_requirements[idx],
   stringsAsFactors=FALSE
 )
-stopifnot(nrow(data)==107L,!any(data$fully_certified))
+stopifnot(nrow(data)==111L,!any(data$fully_certified))
 output_dir<-file.path("artifacts","native_inference_contract_review")
 dir.create(output_dir,recursive=TRUE,showWarnings=FALSE)
 output<-file.path(output_dir,"python_1_2_scientific_contract_review_queue.csv")
