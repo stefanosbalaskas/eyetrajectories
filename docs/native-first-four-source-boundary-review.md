@@ -15,17 +15,17 @@ The source-gap inventory intentionally prevents a full-source-parity claim.
 | Python public contract | Native public analogue | Validated/added scientific domain | Explicit remaining boundary |
 | --- | --- | --- | --- |
 | `functional_trapezoid_weights` | `etr_trapezoid_weights` | Increasing finite numeric and coercible scalar-sequence grids; scalar numeric/logical normalize flags | Python accepts nonfinite grid `[0,1,+Inf]` under its `diff(time)>0` guard, yielding Inf weights; Python also accepts arbitrary truthy objects such as nonempty strings as `normalize`. R deliberately rejects both. |
-| `alr_transform` | `etr_alr_transform` | Finite simplex arrays, regular numeric-like nested sequences, zero clipping, modulo reference channels including singleton | Python's `epsilon <= 0` does not reject NaN, which propagates NaN through NumPy operations. R deliberately rejects nonfinite epsilon. Broader array conversion/input-error domains still require review. |
-| `inverse_alr` | `etr_inverse_alr` | Finite 3D numeric arrays and now 3D numeric-string arrays; singleton channel; exact reconstruction for moderate finite logits | Python's `np.exp` can overflow for large finite logits and produce nonfinite normalized outputs. Native R deliberately errors on nonfinite denominator; this is not source-identical. |
-| `score_distance_matrix` | `etr_score_distance_matrix` | Native FPCA fit and finite matrix-score list; now accepts finite numeric-string score matrices in line with sklearn's coercion | Broader Python duck-typed objects, coercion, exception behavior, and sklearn floating-point edge behavior are not fully adjudicated. |
+| `alr_transform` | `etr_alr_transform` | Finite numeric-string/Boolean simplex arrays, regular numeric-like nested sequences, zero clipping, modulo reference channels including singleton | Python's `epsilon <= 0` does not reject NaN, which propagates NaN through NumPy operations. R deliberately rejects nonfinite epsilon. Broader array conversion/input-error domains still require review. |
+| `inverse_alr` | `etr_inverse_alr` | Finite 3D numeric, numeric-string and Boolean arrays; singleton channel; exact reconstruction for moderate finite logits | Python's `np.exp` can overflow for large finite logits and produce nonfinite normalized outputs. Native R deliberately errors on nonfinite denominator; this is not source-identical. |
+| `score_distance_matrix` | `etr_score_distance_matrix` | Native FPCA fit and finite matrix-score list; accepts finite numeric-string and Boolean score matrices as supported by sklearn coercion | Broader Python duck-typed objects, coercion, exception behavior, and sklearn floating-point edge behavior are not fully adjudicated. |
 
 ## Tests and exact-head qualification
 
 - `tests/testthat/test-native-pilot-source-adversarial.R`: direct Python
   adversarial boundary witnesses for quadrature `+Inf` and truthiness,
-  ALR NaN epsilon, inverse exponential overflow, and numeric-string inverse.
+  ALR NaN epsilon, inverse exponential overflow, and numeric-string/Boolean inverse plus numeric-string/Boolean source ALR inputs.
 - `tests/testthat/test-native-source-contract-alignment.R`: numeric-string
-  FPCA score coercion, invalid strings, and direct pinned Python score oracle.
+  and Boolean FPCA score coercion, invalid strings, and direct pinned Python score oracles.
 - These tests are part of `scripts/qualify_native_current_contracts.R`
   and `scripts/capture_native_source_qualification_evidence.R`. The direct
   Python cases run only with `ET_RUN_PYTHON_TESTS=true`.
