@@ -85,3 +85,26 @@ test_that("published Python 1.2 score object oracle is opt-in",{
   expect_equal(sum(etr_native_parity_catalog()$
     one_to_one_native_contract_complete),0L)
 })
+
+test_that("Boolean score matrices coerce like frozen Python sklearn input",{
+  scores<-matrix(c(TRUE,FALSE,TRUE,FALSE,TRUE,FALSE),
+    nrow=3L,ncol=2L)
+  source_like<-list(scores=scores,n_components=2L)
+  native<-etr_score_distance_matrix(source_like)
+  numeric_scores<-matrix(as.numeric(scores),nrow=3L)
+  expected<-unname(as.matrix(stats::dist(numeric_scores)))
+  expect_equal(unname(native),expected,tolerance=1e-14)
+  expect_identical(dim(native),c(3L,3L))
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Pinned Python Boolean FPCA score oracle opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  source_fit<-reticulate::import("types")$SimpleNamespace(
+    scores=reticulate::r_to_py(scores),
+    n_components=as.integer(2L))
+  published<-reticulate::py_call(
+    etpy_get_export("score_distance_matrix"),fpca=source_fit)
+  expect_equal(unname(native),unname(et_to_r(published)),
+    tolerance=1e-12)
+  expect_true(etr_native_parity_catalog()$source_contract_gap_unresolved[
+    etr_native_parity_catalog()$python_name=="score_distance_matrix"])
+})
