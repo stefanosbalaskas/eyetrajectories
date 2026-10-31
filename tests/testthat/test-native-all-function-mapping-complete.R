@@ -7,6 +7,10 @@ test_that("every frozen Python 1.2 function has a uniquely exported R analogue",
   expect_identical(nrow(functions),380L)
   expect_identical(length(unique(functions$python_name)),380L)
   expect_true(all(functions$named_native_candidate))
+  # All 24 early native implementations now have explicit inventory
+  # markers; implementation-started is distinct from certified parity.
+  expect_true(all(functions$native_implementation_started))
+  expect_identical(sum(functions$native_implementation_started),380L)
   expect_true(all(nzchar(functions$native_r_candidate)))
   expect_true(all(functions$native_r_candidate%in%
     getNamespaceExports("eyetrajectories")))
