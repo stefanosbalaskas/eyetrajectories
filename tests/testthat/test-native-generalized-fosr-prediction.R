@@ -118,6 +118,7 @@ _gp_base=dict(time=np.array([0.,.5,1.]),
 _gp_profiles=pd.DataFrame({'profile_id':['A','B','C'],
     'treatment':[0.,1.,2.]})
 _gp_results={}
+_gp_inputs={}
 for _gp_family,_gp_exposure in (
     ('binomial',None),('poisson',None),('poisson',np.ones((2,3)))):
     _gp_fit=_et_predict_obj(et.GeneralizedFunctionOnScalarResult,
@@ -125,6 +126,9 @@ for _gp_family,_gp_exposure in (
         link='logit' if _gp_family=='binomial' else 'log',
         exposure=_gp_exposure)
     _gp_key=_gp_family+('_exposed' if _gp_exposure is not None else '')
+    _gp_inputs[_gp_key]=_gp_fit
+    if _gp_exposure is not None:
+        _gp_inputs['poisson_count']=_gp_fit
     _gp_results[_gp_key]=et.generalized_function_on_scalar_predict(
         _gp_fit,_gp_profiles)
     if _gp_exposure is not None:
@@ -140,6 +144,17 @@ for _gp_family,_gp_exposure in (
       etr_generalized_function_on_scalar_predict(z$fit,z$profiles,
         prediction_scale="expected_count",exposure_profiles=c(2,3,4)) else
       etr_generalized_function_on_scalar_predict(z$fit,z$profiles)
+    args<-list(result=reticulate::py_eval(
+        paste0("_gp_inputs['",key,"']"),convert=FALSE),
+      profiles=reticulate::py_eval("_gp_profiles",convert=FALSE))
+    if(identical(key,"poisson_count")){
+      args$prediction_scale<-"expected_count"
+      args$exposure_profiles<-reticulate::py_eval(
+        "np.array([2.,3.,4.])",convert=FALSE)
+    }
+    direct<-do.call(reticulate::py_call,c(
+      list(etpy_get_export("generalized_function_on_scalar_predict")),
+      args))
     fields<-c("profile_design_matrix","predictor_values",
       "linear_predictor_functions",
       "linear_predictor_standard_errors","mean_functions",
@@ -150,6 +165,8 @@ for _gp_family,_gp_exposure in (
         convert=TRUE)
       expect_equal(native[[field]],py,tolerance=1e-10,
         ignore_attr=TRUE,info=paste(key,field))
+      expect_equal(et_to_r(reticulate::py_get_attr(direct,field)),
+        py,tolerance=1e-10,ignore_attr=TRUE)
     }
     expect_identical(native$prediction_scale,
       reticulate::py_eval(paste0("_gp_results['",key,
