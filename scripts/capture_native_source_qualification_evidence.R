@@ -18,6 +18,7 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-sparse-mfpca-known-truth-recovery",
     "native-fpcr-future-prediction-interval",
     "native-fpcr-regression-cross-validation",
+    "native-fpcr-nested-cross-validation",
     "native-mixed-model-source-text"),".R"))
 missing_scientific_tests<-required_scientific_tests[
   !file.exists(required_scientific_tests)]
@@ -36,7 +37,7 @@ queue_path<-file.path("artifacts","native_inference_contract_review",
   "python_1_2_scientific_contract_review_queue.csv")
 queue<-utils::read.csv(queue_path,stringsAsFactors=FALSE,
   check.names=FALSE)
-stopifnot(nrow(queue)==70L,!anyDuplicated(queue$python_name),
+stopifnot(nrow(queue)==71L,!anyDuplicated(queue$python_name),
   all(!queue$fully_certified),
   all(queue$source_difference_open),
   all(file.exists(queue$oracle_test)))
@@ -70,6 +71,7 @@ filter<-paste(c(
   "native-sparse-mfpca-known-truth-recovery",
   "native-fpcr-future-prediction-interval",
   "native-fpcr-regression-cross-validation",
+  "native-fpcr-nested-cross-validation",
   "native-mixed-model-source-text",
   "native-source-environment",
   "native-source-evidence-runner",
@@ -149,6 +151,7 @@ source_files<-unique(c(
   "R/native-sparse-mfpca-known-truth-recovery.R",
   "R/native-fpcr-future-prediction-interval.R",
   "R/native-fpcr-regression-cross-validation.R",
+  "R/native-fpcr-nested-cross-validation.R",
   "R/native-functional-mixed-moments.R",
   "R/native-mixed-model-source-text.R",
   "R/native-source-environment.R",
@@ -167,6 +170,7 @@ source_files<-unique(c(
   "tests/testthat/test-native-sparse-mfpca-known-truth-recovery.R",
   "tests/testthat/test-native-fpcr-future-prediction-interval.R",
   "tests/testthat/test-native-fpcr-regression-cross-validation.R",
+  "tests/testthat/test-native-fpcr-nested-cross-validation.R",
   "tests/testthat/test-native-mixed-model-source-text.R",
   "tests/testthat/test-native-fpcr-slope-source-calibration.R",
   "tests/testthat/test-native-wild-simultaneous-source-calibration.R",
