@@ -107,3 +107,29 @@ _py_process={
   expect_equal(unname(a$observations$values),
     unname(py$observed),tolerance=1e-12)
 })
+
+
+test_that("multichannel dense simulation keeps source quadrature and noise covariance",{
+  grid<-c(0,.25,.5,.75,1)
+  phi<-function(t)cbind(rep(1/sqrt(2),length(t)),
+    rep(1/sqrt(2),length(t)))
+  out<-etr_simulate_functional_process(
+    mean=function(t)cbind(.1+t,.2-t),
+    eigenfunctions=list(phi),eigenvalues=.8,
+    truth_grid=grid,n_participants=2L,trials_per_participant=2L,
+    dimension_names=c("x","y"),
+    measurement_noise_sd=c(.05,.2),random_state=5L)
+  expect_identical(dim(out$observations$values),c(4L,5L,2L))
+  expect_identical(dim(out$truth$eigenfunctions),c(1L,5L,2L))
+  expect_identical(dim(out$truth$measurement_noise_covariance),
+    c(2L,2L))
+  expect_equal(out$truth$measurement_noise_covariance,
+    diag(c(.05^2,.2^2)),tolerance=1e-12)
+  expect_true(is.list(out$observations$provenance$
+    measurement_noise_covariance))
+  expect_equal(
+    out$observations$provenance$measurement_noise_covariance[[2L]],
+    c(0,.2^2),tolerance=1e-12)
+  expect_true(etr_validate(out$observations,require_complete=TRUE))
+  expect_identical(nrow(etr_functional_simulation_truth_frame(out)),4L)
+})
