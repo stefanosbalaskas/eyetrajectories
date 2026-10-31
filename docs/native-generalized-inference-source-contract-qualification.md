@@ -340,3 +340,24 @@ All source-evidence records now distinguish global suite passes from
 individual contract approval. Global successes are never automatically
 converted into per-contract independent oracle coverage or full
 scientific certification.
+
+## Multivariate IAAFT native Fourier/rank integration
+
+The published Python 1.2 `generate_multivariate_iaaft_surrogates` now
+has a source-informed native R implementation:
+`etr_generate_multivariate_iaaft_surrogates`.
+It uses an explicit reference channel, original per-channel
+Fourier amplitudes, original inter-channel phase offsets,
+reference-anchored common phase adjustments and iterative stable
+rank remapping to preserve each observed marginal distribution exactly.
+Both per-channel spectral and pairwise cross-spectral residual errors
+are retained, with fail-closed nonconvergence and declared seed scope.
+
+R `sample()` and NumPy PCG64 use distinct random streams, so
+individual stochastic surrogate matrices **are not claimed to be
+identical**. The opt-in frozen Python direct source oracle independently
+recalculates the native output's full spectrum and cross-spectrum
+errors using Python's actual private `_spectrum_errors` and verifies
+scientific rank conservation against the native and Python generator.
+This is the **72nd unsigned** source-contract review candidate.
+No independent full scientific certification is implied.

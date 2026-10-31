@@ -18,6 +18,7 @@ required<-c("native-generalized-fosr-prediction",
   "native-fpcr-future-prediction-interval",
   "native-fpcr-regression-cross-validation",
   "native-fpcr-nested-cross-validation",
+  "native-multivariate-iaaft-generator",
   "native-mixed-model-source-text","native-source-environment")
 test_files<-file.path("tests","testthat",paste0("test-",required,".R"))
 git<-Sys.which("git")
