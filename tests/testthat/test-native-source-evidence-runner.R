@@ -154,4 +154,23 @@ test_that("new scientific source oracles are included in both qualification mode
   expect_true(any(grepl(
     '"tests/testthat/helper-native-mixed-bootstrap-fixture.R"',
     runner,fixed=TRUE)))
+  # Scientific source audit must hash the production implementations
+  # associated with all four pilot functions and retain their pinned
+  # Python oracle records within the growing selected candidate queue.
+  expect_true(any(grepl(
+    '"R/native-functional-diagnostics.R"',runner,fixed=TRUE)))
+  expect_true(any(grepl(
+    '"R/native-fpca.R"',runner,fixed=TRUE)))
+  expect_true(any(grepl(
+    '"tests/testthat/test-native-certification.R"',
+    runner,fixed=TRUE)))
+  expect_true(any(grepl(
+    '"tests/testthat/test-native-source-contract-gaps.R"',
+    runner,fixed=TRUE)))
+  for(name in c("alr_transform","inverse_alr",
+    "score_distance_matrix","functional_trapezoid_weights")){
+    expect_true(any(grepl(paste0('"',name,'"'),
+      dossier,fixed=TRUE)),info=paste("pilot missing from selected queue",name))
+  }
+
 })
