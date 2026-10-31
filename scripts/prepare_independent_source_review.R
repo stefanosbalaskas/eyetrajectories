@@ -224,6 +224,91 @@ etr_prepare_independent_source_review<-function(
     "all_508_public_export_independent_review_scope.csv"),
     row.names=FALSE,na="")
 
+  # Deterministic, machine-readable triage over the complete 508-export
+  # frozen public surface. A selected suite witness is not a per-export
+  # approval, and a different R estimator cannot be described as parity.
+  is_function<-review_scope$kind=="function"
+  is_selected<-review_scope$selected_oracle_candidate
+  different_estimand<-review_scope$backend_or_estimand_distinct
+  has_gap<-review_scope$source_difference_open
+  lane<-ifelse(!is_function,"nonfunction_contract_review",
+    ifelse(different_estimand,"alternative_backend_or_estimand",
+    ifelse(is_selected,"selected_source_oracle_review",
+    ifelse(has_gap,"unselected_open_source_gap",
+      "unselected_function_contract_review"))))
+  rank<-ifelse(!is_function,5L,
+    ifelse(different_estimand,2L,
+    ifelse(is_selected,1L,ifelse(has_gap,3L,4L))))
+  review_triage<-data.frame(
+    review_priority=as.integer(rank),
+    review_lane=lane,
+    namespace=review_scope$namespace,
+    python_name=review_scope$python_name,
+    kind=review_scope$kind,
+    native_r_candidate=review_scope$native_r_candidate,
+    selected_oracle_candidate=is_selected,
+    backend_or_estimand_distinct=different_estimand,
+    unresolved_source_difference=has_gap,
+    source_gap_kind=review_scope$source_gap_kind,
+    source_oracle_test=review_scope$selected_oracle_file,
+    recorded_r_commit=rep(recorded_heads,nrow(review_scope)),
+    developer_suite_native_pass=review_scope$selected_suite_native_pass,
+    developer_suite_python_pass=review_scope$selected_suite_python_pass,
+    independent_source_contract_approved=FALSE,
+    stringsAsFactors=FALSE)
+  review_triage<-review_triage[
+    order(review_triage$review_priority,review_triage$python_name),
+    ,drop=FALSE]
+  rownames(review_triage)<-NULL
+  .checked(nrow(review_triage)==508L&&
+    sum(review_triage$kind=="function")==380L&&
+    sum(review_triage$selected_oracle_candidate)==nrow(records)&&
+    !any(review_triage$independent_source_contract_approved),
+    "Full-surface source triage must preserve all unsigned exports")
+  utils::write.csv(review_triage,file.path(output_dir,
+    "all_508_contract_review_priority.csv"),
+    row.names=FALSE,na="")
+  # Every declared source discrepancy remains visible, including known
+  # alternative estimators that cannot be resolved by numeric tolerances.
+  queued_gap<-match(gaps$python_name,review_triage$python_name)
+  .checked(!anyNA(queued_gap)&&
+    all(gaps$native_r_candidate==
+      review_triage$native_r_candidate[queued_gap]),
+    "Unmatched source gaps in independent reviewer triage")
+  gap_resolution<-data.frame(
+    review_priority=review_triage$review_priority[queued_gap],
+    review_lane=review_triage$review_lane[queued_gap],
+    python_name=gaps$python_name,
+    native_r_candidate=gaps$native_r_candidate,
+    gap_kind=gaps$gap_kind,
+    recorded_source_difference=gaps$known_source_difference,
+    source_witness=gaps$source_witness,
+    required_resolution=gaps$review_resolution,
+    gap_open=gaps$unresolved_source_gap,
+    selected_oracle_candidate=review_triage$
+      selected_oracle_candidate[queued_gap],
+    alternative_backend_or_estimand=review_triage$
+      backend_or_estimand_distinct[queued_gap],
+    reviewer_decision="PENDING_INDEPENDENT_REVIEW",
+    independently_replayed=FALSE,
+    resolved=FALSE,
+    stringsAsFactors=FALSE)
+  gap_resolution<-gap_resolution[
+    order(gap_resolution$review_priority,gap_resolution$python_name),
+    ,drop=FALSE]
+  rownames(gap_resolution)<-NULL
+  .checked(nrow(gap_resolution)==nrow(gaps)&&
+    !anyDuplicated(gap_resolution$python_name)&&
+    !any(gap_resolution$resolved),
+    "Gap resolution queue must preserve every unapproved source difference")
+  utils::write.csv(gap_resolution,file.path(output_dir,
+    "known_source_gap_resolution_queue.csv"),row.names=FALSE,na="")
+  lane_counts<-as.data.frame(table(review_triage$review_lane),
+    stringsAsFactors=FALSE)
+  names(lane_counts)<-c("review_lane","exports")
+  utils::write.csv(lane_counts,file.path(output_dir,
+    "review_lane_counts.csv"),row.names=FALSE,na="")
+
   # Four simpler pilot contracts already have user-reported fixture
   # evidence in the authoritative register, but still lack independent
   # numerical/schema/scientific/reviewer approvals. Surface them separately,
