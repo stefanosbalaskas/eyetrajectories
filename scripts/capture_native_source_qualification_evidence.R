@@ -366,6 +366,20 @@ gap_review<-utils::read.csv(gaps_path,stringsAsFactors=FALSE,
 source_gap_count<-nrow(utils::read.csv(
   file.path("inst","extdata","native_source_contract_gaps_stage22.csv"),
   stringsAsFactors=FALSE))
+fixture_attribution_path<-file.path(packet_root,
+  "selected_111_fixture_static_attribution.csv")
+stopifnot(file.exists(fixture_attribution_path))
+fixture_attribution<-utils::read.csv(fixture_attribution_path,
+  stringsAsFactors=FALSE,check.names=FALSE)
+stopifnot(nrow(fixture_attribution)==nrow(queue),
+  !anyDuplicated(fixture_attribution$python_name),
+  setequal(fixture_attribution$python_name,queue$python_name),
+  all(fixture_attribution$test_selection_regex_recorded),
+  all(fixture_attribution$fixture_filename_selected_in_both_suite_modes),
+  all(fixture_attribution$test_that_cases_declared_in_entire_fixture_file>=1L),
+  all(!fixture_attribution$per_contract_test_execution_independently_attributed),
+  all(!fixture_attribution$per_contract_python_oracle_independently_replayed),
+  all(!fixture_attribution$fully_certified))
 stopifnot(nrow(triage)==508L,
   sum(triage$selected_oracle_candidate)==nrow(queue),
   nrow(gap_review)==source_gap_count,
