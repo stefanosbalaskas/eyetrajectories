@@ -181,8 +181,11 @@ source_file[69L]<-"src/eyetrajectoriespy/regression_inference.py"
 source_file[70L]<-"src/eyetrajectoriespy/prediction.py"
 source_file[71L]<-"src/eyetrajectoriespy/prediction.py"
 source_file[72L]<-"src/eyetrajectoriespy/multivariate_surrogates.py"
-fixture_state<-ifelse(seq_along(source_names)<=53L,
-  "user_reported_native_and_python_1_2_qualification_pass_20261030T222420_not_independent",
+# The first 71 contracts were user-qualified at exactly R commit 73503aa9
+# (2026-10-31T102737); the 72nd integration has no user-side R verdict.
+# Historical qualification is NOT evidence for this newer checkout.
+fixture_state<-ifelse(seq_along(source_names)<=71L,
+  "historical_user_R_and_Python_1_2_suite_PASS_at_73503aa9_20261031T102737_not_independent",
   "new_tests_pending_local_native_and_python_oracle")
 stopifnot(all(file.exists(source_test)))
 data<-data.frame(
