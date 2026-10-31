@@ -14,10 +14,10 @@ test_that("static Python source-fixture inventory ignores missing R call argumen
     "  last <- x[1L, ]",
     "  out <- etpy_get_export('alr_transform')",
     "  # etpy_get_export('comment_only')",
-    "  literal <- 'etpy_get_export(\\\"not_a_call\\\")'",
+    "  literal <- 'etpy_get_export(not_a_call)'",
     "})",
     "testthat::test_that('second case', {",
-    "  z <- etpy_get_export(\\"score_distance_matrix\\")",
+    "  z <- etpy_get_export('score_distance_matrix')",
     "})"
   ),fixture,useBytes=TRUE)
   inventory<-env$etr_source_fixture_static_inventory(fixture)
