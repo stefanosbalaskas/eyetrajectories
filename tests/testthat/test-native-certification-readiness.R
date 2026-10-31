@@ -30,15 +30,31 @@ test_that("all 508 published exports receive a fail-closed evidence queue",{
     "unresolved_published_source_difference"))
   expect_true(all(grepl("independent_review_approval_missing",
     mapped$all_unresolved_requirements,fixed=TRUE)))
-  # Use the current source ledger, not a frozen name that may acquire
-  # a real native implementation in later integration cycles.
-  missing<-readiness[readiness$kind=="function" &
-    !readiness$native_mapping_present,,drop=FALSE]
-  expect_gt(nrow(missing),0L)
-  expect_true(all(missing$first_unresolved_requirement==
-    "native_mapping_missing"))
-  expect_true(all(grepl("native_implementation_missing",
-    missing$all_unresolved_requirements,fixed=TRUE)))
+  # Every frozen Python function now has a real exported native R
+  # analogue. This is 100% *mapping* coverage, NOT source parity.
+  # A previous test required an unmapped function and became invalid
+  # when the native source mapping census reached 380/380.
+  functions<-readiness[readiness$kind=="function",,drop=FALSE]
+  expect_identical(nrow(functions),380L)
+  expect_true(all(functions$native_mapping_present))
+  expect_true(all(functions$native_implementation_started))
+  expect_true(all(nzchar(functions$native_r_candidate)))
+  expect_true(all(functions$native_r_candidate%in%
+    getNamespaceExports("eyetrajectories")))
+  missing<-functions[!functions$native_mapping_present,,drop=FALSE]
+  expect_identical(nrow(missing),0L)
+  expect_false(any(grepl("native_mapping_missing",
+    functions$all_unresolved_requirements,fixed=TRUE)))
+  expect_false(any(grepl("native_implementation_missing",
+    functions$all_unresolved_requirements,fixed=TRUE)))
+  # Mapping completion must never elevate scientific source contracts:
+  # retain all unsigned source, numeric, schema, and independent-review
+  # gates, including the 128 nonfunction exports.
+  expect_identical(sum(readiness$fully_certified),0L)
+  expect_true(all(grepl("independent_review_approval_missing",
+    readiness$all_unresolved_requirements,fixed=TRUE)))
+  expect_true(all(grepl("approved_numerical_oracle_missing",
+    readiness$all_unresolved_requirements,fixed=TRUE)))
   # A newly implemented source subset must remain blocked for scientific
   # source-domain and independently approved contract gaps.
   simulated<-readiness[readiness$python_name==
