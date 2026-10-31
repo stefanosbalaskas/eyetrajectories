@@ -96,3 +96,41 @@ test_that("four pinned Python 1.2 pilot public source numerical witnesses match"
   expect_false(any(etr_native_parity_catalog()$
     one_to_one_native_contract_complete))
 })
+
+test_that("frozen Python 1.2 first-pilot boundary differences remain explicit",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Source-specific exceptional-domain Python probes are opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  # NumPy permits a final +Inf grid because source checks diff(time)>0;
+  # native scientific quadrature intentionally rejects nonfinite time.
+  inf_grid<-c(0,1,Inf)
+  py_weights<-reticulate::py_call(
+    etpy_get_export("functional_trapezoid_weights"),
+    time=reticulate::r_to_py(inf_grid))
+  expect_true(any(is.infinite(as.numeric(et_to_r(py_weights)))))
+  expect_error(etr_trapezoid_weights(inf_grid),"strictly increasing")
+  # Python's bool("yes") is TRUE whereas native R requires a finite
+  # numeric or logical scalar, leaving general truthiness uncertified.
+  py_truthy<-reticulate::py_call(
+    etpy_get_export("functional_trapezoid_weights"),
+    time=reticulate::r_to_py(c(0,1,3)),normalize="yes")
+  expect_equal(as.numeric(et_to_r(py_truthy)),
+    c(.5,1.5,1)/3,tolerance=1e-14)
+  expect_error(etr_trapezoid_weights(c(0,1,3),normalize="yes"),
+    "normalize")
+  # Source inverse uses unguarded exp; at very large finite logits it
+  # returns nonfinite output. The native contract fails closed instead.
+  z<-array(c(1000,-1),c(1L,1L,2L))
+  py_inverse<-reticulate::py_call(etpy_get_export("inverse_alr"),
+    transformed=reticulate::r_to_py(z),
+    reference_dimension=as.integer(0L),n_dimensions=as.integer(3L))
+  expect_true(any(!is.finite(et_to_r(py_inverse))))
+  expect_error(etr_inverse_alr(z,0L,3L),"overflowed")
+  # A new numerical alignment is not a full-domain source certification.
+  differences<-etr_native_parity_catalog()
+  pilot_names<-c("functional_trapezoid_weights","inverse_alr",
+    "score_distance_matrix","alr_transform")
+  expect_true(all(differences$source_contract_gap_unresolved[
+    differences$python_name %in% pilot_names]))
+  expect_false(any(differences$one_to_one_native_contract_complete))
+})
