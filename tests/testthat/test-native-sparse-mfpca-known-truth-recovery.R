@@ -116,6 +116,16 @@ _spm_values=[v.value for v in _spm_py.values]
 _spm_sources=[v.source for v in _spm_py.values]
 _spm_provenance=dict(_spm_py.provenance)
 ")
+  direct<-reticulate::py_call(
+    etpy_get_export("evaluate_sparse_mfpca_recovery"),
+    result=reticulate::py_eval("_spm_result",convert=FALSE),
+    truth=reticulate::py_eval("_spm_truth",convert=FALSE))
+  metric_values<-reticulate::py_eval(
+    "lambda assessment: [float(v.value) for v in assessment.values]",
+    convert=FALSE)
+  expect_equal(as.numeric(et_to_r(reticulate::py_call(
+    metric_values,direct))),as.numeric(reticulate::py_eval(
+      "_spm_values",convert=TRUE)),tolerance=1e-12)
   z<-.etr_sparse_mfpca_truth_fixture()
   result<-etr_evaluate_sparse_mfpca_recovery(z$result,z$truth)
   expect_identical(vapply(result$values,function(v)v$metric$name,character(1L)),
