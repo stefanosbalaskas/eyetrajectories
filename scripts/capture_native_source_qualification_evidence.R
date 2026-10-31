@@ -26,14 +26,6 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-source-workflows",
     "native-fpcr-bootstrap-uncertainty",
     "native-recurrence-workflow",
-  "native-functional-process-simulation",
-  "native-functional-recovery-orchestration",
-  "native-workflow-plot-dispatch",
-  "native-fpca-wild-family-test",
-  "native-bounded-model-workflows",
-  "native-generalized-gee-fit",
-  "native-generalized-gee-bootstrap",
-  "native-workflow-bundle-export",
     "native-functional-process-simulation",
     "native-functional-recovery-orchestration",
     "native-workflow-plot-dispatch",
@@ -109,7 +101,17 @@ filter<-paste(c(
   "native-source-environment",
   "native-source-evidence-runner",
   "native-independent-source-review-packet",
-  "native-private-helper-names"),collapse="|")
+  "native-private-helper-names",
+  # Every newly mapped source-candidate oracle must be executed in BOTH
+  # evidence modes, not merely listed as a required or hashed file.
+  "native-functional-process-simulation",
+  "native-functional-recovery-orchestration",
+  "native-workflow-plot-dispatch",
+  "native-fpca-wild-family-test",
+  "native-bounded-model-workflows",
+  "native-generalized-gee-fit",
+  "native-generalized-gee-bootstrap",
+  "native-workflow-bundle-export"),collapse="|")
 git_exe<-Sys.which("git")
 head_sha<-if(nzchar(git_exe)){
   git_out<-suppressWarnings(system2(git_exe,c("rev-parse","HEAD"),
@@ -182,6 +184,7 @@ source_files<-unique(c(
   "R/native-generalized-gee-workflow.R",
   "R/native-generalized-gee-bootstrap.R",
   "R/native-workflow-bundle-export.R",
+  "tests/testthat/helper-native-generalized-gee-fixture.R",
   "R/native-fpcr-bootstrap-uncertainty.R",
   "R/native-fpca-component-envelopes.R",
   "R/native-python-portable-writer.R",

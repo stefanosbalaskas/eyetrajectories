@@ -95,4 +95,24 @@ test_that("new scientific source oracles are included in both qualification mode
     expect_true(any(grepl(name,dossier,fixed=TRUE)))
   }
   expect_true(any(grepl("nrow(queue)==91L",runner,fixed=TRUE)))
+  begin<-grep('^filter<-paste\\(c\\(',runner)
+  finish<-which(grepl('collapse="|"',runner,fixed=TRUE))
+  expect_identical(length(begin),1L)
+  expect_true(any(finish>begin))
+  filter_lines<-runner[begin:min(finish[finish>begin])]
+  for(name in c("native-functional-process-simulation",
+    "native-functional-recovery-orchestration",
+    "native-workflow-plot-dispatch",
+    "native-fpca-wild-family-test",
+    "native-bounded-model-workflows",
+    "native-generalized-gee-fit",
+    "native-generalized-gee-bootstrap",
+    "native-workflow-bundle-export")){
+    expect_true(any(grepl(paste0('"',name,'"'),
+      filter_lines,fixed=TRUE)),
+      info=paste("source evidence capture does not execute",name))
+  }
+  expect_true(any(grepl(
+    '"tests/testthat/helper-native-generalized-gee-fixture.R"',
+    runner,fixed=TRUE)))
 })
