@@ -25,6 +25,14 @@ test_that("minimal score-bearing R list matches native FPCA geometry",{
   expect_error(etr_score_distance_matrix(
     list(scores=c(1,2),n_components=1L)),"compatible")
   expect_error(etr_score_distance_matrix(list()),"compatible")
+  # sklearn converts valid numeric strings to floating-point scores.
+  text_scores<-matrix(c("0","3","1","5"),nrow=2L)
+  expect_equal(
+    etr_score_distance_matrix(list(scores=text_scores,n_components=2L)),
+    matrix(c(0,5,5,0),2L,2L),tolerance=1e-12)
+  bad_scores<-text_scores;bad_scores[1L,1L]<-"not-a-number"
+  expect_error(etr_score_distance_matrix(
+    list(scores=bad_scores,n_components=2L)),"finite scores")
 })
 
 test_that("source certification remains strict despite repaired fixture",{
@@ -63,6 +71,17 @@ test_that("published Python 1.2 score object oracle is opt-in",{
     expect_equal(unname(native),unname(et_to_r(py)),
       tolerance=1e-12)
   }
+  text_scores<-matrix(c("0","3","1","5"),nrow=2L)
+  py_text<-reticulate::import("numpy")$array(
+    reticulate::r_to_py(text_scores))
+  text_object<-reticulate::import("types")$SimpleNamespace(
+    scores=py_text,n_components=as.integer(2L))
+  py_distance<-reticulate::py_call(
+    etpy_get_export("score_distance_matrix"),fpca=text_object)
+  expect_equal(unname(etr_score_distance_matrix(
+      list(scores=text_scores,n_components=2L))),
+    unname(et_to_r(py_distance)),tolerance=1e-12)
+  # Numerical witness only; broad duck-typing/scikit-learn semantics open.
   expect_equal(sum(etr_native_parity_catalog()$
     one_to_one_native_contract_complete),0L)
 })
