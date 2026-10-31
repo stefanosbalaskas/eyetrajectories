@@ -141,11 +141,31 @@ _sr_oracle={
     residual=etr_functional_mixed_effects_residual_reporting_text(
       z$residual),
     sparse=etr_sparse_mfpca_reporting_text(z$sparse))
+  # Identify four typed public source call witnesses directly,
+  # including the fit/band branches of the same reporting contract.
+  direct<-list(
+    fit=reticulate::py_call(
+      etpy_get_export("generalized_function_on_scalar_reporting_text"),
+      result=reticulate::py_eval("_sr_fit",convert=FALSE)),
+    fit_band=reticulate::py_call(
+      etpy_get_export("generalized_function_on_scalar_reporting_text"),
+      result=reticulate::py_eval("_sr_fit",convert=FALSE),
+      band=reticulate::py_eval("_sr_band",convert=FALSE)),
+    residual=reticulate::py_call(
+      etpy_get_export("functional_mixed_effects_residual_reporting_text"),
+      result=reticulate::py_eval("_sr_residual",convert=FALSE)),
+    sparse=reticulate::py_call(
+      etpy_get_export("sparse_mfpca_reporting_text"),
+      result=reticulate::py_eval("_sr_sparse",convert=FALSE))
+  )
+  expect_identical(names(direct),names(results))
   for(key in names(results)){
     python<-reticulate::py_eval(paste0("_sr_oracle['",key,"']"),
       convert=TRUE)
     expect_identical(results[[key]],python,
       info=paste("published Python 1.2.0:",key))
+    expect_identical(results[[key]],as.character(et_to_r(direct[[key]])),
+      info=paste("direct public Python 1.2 source reporter:",key))
   }
 })
 
@@ -229,10 +249,20 @@ _su_oracle={
       .etr_source_sparse_reporting_fixture("native")),
     fdapy=etr_sparse_fpca_reporting_text(
       .etr_source_sparse_reporting_fixture("fdapy")))
+  direct<-list(
+    native=reticulate::py_call(
+      etpy_get_export("sparse_fpca_reporting_text"),
+      result=reticulate::py_eval("_su_native",convert=FALSE)),
+    fdapy=reticulate::py_call(
+      etpy_get_export("sparse_fpca_reporting_text"),
+      result=reticulate::py_eval("_su_fdapy",convert=FALSE))
+  )
   for(key in names(actual)) {
     expected<-reticulate::py_eval(paste0("_su_oracle['",key,"']"),
       convert=TRUE)
     expect_identical(actual[[key]],expected,
       info=paste("published Python sparse FPCA",key))
+    expect_identical(actual[[key]],as.character(et_to_r(direct[[key]])),
+      info=paste("public sparse FPCA source reporter",key))
   }
 })
