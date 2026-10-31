@@ -27,9 +27,13 @@ etr_trapezoid_weights <- function(time, normalize = FALSE) {
   d <- diff(time); n <- length(time)
   w <- c(d[1] / 2, if (n > 2L) (d[-1] + d[-length(d)]) / 2,
          utils::tail(d, 1) / 2)
-  # Normalize remains an R logical flag in native scientific workflows.
-  # Python's broader truthiness acceptance is NOT full-contract parity.
-  if (isTRUE(normalize)) w <- w / sum(w)
+  # Match Python's bool/numeric scalar truthiness for this bounded
+  # scientific domain. Arbitrary Python object truthiness is NOT ported.
+  .etr_assert(length(normalize)==1L && !is.na(normalize) &&
+    ((is.logical(normalize)) ||
+     (is.numeric(normalize) && is.finite(normalize))),
+    "normalize must be a finite numeric or logical scalar")
+  if (isTRUE(normalize!=0)) w <- w / sum(w)
   w
 }
 
