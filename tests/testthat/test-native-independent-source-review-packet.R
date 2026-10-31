@@ -23,6 +23,8 @@ test_that("independent source-review packet is safe and fully unsigned",{
     "review_lane_counts.csv",
     "selected_111_fixture_static_attribution.csv",
     "test_selection_regex.txt",
+    "source_fixture_static_attribution.R",
+    "etr_source_fixture_static_inventory",
     "test_selection_regex_md5",
     "selected_fixture_file_in_capture_filter",
     "selected_fixture_literal_python_export_call",
