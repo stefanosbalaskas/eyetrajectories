@@ -27,6 +27,43 @@
   force(code)
 }
 test_that("exact native Monte Carlo precision reuses fixed bootstrap roots",{
+  # Directly replay three public source functions. Source arrays remain
+  # numerical witnesses; Matplotlib Axes are not a native R return class.
+  direct_mc<-reticulate::py_call(
+    etpy_get_export("fpca_wild_bootstrap_family_test_monte_carlo_diagnostics"),
+    result=reticulate::py_eval("_mc_family",convert=FALSE),
+    confidence_level=.95)
+  direct_plot<-reticulate::py_call(
+    etpy_get_export("plot_fpca_wild_bootstrap_monte_carlo_diagnostics"),
+    result=direct_mc,max_targets=2L,show_targetwise=TRUE)
+  direct_sim<-reticulate::py_call(
+    etpy_get_export("plot_fpca_wild_bootstrap_simultaneous_interval"),
+    result=reticulate::py_eval("_mc_sim",convert=FALSE),
+    max_targets=2L,show_targetwise=TRUE)
+  get_plot<-reticulate::py_eval(
+    "lambda axes, k: axes.containers[k].lines[0].get_ydata()",
+    convert=FALSE)
+  source_arrays<-c("targetwise_exceedances","adjusted_exceedances",
+    "targetwise_tail_probabilities","adjusted_tail_probabilities",
+    "targetwise_mcse","adjusted_mcse",
+    "targetwise_interval_lower","targetwise_interval_upper",
+    "adjusted_interval_lower","adjusted_interval_upper",
+    "targetwise_decision_stable","adjusted_decision_stable")
+  for(n in source_arrays){
+    got<-et_to_r(reticulate::py_get_attr(direct_mc,n))
+    ref<-reticulate::py_eval(paste0("_mc_oracle['",n,"']"),
+      convert=TRUE)
+    expect_equal(got,ref,tolerance=1e-10,ignore_attr=TRUE)
+  }
+  for(n in c("plot_adjusted","plot_targetwise","plot_projection")){
+    ax<-if(identical(n,"plot_projection"))direct_sim else direct_plot
+    idx<-if(identical(n,"plot_targetwise"))1L else 0L
+    got<-et_to_r(reticulate::py_call(get_plot,ax,idx))
+    ref<-reticulate::py_eval(paste0("_mc_oracle['",n,"']"),
+      convert=TRUE)
+    expect_equal(got,ref,tolerance=1e-10,ignore_attr=TRUE)
+  }
+  reticulate::py_run_string("plt.close('all')")
   z<-.etr_wild_mc_fixture()
   a<-etr_fpca_wild_bootstrap_family_test_monte_carlo_diagnostics(
     z$family)
