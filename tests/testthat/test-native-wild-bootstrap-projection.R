@@ -91,6 +91,41 @@ _py_wild_projection={
  'roots':pyw.studentized_roots,
  'critical':pyw.critical_values}
 ")
+  # Replay the exact public Python export with the SAME fixed multipliers,
+  # restoring the private sampling hook even if the source call errors.
+  reticulate::py_run_string("
+def _source_public_wild_replay(fn):
+    previous=wildmod._draw_wild_multipliers
+    index=[0]
+    def draw(rng,*,n,multiplier):
+        if n!=24 or index[0]>=len(fixed):
+            raise AssertionError('fixed wild source draw count mismatch')
+        z=fixed[index[0]].copy()
+        index[0]+=1
+        return z
+    try:
+        wildmod._draw_wild_multipliers=draw
+        value=fn(t,yy,n_bootstrap=20,residual_components=2,
+            inference_components=3,scaling='none',multiplier='normal',
+            confidence_level=.95)
+        if index[0]!=20:
+            raise AssertionError('public wild source did not consume 20 draws')
+        return value
+    finally:
+        wildmod._draw_wild_multipliers=previous
+")
+  direct<-reticulate::py_call(
+    reticulate::py_eval("_source_public_wild_replay",convert=FALSE),
+    etpy_get_export("wild_bootstrap_fpca_projection"))
+  saved<-reticulate::py_eval("pyw",convert=FALSE)
+  for(field in c("reference_projection","pseudo_truth_projection",
+      "reference_se","bootstrap_projections","bootstrap_se",
+      "studentized_roots","critical_values")){
+    expect_equal(et_to_r(reticulate::py_get_attr(direct,field)),
+      et_to_r(reticulate::py_get_attr(saved,field)),
+      tolerance=1e-12,ignore_attr=TRUE,
+      info=paste("exact source wild projection replay",field))
+  }
   oracle<-reticulate::py_to_r(reticulate::py_eval(
     "_py_wild_projection",convert=FALSE))
   f<-.etr_wild_projection_fixture()
