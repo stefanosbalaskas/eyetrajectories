@@ -51,6 +51,7 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-direct-source-advanced-attribution",
     "native-direct-numerical-source-attribution",
     "native-direct-source-estimator-attribution",
+    "native-direct-source-stochastic-attribution",
     "native-sparse-scientific-graphics",
     "native-fpca-inference-source-graphics",
     "native-fpcr-slope-source-calibration",
