@@ -121,6 +121,25 @@ _pygee_oracle={'basis':pygee.basis,
 ")
   expect_true(reticulate::py_to_r(reticulate::py_eval(
     "_pygee_reordered_rejected",convert=FALSE)))
+  # A second execution through the frozen Python public export is
+  # checked against the independently retained published-source fit.
+  direct<-reticulate::py_call(
+    etpy_get_export("fit_generalized_function_on_scalar_regression"),
+    trajectories=reticulate::py_eval("tr",convert=FALSE),
+    design=reticulate::py_eval("design",convert=FALSE),
+    predictors=reticulate::py_eval("['treatment']",convert=FALSE),
+    participant_column="participant_id",dimension="outcome",
+    family="poisson",basis_size=4L,spline_degree=3L)
+  fields<-c(basis="basis",coef="coefficient_functions",
+    se="coefficient_standard_errors",mean="mean_functions",
+    cov="parameter_covariance")
+  for(key in names(fields)){
+    expected<-reticulate::py_eval(
+      paste0("_pygee_oracle['",key,"']"),convert=TRUE)
+    observed<-et_to_r(reticulate::py_get_attr(direct,fields[[key]]))
+    expect_equal(observed,expected,tolerance=1e-12,
+      ignore_attr=TRUE,info=paste("direct source GEE",key))
+  }
   py<-reticulate::py_to_r(reticulate::py_eval("_pygee_oracle",
     convert=FALSE))
   f<-.etr_native_gee_fixture()
