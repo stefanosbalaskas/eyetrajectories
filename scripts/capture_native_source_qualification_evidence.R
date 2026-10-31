@@ -151,6 +151,7 @@ filter<-paste(c(
   "native-direct-source-frame-attribution",
   "native-direct-source-plot-attribution",
   "native-direct-source-advanced-attribution",
+  "native-direct-numerical-source-attribution",
   "native-pilot-source-adversarial"),collapse="|")
 git_exe<-Sys.which("git")
 head_sha<-if(nzchar(git_exe)){
