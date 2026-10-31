@@ -345,6 +345,30 @@ stopifnot(nrow(full_scope)==508L,
 message("All 508 frozen public exports inventoried for independent review;",
   " 380 function analogues, 128 nonfunctions and ",
   nrow(queue)," selected unsigned oracle candidates.")
+# Verify actionable reviewer triage was also emitted and remains unsigned.
+packet_root<-file.path("artifacts","native_independent_review_packets",
+  basename(output_dir))
+triage_path<-file.path(packet_root,"all_508_contract_review_priority.csv")
+gaps_path<-file.path(packet_root,"known_source_gap_resolution_queue.csv")
+lane_path<-file.path(packet_root,"review_lane_counts.csv")
+stopifnot(all(file.exists(c(triage_path,gaps_path,lane_path))))
+triage<-utils::read.csv(triage_path,stringsAsFactors=FALSE,
+  check.names=FALSE)
+gap_review<-utils::read.csv(gaps_path,stringsAsFactors=FALSE,
+  check.names=FALSE)
+source_gap_count<-nrow(utils::read.csv(
+  file.path("inst","extdata","native_source_contract_gaps_stage22.csv"),
+  stringsAsFactors=FALSE))
+stopifnot(nrow(triage)==508L,
+  sum(triage$selected_oracle_candidate)==nrow(queue),
+  nrow(gap_review)==source_gap_count,
+  all(!triage$independent_source_contract_approved),
+  all(!gap_review$resolved),
+  !anyDuplicated(gap_review$python_name))
+message("Review triage: ",nrow(triage)," public exports; ",
+  nrow(gap_review)," recorded source differences; ",
+  sum(triage$backend_or_estimand_distinct),
+  " alternative backends/estimands; zero independent approvals.")
 
 if(!all(vapply(results,function(x)isTRUE(x$success),logical(1L)))) {
   failed_labels<-vapply(results,function(x)
