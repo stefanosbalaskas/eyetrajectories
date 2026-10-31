@@ -236,7 +236,7 @@ etr_fit_generalized_function_on_scalar_regression<-function(
     scale=1,maxiter=as.integer(maxiter),ctol=ctol,converged=TRUE,
     backend_warnings=character(),
     exposure=exp,log_exposure=if(is.null(exp))NULL else log(exp),
-    rate_functions=if(is.null(exp))NULL else exp(rate_eta),
+    rate_functions=if(is.null(exp))NULL else base::exp(rate_eta),
     exposure_units=exposure_units,
     exposure_expanded_from_curve=
       !is.null(exp)&&is.null(dim(exposure)),
