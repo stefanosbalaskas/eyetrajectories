@@ -134,32 +134,13 @@ etr_prepare_independent_source_review<-function(
   if(selector_recorded)
     .checked(length(selector)==1L&&!is.na(selector)&&nzchar(selector),
       "Source qualification test-selection regex is malformed")
-  .inspect_fixture<-function(relative_path){
-    expr<-parse(file=file.path(root,relative_path),keep.source=FALSE)
-    test_count<-0L
-    direct_exports<-character()
-    visit<-function(node){
-      if(is.call(node)){
-        fn<-node[[1L]]
-        fn_name<-if(is.symbol(fn))as.character(fn) else
-          if(is.call(fn)&&
-            identical(as.character(fn[[1L]]),"::"))
-            as.character(fn[[3L]]) else ""
-        if(identical(fn_name,"test_that"))
-          test_count<<-test_count+1L
-        if(identical(fn_name,"etpy_get_export")&&
-            length(node)>=2L&&is.character(node[[2L]])&&
-            length(node[[2L]])==1L)
-          direct_exports<<-c(direct_exports,node[[2L]])
-        for(item in as.list(node)[-1L])visit(item)
-      } else if(is.expression(node)||is.pairlist(node)||is.list(node)){
-        for(item in node)visit(item)
-      }
-      invisible(NULL)
-    }
-    visit(expr)
-    list(cases=test_count,export_literals=unique(direct_exports))
-  }
+  helper_path<-file.path(root,"scripts",
+    "source_fixture_static_attribution.R")
+  .checked(file.exists(helper_path),
+    "Missing nonexecuting source-fixture attribution helper")
+  source(helper_path,local=TRUE)
+  .inspect_fixture<-function(relative_path)
+    etr_source_fixture_static_inventory(file.path(root,relative_path))
   fixture_files<-unique(records$fixture_test)
   fixture_info<-lapply(fixture_files,.inspect_fixture)
   fixture_idx<-match(records$fixture_test,fixture_files)
