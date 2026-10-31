@@ -139,7 +139,10 @@ etr_save_workflow_figure<-function(result,path,plot,dpi=150L,
     res=as.integer(dpi))
   else if(ext=="svg")grDevices::svg(path,width=7,height=5)
   else grDevices::pdf(path,width=7,height=5)
-  on.exit(grDevices::dev.off(),add=TRUE)
+  opened<-TRUE
+  on.exit(if(opened)grDevices::dev.off(),add=TRUE)
   etr_plot_workflow_result(result,plot=plot,...)
+  grDevices::dev.off()
+  opened<-FALSE
   invisible(normalizePath(path,winslash="/",mustWork=TRUE))
 }
