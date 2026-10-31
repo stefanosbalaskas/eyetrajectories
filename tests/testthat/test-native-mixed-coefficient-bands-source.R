@@ -72,10 +72,12 @@ _mb_base=dict(reference=_mb_fit,
     bootstrap_standard_errors=np.array([[.1,.15,.2],[.15,.1,.1]]),
     provenance={'draws':'retained'})
 _mb_oracle={}
+_mb_input={}
 for kind,klass in [('conditional_covariance',
      et.FunctionalMixedEffectsBootstrapResult),
      ('full_refit',et.FunctionalMixedEffectsFullRefitBootstrapResult)]:
     item=_mb_obj(klass,**_mb_base)
+    _mb_input[kind]=item
     for scope in ('coefficient','family'):
       _mb_oracle[(kind,scope)]=et.functional_mixed_effects_simultaneous_bands(
           item,confidence_level=.5,simultaneous_scope=scope)
@@ -85,12 +87,19 @@ for kind,klass in [('conditional_covariance',
     for(scope in c("coefficient","family")){
       a<-etr_functional_mixed_effects_simultaneous_bands(
         b,confidence_level=.5,simultaneous_scope=scope)
+      direct<-reticulate::py_call(
+        etpy_get_export("functional_mixed_effects_simultaneous_bands"),
+        bootstrap=reticulate::py_eval(
+          paste0("_mb_input['",kind,"']"),convert=FALSE),
+        confidence_level=.5,simultaneous_scope=scope)
       key<-paste0("_mb_oracle[('",kind,"','",scope,"')]")
       for(field in c("lower","upper","critical_values",
         "max_statistics","pointwise_standard_errors")){
         expected<-reticulate::py_eval(paste0(key,".",field),convert=TRUE)
         expect_equal(a[[field]],expected,tolerance=1e-12,
           ignore_attr=TRUE,info=paste(kind,scope,field))
+        expect_equal(et_to_r(reticulate::py_get_attr(direct,field)),
+          expected,tolerance=1e-12,ignore_attr=TRUE)
       }
       expected<-reticulate::py_eval(paste0(
         key,".provenance['functional_mixed_effects_simultaneous_bands']",
