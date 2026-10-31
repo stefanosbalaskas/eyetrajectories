@@ -162,6 +162,65 @@ etr_prepare_independent_source_review<-function(
     "independent_contract_review_queue.csv"),row.names=FALSE,na="")
   utils::write.csv(integrity,file.path(output_dir,
     "file_integrity_recheck.csv"),row.names=FALSE,na="")
+  # Scope the independent-review undertaking across ALL 508 frozen
+  # public exports (380 functions + 128 classes/configs/constants).
+  # The 107-row source fixture packet is a SELECTED subset, never a
+  # claim that other exports were reviewed or even fully exercised.
+  if(!exists("etr_native_certification_readiness_frame",
+      mode="function",inherits=TRUE)){
+    .checked(requireNamespace("pkgload",quietly=TRUE),
+      "Review scope requires pkgload to inspect the checked-out R package")
+    pkgload::load_all(root,quiet=TRUE)
+  }
+  readiness<-etr_native_certification_readiness_frame()
+  .checked(nrow(readiness)==508L&&
+    sum(readiness$kind=="function")==380L&&
+    sum(readiness$kind!="function")==128L&&
+    !anyDuplicated(paste(readiness$namespace,readiness$python_name,
+      sep="::"))&&
+    !any(readiness$fully_certified),
+    "Full source review scope must remain 508 distinct unsigned exports")
+  gidx<-match(readiness$python_name,gaps$python_name)
+  queued_idx<-match(readiness$python_name,records$python_name)
+  .checked(all(!is.na(queued_idx[!is.na(queued_idx)])),
+    "Selected review queue could not be mapped to source registry")
+  review_scope<-data.frame(
+    namespace=readiness$namespace,
+    python_name=readiness$python_name,
+    kind=readiness$kind,
+    native_r_candidate=readiness$native_r_candidate,
+    frozen_source_sha=readiness$frozen_source_sha,
+    evidence_r_git_head=rep(recorded_heads,nrow(readiness)),
+    mapped_native_function=readiness$kind=="function"&
+      readiness$native_mapping_present,
+    source_difference_open=readiness$published_source_difference_open,
+    source_gap_kind=ifelse(is.na(gidx),"",
+      gaps$gap_kind[gidx]),
+    selected_oracle_candidate=!is.na(queued_idx),
+    selected_oracle_file=ifelse(is.na(queued_idx),"",
+      records$fixture_test[queued_idx]),
+    selected_suite_native_pass=ifelse(is.na(queued_idx),FALSE,
+      passed[[1L]]),
+    selected_suite_python_pass=ifelse(is.na(queued_idx),FALSE,
+      passed[[2L]]),
+    per_export_complete_domain_review=FALSE,
+    per_export_independent_oracle_replay=FALSE,
+    per_export_schema_error_review=FALSE,
+    per_export_scientific_scope_review=FALSE,
+    per_export_independent_reviewer_approved=FALSE,
+    open_evidence_requirements=readiness$all_unresolved_requirements,
+    fully_certified=FALSE,
+    stringsAsFactors=FALSE)
+  .checked(nrow(review_scope)==508L&&
+    sum(review_scope$selected_oracle_candidate)==nrow(records)&&
+    sum(review_scope$mapped_native_function)==380L&&
+    !any(review_scope$fully_certified)&&
+    !any(review_scope$per_export_independent_reviewer_approved),
+    "Full 508-contract reviewer scope must fail closed before signoff")
+  utils::write.csv(review_scope,file.path(output_dir,
+    "all_508_public_export_independent_review_scope.csv"),
+    row.names=FALSE,na="")
+
   # Four simpler pilot contracts already have user-reported fixture
   # evidence in the authoritative register, but still lack independent
   # numerical/schema/scientific/reviewer approvals. Surface them separately,
@@ -237,6 +296,9 @@ etr_prepare_independent_source_review<-function(
     "Review decisions default to PENDING_INDEPENDENT_REVIEW.",
     "The test suites are aggregated; suite PASS does not prove that each",
     "contract has a complete source-domain witness.",
+    "The all_508_public_export_independent_review_scope.csv includes every",
+    "public function and nonfunction export, with mapping distinguished from",
+    "scientific equivalence, verified boundaries, and third-party signoff.",
     "")
   writeLines(instructions,file.path(output_dir,"REVIEW_INSTRUCTIONS.md"),
     useBytes=TRUE)
@@ -249,6 +311,7 @@ etr_prepare_independent_source_review<-function(
   message("Contracts awaiting truly independent full-domain review: ",
     nrow(submission),". No certifications changed.")
   invisible(list(status=status,review=submission,
+    full_export_scope=review_scope,
     file_integrity=integrity,output_dir=output_dir))
 }
 
