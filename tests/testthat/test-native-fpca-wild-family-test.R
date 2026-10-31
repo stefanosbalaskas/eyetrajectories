@@ -118,6 +118,23 @@ _source_maxT=dict(
  adjusted_reject=t.reject_familywise.tolist(),
  global_reject=t.reject_global)
 ")
+  # Literal public export source replay and retained numerical oracle agree.
+  direct<-reticulate::py_call(
+    etpy_get_export("fpca_wild_bootstrap_projection_family_test"),
+    result=reticulate::py_eval("p",convert=FALSE),
+    null_values=reticulate::py_eval("np.array([.25,0.,-.25])",
+      convert=FALSE),
+    significance_level=.2)
+  for(field in c("observed_statistics","targetwise_p_values",
+    "adjusted_p_values","max_statistics","global_statistic",
+    "global_p_value","reject_targetwise","reject_familywise",
+    "reject_global")){
+    x<-reticulate::py_get_attr(direct,field)
+    expected<-reticulate::py_get_attr(
+      reticulate::py_eval("t",convert=FALSE),field)
+    expect_equal(et_to_r(x),et_to_r(expected),
+      tolerance=1e-12,ignore_attr=TRUE)
+  }
   source<-reticulate::py_to_r(reticulate::py_eval("_source_maxT",convert=FALSE))
   r<-etr_fpca_wild_bootstrap_projection_family_test(
     .etr_wild_family_fixture(),
