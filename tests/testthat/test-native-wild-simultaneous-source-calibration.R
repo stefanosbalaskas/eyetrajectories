@@ -95,6 +95,10 @@ _ws_oracle={
     'lower':_ws_result.lower,'upper':_ws_result.upper,
     'confidence_level':_ws_result.confidence_level}
 ")
+  direct<-reticulate::py_call(
+    etpy_get_export("fpca_wild_bootstrap_projection_simultaneous_interval"),
+    result=reticulate::py_eval("_ws_base",convert=FALSE),
+    confidence_level=.5)
   z<-.etr_fpcr_simultaneous_fixture()
   a<-etr_fpca_wild_bootstrap_projection_simultaneous_interval(
     z,confidence_level=.5)
@@ -104,5 +108,7 @@ _ws_oracle={
       convert=TRUE)
     expect_equal(a[[n]],py,tolerance=1e-12,ignore_attr=TRUE,
       info=paste("pinned Python 1.2 wild simultaneous",n))
+    expect_equal(et_to_r(reticulate::py_get_attr(direct,n)),py,
+      tolerance=1e-12,ignore_attr=TRUE)
   }
 })
