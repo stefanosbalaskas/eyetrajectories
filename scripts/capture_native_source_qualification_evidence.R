@@ -29,9 +29,11 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
   "native-functional-process-simulation",
   "native-functional-recovery-orchestration",
   "native-workflow-plot-dispatch",
+  "native-fpca-wild-family-test",
     "native-functional-process-simulation",
     "native-functional-recovery-orchestration",
     "native-workflow-plot-dispatch",
+    "native-fpca-wild-family-test",
     "native-mixed-model-source-text"),".R"))
 missing_scientific_tests<-required_scientific_tests[
   !file.exists(required_scientific_tests)]
@@ -53,7 +55,7 @@ queue_path<-file.path("artifacts","native_inference_contract_review",
   "python_1_2_scientific_contract_review_queue.csv")
 queue<-utils::read.csv(queue_path,stringsAsFactors=FALSE,
   check.names=FALSE)
-stopifnot(nrow(queue)==84L,!anyDuplicated(queue$python_name),
+stopifnot(nrow(queue)==85L,!anyDuplicated(queue$python_name),
   all(!queue$fully_certified),
   all(queue$source_difference_open),
   all(file.exists(queue$oracle_test)))
@@ -166,6 +168,7 @@ source_files<-unique(c(
   "R/native-functional-process-simulation.R",
   "R/native-functional-recovery-orchestration.R",
   "R/native-workflow-plot-dispatch.R",
+  "R/native-fpca-wild-family-test.R",
   "R/native-fpcr-bootstrap-uncertainty.R",
   "R/native-fpca-component-envelopes.R",
   "R/native-python-portable-writer.R",

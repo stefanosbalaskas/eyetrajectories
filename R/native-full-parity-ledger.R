@@ -33,6 +33,7 @@
   run_functional_recovery_scenarios="etr_run_functional_recovery_scenarios",
   plot_workflow_result="etr_plot_workflow_result",
   save_workflow_figure="etr_save_workflow_figure",
+  fpca_wild_bootstrap_projection_family_test="etr_fpca_wild_bootstrap_projection_family_test",
   capture_environment="etr_capture_environment",
   generalized_function_on_scalar_predict="etr_generalized_function_on_scalar_predict",
   functional_mixed_effects_reporting_text="etr_functional_mixed_effects_reporting_text",
@@ -810,6 +811,8 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     api$python_name=="plot_workflow_result"] <- 88L
   api$native_implementation_stage[api$is_python_function &
     api$python_name=="save_workflow_figure"] <- 89L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="fpca_wild_bootstrap_projection_family_test"] <- 90L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # TrajectorySet native representation covers key fields and with_values/subset

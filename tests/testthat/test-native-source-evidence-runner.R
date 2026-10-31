@@ -94,5 +94,5 @@ test_that("new scientific source oracles are included in both qualification mode
     "multivariate_surrogate_nonlinearity_test")){
     expect_true(any(grepl(name,dossier,fixed=TRUE)))
   }
-  expect_true(any(grepl("nrow(queue)==84L",runner,fixed=TRUE)))
+  expect_true(any(grepl("nrow(queue)==85L",runner,fixed=TRUE)))
 })
