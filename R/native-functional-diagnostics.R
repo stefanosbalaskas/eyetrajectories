@@ -66,7 +66,8 @@ etr_alr_transform <- function(values,reference_dimension=-1L,epsilon=1e-8) {
   # NumPy's published np.asarray(values, dtype=float) also accepts 3-D
   # numeric-string arrays. Retain native fail-closed checks for nonfinite
   # and malformed values; conversion alone never approves full parity.
-  if(is.array(values) && is.character(values) &&
+  if(is.array(values) &&
+      (is.character(values)||is.logical(values)) &&
       length(dim(values))==3L) {
     numeric_values<-suppressWarnings(as.numeric(values))
     if(all(is.finite(numeric_values)))
@@ -101,7 +102,8 @@ etr_inverse_alr <- function(transformed,reference_dimension,n_dimensions) {
   # Frozen Python np.asarray(..., dtype=float) accepts numeric-string
   # arrays. Convert that finite, rectangular domain without expanding
   # the native overflow/nonfinite scientific contract.
-  if(is.array(transformed) && is.character(transformed) &&
+  if(is.array(transformed) &&
+      (is.character(transformed)||is.logical(transformed)) &&
       length(dim(transformed))==3L) {
     numeric_values<-suppressWarnings(as.numeric(transformed))
     if(all(is.finite(numeric_values)))
@@ -193,7 +195,8 @@ etr_score_distance_matrix <- function(fpca,n_components=NULL) {
     # matrix contract without pretending all Python object types port.
     .etr_assert(is.list(fpca)&&
       is.matrix(fpca$scores)&&
-      (is.numeric(fpca$scores)||is.character(fpca$scores))&&
+      (is.numeric(fpca$scores)||is.character(fpca$scores)||
+        is.logical(fpca$scores))&&
       nrow(fpca$scores)>=1L&&ncol(fpca$scores)>=1L&&
       all(is.finite(suppressWarnings(as.numeric(fpca$scores))))&&
       is.numeric(fpca$n_components)&&
@@ -211,7 +214,7 @@ etr_score_distance_matrix <- function(fpca,n_components=NULL) {
     "n_components is outside the fitted range")
   # sklearn pairwise_distances accepts numeric-string score arrays.
   # Do not coerce the caller's object, nor accept NaN, Inf or bad strings.
-  scores<-if(is.character(fpca$scores))
+  scores<-if(is.character(fpca$scores)||is.logical(fpca$scores))
     matrix(suppressWarnings(as.numeric(fpca$scores)),
       nrow=nrow(fpca$scores),ncol=ncol(fpca$scores)) else fpca$scores
   x<-scores[,seq_len(n_components),drop=FALSE]
