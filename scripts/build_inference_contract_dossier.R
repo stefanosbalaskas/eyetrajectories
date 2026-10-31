@@ -89,9 +89,11 @@ source_names<-c(
   "run_recurrence_workflow",
   "simulate_functional_process",
   "simulate_functional_scenario",
-  "run_functional_recovery_scenarios"
+  "run_functional_recovery_scenarios",
+  "plot_workflow_result",
+  "save_workflow_figure"
 )
-stopifnot(length(source_names)==82L,!anyDuplicated(source_names))
+stopifnot(length(source_names)==84L,!anyDuplicated(source_names))
 idx<-match(source_names,readiness$python_name)
 stopifnot(!anyNA(idx),all(readiness$kind[idx]=="function"),
   all(readiness$native_mapping_present[idx]),
@@ -152,6 +154,7 @@ source_test[78L]<-"tests/testthat/test-native-fpcr-bootstrap-uncertainty.R"
 source_test[79L]<-"tests/testthat/test-native-recurrence-workflow.R"
 source_test[80L]<-"tests/testthat/test-native-functional-process-simulation.R"
 source_test[81:82]<-"tests/testthat/test-native-functional-recovery-orchestration.R"
+source_test[83:84]<-"tests/testthat/test-native-workflow-plot-dispatch.R"
 source_file<-rep("src/eyetrajectoriespy/reporting.py",length(source_names))
 source_file[12L]<-"src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py"
 source_file[13L]<-"src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py"
@@ -206,6 +209,7 @@ source_file[76:77]<-"src/eyetrajectoriespy/workflows/_dense_regression.py"
 source_file[78L]<-"src/eyetrajectoriespy/regression_inference.py"
 source_file[79L]<-"src/eyetrajectoriespy/workflows/_recurrence.py"
 source_file[80:82]<-"src/eyetrajectoriespy/simulate.py"
+source_file[83:84]<-"src/eyetrajectoriespy/workflows/_plotting.py"
 # The first 71 contracts were user-qualified at exactly R commit 73503aa9
 # (2026-10-31T102737); the 72nd integration has no user-side R verdict.
 # Historical qualification is NOT evidence for this newer checkout.
@@ -237,11 +241,11 @@ data<-data.frame(
   missing_evidence=readiness$all_unresolved_requirements[idx],
   stringsAsFactors=FALSE
 )
-stopifnot(nrow(data)==82L,!any(data$fully_certified))
+stopifnot(nrow(data)==84L,!any(data$fully_certified))
 output_dir<-file.path("artifacts","native_inference_contract_review")
 dir.create(output_dir,recursive=TRUE,showWarnings=FALSE)
 output<-file.path(output_dir,"python_1_2_scientific_contract_review_queue.csv")
 utils::write.csv(data,output,row.names=FALSE,na="")
 message("Wrote unsigned source-contract review queue: ",
   normalizePath(output,winslash="/",mustWork=TRUE))
-message("All 82 contracts remain uncertified pending full-domain and independent review.")
+message("All 84 contracts remain uncertified pending full-domain and independent review.")
