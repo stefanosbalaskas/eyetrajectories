@@ -24,7 +24,7 @@
 .etr_source_workflow_step <- function(fun,parameters) {
   # Native R performs the synchronous fit prior to creating this record.
   # No fabricated time/performance observations are reported.
-  list(name="fit",function=fun,parameters=parameters,status="completed",
+  list(name="fit",`function`=fun,parameters=parameters,status="completed",
     duration_seconds=NA_real_,duration_measured=FALSE)
 }
 
