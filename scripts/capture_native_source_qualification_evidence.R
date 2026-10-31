@@ -25,7 +25,6 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-fpca-component-envelopes",
     "native-source-workflows",
     "native-fpcr-bootstrap-uncertainty",
-  "native-recurrence-workflow",
     "native-recurrence-workflow",
     "native-mixed-model-source-text"),".R"))
 missing_scientific_tests<-required_scientific_tests[
@@ -89,6 +88,7 @@ filter<-paste(c(
   "native-fpca-component-envelopes",
   "native-source-workflows",
   "native-fpcr-bootstrap-uncertainty",
+  "native-recurrence-workflow",
   "native-mixed-model-source-text",
   "native-source-environment",
   "native-source-evidence-runner",
