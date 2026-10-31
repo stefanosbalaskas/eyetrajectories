@@ -53,6 +53,53 @@
   force(code)
 }
 test_that("seven generalized/mixed native plots retain observed-grid geometry",{
+  # Re-execute seven public Python source plot functions explicitly.
+  # Frozen direct Axes geometry is matched to the independently retained
+  # _gm_oracle data, which the native R plots already compare against.
+  direct_axes<-list(
+    prediction=reticulate::py_call(
+      etpy_get_export("plot_generalized_function_on_scalar_predictions"),
+      result=reticulate::py_eval("_gm_band",convert=FALSE)),
+    difference=reticulate::py_call(
+      etpy_get_export("plot_generalized_function_on_scalar_mean_difference"),
+      result=reticulate::py_eval("_gm_diff",convert=FALSE)),
+    coefficient=reticulate::py_call(
+      etpy_get_export("plot_generalized_function_on_scalar_coefficients"),
+      result=reticulate::py_eval("_gm_cband",convert=FALSE),
+      coefficient="group"),
+    sensitivity=reticulate::py_call(
+      etpy_get_export("plot_covariance_sensitivity_coefficients"),
+      result=reticulate::py_eval("_gm_sens",convert=FALSE),
+      coefficient="group"),
+    width=reticulate::py_call(
+      etpy_get_export("plot_covariance_sensitivity_band_widths"),
+      result=reticulate::py_eval("_gm_sens",convert=FALSE),
+      coefficient="group"),
+    acf=reticulate::py_call(
+      etpy_get_export("plot_functional_mixed_effects_residual_acf"),
+      result=reticulate::py_eval("_gm_res",convert=FALSE)),
+    variogram=reticulate::py_call(
+      etpy_get_export("plot_functional_mixed_effects_residual_variogram"),
+      result=reticulate::py_eval("_gm_res",convert=FALSE),
+      level="trial",curve_id="c1")
+  )
+  line_idx<-c(prediction=1L,difference=0L,coefficient=0L,
+    sensitivity=1L,width=0L,acf=0L,variogram=0L)
+  get_line<-reticulate::py_eval(
+    "lambda axes, index: axes.lines[index].get_ydata()",convert=FALSE)
+  oracle_names<-c(prediction="prediction_B",difference="difference",
+    coefficient="coefficient",sensitivity="sensitivity_alternative",
+    width="width_base",acf="acf",variogram="variogram")
+  for(n in names(direct_axes)){
+    y<-et_to_r(reticulate::py_call(get_line,direct_axes[[n]],
+      as.integer(line_idx[[n]])))
+    expected<-reticulate::py_eval(
+      paste0("_gm_oracle['",oracle_names[[n]],"']"),convert=TRUE)
+    expect_equal(as.numeric(y),as.numeric(expected),
+      tolerance=1e-12,ignore_attr=TRUE,
+      info=paste("direct frozen matplotlib Axes geometry",n))
+  }
+  reticulate::py_run_string("plt.close('all')")
   x<-.etr_generalized_mixed_graphics_fixtures()
   .etr_generalized_mixed_pdf({
     a<-etr_plot_generalized_function_on_scalar_predictions(
