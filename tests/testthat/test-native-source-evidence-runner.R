@@ -26,6 +26,9 @@ test_that("native source qualification evidence runner parses", {
     "review_lane_counts.csv",
     "test_selection_regex.txt",
     "selected_111_fixture_static_attribution.csv",
+    "scripts/source_fixture_static_attribution.R",
+    "tests/testthat/test-native-source-fixture-static-attribution.R",
+    "native-source-fixture-static-attribution",
     "fixture_filename_selected_in_both_suite_modes",
     "source_gap_count",
     "native-source-contract-alignment")){
