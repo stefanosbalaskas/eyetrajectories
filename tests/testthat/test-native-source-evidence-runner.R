@@ -31,6 +31,17 @@ test_that("native source qualification evidence runner parses", {
     current,fixed=TRUE)))
   expect_true(any(grepl("no source contracts certified",
     current,fixed=TRUE)))
+  # The owner's direct source qualification must not omit mapping,
+  # 508-export readiness or stage-free namespace gates. Requiring a
+  # newly unmapped function was previously a hidden false-fail after 380/380.
+  for(name in c("native-all-function-mapping-complete",
+    "native-certification-readiness",
+    "full-native-r-parity-ledger",
+    "native-private-helper-names")){
+    expect_true(any(grepl(paste0('"',name,'"'),
+      current,fixed=TRUE)),
+      info=paste("qualify_native_current_contracts omits",name))
+  }
   packet<-testthat::test_path("..","..","scripts",
     "prepare_independent_source_review.R")
   expect_true(file.exists(packet))
