@@ -111,6 +111,15 @@ _cm_zero_ratio=et.compare_functional_mixed_effects_bootstraps(
       confidence_level=.5,simultaneous_scope=scope)
     py<-reticulate::py_to_r(reticulate::py_eval(paste0(
       "_cm_comparison['",scope,"']"),convert=FALSE))
+    direct<-et_to_r(reticulate::py_call(
+      etpy_get_export("compare_functional_mixed_effects_bootstraps"),
+      fixed_covariance_bootstrap=reticulate::py_eval(
+        "_cm_fixed",convert=FALSE),
+      full_refit_bootstrap=reticulate::py_eval(
+        "_cm_full",convert=FALSE),
+      confidence_level=.5,simultaneous_scope=scope))
+    expect_equal(direct,py,tolerance=1e-12,ignore_attr=TRUE,
+      info=paste("direct frozen width comparison",scope))
     expect_identical(names(actual),names(py))
     for(field in names(actual)){
       if(is.numeric(actual[[field]]))
