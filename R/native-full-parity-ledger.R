@@ -28,6 +28,9 @@
   run_function_on_scalar_workflow="etr_run_function_on_scalar_workflow",
   bootstrap_fpca_regression_uncertainty="etr_bootstrap_fpca_regression_uncertainty",
   run_recurrence_workflow="etr_run_recurrence_workflow",
+  simulate_functional_process="etr_simulate_functional_process",
+  simulate_functional_scenario="etr_simulate_functional_scenario",
+  run_functional_recovery_scenarios="etr_run_functional_recovery_scenarios",
   capture_environment="etr_capture_environment",
   generalized_function_on_scalar_predict="etr_generalized_function_on_scalar_predict",
   functional_mixed_effects_reporting_text="etr_functional_mixed_effects_reporting_text",
@@ -795,6 +798,12 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     api$python_name=="bootstrap_fpca_regression_uncertainty"] <- 83L
   api$native_implementation_stage[api$is_python_function &
     api$python_name=="run_recurrence_workflow"] <- 84L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="simulate_functional_process"] <- 85L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="simulate_functional_scenario"] <- 86L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="run_functional_recovery_scenarios"] <- 87L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # TrajectorySet native representation covers key fields and with_values/subset
