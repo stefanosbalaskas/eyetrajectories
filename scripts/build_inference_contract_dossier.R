@@ -98,9 +98,11 @@ source_names<-c(
   "fit_generalized_function_on_scalar_regression",
   "run_generalized_functional_workflow",
   "bootstrap_generalized_function_on_scalar_coefficients",
-  "export_workflow_bundle"
+  "export_workflow_bundle",
+  "wild_bootstrap_fpca_projection",
+  "scan_wild_bootstrap_fpca_truncations"
 )
-stopifnot(length(source_names)==91L,!anyDuplicated(source_names))
+stopifnot(length(source_names)==93L,!anyDuplicated(source_names))
 idx<-match(source_names,readiness$python_name)
 stopifnot(!anyNA(idx),all(readiness$kind[idx]=="function"),
   all(readiness$native_mapping_present[idx]),
@@ -167,6 +169,8 @@ source_test[86:87]<-"tests/testthat/test-native-bounded-model-workflows.R"
 source_test[88:89]<-"tests/testthat/test-native-generalized-gee-fit.R"
 source_test[90L]<-"tests/testthat/test-native-generalized-gee-bootstrap.R"
 source_test[91L]<-"tests/testthat/test-native-workflow-bundle-export.R"
+source_test[92L]<-"tests/testthat/test-native-wild-bootstrap-projection.R"
+source_test[93L]<-"tests/testthat/test-native-wild-bootstrap-truncation-scan.R"
 source_file<-rep("src/eyetrajectoriespy/reporting.py",length(source_names))
 source_file[12L]<-"src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py"
 source_file[13L]<-"src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py"
@@ -229,13 +233,15 @@ source_file[88L]<-"src/eyetrajectoriespy/generalized_function_on_scalar.py"
 source_file[89L]<-"src/eyetrajectoriespy/workflows/_dense_regression.py"
 source_file[90L]<-"src/eyetrajectoriespy/generalized_function_on_scalar.py"
 source_file[91L]<-"src/eyetrajectoriespy/workflows/_core.py"
-# Owner RStudio evidence at exact older commit 18d5c38
-# (2026-10-31T124546) confirms BOTH full source qualification modes,
-# package checkout/file integrity TRUE and all first 87 review candidates
+source_file[92L]<-"src/eyetrajectoriespy/wild_regression.py"
+source_file[93L]<-"src/eyetrajectoriespy/wild_selection.py"
+# Owner RStudio evidence at exact older commit c8084bb
+# (2026-10-31T132748) confirms BOTH full source qualification modes,
+# package checkout/file integrity TRUE and all first 91 review candidates
 # unsigned. These are historical owner-run tests, not independent reviews.
-# Newly added generalized GEE source candidates 88-90 are NOT owner-qualified.
-fixture_state<-ifelse(seq_along(source_names)<=87L,
-  "owner_full_R_and_Python_1_2_qualification_PASS_at_18d5c38_20261031T124546_not_independent",
+# Newly added wild FPCR source candidates 92-93 are NOT owner-qualified.
+fixture_state<-ifelse(seq_along(source_names)<=91L,
+  "owner_full_R_and_Python_1_2_qualification_PASS_at_c8084bb_20261031T132748_not_independent",
   "new_tests_pending_local_native_and_python_oracle")
 stopifnot(all(file.exists(source_test)))
 data<-data.frame(
@@ -258,11 +264,11 @@ data<-data.frame(
   missing_evidence=readiness$all_unresolved_requirements[idx],
   stringsAsFactors=FALSE
 )
-stopifnot(nrow(data)==91L,!any(data$fully_certified))
+stopifnot(nrow(data)==93L,!any(data$fully_certified))
 output_dir<-file.path("artifacts","native_inference_contract_review")
 dir.create(output_dir,recursive=TRUE,showWarnings=FALSE)
 output<-file.path(output_dir,"python_1_2_scientific_contract_review_queue.csv")
 utils::write.csv(data,output,row.names=FALSE,na="")
 message("Wrote unsigned source-contract review queue: ",
   normalizePath(output,winslash="/",mustWork=TRUE))
-message("All 91 contracts remain uncertified pending full-domain and independent review.")
+message("All 93 contracts remain uncertified pending full-domain and independent review.")

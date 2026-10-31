@@ -94,7 +94,7 @@ test_that("new scientific source oracles are included in both qualification mode
     "multivariate_surrogate_nonlinearity_test")){
     expect_true(any(grepl(name,dossier,fixed=TRUE)))
   }
-  expect_true(any(grepl("nrow(queue)==91L",runner,fixed=TRUE)))
+  expect_true(any(grepl("nrow(queue)==93L",runner,fixed=TRUE)))
   begin<-grep('^filter<-paste\\(c\\(',runner)
   finish<-which(grepl('collapse="|"',runner,fixed=TRUE))
   expect_identical(length(begin),1L)
@@ -107,12 +107,17 @@ test_that("new scientific source oracles are included in both qualification mode
     "native-bounded-model-workflows",
     "native-generalized-gee-fit",
     "native-generalized-gee-bootstrap",
-    "native-workflow-bundle-export")){
+    "native-workflow-bundle-export",
+    "native-wild-bootstrap-projection",
+    "native-wild-bootstrap-truncation-scan")){
     expect_true(any(grepl(paste0('"',name,'"'),
       filter_lines,fixed=TRUE)),
       info=paste("source evidence capture does not execute",name))
   }
   expect_true(any(grepl(
     '"tests/testthat/helper-native-generalized-gee-fixture.R"',
+    runner,fixed=TRUE)))
+  expect_true(any(grepl(
+    '"tests/testthat/helper-native-wild-projection-fixture.R"',
     runner,fixed=TRUE)))
 })
