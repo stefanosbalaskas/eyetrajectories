@@ -77,6 +77,19 @@ _cv_python=et.cross_validate_fpca_regression(
     trajectories,y,candidate_components=(2,1,2),n_splits=3,
     shuffle=False,family='gaussian')
 ")
+  direct<-reticulate::py_call(
+    etpy_get_export("cross_validate_fpca_regression"),
+    trajectories=reticulate::py_eval("trajectories",convert=FALSE),
+    outcome=reticulate::py_eval("y",convert=FALSE),
+    candidate_components=reticulate::py_eval("(2,1,2)",convert=FALSE),
+    n_splits=3L,shuffle=FALSE,family="gaussian")
+  for(name in c("fold_losses","assignments","predictions")){
+    original<-reticulate::py_eval(
+      paste0("_cv_python.",name),convert=TRUE)
+    replay<-et_to_r(reticulate::py_get_attr(direct,name))
+    expect_equal(replay,original,tolerance=1e-8,
+      ignore_attr=TRUE)
+  }
   z<-.etr_fpcr_cv_fixture()
   actual<-etr_cross_validate_fpca_regression(z$trajectories,z$outcome,
     candidate_components=c(2L,1L,2L),n_splits=3L,shuffle=FALSE)
