@@ -53,8 +53,9 @@ test_that("fixed zero-based source curves replay deterministically",{
   r<-etr_bootstrap_fpca_regression_uncertainty(z$x,z$y,
     n_bootstrap=20L,n_components=1L,
     bootstrap_indices=indexes,random_state=91L)
-  expect_equal(r$bootstrap_slopes[1,,],r$reference_slope,
-    tolerance=1e-8)
+  expect_equal(matrix(r$bootstrap_slopes[1,,,drop=FALSE],
+    nrow=length(z$x$time),ncol=length(z$x$dimension_names)),
+    r$reference_slope,tolerance=1e-8)
   expect_true(all(r$sampled_source_curve_indices[[1L]]==0:13))
   expect_identical(r$provenance$fpca_regression_uncertainty$
     random_engine,"externally_fixed_source_curve_indices")
