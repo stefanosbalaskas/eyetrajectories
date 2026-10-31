@@ -87,6 +87,42 @@ _rec_values_h=[float(v.value) for v in _rec_h.values]
 _rec_names_r=[v.metric.name for v in _rec_r.values]
 _rec_values_r=[float(v.value) for v in _rec_r.values]
 ")
+  # Directly replay both frozen public source recovery functions.
+  truth_py<-reticulate::py_eval("_rec_truth",convert=FALSE)
+  source_h<-reticulate::py_call(
+    etpy_get_export("evaluate_hierarchy_truth_recovery"),
+    truth=truth_py)
+  source_r<-reticulate::py_call(
+    etpy_get_export("evaluate_registration_recovery"),
+    result=reticulate::py_eval("_rec_reg",convert=FALSE),
+    truth=truth_py)
+  source_perturbed<-reticulate::py_call(
+    etpy_get_export("evaluate_registration_recovery"),
+    result=reticulate::py_eval("_rec_perturbed",convert=FALSE),
+    truth=truth_py)
+  source_values<-reticulate::py_eval(
+    "lambda assessment: [float(v.value) for v in assessment.values]",
+    convert=FALSE)
+  source_names<-reticulate::py_eval(
+    "lambda assessment: [v.metric.name for v in assessment.values]",
+    convert=FALSE)
+  for(key in c("h","r")){
+    obj<-if(identical(key,"h"))source_h else source_r
+    direct_values<-et_to_r(reticulate::py_call(source_values,obj))
+    direct_names<-et_to_r(reticulate::py_call(source_names,obj))
+    expected_values<-reticulate::py_eval(paste0("_rec_values_",key),
+      convert=TRUE)
+    expected_names<-reticulate::py_eval(paste0("_rec_names_",key),
+      convert=TRUE)
+    expect_equal(as.numeric(direct_values),
+      as.numeric(expected_values),tolerance=1e-12)
+    expect_identical(as.character(direct_names),
+      as.character(expected_names))
+  }
+  expect_equal(as.numeric(et_to_r(
+    reticulate::py_call(source_values,source_perturbed))),
+    as.numeric(reticulate::py_eval("_rec_r_perturbed_values",
+      convert=TRUE)),tolerance=1e-12)
   truth<-.etr_truth_audit_fixture()
   fit<-list(original=list(time=truth$truth_grid),
     warping_functions=rbind(c(0,2/3,1),c(0,1/3,1)))
