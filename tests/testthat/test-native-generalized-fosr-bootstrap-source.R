@@ -123,6 +123,7 @@ _boot_coef=np.array([
   [[.32,.36,.42],[.65,.80,.85]]
 ])
 _boot_oracles={}
+_boot_inputs={}
 for _family,_exposed,_kind in [
     ('binomial',False,'binomial'),
     ('poisson',False,'poisson'),
@@ -137,6 +138,7 @@ for _family,_exposed,_kind in [
         provenance={'source':'retained'})
     _extra={'prediction_scale':'expected_count',
         'exposure_profiles':np.array([2.,3.,4.])} if _kind=='poisson_count' else {}
+    _boot_inputs[_kind]=_bootstrap
     _result=et.bootstrap_generalized_function_on_scalar_predictions(
         _bootstrap,_boot_profiles,**_extra)
     _profile=et.generalized_function_on_scalar_prediction_bands(
@@ -155,6 +157,19 @@ for _family,_exposed,_kind in [
         exposure_profiles=c(2,3,4)) else
       etr_bootstrap_generalized_function_on_scalar_predictions(
         z$bootstrap,z$profiles)
+    # Public frozen Python source export replay on the retained inputs.
+    call_args<-list(
+      bootstrap=reticulate::py_eval(paste0(
+        "_boot_inputs['",kind,"']"),convert=FALSE),
+      profiles=reticulate::py_eval("_boot_profiles",convert=FALSE))
+    if(identical(kind,"poisson_count")){
+      call_args$prediction_scale<-"expected_count"
+      call_args$exposure_profiles<-reticulate::py_eval(
+        "np.array([2.,3.,4.])",convert=FALSE)
+    }
+    direct<-do.call(reticulate::py_call,c(list(
+      etpy_get_export("bootstrap_generalized_function_on_scalar_predictions")),
+      call_args))
     for(field in c("bootstrap_linear_predictor_functions",
       "bootstrap_mean_functions","bootstrap_rate_functions",
       "bootstrap_expected_count_functions")){
@@ -162,10 +177,15 @@ for _family,_exposed,_kind in [
         "'][0].",field),convert=TRUE)
       expect_equal(b[[field]],py,ignore_attr=TRUE,tolerance=1e-10,
         info=paste(kind,field))
+      expect_equal(et_to_r(reticulate::py_get_attr(direct,field)),py,
+        ignore_attr=TRUE,tolerance=1e-10)
     }
     for(scope in c("profile","family")){
       rb<-etr_generalized_function_on_scalar_prediction_bands(
         b,confidence_level=.5,simultaneous_scope=scope)
+      direct_band<-reticulate::py_call(
+        etpy_get_export("generalized_function_on_scalar_prediction_bands"),
+        bootstrap=direct,confidence_level=.5,simultaneous_scope=scope)
       ix<-if(scope=="profile")1L else 2L
       for(field in c("linear_lower","linear_upper",
         "mean_lower","mean_upper","critical_values","max_statistics")){
@@ -173,6 +193,8 @@ for _family,_exposed,_kind in [
           "'][",ix,"].",field),convert=TRUE)
         expect_equal(rb[[field]],py,ignore_attr=TRUE,tolerance=1e-10,
           info=paste(kind,scope,field))
+        expect_equal(et_to_r(reticulate::py_get_attr(direct_band,field)),
+          py,ignore_attr=TRUE,tolerance=1e-10)
       }
     }
   }
