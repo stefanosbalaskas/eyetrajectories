@@ -19,6 +19,8 @@ test_that("native dense process retains curve, participant and trial truth",{
   expect_identical(dim(out$truth$scores),c(6L,2L))
   expect_identical(dim(out$truth$participant_scores),c(3L,2L))
   expect_identical(dim(out$truth$trial_scores),c(6L,2L))
+  expect_identical(dim(out$truth$measurement_noise_covariance),c(1L,1L))
+  expect_equal(out$truth$measurement_noise_covariance[1L,1L],.03^2)
   expect_identical(out$observations$curve_ids[1:2],
     c("P001|T01","P001|T02"))
   expect_equal(out$truth$scores,
