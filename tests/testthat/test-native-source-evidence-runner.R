@@ -60,6 +60,7 @@ test_that("native source qualification evidence runner parses", {
     "native-direct-source-plot-attribution",
     "native-direct-source-advanced-attribution",
     "native-direct-numerical-source-attribution",
+    "native-direct-source-estimator-attribution",
     "native-sparse-scientific-graphics",
     "native-fpca-inference-source-graphics",
     "native-fpcr-slope-source-calibration",
