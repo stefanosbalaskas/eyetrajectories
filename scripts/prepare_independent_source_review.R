@@ -123,6 +123,87 @@ etr_prepare_independent_source_review<-function(
     full_source_contract_certified=FALSE,
     source_contract_count=nrow(records),
     stringsAsFactors=FALSE)
+  # Evidence attribution stops at what is actually observable: which
+  # fixture files the testthat filter selected, their declared test-case
+  # count, and a static literal etpy_get_export("...") reference. It
+  # never infers per-contract case execution from a global PASS.
+  selector_file<-file.path(evidence_dir,"test_selection_regex.txt")
+  selector_recorded<-file.exists(selector_file)
+  selector<-if(selector_recorded)
+    readLines(selector_file,warn=FALSE) else character()
+  if(selector_recorded)
+    .checked(length(selector)==1L&&!is.na(selector)&&nzchar(selector),
+      "Source qualification test-selection regex is malformed")
+  .inspect_fixture<-function(relative_path){
+    expr<-parse(file=file.path(root,relative_path),keep.source=FALSE)
+    test_count<-0L
+    direct_exports<-character()
+    visit<-function(node){
+      if(is.call(node)){
+        fn<-node[[1L]]
+        fn_name<-if(is.symbol(fn))as.character(fn) else
+          if(is.call(fn)&&
+            identical(as.character(fn[[1L]]),"::"))
+            as.character(fn[[3L]]) else ""
+        if(identical(fn_name,"test_that"))
+          test_count<<-test_count+1L
+        if(identical(fn_name,"etpy_get_export")&&
+            length(node)>=2L&&is.character(node[[2L]])&&
+            length(node[[2L]])==1L)
+          direct_exports<<-c(direct_exports,node[[2L]])
+        for(item in as.list(node)[-1L])visit(item)
+      } else if(is.expression(node)||is.pairlist(node)||is.list(node)){
+        for(item in node)visit(item)
+      }
+      invisible(NULL)
+    }
+    visit(expr)
+    list(cases=test_count,export_literals=unique(direct_exports))
+  }
+  fixture_files<-unique(records$fixture_test)
+  fixture_info<-lapply(fixture_files,.inspect_fixture)
+  fixture_idx<-match(records$fixture_test,fixture_files)
+  fixture_case_counts<-vapply(fixture_info,function(x)
+    x$cases,integer(1L))
+  .checked(all(fixture_case_counts>=1L),
+    "One or more source fixture files define no test_that test cases")
+  fixture_selected<-if(selector_recorded)
+    grepl(selector,basename(records$fixture_test)) else
+      rep(FALSE,nrow(records))
+  if(selector_recorded)
+    .checked(all(fixture_selected),
+      paste("Selected source fixture files omitted by testthat filter:",
+        paste(unique(records$fixture_test[!fixture_selected]),
+          collapse=", ")))
+  literal_reference<-vapply(seq_len(nrow(records)),function(i)
+    records$python_name[[i]]%in%
+      fixture_info[[fixture_idx[[i]]]]$export_literals,logical(1L))
+  attribution<-data.frame(
+    python_name=records$python_name,
+    native_r_function=records$native_r_function,
+    fixture_test=records$fixture_test,
+    fixture_file_md5=unname(tools::md5sum(
+      file.path(root,records$fixture_test))),
+    test_selection_regex_recorded=rep(selector_recorded,nrow(records)),
+    fixture_filename_selected_in_both_suite_modes=fixture_selected,
+    test_that_cases_declared_in_entire_fixture_file=
+      fixture_case_counts[fixture_idx],
+    literal_etpy_get_export_call_for_this_contract=literal_reference,
+    # Each file may contain multiple tests, skips, and many contracts.
+    # Static AST references and filename selection are NOT case results.
+    per_contract_test_execution_independently_attributed=FALSE,
+    per_contract_python_oracle_independently_replayed=FALSE,
+    fully_certified=FALSE,
+    stringsAsFactors=FALSE)
+  .checked(nrow(attribution)==nrow(records)&&
+    !anyDuplicated(attribution$python_name)&&
+    all(attribution$test_that_cases_declared_in_entire_fixture_file>0L)&&
+    !any(attribution$fully_certified)&&
+    !any(attribution$per_contract_test_execution_independently_attributed),
+    "Fixture attribution must preserve every unsigned selected contract")
+  utils::write.csv(attribution,file.path(output_dir,
+    "selected_111_fixture_static_attribution.csv"),
+    row.names=FALSE,na="")
   submission<-data.frame(
     python_name=records$python_name,
     native_r_function=records$native_r_function,
