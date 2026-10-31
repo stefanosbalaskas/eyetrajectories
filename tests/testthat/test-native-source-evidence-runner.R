@@ -20,6 +20,16 @@ test_that("native source qualification evidence runner parses", {
       script,fixed=TRUE)))
   }
   lines <- readLines(runner, warn = FALSE)
+  for(required_triage in c(
+    "all_508_contract_review_priority.csv",
+    "known_source_gap_resolution_queue.csv",
+    "review_lane_counts.csv",
+    "source_gap_count",
+    "native-source-contract-alignment")){
+    expect_true(any(grepl(required_triage,
+      readLines(runner,warn=FALSE),fixed=TRUE)),
+      info=paste("source evidence runner omits",required_triage))
+  }
   expect_false(any(trimws(lines) == "else"))
   expect_true(any(grepl("qualify_once(FALSE)",lines,fixed=TRUE)))
   expect_true(any(grepl("qualify_once(TRUE)",lines,fixed=TRUE)))
