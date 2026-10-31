@@ -113,7 +113,8 @@ test_that("new scientific source oracles are included in both qualification mode
     "native-mixed-covariance-sensitivity",
     "native-mixed-participant-bootstraps",
     "native-thirdparty-functional-analogues",
-    "native-final-sparse-elastic-analogues")){
+    "native-final-sparse-elastic-analogues",
+    "native-all-function-mapping-complete")){
     expect_true(any(grepl(paste0('"',name,'"'),
       filter_lines,fixed=TRUE)),
       info=paste("source evidence capture does not execute",name))

@@ -40,6 +40,7 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-mixed-participant-bootstraps",
     "native-thirdparty-functional-analogues",
     "native-final-sparse-elastic-analogues",
+    "native-all-function-mapping-complete",
     "native-mixed-model-source-text"),".R"))
 missing_scientific_tests<-required_scientific_tests[
   !file.exists(required_scientific_tests)]
@@ -123,7 +124,8 @@ filter<-paste(c(
   "native-mixed-covariance-sensitivity",
   "native-mixed-participant-bootstraps",
   "native-thirdparty-functional-analogues",
-  "native-final-sparse-elastic-analogues"),collapse="|")
+  "native-final-sparse-elastic-analogues",
+  "native-all-function-mapping-complete"),collapse="|")
 git_exe<-Sys.which("git")
 head_sha<-if(nzchar(git_exe)){
   git_out<-suppressWarnings(system2(git_exe,c("rev-parse","HEAD"),
@@ -204,6 +206,7 @@ source_files<-unique(c(
   "R/native-elastic-srvf-alternative.R",
   "R/native-sparse-joint-score-workflows.R",
   "R/native-sparse-multilevel-prediction-workflows.R",
+  "tests/testthat/test-native-all-function-mapping-complete.R",
   "tests/testthat/helper-native-generalized-gee-fixture.R",
   "tests/testthat/helper-native-wild-projection-fixture.R",
   "tests/testthat/helper-native-mixed-bootstrap-fixture.R",
