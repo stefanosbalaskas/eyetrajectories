@@ -57,7 +57,13 @@ test_that("native source qualification evidence runner parses", {
     "native-scientific-source-frames","native-source-diagnostic-frames",
     "native-generalized-mixed-source-graphics",
     "native-direct-source-frame-attribution",
-    "native-direct-source-plot-attribution")){
+    "native-direct-source-plot-attribution",
+    "native-direct-source-advanced-attribution",
+    "native-sparse-scientific-graphics",
+    "native-fpca-inference-source-graphics",
+    "native-fpcr-slope-source-calibration",
+    "native-wild-simultaneous-source-calibration",
+    "native-wild-monte-carlo-source-contracts")){
     expect_true(any(grepl(paste0('"',name,'"'),
       current,fixed=TRUE)),
       info=paste("qualification omitted executed source witnesses",name))
