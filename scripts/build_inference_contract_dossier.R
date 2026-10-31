@@ -80,9 +80,11 @@ source_names<-c(
   "cross_validate_fpca_regression",
   "nested_cross_validate_fpca_regression",
   "generate_multivariate_iaaft_surrogates",
-  "multivariate_surrogate_nonlinearity_test"
+  "multivariate_surrogate_nonlinearity_test",
+  "export_portable_result",
+  "bootstrap_fpca_component_envelopes"
 )
-stopifnot(length(source_names)==73L,!anyDuplicated(source_names))
+stopifnot(length(source_names)==75L,!anyDuplicated(source_names))
 idx<-match(source_names,readiness$python_name)
 stopifnot(!anyNA(idx),all(readiness$kind[idx]=="function"),
   all(readiness$native_mapping_present[idx]),
@@ -136,6 +138,8 @@ source_test[70L]<-"tests/testthat/test-native-fpcr-regression-cross-validation.R
 source_test[71L]<-"tests/testthat/test-native-fpcr-nested-cross-validation.R"
 source_test[72L]<-"tests/testthat/test-native-multivariate-iaaft-generator.R"
 source_test[73L]<-"tests/testthat/test-native-multivariate-surrogate-nonlinearity.R"
+source_test[74L]<-"tests/testthat/test-native-python-portable-writer.R"
+source_test[75L]<-"tests/testthat/test-native-fpca-component-envelopes.R"
 source_file<-rep("src/eyetrajectoriespy/reporting.py",length(source_names))
 source_file[12L]<-"src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py"
 source_file[13L]<-"src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py"
@@ -184,6 +188,8 @@ source_file[70L]<-"src/eyetrajectoriespy/prediction.py"
 source_file[71L]<-"src/eyetrajectoriespy/prediction.py"
 source_file[72L]<-"src/eyetrajectoriespy/multivariate_surrogates.py"
 source_file[73L]<-"src/eyetrajectoriespy/multivariate_surrogates.py"
+source_file[74L]<-"src/eyetrajectoriespy/portable_results.py"
+source_file[75L]<-"src/eyetrajectoriespy/stability.py"
 # The first 71 contracts were user-qualified at exactly R commit 73503aa9
 # (2026-10-31T102737); the 72nd integration has no user-side R verdict.
 # Historical qualification is NOT evidence for this newer checkout.
@@ -211,11 +217,11 @@ data<-data.frame(
   missing_evidence=readiness$all_unresolved_requirements[idx],
   stringsAsFactors=FALSE
 )
-stopifnot(nrow(data)==73L,!any(data$fully_certified))
+stopifnot(nrow(data)==75L,!any(data$fully_certified))
 output_dir<-file.path("artifacts","native_inference_contract_review")
 dir.create(output_dir,recursive=TRUE,showWarnings=FALSE)
 output<-file.path(output_dir,"python_1_2_scientific_contract_review_queue.csv")
 utils::write.csv(data,output,row.names=FALSE,na="")
 message("Wrote unsigned source-contract review queue: ",
   normalizePath(output,winslash="/",mustWork=TRUE))
-message("All 73 contracts remain uncertified pending full-domain and independent review.")
+message("All 75 contracts remain uncertified pending full-domain and independent review.")

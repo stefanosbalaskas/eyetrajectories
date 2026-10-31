@@ -855,3 +855,4 @@ export(etr_generate_multivariate_iaaft_surrogates)
 export(etr_multivariate_surrogate_nonlinearity_test)
 
 export(etr_export_python_portable_result)
+export(etr_bootstrap_fpca_component_envelopes)

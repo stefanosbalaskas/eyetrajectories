@@ -22,6 +22,8 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-multivariate-iaaft-generator",
     "native-multivariate-surrogate-nonlinearity",
     "native-python-portable-writer",
+    "native-fpca-component-envelopes",
+  "native-fpca-component-envelopes",
     "native-mixed-model-source-text"),".R"))
 missing_scientific_tests<-required_scientific_tests[
   !file.exists(required_scientific_tests)]
@@ -43,7 +45,7 @@ queue_path<-file.path("artifacts","native_inference_contract_review",
   "python_1_2_scientific_contract_review_queue.csv")
 queue<-utils::read.csv(queue_path,stringsAsFactors=FALSE,
   check.names=FALSE)
-stopifnot(nrow(queue)==73L,!anyDuplicated(queue$python_name),
+stopifnot(nrow(queue)==75L,!anyDuplicated(queue$python_name),
   all(!queue$fully_certified),
   all(queue$source_difference_open),
   all(file.exists(queue$oracle_test)))
@@ -164,6 +166,7 @@ source_files<-unique(c(
   "R/native-multivariate-iaaft-generator.R",
   "R/native-multivariate-surrogate-nonlinearity.R",
   "R/native-python-portable-writer.R",
+  "R/native-fpca-component-envelopes.R",
   "R/native-functional-mixed-moments.R",
   "R/native-mixed-model-source-text.R",
   "R/native-source-environment.R",
@@ -186,6 +189,7 @@ source_files<-unique(c(
   "tests/testthat/test-native-multivariate-iaaft-generator.R",
   "tests/testthat/test-native-multivariate-surrogate-nonlinearity.R",
   "tests/testthat/test-native-python-portable-writer.R",
+  "tests/testthat/test-native-fpca-component-envelopes.R",
   "tests/testthat/test-native-mixed-model-source-text.R",
   "tests/testthat/test-native-fpcr-slope-source-calibration.R",
   "tests/testthat/test-native-wild-simultaneous-source-calibration.R",
