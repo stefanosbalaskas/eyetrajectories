@@ -65,7 +65,7 @@ test_that("native sparse workflow rejects source Python estimator conflation",{
   expect_error(etr_run_sparse_fpca_workflow(list(),
     cfg,observation_process=list()),"observation_process")
   expect_error(etr_run_sparse_fpca_workflow(list(),
-    modifyList(cfg,list(dimension=NULL))),
+    modifyList(cfg,list(dimension=""))),
     "dimension")
 })
 
