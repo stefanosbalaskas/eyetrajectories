@@ -219,6 +219,7 @@ source_files<-unique(c(
   "tests/testthat/test-native-source-contract-gaps.R",
   "R/native-fpca.R",
   "R/native-fpca-extensions.R",
+  "R/native-functional-diagnostics.R",
   "tests/testthat/helper-native-generalized-gee-fixture.R",
   "tests/testthat/helper-native-wild-projection-fixture.R",
   "tests/testthat/helper-native-mixed-bootstrap-fixture.R",
