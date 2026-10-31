@@ -96,9 +96,10 @@ source_names<-c(
   "run_functional_mixed_effects_workflow",
   "run_sparse_fpca_workflow",
   "fit_generalized_function_on_scalar_regression",
-  "run_generalized_functional_workflow"
+  "run_generalized_functional_workflow",
+  "bootstrap_generalized_function_on_scalar_coefficients"
 )
-stopifnot(length(source_names)==89L,!anyDuplicated(source_names))
+stopifnot(length(source_names)==90L,!anyDuplicated(source_names))
 idx<-match(source_names,readiness$python_name)
 stopifnot(!anyNA(idx),all(readiness$kind[idx]=="function"),
   all(readiness$native_mapping_present[idx]),
@@ -163,6 +164,7 @@ source_test[83:84]<-"tests/testthat/test-native-workflow-plot-dispatch.R"
 source_test[85L]<-"tests/testthat/test-native-fpca-wild-family-test.R"
 source_test[86:87]<-"tests/testthat/test-native-bounded-model-workflows.R"
 source_test[88:89]<-"tests/testthat/test-native-generalized-gee-fit.R"
+source_test[90L]<-"tests/testthat/test-native-generalized-gee-bootstrap.R"
 source_file<-rep("src/eyetrajectoriespy/reporting.py",length(source_names))
 source_file[12L]<-"src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py"
 source_file[13L]<-"src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py"
@@ -223,6 +225,7 @@ source_file[86L]<-"src/eyetrajectoriespy/workflows/_dense_regression.py"
 source_file[87L]<-"src/eyetrajectoriespy/workflows/_sparse_fpca.py"
 source_file[88L]<-"src/eyetrajectoriespy/generalized_function_on_scalar.py"
 source_file[89L]<-"src/eyetrajectoriespy/workflows/_dense_regression.py"
+source_file[90L]<-"src/eyetrajectoriespy/generalized_function_on_scalar.py"
 # Owner RStudio evidence at the exact, older c9c6c50 checkout
 # (2026-10-31T123054) confirms BOTH complete qualification modes and all
 # 84 source review candidate rows without test failures. This is historical
@@ -252,11 +255,11 @@ data<-data.frame(
   missing_evidence=readiness$all_unresolved_requirements[idx],
   stringsAsFactors=FALSE
 )
-stopifnot(nrow(data)==89L,!any(data$fully_certified))
+stopifnot(nrow(data)==90L,!any(data$fully_certified))
 output_dir<-file.path("artifacts","native_inference_contract_review")
 dir.create(output_dir,recursive=TRUE,showWarnings=FALSE)
 output<-file.path(output_dir,"python_1_2_scientific_contract_review_queue.csv")
 utils::write.csv(data,output,row.names=FALSE,na="")
 message("Wrote unsigned source-contract review queue: ",
   normalizePath(output,winslash="/",mustWork=TRUE))
-message("All 89 contracts remain uncertified pending full-domain and independent review.")
+message("All 90 contracts remain uncertified pending full-domain and independent review.")
