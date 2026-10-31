@@ -17,6 +17,15 @@ test_that("independent source-review packet is safe and fully unsigned",{
     "python_1_2_direct_source.txt",
     "native_source_contract_gaps_stage22.csv","head",
     "four_numerical_pilots_external_review_priority.csv",
+    "all_508_public_export_independent_review_scope.csv",
+    "nrow(readiness)==508L",
+    "sum(readiness$kind==\"function\")==380L",
+    "sum(readiness$kind!=\"function\")==128L",
+    "per_export_complete_domain_review=FALSE",
+    "per_export_independent_oracle_replay=FALSE",
+    "per_export_schema_error_review=FALSE",
+    "per_export_scientific_scope_review=FALSE",
+    "per_export_independent_reviewer_approved=FALSE",
     "nrow(pilot)==4L")){
     expect_true(any(grepl(term,source_lines,fixed=TRUE)),
       info=paste("expected independent evidence safeguard",term))
