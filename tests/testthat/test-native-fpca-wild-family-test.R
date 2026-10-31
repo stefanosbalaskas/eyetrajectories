@@ -32,6 +32,16 @@ test_that("fixed-family maxT source law reuses exact roots and never refits",{
   expect_equal(fixed$global_p_value,
     (sum(fixed$max_statistics>=max(abs(fixed$observed_statistics)))+1)/8)
   expect_identical(fixed$projection_result,z)
+  family_frame<-etr_fpca_wild_bootstrap_family_test_frame(fixed)
+  expect_equal(nrow(family_frame),3L)
+  expect_equal(family_frame$adjusted_p_value,fixed$adjusted_p_values)
+  diagnostic<-etr_fpca_wild_bootstrap_family_test_monte_carlo_diagnostics(
+    fixed,confidence_level=.95)
+  expect_identical(length(diagnostic$adjusted_exceedances),3L)
+  expect_equal(diagnostic$global_tail_probability,
+    (fixed$global_p_value*8-1)/7,tolerance=1e-12)
+  expect_true(diagnostic$provenance$
+    fpca_wild_bootstrap_monte_carlo_diagnostics$bootstrap_roots_reused)
   expect_true(fixed$provenance$
     fpca_wild_bootstrap_family_test$bootstrap_roots_reused)
   expect_false(fixed$provenance$
