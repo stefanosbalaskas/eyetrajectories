@@ -44,6 +44,7 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-certification",
     "native-source-contract-gaps",
     "native-source-contract-alignment",
+    "native-source-fixture-static-attribution",
     "native-pilot-source-adversarial",
     "native-mixed-model-source-text"),".R"))
 missing_scientific_tests<-required_scientific_tests[
@@ -132,6 +133,7 @@ filter<-paste(c(
   "native-all-function-mapping-complete",
   "native-certification",
   "native-source-contract-alignment",
+  "native-source-fixture-static-attribution",
   "native-pilot-source-adversarial"),collapse="|")
 git_exe<-Sys.which("git")
 head_sha<-if(nzchar(git_exe)){
@@ -227,6 +229,8 @@ source_files<-unique(c(
   "tests/testthat/test-native-certification.R",
   "tests/testthat/test-native-source-contract-gaps.R",
   "tests/testthat/test-native-source-contract-alignment.R",
+  "tests/testthat/test-native-source-fixture-static-attribution.R",
+  "scripts/source_fixture_static_attribution.R",
   "R/native-fpca.R",
   "R/native-fpca-extensions.R",
   "R/native-functional-diagnostics.R",
