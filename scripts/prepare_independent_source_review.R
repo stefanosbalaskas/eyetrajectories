@@ -182,8 +182,10 @@ etr_prepare_independent_source_review<-function(
     "Full source review scope must remain 508 distinct unsigned exports")
   gidx<-match(readiness$python_name,gaps$python_name)
   queued_idx<-match(readiness$python_name,records$python_name)
-  .checked(all(!is.na(queued_idx[!is.na(queued_idx)])),
-    "Selected review queue could not be mapped to source registry")
+  .checked(all(records$python_name%in%readiness$python_name)&&
+    all(!is.na(queued_idx[match(records$python_name,
+      readiness$python_name)])),
+    "Selected review queue could not be mapped to the full source registry")
   review_scope<-data.frame(
     namespace=readiness$namespace,
     python_name=readiness$python_name,
