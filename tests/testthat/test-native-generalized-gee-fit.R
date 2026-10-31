@@ -93,7 +93,10 @@ test_that("native generalized estimator rejects unsupported or invalid source do
   expect_error(call(working_correlation="exchangeable"),"independence")
   expect_error(call(covariance_type="naive"),"robust")
   expect_error(call(basis_size=2L),"basis_size")
-  expect_error(call(family="gaussian"),"family")
+  expect_error(etr_fit_generalized_function_on_scalar_regression(
+    f$x,f$design,"treatment",
+    participant_column="participant_id",dimension="outcome",
+    family="gaussian",basis_size=4L,spline_degree=3L),"family")
   expect_error(call(exposure=rep(-1,36L)),"positive")
   expect_error(etr_run_generalized_functional_workflow(
     f$x,f$design,list(predictors="treatment",
