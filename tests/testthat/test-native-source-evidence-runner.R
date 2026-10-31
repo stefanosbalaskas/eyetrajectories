@@ -24,6 +24,9 @@ test_that("native source qualification evidence runner parses", {
     "all_508_contract_review_priority.csv",
     "known_source_gap_resolution_queue.csv",
     "review_lane_counts.csv",
+    "test_selection_regex.txt",
+    "selected_111_fixture_static_attribution.csv",
+    "fixture_filename_selected_in_both_suite_modes",
     "source_gap_count",
     "native-source-contract-alignment")){
     expect_true(any(grepl(required_triage,
