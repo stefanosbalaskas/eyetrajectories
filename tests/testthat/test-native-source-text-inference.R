@@ -160,10 +160,30 @@ _st_python={
     surrogate=etr_multivariate_iaaft_reporting_text(z$surrogate),
     nonlinear=etr_multivariate_surrogate_nonlinearity_reporting_text(
       z$nonlinear))
+  direct<-list(
+    prediction=reticulate::py_call(
+      etpy_get_export("generalized_function_on_scalar_prediction_reporting_text"),
+      result=reticulate::py_eval("_st_band",convert=FALSE)),
+    difference=reticulate::py_call(
+      etpy_get_export("generalized_function_on_scalar_mean_difference_reporting_text"),
+      result=reticulate::py_eval("_st_diff",convert=FALSE)),
+    covariance=reticulate::py_call(
+      etpy_get_export("functional_mixed_effects_covariance_sensitivity_reporting_text"),
+      result=reticulate::py_eval("_st_cov",convert=FALSE)),
+    surrogate=reticulate::py_call(
+      etpy_get_export("multivariate_iaaft_reporting_text"),
+      result=reticulate::py_eval("_st_surr",convert=FALSE)),
+    nonlinear=reticulate::py_call(
+      etpy_get_export("multivariate_surrogate_nonlinearity_reporting_text"),
+      result=reticulate::py_eval("_st_test",convert=FALSE))
+  )
+  expect_identical(names(direct),names(native))
   for(n in names(native)){
     python<-reticulate::py_eval(paste0("_st_python['",n,"']"),
       convert=TRUE)
     expect_identical(native[[n]],python,
       info=paste("direct Python 1.2 source report:",n))
+    expect_identical(native[[n]],as.character(et_to_r(direct[[n]])),
+      info=paste("direct frozen public source reporter:",n))
   }
 })
