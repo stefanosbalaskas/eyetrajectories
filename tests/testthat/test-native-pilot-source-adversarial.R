@@ -167,3 +167,39 @@ test_that("finite numeric-string inverse-ALR arrays retain NumPy geometry",{
   expect_true(etr_native_parity_catalog()$source_contract_gap_unresolved[
     etr_native_parity_catalog()$python_name=="inverse_alr"])
 })
+
+test_that("finite numeric-string simplex arrays match the source ALR contract",{
+  source_values<-.etr_pilot_adversarial_simplex()
+  character_values<-array(as.character(source_values),dim(source_values))
+  numeric_values<-array(as.numeric(character_values),
+    dim(character_values))
+  for(ref in c(-1L,0L,1L,2L)){
+    for(epsilon in c(1e-8,1e-3)){
+      native<-etr_alr_transform(character_values,
+        reference_dimension=ref,epsilon=epsilon)
+      expected<-etr_alr_transform(numeric_values,
+        reference_dimension=ref,epsilon=epsilon)
+      expect_identical(dim(native),c(4L,7L,2L))
+      expect_equal(unname(native),unname(expected),tolerance=1e-14)
+      expect_true(all(is.finite(native)))
+    }
+  }
+  bad<-character_values;bad[1L,1L,1L]<-"not-a-number"
+  expect_error(etr_alr_transform(bad))
+  missing<-character_values;missing[1L,1L,1L]<-"NaN"
+  expect_error(etr_alr_transform(missing))
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Pinned Python ALR numeric-string array oracle opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  for(ref in c(-1L,0L,1L,2L)){
+    native<-etr_alr_transform(character_values,
+      reference_dimension=ref,epsilon=1e-3)
+    published<-reticulate::py_call(etpy_get_export("alr_transform"),
+      values=reticulate::r_to_py(character_values),
+      reference_dimension=as.integer(ref),epsilon=1e-3)
+    expect_equal(unname(native),unname(et_to_r(published)),
+      tolerance=1e-12)
+  }
+  expect_true(etr_native_parity_catalog()$source_contract_gap_unresolved[
+    etr_native_parity_catalog()$python_name=="alr_transform"])
+})
