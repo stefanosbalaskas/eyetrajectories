@@ -87,6 +87,16 @@ _gbc_py={s:et.generalized_function_on_scalar_simultaneous_bands(
     _gbc_boot,confidence_level=.5,simultaneous_scope=s)
     for s in ('coefficient','family')}
 ")
+  direct<-list(
+    coefficient=reticulate::py_call(
+      etpy_get_export("generalized_function_on_scalar_simultaneous_bands"),
+      bootstrap=reticulate::py_eval("_gbc_boot",convert=FALSE),
+      confidence_level=.5,simultaneous_scope="coefficient"),
+    family=reticulate::py_call(
+      etpy_get_export("generalized_function_on_scalar_simultaneous_bands"),
+      bootstrap=reticulate::py_eval("_gbc_boot",convert=FALSE),
+      confidence_level=.5,simultaneous_scope="family")
+  )
   b<-.etr_gfosr_coefficient_band_fixture()
   for(scope in c("coefficient","family")){
     actual<-etr_generalized_function_on_scalar_simultaneous_bands(
@@ -96,6 +106,8 @@ _gbc_py={s:et.generalized_function_on_scalar_simultaneous_bands(
         "'].",field),convert=TRUE)
       expect_equal(actual[[field]],expected,tolerance=1e-12,
         ignore_attr=TRUE,info=paste(scope,field))
+      expect_equal(et_to_r(reticulate::py_get_attr(direct[[scope]],field)),
+        expected,tolerance=1e-12,ignore_attr=TRUE)
     }
     expected<-reticulate::py_eval(paste0(
       "_gbc_py['",scope,"'].provenance"),convert=TRUE)
