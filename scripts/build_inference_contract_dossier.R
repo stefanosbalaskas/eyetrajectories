@@ -226,13 +226,13 @@ source_file[87L]<-"src/eyetrajectoriespy/workflows/_sparse_fpca.py"
 source_file[88L]<-"src/eyetrajectoriespy/generalized_function_on_scalar.py"
 source_file[89L]<-"src/eyetrajectoriespy/workflows/_dense_regression.py"
 source_file[90L]<-"src/eyetrajectoriespy/generalized_function_on_scalar.py"
-# Owner RStudio evidence at the exact, older c9c6c50 checkout
-# (2026-10-31T123054) confirms BOTH complete qualification modes and all
-# 84 source review candidate rows without test failures. This is historical
-# owner-run evidence, NOT an independent full-domain reviewer signoff.
-# The additional candidates at this newer head have NOT been owner-run.
-fixture_state<-ifelse(seq_along(source_names)<=84L,
-  "owner_full_R_and_Python_1_2_qualification_PASS_at_c9c6c50_20261031T123054_not_independent",
+# Owner RStudio evidence at exact older commit 18d5c38
+# (2026-10-31T124546) confirms BOTH full source qualification modes,
+# package checkout/file integrity TRUE and all first 87 review candidates
+# unsigned. These are historical owner-run tests, not independent reviews.
+# Newly added generalized GEE source candidates 88-90 are NOT owner-qualified.
+fixture_state<-ifelse(seq_along(source_names)<=87L,
+  "owner_full_R_and_Python_1_2_qualification_PASS_at_18d5c38_20261031T124546_not_independent",
   "new_tests_pending_local_native_and_python_oracle")
 stopifnot(all(file.exists(source_test)))
 data<-data.frame(
