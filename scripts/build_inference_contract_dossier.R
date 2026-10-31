@@ -264,14 +264,15 @@ source_file[104L]<-"src/eyetrajectoriespy/workflows/_sparse_async.py"
 source_file[105L]<-"src/eyetrajectoriespy/workflows/_sparse_mfpca.py"
 source_file[106L]<-"src/eyetrajectoriespy/workflows/_sparse_multilevel.py"
 source_file[107L]<-"src/eyetrajectoriespy/workflows/_sparse_prediction.py"
-# Owner RStudio evidence at exact older commit c8084bb
-# (2026-10-31T132748) confirms BOTH full source qualification modes,
-# package checkout/file integrity TRUE and all first 91 review candidates
-# unsigned. These are historical owner-run tests, not independent reviews.
-# Newly added wild FPCR source candidates 92-93 are NOT owner-qualified.
-fixture_state<-ifelse(seq_along(source_names)<=91L,
-  "owner_full_R_and_Python_1_2_qualification_PASS_at_c8084bb_20261031T132748_not_independent",
-  "new_tests_pending_local_native_and_python_oracle")
+# Reported owner RStudio evidence at c61e14f (2026-10-31T210921):
+# both offline native R and pinned Python 1.2 source suite verdicts PASS,
+# exact checkout and file-integrity TRUE, 107 selected candidate dossiers.
+# This is a HISTORICAL aggregate suite result, not individually adjudicated
+# full-domain oracles and not an independent reviewer approval. New commits
+# require a fresh exact-head execution/capture; NEVER inherit certified PASS.
+fixture_state<-rep(
+  "historical_owner_aggregate_both_modes_PASS_at_c61e14f_not_per_contract_adjudicated_not_independent",
+  length(source_names))
 stopifnot(all(file.exists(source_test)))
 data<-data.frame(
   python_name=source_names,
@@ -300,4 +301,6 @@ output<-file.path(output_dir,"python_1_2_scientific_contract_review_queue.csv")
 utils::write.csv(data,output,row.names=FALSE,na="")
 message("Wrote unsigned source-contract review queue: ",
   normalizePath(output,winslash="/",mustWork=TRUE))
-message("All 93 contracts remain uncertified pending full-domain and independent review.")
+message("All ",nrow(data),
+  " selected source contracts remain uncertified pending full-domain and independent review;",
+  " this dossier is not an independent certification.")
