@@ -311,6 +311,24 @@ message("These are test execution records, not independent full-contract certifi
 # The packet checks the captured git commit and all listed MD5 hashes; a
 # passing suite cannot sign its own scientific contracts.
 source("scripts/prepare_independent_source_review.R",local=TRUE)
+# The source review packet must cover the entire immutable 508-export
+# inventory; the 107 candidate fixture rows are only a selected subset.
+scope_file<-file.path("artifacts","native_independent_review_packets",
+  basename(output_dir),"all_508_public_export_independent_review_scope.csv")
+stopifnot(file.exists(scope_file))
+full_scope<-utils::read.csv(scope_file,stringsAsFactors=FALSE,
+  check.names=FALSE)
+stopifnot(nrow(full_scope)==508L,
+  sum(full_scope$kind=="function")==380L,
+  sum(full_scope$kind!="function")==128L,
+  sum(full_scope$mapped_native_function)==380L,
+  sum(full_scope$selected_oracle_candidate)==nrow(queue),
+  all(!full_scope$fully_certified),
+  all(!full_scope$per_export_independent_reviewer_approved))
+message("All 508 frozen public exports inventoried for independent review;",
+  " 380 function analogues, 128 nonfunctions and ",
+  nrow(queue)," selected unsigned oracle candidates.")
+
 if(!all(vapply(results,function(x)isTRUE(x$success),logical(1L)))) {
   failed_labels<-vapply(results,function(x)
     if(identical(x$success,FALSE))x$label else "",character(1L))
