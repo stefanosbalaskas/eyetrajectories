@@ -37,6 +37,14 @@ test_that("all 508 published exports receive a fail-closed evidence queue",{
   functions<-readiness[readiness$kind=="function",,drop=FALSE]
   expect_identical(nrow(functions),380L)
   expect_true(all(functions$native_mapping_present))
+  # A previously omitted implementation marker blocked 111-row source
+  # evidence capture despite the exported native quadrature implementation.
+  weights<-functions[functions$python_name=="functional_trapezoid_weights",
+    ,drop=FALSE]
+  expect_identical(nrow(weights),1L)
+  expect_true(weights$native_implementation_started)
+  expect_false(weights$published_source_difference_open==FALSE)
+  expect_false(weights$fully_certified)
   # Implemented vs mapped are separate tracked states. If any
   # mapped candidate has not started implementation, retain its
   # explicit unresolved requirement instead of fabricating progress.
