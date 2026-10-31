@@ -195,7 +195,7 @@ plt.close('all')
       stage="smoothed"),
     irregular=reticulate::py_call(
       etpy_get_export("plot_sparse_irregular_dimension"),
-      result=reticulate::py_eval("_vs_ir",convert=FALSE),
+      trajectories=reticulate::py_eval("_vs_ir",convert=FALSE),
       dimension="x")
   )
   extract<-reticulate::py_eval(
