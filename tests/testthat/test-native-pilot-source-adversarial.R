@@ -134,3 +134,29 @@ test_that("frozen Python 1.2 first-pilot boundary differences remain explicit",{
     differences$python_name %in% pilot_names]))
   expect_false(any(differences$one_to_one_native_contract_complete))
 })
+
+test_that("finite numeric-string inverse-ALR arrays retain NumPy geometry",{
+  text_logits<-array(c("-0.5","0.0","0.25","1.0"),
+    c(1L,2L,2L))
+  numeric_logits<-array(as.numeric(text_logits),dim(text_logits))
+  native<-etr_inverse_alr(text_logits,0L,3L)
+  expect_identical(dim(native),c(1L,2L,3L))
+  expect_equal(native,etr_inverse_alr(numeric_logits,0L,3L),
+    tolerance=1e-14)
+  expect_true(all(is.finite(native)))
+  expect_equal(as.numeric(apply(native,c(1L,2L),sum)),
+    rep(1,2L),tolerance=1e-14)
+  bad<-text_logits;bad[1L,1L,1L]<-"not-numeric"
+  expect_error(etr_inverse_alr(bad,0L,3L),
+    "incompatible dimensions or nonfinite")
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Pinned Python inverse-ALR numeric-string coercion oracle opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  published<-reticulate::py_call(etpy_get_export("inverse_alr"),
+    transformed=reticulate::r_to_py(text_logits),
+    reference_dimension=as.integer(0L),n_dimensions=as.integer(3L))
+  expect_equal(unname(native),unname(et_to_r(published)),
+    tolerance=1e-12)
+  expect_true(etr_native_parity_catalog()$source_contract_gap_unresolved[
+    etr_native_parity_catalog()$python_name=="inverse_alr"])
+})
