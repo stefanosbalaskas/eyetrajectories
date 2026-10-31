@@ -89,6 +89,33 @@ _py_process={
  'scores':a.truth.scores
 }
 ")
+  # Direct public source call: same seed and Python callable bases.
+  # Native R still uses retained Python source draws to avoid RNG claims.
+  direct<-reticulate::py_call(
+    etpy_get_export("simulate_functional_process"),
+    mean=reticulate::py_eval(
+      "lambda t: np.full(t.shape,.3)",convert=FALSE),
+    eigenfunctions=reticulate::py_eval(
+      "(lambda t: np.ones_like(t),)",convert=FALSE),
+    eigenvalues=reticulate::py_eval("(1.,)",convert=FALSE),
+    truth_grid=reticulate::py_eval("time",convert=FALSE),
+    n_participants=3L,trials_per_participant=2L,
+    participant_eigenvalues=reticulate::py_eval(
+      "(.2,)",convert=FALSE),
+    trial_eigenvalues=reticulate::py_eval("(.1,)",convert=FALSE),
+    measurement_noise_sd=.03,random_state=73L)
+  for(field in c("scores","latent_on_truth_grid")){
+    replay<-et_to_r(reticulate::py_get_attr(
+      reticulate::py_get_attr(direct,"truth"),field))
+    original<-reticulate::py_eval(
+      paste0("a.truth.",field),convert=TRUE)
+    expect_equal(replay,original,tolerance=1e-12,
+      ignore_attr=TRUE,info=paste("direct source simulation",field))
+  }
+  expect_equal(et_to_r(reticulate::py_get_attr(
+    reticulate::py_get_attr(direct,"observations"),"values")),
+    reticulate::py_eval("a.observations.values",convert=TRUE),
+    tolerance=1e-12,ignore_attr=TRUE)
   py<-reticulate::py_to_r(reticulate::py_eval(
     "_py_process",convert=FALSE))
   a<-etr_simulate_functional_process(
