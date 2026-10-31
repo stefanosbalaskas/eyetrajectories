@@ -49,6 +49,18 @@ test_that("native source qualification evidence runner parses", {
     current,fixed=TRUE)))
   expect_true(any(grepl("no source contracts certified",
     current,fixed=TRUE)))
+  # Both the quick qualification and full evidence capture must execute
+  # the direct-source reporter fixtures, not just test static file names.
+  for(name in c("native-inference-reporting",
+    "native-source-text-inference","native-source-model-reports",
+    "native-direct-source-report-attribution")){
+    expect_true(any(grepl(paste0('"',name,'"'),
+      current,fixed=TRUE)),
+      info=paste("qualification omitted executed source witnesses",name))
+    expect_true(any(grepl(paste0('"',name,'"'),
+      lines,fixed=TRUE)),
+      info=paste("evidence capture omitted source witnesses",name))
+  }
   # The owner's direct source qualification must not omit mapping,
   # 508-export readiness or stage-free namespace gates. Requiring a
   # newly unmapped function was previously a hidden false-fail after 380/380.
