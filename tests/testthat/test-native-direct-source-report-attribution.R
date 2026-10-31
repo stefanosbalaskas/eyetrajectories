@@ -38,7 +38,7 @@ test_that("twenty additional source reporting exports have direct pinned oracle 
     inventory<-env$etr_source_fixture_static_inventory(path)
     expect_true(inventory$cases>=1L)
     expect_setequal(intersect(expected[[file]],inventory$export_literals),
-      expected[[file]],info=paste("direct frozen-export calls in",file))
+      expected[[file]])
   }
   catalog<-etr_native_parity_catalog()
   idx<-match(unlist(expected,use.names=FALSE),catalog$python_name)
