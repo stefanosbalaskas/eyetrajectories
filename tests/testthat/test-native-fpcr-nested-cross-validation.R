@@ -84,6 +84,19 @@ for rule in ('minimum','one_se'):
 ")
   z<-.etr_nested_cv_fixture()
   for(rule in c("minimum","one_se")){
+    direct<-reticulate::py_call(
+      etpy_get_export("nested_cross_validate_fpca_regression"),
+      trajectories=reticulate::py_eval("x",convert=FALSE),
+      outcome=reticulate::py_eval("y",convert=FALSE),
+      candidate_components=reticulate::py_eval("(2,1,2)",convert=FALSE),
+      outer_splits=3L,inner_splits=2L,selection_rule=rule,
+      shuffle=FALSE,family="gaussian")
+    for(name in c("outer_folds","inner_summaries","predictions")){
+      original<-reticulate::py_eval(
+        paste0("_py_nested['",rule,"'].",name),convert=TRUE)
+      replay<-et_to_r(reticulate::py_get_attr(direct,name))
+      expect_equal(replay,original,tolerance=1e-8,ignore_attr=TRUE)
+    }
     native<-etr_nested_cross_validate_fpca_regression(z$x,z$y,
       candidate_components=c(2L,1L,2L),outer_splits=3L,
       inner_splits=2L,selection_rule=rule,shuffle=FALSE)
