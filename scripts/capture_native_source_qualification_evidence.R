@@ -207,6 +207,11 @@ status<-data.frame(
   fixture_test=queue$oracle_test,
   native_offline_fixture_pass=results[[1L]]$success,
   pinned_python_fixture_pass=results[[2L]]$success,
+  # The above fields describe the aggregate suite, NOT per-contract
+  # independent coverage. Keep independent case adjudication explicit.
+  per_contract_oracle_reviewed=FALSE,
+  per_contract_full_source_domain_verified=FALSE,
+  per_contract_oracle_witness_state="not_individually_adjudicated",
   input_domain_independent_approval=FALSE,
   numerical_domain_independent_approval=FALSE,
   scientific_scope_independent_approval=FALSE,

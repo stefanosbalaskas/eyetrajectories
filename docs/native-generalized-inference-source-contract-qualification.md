@@ -319,3 +319,24 @@ accepted and invalid input types, numerical and RNG domain, estimands
 and error semantics, and sign against a full immutable reviewed commit.
 No code here self-approves a reviewer signature or alters the full
 508-export certification flags.
+
+## Nested Gaussian FPCR validation, source-bounded and unapproved
+
+The source-defined `nested_cross_validate_fpca_regression()`
+is now mapped to native `etr_nested_cross_validate_fpca_regression()`.
+Unshuffled curve-wise, Gaussian, no-covariate double cross-validation
+refits the entire unsupervised FPCA + scalar OLS pipeline within inner
+training folds and again within each outer training fold. The retained
+component count is selected using minimum mean CV loss or the
+one-standard-error rule, then tested only on the untouched outer fold.
+A frozen Python 1.2 source oracle compares complete outer/inner
+tables and predictions with both selection rules; an adversarial
+holdout-outcome perturbation checks absence of outer-fold leakage.
+Sklearn shuffled/random-state folds, group folds, binomial GLM,
+covariates, generalized type/error domains and independent scientific
+review remain unsupported. This is the 71st **unsigned** candidate.
+
+All source-evidence records now distinguish global suite passes from
+individual contract approval. Global successes are never automatically
+converted into per-contract independent oracle coverage or full
+scientific certification.

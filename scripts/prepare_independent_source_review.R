@@ -116,6 +116,7 @@ etr_prepare_independent_source_review<-function(
     source_file_manifest_matches_checkout=all(identical_hash),
     native_suite_pass=passed[[1L]],
     pinned_python_suite_pass=passed[[2L]],
+    per_contract_oracle_coverage_adjudicated=FALSE,
     all_source_differences_resolved=FALSE,
     independent_replay_pass=FALSE,
     independent_review_approved=FALSE,
@@ -134,6 +135,8 @@ etr_prepare_independent_source_review<-function(
     required_resolution=gaps$review_resolution[gap_idx],
     native_suite_pass_observed=passed[[1L]],
     pinned_python_suite_pass_observed=passed[[2L]],
+    # Source fixtures have not been independently attributed one by one.
+    aggregate_suite_is_not_individual_contract_approval=TRUE,
     same_commit_evidence_valid=exact_head&&all(identical_hash),
     source_full_domain_review=FALSE,
     invalid_input_error_domain_review=FALSE,
