@@ -53,7 +53,11 @@ test_that("native source qualification evidence runner parses", {
   # the direct-source reporter fixtures, not just test static file names.
   for(name in c("native-inference-reporting",
     "native-source-text-inference","native-source-model-reports",
-    "native-direct-source-report-attribution")){
+    "native-direct-source-report-attribution",
+    "native-scientific-source-frames","native-source-diagnostic-frames",
+    "native-generalized-mixed-source-graphics",
+    "native-direct-source-frame-attribution",
+    "native-direct-source-plot-attribution")){
     expect_true(any(grepl(paste0('"',name,'"'),
       current,fixed=TRUE)),
       info=paste("qualification omitted executed source witnesses",name))
