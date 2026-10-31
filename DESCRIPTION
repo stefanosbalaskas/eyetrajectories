@@ -30,5 +30,6 @@ Suggests:
     fdapace (>= 0.6.0),
     refund,
     jsonlite (>= 1.8.0),
-    digest (>= 0.6.0)
+    digest (>= 0.6.0),
+    zip (>= 2.3.0)
 Config/testthat/edition: 3

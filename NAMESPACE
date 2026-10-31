@@ -853,3 +853,5 @@ export(etr_cross_validate_fpca_regression)
 export(etr_nested_cross_validate_fpca_regression)
 export(etr_generate_multivariate_iaaft_surrogates)
 export(etr_multivariate_surrogate_nonlinearity_test)
+
+export(etr_export_python_portable_result)

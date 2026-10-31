@@ -21,6 +21,7 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-fpcr-nested-cross-validation",
     "native-multivariate-iaaft-generator",
     "native-multivariate-surrogate-nonlinearity",
+    "native-python-portable-writer",
     "native-mixed-model-source-text"),".R"))
 missing_scientific_tests<-required_scientific_tests[
   !file.exists(required_scientific_tests)]
@@ -76,6 +77,7 @@ filter<-paste(c(
   "native-fpcr-nested-cross-validation",
   "native-multivariate-iaaft-generator",
   "native-multivariate-surrogate-nonlinearity",
+  "native-python-portable-writer",
   "native-mixed-model-source-text",
   "native-source-environment",
   "native-source-evidence-runner",
@@ -158,6 +160,7 @@ source_files<-unique(c(
   "R/native-fpcr-nested-cross-validation.R",
   "R/native-multivariate-iaaft-generator.R",
   "R/native-multivariate-surrogate-nonlinearity.R",
+  "R/native-python-portable-writer.R",
   "R/native-functional-mixed-moments.R",
   "R/native-mixed-model-source-text.R",
   "R/native-source-environment.R",
@@ -179,6 +182,7 @@ source_files<-unique(c(
   "tests/testthat/test-native-fpcr-nested-cross-validation.R",
   "tests/testthat/test-native-multivariate-iaaft-generator.R",
   "tests/testthat/test-native-multivariate-surrogate-nonlinearity.R",
+  "tests/testthat/test-native-python-portable-writer.R",
   "tests/testthat/test-native-mixed-model-source-text.R",
   "tests/testthat/test-native-fpcr-slope-source-calibration.R",
   "tests/testthat/test-native-wild-simultaneous-source-calibration.R",
