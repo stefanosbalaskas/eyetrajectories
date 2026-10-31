@@ -114,11 +114,12 @@ etr_export_python_portable_result <- function(result,directory,
   .etr_assert(is.character(directory)&&length(directory)==1L&&
     !is.na(directory)&&nzchar(directory),
     "directory must be a nonempty path")
-  if(dir.exists(directory))
+  if(dir.exists(directory)) {
     .etr_assert(length(list.files(directory,all.files=TRUE,
       no..=TRUE))==0L,"portable destination directory is not empty")
-  else
+  } else {
     .etr_assert(!file.exists(directory),"portable destination is a file")
+  }
   .etr_assert(is.data.frame(result$metadata) &&
     all(vapply(result$metadata,function(z)
       (is.numeric(z)||is.character(z)||is.logical(z))&&
