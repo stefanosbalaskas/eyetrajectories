@@ -145,6 +145,13 @@ output_dir<-file.path("artifacts","native_source_contract_evidence",
   paste0("qualification_",record_id))
 dir.create(output_dir,recursive=TRUE,showWarnings=FALSE)
 stopifnot(dir.exists(output_dir))
+# Record exactly which test filenames the two aggregate testthat calls select.
+# A source fixture listed in the 111-contract queue is not necessarily
+# exercised merely because its file exists. Store the regex for audit.
+selection_file<-file.path(output_dir,"test_selection_regex.txt")
+writeLines(filter,selection_file,useBytes=TRUE)
+stopifnot(file.exists(selection_file),length(readLines(
+  selection_file,warn=FALSE))==1L)
 qualify_once<-function(python=FALSE){
   label<-if(python)"python_1_2_direct_source" else "native_r_offline"
   if(python)Sys.setenv(ET_RUN_PYTHON_TESTS="true") else
