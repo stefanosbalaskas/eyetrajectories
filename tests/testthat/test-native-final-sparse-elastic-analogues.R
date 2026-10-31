@@ -121,7 +121,8 @@ test_that("paired and asynchronous native MFPCA require declared R backend",{
   expect_error(etr_fit_sparse_mfpca(bad,
     backend="fdapace_joint_score_pca"),"identical source curve IDs")
   expect_error(etr_run_sparse_mfpca_async_workflow(f$proper,list(
-    backend="fdapace_joint_score_pca",n_components=2L)),
+    dimensions=c("x","y"),backend="fdapace_joint_score_pca",
+    n_components=2L)),
     "separately timed")
 })
 
