@@ -163,3 +163,21 @@ test_that("Python 1.2 exports are readable and verified without Python", {
                  "SHA-256 checksum mismatch")
   }
 })
+
+
+test_that("UTF-32 NumPy decoding is warning free and fail closed", {
+  decode <- eyetrajectories:::.etr_npy_decode_utf32
+  encode <- function(points) {
+    con <- rawConnection(raw(0),open="wb")
+    on.exit(close(con),add=TRUE)
+    writeBin(as.integer(points),con,size=4L,endian="little")
+    rawConnectionValue(con)
+  }
+  text <- c("Δ", "水", "😀")
+  cps <- c(916L,27700L,128512L)
+  expect_warning(got <- decode(encode(cps),3L,1L),NA)
+  expect_identical(got,text)
+  expect_error(decode(encode(-1L),1L,1L),"code point")
+  expect_error(decode(encode(55296L),1L,1L),"code point")
+  expect_error(decode(encode(1114112L),1L,1L),"code point")
+})
