@@ -69,6 +69,7 @@ def _fpcr_obj(cls,**fields):
     for key,value in fields.items():object.__setattr__(z,key,value)
     return z
 _fpcr_oracle={}
+_fpcr_inputs={}
 for ndim in (1,2):
     grid=np.array([0.,.5,1.])
     mode=np.full((1,3,ndim),1/np.sqrt(ndim))
@@ -86,6 +87,7 @@ for ndim in (1,2):
         scale=np.ones(ndim),mean=estimated,
         components=-mode,explained_variance=np.array([.5]),
         scores=-scores,weights=np.array([.25,.5,.25]))
+    _fpcr_inputs[ndim]=(fit,truth)
     assessment=et.evaluate_fpca_recovery(fit,truth)
     _fpcr_oracle[ndim]=dict(
       names=[v.metric.name for v in assessment.values],
@@ -102,6 +104,19 @@ for ndim in (1,2):
     z<-.etr_fpca_recovery_source_fixture(ndim)
     x<-etr_evaluate_fpca_recovery(z$fit,z$truth)
     key<-paste0("_fpcr_oracle[",ndim,"]")
+    direct<-reticulate::py_call(
+      etpy_get_export("evaluate_fpca_recovery"),
+      result=reticulate::py_eval(
+        paste0("_fpcr_inputs[",ndim,"][0]"),convert=FALSE),
+      truth=reticulate::py_eval(
+        paste0("_fpcr_inputs[",ndim,"][1]"),convert=FALSE))
+    metric_values<-reticulate::py_eval(
+      "lambda assessment: [float(v.value) for v in assessment.values]",
+      convert=FALSE)
+    expect_equal(as.numeric(et_to_r(reticulate::py_call(
+      metric_values,direct))),
+      as.numeric(reticulate::py_eval(paste0(key,"['values']"),
+        convert=TRUE)),tolerance=1e-12)
     expect_identical(vapply(x$values,function(v)v$metric$name,character(1L)),
       as.character(reticulate::py_eval(paste0(key,"['names']"),convert=TRUE)))
     # NumPy computes one-mode principal angles from QR + SVD of a
