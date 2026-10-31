@@ -33,6 +33,7 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
   "native-bounded-model-workflows",
   "native-generalized-gee-fit",
   "native-generalized-gee-bootstrap",
+  "native-workflow-bundle-export",
     "native-functional-process-simulation",
     "native-functional-recovery-orchestration",
     "native-workflow-plot-dispatch",
@@ -40,6 +41,7 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-bounded-model-workflows",
     "native-generalized-gee-fit",
     "native-generalized-gee-bootstrap",
+    "native-workflow-bundle-export",
     "native-mixed-model-source-text"),".R"))
 missing_scientific_tests<-required_scientific_tests[
   !file.exists(required_scientific_tests)]
@@ -61,7 +63,7 @@ queue_path<-file.path("artifacts","native_inference_contract_review",
   "python_1_2_scientific_contract_review_queue.csv")
 queue<-utils::read.csv(queue_path,stringsAsFactors=FALSE,
   check.names=FALSE)
-stopifnot(nrow(queue)==90L,!anyDuplicated(queue$python_name),
+stopifnot(nrow(queue)==91L,!anyDuplicated(queue$python_name),
   all(!queue$fully_certified),
   all(queue$source_difference_open),
   all(file.exists(queue$oracle_test)))
@@ -179,6 +181,7 @@ source_files<-unique(c(
   "R/native-generalized-gee-fit.R",
   "R/native-generalized-gee-workflow.R",
   "R/native-generalized-gee-bootstrap.R",
+  "R/native-workflow-bundle-export.R",
   "R/native-fpcr-bootstrap-uncertainty.R",
   "R/native-fpca-component-envelopes.R",
   "R/native-python-portable-writer.R",
