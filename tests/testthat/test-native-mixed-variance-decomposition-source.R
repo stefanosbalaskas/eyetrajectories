@@ -72,6 +72,7 @@ def _v_src(cls,**kw):
     for k,v in kw.items():object.__setattr__(o,k,v)
     return o
 _v_py={}
+_v_fits={}
 for slope,trial in ((True,True),(False,False)):
     B=np.column_stack((np.ones(3),np.array([0.,.5,1.])))
     fit=_v_src(et.FunctionalMixedEffectsResult,
@@ -83,6 +84,7 @@ for slope,trial in ((True,True),(False,False)):
       trial_random_basis=np.ones((3,1)) if trial else None,
       trial_random_effect_covariance=np.array([[.25]]) if trial else None,
       residual_variance=.08)
+    _v_fits[(slope,trial)]=fit
     _v_py[(slope,trial)]=et.functional_mixed_effects_variance_decomposition(
       fit,model_label='m').to_dict(orient='list')
 ")
@@ -90,15 +92,23 @@ for slope,trial in ((True,True),(False,False)):
     fit<-.etr_variance_source_fixture(slope=full,trial=full)
     actual<-etr_functional_mixed_effects_variance_decomposition(fit,"m")
     key<-if(full)"_v_py[(True,True)]" else "_v_py[(False,False)]"
+    fit_key<-if(full)"_v_fits[(True,True)]" else "_v_fits[(False,False)]"
+    direct<-et_to_r(reticulate::py_call(
+      etpy_get_export("functional_mixed_effects_variance_decomposition"),
+      fit=reticulate::py_eval(fit_key,convert=FALSE),
+      model_label="m"))
     for(field in c("model","component","component_type")){
       expected<-reticulate::py_eval(paste0(key,"['",field,"']"),
         convert=TRUE)
       expect_identical(actual[[field]],as.character(expected))
+      expect_identical(as.character(direct[[field]]),as.character(expected))
     }
     for(field in c("time","value")){
       expected<-reticulate::py_eval(paste0(key,"['",field,"']"),
         convert=TRUE)
       expect_equal(actual[[field]],as.numeric(expected),tolerance=1e-12)
+      expect_equal(as.numeric(direct[[field]]),
+        as.numeric(expected),tolerance=1e-12)
     }
   }
 })
