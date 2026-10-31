@@ -121,6 +121,47 @@ verified by RStudio.** This is executable source traceability on selected
 fixtures, not independent full-domain certification. The distinction
 between native R graphics and Python Matplotlib remains explicitly open.
 
+## Exact-head 39 verified; 13 further direct numerical and plotting source oracles
+
+The owner verified commit `db5c45ab6f1955dfdaf70e684fdb7247a3b96677`
+on 1 November 2026. **305 R files parsed**, native R and pinned Python
+1.2 source qualifications **PASS**, evidence capture under
+`qualification_20261101T004632` **PASS**, checkout and file integrity
+**TRUE**. Of the 111 selected unsigned contracts, 39 had direct literal
+export calls in selected source fixtures. No independent approvals changed.
+
+The next research source replay patch introduces **13 further distinct**
+literal public Python source call sites, with computations cross-checked
+against the already retained Python oracle arrays and R native results:
+
+- Five sparse graphics source functions: `plot_sparse_fpca_component`,
+  `plot_sparse_mfpca_component`, `plot_sparse_mfpca_covariance_blocks`,
+  `plot_sparse_mfpca_cross_covariance`, and
+  `plot_sparse_irregular_dimension`.
+- Three inference graphics: `plot_fpca_component_envelope`,
+  `plot_sparse_fpca_score_diagnostics`, and
+  `plot_fpca_wild_bootstrap_family_test`.
+- Two numerical interval estimands:
+  `fpca_regression_slope_simultaneous_band` on global/dimension scopes,
+  and `fpca_wild_bootstrap_projection_simultaneous_interval`.
+- Wild source Monte Carlo precision plus two plotting helpers:
+  `fpca_wild_bootstrap_family_test_monte_carlo_diagnostics`,
+  `plot_fpca_wild_bootstrap_monte_carlo_diagnostics`, and
+  `plot_fpca_wild_bootstrap_simultaneous_interval`.
+
+`tests/testthat/test-native-direct-source-advanced-attribution.R`
+asserts the 13 literal names are present in their actual Python-enabled
+test fixtures and remain explicitly **uncertified**. The owner
+qualification and full evidence-capture filters include all five source
+fixture families and the guard in both execution modes. The evidence
+manifest includes the new static guard.
+
+**Expected next static source literal count: at least 52/111; not yet
+confirmed by RStudio.** More direct source references and fixed-fixture
+comparisons do not resolve the 203 recorded source gaps or 19 alternative
+native estimator/backend differences, and no full-domain independent
+scientific certification has been granted.
+
 ## Remaining evidence needed for a genuine per-export certification
 
 1. Independently rerun the frozen Python and native R repositories at their
