@@ -110,6 +110,18 @@ _sp_source_metadata=[
     for v in _sp_source.values]
 _sp_source_provenance=dict(_sp_source.provenance)
 ")
+  direct<-reticulate::py_call(
+    etpy_get_export("evaluate_sparse_fpca_recovery"),
+    result=reticulate::py_eval("fit",convert=FALSE),
+    truth=reticulate::py_eval("truth",convert=FALSE))
+  values_from<-reticulate::py_eval(
+    "lambda assessment: [float(v.value) for v in assessment.values]",
+    convert=FALSE)
+  direct_values<-as.numeric(et_to_r(
+    reticulate::py_call(values_from,direct)))
+  source_values<-as.numeric(
+    reticulate::py_eval("_sp_source_values",convert=TRUE))
+  expect_equal(direct_values,source_values,tolerance=1e-12)
   z<-.etr_sparse_truth_fixture()
   a<-etr_evaluate_sparse_fpca_recovery(z$fit,z$truth)
   expect_identical(vapply(a$values,function(v)v$metric$name,character(1L)),
