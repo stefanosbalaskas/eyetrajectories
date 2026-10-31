@@ -98,12 +98,14 @@ _py_wild_projection={
     n_bootstrap=20L,residual_components=2L,
     inference_components=3L,confidence_level=.95,
     multiplier_draws=f$draws)
+  for(name in c("reference","pseudo_truth","se","critical"))
+    expect_identical(length(oracle[[name]]),length(fit$reference_projection))
   expect_equal(unname(fit$reference_projection),
-    unname(oracle$reference),tolerance=1e-6)
+    as.numeric(oracle$reference),tolerance=1e-6)
   expect_equal(unname(fit$pseudo_truth_projection),
-    unname(oracle$pseudo_truth),tolerance=1e-6)
+    as.numeric(oracle$pseudo_truth),tolerance=1e-6)
   expect_equal(unname(fit$reference_se),
-    unname(oracle$se),tolerance=1e-5)
+    as.numeric(oracle$se),tolerance=1e-5)
   expect_equal(unname(fit$bootstrap_projections),
     unname(oracle$projections),tolerance=1e-5)
   expect_equal(unname(fit$bootstrap_se),
@@ -111,5 +113,5 @@ _py_wild_projection={
   expect_equal(unname(fit$studentized_roots),
     unname(oracle$roots),tolerance=1e-4)
   expect_equal(unname(fit$critical_values),
-    unname(oracle$critical),tolerance=1e-4)
+    as.numeric(oracle$critical),tolerance=1e-4)
 })
