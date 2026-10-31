@@ -30,11 +30,28 @@ test_that("all 508 published exports receive a fail-closed evidence queue",{
     "unresolved_published_source_difference"))
   expect_true(all(grepl("independent_review_approval_missing",
     mapped$all_unresolved_requirements,fixed=TRUE)))
-  missing<-readiness[readiness$python_name==
+  # Use the current source ledger, not a frozen name that may acquire
+  # a real native implementation in later integration cycles.
+  missing<-readiness[readiness$kind=="function" &
+    !readiness$native_mapping_present,,drop=FALSE]
+  expect_gt(nrow(missing),0L)
+  expect_true(all(missing$first_unresolved_requirement==
+    "native_mapping_missing"))
+  expect_true(all(grepl("native_implementation_missing",
+    missing$all_unresolved_requirements,fixed=TRUE)))
+  # A newly implemented source subset must remain blocked for scientific
+  # source-domain and independently approved contract gaps.
+  simulated<-readiness[readiness$python_name==
     "simulate_functional_process",,drop=FALSE]
-  expect_equal(nrow(missing),1L)
-  expect_identical(missing$first_unresolved_requirement,
-    "native_mapping_missing")
+  expect_identical(nrow(simulated),1L)
+  expect_true(simulated$native_mapping_present)
+  expect_true(simulated$native_implementation_started)
+  expect_true(simulated$published_source_difference_open)
+  expect_identical(simulated$first_unresolved_requirement,
+    "unresolved_published_source_difference")
+  expect_false(simulated$fully_certified)
+  expect_true(grepl("independent_review_approval_missing",
+    simulated$all_unresolved_requirements,fixed=TRUE))
   expect_true(any(readiness$kind!="function"))
 })
 
