@@ -63,6 +63,15 @@ etr_alr_transform <- function(values,reference_dimension=-1L,epsilon=1e-8) {
   .etr_assert(is.numeric(epsilon) && length(epsilon)==1L &&
     is.finite(epsilon) && epsilon>0,"epsilon must be positive and finite")
   values<-.etr_simplex_nested_input(values)
+  # NumPy's published np.asarray(values, dtype=float) also accepts 3-D
+  # numeric-string arrays. Retain native fail-closed checks for nonfinite
+  # and malformed values; conversion alone never approves full parity.
+  if(is.array(values) && is.character(values) &&
+      length(dim(values))==3L) {
+    numeric_values<-suppressWarnings(as.numeric(values))
+    if(all(is.finite(numeric_values)))
+      values<-array(numeric_values,dim=dim(values))
+  }
   etr_validate_simplex(values)
   d<-dim(values); k<-d[3L]
   # Published Python 1.2 accepts a one-channel simplex and returns an
