@@ -48,6 +48,12 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-direct-source-report-attribution",
     "native-direct-source-frame-attribution",
     "native-direct-source-plot-attribution",
+    "native-direct-source-advanced-attribution",
+    "native-sparse-scientific-graphics",
+    "native-fpca-inference-source-graphics",
+    "native-fpcr-slope-source-calibration",
+    "native-wild-simultaneous-source-calibration",
+    "native-wild-monte-carlo-source-contracts",
     "native-scientific-source-frames",
     "native-source-diagnostic-frames",
     "native-generalized-mixed-source-graphics",
@@ -143,6 +149,7 @@ filter<-paste(c(
   "native-direct-source-report-attribution",
   "native-direct-source-frame-attribution",
   "native-direct-source-plot-attribution",
+  "native-direct-source-advanced-attribution",
   "native-pilot-source-adversarial"),collapse="|")
 git_exe<-Sys.which("git")
 head_sha<-if(nzchar(git_exe)){
@@ -242,6 +249,7 @@ source_files<-unique(c(
   "tests/testthat/test-native-direct-source-report-attribution.R",
   "tests/testthat/test-native-direct-source-frame-attribution.R",
   "tests/testthat/test-native-direct-source-plot-attribution.R",
+  "tests/testthat/test-native-direct-source-advanced-attribution.R",
   "scripts/source_fixture_static_attribution.R",
   "R/native-fpca.R",
   "R/native-fpca-extensions.R",
