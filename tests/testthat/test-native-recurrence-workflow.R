@@ -63,7 +63,7 @@ cfg=RecurrenceWorkflowConfig(curve=0,dimensions=('x',),
  embedding_dimension=2,delay=2,radius=.6,metric='euclidean',
  theiler_window=1,min_diagonal_length=2,min_vertical_length=2)
 a=run_recurrence_workflow(x,config=cfg)
-_w4_source={'state':a.embedding.values,'matrix':a.recurrence.matrix}
+_w4_source={'state':a.embedding.values,'matrix':a.recurrence.matrix.toarray()}
 ")
   source<-reticulate::py_to_r(reticulate::py_eval("_w4_source",convert=FALSE))
   expect_equal(unname(native$embedding$values),
