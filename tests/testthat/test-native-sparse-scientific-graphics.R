@@ -45,44 +45,6 @@
   force(expr)
 }
 test_that("seven native sparse graphics preserve scientific source coordinates",{
-  # Five literal frozen public plot exports, with returned source Axes
-  # geometry independently matched to the original pinned Python oracle.
-  direct_axes<-list(
-    fpca=reticulate::py_call(
-      etpy_get_export("plot_sparse_fpca_component"),
-      result=reticulate::py_eval("_vs_uni",convert=FALSE)),
-    mfpca=reticulate::py_call(
-      etpy_get_export("plot_sparse_mfpca_component"),
-      result=reticulate::py_eval("_vs_mf",convert=FALSE)),
-    blocks=reticulate::py_call(
-      etpy_get_export("plot_sparse_mfpca_covariance_blocks"),
-      result=reticulate::py_eval("_vs_mf",convert=FALSE)),
-    cross=reticulate::py_call(
-      etpy_get_export("plot_sparse_mfpca_cross_covariance"),
-      result=reticulate::py_eval("_vs_mf",convert=FALSE),
-      stage="smoothed"),
-    irregular=reticulate::py_call(
-      etpy_get_export("plot_sparse_irregular_dimension"),
-      result=reticulate::py_eval("_vs_ir",convert=FALSE),
-      dimension="x")
-  )
-  extract<-reticulate::py_eval(
-    "lambda x, key: {'fpca_mean':lambda: x.lines[0].get_ydata(), 'fpca_lower':lambda: x.lines[1].get_ydata(), 'fpca_upper':lambda: x.lines[2].get_ydata(), 'mfpca_x_upper':lambda: x[0].lines[1].get_ydata(), 'mfpca_y_upper':lambda: x[1].lines[1].get_ydata(), 'xy':lambda: x[0,1].images[0].get_array().data, 'yx':lambda: x[1].images[0].get_array().data, 'irreg_b_x':lambda: x.lines[1].get_ydata()}[key]()",
-    convert=FALSE)
-  direct_keys<-c(fpca_mean="fpca",fpca_lower="fpca",
-    fpca_upper="fpca",mfpca_x_upper="mfpca",
-    mfpca_y_upper="mfpca",xy="blocks",yx="cross",
-    irreg_b_x="irregular")
-  for(n in names(direct_keys)){
-    direct<-et_to_r(reticulate::py_call(extract,
-      direct_axes[[direct_keys[[n]]]],n))
-    retained<-reticulate::py_eval(paste0("_vs_python['",n,"']"),
-      convert=TRUE)
-    expect_equal(direct,retained,
-      tolerance=1e-12,ignore_attr=TRUE,
-      info=paste("replayed frozen sparse source plot",n))
-  }
-  reticulate::py_run_string("plt.close('all')")
   z<-.etr_sparse_visual_fixtures()
   .etr_sparse_visual_pdf({
     a<-etr_plot_sparse_fpca_covariance(z$univariate)
@@ -215,6 +177,44 @@ _vs_python={
 }
 plt.close('all')
 ")
+  # Five literal frozen public plot exports, with returned source Axes
+  # geometry independently matched to the original pinned Python oracle.
+  direct_axes<-list(
+    fpca=reticulate::py_call(
+      etpy_get_export("plot_sparse_fpca_component"),
+      result=reticulate::py_eval("_vs_uni",convert=FALSE)),
+    mfpca=reticulate::py_call(
+      etpy_get_export("plot_sparse_mfpca_component"),
+      result=reticulate::py_eval("_vs_mf",convert=FALSE)),
+    blocks=reticulate::py_call(
+      etpy_get_export("plot_sparse_mfpca_covariance_blocks"),
+      result=reticulate::py_eval("_vs_mf",convert=FALSE)),
+    cross=reticulate::py_call(
+      etpy_get_export("plot_sparse_mfpca_cross_covariance"),
+      result=reticulate::py_eval("_vs_mf",convert=FALSE),
+      stage="smoothed"),
+    irregular=reticulate::py_call(
+      etpy_get_export("plot_sparse_irregular_dimension"),
+      result=reticulate::py_eval("_vs_ir",convert=FALSE),
+      dimension="x")
+  )
+  extract<-reticulate::py_eval(
+    "lambda x, key: {'fpca_mean':lambda: x.lines[0].get_ydata(), 'fpca_lower':lambda: x.lines[1].get_ydata(), 'fpca_upper':lambda: x.lines[2].get_ydata(), 'mfpca_x_upper':lambda: x[0].lines[1].get_ydata(), 'mfpca_y_upper':lambda: x[1].lines[1].get_ydata(), 'xy':lambda: x[0,1].images[0].get_array().data, 'yx':lambda: x[1].images[0].get_array().data, 'irreg_b_x':lambda: x.lines[1].get_ydata()}[key]()",
+    convert=FALSE)
+  direct_keys<-c(fpca_mean="fpca",fpca_lower="fpca",
+    fpca_upper="fpca",mfpca_x_upper="mfpca",
+    mfpca_y_upper="mfpca",xy="blocks",yx="cross",
+    irreg_b_x="irregular")
+  for(n in names(direct_keys)){
+    direct<-et_to_r(reticulate::py_call(extract,
+      direct_axes[[direct_keys[[n]]]],n))
+    retained<-reticulate::py_eval(paste0("_vs_python['",n,"']"),
+      convert=TRUE)
+    expect_equal(direct,retained,
+      tolerance=1e-12,ignore_attr=TRUE,
+      info=paste("replayed frozen sparse source plot",n))
+  }
+  reticulate::py_run_string("plt.close('all')")
   z<-.etr_sparse_visual_fixtures()
   .etr_sparse_visual_pdf({
     a<-etr_plot_sparse_fpca_component(z$univariate)
