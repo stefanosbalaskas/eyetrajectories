@@ -39,6 +39,7 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-mixed-covariance-sensitivity",
     "native-mixed-participant-bootstraps",
     "native-thirdparty-functional-analogues",
+    "native-final-sparse-elastic-analogues",
     "native-mixed-model-source-text"),".R"))
 missing_scientific_tests<-required_scientific_tests[
   !file.exists(required_scientific_tests)]
@@ -60,7 +61,7 @@ queue_path<-file.path("artifacts","native_inference_contract_review",
   "python_1_2_scientific_contract_review_queue.csv")
 queue<-utils::read.csv(queue_path,stringsAsFactors=FALSE,
   check.names=FALSE)
-stopifnot(nrow(queue)==101L,!anyDuplicated(queue$python_name),
+stopifnot(nrow(queue)==107L,!anyDuplicated(queue$python_name),
   all(!queue$fully_certified),
   all(queue$source_difference_open),
   all(file.exists(queue$oracle_test)))
@@ -121,7 +122,8 @@ filter<-paste(c(
   "native-wild-bootstrap-truncation-scan",
   "native-mixed-covariance-sensitivity",
   "native-mixed-participant-bootstraps",
-  "native-thirdparty-functional-analogues"),collapse="|")
+  "native-thirdparty-functional-analogues",
+  "native-final-sparse-elastic-analogues"),collapse="|")
 git_exe<-Sys.which("git")
 head_sha<-if(nzchar(git_exe)){
   git_out<-suppressWarnings(system2(git_exe,c("rev-parse","HEAD"),
@@ -199,6 +201,9 @@ source_files<-unique(c(
   "R/native-mixed-covariance-sensitivity.R",
   "R/native-mixed-participant-bootstraps.R",
   "R/native-thirdparty-functional-analogues.R",
+  "R/native-elastic-srvf-alternative.R",
+  "R/native-sparse-joint-score-workflows.R",
+  "R/native-sparse-multilevel-prediction-workflows.R",
   "tests/testthat/helper-native-generalized-gee-fixture.R",
   "tests/testthat/helper-native-wild-projection-fixture.R",
   "tests/testthat/helper-native-mixed-bootstrap-fixture.R",

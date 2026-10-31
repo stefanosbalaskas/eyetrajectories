@@ -50,6 +50,12 @@
   detect_functional_outliers_skfda="etr_detect_functional_outliers_skfda",
   to_fdapy_irregular="etr_to_fdapy_irregular",
   fit_sparse_fpca_fdapy="etr_fit_sparse_fpca_fdapy",
+  fit_elastic_fpca="etr_fit_elastic_fpca",
+  fit_sparse_mfpca="etr_fit_sparse_mfpca",
+  run_sparse_mfpca_async_workflow="etr_run_sparse_mfpca_async_workflow",
+  run_sparse_mfpca_workflow="etr_run_sparse_mfpca_workflow",
+  run_sparse_multilevel_workflow="etr_run_sparse_multilevel_workflow",
+  run_sparse_prediction_workflow="etr_run_sparse_prediction_workflow",
   capture_environment="etr_capture_environment",
   generalized_function_on_scalar_predict="etr_generalized_function_on_scalar_predict",
   functional_mixed_effects_reporting_text="etr_functional_mixed_effects_reporting_text",
@@ -861,6 +867,18 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     api$python_name=="to_fdapy_irregular"] <- 105L
   api$native_implementation_stage[api$is_python_function &
     api$python_name=="fit_sparse_fpca_fdapy"] <- 106L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="fit_elastic_fpca"] <- 107L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="fit_sparse_mfpca"] <- 108L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="run_sparse_mfpca_async_workflow"] <- 109L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="run_sparse_mfpca_workflow"] <- 110L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="run_sparse_multilevel_workflow"] <- 111L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="run_sparse_prediction_workflow"] <- 112L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # TrajectorySet native representation covers key fields and with_values/subset

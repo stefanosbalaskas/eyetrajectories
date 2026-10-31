@@ -108,9 +108,15 @@ source_names<-c(
   "to_skfda_basis",
   "detect_functional_outliers_skfda",
   "to_fdapy_irregular",
-  "fit_sparse_fpca_fdapy"
+  "fit_sparse_fpca_fdapy",
+  "fit_elastic_fpca",
+  "fit_sparse_mfpca",
+  "run_sparse_mfpca_async_workflow",
+  "run_sparse_mfpca_workflow",
+  "run_sparse_multilevel_workflow",
+  "run_sparse_prediction_workflow"
 )
-stopifnot(length(source_names)==101L,!anyDuplicated(source_names))
+stopifnot(length(source_names)==107L,!anyDuplicated(source_names))
 idx<-match(source_names,readiness$python_name)
 stopifnot(!anyNA(idx),all(readiness$kind[idx]=="function"),
   all(readiness$native_mapping_present[idx]),
@@ -182,6 +188,7 @@ source_test[93L]<-"tests/testthat/test-native-wild-bootstrap-truncation-scan.R"
 source_test[94L]<-"tests/testthat/test-native-mixed-covariance-sensitivity.R"
 source_test[95:96]<-"tests/testthat/test-native-mixed-participant-bootstraps.R"
 source_test[97:101]<-"tests/testthat/test-native-thirdparty-functional-analogues.R"
+source_test[102:107]<-"tests/testthat/test-native-final-sparse-elastic-analogues.R"
 source_file<-rep("src/eyetrajectoriespy/reporting.py",length(source_names))
 source_file[12L]<-"src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py"
 source_file[13L]<-"src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py"
@@ -251,6 +258,12 @@ source_file[95L]<-"src/eyetrajectoriespy/functional_mixed_effects_inference.py"
 source_file[96L]<-"src/eyetrajectoriespy/functional_mixed_effects_full_refit.py"
 source_file[97:99]<-"src/eyetrajectoriespy/backends.py"
 source_file[100:101]<-"src/eyetrajectoriespy/sparse.py"
+source_file[102L]<-"src/eyetrajectoriespy/elastic.py"
+source_file[103L]<-"src/eyetrajectoriespy/sparse_multivariate.py"
+source_file[104L]<-"src/eyetrajectoriespy/workflows/_sparse_async.py"
+source_file[105L]<-"src/eyetrajectoriespy/workflows/_sparse_mfpca.py"
+source_file[106L]<-"src/eyetrajectoriespy/workflows/_sparse_multilevel.py"
+source_file[107L]<-"src/eyetrajectoriespy/workflows/_sparse_prediction.py"
 # Owner RStudio evidence at exact older commit c8084bb
 # (2026-10-31T132748) confirms BOTH full source qualification modes,
 # package checkout/file integrity TRUE and all first 91 review candidates
@@ -280,7 +293,7 @@ data<-data.frame(
   missing_evidence=readiness$all_unresolved_requirements[idx],
   stringsAsFactors=FALSE
 )
-stopifnot(nrow(data)==101L,!any(data$fully_certified))
+stopifnot(nrow(data)==107L,!any(data$fully_certified))
 output_dir<-file.path("artifacts","native_inference_contract_review")
 dir.create(output_dir,recursive=TRUE,showWarnings=FALSE)
 output<-file.path(output_dir,"python_1_2_scientific_contract_review_queue.csv")
