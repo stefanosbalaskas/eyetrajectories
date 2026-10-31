@@ -37,13 +37,14 @@ test_that("multivariate LLE surrogate test uses exact plus-one tails",{
 })
 test_that("multivariate LLE refuses unsupported source domains",{
   x<-.etr_multivariate_lle_fixture()
-  base<-function(...)etr_multivariate_surrogate_nonlinearity_test(
-    x,"example",c("x","y"),"y","largest_lyapunov",2L,
-    2L,3L,7L,1L,4L,...)
-  expect_error(base(statistic="bad"),"matched by multiple")
+  base<-function(statistic="largest_lyapunov",fit_end=4L,...)
+    etr_multivariate_surrogate_nonlinearity_test(
+      x,"example",c("x","y"),"y",statistic,2L,
+      2L,3L,7L,1L,fit_end,...)
+  expect_error(base(statistic="bad"),"statistic")
   expect_error(base(alternative="bad"),"alternative")
   expect_error(base(delay_units="ms"),"sample units")
-  expect_error(base(fit_end=1L),"matched by multiple")
+  expect_error(base(fit_end=1L),"fit_end")
 })
 test_that("pinned Python 1.2 independently verifies multivariate p-value rule",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
