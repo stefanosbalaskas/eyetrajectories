@@ -122,6 +122,17 @@ source_names<-c(
 )
 stopifnot(length(source_names)==111L,!anyDuplicated(source_names))
 idx<-match(source_names,readiness$python_name)
+# Keep the scientific evidence gate strict, but explain which exact
+# source contract needs genuine implementation work or inventory repair.
+if(anyNA(idx))
+  stop("Selected source contracts absent from frozen readiness registry: ",
+    paste(source_names[is.na(idx)],collapse=", "),call.=FALSE)
+not_implemented<-source_names[!readiness$native_implementation_started[idx]]
+if(length(not_implemented))
+  stop("Selected source contracts have no recorded native implementation: ",
+    paste(not_implemented,collapse=", "),
+    ". Fix the implementation or authoritative inventory; never sign a",
+    " missing scientific contract.",call.=FALSE)
 stopifnot(!anyNA(idx),all(readiness$kind[idx]=="function"),
   all(readiness$native_mapping_present[idx]),
   all(readiness$native_implementation_started[idx]),
