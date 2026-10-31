@@ -255,6 +255,7 @@ source_files<-unique(c(
   "tests/testthat/test-native-direct-source-plot-attribution.R",
   "tests/testthat/test-native-direct-source-advanced-attribution.R",
   "tests/testthat/test-native-direct-numerical-source-attribution.R",
+  "tests/testthat/test-native-direct-source-estimator-attribution.R",
   "tests/testthat/test-native-fpca-wild-family-test.R",
   "scripts/source_fixture_static_attribution.R",
   "R/native-fpca.R",
