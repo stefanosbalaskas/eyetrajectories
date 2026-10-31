@@ -88,6 +88,18 @@ _sl_results={
       _sl_fit,confidence_level=.5,simultaneous_scope=scope)
     for scope in ('global','dimension')}
 ")
+  # Direct source calls for both simultaneous maxima scopes; compare
+  # source-to-source and source-to-native without promoting certification.
+  direct<-list(
+    global=reticulate::py_call(
+      etpy_get_export("fpca_regression_slope_simultaneous_band"),
+      result=reticulate::py_eval("_sl_fit",convert=FALSE),
+      confidence_level=.5,simultaneous_scope="global"),
+    dimension=reticulate::py_call(
+      etpy_get_export("fpca_regression_slope_simultaneous_band"),
+      result=reticulate::py_eval("_sl_fit",convert=FALSE),
+      confidence_level=.5,simultaneous_scope="dimension")
+  )
   z<-.etr_slope_calibration_fixture()
   for(scope in c("global","dimension")){
     x<-etr_fpca_regression_slope_simultaneous_band(
@@ -98,6 +110,8 @@ _sl_results={
         "_sl_results['",scope,"'].",n),convert=TRUE)
       expect_equal(x[[n]],py,tolerance=1e-12,ignore_attr=TRUE,
         info=paste("frozen 1.2",scope,n))
+      expect_equal(et_to_r(reticulate::py_get_attr(direct[[scope]],n)),py,
+        tolerance=1e-12,ignore_attr=TRUE)
     }
   }
 })
