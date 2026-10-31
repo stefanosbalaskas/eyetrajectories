@@ -37,6 +37,7 @@ required<-c("native-generalized-fosr-prediction",
   "native-wild-bootstrap-truncation-scan",
   "native-mixed-covariance-sensitivity",
   "native-mixed-participant-bootstraps",
+  "native-thirdparty-functional-analogues",
   "native-mixed-model-source-text","native-source-environment")
 test_files<-file.path("tests","testthat",paste0("test-",required,".R"))
 git<-Sys.which("git")

@@ -45,6 +45,11 @@
   functional_mixed_effects_covariance_sensitivity="etr_functional_mixed_effects_covariance_sensitivity",
   bootstrap_functional_mixed_effects_coefficients="etr_bootstrap_functional_mixed_effects_coefficients",
   bootstrap_functional_mixed_effects_full_refit="etr_bootstrap_functional_mixed_effects_full_refit",
+  to_skfda_grid="etr_to_skfda_grid",
+  to_skfda_basis="etr_to_skfda_basis",
+  detect_functional_outliers_skfda="etr_detect_functional_outliers_skfda",
+  to_fdapy_irregular="etr_to_fdapy_irregular",
+  fit_sparse_fpca_fdapy="etr_fit_sparse_fpca_fdapy",
   capture_environment="etr_capture_environment",
   generalized_function_on_scalar_predict="etr_generalized_function_on_scalar_predict",
   functional_mixed_effects_reporting_text="etr_functional_mixed_effects_reporting_text",
@@ -846,6 +851,16 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     api$python_name=="bootstrap_functional_mixed_effects_coefficients"] <- 100L
   api$native_implementation_stage[api$is_python_function &
     api$python_name=="bootstrap_functional_mixed_effects_full_refit"] <- 101L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="to_skfda_grid"] <- 102L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="to_skfda_basis"] <- 103L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="detect_functional_outliers_skfda"] <- 104L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="to_fdapy_irregular"] <- 105L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="fit_sparse_fpca_fdapy"] <- 106L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # TrajectorySet native representation covers key fields and with_values/subset
