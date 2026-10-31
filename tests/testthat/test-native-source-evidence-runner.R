@@ -53,6 +53,18 @@ test_that("native source qualification evidence runner parses", {
   expect_true(any(grepl(
     'source("scripts/prepare_independent_source_review.R",local=TRUE)',
     lines,fixed=TRUE)))
+  # Selected 107 source-oracle rows must not hide missing non-function
+  # contracts from the immutable 508-export independent-review scope.
+  for(term in c("all_508_public_export_independent_review_scope.csv",
+    "nrow(full_scope)==508L",
+    'sum(full_scope$kind=="function")==380L',
+    'sum(full_scope$kind!="function")==128L',
+    "sum(full_scope$selected_oracle_candidate)==nrow(queue)",
+    "all(!full_scope$fully_certified)")){
+    expect_true(any(grepl(term,lines,fixed=TRUE)),
+      info=paste("evidence runner scope check missing",term))
+  }
+
   expect_false(any(grepl(
     "NOT ATTEMPTED: offline qualification failed",lines,fixed=TRUE)))
 })
