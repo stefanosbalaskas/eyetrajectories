@@ -124,9 +124,9 @@ tr=TrajectorySet(time=t,values=y[:,:,None],curve_ids=ids,
  dimension_names=('outcome',),
  metadata=pd.DataFrame({'participant_id':[f'P{i:02d}' for i in range(1,13) for _ in range(3)]}),
  coordinate_system='unknown',time_unit='s')
-rev=np.arange(n,0,-1)
-design=pd.DataFrame({'curve_id':[f'curve{i:02d}' for i in rev],
- 'treatment':(rev%4<2).astype(float)})
+ordered=np.arange(1,n+1)
+design=pd.DataFrame({'curve_id':[f'curve{i:02d}' for i in ordered],
+ 'treatment':(ordered%4<2).astype(float)})
 pygee=fit_generalized_function_on_scalar_regression(tr,design,
  ['treatment'],participant_column='participant_id',
  dimension='outcome',family='poisson',basis_size=4,spline_degree=3)
