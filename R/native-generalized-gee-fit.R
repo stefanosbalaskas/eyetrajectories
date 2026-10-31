@@ -243,7 +243,7 @@ etr_fit_generalized_function_on_scalar_regression<-function(
     binomial_successes=if(is.null(den))NULL else y,
     binomial_denominators=den,
     binomial_observed_proportions=if(is.null(den))NULL else observed,
-    binomial_expected_successes=if(is.null(den))NULL else mu*den,
+    binomial_expected_successes=if(is.null(den))NULL else fitted_mean*den,
     binomial_denominator_expanded_from_curve=
       !is.null(den)&&is.null(dim(binomial_denominator)),
     provenance=prov),class="etr_generalized_function_on_scalar")
