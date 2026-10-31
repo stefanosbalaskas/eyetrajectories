@@ -24,6 +24,8 @@
   load_portable_result="etr_read_python_portable_result",
   export_portable_result="etr_export_python_portable_result",
   bootstrap_fpca_component_envelopes="etr_bootstrap_fpca_component_envelopes",
+  run_fpca_workflow="etr_run_fpca_workflow",
+  run_function_on_scalar_workflow="etr_run_function_on_scalar_workflow",
   capture_environment="etr_capture_environment",
   generalized_function_on_scalar_predict="etr_generalized_function_on_scalar_predict",
   functional_mixed_effects_reporting_text="etr_functional_mixed_effects_reporting_text",
@@ -783,6 +785,10 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     api$python_name=="export_portable_result"] <- 79L
   api$native_implementation_stage[api$is_python_function &
     api$python_name=="bootstrap_fpca_component_envelopes"] <- 80L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="run_fpca_workflow"] <- 81L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="run_function_on_scalar_workflow"] <- 82L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
   # TrajectorySet native representation covers key fields and with_values/subset

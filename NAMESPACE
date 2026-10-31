@@ -856,3 +856,5 @@ export(etr_multivariate_surrogate_nonlinearity_test)
 
 export(etr_export_python_portable_result)
 export(etr_bootstrap_fpca_component_envelopes)
+export(etr_run_fpca_workflow)
+export(etr_run_function_on_scalar_workflow)
