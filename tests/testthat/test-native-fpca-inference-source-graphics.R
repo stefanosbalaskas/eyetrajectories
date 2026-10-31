@@ -167,6 +167,36 @@ _iv_oracle={
 }
 plt.close('all')
 ")
+  # Direct public Python source Axes (no claim of Python/R object parity).
+  direct_axes<-list(
+    component=reticulate::py_call(
+      etpy_get_export("plot_fpca_component_envelope"),
+      result=reticulate::py_eval("_iv_env",convert=FALSE)),
+    sparse=reticulate::py_call(
+      etpy_get_export("plot_sparse_fpca_score_diagnostics"),
+      result=reticulate::py_eval("_iv_sparse",convert=FALSE)),
+    family=reticulate::py_call(
+      etpy_get_export("plot_fpca_wild_bootstrap_family_test"),
+      result=reticulate::py_eval("_iv_family",convert=FALSE),
+      max_targets=2L,show_targetwise=TRUE)
+  )
+  extract<-reticulate::py_eval(
+    "lambda x, key: {'component_median':lambda: x.lines[0].get_ydata(), 'component_reference':lambda: x.lines[1].get_ydata(), 'family_adjusted':lambda: x.collections[0].get_offsets()[:,1], 'family_targetwise':lambda: x.collections[1].get_offsets()[:,1], 'sparse_good':lambda: x.collections[0].get_offsets()[:,1], 'sparse_flagged':lambda: x.collections[1].get_offsets()[:,1]}[key]()",
+    convert=FALSE)
+  sources<-c(component_median="component",
+    component_reference="component",family_adjusted="family",
+    family_targetwise="family",sparse_good="sparse",
+    sparse_flagged="sparse")
+  for(n in names(sources)){
+    direct<-et_to_r(reticulate::py_call(extract,
+      direct_axes[[sources[[n]]]],n))
+    retained<-reticulate::py_eval(paste0("_iv_oracle['",n,"']"),
+      convert=TRUE)
+    expect_equal(as.numeric(direct),as.numeric(retained),
+      tolerance=1e-12,ignore_attr=TRUE,
+      info=paste("direct source FPCA/PACE Matplotlib line",n))
+  }
+  reticulate::py_run_string("plt.close('all')")
   x<-.etr_fpca_inference_visual_fixture()
   .etr_fpca_inference_visual_pdf({
     a<-etr_plot_fpca_component_envelope(x$envelope)
