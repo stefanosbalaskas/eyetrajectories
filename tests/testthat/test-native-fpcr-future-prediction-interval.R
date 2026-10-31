@@ -108,6 +108,21 @@ _pi_indices=np.array(
 _pi_provenance=dict(
   _pi_source.provenance['fpca_regression_future_prediction_interval'])
 ")
+  # Direct frozen Python public-source predictive replay with its own
+  # NumPy RNG stream; the native R comparison still uses explicit indices.
+  direct<-reticulate::py_call(
+    etpy_get_export("fpca_regression_future_prediction_interval"),
+    result=reticulate::py_eval("_pi_result",convert=FALSE),
+    outcome=reticulate::py_eval("_pi_outcome",convert=FALSE),
+    confidence_level=.9,random_state=121L)
+  for(field in c("centered_residuals","sampled_residuals",
+      "predictive_draws","lower","median","upper","predictive_se")){
+    baseline<-reticulate::py_eval(paste0("_pi_source.",field),
+      convert=TRUE)
+    replay<-et_to_r(reticulate::py_get_attr(direct,field))
+    expect_equal(replay,baseline,tolerance=1e-12,ignore_attr=TRUE,
+      info=paste("direct source prediction",field))
+  }
   z<-.etr_fpcr_future_fixture()
   indices<-reticulate::py_to_r(reticulate::py_eval(
     "_pi_indices",convert=FALSE))
