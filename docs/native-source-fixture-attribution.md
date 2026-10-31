@@ -162,6 +162,54 @@ comparisons do not resolve the 203 recorded source gaps or 19 alternative
 native estimator/backend differences, and no full-domain independent
 scientific certification has been granted.
 
+## Verified 52 direct source references; eight more numerical/estimator replays
+
+At exact owner-verified RStudio checkout
+`fa7c040c638cd82dc44e968bce9305cf101eea76`, the
+`qualification_20261101T012433` evidence bundle confirmed 306 R
+source files parsed, native R **PASS**, pinned Python 1.2 source **PASS**,
+both source qualification/evidence modes **PASS**, checkout and file
+integrity **TRUE**. All 111 selected fixtures were included in captured
+test selection, and **52/111** selected contract files contained direct
+literal source-export call references. No independent signoffs changed.
+
+The following eight additional previously indirect public Python source
+contracts now have typed direct-source replays and numeric comparisons
+against the original pinned Python fixtures (new HEAD requires owner
+RStudio qualification):
+
+- Fixed-family wild bootstrap maxT:
+  `fpca_wild_bootstrap_projection_family_test`
+- Generalized FoSR link-scale simultaneous coefficient bands:
+  `generalized_function_on_scalar_simultaneous_bands`
+- Mixed model coefficient bands:
+  `functional_mixed_effects_simultaneous_bands`
+- Mixed model variance decomposition:
+  `functional_mixed_effects_variance_decomposition`
+- Known-truth hierarchy and registration recovery:
+  `evaluate_hierarchy_truth_recovery`,
+  `evaluate_registration_recovery`
+- Mixed model known-truth recovery:
+  `evaluate_functional_mixed_effects_recovery`
+- Generalized FoSR mean difference and ratio contrasts:
+  `generalized_function_on_scalar_mean_difference_band`
+
+The original fixed arrays, estimands, nulls and source numerical results
+are retained, and newly executed direct public-export results are checked
+against them. The new
+`test-native-direct-numerical-source-attribution.R` guards all eight
+frozen Python names while requiring that their one-to-one complete and
+independent certification flags remain **FALSE**. It is selected in both
+qualification modes and evidence capture; its code and the maxT test are
+included in the evidence integrity manifest.
+
+**Expected next static attribution >=60/111, NOT yet measured at the
+new research HEAD.** A direct source function call on a fixed fixture
+does not qualify whole-domain errors, type coercion, nonidentical R
+result structures, optimizer choices, scientific backend distinctions
+or independent signoff. The 203 recorded source differences and 19
+distinct backend/estimand alternatives are still open.
+
 ## Remaining evidence needed for a genuine per-export certification
 
 1. Independently rerun the frozen Python and native R repositories at their
