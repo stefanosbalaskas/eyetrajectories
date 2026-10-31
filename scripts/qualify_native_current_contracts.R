@@ -23,6 +23,7 @@ required<-c("native-generalized-fosr-prediction",
   "native-python-portable-writer",
   "native-fpca-component-envelopes",
   "native-source-workflows",
+  "native-fpcr-bootstrap-uncertainty",
   "native-mixed-model-source-text","native-source-environment")
 test_files<-file.path("tests","testthat",paste0("test-",required,".R"))
 git<-Sys.which("git")
