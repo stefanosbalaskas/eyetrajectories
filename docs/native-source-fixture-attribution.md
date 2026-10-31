@@ -253,6 +253,54 @@ independently certified per-case pass count. The 203 recorded source
 differences and 19 known scientific backend/estimand differences remain
 open; all 508 independent certification approvals remain FALSE.
 
+## Exact-head 69/111 verified; six more stochastic source export replays
+
+The owner's exact-HEAD RStudio qualification at
+`50ec030586c1ddbaf602fac1abd382a442d97ac5` successfully parsed
+**308 R files**, ran native offline R and pinned Python 1.2 direct-source
+qualification **PASS**, and completed both evidence-capture modes
+**PASS** with checkout and file integrity **TRUE**. The source capture
+bundle is `qualification_20261101T014453`. All 111 selected source
+candidate fixture files were selected, with **69/111 containing direct
+literal frozen public Python export calls**. All certification flags
+remain FALSE.
+
+Six further distinct source functions now have explicit reruns in their
+existing pinned-Python test cases, including strict direct-source
+comparisons against the original frozen Python fixture output:
+
+- `fpca_regression_future_prediction_interval`: centered residuals,
+  predictive draws, quantiles and predictive SE using the original
+  NumPy random seed. Native R continues to compare via retained source
+  residual indices; R/NumPy random-stream equivalence is not implied.
+- `fit_generalized_function_on_scalar_regression`: observed Poisson
+  spline GEE basis, coefficients, robust standard errors, means and
+  covariance, without changing the original R numerical tolerances.
+- `simulate_functional_process`: seeded source curve, participant and
+  trial simulation, latent scores and observed trajectories; native R
+  continues using fixed published source draws for replay.
+- `generate_multivariate_iaaft_surrogates`: exact frozen Python
+  reference-source arrays and spectra under its fixed NumPy seed.
+- `multivariate_surrogate_nonlinearity_test`: original observed
+  statistic, generated surrogate statistics and plus-one p-value.
+- `bootstrap_fpca_regression_uncertainty`: repeated source paired
+  FPCR bootstrap reference and retained draws at its original seed.
+
+The new `test-native-direct-source-stochastic-attribution.R` checks
+all six names against their actual test fixtures and explicitly
+requires unresolved source differences and unapproved contract flags.
+Both qualification modes and evidence capture include the new test
+and all six executable test files; the evidence manifest hashes the
+seven files. The evidence-runner guard checks their presence in the
+recorded selection filters.
+
+**Expected direct-source fixture attribution after owner replay:
+at least 75/111, NOT YET verified**. A repeated seed-matched Python
+call does not establish RNG equivalence with R, complete-domain
+source behavior, or independent full-contract certification. The 203
+source differences, 19 distinct scientific backend/estimand
+differences, and **0/508 independent approvals** are unchanged.
+
 ## Remaining evidence needed for a genuine per-export certification
 
 1. Independently rerun the frozen Python and native R repositories at their
