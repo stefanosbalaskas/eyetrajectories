@@ -17,7 +17,7 @@ etr_source_fixture_static_inventory<-function(path){
   rendered<-paste(deparse(parsed,width.cutoff=500L),collapse="\n")
   # R deparse() canonicalizes a literal string argument to double quotes.
   literal_pattern<-
-    'etpy_get_export[[:space:]]*\\\\([[:space:]]*"([A-Za-z_][A-Za-z0-9_]*)"'
+    'etpy_get_export[[:space:]]*\\([[:space:]]*"([A-Za-z_][A-Za-z0-9_]*)"'
   hits<-regmatches(rendered,gregexpr(
     literal_pattern,rendered,perl=TRUE))[[1L]]
   literals<-unique(sub(literal_pattern,"\\1",hits,perl=TRUE))
