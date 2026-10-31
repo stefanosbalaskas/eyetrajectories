@@ -113,6 +113,21 @@ _fpcr_published_reference={
     'shape':original.bootstrap_slopes.shape
 }
 ")
+  # Repeat frozen Python public source uncertainty bootstrap using its
+  # own fixed NumPy seed, preserving separate native R RNG assumptions.
+  direct<-reticulate::py_call(
+    etpy_get_export("bootstrap_fpca_regression_uncertainty"),
+    trajectories=reticulate::py_eval("tr",convert=FALSE),
+    outcome=reticulate::py_eval("y",convert=FALSE),
+    n_bootstrap=20L,n_components=1L,random_state=7L)
+  source_fit<-reticulate::py_eval("original",convert=FALSE)
+  for(field in c("reference_slope","reference_mean_predictions",
+    "bootstrap_slopes","bootstrap_mean_predictions")){
+    replay<-et_to_r(reticulate::py_get_attr(direct,field))
+    original<-et_to_r(reticulate::py_get_attr(source_fit,field))
+    expect_equal(replay,original,tolerance=1e-12,
+      ignore_attr=TRUE,info=paste("replayed source FPCR refit",field))
+  }
   oracle<-reticulate::py_to_r(reticulate::py_eval(
     "_fpcr_published_reference",convert=FALSE))
   expect_equal(unname(native$reference_slope),unname(oracle$slope),
