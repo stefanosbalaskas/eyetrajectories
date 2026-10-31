@@ -125,3 +125,67 @@ _fpcr_published_reference={
   expect_false(any(etr_native_parity_catalog()$
     one_to_one_native_contract_complete))
 })
+
+
+test_that("pinned Python 1.2 full paired-bootstrap refits match fixed source indices",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("frozen Python 1.2 20-replicate fixed-draw FPCR source oracle opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  z<-.etr_fpcr_uncertainty_fixture()
+  indices<-replicate(20L,as.integer(0:13),simplify=FALSE)
+  native<-etr_bootstrap_fpca_regression_uncertainty(z$x,z$y,
+    n_bootstrap=20L,n_components=1L,random_state=7L,
+    bootstrap_indices=indices)
+  reticulate::py_run_string("
+import numpy as np
+import pandas as pd
+from unittest.mock import patch
+import eyetrajectoriespy as et
+import eyetrajectoriespy.regression_inference as ri
+time=np.linspace(0.0,1.0,15)
+n=14
+values=np.empty((n,15,1))
+for j in range(1,15):
+ values[j-1,:,0]=(np.sin(np.pi*time)*(1+j/16)
+     +.16*np.cos(2*np.pi*time)*(j%4)/3+time*j/18)
+y=.2+1.2*np.arange(1,15)/14+.2*np.sin(np.arange(1,15))
+x=et.TrajectorySet(time=time,values=values,
+ curve_ids=tuple(f'c{j:02d}' for j in range(1,15)),
+ dimension_names=('gaze',),
+ metadata=pd.DataFrame({'subject':np.repeat(
+     [f'p{j:02d}' for j in range(1,8)],2)}),
+ coordinate_system='normalized',time_unit='s')
+class _FixedBootstrapRNG:
+ def integers(self,low,high=None,size=None):
+  assert low==0 and high==14 and size==14
+  return np.arange(14,dtype=int)
+with patch.object(ri.np.random,'default_rng',
+                  return_value=_FixedBootstrapRNG()):
+ exact=ri.bootstrap_fpca_regression_uncertainty(
+     x,y,n_bootstrap=20,n_components=1,random_state=7)
+_python_fpcr_fixed={
+ 'bootstrap_slopes':exact.bootstrap_slopes,
+ 'bootstrap_mean_predictions':exact.bootstrap_mean_predictions,
+ 'slope_lower':exact.slope_lower,
+ 'slope_upper':exact.slope_upper,
+ 'prediction_lower':exact.prediction_lower,
+ 'prediction_upper':exact.prediction_upper
+}
+")
+  source<-reticulate::py_to_r(reticulate::py_eval(
+    "_python_fpcr_fixed",convert=FALSE))
+  expect_equal(unname(native$bootstrap_slopes),
+    unname(source$bootstrap_slopes),tolerance=1e-6)
+  expect_equal(unname(native$bootstrap_mean_predictions),
+    unname(source$bootstrap_mean_predictions),tolerance=1e-6)
+  expect_equal(unname(native$slope_lower),
+    unname(source$slope_lower),tolerance=1e-6)
+  expect_equal(unname(native$slope_upper),
+    unname(source$slope_upper),tolerance=1e-6)
+  expect_equal(as.numeric(native$prediction_lower),
+    as.numeric(source$prediction_lower),tolerance=1e-6)
+  expect_equal(as.numeric(native$prediction_upper),
+    as.numeric(source$prediction_upper),tolerance=1e-6)
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})
