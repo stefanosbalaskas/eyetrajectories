@@ -1,30 +1,5 @@
 # Frozen source: eyetrajectoriespy 1.2.0 generalized_function_on_scalar.py
 # Native R GLM score solver with participant-cluster sandwich covariance.
-.etr_native_gee_fixture<-function(family="poisson",grouped=FALSE){
-  time<-seq(0,1,length.out=7L)
-  n<-36L;nt<-length(time)
-  z<-outer(seq_len(n),seq_len(nt),function(i,j){
-    if(family=="poisson") (i+2*j+(i*j)%%3)%%6
-    else as.integer((i+j+i*j)%%5<2)
-  })
-  den<-NULL
-  if(grouped){
-    den<-outer(seq_len(n),seq_len(nt),
-      function(i,j)3L+(i+j)%%3L)
-    z<-outer(seq_len(n),seq_len(nt),
-      function(i,j)(i+2*j)%%4)
-    z<-pmin(z,den)
-  }
-  x<-etr_trajectory_set(time,array(as.numeric(z),c(n,nt,1L)),
-    sprintf("curve%02d",seq_len(n)),"outcome",
-    metadata=data.frame(participant_id=rep(
-      sprintf("P%02d",1:12),each=3)),
-    coordinate_system="unknown",time_unit="s")
-  design<-data.frame(curve_id=rev(x$curve_ids),
-    treatment=as.numeric((rev(seq_len(n))%%4)<2))
-  list(x=x,design=design,den=den)
-}
-
 test_that("native Poisson GEE fits real expanded spline and participant sandwich",{
   f<-.etr_native_gee_fixture()
   model<-etr_fit_generalized_function_on_scalar_regression(
@@ -41,8 +16,8 @@ test_that("native Poisson GEE fits real expanded spline and participant sandwich
   expect_true(all(model$coefficient_standard_errors>=0))
   expect_equal(model$parameter_covariance,t(model$parameter_covariance),
     tolerance=1e-12)
-  expect_equal(model$mean_functions,
-    exp(model$scalar_design_matrix%*%model$coefficient_functions),
+  expect_equal(unname(model$mean_functions),
+    unname(exp(model$scalar_design_matrix%*%model$coefficient_functions)),
     tolerance=1e-8)
   expect_false(model$provenance$full_source_contract_certified)
   w<-etr_run_generalized_functional_workflow(
@@ -74,7 +49,8 @@ test_that("native grouped binomial and Poisson exposure are explicit",{
     participant_column="participant_id",dimension="outcome",
     family="poisson",exposure=exposure,
     exposure_units="person_hours",basis_size=4L,spline_degree=3L)
-  expect_equal(p$mean_functions,p$rate_functions*2,tolerance=1e-8)
+  expect_equal(unname(p$mean_functions),unname(p$rate_functions*2),
+    tolerance=1e-8)
   expect_identical(p$exposure_units,"person_hours")
   expect_true(p$exposure_expanded_from_curve)
   expect_error(etr_fit_generalized_function_on_scalar_regression(
