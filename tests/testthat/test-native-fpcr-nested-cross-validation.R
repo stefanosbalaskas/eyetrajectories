@@ -31,6 +31,23 @@ test_that("nested FPCR selection and outer predictions remain leakage-free",{
     }
   }
 })
+test_that("outer held-out outcomes cannot affect their own nested prediction",{
+  z<-.etr_nested_cv_fixture()
+  original<-etr_nested_cross_validate_fpca_regression(z$x,z$y,
+    candidate_components=c(1L,2L),outer_splits=3L,
+    inner_splits=2L,selection_rule="one_se")
+  changed<-z$y;changed[1:4]<-changed[1:4]+100
+  moved<-etr_nested_cross_validate_fpca_regression(z$x,changed,
+    candidate_components=c(1L,2L),outer_splits=3L,
+    inner_splits=2L,selection_rule="one_se")
+  first<-original$predictions$outer_fold==0L
+  expect_equal(original$predictions$prediction[first],
+    moved$predictions$prediction[first],tolerance=1e-12)
+  expect_identical(original$outer_folds$selected_n_components[[1L]],
+    moved$outer_folds$selected_n_components[[1L]])
+  expect_false(isTRUE(all.equal(
+    original$outer_folds$loss[[1L]],moved$outer_folds$loss[[1L]])))
+})
 test_that("nested FPCR refuses unsupported Python source domains",{
   z<-.etr_nested_cv_fixture()
   f<-etr_nested_cross_validate_fpca_regression
