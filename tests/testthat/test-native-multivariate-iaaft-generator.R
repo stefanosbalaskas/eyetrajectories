@@ -102,6 +102,22 @@ ref=et.generate_multivariate_iaaft_surrogates(
  reference_dimension='x',n_surrogates=2,
  max_iterations=120,tolerance=.5,random_state=15)
 ")
+  # Direct replay of frozen public MIAAFT under the same NumPy seed.
+  # This verifies Python source determinism, not R/NumPy RNG equivalence.
+  direct<-reticulate::py_call(
+    etpy_get_export("generate_multivariate_iaaft_surrogates"),
+    trajectories=reticulate::py_eval("p",convert=FALSE),
+    curve="a",dimensions=reticulate::py_eval(
+      "('z','x','y')",convert=FALSE),
+    reference_dimension="x",n_surrogates=2L,
+    max_iterations=120L,tolerance=.5,random_state=15L)
+  for(field in c("surrogates","source_values",
+    "spectral_errors","cross_spectral_errors")){
+    a<-et_to_r(reticulate::py_get_attr(direct,field))
+    b<-reticulate::py_eval(paste0("ref.",field),convert=TRUE)
+    expect_equal(a,b,tolerance=1e-12,ignore_attr=TRUE,
+      info=paste("replayed public IAAFT",field))
+  }
   ref<-reticulate::py_eval("ref",convert=FALSE)
   expect_equal(as.integer(native$n_surrogates),
     as.integer(reticulate::py_to_r(ref$n_surrogates)))
