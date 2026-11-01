@@ -157,24 +157,56 @@ etr_transform_fpca <- function(fit, x) {
   centered %*% t(basis)
 }
 
-#' Reconstruct original curves from native FPCA components
+#' Reconstruct fitted or externally scored curves from native FPCA components
 #' @param fit Native FPCA result.
-#' @param n_components Number of retained components to reconstruct.
+#' @param n_components Number of retained components to reconstruct. With
+#'   external scores, defaults to the lesser of supplied score columns and
+#'   fitted components, matching the frozen Python 1.2 source.
+#' @param scores Optional finite numeric score vector (one curve) or matrix
+#'   (curves by components). Unlike an original fitted curve, an externally
+#'   scored curve has no known source curve ID.
+#' @return A native trajectory set when `scores` is NULL, preserving the
+#'   existing R API. When external `scores` are supplied, an unlabelled
+#'   numeric array of shape curves by time by dimensions, matching the Python
+#'   1.2 `reconstruct_fpca` numerical return contract.
 #' @export
-etr_reconstruct_fpca <- function(fit, n_components = NULL) {
+etr_reconstruct_fpca <- function(fit, n_components = NULL, scores = NULL) {
   .etr_assert(inherits(fit, "etr_fpca"), "fit must be a native etr_fpca")
-  if (is.null(n_components)) n_components <- fit$n_components
+  external <- !is.null(scores)
+  if (!external) {
+    score_matrix <- fit$scores
+  } else {
+    # Source np.asarray(..., dtype=float) accepts 1D or 2D score arrays.
+    # Native R stays fail-closed on nonfinite and nonnumeric score data.
+    .etr_assert(is.numeric(scores) && !is.object(scores) &&
+                  (is.null(dim(scores)) || length(dim(scores)) == 2L) &&
+                  length(scores) > 0L && all(is.finite(scores)),
+                "scores must be a finite numeric vector or two-dimensional matrix")
+    score_matrix <- if(is.null(dim(scores)))
+      matrix(as.numeric(scores),nrow=1L) else scores
+    .etr_assert(nrow(score_matrix) >= 1L && ncol(score_matrix) >= 1L,
+                "scores must contain at least one curve and component")
+  }
+  if (is.null(n_components))
+    n_components <- if(external)
+      min(ncol(score_matrix),fit$n_components) else fit$n_components
   .etr_assert(is.numeric(n_components) && length(n_components) == 1L &&
-                !is.na(n_components) && n_components == as.integer(n_components) &&
-                n_components >= 1 && n_components <= fit$n_components,
+                is.finite(n_components) &&
+                n_components == as.integer(n_components) &&
+                n_components >= 1L && n_components <= fit$n_components,
               "n_components must be between 1 and retained component count")
-  n <- nrow(fit$scores); nt <- length(fit$time); nd <- length(fit$dimension_names)
+  .etr_assert(ncol(score_matrix) >= n_components,
+              "scores contain fewer columns than requested components")
+  n <- nrow(score_matrix)
+  nt <- length(fit$time)
+  nd <- length(fit$dimension_names)
   y <- array(NA_real_, c(n, nt, nd))
   for (j in seq_len(nd)) for (t in seq_len(nt)) {
     y[, t, j] <- fit$mean[t, j] +
-      as.vector(fit$scores[, seq_len(n_components), drop = FALSE] %*%
-                  fit$components[seq_len(n_components), t, j])
+      as.vector(score_matrix[, seq_len(n_components), drop = FALSE] %*%
+                  as.numeric(fit$components[seq_len(n_components), t, j]))
   }
+  if (external) return(y)
   etr_trajectory_set(fit$time, y, fit$curve_ids, fit$dimension_names,
                      coordinate_system = fit$coordinate_system, time_unit = fit$time_unit)
 }
