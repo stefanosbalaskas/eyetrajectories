@@ -34,6 +34,8 @@ def make_packet(folder):
         full.append(dict(namespace="root", python_name=name,
                          kind="function" if isfn else "other_export",
                          native_r_candidate=f"etr_{name}" if isfn else "",
+                         native_nonfunction_representation=(
+                             "etr_trajectory_set" if class_gap else ""),
                          review_lane=lane,
                          source_gap_open=str(gap).upper(),
                          native_nonfunction_source_gap_open=str(class_gap).upper(),
@@ -302,6 +304,17 @@ class TestUnsignedBatchIntegrity(unittest.TestCase):
         write_csv(p, rows)
         self.update_manifest()
         with self.assertRaisesRegex(v.ReviewBatchError, "source-gap inventory"):
+            v.verify(self.root)
+
+    def test_nonfunction_representation_forgery_rehashed_fails(self):
+        p = self.root / v.FILES[0]
+        rows = v.read_csv(p)
+        obj = next(r for r in rows if r["python_name"] == "TrajectorySet")
+        obj["native_nonfunction_representation"] = "unrelated_native_class"
+        write_csv(p, rows)
+        self.update_manifest()
+        with self.assertRaisesRegex(v.ReviewBatchError,
+                                    "Nonfunction native representation inventory"):
             v.verify(self.root)
 
     def test_forged_trajectory_class_source_gap_rehashed_fails(self):
