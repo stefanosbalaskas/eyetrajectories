@@ -84,3 +84,14 @@ def frozen_component_envelope_source_quantiles(values,level):
   expect_equal(sum(etr_native_parity_catalog()$
     one_to_one_native_contract_complete),0L)
 })
+
+# Actual pinned-Python 1.2 public export and source-signature witness.
+# This verifies callable/source availability, NOT native scientific parity.
+test_that("unreviewed Python 1.2 source symbols are inspectable: bootstrap_fpca_component_envelopes",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("pinned Python source-symbol audit requires source runtime")
+  .etr_expect_frozen_python_source_symbol(
+    etpy_get_export("bootstrap_fpca_component_envelopes"),"bootstrap_fpca_component_envelopes")
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})
