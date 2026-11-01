@@ -287,7 +287,7 @@ New native R adapters move beyond field-only schemas for five source
 workflow record types: three scientific configuration records plus
 decision and step audit records. Three new exported source-aware config
 constructors provide input validation for FPCA, observed-grid
-function-on-scalar regression, and Euclidean sample-unit recurrence:
+function-on-scalar regression, and sample-unit recurrence (L1, L2, L-infinity):
 `etr_frozen_fpca_workflow_config()`,
 `etr_frozen_function_on_scalar_workflow_config()`, and
 `etr_frozen_recurrence_workflow_config()`.
@@ -319,3 +319,28 @@ error messages and independent external certification remain unresolved.
 The callable-name and native object mapping counts are unchanged:
 380/380 names and 32/128 provisional nonfunction representations.
 Independent full-domain source certificates remain **0/508**.
+
+## Python-source Minkowski recurrence integration
+
+The native source distance kernel now handles all frozen Python 1.2
+`recurrence.py` fixed-radius metrics: `cityblock` (L1), `euclidean`
+(L2) and `chebyshev` (L-infinity). It is used by auto-recurrence,
+cross-recurrence and the fully executable native W4 recurrence workflow.
+Previously the latter rejected L1 and L-infinity; it now records the
+actual chosen metric in source-sensitive recurrence metadata and R workflow
+provenance. Its three measured steps remain actual R runtime measurements.
+
+`tests/testthat/test-native-recurrence-minkowski-source.R` checks
+deterministic metric-distinguishing two-dimensional trajectories, exact
+auto/cross matrices, Theiler exclusions and rejection of unsupported
+metric labels. Under pinned Python 1.2 source mode, it exercises both
+new metrics through actual Python workflow calls and compares recurrence
+matrices plus twelve RQA estimands with their native R counterparts.
+
+Remaining scientific limitations are unchanged: Python `recurrence.py`
+supports additional time-unit delay and Theiler semantics, source result
+classes differ from native R S3 records, Python cKDTree is sparse while
+R uses a bounded dense matrix, and numerous domain/source gaps remain.
+The author-generated paired tests do not certify a full-domain contract.
+No independent reviewer approvals or 508-export source-gap flags were
+changed.
