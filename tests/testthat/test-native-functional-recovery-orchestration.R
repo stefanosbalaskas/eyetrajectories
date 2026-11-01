@@ -101,3 +101,16 @@ _scenario_source=list(sc.seeds())
   expect_false(any(etr_native_parity_catalog()$
     one_to_one_native_contract_complete))
 })
+
+# Actual pinned-Python 1.2 public export and source-signature witness.
+# This verifies callable/source availability, NOT native scientific parity.
+test_that("unreviewed Python 1.2 source symbols are inspectable: simulate_functional_scenario, run_functional_recovery_scenarios",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("pinned Python source-symbol audit requires source runtime")
+  .etr_expect_frozen_python_source_symbol(
+    etpy_get_export("simulate_functional_scenario"),"simulate_functional_scenario")
+  .etr_expect_frozen_python_source_symbol(
+    etpy_get_export("run_functional_recovery_scenarios"),"run_functional_recovery_scenarios")
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})
