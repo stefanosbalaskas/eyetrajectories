@@ -47,17 +47,17 @@ test_that("native TrajectorySet with_values rejects incompatible shapes and miss
   x<-etr_trajectory_set(c(0,1,2),array(1:6,c(2L,3L,1L)),
     c("a","b"),"x")
   expect_error(etr_with_values(x,matrix(1:6,2,3)),
-    "three-dimensional")
+    "numeric 3D array")
   expect_error(etr_with_values(x,array(1:3,c(1L,3L,1L))),
-    "retain curve")
+    "values dimensions must agree")
   expect_error(etr_with_values(x,array(1:12,c(2L,3L,2L))),
     "retain curve")
   expect_error(etr_with_values(x,array(1:8,c(2L,4L,1L))),
-    "time dimension")
+    "values dimensions must agree")
   expect_error(etr_with_values(x,array(1:8,c(2L,4L,1L)),
     time=c(0,1,1,3)),"strictly increasing")
   expect_error(etr_with_values(x,array(1:6,c(2L,3L,1L)),
-    provenance_update="wrong"),"named JSON-like")
+    provenance_update="wrong"),"JSON-like named")
   expect_error(etr_with_values(x,array(1:6,c(2L,3L,1L)),
     time_unit=""),"time_unit")
   # IMPORTANT: native R rejects NaN while Python source class permits NaN
