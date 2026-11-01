@@ -108,7 +108,7 @@ etr_fpca_variance_frame(fit)
 
 etr_transform_fpca(fit, x)
 
-etr_reconstruct_fpca(fit, n_components = NULL)
+etr_reconstruct_fpca(fit, n_components = NULL, scores = NULL)
 
 etr_recurrence_matrix(x, curve = 1L, radius, theiler = 0L)
 
@@ -151,6 +151,7 @@ etr_plot_recurrence(recurrence, ...)
 \item{normalize}{Whether trapezoidal quadrature weights should sum to one.}
 \item{n_components}{Integer component count or, for fitting, a variance fraction strictly between 0 and 1.}
 \item{fit}{Native etr_fpca fit.}
+\item{scores}{Optional finite numeric FPCA score vector (one external curve) or numeric matrix (curves by fitted components). When supplied, reconstructs these external scores to an unlabelled curve-by-time-by-dimension numeric array. When omitted, fitted curves are returned as the original native trajectory collection.}
 \item{curve}{Curve ID or 1-based index.}
 \item{radius}{Finite non-negative Euclidean recurrence radius.}
 \item{theiler}{Excluded sample lag for auto-recurrence.}
