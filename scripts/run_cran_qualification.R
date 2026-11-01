@@ -40,6 +40,7 @@ writeLines(c(
     Sys.which("makeindex") else "NOT FOUND (manual may fail)"),
   "Full R CMD check --as-cran; PDF manual is NOT skipped",
   "ET_RUN_PYTHON_TESTS=false (CRAN-safe; separate Python integration)",
+  "DEV_SCRIPT_TESTS=SOURCE_CHECKOUT_ONLY; mandatory two-mode source qualification",
   "No source publication, no GitHub Actions and no CRAN upload"
 ), file.path(report, "MANIFEST.txt"))
 capture.output(sessionInfo(), file = file.path(report, "sessionInfo.txt"))
@@ -56,6 +57,8 @@ write(paste("Git HEAD:", sha[1L]), file = file.path(report, "MANIFEST.txt"),
 check_env <- c(ET_RUN_PYTHON_TESTS = "false",
                MPLBACKEND = "Agg",
                NOT_CRAN = "false")
+cat("\n=== Fail-closed source-only test coverage ===\n")
+source("scripts/preflight_source_checkout_coverage.R",local=TRUE)
 cat("\n=== Fast full Rd-manual syntax preflight ===\n")
 rd_preflight_error <- tryCatch({
   source("scripts/preflight_rd_manuals.R", local=TRUE)

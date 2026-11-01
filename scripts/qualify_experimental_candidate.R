@@ -37,6 +37,8 @@ if(grepl("\\.9000$",version))
 # NOTE can be reviewed explicitly; the external CRAN farm isn't reproduced.
 cat("\n=== Fast parse preflight: source, tests and release R scripts ===\n")
 source("scripts/preflight_release_source_syntax.R",local=TRUE)
+cat("\n=== Required source checkout regression coverage ===\n")
+source("scripts/preflight_source_checkout_coverage.R",local=TRUE)
 
 cat("\n=== R CMD check --as-cran plus native source example ===\n")
 cran_gate_error<-tryCatch({
