@@ -37,7 +37,10 @@ def synthetic_packet(root):
     write_csv(root / v.FILES[4], [dict(python_name=p,
         relation=("both_reject_error_schema_unreviewed" if p == "score_distance_matrix"
                   else "documented_source_difference"),
-        observed_behavior_as_expected="TRUE", source_domain_equivalence_established="FALSE",
+        observed_behavior_as_expected="TRUE",
+        opt_in_python_boundary_mode_matches_source_category="TRUE",
+        opt_in_mode_full_source_parity_certified="FALSE",
+        source_domain_equivalence_established="FALSE",
         independent_reviewer_approved="FALSE", independently_replayed_case="FALSE",
         fully_certified="FALSE") for p in pilots])
     write_csv(root / v.FILES[5], [dict(python_name=p, resolved="FALSE")
