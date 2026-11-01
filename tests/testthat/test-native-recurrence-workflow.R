@@ -43,8 +43,15 @@ test_that("recurrence workflow preserves declared sample geometry",{
 
 test_that("recurrence W4 refuses unsupported source modes",{
   x<-.etr_w4_fixture(); cfg<-.etr_w4_config()
-  wrong<-cfg;wrong$metric<-"cityblock"
-  expect_error(etr_run_recurrence_workflow(x,wrong),"Euclidean")
+  wrong<-cfg;wrong$metric<-"manhattan"
+  expect_error(etr_run_recurrence_workflow(x,wrong),"metric must be one of")
+  for(metric in c("cityblock","chebyshev")){
+    supported<-cfg;supported$metric<-metric
+    result<-etr_run_recurrence_workflow(x,supported)
+    expect_identical(result$recurrence$metric,metric)
+    expect_identical(result$provenance$metric_used,metric)
+    expect_identical(length(result$steps),3L)
+  }
   wrong<-cfg;wrong$delay_units<-"time"
   expect_error(etr_run_recurrence_workflow(x,wrong),"time-unit")
   wrong<-cfg;wrong$radius<-0
