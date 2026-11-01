@@ -85,6 +85,35 @@ test_that("four-pilot external handoff emits hashed unsigned reviewed inputs",{
     trusted_fingerprint=paste(rep("A",40L),collapse=""),
     root=root,packet_dir=packet),
     "Independent reviewer must document every required domain/replay gate")
+  # Even a completed, apparently self-attested and signed record must
+  # be rejected when it falsely asserts full Python source equivalence.
+  completed<-submission
+  complete_flags<-c("reviewer_is_independent_of_authors",
+    "reviewer_replayed_python_separately",
+    "reviewer_replayed_native_r_separately",
+    "accepted_input_domain_reviewed","error_warning_semantics_reviewed",
+    "return_schema_dtype_reviewed","scientific_estimand_reviewed")
+  for(name in complete_flags)completed[[name]]<-TRUE
+  for(name in c("reviewer_name","reviewer_affiliation",
+    "reviewer_contact","reviewer_written_findings",
+    "external_evidence_reference","independent_review_signed_utc"))
+    completed[[name]]<-"Synthetic evidence, NOT A REAL REVIEW"
+  completed$scope_decision<-"FULL_SOURCE_PARITY"
+  completed_path<-file.path(packet,"synthetic_not_signed.csv")
+  utils::write.csv(completed,completed_path,row.names=FALSE)
+  expect_error(envir$etr_check_four_pilot_external_attestation(
+    completed_csv=completed_path,detached_signature=signature,
+    trusted_fingerprint=paste(rep("A",40L),collapse=""),
+    root=root,packet_dir=packet),
+    "FULL_SOURCE_PARITY prohibited")
+  completed$scope_decision<-"RESTRICTED_SUBSET_MATCH"
+  completed$evidence_manifest_sha256<-paste(rep("0",64L),collapse="")
+  utils::write.csv(completed,completed_path,row.names=FALSE)
+  expect_error(envir$etr_check_four_pilot_external_attestation(
+    completed_csv=completed_path,detached_signature=signature,
+    trusted_fingerprint=paste(rep("A",40L),collapse=""),
+    root=root,packet_dir=packet),
+    "does not bind the SHA256 evidence manifest")
   # Tamper with any source evidence AFTER manifest generation, even by
   # an empty line: the SHA256 gate must reject it before reading a signature.
   cat("\n",file=file.path(packet,
