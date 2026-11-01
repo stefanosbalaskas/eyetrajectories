@@ -48,10 +48,14 @@ test_that("native TrajectorySet with_values rejects incompatible shapes and miss
     c("a","b"),"x")
   expect_error(etr_with_values(x,matrix(1:6,2,3)),
     "numeric 3D array")
+  # Constructor checks time/channel shape first and then ID counts.
+  # A one-curve replacement keeps the time/channel dimensions but
+  # violates the preserved two-element curve ID collection.
   expect_error(etr_with_values(x,array(1:3,c(1L,3L,1L))),
-    "values dimensions must agree")
+    "curve_ids must be unique nonempty strings")
+  # A second channel violates the preserved one-element dimension list.
   expect_error(etr_with_values(x,array(1:12,c(2L,3L,2L))),
-    "values dimensions must agree")
+    "dimension_names must be unique strings")
   expect_error(etr_with_values(x,array(1:8,c(2L,4L,1L))),
     "values dimensions must agree")
   expect_error(etr_with_values(x,array(1:8,c(2L,4L,1L)),
