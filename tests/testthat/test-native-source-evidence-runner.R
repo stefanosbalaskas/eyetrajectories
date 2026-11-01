@@ -62,6 +62,8 @@ test_that("native source qualification evidence runner parses", {
     "native-direct-numerical-source-attribution",
     "native-direct-source-estimator-attribution",
     "native-direct-source-stochastic-attribution",
+    "native-direct-source-workflow-attribution",
+    "native-recurrence-workflow",
     "native-fpcr-future-prediction-interval",
     "native-generalized-gee-fit",
     "native-functional-process-simulation",
