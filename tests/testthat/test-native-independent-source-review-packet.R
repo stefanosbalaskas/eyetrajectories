@@ -1,4 +1,5 @@
 test_that("independent source-review packet is safe and fully unsigned",{
+  .etr_require_developer_checkout()
   path<-testthat::test_path("..","..","scripts",
     "prepare_independent_source_review.R")
   expect_true(file.exists(path))
@@ -67,6 +68,7 @@ test_that("independent source-review packet is safe and fully unsigned",{
 })
 
 test_that("missing direct source witnesses have explicit fail-closed triage",{
+  .etr_require_developer_checkout()
   path<-testthat::test_path("..","..","scripts",
     "prepare_independent_source_review.R")
   lines<-readLines(path,warn=FALSE)
@@ -95,6 +97,7 @@ test_that("missing direct source witnesses have explicit fail-closed triage",{
 })
 
 test_that("zero missing source references preserve a typed independent-review queue",{
+  .etr_require_developer_checkout()
   root<-testthat::test_path("..","..")
   producer<-readLines(file.path(root,"scripts",
     "prepare_independent_source_review.R"),warn=FALSE)

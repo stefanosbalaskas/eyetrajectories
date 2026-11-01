@@ -2,9 +2,7 @@
 # dataclass/schema contract. Nonfunction gaps are separate from the 203
 # recorded callable-function gaps and must block independent certification.
 test_that("TrajectorySet class source differences remain explicit, unsigned and blocking",{
-  root<-testthat::test_path("..","..")
-  path<-file.path(root,"inst","extdata",
-    "native_nonfunction_source_gaps_v1.csv")
+  path<-.etr_test_extdata("native_nonfunction_source_gaps_v1.csv")
   expect_true(file.exists(path))
   gaps<-utils::read.csv(path,stringsAsFactors=FALSE,check.names=FALSE)
   expect_equal(nrow(gaps),1L)
@@ -40,8 +38,7 @@ test_that("TrajectorySet class source differences remain explicit, unsigned and 
 })
 
 test_that("native TrajectorySet represented only as partial S3 class candidate",{
-  registry<-utils::read.csv(testthat::test_path("..","..",
-    "inst","extdata","native_nonfunction_contract_review_v1.csv"),
+  registry<-utils::read.csv(.etr_test_extdata("native_nonfunction_contract_review_v1.csv"),
     stringsAsFactors=FALSE,check.names=FALSE)
   expect_identical(nrow(registry),128L)
   mapped<-registry[!is.na(registry$native_representation)&

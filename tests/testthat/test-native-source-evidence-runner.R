@@ -1,6 +1,7 @@
 # A syntax regression in the evidence runner must be caught before
 # users invoke a full native/Python qualification cycle.
 test_that("native source qualification evidence runner parses", {
+  .etr_require_developer_checkout()
   runner <- testthat::test_path(
     "..", "..", "scripts",
     "capture_native_source_qualification_evidence.R"
@@ -138,6 +139,7 @@ test_that("native source qualification evidence runner parses", {
 })
 
 test_that("new scientific source oracles are included in both qualification modes",{
+  .etr_require_developer_checkout()
   root<-testthat::test_path("..","..")
   runner<-readLines(file.path(root,"scripts",
     "capture_native_source_qualification_evidence.R"),warn=FALSE)
@@ -259,6 +261,7 @@ test_that("new scientific source oracles are included in both qualification mode
 })
 
 test_that("111 selected Python exports require exact-head literal source evidence",{
+  .etr_require_developer_checkout()
   runner<-testthat::test_path("..","..","scripts",
     "capture_native_source_qualification_evidence.R")
   lines<-readLines(runner,warn=FALSE)

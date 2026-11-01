@@ -1,5 +1,6 @@
 # Synthetic input fixture exercises output schema, not independent approval.
 test_that("four pilot review matrix is complete and never self-certifying",{
+  .etr_require_developer_checkout()
   root<-testthat::test_path("..","..")
   if(!nzchar(Sys.which("git")))
     skip("git is required for the exact-source-head reviewer evidence check")
@@ -66,6 +67,7 @@ test_that("four pilot review matrix is complete and never self-certifying",{
 })
 
 test_that("four-pilot capture requirements never repeat a test filename",{
+  .etr_require_developer_checkout()
   runner<-testthat::test_path("..","..","scripts",
     "capture_native_source_qualification_evidence.R")
   src<-paste(readLines(runner,warn=FALSE),collapse="\n")
@@ -85,6 +87,7 @@ test_that("four-pilot capture requirements never repeat a test filename",{
 })
 
 test_that("ten paired pilot source witnesses stay source-run and noncertifying",{
+  .etr_require_developer_checkout()
   root<-testthat::test_path("..","..")
   path<-file.path(root,"scripts",
     "capture_four_pilot_numeric_evidence.R")
@@ -118,6 +121,7 @@ test_that("ten paired pilot source witnesses stay source-run and noncertifying",
 })
 
 test_that("source boundary probes are explicit and cannot grant full parity",{
+  .etr_require_developer_checkout()
   root<-testthat::test_path("..","..")
   path<-file.path(root,"scripts",
     "capture_four_pilot_boundary_evidence.R")

@@ -1,4 +1,5 @@
 test_that("static Python source-fixture inventory ignores missing R call arguments",{
+  .etr_require_developer_checkout()
   helper<-testthat::test_path("..","..","scripts",
     "source_fixture_static_attribution.R")
   expect_true(file.exists(helper))
@@ -29,6 +30,7 @@ test_that("static Python source-fixture inventory ignores missing R call argumen
 })
 
 test_that("static inventory stays noncertifying and never executes source fixtures",{
+  .etr_require_developer_checkout()
   helper<-testthat::test_path("..","..","scripts",
     "source_fixture_static_attribution.R")
   env<-new.env(parent=baseenv())
@@ -52,6 +54,7 @@ test_that("static inventory stays noncertifying and never executes source fixtur
 # 26 additional numerical parity oracles. Each direct export is inspected
 # in Python 1.2 mode using helper-frozen-python-source-symbol.R.
 test_that("all 26 previously unreferenced public Python exports are now attributed",{
+  .etr_require_developer_checkout()
   root<-testthat::test_path("..","..")
   env<-new.env(parent=baseenv())
   sys.source(file.path(root,"scripts",

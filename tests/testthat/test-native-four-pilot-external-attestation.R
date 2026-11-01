@@ -2,6 +2,7 @@
 # It is NEVER a scientific independent reviewer signoff or source certificate.
 
 test_that("four-pilot external handoff emits hashed unsigned reviewed inputs",{
+  .etr_require_developer_checkout()
   if(!nzchar(Sys.which("git")))
     skip("git required for exact-head source review checks")
   if(!requireNamespace("digest",quietly=TRUE))
@@ -128,6 +129,7 @@ test_that("four-pilot external handoff emits hashed unsigned reviewed inputs",{
 })
 
 test_that("external review signer gate rejects full parity for open gaps",{
+  .etr_require_developer_checkout()
   path<-testthat::test_path("..","..","scripts",
     "four_pilot_external_attestation.R")
   expect_silent(parse(file=path,keep.source=FALSE))

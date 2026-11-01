@@ -1,6 +1,7 @@
 # Developer-side first-wave signature inventory guard. Source signature
 # strings provide hints to reviewers, never proof of Python/R equivalence.
 test_that("first-wave signature inventory is source-pinned and never approving",{
+  .etr_require_developer_checkout()
   root<-testthat::test_path("..","..")
   file<-file.path(root,"scripts",
     "capture_first_wave_source_interfaces.R")
@@ -55,8 +56,7 @@ test_that("workflows exports are inspected in their recorded namespace",{
 })
 
 test_that("nonfunction native representations are not silently inferred",{
-  reg<-utils::read.csv(testthat::test_path("..","..","inst",
-    "extdata","native_nonfunction_contract_review_v1.csv"),
+  reg<-utils::read.csv(.etr_test_extdata("native_nonfunction_contract_review_v1.csv"),
     stringsAsFactors=FALSE,check.names=FALSE)
   expect_equal(nrow(reg),128L)
   expect_true(all(c("namespace","python_name",

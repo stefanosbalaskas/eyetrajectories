@@ -1,6 +1,7 @@
 # Replayed source branch boundaries are not full-domain R/Python
 # equivalence certificates and never grant independent approval.
 test_that("two root wild exports and two subpackage workflows retain separate attribution",{
+  .etr_require_developer_checkout()
   root<-testthat::test_path("..","..")
   env<-new.env(parent=baseenv())
   sys.source(file.path(root,"scripts",

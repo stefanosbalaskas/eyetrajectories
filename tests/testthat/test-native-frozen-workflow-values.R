@@ -18,8 +18,7 @@ test_that("native source workflow scalar values are exact, typed, and unapproved
   expect_identical(nrow(rows),3L)
   expect_true(all(rows$namespace=="workflows"))
   expect_true(all(rows$kind=="other_export"))
-  reg<-utils::read.csv(testthat::test_path("..","..","inst","extdata",
-    "native_nonfunction_contract_review_v1.csv"),
+  reg<-utils::read.csv(.etr_test_extdata("native_nonfunction_contract_review_v1.csv"),
     stringsAsFactors=FALSE,check.names=FALSE)
   mapped<-reg[reg$python_name%in%symbols&
     reg$namespace=="workflows",,drop=FALSE]

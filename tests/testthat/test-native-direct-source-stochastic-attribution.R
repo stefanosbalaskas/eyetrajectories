@@ -1,6 +1,7 @@
 # These are executable fixed-source comparisons, not independence or
 # whole-domain numerical/scientific certification. R and NumPy RNGs differ.
 test_that("six stochastic source functions have direct frozen Python witnesses",{
+  .etr_require_developer_checkout()
   root<-testthat::test_path("..","..")
   env<-new.env(parent=baseenv())
   sys.source(file.path(root,"scripts",
