@@ -1122,6 +1122,11 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     "class/constant certification approvals must be explicit booleans")
   other_representation <- as.character(other$native_representation)
   other_representation[is.na(other_representation)] <- ""
+  # Native candidate mapping and full scientific certification are separate.
+  # One S3 candidate exists for TrajectorySet but its documented Python
+  # constructor/method differences remain open and fail the approval gate.
+  api$nonfunction_native_representation <- rep("",nrow(api))
+  api$nonfunction_native_representation[other_idx] <- other_representation
   other_links <- as.character(other$review_evidence)
   other_links[is.na(other_links)] <- ""
   # A full commit SHA in the review URL prevents an unpinned generic PR link
