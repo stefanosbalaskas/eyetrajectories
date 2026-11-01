@@ -144,7 +144,7 @@ test_that("frozen 508 source register counts only native implementations",{
   expect_gte(sum(x$named_native_candidate),236L)
   expect_lte(sum(x$is_python_function & !x$named_native_candidate),144L)
   expect_gte(sum(x$native_implementation_started),211L)
-  expect_equal(sum(x$native_implementation_stage==9L,na.rm=TRUE),12L)
+  expect_equal(sum(x$native_implementation_stage==9L,na.rm=TRUE),13L)
   for (n in names(want)) {
     one<-x[x$namespace=="root" & x$python_name==n,,drop=FALSE]
     expect_equal(nrow(one),1L)
