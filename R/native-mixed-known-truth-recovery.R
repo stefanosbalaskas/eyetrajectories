@@ -8,15 +8,15 @@
   definitions<-switch(name,
     coefficient_function_ise=list(
       quantity="functional mixed-effects coefficient function",
-      units="squared signal × time",scope="mixed_effects",
+      units="squared signal \u00d7 time",scope="mixed_effects",
       description="Integrated squared error of a matched coefficient function."),
     source_variance_function_ise=list(
       quantity="functional random-effect variance function",
-      units="variance² × time",scope="mixed_effects",
+      units="variance\u00b2 \u00d7 time",scope="mixed_effects",
       description="Integrated squared error of participant/trial variance functions."),
     source_integrated_variance_absolute_error=list(
       quantity="integrated functional random-effect variance",
-      units="signal variance × time",scope="mixed_effects",
+      units="signal variance \u00d7 time",scope="mixed_effects",
       description="Absolute integrated participant/trial variance error."),
     source_integrated_variance_relative_error=list(
       quantity="integrated functional random-effect variance",
