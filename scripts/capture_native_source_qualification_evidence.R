@@ -236,6 +236,7 @@ results<-list(
   qualify_once(TRUE)
 )
 source_files<-unique(c(
+  "scripts/capture_four_pilot_boundary_evidence.R",
   "scripts/capture_four_pilot_numeric_evidence.R",
   "scripts/build_four_pilot_review_matrix.R",
   "tests/testthat/test-native-four-pilot-review-matrix.R",
@@ -573,3 +574,14 @@ stopifnot(nrow(four_pilot_numeric$evidence)==10L,
   all(four_pilot_numeric$evidence$developer_numeric_fixture_pass),
   !any(four_pilot_numeric$evidence$independent_reviewer_approved),
   !any(four_pilot_numeric$evidence$fully_certified))
+
+# Preserve deliberate source/native divergences in a separate recorded
+# developer boundary audit. A finite fixture PASS is never full-source parity.
+source("scripts/capture_four_pilot_boundary_evidence.R",local=TRUE)
+four_pilot_boundaries<-etr_capture_four_pilot_boundary_evidence(
+  root=".",packet_dir=packet_root)
+stopifnot(nrow(four_pilot_boundaries$evidence)==4L,
+  all(four_pilot_boundaries$evidence$observed_behavior_as_expected),
+  !any(four_pilot_boundaries$evidence$source_domain_equivalence_established),
+  !any(four_pilot_boundaries$evidence$independent_reviewer_approved),
+  !any(four_pilot_boundaries$evidence$fully_certified))
