@@ -118,6 +118,10 @@ test_that("scientific workflow step and decision records have guarded source sch
     value=1L,source="audited_selector",criterion="cross-validated mean loss")
   expect_identical(names(d),
     etr_frozen_workflow_schema("WorkflowDecisionRecord")$field_name)
+  decision_frame<-etr_workflow_decisions_frame(list(selection=d))
+  expect_identical(decision_frame$name,"selection")
+  expect_identical(decision_frame$source,"audited_selector")
+  expect_identical(decision_frame$criterion,"cross-validated mean loss")
   expect_error(etr_frozen_workflow_decision_record(
     value=1L,source="audited_selector"),"criterion")
   expect_error(etr_frozen_workflow_decision_record(
@@ -128,6 +132,11 @@ test_that("scientific workflow step and decision records have guarded source sch
   expect_identical(names(s),
     etr_frozen_workflow_schema("WorkflowStepRecord")$field_name)
   expect_identical(s[["function"]],"fit_fpca")
+  step_frame<-etr_workflow_steps_frame(list(s))
+  expect_identical(step_frame[["function"]],"fit_fpca")
+  expect_identical(step_frame$status,"completed")
+  expect_identical(step_frame$warning_count,0L)
+  expect_equal(step_frame$elapsed_seconds,0.1,tolerance=0)
   expect_error(etr_frozen_workflow_step_record("fit","fit_fpca","completed",
     elapsed_seconds=-1),"time and warnings")
   expect_error(etr_frozen_workflow_step_record("fit","fit_fpca","unknown",
