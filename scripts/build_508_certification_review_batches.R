@@ -81,7 +81,8 @@ etr_build_508_certification_review_batches <- function(
   idx<-match(key,paste(ready$namespace,ready$python_name,sep="::"))
   ck(!anyNA(idx)&&!anyDuplicated(idx),"Scope/readiness key mismatch")
   ready<-ready[idx,,drop=FALSE]
-  ck(all(ready$published_source_difference_open==
+  ck(all((ready$published_source_difference_open |
+      ready$nonfunction_source_difference_open)==
     scope$source_difference_open)&&
     all(ready$native_backend_or_estimand_differs==
       scope$backend_or_estimand_distinct)&&
