@@ -107,3 +107,46 @@ Synthetic author-only unit tests for cryptographic receipt structure mock
 signature verification; they do NOT create or impersonate independent
 reviewers. Actual GPG cryptography is exercised only when a real reviewer
 submits signed documents and a separately trusted fingerprint.
+
+
+## Additional first-wave source-interface evidence and real-packet gates
+
+On exact-head qualification, the runner now records the FIRST-PARTY
+observed interface inventory for all 36 first-wave exports:
+
+- first_wave_source_interface_inventory.csv: frozen Python 1.2
+  function signatures or nonfunction Python object classes, native R
+  exported formals, source-lookup and introspection errors, native body
+  hashes, immutable Python/R commits, and explicit FALSE flags for
+  independent review and full-source certification.
+- first_wave_source_interface_inventory_sha256.csv: author-generated
+  SHA256 checksum and exact source pins.
+
+Source-code signatures and function bodies are DESCRIPTIVE compatibility
+evidence; they cannot prove numerical or scientific equivalence. Missing
+source interface information is explicitly recorded rather than silently
+converted into a PASS or a certification.
+
+Following the two successful scientific source test suites, the actual
+newly generated packet is verified by both read-only Python commands,
+using the separately recorded R commit:
+
+~~~bash
+python scripts/verify_four_pilot_review_bundle.py PACKET_DIR --expected-r-head FULL_TRUSTED_R_SHA
+python scripts/verify_508_certification_batch.py PACKET_DIR --expected-r-head FULL_TRUSTED_R_SHA
+~~~
+
+The 508 verifier additionally validates the descriptive interface file
+when present, including the required SHA256 sidecar, 36 exact export
+identities, frozen Python source, unchanged R commit, and FALSE approval
+flags. The qualification runner prints the actual verifier results and
+writes separate *_AUTHOR_INTEGRITY_CHECK.txt logs under the packet.
+A failure stops the capture rather than silently allowing a tampered
+or mismatched reviewer worklist.
+
+Neither SHA256 verification, Python introspection nor developer-generated
+boundary cases constitute an external independent scientific replay. The
+current full-domain certified count must remain 0/508 until an actually
+independent, qualified reviewer has submitted and defended source-specific
+scientific findings and the relevant source gaps and registry approvals
+have been legitimately adjudicated.
