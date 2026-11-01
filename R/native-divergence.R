@@ -85,11 +85,14 @@ etr_delay_embed_trajectory <- function(trajectories,embedding_dimension,
 .etr_nonlinear_state <- function(embedding,curve,theiler_window,max_horizon,
                         theiler_window_units,max_horizon_units){
   .etr_nonlinear_embedding(embedding)
-  .etr_assert(identical(theiler_window_units,"samples")&&
-    identical(max_horizon_units,"samples"),
-    "time-unit divergence parameters are not qualified; use samples")
-  th<-.etr_nonlinear_integer(theiler_window,0L,"theiler_window")
-  horizon<-.etr_nonlinear_integer(max_horizon,1L,"max_horizon")
+  th<-.etr_source_time_unit_samples(embedding$time,
+    theiler_window,theiler_window_units,embedding$time_unit,
+    "theiler_window",allow_zero=TRUE)
+  horizon<-.etr_source_time_unit_samples(embedding$time,
+    max_horizon,max_horizon_units,embedding$time_unit,
+    "max_horizon",allow_zero=TRUE)
+  .etr_assert(horizon>=1L,
+    "max_horizon must be at least one sample")
   i<-.etr_nonlinear_curve(embedding$curve_ids,curve)
   n<-length(embedding$time)
   .etr_assert(horizon<n,"max_horizon must be smaller than state count")
@@ -106,7 +109,8 @@ etr_delay_embed_trajectory <- function(trajectories,embedding_dimension,
 #' @param curve Zero-based curve index or exact ID.
 #' @param theiler_window Minimum temporal neighbor exclusion in samples.
 #' @param max_horizon Positive observed sample horizon.
-#' @param theiler_window_units,max_horizon_units Only "samples" are supported.
+#' @param theiler_window_units,max_horizon_units Observed sample or
+#'   physical-time units; non-sample units require a regular embedded grid.
 #' @export
 etr_local_divergence_curve <- function(embedding,curve,
     theiler_window,max_horizon,theiler_window_units="samples",
