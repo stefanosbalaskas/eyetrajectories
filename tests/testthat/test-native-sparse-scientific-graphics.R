@@ -160,12 +160,17 @@ _vs_ir=_vs_new(et.IrregularTrajectorySet,
     time=(np.array([0.,.5,1.]),np.array([.1,.7])),
     values=(np.array([[0.,2.],[1.,3.],[2.,4.]]),
       np.array([[5.,6.],[7.,8.]])))
+_vs_cov=et.plot_sparse_fpca_covariance(_vs_uni)
+_vs_scores=et.plot_sparse_mfpca_score_diagnostics(_vs_mf)
 _vs_fpca=et.plot_sparse_fpca_component(_vs_uni)
 _vs_mfpca=et.plot_sparse_mfpca_component(_vs_mf)
 _vs_blocks=et.plot_sparse_mfpca_covariance_blocks(_vs_mf)
 _vs_cross=et.plot_sparse_mfpca_cross_covariance(_vs_mf,stage='smoothed')
 _vs_irreg=et.plot_sparse_irregular_dimension(_vs_ir,dimension='x')
 _vs_python={
+  'covariance':_vs_cov.images[0].get_array().data,
+  'scores_good':_vs_scores.collections[0].get_offsets().data,
+  'scores_flagged':_vs_scores.collections[1].get_offsets().data,
   'fpca_mean':_vs_fpca.lines[0].get_ydata(),
   'fpca_lower':_vs_fpca.lines[1].get_ydata(),
   'fpca_upper':_vs_fpca.lines[2].get_ydata(),
@@ -177,9 +182,15 @@ _vs_python={
 }
 plt.close('all')
 ")
-  # Five literal frozen public plot exports, with returned source Axes
+  # Seven literal frozen public plot exports, with returned source Axes
   # geometry independently matched to the original pinned Python oracle.
   direct_axes<-list(
+    covariance=reticulate::py_call(
+      etpy_get_export("plot_sparse_fpca_covariance"),
+      result=reticulate::py_eval("_vs_uni",convert=FALSE)),
+    scores=reticulate::py_call(
+      etpy_get_export("plot_sparse_mfpca_score_diagnostics"),
+      result=reticulate::py_eval("_vs_mf",convert=FALSE)),
     fpca=reticulate::py_call(
       etpy_get_export("plot_sparse_fpca_component"),
       result=reticulate::py_eval("_vs_uni",convert=FALSE)),
@@ -199,9 +210,11 @@ plt.close('all')
       dimension="x")
   )
   extract<-reticulate::py_eval(
-    "lambda x, key: {'fpca_mean':lambda: x.lines[0].get_ydata(), 'fpca_lower':lambda: x.lines[1].get_ydata(), 'fpca_upper':lambda: x.lines[2].get_ydata(), 'mfpca_x_upper':lambda: x[0].lines[1].get_ydata(), 'mfpca_y_upper':lambda: x[1].lines[1].get_ydata(), 'xy':lambda: x[0,1].images[0].get_array().data, 'yx':lambda: x[1].images[0].get_array().data, 'irreg_b_x':lambda: x.lines[1].get_ydata()}[key]()",
+    "lambda x, key: {'covariance':lambda: x.images[0].get_array().data, 'scores_good':lambda: x.collections[0].get_offsets().data, 'scores_flagged':lambda: x.collections[1].get_offsets().data, 'fpca_mean':lambda: x.lines[0].get_ydata(), 'fpca_lower':lambda: x.lines[1].get_ydata(), 'fpca_upper':lambda: x.lines[2].get_ydata(), 'mfpca_x_upper':lambda: x[0].lines[1].get_ydata(), 'mfpca_y_upper':lambda: x[1].lines[1].get_ydata(), 'xy':lambda: x[0,1].images[0].get_array().data, 'yx':lambda: x[1].images[0].get_array().data, 'irreg_b_x':lambda: x.lines[1].get_ydata()}[key]()",
     convert=FALSE)
-  direct_keys<-c(fpca_mean="fpca",fpca_lower="fpca",
+  direct_keys<-c(covariance="covariance",
+    scores_good="scores",scores_flagged="scores",
+    fpca_mean="fpca",fpca_lower="fpca",
     fpca_upper="fpca",mfpca_x_upper="mfpca",
     mfpca_y_upper="mfpca",xy="blocks",yx="cross",
     irreg_b_x="irregular")
@@ -223,7 +236,16 @@ plt.close('all')
     d<-etr_plot_sparse_mfpca_cross_covariance(z$multivariate,
       source="smoothed")
     e<-etr_plot_sparse_irregular_dimension(z$irregular,"x")
-    actual<-list(fpca_mean=a$mean,fpca_lower=a$lower,
+    cov<-etr_plot_sparse_fpca_covariance(z$univariate)
+    scores<-etr_plot_sparse_mfpca_score_diagnostics(z$multivariate)
+    good<-scores$finite[scores$finite$status_code=="ok",
+      c("n_time_points","condition_number"),drop=FALSE]
+    flagged<-scores$finite[scores$finite$status_code!="ok",
+      c("n_time_points","condition_number"),drop=FALSE]
+    actual<-list(covariance=cov$covariance,
+      scores_good=unname(as.matrix(good)),
+      scores_flagged=unname(as.matrix(flagged)),
+      fpca_mean=a$mean,fpca_lower=a$lower,
       fpca_upper=a$upper,mfpca_x_upper=b$x$upper,
       mfpca_y_upper=b$y$upper,xy=c$xy,yx=d$yx,
       irreg_b_x=e$values[[2L]])
