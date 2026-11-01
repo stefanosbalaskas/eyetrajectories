@@ -77,9 +77,9 @@ test_that("all 26 previously unreferenced public Python exports are now attribut
   for(file in names(required)){
     target<-file.path(root,"tests","testthat",file)
     inv<-env$etr_source_fixture_static_inventory(target)
-    expect_gte(inv$cases,1L,info=file)
-    expect_setequal(intersect(inv$export_literals,required[[file]]),
-      required[[file]],info=file)
+    expect_true(inv$cases>=1L,info=file)
+    expect_true(setequal(intersect(inv$export_literals,required[[file]]),
+      required[[file]]),info=file)
     lines<-readLines(target,warn=FALSE)
     expect_true(any(grepl(
       ".etr_expect_frozen_python_source_symbol(",lines,fixed=TRUE)),
