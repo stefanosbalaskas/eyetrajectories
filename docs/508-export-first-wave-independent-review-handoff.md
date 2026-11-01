@@ -212,3 +212,30 @@ difference (204 total), with a one-row unsigned class resolution queue
 The first no-known-gap reviewer batch excludes `TrajectorySet` until the
 source differences have been scientifically addressed. All independent
 source replay and certification flags remain FALSE.
+
+## Frozen Python 1.2 scalar workflow constants: three native value mappings
+
+Three additional source-backed nonfunction objects now have native R
+descriptive mappings in the 128-entry authoritative object inventory:
+`workflows::WORKFLOW_SCHEMA_VERSION`,
+`workflows::WORKFLOW_BUNDLE_SCHEMA_VERSION`, and
+`workflows::WORKFLOW_BUNDLE_FORMAT`. Their observed Python 1.2 frozen
+values in `workflows/_core.py` are integer 1, integer 1 and
+the string `eyetrajectoriespy-workflow-bundle`, respectively.
+
+The exported native R accessor `etr_frozen_workflow_values()` returns
+independent R copies of those three scalar source values. They are
+**not** the native R workflow bundle format, which remains
+`etr_native_r_workflow_bundle_v1`, and this accessor makes no
+interoperability claim. The frozen `SUPPORTED_WORKFLOW_PLOTS` source tuple
+contains seven possible plot kinds, while the current native R dispatcher
+supports three. The latter tuple is not registered as fully mapped.
+
+Source-level tests check exact R values and types, inspect frozen
+Python 1.2 exports directly in the opt-in source mode and ensure
+the source tuple is not mislabeled as native-supported behavior.
+The 508 source-packet SHA256 verifier checks the four current
+nonfunction mapping identifiers, including `TrajectorySet`, and rejects
+substitutions after rehash. No scientific or independent approval flags
+have been changed. There are now **4/128 provisional native nonfunction
+representations, 0/128 independently certified nonfunction exports**.
