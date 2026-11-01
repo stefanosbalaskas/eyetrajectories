@@ -25,8 +25,14 @@ def make_packet(folder):
         gap = i < 203 or i == 383
         class_gap = i == 383
         backend = i < 19
+        workflow_constants = {
+            384: "WORKFLOW_SCHEMA_VERSION",
+            385: "WORKFLOW_BUNDLE_SCHEMA_VERSION",
+            386: "WORKFLOW_BUNDLE_FORMAT",
+        }
         name = (f"fn_{i:03d}" if isfn else
-                ("TrajectorySet" if class_gap else f"obj_{i - 380:03d}"))
+                ("TrajectorySet" if class_gap else
+                 workflow_constants.get(i, f"obj_{i - 380:03d}")))
         lane = ("DIFFERENT_BACKEND_OR_ESTIMAND" if backend else
                 "RECORDED_SOURCE_DIFFERENCE" if gap else
                 "FUNCTION_NO_RECORDED_GAP" if isfn else
@@ -35,7 +41,9 @@ def make_packet(folder):
                          kind="function" if isfn else "other_export",
                          native_r_candidate=f"etr_{name}" if isfn else "",
                          native_nonfunction_representation=(
-                             "etr_trajectory_set" if class_gap else ""),
+                             "etr_trajectory_set" if class_gap else
+                             f"etr_frozen_workflow_values()${name}"
+                             if i in workflow_constants else ""),
                          review_lane=lane,
                          source_gap_open=str(gap).upper(),
                          native_nonfunction_source_gap_open=str(class_gap).upper(),
@@ -304,6 +312,18 @@ class TestUnsignedBatchIntegrity(unittest.TestCase):
         write_csv(p, rows)
         self.update_manifest()
         with self.assertRaisesRegex(v.ReviewBatchError, "source-gap inventory"):
+            v.verify(self.root)
+
+    def test_rehashed_workflow_scalar_native_mapping_forgery_rejected(self):
+        p = self.root / v.FILES[0]
+        rows = v.read_csv(p)
+        target = next(r for r in rows
+                      if r["python_name"] == "WORKFLOW_BUNDLE_FORMAT")
+        target["native_nonfunction_representation"] = "forged_R_value"
+        write_csv(p, rows)
+        self.update_manifest()
+        with self.assertRaisesRegex(v.ReviewBatchError,
+                                    "Nonfunction native representation inventory"):
             v.verify(self.root)
 
     def test_nonfunction_representation_forgery_rehashed_fails(self):
