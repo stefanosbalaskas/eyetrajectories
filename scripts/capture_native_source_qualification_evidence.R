@@ -550,3 +550,14 @@ if(!all(vapply(results,function(x)isTRUE(x$success),logical(1L)))) {
     ". The preceding console output contains the test failures.",
     call.=FALSE)
 }
+
+
+# A completed, exact-head aggregate qualification may produce a scoped
+# reviewer worklist. This does not imply independent case-level replay,
+# scientific source equivalence, approval, or certification.
+source("scripts/build_four_pilot_review_matrix.R",local=TRUE)
+four_pilot_worksheet<-etr_build_four_pilot_review_matrix(
+  root=".",packet_dir=packet_root)
+stopifnot(nrow(four_pilot_worksheet$matrix)==16L,
+  !any(four_pilot_worksheet$matrix$independently_replayed_case),
+  !any(four_pilot_worksheet$matrix$fully_certified))
