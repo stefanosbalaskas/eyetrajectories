@@ -87,7 +87,14 @@ etr_build_508_certification_review_batches <- function(
       scope$backend_or_estimand_distinct)&&
     all(ready$fully_certified==scope$fully_certified),
     "Reviewer scope and current authoritative readiness disagree")
-  gap<-scope$source_difference_open
+  # Callable and nonfunction source differences are separately registered.
+  # Do not classify TrajectorySet as an error-free first-wave review
+  # candidate merely because the 203-row function gap registry omits it.
+  nonfunction_gap<-ready$nonfunction_source_difference_open
+  ck(is.logical(nonfunction_gap)&&!anyNA(nonfunction_gap)&&
+    sum(nonfunction_gap)==1L,
+    "Expected one explicit unresolved Python nonfunction source contract")
+  gap<-scope$source_difference_open | nonfunction_gap
   backend<-scope$backend_or_estimand_distinct
   fn<-scope$kind=="function"
   impl<-ready$native_implementation_started
@@ -117,6 +124,7 @@ etr_build_508_certification_review_batches <- function(
     native_implementation_started=impl,
     mapped_native_function=scope$mapped_native_function,
     source_gap_open=gap,
+    native_nonfunction_source_gap_open=nonfunction_gap,
     backend_or_estimand_distinct=backend,
     source_fixture_attributed=scope$selected_oracle_candidate,
     first_unresolved_requirement=ready$first_unresolved_requirement,
@@ -206,7 +214,9 @@ etr_build_508_certification_review_batches <- function(
   message("508 export certification queue generated at ",packet_dir,
     ": ",nrow(functions)," candidate functions and ",
     nrow(others)," candidate nonfunctions without RECORDED source gaps; ",
-    sum(gap)," documented source-gap exports; ",
+    sum(scope$source_difference_open)," callable source gaps, ",
+    sum(nonfunction_gap)," nonfunction source gap; ",
+    sum(gap)," total documented source-gap exports; ",
     sum(backend)," alternative backends/estimands (overlap permitted).")
   message("First unsigned reviewer batch: ",nrow(selection),
     " exports, ",nrow(cases)," case criteria; 0 new independent approvals.")
