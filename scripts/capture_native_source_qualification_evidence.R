@@ -322,6 +322,7 @@ source_files<-unique(c(
   "tests/testthat/test-native-mixed-known-truth-recovery.R",
   "tests/testthat/test-native-mixed-variance-decomposition-source.R",
   "tests/testthat/test-native-fpca-known-truth-recovery.R",
+  "tests/testthat/test-native-fpca-external-score-reconstruction.R",
   "tests/testthat/test-native-sparse-known-truth-recovery.R",
   "tests/testthat/test-native-mixed-bootstrap-width-comparison.R",
   "tests/testthat/test-native-sparse-mfpca-known-truth-recovery.R",
