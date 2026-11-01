@@ -115,6 +115,7 @@ class TestUnsignedBatchIntegrity(unittest.TestCase):
         batch = v.read_csv(self.root / v.FILES[1])
         records = []
         for row in batch:
+            is_fn = row["kind"] == "function"
             records.append(dict(
                 namespace=row["namespace"],
                 python_name=row["python_name"],
@@ -125,8 +126,16 @@ class TestUnsignedBatchIntegrity(unittest.TestCase):
                 signature_text_is_not_semantic_parity="TRUE",
                 independently_reproduced="FALSE",
                 source_full_domain_certified="FALSE",
+                python_export_lookup_ok="TRUE",
                 python_interface_inspected="TRUE",
-                native_r_formals_inspected="FALSE"))
+                native_r_function_present="TRUE" if is_fn else "FALSE",
+                native_r_formals_inspected="FALSE",
+                native_nonfunction_representation=(
+                    "NOT_APPLICABLE_FUNCTION" if is_fn else ""),
+                first_review_blocker=(
+                    "FULL_DOMAIN_SCIENTIFIC_AND_EXTERNAL_REVIEW_MISSING"
+                    if is_fn else "NATIVE_R_NONFUNCTION_REPRESENTATION_MISSING"),
+                reviewer_next_action="Synthetic first-party review still needed"))
         path = self.root / v.INTERFACE_INVENTORY
         write_csv(path, records)
         write_csv(self.root / v.INTERFACE_SHA256,
@@ -162,6 +171,21 @@ class TestUnsignedBatchIntegrity(unittest.TestCase):
         side_rows[0]["sha256"] = v.sha256(p)
         write_csv(side, side_rows)
         with self.assertRaisesRegex(v.ReviewBatchError, "must be FALSE"):
+            v.verify(self.root)
+
+    def test_forged_nonfunction_representation_blocker_rehashed_fails(self):
+        self.write_interface_inventory()
+        p = self.root / v.INTERFACE_INVENTORY
+        rows = v.read_csv(p)
+        nonfunction = next(r for r in rows if r["kind"] != "function")
+        nonfunction["first_review_blocker"] = (
+            "FULL_DOMAIN_SCIENTIFIC_AND_EXTERNAL_REVIEW_MISSING")
+        write_csv(p, rows)
+        side = self.root / v.INTERFACE_SHA256
+        side_rows = v.read_csv(side)
+        side_rows[0]["sha256"] = v.sha256(p)
+        write_csv(side, side_rows)
+        with self.assertRaisesRegex(v.ReviewBatchError, "blocker does not agree"):
             v.verify(self.root)
 
     def test_unpaired_interface_inventory_rejected(self):
