@@ -159,7 +159,7 @@ etr_functional_mixed_effects_covariance_sensitivity_reporting_text <- function(r
     "No covariance structure was ranked or automatically selected and no ",
     "likelihood-ratio p-values were computed. Information criteria used ",
     "the recorded convention '",mode,
-    "'; BIC used the explicit observation count n_curves × n_time.")
+    "'; BIC used the explicit observation count n_curves \u00d7 n_time.")
 }
 
 .etr_multivariate_source_report_check <- function(result) {
