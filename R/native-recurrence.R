@@ -1,8 +1,19 @@
-# Internal Euclidean recurrence distances.
-.etr_distance_matrix <- function(a, b) {
+# Source-matched Minkowski distances: frozen Python 1.2 recurrence.py uses
+# scipy.spatial.cKDTree query_pairs with p=1, 2, or Inf. This native dense
+# implementation computes equivalent L1/L2/L-infinity state distances.
+.etr_distance_matrix <- function(a, b, metric="euclidean") {
+  .etr_assert(is.character(metric)&&length(metric)==1L&&
+    !is.na(metric)&&metric%in%c("cityblock","euclidean","chebyshev"),
+    "metric must be one of cityblock, euclidean, chebyshev")
+  .etr_assert(is.matrix(a)&&is.matrix(b)&&ncol(a)==ncol(b)&&
+    is.numeric(a)&&is.numeric(b)&&all(is.finite(a))&&all(is.finite(b)),
+    "distance states must be complete numeric matrices of equal width")
   z <- matrix(0, nrow(a), nrow(b))
-  for (i in seq_len(nrow(a))) for (j in seq_len(nrow(b)))
-    z[i, j] <- sqrt(sum((a[i, ] - b[j, ])^2))
+  for (i in seq_len(nrow(a))) for (j in seq_len(nrow(b))) {
+    delta<-abs(a[i, ]-b[j, ])
+    z[i,j]<-switch(metric,cityblock=sum(delta),
+      euclidean=sqrt(sum(delta^2)),chebyshev=max(delta))
+  }
   z
 }
 
@@ -13,10 +24,12 @@
 #' The matrix is dense and intended for modest single-trial samples.
 #' @param x Complete native trajectory collection.
 #' @param curve 1-based curve index or curve identifier.
-#' @param radius Finite non-negative Euclidean radius.
+#' @param radius Finite non-negative distance radius.
 #' @param theiler Non-negative integer number of excluded adjacent sample lags.
+#' @param metric One of cityblock (L1), euclidean (L2), chebyshev (L-infinity).
 #' @export
-etr_recurrence_matrix <- function(x, curve = 1L, radius, theiler = 0L) {
+etr_recurrence_matrix <- function(x, curve = 1L, radius, theiler = 0L,
+                                  metric = "euclidean") {
   etr_validate(x, require_complete = TRUE)
   if (is.character(curve)) curve <- match(curve, x$curve_ids)
   .etr_assert(length(curve) == 1L && !is.na(curve) && is.numeric(curve) &&
@@ -32,7 +45,7 @@ etr_recurrence_matrix <- function(x, curve = 1L, radius, theiler = 0L) {
   a <- .etr_curve(x, curve); n <- nrow(a)
   .etr_assert(n <= 2500L, "dense recurrence exceeds 2500 samples; use a sparse backend")
   .etr_assert(theiler < n - 1L, "Theiler window leaves no eligible pairs")
-  m <- .etr_distance_matrix(a, a) <= radius
+  m <- .etr_distance_matrix(a, a, metric=metric) <= radius
   eligible <- abs(row(m) - col(m)) > theiler
   diag(eligible) <- FALSE
   m <- m & eligible
@@ -42,9 +55,10 @@ etr_recurrence_matrix <- function(x, curve = 1L, radius, theiler = 0L) {
                  radius = radius, theiler = as.integer(theiler),
                  eligible_pairs = sum(upper), recurrence_rate = rate,
                  time = x$time, time_unit = x$time_unit,
-                 metric = "euclidean", state_dimension = ncol(a),
+                 metric = metric, state_dimension = ncol(a),
                  target_recurrence_rate = NULL,
                  provenance = list(source="native_R_recurrence",
+                   metric=metric,
                    recurrence_rate_denominator="eligible_off_diagonal_pairs_outside_theiler_window")),
             class = "etr_recurrence")
 }
