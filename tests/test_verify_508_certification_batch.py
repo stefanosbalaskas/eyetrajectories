@@ -66,8 +66,15 @@ def make_packet(folder):
                 reviewer_written_findings=""))
     decisions = []
     for r in batch:
+        # Keep all six immutable identity fields identical to the native
+        # R-generated unsigned reviewer decision template. A missing field
+        # used to raise KeyError('kind') in signed-receipt structural tests.
         decisions.append(dict(namespace=r["namespace"],
             python_name=r["python_name"],
+            kind=r["kind"],
+            native_r_candidate=r["native_r_candidate"],
+            recorded_r_git_head=r["recorded_r_git_head"],
+            frozen_python_commit=r["frozen_python_commit"],
             scope_decision="PENDING_INDEPENDENT_REVIEW",
             reviewer_name="", reviewer_affiliation="", reviewer_contact="",
             reviewer_independent_of_implementation_team="FALSE",
