@@ -49,6 +49,7 @@ test_that("classes and constants are separately tracked, not called native algor
   z <- etr_native_parity_catalog()
   others <- z[!z$is_python_function,,drop=FALSE]
   expect_equal(nrow(others),128L)
+  expect_equal(sum(!is.na(others$native_representation_stage)),32L)
   stage5 <- others[others$python_name=="TrajectorySet" &
                     others$namespace=="root",,drop=FALSE]
   expect_equal(nrow(stage5),1L)
@@ -56,7 +57,7 @@ test_that("classes and constants are separately tracked, not called native algor
                    "class_or_constant_native_representation_partial")
   expect_identical(stage5$native_representation_stage,5L)
   pending <- others[is.na(others$native_representation_stage),,drop=FALSE]
-  expect_equal(nrow(pending),121L) # 128 non-functions minus 7 partial representations
+  expect_equal(nrow(pending),96L) # 128 nonfunctions minus 32 provisional representations
   expect_true(all(pending$status==
      "class_or_constant_native_representation_not_reviewed"))
   expect_false(any(others$native_implementation_started))
