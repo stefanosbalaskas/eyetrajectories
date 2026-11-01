@@ -590,8 +590,28 @@ stopifnot(nrow(triage)==508L,
   all(!triage$independent_source_contract_approved),
   all(!gap_review$resolved),
   !anyDuplicated(gap_review$python_name))
+# The 203 function source gaps and the one native class source gap must
+# remain separately reviewable; no signed reviewer decisions are inferred.
+class_gap_file<-file.path(packet_root,
+  "native_nonfunction_source_gap_resolution_queue.csv")
+stopifnot(file.exists(class_gap_file))
+class_gap_review<-utils::read.csv(class_gap_file,
+  stringsAsFactors=FALSE,check.names=FALSE)
+traj_triage<-triage[triage$python_name=="TrajectorySet",,drop=FALSE]
+stopifnot(nrow(class_gap_review)==1L,
+  identical(class_gap_review$python_name,"TrajectorySet"),
+  isTRUE(class_gap_review$gap_open),
+  all(!class_gap_review$independently_replayed),
+  all(!class_gap_review$scientific_scope_approved),
+  all(!class_gap_review$independent_reviewer_approved),
+  all(!class_gap_review$fully_certified),
+  nrow(traj_triage)==1L,
+  isTRUE(traj_triage$unresolved_source_difference),
+  identical(traj_triage$review_lane,"nonfunction_open_source_gap"),
+  sum(triage$unresolved_source_difference)==source_gap_count+1L)
 message("Review triage: ",nrow(triage)," public exports; ",
-  nrow(gap_review)," recorded source differences; ",
+  nrow(gap_review)," callable source differences plus ",
+  nrow(class_gap_review)," unresolved nonfunction source difference; ",
   sum(triage$backend_or_estimand_distinct),
   " alternative backends/estimands; zero independent approvals.")
 stopifnot(nrow(missing_refs)==0L,
