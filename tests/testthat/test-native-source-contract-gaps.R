@@ -205,7 +205,13 @@ test_that("pinned Python 1.2 exceptional source output agrees in opt-in mode",{
     time=reticulate::r_to_py(c(0,1,Inf)))
   native_grid<-etr_trapezoid_weights(c(0,1,Inf),
     python_boundary_mode=TRUE)
-  expect_equal(unname(native_grid),unname(et_to_r(python_grid)),
+  # NumPy's one-dimensional ndarray converts to an R object with
+  # dim=c(3L); the native vector has no dim attribute. This remains
+  # an explicit return-schema difference, not a full-domain parity PASS.
+  python_grid_r<-et_to_r(python_grid)
+  expect_null(dim(native_grid))
+  expect_identical(dim(python_grid_r),3L)
+  expect_equal(as.numeric(native_grid),as.numeric(python_grid_r),
     tolerance=0)
   obj<-new.env(parent=emptyenv())
   obj$scores<-matrix(c(0,1,2,3,4,5),nrow=3L,ncol=2L)
