@@ -244,6 +244,7 @@ source_files<-unique(c(
   "R/native-wild-simultaneous-source-calibration.R",
   "R/native-fpcr-slope-source-calibration.R",
   "R/native-source-workflows.R",
+  "R/native-functional-regression.R",
   "R/native-recurrence-workflow.R",
   "R/native-functional-process-simulation.R",
   "R/native-functional-recovery-orchestration.R",
