@@ -26,6 +26,7 @@ etr_native_certification_readiness_frame <- function(
     "native_r_candidate","named_native_candidate",
     "native_implementation_started","source_contract_gap_unresolved",
     "nonfunction_source_gap_unresolved",
+    "nonfunction_native_representation",
     "contract_certification_evidence_state",
     "independent_numeric_parity_pass","behavioral_schema_parity_pass",
     "scientific_inference_qualified","independent_contract_review_pass",
@@ -79,6 +80,7 @@ etr_native_certification_readiness_frame <- function(
   first[approved]<-"complete"
   ans<-data.frame(namespace=api$namespace,python_name=api$python_name,
     kind=api$kind,native_r_candidate=api$native_r_candidate,
+    native_nonfunction_representation=api$nonfunction_native_representation,
     frozen_source_sha=api$source_git_sha,
     native_mapping_present=api$named_native_candidate,
     native_implementation_started=api$native_implementation_started,
