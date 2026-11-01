@@ -137,12 +137,14 @@ etr_prepare_four_pilot_external_attestation<-function(
   manifest_path<-file.path(ctx$packet_dir,
     "four_pilot_external_evidence_sha256_manifest.csv")
   utils::write.csv(manifest,manifest_path,row.names=FALSE,na="")
+  manifest_sha256<-digest::digest(manifest_path,algo="sha256",file=TRUE)
   pilot_names<-ctx$pilots$python_name
   external<-data.frame(
     python_name=pilot_names,
     native_r_candidate=ctx$pilots$native_r_candidate,
     recorded_r_git_head=rep(ctx$head,4L),
     frozen_python_commit=ctx$pilots$pinned_python_commit,
+    evidence_manifest_sha256=rep(manifest_sha256,4L),
     reviewer_name=rep("",4L),
     reviewer_affiliation=rep("",4L),
     reviewer_contact=rep("",4L),
@@ -193,7 +195,7 @@ etr_prepare_four_pilot_external_attestation<-function(
     "   increment the 0/508 full-domain source-contract certification ledger.",
     "   A new qualification/review cycle is required after any source fix.",
     "",
-    "The manifest covers the six original captured source-evidence files.",
+    "The signed CSV binds the SHA256 of the six-file source-evidence manifest.",
     "Sign the completed review CSV, NOT the unsigned template or manifest."
   ),manual,useBytes=TRUE)
   message("Independent reviewer SHA256 evidence manifest: ",manifest_path)
@@ -231,7 +233,7 @@ etr_check_four_pilot_external_attestation<-function(
     stringsAsFactors=FALSE,check.names=FALSE)
   expected<-c("python_name","native_r_candidate",
     "recorded_r_git_head","frozen_python_commit",
-    "reviewer_name","reviewer_affiliation","reviewer_contact",
+    "evidence_manifest_sha256","reviewer_name","reviewer_affiliation","reviewer_contact",
     "reviewer_is_independent_of_authors",
     "reviewer_replayed_python_separately",
     "reviewer_replayed_native_r_separately",
@@ -246,6 +248,10 @@ etr_check_four_pilot_external_attestation<-function(
   idx<-match(ctx$pilots$python_name,submission$python_name)
   ck(!anyNA(idx),"External source contract names do not match four pilots")
   submission<-submission[idx,,drop=FALSE]
+  manifest_sha256<-digest::digest(expected_file,
+    algo="sha256",file=TRUE)
+  ck(all(submission$evidence_manifest_sha256==manifest_sha256),
+    "Detached reviewer submission does not bind the SHA256 evidence manifest")
   ck(identical(as.character(submission$native_r_candidate),
       as.character(ctx$pilots$native_r_candidate))&&
     all(submission$recorded_r_git_head==ctx$head)&&
@@ -267,7 +273,9 @@ etr_check_four_pilot_external_attestation<-function(
     is.character(x)&&all(!is.na(x))&&
       all(nzchar(trimws(x))),logical(1L))),
     "Independent reviewer identity, findings, evidence and time required")
-  ck(!any(submission$documented_source_gap_resolved),
+  ck(is.logical(submission$documented_source_gap_resolved)&&
+    !anyNA(submission$documented_source_gap_resolved)&&
+    !any(submission$documented_source_gap_resolved),
     "Source gaps are still open; a reviewer CSV cannot resolve them")
   ck(all(submission$scope_decision%in%
     c("RESTRICTED_SUBSET_MATCH","NOT_EQUIVALENT")),
