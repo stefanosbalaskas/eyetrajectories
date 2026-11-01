@@ -24,7 +24,8 @@ test_that("two root wild exports and two subpackage workflows retain separate at
       expected[[file]])
   }
   # Workflow functions are public under eyetrajectoriespy.workflows,
-  # not in the frozen 508-export package-root catalogue.
+  # which supplies 18 of the 380 callable exports in the frozen
+  # combined root/workflows inventory. The workflow namespace matters.
   modules<-c("test-native-recurrence-workflow.R",
     "test-native-workflow-plot-dispatch.R")
   module_names<-c("run_recurrence_workflow","plot_workflow_result")
@@ -35,9 +36,23 @@ test_that("two root wild exports and two subpackage workflows retain separate at
       source,fixed=TRUE)))
     expect_true(any(grepl(paste0('"',module_names[[k]],'"'),
       source,fixed=TRUE)))
-    expect_false(any(grepl(paste0('etpy_get_export("',
-      module_names[[k]],'")'),source,fixed=TRUE)))
+    if(k==1L){
+      expect_true(any(grepl(
+        'etpy_get_export("run_recurrence_workflow",.namespace="workflows")',
+        source,fixed=TRUE)))
+    } else {
+      # Other workflows may still use direct imported subpackage calls.
+      expect_false(any(grepl(paste0('etpy_get_export("',
+        module_names[[k]],'")'),source,fixed=TRUE)))
+    }
   }
+  w3<-env$etr_source_fixture_static_inventory(file.path(
+    root,"tests","testthat","test-native-source-workflows.R"))
+  expect_true("run_fpca_workflow"%in%w3$export_literals)
+  expect_true("run_recurrence_workflow"%in%
+    env$etr_source_fixture_static_inventory(file.path(
+      root,"tests","testthat",
+      "test-native-recurrence-workflow.R"))$export_literals)
   api<-etr_native_parity_catalog()
   i<-match(exports,api$python_name)
   expect_false(anyNA(i))
