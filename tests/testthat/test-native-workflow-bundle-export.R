@@ -71,3 +71,14 @@ test_that("native workflow bundle fails closed on unsafe evidence names",{
   expect_error(etr_export_workflow_bundle(e,file.path(root,"e")),
     "JSON")
 })
+
+# Actual frozen-Python 1.2 source-symbol inspection on published exports.
+# For alternate R estimands/backends this is NOT numerical source parity.
+test_that("unreviewed Python 1.2 source symbols are inspectable: export_workflow_bundle",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("pinned Python source-symbol audit requires source runtime")
+  .etr_expect_frozen_python_source_symbol(
+    etpy_get_export("export_workflow_bundle",.namespace="workflows"),"export_workflow_bundle")
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})
