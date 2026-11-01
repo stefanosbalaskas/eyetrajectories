@@ -1,6 +1,7 @@
 # Static evidence guard only: a literal etpy_get_export call is NOT a
 # passed per-case Python oracle, full-domain parity or independent approval.
 test_that("twenty additional source reporting exports have direct pinned oracle calls",{
+  .etr_require_developer_checkout()
   root<-testthat::test_path("..","..")
   helper<-file.path(root,"scripts","source_fixture_static_attribution.R")
   expect_true(file.exists(helper))
@@ -49,6 +50,7 @@ test_that("twenty additional source reporting exports have direct pinned oracle 
 })
 
 test_that("mixed-effects report has an exact direct frozen Python export oracle",{
+  .etr_require_developer_checkout()
   root<-testthat::test_path("..","..")
   env<-new.env(parent=baseenv())
   sys.source(file.path(root,"scripts",

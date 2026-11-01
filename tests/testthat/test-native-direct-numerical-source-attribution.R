@@ -1,6 +1,7 @@
 # A source-name fixture reference is not a per-case independent full
 # Python-to-R equivalence certificate; open gaps remain independently audited.
 test_that("eight numerical and recovery source exports are directly replayed",{
+  .etr_require_developer_checkout()
   root<-testthat::test_path("..","..")
   env<-new.env(parent=baseenv())
   sys.source(file.path(root,"scripts",

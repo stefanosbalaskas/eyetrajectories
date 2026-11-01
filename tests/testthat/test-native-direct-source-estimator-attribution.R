@@ -1,6 +1,7 @@
 # Provenance guard: executable fixed-input Python source comparisons are
 # not comprehensive contract parity or third-party independent signoff.
 test_that("nine estimator and CV Python public exports are explicitly replayed",{
+  .etr_require_developer_checkout()
   root<-testthat::test_path("..","..")
   env<-new.env(parent=baseenv())
   sys.source(file.path(root,"scripts",

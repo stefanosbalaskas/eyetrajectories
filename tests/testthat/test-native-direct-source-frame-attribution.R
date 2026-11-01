@@ -1,6 +1,7 @@
 # Bounded source provenance evidence: name-to-fixture links are NOT
 # independent execution, complete-domain parity or scientific certification.
 test_that("eight typed source-frame exports have explicit pinned Python oracles",{
+  .etr_require_developer_checkout()
   root<-testthat::test_path("..","..")
   helper<-file.path(root,"scripts","source_fixture_static_attribution.R")
   expect_true(file.exists(helper))

@@ -2,6 +2,7 @@
 # Python Matplotlib Axes are deliberately distinct backends and never
 # automatically marked complete-domain source equivalent.
 test_that("seven frozen graphical source exports are directly replayed",{
+  .etr_require_developer_checkout()
   root<-testthat::test_path("..","..")
   env<-new.env(parent=baseenv())
   sys.source(file.path(root,"scripts",
@@ -30,6 +31,7 @@ test_that("seven frozen graphical source exports are directly replayed",{
 })
 
 test_that("two frozen sparse plot exports carry typed direct Python oracles",{
+  .etr_require_developer_checkout()
   root<-testthat::test_path("..","..")
   env<-new.env(parent=baseenv())
   sys.source(file.path(root,"scripts",
@@ -49,6 +51,7 @@ test_that("two frozen sparse plot exports carry typed direct Python oracles",{
 })
 
 test_that("both IAAFT plot exports have direct frozen Python geometry witnesses",{
+  .etr_require_developer_checkout()
   root<-testthat::test_path("..","..")
   env<-new.env(parent=baseenv())
   sys.source(file.path(root,"scripts",

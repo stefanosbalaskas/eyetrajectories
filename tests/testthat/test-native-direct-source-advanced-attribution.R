@@ -1,6 +1,7 @@
 # Explicit source oracle names improve audit attribution but never sign an
 # export or prove identical Matplotlib versus base-R graphics return values.
 test_that("thirteen advanced sparse and bootstrap source exports are explicit",{
+  .etr_require_developer_checkout()
   root<-testthat::test_path("..","..")
   env<-new.env(parent=baseenv())
   sys.source(file.path(root,"scripts",

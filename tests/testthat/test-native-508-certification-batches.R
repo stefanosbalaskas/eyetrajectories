@@ -1,5 +1,6 @@
 # First-party QA of reviewer packet generation, NEVER independent signoff.
 test_that("508-export review fast lane preserves every uncertified export",{
+  .etr_require_developer_checkout()
   if(!nzchar(Sys.which("git")))
     skip("Exact-head reviewer test requires git")
   if(!requireNamespace("digest",quietly=TRUE))

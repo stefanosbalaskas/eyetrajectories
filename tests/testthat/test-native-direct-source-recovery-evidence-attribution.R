@@ -1,5 +1,6 @@
 # This gate records source-call location only, never approved full-domain parity.
 test_that("three typed recovery frames have explicit Python source witnesses",{
+  .etr_require_developer_checkout()
   root<-testthat::test_path("..","..")
   helper<-new.env(parent=baseenv())
   sys.source(file.path(root,"scripts",
