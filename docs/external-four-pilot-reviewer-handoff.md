@@ -43,3 +43,29 @@ A real independent reviewer must obtain both source checkouts, reproduce numeric
 With known source gaps unresolved, only `RESTRICTED_SUBSET_MATCH` or `NOT_EQUIVALENT` can be submitted; `FULL_SOURCE_PARITY` is prohibited. The independent reviewer signs the completed CSV using detached GPG and provides a separately verified full signing-key fingerprint. Existing R function `etr_check_four_pilot_external_attestation(...)` validates technical signature/manifest structure but cannot, by itself, establish scientific judgment or reviewer independence.
 
 Human reviewer queue: [issue #34](https://github.com/stefanosbalaskas/eyetrajectories/issues/34). Research work: [draft PR #48](https://github.com/stefanosbalaskas/eyetrajectories/pull/48).
+
+
+## New opt-in Python 1.2 boundary-mode audit (unqualified until exact-head replay)
+
+The native R exports now accept an explicitly named `python_boundary_mode=TRUE` switch. **This option is not in the Python 1.2 public signature**, and the scientific native defaults remain finite-only. It is a deliberately labeled boundary adapter, not evidence of whole-domain callable parity:
+
+| Original Python 1.2 callable | Default native R scientific policy | Opt-in R source-boundary reproduction |
+|---|---|---|
+| `alr_transform` | rejects NaN/+Inf epsilon | `etr_alr_transform(..., epsilon=NaN, python_boundary_mode=TRUE)` propagates NaN log-ratios; accepts +Inf epsilon for further source-boundary tests |
+| `inverse_alr` | rejects nonfinite exponent normalization | `etr_inverse_alr(..., python_boundary_mode=TRUE)` retains NumPy-like overflow and NaN/Inf propagation rather than silently stabilizing logits |
+| `functional_trapezoid_weights` | finite time grid and normalization scalar required | `etr_trapezoid_weights(..., python_boundary_mode=TRUE)` permits tested infinite monotonic endpoints and NaN/Inf scalar truthiness |
+| `score_distance_matrix` | native FPCA or finite score list | `etr_score_distance_matrix(..., python_boundary_mode=TRUE)` additionally accepts an R environment with finite matrix `scores` and compatible `n_components`, analogous to a minimal Python attribute-bearing object |
+
+The four-row `four_pilot_developer_source_boundary_observations.csv` now contains distinct `opt_in_python_boundary_mode_observed_behavior`, `opt_in_python_boundary_mode_matches_source_category`, and `opt_in_mode_full_source_parity_certified` fields. The last field remains FALSE. Mode/category agreement is only an additional first-party test; numerical values and full-domain accepted input/exception schemas remain subject to independent review.
+
+The external SHA256 handoff and Python standard-library integrity checker both require these opt-in fields on a **newly generated** packet. Prior evidence snapshots stay valid for their original commit and schema but cannot be relabeled as new-head evidence. After a fresh `git pull --ff-only`, run:
+
+```r
+stopifnot(identical(
+  system("git rev-parse HEAD", intern=TRUE),
+  "REPLACE_WITH_THE_RESEARCH_HEAD_REPORTED_BY_GITHUB"
+))
+source("scripts/capture_native_source_qualification_evidence.R")
+```
+
+Re-run the read-only packet verifier with that **exact current** head, and explicitly audit source coercion, types, exceptional warnings, numeric distance algorithms, nested containers, score-object semantics, platform reproducibility, and scientific scope before any independent signoff. No developer approval flag should be promoted.
