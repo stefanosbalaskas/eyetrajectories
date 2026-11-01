@@ -38,6 +38,7 @@
     boundaries="four_pilot_developer_source_boundary_observations.csv",
     gap_queue="known_source_gap_resolution_queue.csv")
   paths<-file.path(packet_dir,keys)
+  names(paths)<-names(keys)
   ck(all(file.exists(paths)),
     paste("Missing source-review file(s):",
       paste(names(keys)[!file.exists(paths)],collapse=", ")))
@@ -122,7 +123,7 @@ etr_prepare_four_pilot_external_attestation<-function(
   ck<-.etr_pilot_review_check
   files<-basename(ctx$paths)
   sha<-vapply(ctx$paths,function(path)
-    digest::digest(file=path,algo="sha256"),
+    digest::digest(path,algo="sha256",file=TRUE),
     character(1L),USE.NAMES=FALSE)
   manifest<-data.frame(filename=files,sha256=sha,
     recorded_r_git_head=rep(ctx$head,length(files)),
@@ -166,8 +167,8 @@ etr_prepare_four_pilot_external_attestation<-function(
   writeLines(c(
     "# Four pilot contracts — externally signed review",
     "",
-    paste0("Pinned native R HEAD: \`",ctx$head,"\`"),
-    "Frozen Python source: \`c1cd95ad718327550f7e55393ff38582872f7a94\`",
+    paste0("Pinned native R HEAD: `",ctx$head,"`"),
+    "Frozen Python source: `c1cd95ad718327550f7e55393ff38582872f7a94`",
     "",
     "**This evidence is NOT an independent certification.**",
     "First-party evidence: 10 finite comparisons pass; 3 documented",
@@ -221,7 +222,7 @@ etr_check_four_pilot_external_attestation<-function(
   manifest<-utils::read.csv(expected_file,
     stringsAsFactors=FALSE,check.names=FALSE)
   hashes<-vapply(ctx$paths,function(f)
-    digest::digest(file=f,algo="sha256"),character(1L))
+    digest::digest(f,algo="sha256",file=TRUE),character(1L))
   ck(nrow(manifest)==length(ctx$paths)&&
     identical(as.character(manifest$filename),basename(ctx$paths))&&
     identical(as.character(manifest$sha256),unname(hashes)),
