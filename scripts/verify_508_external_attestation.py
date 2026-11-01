@@ -142,6 +142,8 @@ def verify_submission(packet_dir: str | Path, completed_cases: str | Path,
         base.check(row["reviewer_created_evidence_reference"].strip() and
                    row["reviewer_written_findings"].strip(),
                    "Every signed case requires independent evidence and findings")
+        base.check(row["independently_replayed"] == "TRUE",
+                   "Every signed case must be independently reviewed/replayed")
         if base.key(row) in full_keys:
             base.check(all(row[name] == "TRUE" for name in
                            ("reviewer_case_passed", "independently_replayed",
