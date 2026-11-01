@@ -51,7 +51,7 @@ test_that("native TrajectorySet with_values rejects incompatible shapes and miss
   expect_error(etr_with_values(x,array(1:3,c(1L,3L,1L))),
     "values dimensions must agree")
   expect_error(etr_with_values(x,array(1:12,c(2L,3L,2L))),
-    "retain curve")
+    "values dimensions must agree")
   expect_error(etr_with_values(x,array(1:8,c(2L,4L,1L))),
     "values dimensions must agree")
   expect_error(etr_with_values(x,array(1:8,c(2L,4L,1L)),
