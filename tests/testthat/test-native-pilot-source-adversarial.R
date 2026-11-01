@@ -25,6 +25,16 @@ test_that("pilot quadrature grids and truthy numeric flags have exact finite wit
       expect_equal(etr_trapezoid_weights(t,normalize=flag),
         if(flag!=0)w/sum(w) else w,tolerance=1e-14)
   }
+  for(flag in c("yes","0","", "FALSE", " ",
+      "normalize")) {
+    expected<-if(nzchar(flag))c(.5,1.5,1)/3 else c(.5,1.5,1)
+    expect_equal(etr_trapezoid_weights(c(0,1,3),normalize=flag),
+      expected,tolerance=1e-14)
+  }
+  expect_error(etr_trapezoid_weights(c(0,1,3),
+    normalize=NA_character_),"normalize")
+  expect_error(etr_trapezoid_weights(c(0,1,3),
+    normalize=c("a","b")),"normalize")
   expect_error(etr_trapezoid_weights(c(0,0,1)),
     "strictly increasing")
   expect_error(etr_trapezoid_weights(c(0,1,NA_real_)),
@@ -62,6 +72,14 @@ test_that("four pinned Python 1.2 pilot public source numerical witnesses match"
       time=reticulate::r_to_py(tt),normalize=flag)
     expect_equal(as.numeric(etr_trapezoid_weights(tt,normalize=flag)),
       as.numeric(et_to_r(py)),tolerance=1e-12)
+  }
+  for(flag in c("yes","0","", "FALSE", " ")) {
+    py<-reticulate::py_call(
+      etpy_get_export("functional_trapezoid_weights"),
+      time=reticulate::r_to_py(c(0,1,3)),normalize=flag)
+    expect_equal(etr_trapezoid_weights(c(0,1,3),normalize=flag),
+      as.numeric(et_to_r(py)),tolerance=1e-14,
+      info=paste("Python scalar string normalization",flag))
   }
   vals<-.etr_pilot_adversarial_simplex()
   for(epsilon in c(1e-8,.01,.07))for(ref in c(-1L,0L,1L,2L)){
