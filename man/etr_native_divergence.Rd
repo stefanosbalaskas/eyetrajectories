@@ -8,12 +8,24 @@
 \title{Native R delay embedding, divergence, explicit Lyapunov fits and RQA population bootstrap}
 \description{Six independent Python-free scientific implementations for complete multivariate delay embedding, Rosenstein and Kantz local divergence, explicit Lyapunov linear segments and fixed-radius population-average RQA bootstrap.}
 \usage{
-etr_delay_embed_trajectory(trajectories, embedding_dimension, delay, delay_units = "samples", dimensions = NULL)
-etr_local_divergence_curve(embedding, curve, theiler_window, max_horizon, theiler_window_units = "samples", max_horizon_units = "samples")
-etr_kantz_divergence_curve(embedding, curve, radius, theiler_window, max_horizon, min_neighbors = 2L, theiler_window_units = "samples", max_horizon_units = "samples")
-etr_estimate_largest_lyapunov_rosenstein(divergence, fit_start, fit_end, fit_units = "samples")
-etr_estimate_largest_lyapunov_kantz(divergence, fit_start, fit_end, fit_units = "samples")
-etr_bootstrap_rqa_metric_means(trajectories, dimensions, metrics, radius = NULL, target_recurrence_rate = NULL, distance_metric = "euclidean", theiler_window = 0L, theiler_window_units = "samples", min_diagonal_length = 2L, min_vertical_length = 2L, embedding_dimension = NULL, delay = NULL, delay_units = "samples", unit = "curve", participant_column = NULL, confidence_level = 0.95, n_bootstrap = 2000L, random_state = 0L)
+etr_delay_embed_trajectory(trajectories, embedding_dimension, delay,
+  delay_units = "samples", dimensions = NULL)
+etr_local_divergence_curve(embedding, curve, theiler_window, max_horizon,
+  theiler_window_units = "samples", max_horizon_units = "samples")
+etr_kantz_divergence_curve(embedding, curve, radius, theiler_window,
+  max_horizon, min_neighbors = 2L, theiler_window_units = "samples",
+  max_horizon_units = "samples")
+etr_estimate_largest_lyapunov_rosenstein(divergence, fit_start, fit_end,
+  fit_units = "samples")
+etr_estimate_largest_lyapunov_kantz(divergence, fit_start, fit_end,
+  fit_units = "samples")
+etr_bootstrap_rqa_metric_means(trajectories, dimensions, metrics, radius = NULL,
+  target_recurrence_rate = NULL, distance_metric = "euclidean",
+  theiler_window = 0L, theiler_window_units = "samples",
+  min_diagonal_length = 2L, min_vertical_length = 2L,
+  embedding_dimension = NULL, delay = NULL, delay_units = "samples",
+  unit = "curve", participant_column = NULL, confidence_level = 0.95,
+  n_bootstrap = 2000L, random_state = 0L)
 }
 \arguments{
 \item{trajectories}{Complete native trajectory collection, no implicit interpolation or smoothing.}
