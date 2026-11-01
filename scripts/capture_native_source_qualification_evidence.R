@@ -240,24 +240,48 @@ results<-list(
   qualify_once(TRUE)
 )
 # These are author-side packet integrity tests, not independent scientific
-# replay. Run both SHA256 handoff verifiers before making a new 508 worklist.
+# replay. Run each Python suite independently so the exact failure and
+# traceback appear in RStudio, not just a hidden status file.
 py_executable<-reticulate::py_config()$python
 stopifnot(length(py_executable)==1L,nzchar(py_executable))
 tooling_log_path<-file.path(output_dir,
   "python_unsigned_review_packet_tooling_tests.txt")
-tooling_output<-tryCatch(
-  suppressWarnings(system2(py_executable,args=c("-m","unittest",
-    "discover","-s","tests","-p","test_verify_*.py","-v"),
-    stdout=TRUE,stderr=TRUE)),
-  error=function(e)structure(conditionMessage(e),status=1L))
-tooling_code<-attr(tooling_output,"status")
-if(is.null(tooling_code))tooling_code<-0L
-writeLines(c(as.character(tooling_output),
-  paste("AUTHOR_PACKET_TOOLING_EXIT_CODE:",as.integer(tooling_code))),
-  tooling_log_path,useBytes=TRUE)
-if(!identical(as.integer(tooling_code),0L))
-  stop("Unsigned reviewer packet tooling tests failed; inspect ",
-    tooling_log_path,call.=FALSE)
+tooling_patterns<-c("test_verify_four_pilot_review_bundle.py",
+  "test_verify_508_certification_batch.py",
+  "test_verify_508_external_attestation.py")
+tooling_checks<-lapply(tooling_patterns,function(pattern){
+  message("Author-side reviewer tooling: ",pattern)
+  output<-tryCatch(
+    suppressWarnings(system2(py_executable,args=c("-m","unittest",
+      "discover","-s","tests","-p",pattern,"-v"),
+      stdout=TRUE,stderr=TRUE)),
+    error=function(e)structure(paste0("PYTHON INVOCATION ERROR: ",
+      conditionMessage(e)),status=1L))
+  code<-attr(output,"status")
+  if(is.null(code))code<-0L
+  list(pattern=pattern,status=as.integer(code),
+    output=as.character(output))
+})
+tooling_lines<-unlist(lapply(tooling_checks,function(check)
+  c(paste0("===== ",check$pattern," ====="),
+    check$output,
+    paste0("AUTHOR_PACKET_TOOLING_EXIT_CODE: ",check$status))),
+  use.names=FALSE)
+writeLines(tooling_lines,tooling_log_path,useBytes=TRUE)
+failed_tooling<-vapply(tooling_checks,function(check)
+  !identical(check$status,0L),logical(1L))
+if(any(failed_tooling)){
+  message("===== Python reviewer tooling failure details =====")
+  for(check in tooling_checks[failed_tooling]){
+    message("FAILED: ",check$pattern," [exit ",check$status,"]")
+    for(line in tail(check$output,100L))message(line)
+  }
+  message("===== Full Python reviewer tooling log: ",
+    tooling_log_path," =====")
+  stop("Unsigned reviewer packet tooling tests failed: ",
+    paste(tooling_patterns[failed_tooling],collapse=", "),
+    "; see traceback printed above.",call.=FALSE)
+}
 message("Author-side Python reviewer integrity suites PASS: ",
   tooling_log_path," (this is NOT independent scientific certification).")
 source_files<-unique(c(
