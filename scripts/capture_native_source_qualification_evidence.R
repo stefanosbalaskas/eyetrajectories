@@ -17,6 +17,7 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-mixed-known-truth-recovery",
     "native-mixed-variance-decomposition-source",
     "native-fpca-known-truth-recovery",
+    "native-fpca-external-score-reconstruction",
     "native-sparse-known-truth-recovery",
     "native-mixed-bootstrap-width-comparison",
     "native-sparse-mfpca-known-truth-recovery",
