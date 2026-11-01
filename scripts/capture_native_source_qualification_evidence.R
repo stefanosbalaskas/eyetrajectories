@@ -350,6 +350,7 @@ source_files<-unique(c(
   "tests/testthat/test-native-fpca-component-envelopes.R",
   "tests/testthat/test-native-mixed-model-source-text.R",
   "tests/testthat/test-native-sparse-scientific-graphics.R",
+  "tests/testthat/test-native-source-diagnostic-frames.R",
   "tests/testthat/test-native-fpcr-slope-source-calibration.R",
   "tests/testthat/test-native-wild-simultaneous-source-calibration.R",
   "tests/testthat/test-native-wild-monte-carlo-source-contracts.R",
