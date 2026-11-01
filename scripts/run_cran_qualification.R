@@ -110,6 +110,49 @@ logs <- list.files(file.path(report, "check"), pattern = "^00check\\.log$",
 if (length(logs))
   file.copy(logs[1L], file.path(report, "00check.log"), overwrite = TRUE)
 
+# R CMD check prints only the final handful of testthat failures. Preserve
+# the complete installed-package transcript, and write an exact diagnostic
+# index with source filename/line for every failed expectation. Do not skip
+# tests or change the R CMD check verdict.
+test_logs <- list.files(file.path(report,"check"),
+  pattern="^testthat\\.Rout(?:\\.fail)?$",
+  recursive=TRUE,full.names=TRUE)
+if(length(test_logs)){
+  for(source_log in test_logs){
+    dest<-file.path(report,paste0("INSTALLED_",basename(source_log)))
+    file.copy(source_log,dest,overwrite=TRUE)
+  }
+  primary <- test_logs[!grepl("\\.fail$",test_logs)]
+  if(!length(primary))primary<-test_logs
+  test_lines<-readLines(primary[[1L]],warn=FALSE,encoding="UTF-8")
+  failure_idx<-grep(
+    "^[[:space:]]*(?:──|--|\\*\\*)[[:space:]]*(?:[0-9]+\\.|Failure|Error|Warning)",
+    test_lines,perl=TRUE)
+  # The source-path form also covers older testthat reporters.
+  path_idx<-grep(
+    "(test-[A-Za-z0-9_.-]+\\.R:[0-9]+:[0-9]+)",
+    test_lines,perl=TRUE)
+  locations<-sort(unique(c(failure_idx,path_idx)))
+  window<-integer()
+  for(i in locations)window<-c(window,seq.int(
+    max(1L,i-1L),min(length(test_lines),i+8L)))
+  if(!length(locations))
+    window<-seq_len(min(length(test_lines),100L))
+  file<-file.path(report,"INSTALLED_TEST_FAILURE_DETAILS.txt")
+  writeLines(c("Exact R CMD check installed-package test log excerpts.",
+    "Complete unedited transcript: INSTALLED_testthat.Rout",
+    paste0("Test transcript lines: ",length(test_lines)),
+    paste0("Diagnostic locations found: ",length(locations)),
+    "",
+    sprintf("%05d: %s",sort(unique(window)),test_lines[sort(unique(window))])),
+    file,useBytes=TRUE)
+  cat("R CMD check test transcript: ",normalizePath(
+    file.path(report,paste0("INSTALLED_",basename(primary[[1L]]))),
+    winslash="/",mustWork=FALSE),"\n",sep="")
+  cat("R CMD check failure detail index: ",normalizePath(
+    file,winslash="/",mustWork=TRUE),"\n",sep="")
+}
+
 # Run a separate real-native-use example on the source package.
 # pkgload::load_all() gives the current checkout, not a stale installed version.
 cat("\n=== Native R smoke example with figures ===\n")
