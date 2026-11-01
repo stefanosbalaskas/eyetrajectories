@@ -153,6 +153,21 @@ class TestUnsignedBatchIntegrity(unittest.TestCase):
             "descriptive_source_interface_inventory_verified"])
         self.assertEqual(observed["independently_certified_full_domain_contracts"], 0)
 
+    def test_forged_python_lookup_success_rehashed_fails(self):
+        self.write_interface_inventory()
+        p = self.root / v.INTERFACE_INVENTORY
+        rows = v.read_csv(p)
+        # The recorded Python source export is reported missing but a
+        # forged review blocker still claims complete-domain readiness.
+        rows[0]["python_export_lookup_ok"] = "FALSE"
+        write_csv(p, rows)
+        side = self.root / v.INTERFACE_SHA256
+        side_rows = v.read_csv(side)
+        side_rows[0]["sha256"] = v.sha256(p)
+        write_csv(side, side_rows)
+        with self.assertRaisesRegex(v.ReviewBatchError, "blocker does not agree"):
+            v.verify(self.root)
+
     def test_source_interface_tamper_without_hash_update_fails(self):
         self.write_interface_inventory()
         with (self.root / v.INTERFACE_INVENTORY).open("a",encoding="utf-8") as out:
