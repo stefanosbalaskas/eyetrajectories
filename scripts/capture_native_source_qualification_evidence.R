@@ -586,6 +586,10 @@ four_pilot_boundaries<-etr_capture_four_pilot_boundary_evidence(
   root=".",packet_dir=packet_root)
 stopifnot(nrow(four_pilot_boundaries$evidence)==4L,
   all(four_pilot_boundaries$evidence$observed_behavior_as_expected),
+  all(four_pilot_boundaries$evidence$
+    opt_in_python_boundary_mode_matches_source_category),
+  !any(four_pilot_boundaries$evidence$
+    opt_in_mode_full_source_parity_certified),
   !any(four_pilot_boundaries$evidence$source_domain_equivalence_established),
   !any(four_pilot_boundaries$evidence$independent_reviewer_approved),
   !any(four_pilot_boundaries$evidence$fully_certified))
