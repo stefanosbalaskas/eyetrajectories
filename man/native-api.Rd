@@ -96,7 +96,8 @@ etr_dtw(a, b, dimension_weights = NULL)
 
 etr_pairwise_dtw(x, dimension_weights = NULL)
 
-etr_trapezoid_weights(time, normalize = FALSE)
+etr_trapezoid_weights(time, normalize = FALSE,
+  python_boundary_mode = FALSE)
 
 etr_fit_fpca(x, n_components = 0.95, scaling = c("none", "dimension_sd"))
 
@@ -110,9 +111,10 @@ etr_transform_fpca(fit, x)
 
 etr_reconstruct_fpca(fit, n_components = NULL, scores = NULL)
 
-etr_recurrence_matrix(x, curve = 1L, radius, theiler = 0L)
+etr_recurrence_matrix(x, curve = 1L, radius, theiler = 0L,
+  metric = "euclidean")
 
-etr_cross_recurrence_matrix(a, b, radius)
+etr_cross_recurrence_matrix(a, b, radius, metric = "euclidean")
 
 etr_rqa_metrics(recurrence, min_diagonal_length = 2L, min_vertical_length = 2L)
 
