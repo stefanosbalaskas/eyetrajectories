@@ -15,6 +15,15 @@ test_that("all 508 published exports receive a fail-closed evidence queue",{
   expect_gte(sum(readiness$native_implementation_started[
     api$is_python_function]),307L)
   expect_gte(sum(readiness$published_source_difference_open),154L)
+  # Source gaps include 203 callable-function contracts and a separate
+  # frozen Python TrajectorySet constructor/method domain counterexample.
+  expect_equal(sum(readiness$nonfunction_source_difference_open),1L)
+  class_gap<-readiness[readiness$python_name=="TrajectorySet",,drop=FALSE]
+  expect_identical(nrow(class_gap),1L)
+  expect_true(class_gap$nonfunction_source_difference_open)
+  expect_identical(class_gap$first_unresolved_requirement,
+    "unresolved_nonfunction_source_difference")
+  expect_false(class_gap$fully_certified)
   expect_equal(sum(readiness$fully_certified),0L)
   expect_true(all(nzchar(readiness$first_unresolved_requirement)))
   expect_true(all(nzchar(readiness$all_unresolved_requirements)))
