@@ -118,6 +118,8 @@ etr_build_508_certification_review_batches <- function(
     python_name=scope$python_name,
     kind=scope$kind,
     native_r_candidate=scope$native_r_candidate,
+    native_nonfunction_representation=
+      ready$native_nonfunction_representation,
     recorded_r_git_head=rep(head,nrow(scope)),
     frozen_python_commit=rep(frozen_python,nrow(scope)),
     frozen_catalog_source_sha=scope$frozen_source_sha,
