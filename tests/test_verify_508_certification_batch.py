@@ -164,6 +164,27 @@ class TestUnsignedBatchIntegrity(unittest.TestCase):
         with self.assertRaisesRegex(v.ReviewBatchError, "Missing reviewer checklists columns"):
             v.verify(self.root)
 
+    def test_missing_decision_source_identity_rehashed_fails(self):
+        p = self.root / v.FILES[3]
+        rows = v.read_csv(p)
+        for row in rows:
+            del row["kind"]
+        write_csv(p, rows)
+        self.update_manifest()
+        with self.assertRaisesRegex(v.ReviewBatchError,
+                                    "Missing reviewer decisions columns"):
+            v.verify(self.root)
+
+    def test_forged_decision_source_identity_rehashed_fails(self):
+        p = self.root / v.FILES[3]
+        rows = v.read_csv(p)
+        rows[0]["recorded_r_git_head"] = "0" * 40
+        write_csv(p, rows)
+        self.update_manifest()
+        with self.assertRaisesRegex(v.ReviewBatchError,
+                                    "decision source identity"):
+            v.verify(self.root)
+
     def test_missing_case_criterion_rehashed_fails(self):
         p = self.root / v.FILES[2]
         rows = v.read_csv(p)
