@@ -92,6 +92,10 @@ _w4_source={'state':a.embedding.values,'matrix':a.recurrence.matrix.toarray()}
     reticulate::py_eval("_w4_source['matrix']",convert=TRUE),
     tolerance=0,ignore_attr=TRUE)
   source<-reticulate::py_to_r(reticulate::py_eval("_w4_source",convert=FALSE))
+  py_steps<-reticulate::py_eval(
+    "tuple(step.name for step in a.steps)",convert=TRUE)
+  expect_identical(as.character(unlist(py_steps)),
+    vapply(native$steps,function(x)x$name,character(1L)))
   expect_equal(unname(native$embedding$values),
     unname(source$state),tolerance=1e-12)
   expect_equal(unname(native$recurrence$matrix),
