@@ -1,6 +1,6 @@
 # Replayed source branch boundaries are not full-domain R/Python
 # equivalence certificates and never grant independent approval.
-test_that("four public wild and workflow exports have explicit direct source calls",{
+test_that("two root wild exports and two subpackage workflows retain separate attribution",{
   root<-testthat::test_path("..","..")
   env<-new.env(parent=baseenv())
   sys.source(file.path(root,"scripts",
@@ -9,13 +9,9 @@ test_that("four public wild and workflow exports have explicit direct source cal
     "test-native-wild-bootstrap-projection.R"=
       "wild_bootstrap_fpca_projection",
     "test-native-wild-bootstrap-truncation-scan.R"=
-      "scan_wild_bootstrap_fpca_truncations",
-    "test-native-recurrence-workflow.R"=
-      "run_recurrence_workflow",
-    "test-native-workflow-plot-dispatch.R"=
-      "plot_workflow_result")
+      "scan_wild_bootstrap_fpca_truncations")
   exports<-unlist(expected,use.names=FALSE)
-  expect_identical(length(exports),4L)
+  expect_identical(length(exports),2L)
   expect_false(anyDuplicated(exports)>0L)
   for(file in names(expected)){
     file_path<-file.path(root,"tests","testthat",file)
@@ -23,6 +19,21 @@ test_that("four public wild and workflow exports have explicit direct source cal
     expect_gte(inv$cases,1L)
     expect_setequal(intersect(expected[[file]],inv$export_literals),
       expected[[file]])
+  }
+  # Workflow functions are public under eyetrajectoriespy.workflows,
+  # not in the frozen 508-export package-root catalogue.
+  modules<-c("test-native-recurrence-workflow.R",
+    "test-native-workflow-plot-dispatch.R")
+  module_names<-c("run_recurrence_workflow","plot_workflow_result")
+  for(k in seq_along(modules)){
+    source<-readLines(file.path(root,"tests","testthat",
+      modules[[k]]),warn=FALSE)
+    expect_true(any(grepl("eyetrajectoriespy.workflows",
+      source,fixed=TRUE)))
+    expect_true(any(grepl(paste0('"',module_names[[k]],'"'),
+      source,fixed=TRUE)))
+    expect_false(any(grepl(paste0('etpy_get_export("',
+      module_names[[k]],'")'),source,fixed=TRUE)))
   }
   api<-etr_native_parity_catalog()
   i<-match(exports,api$python_name)
