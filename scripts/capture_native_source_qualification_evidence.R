@@ -458,6 +458,7 @@ stopifnot(nrow(fixture_attribution)==nrow(queue),
   setequal(fixture_attribution$python_name,queue$python_name),
   all(fixture_attribution$test_selection_regex_recorded),
   all(fixture_attribution$fixture_filename_selected_in_both_suite_modes),
+  all(fixture_attribution$literal_etpy_get_export_call_for_this_contract),
   all(fixture_attribution$test_that_cases_declared_in_entire_fixture_file>=1L),
   all(!fixture_attribution$per_contract_test_execution_independently_attributed),
   all(!fixture_attribution$per_contract_python_oracle_independently_replayed),
@@ -500,6 +501,11 @@ message("Review triage: ",nrow(triage)," public exports; ",
   nrow(gap_review)," recorded source differences; ",
   sum(triage$backend_or_estimand_distinct),
   " alternative backends/estimands; zero independent approvals.")
+stopifnot(nrow(missing_refs)==0L,
+  sum(fixture_attribution$literal_etpy_get_export_call_for_this_contract)==
+    nrow(queue))
+message("All 111 selected Python exports have direct source references; ",
+  "per-contract numerical and full-domain certification remain unsigned.")
 message("Outstanding direct-literal source references: ",
   nrow(missing_refs),"; recorded source differences in triage: ",
   sum(gap_lanes$open_source_gaps),
