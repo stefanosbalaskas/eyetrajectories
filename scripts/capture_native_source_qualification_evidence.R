@@ -239,6 +239,27 @@ results<-list(
   qualify_once(FALSE),
   qualify_once(TRUE)
 )
+# These are author-side packet integrity tests, not independent scientific
+# replay. Run both SHA256 handoff verifiers before making a new 508 worklist.
+py_executable<-reticulate::py_config()$python
+stopifnot(length(py_executable)==1L,nzchar(py_executable))
+tooling_log_path<-file.path(output_dir,
+  "python_unsigned_review_packet_tooling_tests.txt")
+tooling_output<-tryCatch(
+  suppressWarnings(system2(py_executable,args=c("-m","unittest",
+    "discover","-s","tests","-p","test_verify_*.py","-v"),
+    stdout=TRUE,stderr=TRUE)),
+  error=function(e)structure(conditionMessage(e),status=1L))
+tooling_code<-attr(tooling_output,"status")
+if(is.null(tooling_code))tooling_code<-0L
+writeLines(c(as.character(tooling_output),
+  paste("AUTHOR_PACKET_TOOLING_EXIT_CODE:",as.integer(tooling_code))),
+  tooling_log_path,useBytes=TRUE)
+if(!identical(as.integer(tooling_code),0L))
+  stop("Unsigned reviewer packet tooling tests failed; inspect ",
+    tooling_log_path,call.=FALSE)
+message("Author-side Python reviewer integrity suites PASS: ",
+  tooling_log_path," (this is NOT independent scientific certification).")
 source_files<-unique(c(
   "scripts/four_pilot_external_attestation.R",
   "tests/testthat/test-native-four-pilot-external-attestation.R",
@@ -246,6 +267,10 @@ source_files<-unique(c(
   "scripts/capture_four_pilot_numeric_evidence.R",
   "scripts/build_four_pilot_review_matrix.R",
   "scripts/build_508_certification_review_batches.R",
+  "scripts/verify_508_certification_batch.py",
+  "tests/test_verify_508_certification_batch.py",
+  "scripts/verify_four_pilot_review_bundle.py",
+  "tests/test_verify_four_pilot_review_bundle.py",
   "tests/testthat/test-native-508-certification-batches.R",
   "tests/testthat/test-native-four-pilot-review-matrix.R",
   "tests/testthat/helper-frozen-python-source-symbol.R",
