@@ -42,6 +42,11 @@ test_that("native source qualification evidence runner parses", {
       info=paste("source evidence runner omits",required_triage))
   }
   for(name in c("tests/testthat/test-native-pilot-source-adversarial.R",
+    "tests/testthat/test-native-mixed-model-source-text.R",
+    "tests/testthat/test-native-sparse-scientific-graphics.R",
+    "tests/testthat/test-native-source-diagnostic-frames.R",
+    "tests/testthat/test-native-direct-source-plot-attribution.R",
+    "tests/testthat/test-native-direct-source-report-attribution.R",
     "man/native-api.Rd")){
     expect_true(any(grepl(paste0('"',name,'"'),
       lines,fixed=TRUE)),
