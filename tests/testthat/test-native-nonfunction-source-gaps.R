@@ -46,10 +46,11 @@ test_that("native TrajectorySet represented only as partial S3 class candidate",
   expect_identical(nrow(registry),128L)
   mapped<-registry[!is.na(registry$native_representation)&
     nzchar(registry$native_representation),,drop=FALSE]
-  expect_identical(nrow(mapped),1L)
-  expect_identical(mapped$python_name,"TrajectorySet")
-  expect_identical(mapped$native_representation,"etr_trajectory_set")
-  expect_identical(mapped$evidence_state,"not_reviewed")
+  expect_identical(nrow(mapped),4L)
+  trajectory<-mapped[mapped$python_name=="TrajectorySet",,drop=FALSE]
+  expect_identical(nrow(trajectory),1L)
+  expect_identical(trajectory$native_representation,"etr_trajectory_set")
+  expect_true(all(mapped$evidence_state=="not_reviewed"))
   expect_false(any(mapped$numerical_or_value_approved))
   expect_false(any(mapped$schema_boundary_approved))
   expect_false(any(mapped$scientific_scope_approved))
