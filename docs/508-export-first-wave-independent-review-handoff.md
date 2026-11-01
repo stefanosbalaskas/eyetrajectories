@@ -280,3 +280,42 @@ inspects Python dataclasses.fields for each exported class, while
 the 508 SHA256 verifier rejects forged mapping identifiers after rehash.
 These tests are author-generated and never substitute for independent
 full-domain replay.
+
+## Executable frozen workflow configs (native scientific implementations)
+
+New native R adapters move beyond field-only schemas for five source
+workflow record types: three scientific configuration records plus
+decision and step audit records. Three new exported source-aware config
+constructors provide input validation for FPCA, observed-grid
+function-on-scalar regression, and Euclidean sample-unit recurrence:
+`etr_frozen_fpca_workflow_config()`,
+`etr_frozen_function_on_scalar_workflow_config()`, and
+`etr_frozen_recurrence_workflow_config()`.
+
+`etr_run_frozen_native_workflow()` dispatches these records to existing
+real, Python-free R scientific estimators (`etr_run_fpca_workflow`,
+`etr_run_function_on_scalar_workflow`,
+`etr_run_recurrence_workflow`). It requires a deliberately empty
+preprocessing plan; no hidden interpolation or model-selection action is
+performed. It does not promise native estimator numerical parity beyond
+the scientific tests already checked against frozen Python sources.
+
+`etr_frozen_workflow_decision_record()` and
+`etr_frozen_workflow_step_record()` validate step/decision fields and
+can be consumed by the existing native source-aligned workflow audit
+data-frame functions. No synthetic step duration is invented.
+
+The new source test suite checks live native FPCA, FOS, recurrence
+calculations, expected source record field ordering, audit frame
+construction, rejection of invalid parameters and unsupported
+preprocessing or source capabilities, and pinned Python config
+constructor inputs and fields. In particular, Python's FPCA
+configuration accepts double `1.0` as 100% variance retention,
+but the current native R scientific executor does not. That difference
+is explicitly rejected rather than silently recast as full parity.
+
+Frozen Python class immutability, numerical complete-domain correctness,
+error messages and independent external certification remain unresolved.
+The callable-name and native object mapping counts are unchanged:
+380/380 names and 32/128 provisional nonfunction representations.
+Independent full-domain source certificates remain **0/508**.
