@@ -48,7 +48,8 @@ test_that("two root wild exports and two subpackage workflows retain separate at
   }
   w3<-env$etr_source_fixture_static_inventory(file.path(
     root,"tests","testthat","test-native-source-workflows.R"))
-  expect_true("run_fpca_workflow"%in%w3$export_literals)
+  expect_true(all(c("run_fpca_workflow",
+    "run_function_on_scalar_workflow")%in%w3$export_literals))
   expect_true("run_recurrence_workflow"%in%
     env$etr_source_fixture_static_inventory(file.path(
       root,"tests","testthat",
