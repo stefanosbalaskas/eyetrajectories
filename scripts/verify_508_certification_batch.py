@@ -190,7 +190,9 @@ def verify(packet_dir: str | Path, expected_r_head: str | None = None) -> dict[s
               not r["reviewer_written_findings"].strip() for r in cases),
           "Reviewer checklist must not contain invented findings")
 
-    columns(decisions, ("namespace", "python_name", "scope_decision",
+    columns(decisions, ("namespace", "python_name", "kind",
+                        "native_r_candidate", "recorded_r_git_head",
+                        "frozen_python_commit", "scope_decision",
                         "reviewer_name", "reviewer_affiliation", "reviewer_contact",
                         "reviewer_independent_of_implementation_team",
                         "reviewer_python_replay_pass", "reviewer_r_replay_pass",
@@ -203,6 +205,13 @@ def verify(packet_dir: str | Path, expected_r_head: str | None = None) -> dict[s
     check(len(decisions) == 36 and
           {key(r) for r in decisions} == {key(r) for r in batch},
           "Missing independent reviewer decision rows")
+    check(all(row["kind"] == selected_by_key[key(row)]["kind"] and
+              row["native_r_candidate"] ==
+                  selected_by_key[key(row)]["native_r_candidate"] and
+              row["recorded_r_git_head"] == head and
+              row["frozen_python_commit"] == FROZEN_PYTHON
+              for row in decisions),
+          "Unsigned reviewer decision source identity does not match selected batch")
     all_flags(decisions, ("reviewer_independent_of_implementation_team",
                           "reviewer_python_replay_pass", "reviewer_r_replay_pass",
                           "complete_input_error_schema_review_pass",
