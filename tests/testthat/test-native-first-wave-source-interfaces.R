@@ -17,6 +17,9 @@ test_that("first-wave signature inventory is source-pinned and never approving",
     'source_full_domain_certified=FALSE',
     'independently_reproduced=FALSE',
     'signature_text_is_not_semantic_parity=TRUE',
+    'native_nonfunction_contract_review_v1.csv',
+    'NATIVE_R_NONFUNCTION_REPRESENTATION_MISSING',
+    'FULL_DOMAIN_SCIENTIFIC_AND_EXTERNAL_REVIEW_MISSING',
     'first_wave_source_interface_inventory_sha256.csv')){
     expect_true(grepl(token,code,fixed=TRUE),
       info=paste("Missing source-interface audit gate",token))
@@ -49,4 +52,20 @@ test_that("workflows exports are inspected in their recorded namespace",{
     expect_error(etpy_get_export(nm,.namespace="root"),
       "not in installed public exports")
   }
+})
+
+test_that("nonfunction native representations are not silently inferred",{
+  reg<-utils::read.csv(testthat::test_path("..","..","inst",
+    "extdata","native_nonfunction_contract_review_v1.csv"),
+    stringsAsFactors=FALSE,check.names=FALSE)
+  expect_equal(nrow(reg),128L)
+  expect_true(all(c("namespace","python_name",
+    "native_representation")%in%names(reg)))
+  expect_false(anyDuplicated(paste(reg$namespace,reg$python_name,sep="::"))>0L)
+  # Blank native class mappings are unresolved scientific work, not
+  # enough evidence to set any approval or claim 128 source classes.
+  populated<-!is.na(reg$native_representation)&
+    nzchar(trimws(reg$native_representation))
+  expect_equal(sum(populated),0L)
+  expect_true(all(!reg$independent_reviewer_approved))
 })
