@@ -55,7 +55,7 @@ class TestSignedReceiptStructure(unittest.TestCase):
                 "a" * 40, "b" * 40)
 
     def test_unsigned_real_execution_rejects_missing_gpg_signatures(self):
-        with self.assertRaises(FileNotFoundError):
+        with self.assertRaisesRegex(base.ReviewBatchError, "Missing or symlinked"):
             att.verify_submission(self.root, self.case_path, self.decision_path,
                 self.sig_c, self.sig_d, "a" * 40, "b" * 40)
 
