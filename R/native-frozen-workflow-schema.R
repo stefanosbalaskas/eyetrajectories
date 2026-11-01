@@ -104,14 +104,16 @@ etr_frozen_workflow_record <- function(class_name,fields){
 #' plots and result tables retain their original R semantics. This only
 #' provides a field-ordered R view for inspection and explicitly cannot be
 #' used as a published Python workflow result without independent review.
-#' @param result Native R FPCA or function-on-scalar workflow result.
+#' @param result Native R FPCA, function-on-scalar or recurrence workflow result.
 #' @return Native schema-record view with scientific parity flags FALSE.
 #' @export
 etr_native_workflow_result_view <- function(result){
   class_name<-if(inherits(result,"etr_fpca_workflow"))
     "FPCAWorkflowResult" else if(inherits(result,
       "etr_function_on_scalar_workflow"))
-    "FunctionOnScalarWorkflowResult" else
+    "FunctionOnScalarWorkflowResult" else if(inherits(result,
+      "etr_recurrence_workflow"))
+    "RecurrenceWorkflowResult" else
     stop("no native workflow result-view adapter for this class",
       call.=FALSE)
   schema<-etr_frozen_workflow_schema(class_name)
