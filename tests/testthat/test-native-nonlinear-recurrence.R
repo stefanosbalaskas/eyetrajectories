@@ -94,7 +94,11 @@ test_that("radius profiles count empirical CDF exactly without choosing a radius
   expect_error(etr_recurrence_radius_profile(x,radii=c(1,2),
                metric="unknown"),"metric")
   expect_error(etr_recurrence_radius_profile(x,radii=c(1,2),
-               theiler_window_units="time"),"not yet supported")
+               theiler_window_units="time"),"cannot be converted")
+  physical<-etr_recurrence_radius_profile(x,"A",c(.5,1,1.5,3),
+    theiler_window=1,theiler_window_units="s")
+  expect_identical(physical$theiler_window_samples,1L)
+  expect_equal(physical$table,p$table,tolerance=0)
 })
 
 test_that("windowed RQA accounts for non-independent overlapping windows",{
