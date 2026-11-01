@@ -93,11 +93,20 @@ test_that("native recurrence runs and unsupported source domains fail closed",{
   expect_equal(native$recurrence$matrix,direct$recurrence$matrix,
     tolerance=0)
   expect_equal(native$metrics,direct$metrics,tolerance=0)
+  for(metric in c("cityblock","chebyshev")){
+    cfg<-etr_frozen_recurrence_workflow_config(
+      curve=0L,dimensions="gaze",embedding_dimension=2L,
+      delay=1L,radius=.5,metric=metric)
+    result<-etr_run_frozen_native_workflow(z$x,cfg)
+    expect_identical(result$recurrence$metric,metric)
+    expect_identical(result$provenance$metric_used,metric)
+    expect_identical(length(result$steps),3L)
+  }
   wrong_metric<-etr_frozen_recurrence_workflow_config(
     curve=0L,dimensions="gaze",embedding_dimension=2L,
     delay=1L,radius=.5,metric="manhattan")
   expect_error(etr_run_frozen_native_workflow(z$x,wrong_metric),
-    "only Euclidean")
+    "metric must be one of")
   one_as_float<-etr_frozen_fpca_workflow_config(1.0)
   expect_error(etr_run_frozen_native_workflow(z$x,one_as_float),
     "floating 1.0")
