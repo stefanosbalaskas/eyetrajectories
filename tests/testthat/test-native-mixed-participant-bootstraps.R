@@ -56,3 +56,16 @@ test_that("native full participant bootstrap refits covariance for each draw",{
     sampled_participant_indices=matrix(6,100,6)),
     "zero-based")
 })
+
+# Actual frozen-Python 1.2 source-symbol inspection on published exports.
+# For alternate R estimands/backends this is NOT numerical source parity.
+test_that("unreviewed Python 1.2 source symbols are inspectable: bootstrap_functional_mixed_effects_coefficients, bootstrap_functional_mixed_effects_full_refit",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("pinned Python source-symbol audit requires source runtime")
+  .etr_expect_frozen_python_source_symbol(
+    etpy_get_export("bootstrap_functional_mixed_effects_coefficients"),"bootstrap_functional_mixed_effects_coefficients")
+  .etr_expect_frozen_python_source_symbol(
+    etpy_get_export("bootstrap_functional_mixed_effects_full_refit"),"bootstrap_functional_mixed_effects_full_refit")
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})
