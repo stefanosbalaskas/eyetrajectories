@@ -42,10 +42,10 @@ etr_run_frozen_native_workflow(trajectories, config, design = NULL)
 \item{embedding_dimension}{Positive integer delay embedding state dimension.}
 \item{delay}{Positive embedding delay.}
 \item{radius}{Positive recurrence radius.}
-\item{delay_units}{Delay units, native execution supports only \code{samples}.}
+\item{delay_units}{\code{samples} or convertible physical-time units on approximately regular observed grids.}
 \item{metric}{Recurrence distance: \code{cityblock}, \code{euclidean}, or \code{chebyshev}.}
 \item{theiler_window}{Nonnegative exclusion lag.}
-\item{theiler_window_units}{Theiler units, native execution supports only \code{samples}.}
+\item{theiler_window_units}{\code{samples} or convertible physical-time units; resolve on the embedded grid.}
 \item{min_diagonal_length}{Minimum diagonal recurrence line length.}
 \item{min_vertical_length}{Minimum vertical recurrence line length.}
 \item{value}{Explicit scientific decision value.}
@@ -72,7 +72,7 @@ Only an empty preprocessing plan is executable, preserving a strict
 no-hidden-imputation rule. The native FPCA implementation does not currently
 accept floating 1.0 as a variance retention threshold, although the Python
 source config constructor does. L1, L2 and L-infinity recurrence distances are supported natively.
-Time-unit delays and Theiler windows remain unsupported. This documented difference is not waived.
+Time-unit delays and Theiler windows resolve to exact integral sample lags on approximately regular grids. Nonintegral conversions, incompatible units and irregular grids fail closed without interpolation.
 }
 \examples{
 cfg <- etr_frozen_fpca_workflow_config(n_components = 1L)
