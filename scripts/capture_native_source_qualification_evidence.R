@@ -311,6 +311,7 @@ source_files<-unique(c(
   "tests/testthat/test-native-generalized-fosr-bootstrap-source.R",
   "tests/testthat/test-native-generalized-fosr-contrast-source.R",
   "tests/testthat/test-native-recovery-source-evaluators.R",
+  "tests/testthat/test-native-functional-recovery-evidence.R",
   "tests/testthat/test-native-generalized-fosr-coefficient-bands.R",
   "tests/testthat/test-native-mixed-coefficient-bands-source.R",
   "tests/testthat/test-native-mixed-known-truth-recovery.R",
