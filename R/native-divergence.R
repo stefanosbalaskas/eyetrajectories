@@ -33,17 +33,17 @@
 #' Native multichannel delay-coordinate trajectory reconstruction
 #' @param trajectories Complete native shared-grid functional trajectories.
 #' @param embedding_dimension Number of lagged state blocks (>=1).
-#' @param delay Positive integer delay in observed samples.
-#' @param delay_units Only "samples" is currently supported.
+#' @param delay Positive delay (sample count or physical time).
+#' @param delay_units "samples", seconds/milliseconds alias, or the trajectory
+#'   time unit; physical-time delays require approximately regular sampling.
 #' @param dimensions Nonempty explicitly selected functional dimensions.
 #' @export
 etr_delay_embed_trajectory <- function(trajectories,embedding_dimension,
     delay,delay_units="samples",dimensions=NULL){
   etr_validate(trajectories,require_complete=TRUE)
-  .etr_assert(identical(delay_units,"samples"),
-    "time-unit embedding delays are not yet qualified; use samples")
   m<-.etr_nonlinear_integer(embedding_dimension,1L,"embedding_dimension")
-  lag<-.etr_nonlinear_integer(delay,1L,"delay")
+  lag<-.etr_source_time_unit_samples(trajectories$time,delay,
+    units=delay_units,time_unit=trajectories$time_unit,name="delay")
   .etr_assert(is.character(dimensions)&&length(dimensions)>0L&&
     !anyNA(dimensions)&&!anyDuplicated(dimensions)&&
     all(dimensions%in%trajectories$dimension_names),
@@ -77,6 +77,7 @@ etr_delay_embed_trajectory <- function(trajectories,embedding_dimension,
     provenance=list(operation="delay_embed_trajectory",
       source_provenance=trajectories$provenance,
       dimensions=dimensions,embedding_dimension=m,delay_samples=lag,
+      requested_delay=delay,requested_delay_units=delay_units,
       constant_delay_time=is.finite(step),
       automatic_parameter_selection=FALSE,scaling="none")),
     class="etr_delay_embedding_set")
