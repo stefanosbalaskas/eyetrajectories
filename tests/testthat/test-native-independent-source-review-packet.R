@@ -20,6 +20,13 @@ test_that("independent source-review packet is safe and fully unsigned",{
     "all_508_public_export_independent_review_scope.csv",
     "all_508_contract_review_priority.csv",
     "known_source_gap_resolution_queue.csv",
+    "source_gap_resolution_lane_counts.csv",
+    "selected_111_missing_literal_python_source_references.csv",
+    "direct_missing$independently_verified_export_oracle<-FALSE",
+    'source_review_status<-"OPEN_NOT_INDEPENDENTLY_VERIFIED"',
+    "approved_boundary_policy<-FALSE",
+    "documented_boundary_difference=",
+    "required_full_domain_resolution=",
     "review_lane_counts.csv",
     "selected_111_fixture_static_attribution.csv",
     "test_selection_regex.txt",
@@ -57,4 +64,32 @@ test_that("independent source-review packet is safe and fully unsigned",{
   expect_false(any(grepl(
     "write\\.csv\\(.*native_nonfunction_contract_review_v1",
     source_lines)))
+})
+
+test_that("missing direct source witnesses have explicit fail-closed triage",{
+  path<-testthat::test_path("..","..","scripts",
+    "prepare_independent_source_review.R")
+  lines<-readLines(path,warn=FALSE)
+  expect_true(any(grepl(
+    "direct_missing<-attribution[",lines,fixed=TRUE)))
+  expect_true(any(grepl(
+    "!attribution$literal_etpy_get_export_call_for_this_contract",
+    lines,fixed=TRUE)))
+  expect_true(any(grepl(
+    "nrow(direct_missing)==sum(!literal_reference)",
+    lines,fixed=TRUE)))
+  expect_true(any(grepl("!anyDuplicated(direct_missing$python_name)",
+    lines,fixed=TRUE)))
+  expect_true(any(grepl("!any(direct_missing$fully_certified)",
+    lines,fixed=TRUE)))
+  expect_true(any(grepl("gap_resolution$source_review_status",
+    lines,fixed=TRUE)))
+  expect_true(any(grepl("nrow(gap_resolution)==nrow(gaps)",
+    lines,fixed=TRUE)))
+  # A static reference found in a different fixture is NOT silently
+  # reassigned to the contract whose assigned file lacks that reference.
+  expect_true(any(grepl(
+    "literal_reference_in_different_selected_file",lines,fixed=TRUE)))
+  expect_false(any(grepl(
+    "fully_certified<-TRUE",lines,fixed=TRUE)))
 })
