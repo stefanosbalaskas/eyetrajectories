@@ -16,7 +16,9 @@
 \title{Stage 12 native R FPCA cross-validation and uncertainty-result frames}
 \description{Python-free leakage-aware functional PCA cross-validation with explicit component selection and deterministic adapters for previously computed uncertainty and prediction results.}
 \usage{
-etr_cross_validate_fpca_reconstruction(trajectories, candidate_components = c(1L, 2L, 3L, 4L, 5L), n_splits = 5L, scaling = "none", cv_unit = "curve", group_column = NULL, shuffle = TRUE, random_state = 0L)
+etr_cross_validate_fpca_reconstruction(trajectories,
+  candidate_components = c(1L, 2L, 3L, 4L, 5L), n_splits = 5L, scaling = "none",
+  cv_unit = "curve", group_column = NULL, shuffle = TRUE, random_state = 0L)
 etr_summarise_fpca_cross_validation(result)
 etr_select_fpca_components_cv(result, rule = "minimum")
 etr_summarise_fpca_regression_cv(result)
