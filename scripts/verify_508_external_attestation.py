@@ -70,10 +70,12 @@ def verify_submission(packet_dir: str | Path, completed_cases: str | Path,
                "Expected native R commit must be a 40-hex value")
     original = base.verify(packet_dir, expected_r_head=expected_r_head)
     root = Path(packet_dir).resolve(strict=True)
-    case_path = Path(completed_cases).resolve(strict=True)
-    decision_path = Path(completed_decisions).resolve(strict=True)
-    sig_case = Path(cases_signature).resolve(strict=True)
-    sig_decision = Path(decisions_signature).resolve(strict=True)
+    # Do not resolve file symlinks before verifying or the symlink gate
+    # would inspect the target instead of the submitted path.
+    case_path = Path(completed_cases).absolute()
+    decision_path = Path(completed_decisions).absolute()
+    sig_case = Path(cases_signature).absolute()
+    sig_decision = Path(decisions_signature).absolute()
     base.check(case_path != root / base.FILES[2] and
                decision_path != root / base.FILES[3],
                "Reviewers must sign separate completed copies, not original blanks")
