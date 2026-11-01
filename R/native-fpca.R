@@ -3,8 +3,16 @@
 #' @param normalize Divide weights when truthy under Python 1.2 scalar
 #'   semantics (FALSE, 0 and the empty string are false; nonempty strings
 #'   and nonzero finite numeric scalars are true).
+#' @param python_boundary_mode When TRUE, reproduce inspected Python 1.2
+#'   edge behavior for infinite strictly increasing grid endpoints and
+#'   NaN/Inf scalar normalization flags. Default FALSE retains finite-only
+#'   scientific validation. This is NOT a full-source parity assertion.
 #' @export
-etr_trapezoid_weights <- function(time, normalize = FALSE) {
+etr_trapezoid_weights <- function(time, normalize = FALSE,
+    python_boundary_mode = FALSE) {
+  .etr_assert(is.logical(python_boundary_mode) &&
+    length(python_boundary_mode)==1L && !is.na(python_boundary_mode),
+    "python_boundary_mode must be a nonmissing logical scalar")
   # Python 1.2 np.asarray accepts a 1-D sequence of scalar numeric
   # elements. Preserve this common scientific input domain in native R,
   # without allowing a matrix/data.frame or automatic time interpolation.
@@ -23,21 +31,33 @@ etr_trapezoid_weights <- function(time, normalize = FALSE) {
                  is.character(time)),
               "time must be a one-dimensional numeric sequence")
   time <- suppressWarnings(as.numeric(time))
-  .etr_assert(length(time) >= 2L && all(is.finite(time)) &&
-                all(diff(time) > 0),
-              "time must be strictly increasing and finite")
   d <- diff(time); n <- length(time)
+  if(isTRUE(python_boundary_mode)) {
+    # Python 1.2 validates only np.diff(time)>0: +/-Inf endpoints can
+    # pass, while NaN differences still fail.
+    .etr_assert(n>=2L && all(!is.na(d)) && all(d>0),
+      "time must be strictly increasing and one-dimensional")
+  } else {
+    .etr_assert(n>=2L && all(is.finite(time)) &&
+      all(!is.na(d)) && all(d>0),
+      "time must be strictly increasing and finite")
+  }
   w <- c(d[1] / 2, if (n > 2L) (d[-1] + d[-length(d)]) / 2,
          utils::tail(d, 1) / 2)
   # Match Python bool(scalar) on finite numeric, logical and string
   # scalar values, including bool("")=False and bool("0")=True.
   # Arbitrary Python user objects and nonfinite time grids remain outside
   # this intentionally bounded native scientific contract.
-  .etr_assert(length(normalize)==1L && !is.na(normalize) &&
+  .etr_assert(length(normalize)==1L &&
     (is.logical(normalize) || is.character(normalize) ||
-     (is.numeric(normalize) && is.finite(normalize))),
-    "normalize must be a finite numeric, logical or character scalar")
-  truthy<-if(is.character(normalize))nzchar(normalize) else normalize!=0
+      is.numeric(normalize)) &&
+    (if(isTRUE(python_boundary_mode))
+      (!is.na(normalize) || is.nan(normalize))
+     else (!is.na(normalize) &&
+       (!is.numeric(normalize) || is.finite(normalize)))),
+    "normalize must be a valid numeric, logical or character scalar")
+  truthy<-if(is.character(normalize))nzchar(normalize) else
+    if(is.nan(normalize))TRUE else normalize!=0
   if(isTRUE(truthy))w<-w/sum(w)
   w
 }
