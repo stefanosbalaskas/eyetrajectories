@@ -8,6 +8,7 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-generalized-fosr-bootstrap-source",
     "native-generalized-fosr-contrast-source",
     "native-recovery-source-evaluators",
+  "native-functional-recovery-evidence",
     "native-functional-recovery-evidence",
     "native-generalized-fosr-coefficient-bands",
     "native-mixed-coefficient-bands-source",
