@@ -93,3 +93,16 @@ test_that("explicit fdapace workflow can fit native irregular observations",{
   expect_identical(fit$provenance$full_source_contract_certified,FALSE)
   expect_match(fit$reports$fit,"NOT custom Python 1.2 PACE",fixed=TRUE)
 })
+
+# Actual pinned-Python 1.2 public export and source-signature witness.
+# This verifies callable/source availability, NOT native scientific parity.
+test_that("unreviewed Python 1.2 source symbols are inspectable: run_functional_mixed_effects_workflow, run_sparse_fpca_workflow",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("pinned Python source-symbol audit requires source runtime")
+  .etr_expect_frozen_python_source_symbol(
+    etpy_get_export("run_functional_mixed_effects_workflow",.namespace="workflows"),"run_functional_mixed_effects_workflow")
+  .etr_expect_frozen_python_source_symbol(
+    etpy_get_export("run_sparse_fpca_workflow",.namespace="workflows"),"run_sparse_fpca_workflow")
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})
