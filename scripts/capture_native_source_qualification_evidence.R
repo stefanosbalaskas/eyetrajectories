@@ -69,6 +69,7 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-four-pilot-external-attestation",
     "native-508-certification-batches",
     "native-first-wave-source-interfaces",
+    "native-frozen-workflow-values",
     "native-source-trajectory-object",
     "native-nonfunction-source-gaps",
     "native-mixed-model-source-text"),".R"))
@@ -178,6 +179,7 @@ filter<-paste(c(
   "native-four-pilot-external-attestation",
   "native-508-certification-batches",
   "native-first-wave-source-interfaces",
+  "native-frozen-workflow-values",
   "native-source-trajectory-object",
   "native-nonfunction-source-gaps"),collapse="|")
 # Existence and inclusion are separate: all required scientific tests must
@@ -300,6 +302,9 @@ source_files<-unique(c(
   "scripts/build_508_certification_review_batches.R",
   "scripts/capture_first_wave_source_interfaces.R",
   "tests/testthat/test-native-first-wave-source-interfaces.R",
+  "tests/testthat/test-native-frozen-workflow-values.R",
+  "R/native-frozen-workflow-values.R",
+  "NAMESPACE",
   "scripts/verify_508_certification_batch.py",
   "tests/test_verify_508_certification_batch.py",
   "scripts/verify_508_external_attestation.py",
