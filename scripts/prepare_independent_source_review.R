@@ -195,6 +195,27 @@ etr_prepare_independent_source_review<-function(
   direct_missing<-attribution[
     !attribution$literal_etpy_get_export_call_for_this_contract,,
     drop=FALSE]
+  # Keep the same typed CSV schema when all 111 source literals exist.
+  # A zero-row queue is SUCCESS, not a reason to omit triage columns.
+  # Missing headers otherwise turn $-lookups into NULL on read.csv().
+  direct_missing$python_source_file<-
+    rep(NA_character_,nrow(direct_missing))
+  direct_missing$other_literal_exports_in_assigned_file<-
+    rep(NA_character_,nrow(direct_missing))
+  direct_missing$literal_reference_in_different_selected_file<-
+    rep(FALSE,nrow(direct_missing))
+  direct_missing$source_gap_kind<-
+    rep(NA_character_,nrow(direct_missing))
+  direct_missing$known_source_difference<-
+    rep(NA_character_,nrow(direct_missing))
+  direct_missing$review_resolution<-
+    rep(NA_character_,nrow(direct_missing))
+  direct_missing$attribution_next_action<-
+    rep(NA_character_,nrow(direct_missing))
+  direct_missing$independently_verified_export_oracle<-
+    rep(FALSE,nrow(direct_missing))
+  direct_missing$fully_certified<-
+    rep(FALSE,nrow(direct_missing))
   if(nrow(direct_missing)){
     idx_missing<-match(direct_missing$python_name,records$python_name)
     gap_missing<-match(direct_missing$python_name,gaps$python_name)
