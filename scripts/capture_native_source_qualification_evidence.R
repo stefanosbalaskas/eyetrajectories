@@ -236,6 +236,7 @@ results<-list(
   qualify_once(TRUE)
 )
 source_files<-unique(c(
+  "scripts/capture_four_pilot_numeric_evidence.R",
   "scripts/build_four_pilot_review_matrix.R",
   "tests/testthat/test-native-four-pilot-review-matrix.R",
   "tests/testthat/helper-frozen-python-source-symbol.R",
@@ -561,3 +562,14 @@ four_pilot_worksheet<-etr_build_four_pilot_review_matrix(
 stopifnot(nrow(four_pilot_worksheet$matrix)==16L,
   !any(four_pilot_worksheet$matrix$independently_replayed_case),
   !any(four_pilot_worksheet$matrix$fully_certified))
+
+# Source-controlled developer replay of 10 additional finite numeric
+# Python/R fixtures (not independent review). Fail the capture on any
+# paired discrepancy; preserve the unsigned 16-case reviewer matrix.
+source("scripts/capture_four_pilot_numeric_evidence.R",local=TRUE)
+four_pilot_numeric<-etr_capture_four_pilot_numeric_evidence(
+  root=".",packet_dir=packet_root)
+stopifnot(nrow(four_pilot_numeric$evidence)==10L,
+  all(four_pilot_numeric$evidence$developer_numeric_fixture_pass),
+  !any(four_pilot_numeric$evidence$independent_reviewer_approved),
+  !any(four_pilot_numeric$evidence$fully_certified))
