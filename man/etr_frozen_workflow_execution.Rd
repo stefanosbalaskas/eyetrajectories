@@ -43,7 +43,7 @@ etr_run_frozen_native_workflow(trajectories, config, design = NULL)
 \item{delay}{Positive embedding delay.}
 \item{radius}{Positive recurrence radius.}
 \item{delay_units}{Delay units, native execution supports only \code{samples}.}
-\item{metric}{Recurrence distance, native execution supports only \code{euclidean}.}
+\item{metric}{Recurrence distance: \code{cityblock}, \code{euclidean}, or \code{chebyshev}.}
 \item{theiler_window}{Nonnegative exclusion lag.}
 \item{theiler_window_units}{Theiler units, native execution supports only \code{samples}.}
 \item{min_diagonal_length}{Minimum diagonal recurrence line length.}
@@ -71,8 +71,8 @@ returns an actual fitted native R workflow object.
 Only an empty preprocessing plan is executable, preserving a strict
 no-hidden-imputation rule. The native FPCA implementation does not currently
 accept floating 1.0 as a variance retention threshold, although the Python
-source config constructor does. Non-Euclidean and non-sample-unit native
-recurrence scopes are unsupported. This documented difference is not waived.
+source config constructor does. L1, L2 and L-infinity recurrence distances are supported natively.
+Time-unit delays and Theiler windows remain unsupported. This documented difference is not waived.
 }
 \examples{
 cfg <- etr_frozen_fpca_workflow_config(n_components = 1L)
