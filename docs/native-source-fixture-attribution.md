@@ -301,6 +301,59 @@ source behavior, or independent full-contract certification. The 203
 source differences, 19 distinct scientific backend/estimand
 differences, and **0/508 independent approvals** are unchanged.
 
+## Exact-head 75/111 verified; five wild-bootstrap root exports and two workflow-subpackage tests
+
+The owner's exact-head RStudio qualification of
+`d95b774a2abed7e51f28972a239669d5263c0b3e` completed
+successfully: **309 R files parsed**, native offline **PASS**, pinned
+Python 1.2 direct source **PASS**, both evidence-capture modes **PASS**,
+checkout and file integrity **TRUE**. Evidence artifact:
+`qualification_20261101T015459`. All 111 selected source-contract
+fixtures were captured and **75/111** had literal direct root Python
+public-export references. No independent approvals changed.
+
+The next source patch adds **five further distinct frozen package-root
+public exported function oracles** to two existing statistical tests:
+
+- `wild_bootstrap_fpca_projection`: replay fixed Gaussian wild
+  multipliers with a source sampling hook restored in `finally`;
+  compare all source reference projections, SEs, resamples and roots
+  exactly with the original frozen Python oracle. The R numerical
+  FPCR comparison remains intact.
+- `scan_wild_bootstrap_fpca_truncations`: replay the exact same 20
+  multiplier rows across the adjacent inference-truncation candidates,
+  preserving the source oracle and R numerical comparisons.
+- `fpca_wild_bootstrap_truncation_scan_frame`: verify the source
+  48-row (two truncations × 24 fixed targets) data-frame contract.
+- `select_fpca_wild_bootstrap_truncation`: apply declared
+  width/center thresholds and `stability_run=0` to the original
+  source scan; verify exact earliest `h=2` decisions.
+- `fpca_wild_bootstrap_truncation_selection_frame`: verify the
+  24-target frame and exact source-selected inference components.
+
+Separately, the public `eyetrajectoriespy.workflows` subpackage
+(not the root `eyetrajectoriespy` 508-export catalogue) has two
+direct source exercises: `run_recurrence_workflow` verifies exact
+embedded states and recurrence adjacency, and `plot_workflow_result`
+verifies ValueError versus TypeError dispatch. These must **not** be
+counted as new root-export fixtures. This distinction was checked
+against both frozen `__init__.py` files and corrected before replay.
+
+`test-native-direct-source-workflow-attribution.R` guards the five
+root names and separately checks that the workflow calls use the
+subpackage. Every source test remains in both captured qualification
+modes; evidence hashes the four modified test files and guard.
+Static R delimiter checks passed. **Neither new test execution nor
+an R parse check has been performed by the assistant.**
+
+**Expected next file-level direct root-source attribution: up to
+80/111, not yet RStudio verified**. The new tests strengthen
+source-traceability and exact fixed-case numerical conditions; they
+do not establish full-domain Python/R API equality, NumPy RNG
+identity or external independent certification. Known audit
+limitations remain 203 difference records, 19 alternative
+backends/estimands and **0/508 independent approvals**.
+
 ## Remaining evidence needed for a genuine per-export certification
 
 1. Independently rerun the frozen Python and native R repositories at their
