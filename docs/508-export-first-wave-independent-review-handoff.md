@@ -150,3 +150,41 @@ current full-domain certified count must remain 0/508 until an actually
 independent, qualified reviewer has submitted and defended source-specific
 scientific findings and the relevant source gaps and registry approvals
 have been legitimately adjudicated.
+
+## First-wave namespace and native representation audit (2026-11-01)
+
+The owner-qualified `qualification_20261101T213648` at R SHA
+`89d465c495675daea44e0d46602ed1eb5b1a0ac1` passed both
+source qualification modes and both actual packet SHA256 verifiers.
+The first-wave inventory nevertheless reported 33/36 Python export
+lookups and 24/24 native R functions observed.
+
+Repository source inspection identified a specific capture bug:
+`etpy_get_export(name)` defaults to Python namespace `root`.
+Three selected exported classes belong to the `workflows` namespace:
+`PreprocessingPlan`, `FPCAWorkflowConfig`, `FPCAWorkflowResult`.
+The source-interface capture now explicitly uses each catalogued
+namespace. A pinned-Python regression exercises all three classes.
+Any still-unresolvable Python export stops the capture after preserving
+its descriptive source-inspection CSV for diagnosis.
+
+Also important: all 128 currently catalogued Python nonfunctions have
+an EMPTY native-representation field in the authoritative
+`inst/extdata/native_nonfunction_contract_review_v1.csv` register.
+Successful Python class imports do not constitute a native R
+representation or a full-domain semantic certificate.
+The new first-wave interface inventory reports the actual native
+nonfunction representation, a first review blocker and the next
+scientific action for each of the 36 exports. An absent R-side class
+or object is explicitly classified
+`NATIVE_R_NONFUNCTION_REPRESENTATION_MISSING`.
+The source-inventory integrity checker now verifies these reasons
+against observed Python lookup and native candidate presence rather
+than accepting an unsupported descriptive summary.
+
+After owner exact-head replay, the expected observation is 36/36
+Python exports found, 24 native R functions found, and 12 first-wave
+nonfunction R representations still missing until separately
+implemented and qualified. This is a PREDICTION until the new
+commit runs in owner RStudio; no independent scientific approval
+is inferred. Full-domain certifications remain 0/508.
