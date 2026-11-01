@@ -281,6 +281,8 @@ source_files<-unique(c(
   "tests/testthat/test-native-wild-bootstrap-projection.R",
   "tests/testthat/test-native-wild-bootstrap-truncation-scan.R",
   "tests/testthat/test-native-recurrence-workflow.R",
+  "tests/testthat/test-native-source-workflows.R",
+  "tests/testthat/test-native-direct-source-workflow-attribution.R",
   "tests/testthat/test-native-workflow-plot-dispatch.R",
   "tests/testthat/test-native-fpcr-future-prediction-interval.R",
   "tests/testthat/test-native-generalized-gee-fit.R",
