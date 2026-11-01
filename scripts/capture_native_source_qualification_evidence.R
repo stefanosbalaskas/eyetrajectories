@@ -65,6 +65,8 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-source-diagnostic-frames",
     "native-generalized-mixed-source-graphics",
     "native-pilot-source-adversarial",
+  "native-four-pilot-review-matrix",
+    "native-four-pilot-review-matrix",
     "native-mixed-model-source-text"),".R"))
 if(anyDuplicated(required_scientific_tests))stop(
   "Duplicate scientific test files in evidence capture requirements.",
@@ -234,6 +236,8 @@ results<-list(
   qualify_once(TRUE)
 )
 source_files<-unique(c(
+  "scripts/build_four_pilot_review_matrix.R",
+  "tests/testthat/test-native-four-pilot-review-matrix.R",
   "tests/testthat/helper-frozen-python-source-symbol.R",
   "tests/testthat/test-native-functional-recovery-orchestration.R",
   "tests/testthat/test-native-bounded-model-workflows.R",
