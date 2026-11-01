@@ -1,6 +1,8 @@
 #' Trapezoidal weights on an irregular, strictly increasing grid
 #' @param time Finite increasing one-dimensional vector or list of scalar values coercible to numeric time.
-#' @param normalize Divide weights by their sum when TRUE.
+#' @param normalize Divide weights when truthy under Python 1.2 scalar
+#'   semantics (FALSE, 0 and the empty string are false; nonempty strings
+#'   and nonzero finite numeric scalars are true).
 #' @export
 etr_trapezoid_weights <- function(time, normalize = FALSE) {
   # Python 1.2 np.asarray accepts a 1-D sequence of scalar numeric
@@ -27,13 +29,16 @@ etr_trapezoid_weights <- function(time, normalize = FALSE) {
   d <- diff(time); n <- length(time)
   w <- c(d[1] / 2, if (n > 2L) (d[-1] + d[-length(d)]) / 2,
          utils::tail(d, 1) / 2)
-  # Match Python's bool/numeric scalar truthiness for this bounded
-  # scientific domain. Arbitrary Python object truthiness is NOT ported.
+  # Match Python bool(scalar) on finite numeric, logical and string
+  # scalar values, including bool("")=False and bool("0")=True.
+  # Arbitrary Python user objects and nonfinite time grids remain outside
+  # this intentionally bounded native scientific contract.
   .etr_assert(length(normalize)==1L && !is.na(normalize) &&
-    ((is.logical(normalize)) ||
+    (is.logical(normalize) || is.character(normalize) ||
      (is.numeric(normalize) && is.finite(normalize))),
-    "normalize must be a finite numeric or logical scalar")
-  if (isTRUE(normalize!=0)) w <- w / sum(w)
+    "normalize must be a finite numeric, logical or character scalar")
+  truthy<-if(is.character(normalize))nzchar(normalize) else normalize!=0
+  if(isTRUE(truthy))w<-w/sum(w)
   w
 }
 
