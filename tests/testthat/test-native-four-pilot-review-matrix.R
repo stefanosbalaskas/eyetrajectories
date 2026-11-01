@@ -116,3 +116,39 @@ test_that("ten paired pilot source witnesses stay source-run and noncertifying",
   expect_false(any(grepl(
     "fully_certified=TRUE",code,fixed=TRUE)))
 })
+
+test_that("source boundary probes are explicit and cannot grant full parity",{
+  root<-testthat::test_path("..","..")
+  path<-file.path(root,"scripts",
+    "capture_four_pilot_boundary_evidence.R")
+  runner<-file.path(root,"scripts",
+    "capture_native_source_qualification_evidence.R")
+  expect_true(file.exists(path))
+  expect_silent(parse(file=path,keep.source=FALSE))
+  code<-readLines(path,warn=FALSE)
+  capture<-readLines(runner,warn=FALSE)
+  for(name in c("alr_transform","inverse_alr",
+    "score_distance_matrix","functional_trapezoid_weights")){
+    expect_true(any(grepl(paste0('etpy_get_export("',name,'")'),
+      code,fixed=TRUE)),info=paste("Missing frozen source probe",name))
+  }
+  for(probe in c("NaN_epsilon","finite_logit_exp_overflow",
+    "positive_infinite_endpoint","nonfinite_score_error")){
+    expect_true(any(grepl(probe,code,fixed=TRUE)),
+      info=paste("Missing recorded domain probe",probe))
+  }
+  for(guard in c("source_domain_equivalence_established=FALSE",
+    "independent_reviewer_approved=FALSE",
+    "independently_replayed_case=FALSE",
+    "fully_certified=FALSE",
+    "all(out$observed_behavior_as_expected)")){
+    expect_true(any(grepl(guard,code,fixed=TRUE)),
+      info=paste("Missing noncertification guard",guard))
+  }
+  expect_true(any(grepl(
+    '"scripts/capture_four_pilot_boundary_evidence.R"',
+    capture,fixed=TRUE)))
+  expect_true(any(grepl(
+    'source("scripts/capture_four_pilot_boundary_evidence.R"',
+    capture,fixed=TRUE)))
+})
