@@ -100,6 +100,18 @@ _w4_source={'state':a.embedding.values,'matrix':a.recurrence.matrix.toarray()}
     unname(source$state),tolerance=1e-12)
   expect_equal(unname(native$recurrence$matrix),
     unname(source$matrix),tolerance=0)
+  # Pair the *scientific* RQA estimands, not just state/matrix geometry.
+  # Published Python metrics are read from the direct W4 result object.
+  metrics_to_compare<-c("recurrence_rate","determinism",
+    "mean_diagonal_length","max_diagonal_length","diagonal_entropy",
+    "laminarity","trapping_time","max_vertical_length",
+    "center_of_recurrence_mass","n_recurrence_points",
+    "n_diagonal_lines","n_vertical_lines")
+  for(nm in metrics_to_compare){
+    py_value<-reticulate::py_to_r(reticulate::py_get_attr(direct$metrics,nm))
+    expect_equal(as.numeric(native$metrics[[nm]]),as.numeric(py_value),
+      tolerance=1e-10,info=paste("W4 source RQA estimand",nm))
+  }
   expect_false(any(etr_native_parity_catalog()$
     one_to_one_native_contract_complete))
 })
