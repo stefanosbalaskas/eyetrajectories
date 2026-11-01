@@ -71,6 +71,7 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-first-wave-source-interfaces",
     "native-frozen-workflow-values",
     "native-frozen-workflow-schema",
+    "native-frozen-workflow-execution",
     "native-source-trajectory-object",
     "native-nonfunction-source-gaps",
     "native-mixed-model-source-text"),".R"))
@@ -182,6 +183,7 @@ filter<-paste(c(
   "native-first-wave-source-interfaces",
   "native-frozen-workflow-values",
   "native-frozen-workflow-schema",
+  "native-frozen-workflow-execution",
   "native-source-trajectory-object",
   "native-nonfunction-source-gaps"),collapse="|")
 # Existence and inclusion are separate: all required scientific tests must
@@ -306,6 +308,8 @@ source_files<-unique(c(
   "tests/testthat/test-native-first-wave-source-interfaces.R",
   "tests/testthat/test-native-frozen-workflow-values.R",
   "tests/testthat/test-native-frozen-workflow-schema.R",
+  "tests/testthat/test-native-frozen-workflow-execution.R",
+  "R/native-frozen-workflow-execution.R",
   "R/native-frozen-workflow-values.R",
   "R/native-frozen-workflow-schema.R",
   "inst/extdata/native_workflow_28_class_field_schema_v1.csv",
