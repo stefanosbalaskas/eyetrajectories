@@ -674,3 +674,42 @@ stopifnot(nrow(full_review_batches$queue)==508L,
   all(!full_review_batches$decisions$full_domain_certification_approved))
 message("508-export no-recorded-gap fastlane prepared; ",
   "this is NOT an independent replay or a certification decision.")
+
+# Verify the ACTUAL newly generated packet, not only synthetic test fixtures.
+# Both verifiers are read-only and distinguish author integrity from genuine
+# independent reviewer scientific approval. Exact head is taken from the
+# already recorded checkout, not from a field inside the untrusted packet.
+packet_verifier_patterns<-c(
+  "scripts/verify_four_pilot_review_bundle.py",
+  "scripts/verify_508_certification_batch.py")
+packet_verification_logs<-vapply(packet_verifier_patterns,function(script){
+  label<-sub("^scripts/","",script)
+  log_path<-file.path(packet_root,paste0(
+    sub("\\.py$","",label),"_AUTHOR_INTEGRITY_CHECK.txt"))
+  output<-tryCatch(
+    suppressWarnings(system2(py_executable,args=c(
+      script,shQuote(packet_root),"--expected-r-head",head_sha),
+      stdout=TRUE,stderr=TRUE)),
+    error=function(e)structure(
+      paste0("PYTHON VERIFIER INVOCATION ERROR: ",conditionMessage(e)),
+      status=1L))
+  code<-attr(output,"status")
+  if(is.null(code))code<-0L
+  writeLines(c(as.character(output),
+    paste0("ACTUAL_PACKET_VERIFIER_EXIT_CODE: ",as.integer(code))),
+    log_path,useBytes=TRUE)
+  if(!identical(as.integer(code),0L)){
+    message("===== Actual reviewer packet integrity verifier FAILED: ",
+      script," =====")
+    for(line in tail(as.character(output),100L))message(line)
+    stop("Actual reviewer packet FAILED its unsigned SHA256 validation: ",
+      script,". Log: ",log_path,call.=FALSE)
+  }
+  message("Actual unsigned reviewer packet integrity PASS: ",
+    script,". Evidence: ",log_path,
+    " (NOT external scientific certification).")
+  log_path
+},character(1L))
+stopifnot(length(packet_verification_logs)==2L,
+  all(file.exists(packet_verification_logs)),
+  !any(full_review_batches$decisions$full_domain_certification_approved))
