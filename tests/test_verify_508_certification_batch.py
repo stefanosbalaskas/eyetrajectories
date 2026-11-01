@@ -138,6 +138,25 @@ class TestUnsignedBatchIntegrity(unittest.TestCase):
         with self.assertRaisesRegex(v.ReviewBatchError, "must be FALSE"):
             v.verify(self.root)
 
+    def test_forged_case_source_pin_rehashed_fails(self):
+        p = self.root / v.FILES[2]
+        rows = v.read_csv(p)
+        rows[0]["recorded_r_git_head"] = "0" * 40
+        write_csv(p, rows)
+        self.update_manifest()
+        with self.assertRaisesRegex(v.ReviewBatchError, "case source identity"):
+            v.verify(self.root)
+
+    def test_missing_case_identity_column_rehashed_fails(self):
+        p = self.root / v.FILES[2]
+        rows = v.read_csv(p)
+        for row in rows:
+            del row["frozen_python_commit"]
+        write_csv(p, rows)
+        self.update_manifest()
+        with self.assertRaisesRegex(v.ReviewBatchError, "Missing reviewer checklists columns"):
+            v.verify(self.root)
+
     def test_missing_case_criterion_rehashed_fails(self):
         p = self.root / v.FILES[2]
         rows = v.read_csv(p)
