@@ -120,7 +120,9 @@ def _public_workflow_plot_errors(fn):
 ")
   types<-et_to_r(reticulate::py_call(
     reticulate::py_eval("_public_workflow_plot_errors",convert=FALSE),
-    etpy_get_export("plot_workflow_result")))
+    reticulate::py_get_attr(reticulate::import(
+      "eyetrajectoriespy.workflows",convert=FALSE),
+      "plot_workflow_result")))
   expect_identical(as.character(types),c("ValueError","TypeError"))
   expect_true(reticulate::py_to_r(reticulate::py_eval(
     "_native_workflow_unknown_plot_error",convert=FALSE)))
