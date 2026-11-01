@@ -62,9 +62,16 @@ etr_capture_first_wave_source_interfaces<-function(root=".",packet_dir) {
   rows<-lapply(seq_len(nrow(scope)),function(i){
     row<-scope[i,,drop=FALSE]
     name<-row$python_name[[1L]]
+    ns_name<-row$namespace[[1L]]
     is_function<-identical(row$kind[[1L]],"function")
+    # The frozen catalog includes exports from BOTH Python namespaces.
+    # Calling etpy_get_export(name) without .namespace silently defaults
+    # to root, erroneously failing workflows objects such as
+    # FPCAWorkflowConfig, FPCAWorkflowResult and PreprocessingPlan.
     source_obj<-tryCatch(
-      list(ok=TRUE,value=etpy_get_export(name),error=""),
+      list(ok=TRUE,
+        value=etpy_get_export(name,.namespace=ns_name),
+        error=""),
       error=function(e)list(ok=FALSE,value=NULL,
         error=conditionMessage(e)))
     source_signature<-if(!source_obj$ok)
@@ -110,6 +117,8 @@ etr_capture_first_wave_source_interfaces<-function(root=".",packet_dir) {
     all(out$signature_text_is_not_semantic_parity)&&
     !any(out$independently_reproduced|out$source_full_domain_certified),
     "First-wave source interface inventory has invalid review flags")
+  # Capture the actual CSV before reporting an installed-source mismatch.
+  # An unobserved public Python export must not become an implied PASS.
   path<-file.path(packet_dir,"first_wave_source_interface_inventory.csv")
   utils::write.csv(out,path,row.names=FALSE,na="")
   hash<-digest::digest(path,algo="sha256",file=TRUE)
@@ -125,6 +134,14 @@ etr_capture_first_wave_source_interfaces<-function(root=".",packet_dir) {
     digest::digest(path,algo="sha256",file=TRUE))&&
     !any(reread$source_full_domain_certified),
     "SHA256 sidecar or first-party source interface record invalid")
+  if(!all(out$python_export_lookup_ok))
+    stop("Frozen Python 1.2 first-wave export lookup failed for: ",
+      paste(paste0(out$namespace[!out$python_export_lookup_ok],
+        "::",out$python_name[!out$python_export_lookup_ok],
+        " [",out$python_inspection_error[!out$python_export_lookup_ok],
+        "]"),collapse="; "),
+      ". The source interface CSV was preserved for inspection.",
+      call.=FALSE)
   message("36-source first-party signature/class inventory written: ",path,
     ". Python exports inspected: ",sum(out$python_export_lookup_ok),
     "; native functions present: ",sum(out$native_r_function_present),
