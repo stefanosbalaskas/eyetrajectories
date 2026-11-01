@@ -74,7 +74,11 @@ test_that("nonfunction native representations are not silently inferred",{
       "etr_frozen_workflow_values()$WORKFLOW_BUNDLE_SCHEMA_VERSION",
     "workflows::WORKFLOW_BUNDLE_FORMAT"=
       "etr_frozen_workflow_values()$WORKFLOW_BUNDLE_FORMAT")
-  expect_equal(sum(populated),4L)
+  schema_names<-unique(etr_frozen_workflow_schema()$class_name)
+  expected<-c(expected,setNames(
+    paste0("etr_frozen_py12_",schema_names),
+    paste0("workflows::",schema_names)))
+  expect_equal(sum(populated),32L)
   observed<-setNames(reg$native_representation[populated],
     paste(reg$namespace[populated],reg$python_name[populated],sep="::"))
   expect_setequal(names(observed),names(expected))
