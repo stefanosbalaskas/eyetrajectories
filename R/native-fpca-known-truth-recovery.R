@@ -7,10 +7,10 @@
 .etr_fpca_recovery_metric <- function(name){
   definitions<-switch(name,
     mean_ise=c("population mean function","lower_is_better",
-      "squared signal × time","population",
+      "squared signal \u00d7 time","population",
       "Integrated squared error of the fitted mean function."),
     covariance_ise=c("population covariance operator","lower_is_better",
-      "squared covariance × time²","population",
+      "squared covariance \u00d7 time\u00b2","population",
       "Quadrature-weighted integrated squared covariance error."),
     eigenvalue_relative_error=c("functional eigenvalue","lower_is_better",
       "relative","component",
@@ -31,7 +31,7 @@
       "degrees","subspace",
       "Principal angle between retained fitted and true subspaces."),
     reconstruction_ise=c("latent trajectory reconstruction","lower_is_better",
-      "squared signal × time","curve",
+      "squared signal \u00d7 time","curve",
       "Mean curve-level integrated squared reconstruction error."),
     stop("unrecognized source FPCA recovery metric",call.=FALSE))
   list(name=name,quantity=definitions[[1L]],
