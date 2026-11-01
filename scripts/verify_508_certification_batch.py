@@ -36,6 +36,8 @@ CRITERIA = (
     "independently_created_case_and_replay_logs",
     "independent_reviewer_identity_evidence_and_signature",
 )
+INTERFACE_INVENTORY = "first_wave_source_interface_inventory.csv"
+INTERFACE_SHA256 = "first_wave_source_interface_inventory_sha256.csv"
 HEX40 = re.compile(r"[a-f0-9]{40}\Z")
 HEX64 = re.compile(r"[a-f0-9]{64}\Z")
 
@@ -226,6 +228,53 @@ def verify(packet_dir: str | Path, expected_r_head: str | None = None) -> dict[s
               for r in decisions),
           "First-batch decisions must remain unsigned and pending")
 
+    # An optional first-party Python/R interface inventory is a separate
+    # descriptive evidence attachment. It MUST be paired with a SHA256
+    # sidecar and source-pinned to the same 36-reviewer worklist.
+    inventory = root / INTERFACE_INVENTORY
+    inventory_sha = root / INTERFACE_SHA256
+    attached = inventory.exists() or inventory_sha.exists()
+    if attached:
+        check(inventory.is_file() and inventory_sha.is_file() and
+              not inventory.is_symlink() and not inventory_sha.is_symlink(),
+              "First-wave interface inventory and SHA256 sidecar must both exist")
+        sidecar = read_csv(inventory_sha)
+        check(len(sidecar) == 1, "Interface SHA256 sidecar must have one row")
+        columns(sidecar, ("filename", "sha256", "recorded_r_git_head",
+                          "frozen_python_commit", "independently_verified",
+                          "fully_certified"), "interface SHA256 sidecar")
+        h = sidecar[0]
+        check(h["filename"] == INTERFACE_INVENTORY and
+              HEX64.fullmatch(h["sha256"]) is not None and
+              sha256(inventory) == h["sha256"] and
+              h["recorded_r_git_head"] == head and
+              h["frozen_python_commit"] == FROZEN_PYTHON and
+              h["independently_verified"] == "FALSE" and
+              h["fully_certified"] == "FALSE",
+              "First-wave interface SHA256, source pin, or unsigned state invalid")
+        interfaces = read_csv(inventory)
+        columns(interfaces, ("namespace", "python_name", "kind",
+                "native_r_candidate", "recorded_r_git_head",
+                "frozen_python_commit", "signature_text_is_not_semantic_parity",
+                "independently_reproduced", "source_full_domain_certified"),
+                "first-wave source interfaces")
+        check(len(interfaces) == 36 and
+              len({key(row) for row in interfaces}) == 36 and
+              {key(row) for row in interfaces} == {key(row) for row in batch},
+              "First-wave source interface coverage does not match batch")
+        check(all(row["kind"] == selected_by_key[key(row)]["kind"] and
+                  row["native_r_candidate"] ==
+                    selected_by_key[key(row)]["native_r_candidate"] and
+                  row["recorded_r_git_head"] == head and
+                  row["frozen_python_commit"] == FROZEN_PYTHON
+                  for row in interfaces),
+              "First-wave source interface identity mismatch")
+        all_flags(interfaces, ("signature_text_is_not_semantic_parity",),
+                  "TRUE", "source interface qualification disclaimer")
+        all_flags(interfaces, ("independently_reproduced",
+                               "source_full_domain_certified"),
+                  "FALSE", "source interface independent approval")
+
     return {
         "result": "PASS: 508 author-generated reviewer queue integrity / UNSIGNED",
         "r_git_head": head,
@@ -235,6 +284,7 @@ def verify(packet_dir: str | Path, expected_r_head: str | None = None) -> dict[s
         "nonfunction_count": 128,
         "open_source_gap_exports": 203,
         "first_review_batch": 36,
+        "descriptive_source_interface_inventory_verified": attached,
         "independent_case_replays": 0,
         "independently_certified_full_domain_contracts": 0,
         "separately_trusted_head_checked": expected_r_head is not None,
