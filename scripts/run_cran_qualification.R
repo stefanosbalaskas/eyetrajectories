@@ -61,10 +61,18 @@ rd_preflight_error <- tryCatch({
   source("scripts/preflight_rd_manuals.R", local=TRUE)
   NULL
 },error=function(e)conditionMessage(e))
+cat("\n=== Packaged research test fixture integrity preflight ===\n")
+fixture_preflight_error <- tryCatch({
+  source("scripts/preflight_packaged_test_fixtures.R",local=TRUE)
+  NULL
+},error=function(e)conditionMessage(e))
 check_error <- if(!is.null(rd_preflight_error))
-  paste("Rd manual preflight failed:",rd_preflight_error) else NULL
+  paste("Rd manual preflight failed:",rd_preflight_error) else
+  if(!is.null(fixture_preflight_error))
+    paste("Research fixture preflight failed:",fixture_preflight_error)
+  else NULL
 cat("\n=== Full source-build R CMD check --as-cran ===\n")
-check <- if(!is.null(rd_preflight_error)) NULL else tryCatch(
+check <- if(!is.null(check_error)) NULL else tryCatch(
   rcmdcheck::rcmdcheck(
     path = root,
     args = "--as-cran",
@@ -128,6 +136,8 @@ check_without_errors_or_warnings <- is.null(check_error) &&
 example_pass <- is.null(example_error)
 check_status <- if (!is.null(rd_preflight_error)) {
   "FAIL - RD MANUAL PREFLIGHT"
+} else if (!is.null(fixture_preflight_error)) {
+  "FAIL - PACKAGED RESEARCH FIXTURE PREFLIGHT"
 } else if (is.null(check)) {
   "FAIL - SOURCE BUILD (R CMD CHECK NOT RUN)"
 } else if (!check_without_errors_or_warnings || !example_pass) {
