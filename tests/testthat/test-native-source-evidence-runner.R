@@ -23,6 +23,9 @@ test_that("native source qualification evidence runner parses", {
   for(required_triage in c(
     "all_508_contract_review_priority.csv",
     "known_source_gap_resolution_queue.csv",
+    "selected_111_missing_literal_python_source_references.csv",
+    "source_gap_resolution_lane_counts.csv",
+    "four_numerical_pilots_external_review_priority.csv",
     "review_lane_counts.csv",
     "test_selection_regex.txt",
     "selected_111_fixture_static_attribution.csv",
@@ -37,6 +40,12 @@ test_that("native source qualification evidence runner parses", {
     expect_true(any(grepl(required_triage,
       readLines(runner,warn=FALSE),fixed=TRUE)),
       info=paste("source evidence runner omits",required_triage))
+  }
+  for(name in c("tests/testthat/test-native-pilot-source-adversarial.R",
+    "man/native-api.Rd")){
+    expect_true(any(grepl(paste0('"',name,'"'),
+      lines,fixed=TRUE)),
+      info=paste("source evidence manifest omitted",name))
   }
   expect_false(any(trimws(lines) == "else"))
   expect_true(any(grepl("qualify_once(FALSE)",lines,fixed=TRUE)))
