@@ -73,6 +73,7 @@ test_that("native source qualification evidence runner parses", {
     "native-multivariate-surrogate-nonlinearity",
     "native-fpcr-bootstrap-uncertainty",
     "native-sparse-scientific-graphics",
+    "native-fpca-external-score-reconstruction",
     "native-fpca-inference-source-graphics",
     "native-fpcr-slope-source-calibration",
     "native-wild-simultaneous-source-calibration",
