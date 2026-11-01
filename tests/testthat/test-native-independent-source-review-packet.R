@@ -93,3 +93,38 @@ test_that("missing direct source witnesses have explicit fail-closed triage",{
   expect_false(any(grepl(
     "fully_certified<-TRUE",lines,fixed=TRUE)))
 })
+
+test_that("zero missing source references preserve a typed independent-review queue",{
+  root<-testthat::test_path("..","..")
+  producer<-readLines(file.path(root,"scripts",
+    "prepare_independent_source_review.R"),warn=FALSE)
+  consumer<-readLines(file.path(root,"scripts",
+    "capture_native_source_qualification_evidence.R"),warn=FALSE)
+  expect_true(any(grepl(
+    "direct_missing$independently_verified_export_oracle<-",
+    producer,fixed=TRUE)))
+  expect_true(any(grepl("rep(FALSE,nrow(direct_missing))",
+    producer,fixed=TRUE)))
+  expect_true(any(grepl("if(nrow(missing_refs)>0L)",
+    consumer,fixed=TRUE)))
+  expect_true(any(grepl(
+    "all(required_missing_columns%in%names(missing_refs))",
+    consumer,fixed=TRUE)))
+  empty<-data.frame(
+    python_name=character(),
+    python_source_file=character(),
+    source_gap_kind=character(),
+    known_source_difference=character(),
+    independently_verified_export_oracle=logical(),
+    fully_certified=logical(),
+    stringsAsFactors=FALSE)
+  path<-tempfile(fileext=".csv")
+  on.exit(unlink(path),add=TRUE)
+  utils::write.csv(empty,path,row.names=FALSE,na="")
+  reread<-utils::read.csv(path,stringsAsFactors=FALSE,
+    check.names=FALSE)
+  expect_identical(nrow(reread),0L)
+  expect_true(all(names(empty)%in%names(reread)))
+  expect_false(any(reread$fully_certified))
+  expect_false(any(reread$independently_verified_export_oracle))
+})
