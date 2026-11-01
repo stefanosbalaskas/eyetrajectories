@@ -60,3 +60,14 @@ test_that("Python 1.2 directly reads native R exported result",{
     py$payload$get("curve_ids"))),x$curve_ids)
   expect_false(isTRUE(reticulate::py_to_r(py$package_version_match)))
 })
+
+# Actual pinned-Python 1.2 public export and source-signature witness.
+# This verifies callable/source availability, NOT native scientific parity.
+test_that("unreviewed Python 1.2 source symbols are inspectable: export_portable_result",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("pinned Python source-symbol audit requires source runtime")
+  .etr_expect_frozen_python_source_symbol(
+    etpy_get_export("export_portable_result"),"export_portable_result")
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})
