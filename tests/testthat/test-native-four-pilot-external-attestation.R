@@ -101,7 +101,7 @@ test_that("external review signer gate rejects full parity for open gaps",{
     "four_pilot_external_attestation.R")
   expect_silent(parse(file=path,keep.source=FALSE))
   lines<-readLines(path,warn=FALSE)
-  for(token in c("source gaps","FULL_SOURCE_PARITY",
+  for(token in c("Source gaps are still open","FULL_SOURCE_PARITY",
     "RESTRICTED_SUBSET_MATCH","NOT_EQUIVALENT",
     "GPG required","VALIDSIG","trusted_fingerprint",
     "source evidence modified after reviewer handoff",
