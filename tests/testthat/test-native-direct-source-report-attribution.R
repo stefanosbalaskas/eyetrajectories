@@ -47,3 +47,20 @@ test_that("twenty additional source reporting exports have direct pinned oracle 
   expect_true(all(catalog$source_contract_gap_unresolved[idx]))
   expect_false(any(catalog$one_to_one_native_contract_complete[idx]))
 })
+
+test_that("mixed-effects report has an exact direct frozen Python export oracle",{
+  root<-testthat::test_path("..","..")
+  env<-new.env(parent=baseenv())
+  sys.source(file.path(root,"scripts",
+    "source_fixture_static_attribution.R"),envir=env)
+  found<-env$etr_source_fixture_static_inventory(file.path(
+    root,"tests","testthat","test-native-mixed-model-source-text.R"))
+  expect_true(found$cases>=1L)
+  expect_true("functional_mixed_effects_reporting_text"%in%
+    found$export_literals)
+  api<-etr_native_parity_catalog()
+  idx<-match("functional_mixed_effects_reporting_text",api$python_name)
+  expect_false(is.na(idx))
+  expect_true(api$source_contract_gap_unresolved[idx])
+  expect_false(api$one_to_one_native_contract_complete[idx])
+})
