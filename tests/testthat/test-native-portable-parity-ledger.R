@@ -20,9 +20,9 @@ test_that("maps Python portable-result loader only as a candidate", {
   expect_false(row$one_to_one_native_contract_complete)
   expect_false(row$behavioral_schema_parity_pass)
   expect_false(row$independent_numeric_parity_pass)
-  expect_equal(sum(!is.na(register$native_representation_stage)),7L)
+  expect_equal(sum(!is.na(register$native_representation_stage)),32L)
   expect_equal(sum(register$status==
-     "class_or_constant_native_representation_not_reviewed"),121L)
+     "class_or_constant_native_representation_not_reviewed"),96L)
   expect_true(all(!register$one_to_one_native_contract_complete))
   expect_identical(reticulate::py_available(initialize=FALSE),was)
   expect_error(etr_native_parity_catalog(require_complete=TRUE),
