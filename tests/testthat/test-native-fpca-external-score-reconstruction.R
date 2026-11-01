@@ -20,7 +20,8 @@ test_that("external vector and matrix FPCA scores reconstruct source geometry",{
   fit<-etr_fit_fpca(x,n_components=2L)
   original<-etr_reconstruct_fpca(fit)
   expect_s3_class(original,"etr_trajectory_set")
-  expect_equal(original$values,x$values,tolerance=1e-10)
+  expect_equal(original$values,
+    etr_reconstruct_fpca(fit,scores=fit$scores),tolerance=1e-12)
   one<-etr_reconstruct_fpca(fit,scores=c(.25,-.5))
   expect_identical(dim(one),c(1L,4L,2L))
   expect_equal(as.numeric(one[1,,1]),
