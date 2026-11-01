@@ -52,6 +52,43 @@ stopifnot(nrow(scores) == n, nrow(distance) == n,
           all(is.finite(distance)), is.finite(rqa$recurrence_rate),
           all(dim(etr_reconstruct_fpca(fit)$values) == dim(x$values)))
 
+# Actual source-based time-unit and Minkowski scientific smoke: no Python.
+observed_step <- time[2L]-time[1L]
+embedded <- etr_delay_embed_trajectory(x, 2L, delay=2*observed_step,
+  delay_units="s", dimensions=c("x","y"))
+stopifnot(identical(embedded$delay_samples,2L))
+rqa_metrics <- c("cityblock","euclidean","chebyshev")
+recurrence_rates <- vapply(rqa_metrics,function(metric){
+  z <- etr_run_recurrence_workflow(x,list(
+    curve="example_1",dimensions=c("x","y"),
+    embedding_dimension=2L,delay=2*observed_step,delay_units="s",
+    radius=.3,metric=metric,theiler_window=observed_step,
+    theiler_window_units="s"))
+  stopifnot(identical(z$embedding$delay_samples,2L),
+    identical(z$recurrence$theiler,1L),
+    identical(z$recurrence$metric,metric),
+    identical(length(z$steps),3L),
+    all(vapply(z$steps,function(step)
+      is.finite(step$elapsed_seconds)&&step$elapsed_seconds>=0,
+      logical(1))))
+  z$recurrence$recurrence_rate
+},numeric(1L))
+stopifnot(all(is.finite(recurrence_rates)),
+  all(diff(recurrence_rates)>=-1e-12))
+profile <- etr_recurrence_radius_profile(x,"example_1",c(.1,.3,.6),
+  metric="chebyshev",theiler_window=observed_step,
+  theiler_window_units="s",dimensions=c("x","y"))
+stopifnot(identical(profile$theiler_window_samples,1L),
+          nrow(profile$table)==3L)
+windowed <- etr_windowed_rqa(x,curve="example_1",
+  window=6*observed_step,step=2*observed_step,
+  window_units="s",step_units="s",radius=.3,
+  metric="chebyshev",theiler_window=observed_step,
+  theiler_window_units="s",dimensions=c("x","y"))
+stopifnot(identical(windowed$window_samples,6L),
+  identical(windowed$step_samples,2L),
+  nrow(windowed$table)>0L)
+
 # Experimental participant mean band: shape/invariants ONLY; no calibration.
 sim <- etr_simulate_hierarchical(n_subjects = 12L,
                                   trials_per_subject = 2L,
