@@ -9,13 +9,22 @@
 \title{Native R FPCA eigenspace stability, influence and empirical outlier diagnostics}
 \description{Seven Python-free scientific implementations: weighted principal-angle subspace comparison, grouped/curve bootstrap stability, one-group-out influence, component-matched bootstrap diagnostics and explicitly selected empirical-covariance outlier screening.}
 \usage{
-etr_compare_fpca_subspaces(reference, candidate, start_component = 0L, n_components = 2L)
-etr_bootstrap_fpca_subspace_stability(trajectories, start_component = 0L, n_components = 2L, n_bootstrap = 200L, scaling = "none", resample_unit = "curve", participant_column = NULL, random_state = 0L)
+etr_compare_fpca_subspaces(reference, candidate, start_component = 0L,
+  n_components = 2L)
+etr_bootstrap_fpca_subspace_stability(trajectories, start_component = 0L,
+  n_components = 2L, n_bootstrap = 200L, scaling = "none",
+  resample_unit = "curve", participant_column = NULL, random_state = 0L)
 etr_summarise_fpca_subspace_stability(result, interval = c(0.025, 0.975))
-etr_leave_one_group_out_fpca_influence(trajectories, group_column = NULL, n_components = 3L, scaling = "none")
-etr_bootstrap_fpca_stability(trajectories, n_bootstrap = 200L, n_components = 3L, scaling = "none", resample_unit = "curve", participant_column = NULL, random_state = 0L)
-etr_summarise_fpca_stability(result, similarity_threshold = 0.80, interval = c(0.025, 0.975))
-etr_diagnose_fpca_outliers(result, trajectories, n_components = NULL, reconstruction_z_threshold = 3.5, score_alpha = 0.99, score_covariance = "robust", random_state = 0L)
+etr_leave_one_group_out_fpca_influence(trajectories, group_column = NULL,
+  n_components = 3L, scaling = "none")
+etr_bootstrap_fpca_stability(trajectories, n_bootstrap = 200L,
+  n_components = 3L, scaling = "none", resample_unit = "curve",
+  participant_column = NULL, random_state = 0L)
+etr_summarise_fpca_stability(result, similarity_threshold = 0.80,
+  interval = c(0.025, 0.975))
+etr_diagnose_fpca_outliers(result, trajectories, n_components = NULL,
+  reconstruction_z_threshold = 3.5, score_alpha = 0.99,
+  score_covariance = "robust", random_state = 0L)
 }
 \arguments{
 \item{reference}{Native reference FPCA fitted result.}
