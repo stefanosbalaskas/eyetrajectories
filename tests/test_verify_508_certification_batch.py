@@ -50,8 +50,16 @@ def make_packet(folder):
     cases = []
     for r in batch:
         for crit in v.CRITERIA:
+            # Mirror the real R-generated checklist source identity
+            # schema. The separate GPG receipt verifier must compare these
+            # fields against unsigned source evidence without KeyError.
             cases.append(dict(namespace=r["namespace"],
-                python_name=r["python_name"], criterion=crit,
+                python_name=r["python_name"],
+                kind=r["kind"],
+                native_r_candidate=r["native_r_candidate"],
+                recorded_r_git_head=r["recorded_r_git_head"],
+                frozen_python_commit=r["frozen_python_commit"],
+                criterion=crit,
                 reviewer_case_passed="FALSE", independently_replayed="FALSE",
                 full_domain_approved="FALSE",
                 reviewer_created_evidence_reference="",
