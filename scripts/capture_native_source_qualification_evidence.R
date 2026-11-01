@@ -66,6 +66,7 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-generalized-mixed-source-graphics",
     "native-pilot-source-adversarial",
     "native-four-pilot-review-matrix",
+    "native-four-pilot-external-attestation",
     "native-mixed-model-source-text"),".R"))
 if(anyDuplicated(required_scientific_tests))stop(
   "Duplicate scientific test files in evidence capture requirements.",
@@ -169,7 +170,8 @@ filter<-paste(c(
   "native-direct-source-stochastic-attribution",
   "native-direct-source-workflow-attribution",
   "native-pilot-source-adversarial",
-  "native-four-pilot-review-matrix"),collapse="|")
+  "native-four-pilot-review-matrix",
+  "native-four-pilot-external-attestation"),collapse="|")
 # Existence and inclusion are separate: all required scientific tests must
 # be selected by the exact filter executed in BOTH offline and Python modes.
 unselected_required<-required_scientific_tests[
@@ -236,6 +238,8 @@ results<-list(
   qualify_once(TRUE)
 )
 source_files<-unique(c(
+  "scripts/four_pilot_external_attestation.R",
+  "tests/testthat/test-native-four-pilot-external-attestation.R",
   "scripts/capture_four_pilot_boundary_evidence.R",
   "scripts/capture_four_pilot_numeric_evidence.R",
   "scripts/build_four_pilot_review_matrix.R",
@@ -585,3 +589,12 @@ stopifnot(nrow(four_pilot_boundaries$evidence)==4L,
   !any(four_pilot_boundaries$evidence$source_domain_equivalence_established),
   !any(four_pilot_boundaries$evidence$independent_reviewer_approved),
   !any(four_pilot_boundaries$evidence$fully_certified))
+
+# Hand off immutable source evidence to a REAL external reviewer.
+# All submission flags default to FALSE; no signoff or parity promotion.
+source("scripts/four_pilot_external_attestation.R",local=TRUE)
+four_pilot_external<-etr_prepare_four_pilot_external_attestation(
+  root=".",packet_dir=packet_root)
+stopifnot(all(file.exists(unlist(four_pilot_external))))
+message("External independent scientific review: ",
+  "UNSIGNED; GPG-verified third-party decision required.")
