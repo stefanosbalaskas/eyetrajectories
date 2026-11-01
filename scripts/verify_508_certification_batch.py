@@ -160,13 +160,47 @@ def verify(packet_dir: str | Path, expected_r_head: str | None = None) -> dict[s
         ("workflows", "WORKFLOW_BUNDLE_FORMAT"):
             "etr_frozen_workflow_values()$WORKFLOW_BUNDLE_FORMAT",
     }
+    schema_backed_workflow_classes = (
+        "WorkflowDecisionRecord",
+        "WorkflowStepRecord",
+        "PreprocessingStepConfig",
+        "PreprocessingPlan",
+        "FPCAWorkflowConfig",
+        "FPCAWorkflowResult",
+        "FunctionOnScalarWorkflowConfig",
+        "FunctionOnScalarWorkflowResult",
+        "FunctionalMixedEffectsWorkflowConfig",
+        "FunctionalMixedEffectsWorkflowResult",
+        "GeneralizedFunctionalWorkflowConfig",
+        "GeneralizedFunctionalWorkflowResult",
+        "RecurrenceWorkflowConfig",
+        "RecurrenceWorkflowResult",
+        "SparseFPCABandwidthSelectionConfig",
+        "SparseFPCAWorkflowConfig",
+        "SparseFPCAWorkflowResult",
+        "SparseMFPCABandwidthSelectionConfig",
+        "SparseMFPCAWorkflowConfig",
+        "SparseMFPCAWorkflowResult",
+        "ScoreUncertaintyConfig",
+        "ObservationDiagnosticConfig",
+        "SparseMultilevelWorkflowConfig",
+        "SparseMultilevelWorkflowResult",
+        "SparsePredictionWorkflowConfig",
+        "SparsePredictionWorkflowResult",
+        "SparseMFPCAAsyncWorkflowConfig",
+        "SparseMFPCAAsyncWorkflowResult",
+    )
+    frozen_value_mappings.update({
+        ("workflows", name): "etr_frozen_py12_" + name
+        for name in schema_backed_workflow_classes
+    })
     check(sum(bool(r["native_nonfunction_representation"].strip())
               for r in full) == len(frozen_value_mappings) and
           all(r["native_nonfunction_representation"] ==
               frozen_value_mappings.get(key(r), "") for r in full) and
           all(row["kind"] != "function" for row in full
               if key(row) in frozen_value_mappings),
-          "Nonfunction native representation inventory must retain exactly four source-backed partial candidates")
+          "Nonfunction native representation inventory must retain exactly 32 source-backed partial candidates")
     all_flags(full, ("currently_authoritatively_certified",),
               "FALSE", "source certification state")
     all_flags(full, ("developer_queue_is_not_scientific_certification",),
