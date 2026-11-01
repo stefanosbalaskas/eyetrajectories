@@ -14,12 +14,15 @@
 \title{Stage 9 native R functional transformations and scientific diagnostics}
 \description{Twelve Python-free implementations of selected eyetrajectoriespy 1.2.0 functional transformations, distance summaries and phase diagnostics. Native R implementations have been authored; comprehensive one-to-one Python contract equivalence has not been established.}
 \usage{
-etr_alr_transform(values, reference_dimension = -1L, epsilon = 1e-8)
-etr_inverse_alr(transformed, reference_dimension, n_dimensions)
+etr_alr_transform(values, reference_dimension = -1L, epsilon = 1e-8,
+  python_boundary_mode = FALSE)
+etr_inverse_alr(transformed, reference_dimension, n_dimensions,
+  python_boundary_mode = FALSE)
 etr_component_trajectories(result, component, sd_multipliers = c(-2, -1, 0, 1, 2))
 etr_select_n_components(result, threshold = 0.95)
 etr_fpca_score_frame(result, prefix = "FPC")
-etr_score_distance_matrix(fpca, n_components = NULL)
+etr_score_distance_matrix(fpca, n_components = NULL,
+  python_boundary_mode = FALSE)
 etr_pairwise_functional_distances(trajectories, dimension_weights = NULL)
 etr_sparse_dimension_summary(trajectories, dimension)
 etr_warping_displacement(result)
