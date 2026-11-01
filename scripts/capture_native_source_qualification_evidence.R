@@ -10,6 +10,7 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-recovery-source-evaluators",
   "native-functional-recovery-evidence",
     "native-functional-recovery-evidence",
+    "native-direct-source-recovery-evidence-attribution",
     "native-generalized-fosr-coefficient-bands",
     "native-mixed-coefficient-bands-source",
     "native-mixed-known-truth-recovery",
