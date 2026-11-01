@@ -6,7 +6,7 @@ sample coverage concerns remain unresolved independently of clean checks.
 
 ## One command
 
-From a freshly pulled repository `main`, in RStudio with the package root
+From the exact intended Git checkout, in RStudio with the package root
 as its working directory, run:
 
 ```r
@@ -74,8 +74,11 @@ and avoiding network requirements when dependencies are unavailable.
 CRAN package policy: https://cran.r-project.org/web/packages/policies.html
 R CMD check documentation: https://cran.r-project.org/doc/manuals/r-release/R-exts.html
 
-Do not publish or submit until the scientific HOLD status and cross-platform
-matrix are independently reviewed.
+For a scoped experimental 0.x candidate, follow docs/experimental-release-scope.md
+and run source("scripts/qualify_experimental_candidate.R"). Do not publish
+or submit until the scientific scope, package checks, NOTES and
+cross-platform restrictions are reviewed. Complete Python 1.2 parity remains
+separate and unclaimed.
 
 ## October 25 full-check findings and corrections
 
