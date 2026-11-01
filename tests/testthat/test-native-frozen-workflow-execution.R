@@ -87,6 +87,9 @@ test_that("native recurrence runs and unsupported source domains fail closed",{
       preprocessing=list()))
   expect_s3_class(native,"etr_recurrence_workflow")
   expect_identical(native$workflow_contract,"recurrence:v1")
+  expect_identical(length(native$steps),3L)
+  expect_s3_class(etr_native_workflow_result_view(native),
+    "etr_frozen_py12_RecurrenceWorkflowResult")
   expect_equal(native$recurrence$matrix,direct$recurrence$matrix,
     tolerance=0)
   expect_equal(native$metrics,direct$metrics,tolerance=0)
