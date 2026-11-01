@@ -118,3 +118,108 @@ test_that("published Python 1.2 graphics return Matplotlib axes not R data",{
   expect_true(all(etr_native_parity_catalog()$
     one_to_one_native_contract_complete==FALSE))
 })
+
+
+# Python-boundary-mode experiments are intentionally separate from the
+# finite-only native scientific defaults. No independent approval is implied.
+test_that("opt-in source boundary mode matches three known NumPy behaviors",{
+  simplex<-array(0,c(2L,2L,3L))
+  for(i in 1:2)for(j in 1:2)simplex[i,j,]<-c(.2,.35,.45)
+  expect_error(etr_alr_transform(simplex,epsilon=NaN),"epsilon")
+  nan_z<-etr_alr_transform(simplex,epsilon=NaN,
+    python_boundary_mode=TRUE)
+  expect_identical(dim(nan_z),c(2L,2L,2L))
+  expect_true(all(is.nan(nan_z)))
+
+  logits<-array(c(1000,-1),c(1L,1L,2L))
+  expect_error(etr_inverse_alr(logits,0L,3L),"overflowed")
+  extreme<-etr_inverse_alr(logits,0L,3L,
+    python_boundary_mode=TRUE)
+  expect_identical(dim(extreme),c(1L,1L,3L))
+  expect_true(any(is.nan(extreme)))
+  expect_true(any(is.finite(extreme)))
+
+  grid<-c(0,1,Inf)
+  expect_error(etr_trapezoid_weights(grid),"finite")
+  w<-etr_trapezoid_weights(grid,python_boundary_mode=TRUE)
+  expect_equal(w[1L],.5,tolerance=0)
+  expect_true(all(is.infinite(w[-1L])))
+  normalized<-etr_trapezoid_weights(grid,normalize=TRUE,
+    python_boundary_mode=TRUE)
+  expect_equal(normalized[1L],0,tolerance=0)
+  expect_true(all(is.nan(normalized[-1L])))
+  expect_equal(etr_trapezoid_weights(c(0,1,3),
+    normalize=NaN,python_boundary_mode=TRUE),c(.5,1.5,1)/3,
+    tolerance=0)
+
+  expect_error(etr_alr_transform(simplex,
+    python_boundary_mode=NA),"python_boundary_mode")
+  expect_error(etr_inverse_alr(logits,0L,3L,
+    python_boundary_mode=1),"python_boundary_mode")
+  expect_error(etr_trapezoid_weights(c(0,1,3),
+    python_boundary_mode=c(TRUE,FALSE)),"python_boundary_mode")
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})
+
+test_that("opt-in score boundary mode accepts native duck-typed environment",{
+  score<-matrix(c(0,1,2,3,4,5),nrow=3L,ncol=2L)
+  obj<-new.env(parent=emptyenv())
+  obj$scores<-score
+  obj$n_components<-2L
+  expect_error(etr_score_distance_matrix(obj),"fpca must provide")
+  found<-etr_score_distance_matrix(obj,python_boundary_mode=TRUE)
+  reference<-etr_score_distance_matrix(
+    list(scores=score,n_components=2L))
+  expect_equal(found,reference,tolerance=0)
+  expect_true(all(is.finite(found)))
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})
+
+test_that("pinned Python 1.2 exceptional source output agrees in opt-in mode",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Frozen Python 1.2 boundary-mode paired oracle is opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  simplex<-array(0,c(2L,2L,3L))
+  for(i in 1:2)for(j in 1:2)simplex[i,j,]<-c(.2,.35,.45)
+  python_alr<-reticulate::py_call(etpy_get_export("alr_transform"),
+    values=reticulate::r_to_py(simplex),epsilon=NaN)
+  native_alr<-etr_alr_transform(simplex,epsilon=NaN,
+    python_boundary_mode=TRUE)
+  expect_equal(unname(native_alr),unname(et_to_r(python_alr)),
+    tolerance=0)
+  logits<-array(c(1000,-1),c(1L,1L,2L))
+  np<-reticulate::import("numpy",convert=FALSE)
+  python_inv<-with(np$errstate(over="ignore",invalid="ignore"),
+    reticulate::py_call(etpy_get_export("inverse_alr"),
+      transformed=reticulate::r_to_py(logits),
+      reference_dimension=as.integer(0L),
+      n_dimensions=as.integer(3L)))
+  native_inv<-etr_inverse_alr(logits,0L,3L,python_boundary_mode=TRUE)
+  expect_identical(is.nan(native_inv),is.nan(et_to_r(python_inv)))
+  expect_equal(unname(native_inv),unname(et_to_r(python_inv)),
+    tolerance=0)
+  python_grid<-reticulate::py_call(
+    etpy_get_export("functional_trapezoid_weights"),
+    time=reticulate::r_to_py(c(0,1,Inf)))
+  native_grid<-etr_trapezoid_weights(c(0,1,Inf),
+    python_boundary_mode=TRUE)
+  expect_equal(unname(native_grid),unname(et_to_r(python_grid)),
+    tolerance=0)
+  obj<-new.env(parent=emptyenv())
+  obj$scores<-matrix(c(0,1,2,3,4,5),nrow=3L,ncol=2L)
+  obj$n_components<-2L
+  py_obj<-reticulate::import("types")$SimpleNamespace(
+    scores=reticulate::r_to_py(obj$scores),
+    n_components=as.integer(obj$n_components))
+  python_dist<-reticulate::py_call(
+    etpy_get_export("score_distance_matrix"),fpca=py_obj)
+  native_dist<-etr_score_distance_matrix(obj,python_boundary_mode=TRUE)
+  expect_equal(unname(native_dist),unname(et_to_r(python_dist)),
+    tolerance=1e-12)
+  # This only closes three particular input/output probes in an optional
+  # mode; the frozen default source contracts and 508-wide gate remain open.
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})
