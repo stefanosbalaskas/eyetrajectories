@@ -68,9 +68,11 @@ etr_recurrence_matrix <- function(x, curve = 1L, radius, theiler = 0L,
 #' Timestamps and Theiler exclusions are not applied to cross-recurrence.
 #' @param a Complete points-by-channels numeric matrix.
 #' @param b Complete points-by-channels numeric matrix.
-#' @param radius Finite, non-negative Euclidean recurrence radius.
+#' @param radius Finite, non-negative distance radius.
+#' @param metric One of cityblock (L1), euclidean (L2), chebyshev (L-infinity).
 #' @export
-etr_cross_recurrence_matrix <- function(a, b, radius) {
+etr_cross_recurrence_matrix <- function(a, b, radius,
+                                        metric = "euclidean") {
   a <- .etr_points(a, "a"); b <- .etr_points(b, "b")
   .etr_assert(ncol(a) == ncol(b), "channel count mismatch")
   .etr_assert(is.numeric(radius) && length(radius) == 1L &&
@@ -78,10 +80,11 @@ etr_cross_recurrence_matrix <- function(a, b, radius) {
               "radius must be finite and non-negative")
   .etr_assert(as.double(nrow(a)) * as.double(nrow(b)) <= 5e6,
               "dense cross-recurrence exceeds 5 million pairs")
-  m <- .etr_distance_matrix(a, b) <= radius
+  m <- .etr_distance_matrix(a, b, metric=metric) <= radius
   structure(list(matrix = m, kind = "cross", curve_ids = NULL, radius = radius,
                  theiler = NA_integer_, eligible_pairs = length(m),
-                 recurrence_rate = mean(m), time = NULL),
+                 recurrence_rate = mean(m), time = NULL,
+                 metric=metric),
             class = "etr_recurrence")
 }
 
