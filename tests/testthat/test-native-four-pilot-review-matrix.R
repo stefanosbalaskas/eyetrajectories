@@ -64,3 +64,22 @@ test_that("four pilot review matrix is complete and never self-certifying",{
   expect_error(env$etr_build_four_pilot_review_matrix(
     root=root,packet_dir=packet),"Current checkout differs")
 })
+
+test_that("four-pilot capture requirements never repeat a test filename",{
+  runner<-testthat::test_path("..","..","scripts",
+    "capture_native_source_qualification_evidence.R")
+  src<-paste(readLines(runner,warn=FALSE),collapse="\n")
+  first<-regexpr("required_scientific_tests<-file.path",src,
+    fixed=TRUE)[[1L]]
+  next_statement<-regexpr("if(anyDuplicated(required_scientific_tests))",
+    src,fixed=TRUE)[[1L]]
+  expect_true(first>0L&&next_statement>first)
+  if(first<=0L||next_statement<=first)
+    stop("Cannot locate capture test discovery boundary",call.=FALSE)
+  block<-substr(src,first,next_statement-1L)
+  matches<-regmatches(block,gregexpr(
+    '"native-[^"]+"',block,perl=TRUE))[[1L]]
+  expect_true(length(matches)>50L)
+  expect_identical(anyDuplicated(matches),0L)
+  expect_identical(sum(matches=='"native-four-pilot-review-matrix"'),1L)
+})
