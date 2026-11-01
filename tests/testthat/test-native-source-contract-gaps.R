@@ -69,6 +69,15 @@ test_that("source Python 1.2 trapezoid sequence inputs now align but truthiness 
     c(.5,1.5,1)/3,tolerance=1e-15)
   expect_equal(etr_trapezoid_weights(c(0,1,3),normalize=0),
     c(.5,1.5,1),tolerance=0)
+  for(flag in c("yes","0","", "FALSE")) {
+    source_flag<-reticulate::py_call(
+      etpy_get_export("functional_trapezoid_weights"),
+      time=reticulate::r_to_py(c(0,1,3)),
+      normalize=flag)
+    expect_equal(etr_trapezoid_weights(c(0,1,3),
+      normalize=flag),as.numeric(et_to_r(source_flag)),
+      tolerance=1e-15)
+  }
   expect_error(etr_trapezoid_weights(c(0,1,3),normalize=NA_real_),
     "normalize")
   expect_true(etr_native_parity_catalog()$source_contract_gap_unresolved[
