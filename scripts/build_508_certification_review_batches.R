@@ -217,7 +217,8 @@ etr_build_508_certification_review_batches <- function(
   message("508 export certification queue generated at ",packet_dir,
     ": ",nrow(functions)," candidate functions and ",
     nrow(others)," candidate nonfunctions without RECORDED source gaps; ",
-    sum(scope$source_difference_open)," callable source gaps, ",
+    sum(scope$source_difference_open & scope$kind=="function"),
+    " callable source gaps, ",
     sum(nonfunction_gap)," nonfunction source gap; ",
     sum(gap)," total documented source-gap exports; ",
     sum(backend)," alternative backends/estimands (overlap permitted).")
