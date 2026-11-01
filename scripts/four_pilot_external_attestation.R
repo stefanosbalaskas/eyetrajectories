@@ -98,6 +98,10 @@
     "Source finite observations missing or incorrectly certified")
   boundaries<-objects$boundaries
   ck(nrow(boundaries)==4L&&
+    all(c("opt_in_python_boundary_mode_matches_source_category",
+      "opt_in_mode_full_source_parity_certified")%in%names(boundaries))&&
+    all(boundaries$opt_in_python_boundary_mode_matches_source_category)&&
+    !any(boundaries$opt_in_mode_full_source_parity_certified)&&
     all(boundaries$observed_behavior_as_expected)&&
     sum(boundaries$relation=="documented_source_difference")==3L&&
     sum(boundaries$relation=="both_reject_error_schema_unreviewed")==1L&&
