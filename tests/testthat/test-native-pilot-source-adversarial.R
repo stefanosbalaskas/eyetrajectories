@@ -127,15 +127,15 @@ test_that("frozen Python 1.2 first-pilot boundary differences remain explicit",{
     time=reticulate::r_to_py(inf_grid))
   expect_true(any(is.infinite(as.numeric(et_to_r(py_weights)))))
   expect_error(etr_trapezoid_weights(inf_grid),"strictly increasing")
-  # Python's bool("yes") is TRUE whereas native R requires a finite
-  # numeric or logical scalar, leaving general truthiness uncertified.
+  # Python's finite character scalar truthiness now matches
+  # the native scientific subset; arbitrary Python objects remain open.
   py_truthy<-reticulate::py_call(
     etpy_get_export("functional_trapezoid_weights"),
     time=reticulate::r_to_py(c(0,1,3)),normalize="yes")
   expect_equal(as.numeric(et_to_r(py_truthy)),
     c(.5,1.5,1)/3,tolerance=1e-14)
-  expect_error(etr_trapezoid_weights(c(0,1,3),normalize="yes"),
-    "normalize")
+  expect_equal(etr_trapezoid_weights(c(0,1,3),normalize="yes"),
+    as.numeric(et_to_r(py_truthy)),tolerance=1e-14)
   # Source inverse uses unguarded exp; at very large finite logits it
   # returns nonfinite output. The native contract fails closed instead.
   z<-array(c(1000,-1),c(1L,1L,2L))
