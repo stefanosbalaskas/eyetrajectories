@@ -1,5 +1,38 @@
 # eyetrajectories
 
+## Current development status (2 November 2026)
+
+`eyetrajectories` is a **development-stage R scientific package**, currently
+`0.4.1.9000`. It contains executable Python-free R methods for common-grid
+functional-data analysis, gaze trajectories, recurrence/RQA, nonlinear
+divergence, functional regression and explicit uncertainty workflows.
+A separate optional Python 1.2 bridge is provided for selected source calls.
+
+**A Python callable-name mapping is not a guarantee of numerical
+equivalence.** The inventory lists 380 mapped names; 203 callable source
+differences and one class difference remain explicitly documented. Thirty-two
+nonfunction representations are provisional. No independent full-domain
+certifications have yet been signed (0/508). These stringent reviewer
+approvals are separate from whether a **limited experimental native R
+release** can pass R package checks.
+
+The current research branch has a source-only experimental release gate.
+From an exact checked-out Git commit, in RStudio:
+
+```r
+source("scripts/qualify_experimental_candidate.R")
+```
+
+It executes an actual `R CMD check --as-cran`, checks installed native
+scientific usage, and separately runs native/Python 1.2 author qualification.
+It cannot publish, certify unseen scientific domains, or replace independent
+review. The package's GitHub Actions runner-admission problem remains a
+separate external release dependency. See `NEWS.md` for recent changes and
+the `docs/experimental-release-scope.md` document in the research checkout
+for the bounded release plan.
+
+### Historical research progress (not the current release specification)
+
 ## Stage 20 — auditable native source-contract certification starts (research draft)
 
 **Three source contracts now have candidate-level evidence records**:
