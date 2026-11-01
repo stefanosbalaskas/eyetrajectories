@@ -111,6 +111,65 @@ class TestUnsignedBatchIntegrity(unittest.TestCase):
             row["sha256"] = v.sha256(self.root / row["filename"])
         write_csv(path, rows)
 
+    def write_interface_inventory(self):
+        batch = v.read_csv(self.root / v.FILES[1])
+        records = []
+        for row in batch:
+            records.append(dict(
+                namespace=row["namespace"],
+                python_name=row["python_name"],
+                kind=row["kind"],
+                native_r_candidate=row["native_r_candidate"],
+                recorded_r_git_head=row["recorded_r_git_head"],
+                frozen_python_commit=row["frozen_python_commit"],
+                signature_text_is_not_semantic_parity="TRUE",
+                independently_reproduced="FALSE",
+                source_full_domain_certified="FALSE",
+                python_interface_inspected="TRUE",
+                native_r_formals_inspected="FALSE"))
+        path = self.root / v.INTERFACE_INVENTORY
+        write_csv(path, records)
+        write_csv(self.root / v.INTERFACE_SHA256,
+            [dict(filename=v.INTERFACE_INVENTORY,
+                  sha256=v.sha256(path),
+                  recorded_r_git_head="a" * 40,
+                  frozen_python_commit=v.FROZEN_PYTHON,
+                  independently_verified="FALSE",
+                  fully_certified="FALSE")])
+
+    def test_source_interface_sha256_and_36_export_mapping_pass(self):
+        self.write_interface_inventory()
+        observed = v.verify(self.root, expected_r_head="a" * 40)
+        self.assertTrue(observed[
+            "descriptive_source_interface_inventory_verified"])
+        self.assertEqual(observed["independently_certified_full_domain_contracts"], 0)
+
+    def test_source_interface_tamper_without_hash_update_fails(self):
+        self.write_interface_inventory()
+        with (self.root / v.INTERFACE_INVENTORY).open("a",encoding="utf-8") as out:
+            out.write("\n")
+        with self.assertRaisesRegex(v.ReviewBatchError, "interface SHA256"):
+            v.verify(self.root)
+
+    def test_source_interface_forged_approval_even_if_rehashed_fails(self):
+        self.write_interface_inventory()
+        p = self.root / v.INTERFACE_INVENTORY
+        rows = v.read_csv(p)
+        rows[0]["source_full_domain_certified"] = "TRUE"
+        write_csv(p, rows)
+        side = self.root / v.INTERFACE_SHA256
+        side_rows = v.read_csv(side)
+        side_rows[0]["sha256"] = v.sha256(p)
+        write_csv(side, side_rows)
+        with self.assertRaisesRegex(v.ReviewBatchError, "must be FALSE"):
+            v.verify(self.root)
+
+    def test_unpaired_interface_inventory_rejected(self):
+        self.write_interface_inventory()
+        (self.root / v.INTERFACE_SHA256).unlink()
+        with self.assertRaisesRegex(v.ReviewBatchError, "must both exist"):
+            v.verify(self.root)
+
     def test_clean_unsigned_packet_passes(self):
         result = v.verify(self.root, expected_r_head="a" * 40)
         self.assertEqual(result["export_count"], 508)
