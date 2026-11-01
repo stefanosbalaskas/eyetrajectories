@@ -99,7 +99,7 @@ test_that("native recurrence runs and unsupported source domains fail closed",{
   expect_error(etr_run_frozen_native_workflow(z$x,one_as_float),
     "floating 1.0")
   step<-etr_frozen_workflow_record("PreprocessingStepConfig",
-    list(function="interpolate",parameters=list(),
+    list(`function`="interpolate",parameters=list(),
       scientific_effect="changes the observed time support"))
   plan<-etr_frozen_workflow_record("PreprocessingPlan",list(steps=list(step)))
   imp<-etr_frozen_fpca_workflow_config(1L,preprocessing=plan)
