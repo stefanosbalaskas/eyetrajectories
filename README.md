@@ -296,7 +296,7 @@ remain unqualified. Full Python sparse-graph contracts, target-radius
 policies and time-unit windows are not reproduced, and
 `etr_recurrence_network()` retains its 750-node dense R bound.
 
-**[Stage 8 scientific contracts and limitations](docs/full-native-r-stage8-recurrence-nonlinear.md)** · **[Draft PR #16](https://github.com/stefanosbalaskas/eyetrajectories/pull/16)**.
+**[Stage 8 scientific contracts and limitations](docs/full-native-r-stage8-recurrence-nonlinear.md)** · **Draft PR #16 (private development record #16)**.
 
 
 ## Native R Stage 7 — ten Python 1.2 functions in one batch (draft)
@@ -338,7 +338,7 @@ tryCatch(testthat::test_local(
   finally=Sys.unsetenv("ET_RUN_PYTHON_TESTS"))
 ```
 
-**[Ten-function batch guide](docs/full-native-r-stage7-ten-function-batch.md)** · **[Draft PR #15](https://github.com/stefanosbalaskas/eyetrajectories/pull/15)**.
+**[Ten-function batch guide](docs/full-native-r-stage7-ten-function-batch.md)** · **Draft PR #15 (private development record #15)**.
 Draft research only; no release/merge.
 
 
@@ -389,7 +389,7 @@ functions, one partially represented nonfunction class and 127
 unreviewed nonfunction public objects**. No complete
 508/508 native parity claim, merge or release.
 
-**[Stage 6 source contract and security boundaries](docs/full-native-r-stage6-python-portable-reader.md)** · **[Draft Stage 6 PR #14](https://github.com/stefanosbalaskas/eyetrajectories/pull/14)**.
+**[Stage 6 source contract and security boundaries](docs/full-native-r-stage6-python-portable-reader.md)** · **Draft Stage 6 PR #14 (private development record #14)**.
 
 
 ## Native R Stage 5 — trajectory provenance and snapshots (research)
@@ -433,7 +433,7 @@ Sys.unsetenv("ET_RUN_PYTHON_TESTS")
 ```
 
 **[Stage 5 contracts and RDS limitations](docs/full-native-r-stage5-provenance-snapshots.md)** ·
-**[Stage 5 draft PR #13](https://github.com/stefanosbalaskas/eyetrajectories/pull/13)**.
+**Stage 5 draft PR #13 (private development record #13)**.
 Draft research branch only; no merge/release/508-contract certification.
 
 
@@ -481,7 +481,7 @@ testthat::test_local(".",filter="native-stage4-distance-contracts")
 Sys.unsetenv("ET_RUN_PYTHON_TESTS")
 ```
 
-**[Stage 4 method contracts and reproducibility](docs/full-native-r-stage4-frechet-dtw.md)** · **[Stage 4 draft PR #12](https://github.com/stefanosbalaskas/eyetrajectories/pull/12)**.
+**[Stage 4 method contracts and reproducibility](docs/full-native-r-stage4-frechet-dtw.md)** · **Stage 4 draft PR #12 (private development record #12)**.
 Research-only; no release/merge and no general scientific inferential
 qualification.
 
@@ -516,7 +516,7 @@ Sys.unsetenv("ET_RUN_PYTHON_TESTS")
 ```
 
 **[Stage 3 scientific contracts and instructions](docs/full-native-r-stage3-preprocessing-distances.md)** ·
-**[Stage 3 draft PR](https://github.com/stefanosbalaskas/eyetrajectories/pull/11)**.
+**Stage 3 draft PR (private development record #11)**.
 No release or native 508/508 parity claim.
 
 
@@ -547,8 +547,8 @@ source("scripts/report_full_native_r_parity.R")
 ```
 
 **[Full native parity roadmap](docs/full-native-r-one-to-one-roadmap.md)** ·
-**[Draft native PR #9](https://github.com/stefanosbalaskas/eyetrajectories/pull/9)** ·
-**[Completion issue #10](https://github.com/stefanosbalaskas/eyetrajectories/issues/10)**.
+**Draft native PR #9 (private development record #9)** ·
+**Completion issue #10 (private development record #10)**.
 
 **If `testthat` says "No test files found", you are almost certainly
 running an older branch.** The two native tests exist only on the
