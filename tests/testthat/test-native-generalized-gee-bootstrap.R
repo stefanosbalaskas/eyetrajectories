@@ -84,3 +84,14 @@ _gee_case_oracle={'coefficients':refit.coefficient_functions,
   expect_equal(unname(z$bootstrap_coefficient_functions[1L,,]),
     unname(p$coefficients),tolerance=1e-4)
 })
+
+# Actual frozen-Python 1.2 source-symbol inspection on published exports.
+# For alternate R estimands/backends this is NOT numerical source parity.
+test_that("unreviewed Python 1.2 source symbols are inspectable: bootstrap_generalized_function_on_scalar_coefficients",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("pinned Python source-symbol audit requires source runtime")
+  .etr_expect_frozen_python_source_symbol(
+    etpy_get_export("bootstrap_generalized_function_on_scalar_coefficients"),"bootstrap_generalized_function_on_scalar_coefficients")
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})
