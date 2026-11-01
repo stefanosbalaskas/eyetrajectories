@@ -57,11 +57,27 @@
 #' @param values Numeric array of shape curve by time by dimension.
 #' @param reference_dimension Python-style zero-based reference index (-1 = last).
 #' @param epsilon Positive clipping floor, part of the scientific specification.
+#' @param python_boundary_mode Explicitly reproduce Python 1.2 exceptional
+#'   NaN/Inf propagation on the inspected scalar/array boundary. FALSE
+#'   preserves the finite-only native scientific contract; this option
+#'   does not certify the full Python input/return contract.
 #' @return Three-dimensional array with the reference channel removed.
 #' @export
-etr_alr_transform <- function(values,reference_dimension=-1L,epsilon=1e-8) {
-  .etr_assert(is.numeric(epsilon) && length(epsilon)==1L &&
-    is.finite(epsilon) && epsilon>0,"epsilon must be positive and finite")
+etr_alr_transform <- function(values,reference_dimension=-1L,epsilon=1e-8,
+    python_boundary_mode=FALSE) {
+  .etr_assert(is.logical(python_boundary_mode) &&
+    length(python_boundary_mode)==1L && !is.na(python_boundary_mode),
+    "python_boundary_mode must be a nonmissing logical scalar")
+  if(isTRUE(python_boundary_mode)) {
+    # Frozen Python 1.2 only checks epsilon <= 0: NaN and +Inf pass
+    # the comparison and may propagate nonfinite log-ratios.
+    .etr_assert(is.numeric(epsilon) && length(epsilon)==1L &&
+      (is.nan(epsilon) || (!is.na(epsilon) && epsilon>0)),
+      "epsilon must satisfy frozen Python 1.2 epsilon > 0 or NaN")
+  } else {
+    .etr_assert(is.numeric(epsilon) && length(epsilon)==1L &&
+      is.finite(epsilon) && epsilon>0,"epsilon must be positive and finite")
+  }
   values<-.etr_simplex_nested_input(values)
   # NumPy's published np.asarray(values, dtype=float) also accepts 3-D
   # numeric-string and Boolean arrays. Retain native fail-closed checks for nonfinite
@@ -90,11 +106,18 @@ etr_alr_transform <- function(values,reference_dimension=-1L,epsilon=1e-8) {
 }
 
 #' Recover simplex-valued trajectories from additive log-ratios
-#' @param transformed Finite numeric 3D ALR array.
+#' @param transformed Finite numeric 3D ALR array in default mode.
+#' @param python_boundary_mode When TRUE, reproduce Python 1.2 nonfinite
+#'   exponentiation and normalization on inspected numeric arrays.
+#'   The default keeps the native scientific finite-only contract.
 #' @param reference_dimension Python-style zero-based reference channel.
 #' @param n_dimensions Original number of simplex channels.
 #' @export
-etr_inverse_alr <- function(transformed,reference_dimension,n_dimensions) {
+etr_inverse_alr <- function(transformed,reference_dimension,n_dimensions,
+    python_boundary_mode=FALSE) {
+  .etr_assert(is.logical(python_boundary_mode) &&
+    length(python_boundary_mode)==1L && !is.na(python_boundary_mode),
+    "python_boundary_mode must be a nonmissing logical scalar")
   .etr_assert(is.numeric(n_dimensions) && length(n_dimensions)==1L &&
     is.finite(n_dimensions) && n_dimensions>=1L &&
     n_dimensions==as.integer(n_dimensions),
@@ -106,13 +129,17 @@ etr_inverse_alr <- function(transformed,reference_dimension,n_dimensions) {
       (is.character(transformed)||is.logical(transformed)) &&
       length(dim(transformed))==3L) {
     numeric_values<-suppressWarnings(as.numeric(transformed))
-    if(all(is.finite(numeric_values)))
+    if(all(is.finite(numeric_values)) ||
+        (isTRUE(python_boundary_mode) &&
+          all(!is.na(numeric_values) | is.nan(numeric_values))))
       transformed<-array(numeric_values,dim=dim(transformed))
   }
   .etr_assert(is.array(transformed) && is.numeric(transformed) &&
     length(dim(transformed))==3L &&
     dim(transformed)[3L]==n_dimensions-1L &&
-    all(is.finite(transformed)),
+    (if(isTRUE(python_boundary_mode))
+      all(!is.na(transformed) | is.nan(transformed))
+     else all(is.finite(transformed))),
     "transformed data have incompatible dimensions or nonfinite values")
   d<-dim(transformed)
   ref<-.etr_fpca_index(reference_dimension,as.integer(n_dimensions),
@@ -121,8 +148,9 @@ etr_inverse_alr <- function(transformed,reference_dimension,n_dimensions) {
   out<-array(1,c(d[1L],d[2L],as.integer(n_dimensions)))
   for(j in seq_along(others))out[,,others[j]]<-exp(transformed[,,j])
   denom<-apply(out,c(1L,2L),sum)
-  .etr_assert(all(is.finite(denom) & denom>0),
-    "inverse ALR exponentiation overflowed; cannot normalize the simplex")
+  if(!isTRUE(python_boundary_mode))
+    .etr_assert(all(is.finite(denom) & denom>0),
+      "inverse ALR exponentiation overflowed; cannot normalize the simplex")
   sweep(out,c(1L,2L),denom,"/")
 }
 
@@ -184,16 +212,25 @@ etr_fpca_score_frame <- function(result,prefix="FPC") {
 #' Pairwise Euclidean distances in native fitted FPCA score space
 #' @param fpca Native etr_fpca fit.
 #' @param n_components Retained fitted score columns (NULL means all).
+#' @param python_boundary_mode When TRUE, additionally accept a minimal
+#'   score-bearing R environment as a native analogue of Python's
+#'   duck-typed objects. Other Python-specific classes and error types
+#'   remain outside the audited subset.
 #' @return Unlabelled symmetric numeric matrix.
 #' @export
-etr_score_distance_matrix <- function(fpca,n_components=NULL) {
+etr_score_distance_matrix <- function(fpca,n_components=NULL,
+    python_boundary_mode=FALSE) {
+  .etr_assert(is.logical(python_boundary_mode) &&
+    length(python_boundary_mode)==1L && !is.na(python_boundary_mode),
+    "python_boundary_mode must be a nonmissing logical scalar")
   if(inherits(fpca,"etr_fpca")) {
     .etr_fpca_diagnostic_fit(fpca)
   } else {
     # Published Python 1.2 uses only .scores and .n_components, with
     # duck-typed FPCA-compatible objects. Permit that minimal finite
     # matrix contract without pretending all Python object types port.
-    .etr_assert(is.list(fpca)&&
+    .etr_assert((is.list(fpca) ||
+      (isTRUE(python_boundary_mode) && is.environment(fpca)))&&
       is.matrix(fpca$scores)&&
       (is.numeric(fpca$scores)||is.character(fpca$scores)||
         is.logical(fpca$scores))&&
