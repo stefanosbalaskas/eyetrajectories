@@ -8,11 +8,15 @@
 \title{Restricted functional repeated-measures moments and residual dependence diagnostics}
 \description{Seven Python-free numerical R implementations covering a restricted two-level functional method-of-moments fixed-effects model, covariance-conditional participant random functions, within-curve whitening, exact residual lag diagnostics, residual pairs and source-shaped coefficient/variance auditing.}
 \usage{
-etr_fit_functional_mixed_effects_regression(trajectories, design, predictors, participant_column, dimension, covariance_ridge = 1e-6)
+etr_fit_functional_mixed_effects_regression(trajectories, design, predictors,
+  participant_column, dimension, covariance_ridge = 1e-6)
 etr_functional_mixed_effects_whitened_residuals(result)
-etr_functional_mixed_effects_residual_diagnostics(result, max_lag, residual_scale = "raw")
-etr_functional_mixed_effects_residual_diagnostic_frame(result, level = "trial", curve_id = NULL, participant_id = NULL)
-etr_functional_mixed_effects_residual_pair_frame(result, lag_index, curve_id = NULL, participant_id = NULL)
+etr_functional_mixed_effects_residual_diagnostics(result, max_lag,
+  residual_scale = "raw")
+etr_functional_mixed_effects_residual_diagnostic_frame(result, level = "trial",
+  curve_id = NULL, participant_id = NULL)
+etr_functional_mixed_effects_residual_pair_frame(result, lag_index,
+  curve_id = NULL, participant_id = NULL)
 etr_functional_mixed_effects_coefficient_frame(result, band = NULL)
 }
 \arguments{
