@@ -165,7 +165,9 @@ def verify(packet_dir: str | Path, expected_r_head: str | None = None) -> dict[s
               r["frozen_python_commit"] == FROZEN_PYTHON for r in batch),
           "Selected batch includes a mismatched source contract")
 
-    columns(cases, ("namespace", "python_name", "criterion",
+    columns(cases, ("namespace", "python_name", "kind",
+                    "native_r_candidate", "recorded_r_git_head",
+                    "frozen_python_commit", "criterion",
                     "reviewer_case_passed", "independently_replayed",
                     "full_domain_approved", "reviewer_created_evidence_reference",
                     "reviewer_written_findings"),
@@ -174,6 +176,14 @@ def verify(packet_dir: str | Path, expected_r_head: str | None = None) -> dict[s
     check({(key(r), r["criterion"]) for r in cases} ==
           {(key(b), item) for b in batch for item in CRITERIA},
           "Missing or unexpected per-contract criteria")
+    selected_by_key = {key(row): row for row in batch}
+    check(all(row["kind"] == selected_by_key[key(row)]["kind"] and
+              row["native_r_candidate"] ==
+                  selected_by_key[key(row)]["native_r_candidate"] and
+              row["recorded_r_git_head"] == head and
+              row["frozen_python_commit"] == FROZEN_PYTHON
+              for row in cases),
+          "Unsigned reviewer case source identity does not match selected batch")
     all_flags(cases, ("reviewer_case_passed", "independently_replayed",
                       "full_domain_approved"), "FALSE", "reviewer checklists")
     check(all(not r["reviewer_created_evidence_reference"].strip() and
