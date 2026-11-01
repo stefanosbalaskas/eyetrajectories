@@ -39,6 +39,18 @@ etr_capture_first_wave_source_interfaces<-function(root=".",packet_dir) {
     "reticulate and digest are required")
   inspect<-reticulate::import("inspect",convert=FALSE)
   ns<-asNamespace("eyetrajectories")
+  nonfunction_path<-file.path(root,"inst","extdata",
+    "native_nonfunction_contract_review_v1.csv")
+  ck(file.exists(nonfunction_path),
+    "Missing authoritative 128-export native representation register")
+  nonfunctions<-utils::read.csv(nonfunction_path,
+    stringsAsFactors=FALSE,check.names=FALSE)
+  ck(nrow(nonfunctions)==128L&&
+    all(c("namespace","python_name","native_representation")%in%
+      names(nonfunctions))&&
+    !anyDuplicated(paste(nonfunctions$namespace,
+      nonfunctions$python_name,sep="::")),
+    "Nonfunction source representation inventory must contain 128 unique exports")
   safe<-function(f){
     tryCatch(list(ok=TRUE,value=as.character(f()),error=""),
       error=function(e)list(ok=FALSE,value="",
@@ -93,6 +105,35 @@ etr_capture_first_wave_source_interfaces<-function(root=".",packet_dir) {
       else safe(function()native_args(native))
     body_hash<-if(is.null(native))"" else
       digest::digest(body(native),algo="sha256",serialize=TRUE)
+    native_representation<-if(is_function)"NOT_APPLICABLE_FUNCTION" else {
+      idx<-match(paste(ns_name,name,sep="::"),
+        paste(nonfunctions$namespace,nonfunctions$python_name,sep="::"))
+      ck(!is.na(idx),
+        paste0("Nonfunction ",ns_name,"::",name,
+          " absent from authoritative review inventory"))
+      representation<-as.character(nonfunctions$native_representation[[idx]])
+      if(is.na(representation))"" else representation
+    }
+    first_blocker<-if(!source_obj$ok)
+      "FROZEN_PYTHON_EXPORT_LOOKUP_FAILED" else
+      if(!source_signature$ok)
+        "PYTHON_INTERFACE_INTROSPECTION_FAILED" else
+        if(is_function&&is.null(native))
+          "NATIVE_R_FUNCTION_MISSING" else
+          if(!is_function&&!nzchar(native_representation))
+            "NATIVE_R_NONFUNCTION_REPRESENTATION_MISSING" else
+            "FULL_DOMAIN_SCIENTIFIC_AND_EXTERNAL_REVIEW_MISSING"
+    next_action<-switch(first_blocker,
+      FROZEN_PYTHON_EXPORT_LOOKUP_FAILED=
+        "Verify the installed Python 1.2 export and frozen module namespace",
+      PYTHON_INTERFACE_INTROSPECTION_FAILED=
+        "Inspect frozen Python source signature or class metadata manually",
+      NATIVE_R_FUNCTION_MISSING=
+        "Implement and export the mapped native R function",
+      NATIVE_R_NONFUNCTION_REPRESENTATION_MISSING=
+        "Specify and implement the R-side class or object representation, then compare fields and semantics",
+      FULL_DOMAIN_SCIENTIFIC_AND_EXTERNAL_REVIEW_MISSING=
+        "Obtain complete-domain independent source, numeric, schema and scientific adjudication")
     data.frame(namespace=row$namespace,python_name=name,
       kind=row$kind,
       native_r_candidate=native_name,
@@ -107,6 +148,9 @@ etr_capture_first_wave_source_interfaces<-function(root=".",packet_dir) {
       native_r_formals=native_sig$value,
       native_inspection_error=native_sig$error,
       native_r_body_sha256=body_hash,
+      native_nonfunction_representation=native_representation,
+      first_review_blocker=first_blocker,
+      reviewer_next_action=next_action,
       signature_text_is_not_semantic_parity=TRUE,
       independently_reproduced=FALSE,
       source_full_domain_certified=FALSE,
@@ -145,6 +189,9 @@ etr_capture_first_wave_source_interfaces<-function(root=".",packet_dir) {
   message("36-source first-party signature/class inventory written: ",path,
     ". Python exports inspected: ",sum(out$python_export_lookup_ok),
     "; native functions present: ",sum(out$native_r_function_present),
+    "; first-wave native nonfunction representation gaps: ",
+    sum(out$first_review_blocker==
+      "NATIVE_R_NONFUNCTION_REPRESENTATION_MISSING"),
     ". These are DESCRIPTIVE evidence, not independent full-domain parity.")
   invisible(list(records=out,csv=path,manifest=meta_path))
 }
