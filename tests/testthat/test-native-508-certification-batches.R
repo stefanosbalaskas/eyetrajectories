@@ -27,7 +27,8 @@ test_that("508-export review fast lane preserves every uncertified export",{
       api$native_mapping_present,
     backend_or_estimand_distinct=
       api$native_backend_or_estimand_differs,
-    source_difference_open=api$published_source_difference_open,
+    source_difference_open=(api$published_source_difference_open |
+      api$nonfunction_source_difference_open),
     selected_oracle_candidate=rep(FALSE,nrow(api)),
     fully_certified=api$fully_certified,
     per_export_independent_reviewer_approved=rep(FALSE,nrow(api)))
