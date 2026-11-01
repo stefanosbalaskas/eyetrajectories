@@ -125,7 +125,8 @@ def verify(packet_dir: str | Path, expected_r_head: str | None = None) -> dict[s
     full, batch, cases, decisions = [read_csv(root / f) for f in FILES]
     columns(full, ("namespace", "python_name", "kind", "review_lane",
                    "recorded_r_git_head", "frozen_python_commit",
-                   "source_gap_open", "backend_or_estimand_distinct",
+                   "source_gap_open", "native_nonfunction_source_gap_open",
+                   "backend_or_estimand_distinct",
                    "currently_authoritatively_certified",
                    "developer_queue_is_not_scientific_certification"), "508 worklist")
     check(len(full) == 508, "Full export inventory must have 508 rows")
@@ -134,8 +135,19 @@ def verify(packet_dir: str | Path, expected_r_head: str | None = None) -> dict[s
     check(sum(r["kind"] == "function" for r in full) == 380 and
           sum(r["kind"] != "function" for r in full) == 128,
           "Incorrect frozen 380-function/128-nonfunction inventory")
-    check(sum(r["source_gap_open"] == "TRUE" for r in full) == 203,
-          "Incorrect open source gap inventory")
+    check(sum(r["source_gap_open"] == "TRUE" and r["kind"] == "function"
+              for r in full) == 203 and
+          sum(r["source_gap_open"] == "TRUE" and r["kind"] != "function"
+              for r in full) == 1 and
+          sum(r["native_nonfunction_source_gap_open"] == "TRUE"
+              for r in full) == 1 and
+          all(r["source_gap_open"] == "TRUE"
+              for r in full if r["native_nonfunction_source_gap_open"] == "TRUE") and
+          any(r["python_name"] == "TrajectorySet" and
+              r["kind"] != "function" and r["source_gap_open"] == "TRUE" and
+              r["native_nonfunction_source_gap_open"] == "TRUE"
+              for r in full),
+          "Incorrect callable/nonfunction source-gap inventory")
     check(sum(r["backend_or_estimand_distinct"] == "TRUE" for r in full) == 19,
           "Incorrect alternative backend/estimand inventory")
     all_flags(full, ("currently_authoritatively_certified",),
