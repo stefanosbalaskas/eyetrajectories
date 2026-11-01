@@ -56,9 +56,15 @@ write(paste("Git HEAD:", sha[1L]), file = file.path(report, "MANIFEST.txt"),
 check_env <- c(ET_RUN_PYTHON_TESTS = "false",
                MPLBACKEND = "Agg",
                NOT_CRAN = "false")
+cat("\n=== Fast full Rd-manual syntax preflight ===\n")
+rd_preflight_error <- tryCatch({
+  source("scripts/preflight_rd_manuals.R", local=TRUE)
+  NULL
+},error=function(e)conditionMessage(e))
+check_error <- if(!is.null(rd_preflight_error))
+  paste("Rd manual preflight failed:",rd_preflight_error) else NULL
 cat("\n=== Full source-build R CMD check --as-cran ===\n")
-check_error <- NULL
-check <- tryCatch(
+check <- if(!is.null(rd_preflight_error)) NULL else tryCatch(
   rcmdcheck::rcmdcheck(
     path = root,
     args = "--as-cran",
@@ -120,7 +126,11 @@ if (!is.null(example_error))
 check_without_errors_or_warnings <- is.null(check_error) &&
   !is.na(errors) && errors == 0L && warnings == 0L
 example_pass <- is.null(example_error)
-check_status <- if (!check_without_errors_or_warnings || !example_pass) {
+check_status <- if (!is.null(rd_preflight_error)) {
+  "FAIL - RD MANUAL PREFLIGHT"
+} else if (is.null(check)) {
+  "FAIL - SOURCE BUILD (R CMD CHECK NOT RUN)"
+} else if (!check_without_errors_or_warnings || !example_pass) {
   "FAIL"
 } else if (!is.na(notes) && notes > 0L) {
   "PASS WITH NOTES - REVIEW REQUIRED"
@@ -136,10 +146,12 @@ summary <- c(
   paste("Native source example:",
         if (example_pass) "PASS" else paste("FAIL:", example_error)),
   paste("Report directory:", report),
-  if (!is.na(notes) && notes > 0L) {
+  if (is.na(notes)) {
+    "R CMD check was NOT COMPLETED; E/W/NOTE counts unavailable. This is NOT a clean check."
+  } else if (notes > 0L) {
     "NOTE(s) require manual review. A clean package check is not CRAN acceptance."
   } else {
-    "No incoming NOTES recorded. This is not CRAN acceptance."
+    "R CMD check completed with zero NOTES; this is not CRAN acceptance."
   },
   "Python integration intentionally disabled for CRAN-style stage.",
   "Cross-platform and scientific coverage qualification remain open."
@@ -147,7 +159,7 @@ summary <- c(
 writeLines(summary, file.path(report, "SUMMARY.txt"))
 cat("\n", paste(summary, collapse = "\n"), "\n", sep = "")
 if (!check_without_errors_or_warnings || !example_pass)
-  stop("CRAN-style qualification has check errors/warnings or example failures. Review report files.",
+  stop("CRAN-style qualification incomplete or failed (Rd preflight, source build, check, or smoke). Review report files.",
        call. = FALSE)
 if (!is.na(notes) && notes > 0L) {
   cat("Local R CMD check completed without errors/warnings. NOTE(s) require manual review.\n")
