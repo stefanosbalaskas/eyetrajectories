@@ -239,3 +239,44 @@ nonfunction mapping identifiers, including `TrajectorySet`, and rejects
 substitutions after rehash. No scientific or independent approval flags
 have been changed. There are now **4/128 provisional native nonfunction
 representations, 0/128 independently certified nonfunction exports**.
+
+## Twenty-eight workflow dataclass native R record schemas (sprint batch)
+
+Native R now includes a Python-free record/schema layer for 28 public
+`eyetrajectoriespy.workflows` dataclasses, frozen to Python 1.2 source
+SHA `c1cd95ad718327550f7e55393ff38582872f7a94`. The 303 field
+definitions (declaration order, required/default indicators, annotations
+and inert Python default-source expressions) live in
+`inst/extdata/native_workflow_28_class_field_schema_v1.csv`.
+
+`etr_frozen_workflow_schema()` returns the pinned source schema.
+`etr_frozen_workflow_record()` accepts exactly those fields in a named
+R list and produces a field-ordered native R S3 record. It does not
+invoke Python, construct a scientific estimator, evaluate Python defaults,
+or pretend the S3 record is an immutable Python dataclass.
+`etr_native_workflow_result_view()` exposes existing native R FPCA and
+function-on-scalar workflow outputs using their corresponding 9-field
+frozen result schema, without changing native scientific computations.
+
+The class batch covers workflow audit/decision records, preprocessing
+plans/steps, 4 common dense/recurrence workflow configs/results, and
+sparse FPCA, multivariate, async, multilevel and prediction workflows
+(28 dataclasses total). Every source class has its own explicit S3
+record class and source manifest entry. All 28 are **provisional R
+field-schema representations only**, not complete behavioral ports.
+
+The authoritative 128-export nonfunction review register now records
+32 provisional native representations: those 28 S3 field records,
+the existing `TrajectorySet` S3 candidate and 3 frozen workflow constants.
+All 32 remain `not_reviewed` with numerical/schema/scientific/reviewer
+approval FALSE. Full-domain certifications remain **0/508**. The
+source gaps remain 203 callable + 1 class gap (204 total); this sprint
+does not close existing class methods, error or scientific differences.
+
+New `test-native-frozen-workflow-schema.R` checks all 28 schemas and
+303 fields, all 28 R records and exact-order field validation, and
+the R-native FPCA workflow result view. Pinned Python 1.2 mode directly
+inspects Python dataclasses.fields for each exported class, while
+the 508 SHA256 verifier rejects forged mapping identifiers after rehash.
+These tests are author-generated and never substitute for independent
+full-domain replay.
