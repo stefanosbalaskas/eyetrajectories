@@ -17,13 +17,15 @@
 \title{Stage 10 native R compositional FPCA and scientific diagnostics}
 \description{Python-free functional PCA, reconstruction, component matching, registration sensitivity, eigenvalue gaps and descriptive reporting. Implementations await independent source-equivalence qualification.}
 \usage{
-etr_fit_compositional_fpca(trajectories, reference_dimension = -1L, epsilon = 1e-8, n_components = 0.95, scaling = "none")
+etr_fit_compositional_fpca(trajectories, reference_dimension = -1L,
+  epsilon = 1e-8, n_components = 0.95, scaling = "none")
 etr_reconstruct_compositional_fpca(result, scores = NULL, n_components = NULL)
 etr_component_similarity_matrix(reference, candidate, n_components = NULL)
 etr_match_fpca_components(reference, candidate, n_components = NULL)
 etr_reconstruction_error_by_curve(result, trajectories, n_components = NULL)
 etr_fpca_reconstruction_curve(result, trajectories)
-etr_compare_registered_unregistered_fpca(registration, n_components = 3L, scaling = "none")
+etr_compare_registered_unregistered_fpca(registration, n_components = 3L,
+  scaling = "none")
 etr_registration_sensitivity_frame(result)
 etr_summarise_trajectory_set(trajectories)
 etr_summarise_fpca(result)
