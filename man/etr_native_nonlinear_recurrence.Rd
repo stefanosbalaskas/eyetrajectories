@@ -56,16 +56,18 @@ qualifying RQA line lengths.}
 the first supplies a radius-profile source.}
 \item{curve}{One-based numeric curve index or existing curve identifier.}
 \item{radii}{Prespecified strictly increasing positive finite radius vector.}
-\item{metric}{Radius-profile source metric:
-\code{"euclidean"}, \code{"cityblock"}, or \code{"chebyshev"}.
-Windowed RQA currently supports only Euclidean distance.}
+\item{metric}{Source recurrence metric: \code{"euclidean"},
+\code{"cityblock"}, or \code{"chebyshev"}, including windowed RQA.}
 \item{theiler_window}{Nonnegative excluded sample-index lag.}
-\item{theiler_window_units}{Currently only \code{"samples"}.}
+\item{theiler_window_units}{Sample units or convertible physical-time units
+on an approximately regular observed grid.}
 \item{dimensions}{Optional distinct named channel selection.}
-\item{window,step}{Window and step lengths expressed in samples; windows
-must contain at least three samples, and \code{step <= window}.}
-\item{window_units,step_units}{Currently only \code{"samples"}.}
-\item{radius}{Fixed finite nonnegative Euclidean recurrence radius.}
+\item{window,step}{Window and step lengths in explicit sample or physical
+units, resolved to whole observed samples; windows need at least three
+samples and \code{step <= window}.}
+\item{window_units,step_units}{Sample units or convertible physical-time
+units without resampling or interpolation.}
+\item{radius}{Fixed finite nonnegative recurrence distance radius.}
 \item{target_recurrence_rate}{Must be NULL in this native-R
 windowed implementation; automatic target-density selection has not
 been numerically qualified.}
@@ -97,9 +99,11 @@ resample, shift, or harmonize component thresholds.
 
 Dense recurrence network analysis is limited to 750 state nodes;
 native radius profiles to 2500. These caps differ from Python's sparse
-implementations. Radius profiles accept only sample-based Theiler
-windows and TrajectorySet input. Windowed RQA is limited to fixed-radius
-Euclidean sample windows; Python has more metrics and threshold policies.
+implementations. Radius profiles accept convertible physical-time
+Theiler windows and TrajectorySet input. Windowed RQA is restricted to
+fixed-radius thresholds, but supports all three source distance metrics
+and convertible physical-time windows/steps on regular grids. Python
+still has additional threshold policies.
 The current R objects are partial scientific-result representations,
 not certified binary/serialization equivalents of Python dataclasses.
 
