@@ -65,7 +65,6 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-source-diagnostic-frames",
     "native-generalized-mixed-source-graphics",
     "native-pilot-source-adversarial",
-  "native-four-pilot-review-matrix",
     "native-four-pilot-review-matrix",
     "native-mixed-model-source-text"),".R"))
 if(anyDuplicated(required_scientific_tests))stop(
