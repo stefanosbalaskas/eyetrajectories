@@ -235,10 +235,6 @@ qualify_once<-function(python=FALSE){
 # Record both independently: an offline R census failure must not
 # suppress direct pinned Python numerical/source witnesses. Overall status
 # remains FAIL whenever either mode fails. These logs are not signoffs.
-results<-list(
-  qualify_once(FALSE),
-  qualify_once(TRUE)
-)
 # These are author-side packet integrity tests, not independent scientific
 # replay. Run each Python suite independently so the exact failure and
 # traceback appear in RStudio, not just a hidden status file.
@@ -284,6 +280,11 @@ if(any(failed_tooling)){
 }
 message("Author-side Python reviewer integrity suites PASS: ",
   tooling_log_path," (this is NOT independent scientific certification).")
+
+results<-list(
+  qualify_once(FALSE),
+  qualify_once(TRUE)
+)
 source_files<-unique(c(
   "scripts/four_pilot_external_attestation.R",
   "tests/testthat/test-native-four-pilot-external-attestation.R",
