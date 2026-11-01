@@ -49,8 +49,12 @@ etr_capture_first_wave_source_interfaces<-function(root=".",packet_dir) {
     if(length(args)==0L)return("()")
     out<-vapply(seq_along(args),function(i){
       parameter<-names(args)[[i]]
-      value<-paste(deparse(args[[i]],width.cutoff=500L),
-        collapse=" ")
+      # R pairlists contain a special *missing argument* object for
+      # required formals. Extract it defensively instead of treating a
+      # required argument as an introspection failure for the whole API.
+      value<-tryCatch(paste(
+        deparse(args[[i]],width.cutoff=500L),collapse=" "),
+        error=function(e)"")
       if(nzchar(value))paste0(parameter,"=",value) else parameter
     },character(1L))
     paste0("(",paste(out,collapse=", "),")")
