@@ -83,3 +83,36 @@ test_that("four-pilot capture requirements never repeat a test filename",{
   expect_identical(anyDuplicated(matches),0L)
   expect_identical(sum(matches=='"native-four-pilot-review-matrix"'),1L)
 })
+
+test_that("ten paired pilot source witnesses stay source-run and noncertifying",{
+  root<-testthat::test_path("..","..")
+  path<-file.path(root,"scripts",
+    "capture_four_pilot_numeric_evidence.R")
+  runner<-file.path(root,"scripts",
+    "capture_native_source_qualification_evidence.R")
+  expect_true(file.exists(path))
+  expect_silent(parse(file=path,keep.source=FALSE))
+  code<-readLines(path,warn=FALSE)
+  capture<-readLines(runner,warn=FALSE)
+  for(name in c("alr_transform","inverse_alr",
+    "score_distance_matrix","functional_trapezoid_weights")){
+    expect_true(any(grepl(paste0('etpy_get_export("',name,'")'),
+      code,fixed=TRUE)),info=paste("Missing frozen-source call",name))
+  }
+  expect_true(any(grepl("nrow(rows)==10L",code,fixed=TRUE)))
+  expect_true(any(grepl(
+    "all(rows$developer_numeric_fixture_pass)",code,fixed=TRUE)))
+  expect_true(any(grepl(
+    "rows$independently_replayed_case|rows$fully_certified",
+    code,fixed=TRUE)))
+  expect_true(any(grepl(
+    "source(\"scripts/capture_four_pilot_numeric_evidence.R\"",
+    capture,fixed=TRUE)))
+  expect_true(any(grepl(
+    '"scripts/capture_four_pilot_numeric_evidence.R"',
+    capture,fixed=TRUE)))
+  expect_false(any(grepl(
+    "independent_reviewer_approved=TRUE",code,fixed=TRUE)))
+  expect_false(any(grepl(
+    "fully_certified=TRUE",code,fixed=TRUE)))
+})
