@@ -83,3 +83,53 @@ _native_w3_oracle={
   expect_identical(as.character(unlist(source$fos_predictors)),"treatment")
   expect_equal(as.integer(source$empty_plan),0L)
 })
+
+test_that("frozen Python 1.2 W3 FPCA workflow matches native scientific geometry",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("pinned Python 1.2 W3 complete workflow oracle is opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  z<-.etr_source_workflow_fixture()
+  native<-etr_run_fpca_workflow(z$x,
+    list(n_components=1L,scaling="none",preprocessing=list()))
+  # Construct the very same deterministic curves in the published Python
+  # dataclass domain. This is a direct source workflow call, not a bridge
+  # dispatch to native R, and makes no cross-language result-class claim.
+  reticulate::py_run_string("
+import numpy as np, pandas as pd
+import eyetrajectoriespy as et
+from eyetrajectoriespy.workflows._dense_regression import FPCAWorkflowConfig
+w3_t=np.linspace(0.,1.,15)
+w3_y=np.empty((12,15,1))
+for i in range(1,13):
+    w3_y[i-1,:,0]=(np.sin(np.pi*w3_t)*(1+i/19) +
+        .13*np.cos(2*np.pi*w3_t)*(i%3)+w3_t*i/15)
+w3_x=et.TrajectorySet(time=w3_t,values=w3_y,
+    curve_ids=tuple(f'c{i:02d}' for i in range(1,13)),
+    dimension_names=('gaze',),
+    metadata=pd.DataFrame(index=range(12)),
+    coordinate_system='normalized',time_unit='s')
+w3_cfg=FPCAWorkflowConfig(n_components=1,scaling='none')
+")
+  source<-reticulate::py_call(
+    etpy_get_export("run_fpca_workflow",.namespace="workflows"),
+    trajectories=reticulate::py_eval("w3_x",convert=FALSE),
+    config=reticulate::py_eval("w3_cfg",convert=FALSE))
+  expect_identical(reticulate::py_to_r(source$workflow_contract),
+    native$workflow_contract)
+  expect_equal(as.integer(reticulate::py_to_r(source$workflow_schema_version)),
+    native$workflow_schema_version)
+  expect_equal(as.integer(reticulate::py_to_r(source$fit$n_components)),
+    native$fit$n_components)
+  expect_equal(unname(et_to_r(source$fit$mean)),
+    unname(native$fit$mean),tolerance=1e-10)
+  expect_equal(as.numeric(et_to_r(source$fit$explained_variance)),
+    as.numeric(native$fit$explained_variance),tolerance=1e-9)
+  py_scores<-et_to_r(source$fit$scores)
+  r_scores<-native$fit$scores
+  # Score sign is not identified; compare invariant pairwise geometry.
+  expect_equal(unname(tcrossprod(py_scores)),
+    unname(tcrossprod(r_scores)),tolerance=1e-8)
+  expect_false(native$provenance$source_schema_equivalent)
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})
