@@ -59,6 +59,8 @@ test_that("508-export review fast lane preserves every uncertified export",{
   expect_identical(nrow(trajectory),1L)
   expect_true(trajectory$source_gap_open)
   expect_true(trajectory$native_nonfunction_source_gap_open)
+  expect_identical(trajectory$native_nonfunction_representation,
+    "etr_trajectory_set")
   expect_identical(trajectory$review_lane,"RECORDED_SOURCE_DIFFERENCE")
   expect_false("TrajectorySet"%in%z$selection$python_name)
   expect_true(all(z$selection$review_lane%in%c(
