@@ -46,7 +46,8 @@ test_that("native TrajectorySet represented only as partial S3 class candidate",
   expect_identical(nrow(registry),128L)
   mapped<-registry[!is.na(registry$native_representation)&
     nzchar(registry$native_representation),,drop=FALSE]
-  expect_identical(nrow(mapped),4L)
+  expect_identical(nrow(mapped),32L)
+  expect_identical(sum(mapped$namespace=="workflows"),31L)
   trajectory<-mapped[mapped$python_name=="TrajectorySet",,drop=FALSE]
   expect_identical(nrow(trajectory),1L)
   expect_identical(trajectory$native_representation,"etr_trajectory_set")
