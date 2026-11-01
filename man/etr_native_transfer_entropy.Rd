@@ -14,13 +14,19 @@
 \title{Native R empirical discrete and conditional transfer entropy}
 \description{Independent Python-free plug-in transfer entropy, local information histories, analyst-declared source-only circular shift nulls, Cartesian specification sensitivity and transparent scientific reporting.}
 \usage{
-etr_discrete_transfer_entropy(source, target, target_history, source_history, source_lag)
+etr_discrete_transfer_entropy(source, target, target_history, source_history,
+  source_lag)
 etr_transfer_entropy_local_frame(result)
-etr_transfer_entropy_circular_shift_test(source, target, target_history, source_history, source_lag, shifts)
-etr_conditional_transfer_entropy(source, target, condition, target_history, source_history, condition_history, source_lag, condition_lag)
+etr_transfer_entropy_circular_shift_test(source, target, target_history,
+  source_history, source_lag, shifts)
+etr_conditional_transfer_entropy(source, target, condition, target_history,
+  source_history, condition_history, source_lag, condition_lag)
 etr_conditional_transfer_entropy_local_frame(result)
-etr_conditional_transfer_entropy_circular_shift_test(source, target, condition, target_history, source_history, condition_history, source_lag, condition_lag, shifts)
-etr_transfer_entropy_parameter_sensitivity(source, target, target_histories, source_histories, source_lags, shifts = NULL)
+etr_conditional_transfer_entropy_circular_shift_test(source, target, condition,
+  target_history, source_history, condition_history, source_lag, condition_lag,
+  shifts)
+etr_transfer_entropy_parameter_sensitivity(source, target, target_histories,
+  source_histories, source_lags, shifts = NULL)
 etr_transfer_entropy_reporting_text(result)
 etr_transfer_entropy_circular_shift_reporting_text(result)
 etr_conditional_transfer_entropy_reporting_text(result)
