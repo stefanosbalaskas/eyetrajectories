@@ -52,7 +52,15 @@ test_that("508-export review fast lane preserves every uncertified export",{
   expect_identical(sum(z$queue$kind=="function"),380L)
   expect_identical(sum(z$queue$kind!="function"),128L)
   expect_identical(sum(z$queue$source_gap_open),
-    sum(api$published_source_difference_open))
+    sum(api$published_source_difference_open)+
+      sum(api$nonfunction_source_difference_open))
+  expect_identical(sum(z$queue$native_nonfunction_source_gap_open),1L)
+  trajectory<-z$queue[z$queue$python_name=="TrajectorySet",,drop=FALSE]
+  expect_identical(nrow(trajectory),1L)
+  expect_true(trajectory$source_gap_open)
+  expect_true(trajectory$native_nonfunction_source_gap_open)
+  expect_identical(trajectory$review_lane,"RECORDED_SOURCE_DIFFERENCE")
+  expect_false("TrajectorySet"%in%z$selection$python_name)
   expect_true(all(z$selection$review_lane%in%c(
     "FUNCTION_NO_RECORDED_GAP","NONFUNCTION_NO_RECORDED_GAP")))
   expect_false(any(z$selection$source_gap_open))
