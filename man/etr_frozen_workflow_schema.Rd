@@ -20,8 +20,10 @@ etr_native_workflow_result_view(result)
 or NULL when listing all source schemas.}
 \item{fields}{Uniquely named native R list supplying every declared source
 field explicitly, including fields with Python defaults. Entries may be NULL.}
-\item{result}{A native \code{etr_fpca_workflow} or
-\code{etr_function_on_scalar_workflow} result already fitted in R.}
+\item{result}{A native \code{etr_fpca_workflow},
+\code{etr_function_on_scalar_workflow}, or \code{etr_recurrence_workflow}
+result already fitted in R. Recurrence views preserve three measured
+native step durations, not Python runtime measurements.}
 }
 \value{
 \code{etr_frozen_workflow_schema()} returns the source-pinned field schema
