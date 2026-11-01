@@ -22,6 +22,18 @@ test_that("recurrence workflow preserves declared sample geometry",{
   expect_identical(z$recurrence$theiler,1L)
   expect_equal(z$recurrence$radius,.6)
   expect_identical(nrow(z$tables$rqa_metrics),1L)
+  expect_identical(length(z$steps),3L)
+  expect_identical(vapply(z$steps,function(x)x$name,character(1)),
+    c("delay_embedding","recurrence","rqa"))
+  expect_true(all(vapply(z$steps,function(x)
+    is.finite(x$elapsed_seconds)&&x$elapsed_seconds>=0,logical(1))))
+  frame<-etr_workflow_steps_frame(z$steps)
+  expect_identical(frame$name,c("delay_embedding","recurrence","rqa"))
+  view<-etr_native_workflow_result_view(z)
+  expect_s3_class(view,"etr_frozen_py12_RecurrenceWorkflowResult")
+  expect_identical(names(view),
+    etr_frozen_workflow_schema("RecurrenceWorkflowResult")$field_name)
+  expect_false(attr(view,"independent_full_domain_certification"))
   expect_false(z$provenance$preprocessing_executed)
   expect_false(z$provenance$source_schema_equivalent)
   cfg<-.etr_w4_config();cfg$curve<-"c01"
