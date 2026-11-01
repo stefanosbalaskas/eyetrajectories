@@ -18,7 +18,7 @@
 .etr_recovery_source_metric <- function(name) {
   defs<-switch(name,
     phase_warp_ise=list(
-      quantity="registration inverse phase warp",units="time² × time",
+      quantity="registration inverse phase warp",units="time\u00b2 \u00d7 time",
       scope="registration",
       description="Mean integrated squared error of recovered inverse phase warps."),
     phase_warp_max_absolute_error=list(
