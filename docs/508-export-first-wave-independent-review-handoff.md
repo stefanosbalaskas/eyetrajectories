@@ -188,3 +188,27 @@ nonfunction R representations still missing until separately
 implemented and qualified. This is a PREDICTION until the new
 commit runs in owner RStudio; no independent scientific approval
 is inferred. Full-domain certifications remain 0/508.
+
+## First native nonfunction candidate and explicit class gap
+
+The source-backed native `TrajectorySet` candidate is now recorded as
+`etr_trajectory_set` in the 128-entry nonfunction register, with all
+scientific, schema, reviewer and numerical approval fields still FALSE.
+All other nonfunction native representation fields remain blank.
+This is **1/128 provisional object mappings, 0/128 class certifications**.
+
+The frozen Python dataclass remains different from the native S3 object
+on NaN/missing values, array coercion, zero-curve behavior, immutability,
+Python indexing, pandas metadata and exception semantics. These differences
+are explicitly tracked in `inst/extdata/native_nonfunction_source_gaps_v1.csv`
+and [the source-specific TrajectorySet dossier](native-trajectoryset-frozen-python-contract.md).
+The full-domain 508 catalog **fails closed** on this gap regardless of
+provisional class mapping or any future author-generated test PASS.
+
+The complete unsigned priority queue now reports 203 known callable
+source differences and one separately registered nonfunction source
+difference (204 total), with a one-row unsigned class resolution queue
+`native_nonfunction_source_gap_resolution_queue.csv`.
+The first no-known-gap reviewer batch excludes `TrajectorySet` until the
+source differences have been scientifically addressed. All independent
+source replay and certification flags remain FALSE.
