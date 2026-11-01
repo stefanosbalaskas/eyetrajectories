@@ -38,7 +38,7 @@ test_that("508-contract certificate gate rejects known unresolved source differe
   expect_identical(before,reticulate::py_available(initialize=FALSE))
 })
 
-test_that("source Python 1.2 trapezoid sequence inputs now align but truthiness does not",{
+test_that("source Python 1.2 trapezoid scalar truthiness aligns but arbitrary objects and infinities do not",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("Pinned public Python 1.2 source acceptance witness is opt-in")
   expect_identical(et_python_version(),"1.2.0")
