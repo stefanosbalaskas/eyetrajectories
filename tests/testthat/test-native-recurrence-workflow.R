@@ -54,8 +54,9 @@ test_that("recurrence W4 refuses unsupported source modes",{
   }
   wrong<-cfg;wrong$delay_units<-"time"
   expect_error(etr_run_recurrence_workflow(x,wrong),"cannot be converted")
-  good<-cfg;good$delay<-0.08;good$delay_units<-"s"
-  good$theiler_window<-0.04;good$theiler_window_units<-"s"
+  step<-x$time[2L]-x$time[1L]
+  good<-cfg;good$delay<-2*step;good$delay_units<-"s"
+  good$theiler_window<-step;good$theiler_window_units<-"s"
   physical<-etr_run_recurrence_workflow(x,good)
   expect_identical(physical$embedding$delay_samples,2L)
   expect_identical(physical$recurrence$theiler,1L)
