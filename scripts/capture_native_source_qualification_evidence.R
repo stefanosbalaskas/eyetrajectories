@@ -234,6 +234,15 @@ results<-list(
   qualify_once(TRUE)
 )
 source_files<-unique(c(
+  "tests/testthat/helper-frozen-python-source-symbol.R",
+  "tests/testthat/test-native-functional-recovery-orchestration.R",
+  "tests/testthat/test-native-bounded-model-workflows.R",
+  "tests/testthat/test-native-generalized-gee-bootstrap.R",
+  "tests/testthat/test-native-workflow-bundle-export.R",
+  "tests/testthat/test-native-mixed-covariance-sensitivity.R",
+  "tests/testthat/test-native-mixed-participant-bootstraps.R",
+  "tests/testthat/test-native-thirdparty-functional-analogues.R",
+  "tests/testthat/test-native-final-sparse-elastic-analogues.R",
   queue$oracle_test,
   "R/native-source-diagnostic-frames.R",
   "R/native-sparse-scientific-graphics.R",
