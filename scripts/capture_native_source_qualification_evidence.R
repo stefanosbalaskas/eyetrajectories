@@ -68,6 +68,7 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-four-pilot-review-matrix",
     "native-four-pilot-external-attestation",
     "native-508-certification-batches",
+    "native-first-wave-source-interfaces",
     "native-mixed-model-source-text"),".R"))
 if(anyDuplicated(required_scientific_tests))stop(
   "Duplicate scientific test files in evidence capture requirements.",
@@ -173,7 +174,8 @@ filter<-paste(c(
   "native-pilot-source-adversarial",
   "native-four-pilot-review-matrix",
   "native-four-pilot-external-attestation",
-  "native-508-certification-batches"),collapse="|")
+  "native-508-certification-batches",
+  "native-first-wave-source-interfaces"),collapse="|")
 # Existence and inclusion are separate: all required scientific tests must
 # be selected by the exact filter executed in BOTH offline and Python modes.
 unselected_required<-required_scientific_tests[
@@ -292,6 +294,8 @@ source_files<-unique(c(
   "scripts/capture_four_pilot_numeric_evidence.R",
   "scripts/build_four_pilot_review_matrix.R",
   "scripts/build_508_certification_review_batches.R",
+  "scripts/capture_first_wave_source_interfaces.R",
+  "tests/testthat/test-native-first-wave-source-interfaces.R",
   "scripts/verify_508_certification_batch.py",
   "tests/test_verify_508_certification_batch.py",
   "scripts/verify_508_external_attestation.py",
@@ -674,6 +678,18 @@ stopifnot(nrow(full_review_batches$queue)==508L,
   all(!full_review_batches$decisions$full_domain_certification_approved))
 message("508-export no-recorded-gap fastlane prepared; ",
   "this is NOT an independent replay or a certification decision.")
+
+# Record exact frozen Python 1.2 source signatures, exported object classes
+# and native R formals for each selected first-wave export. Introspection
+# failures remain visible in the CSV instead of being misreported as parity.
+source("scripts/capture_first_wave_source_interfaces.R",local=TRUE)
+first_wave_interfaces<-etr_capture_first_wave_source_interfaces(
+  root=".",packet_dir=packet_root)
+stopifnot(nrow(first_wave_interfaces$records)==36L,
+  all(!first_wave_interfaces$records$source_full_domain_certified),
+  all(!first_wave_interfaces$records$independently_reproduced),
+  all(file.exists(c(first_wave_interfaces$csv,
+    first_wave_interfaces$manifest))))
 
 # Verify the ACTUAL newly generated packet, not only synthetic test fixtures.
 # Both verifiers are read-only and distinguish author integrity from genuine
