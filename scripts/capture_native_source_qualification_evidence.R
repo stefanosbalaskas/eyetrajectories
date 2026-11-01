@@ -168,7 +168,8 @@ filter<-paste(c(
   "native-direct-source-estimator-attribution",
   "native-direct-source-stochastic-attribution",
   "native-direct-source-workflow-attribution",
-  "native-pilot-source-adversarial"),collapse="|")
+  "native-pilot-source-adversarial",
+  "native-four-pilot-review-matrix"),collapse="|")
 # Existence and inclusion are separate: all required scientific tests must
 # be selected by the exact filter executed in BOTH offline and Python modes.
 unselected_required<-required_scientific_tests[
