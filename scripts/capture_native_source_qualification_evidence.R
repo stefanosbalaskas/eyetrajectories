@@ -67,6 +67,7 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-pilot-source-adversarial",
     "native-four-pilot-review-matrix",
     "native-four-pilot-external-attestation",
+    "native-508-certification-batches",
     "native-mixed-model-source-text"),".R"))
 if(anyDuplicated(required_scientific_tests))stop(
   "Duplicate scientific test files in evidence capture requirements.",
@@ -171,7 +172,8 @@ filter<-paste(c(
   "native-direct-source-workflow-attribution",
   "native-pilot-source-adversarial",
   "native-four-pilot-review-matrix",
-  "native-four-pilot-external-attestation"),collapse="|")
+  "native-four-pilot-external-attestation",
+  "native-508-certification-batches"),collapse="|")
 # Existence and inclusion are separate: all required scientific tests must
 # be selected by the exact filter executed in BOTH offline and Python modes.
 unselected_required<-required_scientific_tests[
@@ -243,6 +245,8 @@ source_files<-unique(c(
   "scripts/capture_four_pilot_boundary_evidence.R",
   "scripts/capture_four_pilot_numeric_evidence.R",
   "scripts/build_four_pilot_review_matrix.R",
+  "scripts/build_508_certification_review_batches.R",
+  "tests/testthat/test-native-508-certification-batches.R",
   "tests/testthat/test-native-four-pilot-review-matrix.R",
   "tests/testthat/helper-frozen-python-source-symbol.R",
   "tests/testthat/test-native-functional-recovery-orchestration.R",
@@ -602,3 +606,19 @@ four_pilot_external<-etr_prepare_four_pilot_external_attestation(
 stopifnot(all(file.exists(unlist(four_pilot_external))))
 message("External independent scientific review: ",
   "UNSIGNED; GPG-verified third-party decision required.")
+
+# Fail closed while creating the *additional*, full-508 export worklist.
+# The 508-row readiness audit already exists in the same exact-head run;
+# these are priority batches and UNSIGNED case-level reviewer worksheets.
+source("scripts/build_508_certification_review_batches.R",local=TRUE)
+full_review_batches<-etr_build_508_certification_review_batches(
+  root=".",packet_dir=packet_root,
+  function_batch_size=24L,nonfunction_batch_size=12L)
+stopifnot(nrow(full_review_batches$queue)==508L,
+  nrow(full_review_batches$selection)==36L,
+  nrow(full_review_batches$cases)==360L,
+  nrow(full_review_batches$decisions)==36L,
+  all(!full_review_batches$cases$independently_replayed),
+  all(!full_review_batches$decisions$full_domain_certification_approved))
+message("508-export no-recorded-gap fastlane prepared; ",
+  "this is NOT an independent replay or a certification decision.")
