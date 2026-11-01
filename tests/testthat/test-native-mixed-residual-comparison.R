@@ -69,3 +69,14 @@ test_that("source mixed residual comparison remains an unsigned native subset",{
   expect_gte(sum(p$native_implementation_started),307L)
   expect_gte(sum(p$source_contract_gap_unresolved),154L)
 })
+
+# Actual pinned-Python 1.2 public export and source-signature witness.
+# This verifies callable/source availability, NOT native scientific parity.
+test_that("unreviewed Python 1.2 source symbols are inspectable: compare_functional_mixed_effects_residual_diagnostics",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("pinned Python source-symbol audit requires source runtime")
+  .etr_expect_frozen_python_source_symbol(
+    etpy_get_export("compare_functional_mixed_effects_residual_diagnostics"),"compare_functional_mixed_effects_residual_diagnostics")
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})
