@@ -69,8 +69,10 @@ test_that("published Python accepts NaN gaps but native S3 source domain rejects
   py_obj<-reticulate::py_call(cls,
     time=reticulate::r_to_py(c(0,1,2)),
     values=reticulate::r_to_py(x),
-    curve_ids=reticulate::r_to_py("c"),
-    dimension_names=reticulate::r_to_py("x"))
+    # pandas.Index(...) requires a collection; r_to_py("c") yields
+    # a scalar Python str and fails before the scientific NaN oracle.
+    curve_ids=reticulate::r_to_py(list("c")),
+    dimension_names=reticulate::r_to_py(list("x")))
   actual<-reticulate::py_to_r(py_obj$values)
   expect_true(is.nan(actual[1L,2L,1L]))
   expect_false(any(etr_native_parity_catalog()$
