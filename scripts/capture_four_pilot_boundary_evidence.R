@@ -106,7 +106,9 @@ etr_capture_four_pilot_boundary_evidence<-function(root=".",packet_dir=NULL){
     invisible(NULL)
   }
   # NumPy comparison (NaN <= 0) is FALSE: epsilon is propagated.
-  simplex<-array(rep(c(.2,.35,.45),4L),c(2L,2L,3L))
+  simplex<-array(0,c(2L,2L,3L))
+  for(i in 1:2)for(j in 1:2)
+    simplex[i,j,]<-c(.2,.35,.45)
   src_alr<-observe(function()reticulate::py_call(
     etpy_get_export("alr_transform"),
     values=reticulate::r_to_py(simplex),epsilon=NaN))
