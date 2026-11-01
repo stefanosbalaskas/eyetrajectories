@@ -91,3 +91,22 @@ test_that("explicit fdapace sparse alternative never claims FDApy parity",{
   expect_false(z$source_python_equivalent)
   expect_false(z$provenance$independent_source_contract_certified)
 })
+
+# Actual frozen-Python 1.2 source-symbol inspection on published exports.
+# For alternate R estimands/backends this is NOT numerical source parity.
+test_that("unreviewed Python 1.2 source symbols are inspectable: to_skfda_grid, to_skfda_basis, detect_functional_outliers_skfda, to_fdapy_irregular, fit_sparse_fpca_fdapy",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("pinned Python source-symbol audit requires source runtime")
+  .etr_expect_frozen_python_source_symbol(
+    etpy_get_export("to_skfda_grid"),"to_skfda_grid")
+  .etr_expect_frozen_python_source_symbol(
+    etpy_get_export("to_skfda_basis"),"to_skfda_basis")
+  .etr_expect_frozen_python_source_symbol(
+    etpy_get_export("detect_functional_outliers_skfda"),"detect_functional_outliers_skfda")
+  .etr_expect_frozen_python_source_symbol(
+    etpy_get_export("to_fdapy_irregular"),"to_fdapy_irregular")
+  .etr_expect_frozen_python_source_symbol(
+    etpy_get_export("fit_sparse_fpca_fdapy"),"fit_sparse_fpca_fdapy")
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})
