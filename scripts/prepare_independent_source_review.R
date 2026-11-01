@@ -188,6 +188,48 @@ etr_prepare_independent_source_review<-function(
   utils::write.csv(attribution,file.path(output_dir,
     "selected_111_fixture_static_attribution.csv"),
     row.names=FALSE,na="")
+  # Expose the unmatched direct Python source references as explicit work,
+  # rather than burying them in a single 77/111 aggregate statistic.
+  # An export mentioned in another test file is NOT an oracle for this
+  # contract, and even a matching literal is not independent case replay.
+  direct_missing<-attribution[
+    !attribution$literal_etpy_get_export_call_for_this_contract,,
+    drop=FALSE]
+  if(nrow(direct_missing)){
+    idx_missing<-match(direct_missing$python_name,records$python_name)
+    gap_missing<-match(direct_missing$python_name,gaps$python_name)
+    .checked(!anyNA(idx_missing)&&!anyNA(gap_missing),
+      "A missing literal source reference could not be triaged")
+    direct_missing$python_source_file<-records$source_path[idx_missing]
+    direct_missing$other_literal_exports_in_assigned_file<-vapply(
+      idx_missing,function(i)paste(
+        fixture_info[[fixture_idx[[i]]]]$export_literals,
+        collapse=";"),character(1L))
+    direct_missing$literal_reference_in_different_selected_file<-vapply(
+      direct_missing$python_name,function(name){
+        any(vapply(seq_along(fixture_files),function(i){
+          name%in%fixture_info[[i]]$export_literals &&
+            !identical(fixture_files[[i]],
+              records$fixture_test[[match(name,records$python_name)]])
+        },logical(1L)))
+      },logical(1L))
+    direct_missing$source_gap_kind<-gaps$gap_kind[gap_missing]
+    direct_missing$known_source_difference<-
+      gaps$known_source_difference[gap_missing]
+    direct_missing$review_resolution<-gaps$review_resolution[gap_missing]
+    direct_missing$attribution_next_action<-
+      "Inspect assigned fixture and construct a real pinned-Python call for this exact export, or document an explicit scientific exception"
+    direct_missing$independently_verified_export_oracle<-FALSE
+    direct_missing$fully_certified<-FALSE
+  }
+  .checked(nrow(direct_missing)==sum(!literal_reference)&&
+    !anyDuplicated(direct_missing$python_name)&&
+    !any(direct_missing$fully_certified),
+    "Direct-source attribution gap triage must remain complete and unsigned")
+  utils::write.csv(direct_missing,file.path(output_dir,
+    "selected_111_missing_literal_python_source_references.csv"),
+    row.names=FALSE,na="")
+
   submission<-data.frame(
     python_name=records$python_name,
     native_r_function=records$native_r_function,
@@ -381,6 +423,38 @@ etr_prepare_independent_source_review<-function(
     "Gap resolution queue must preserve every unapproved source difference")
   utils::write.csv(gap_resolution,file.path(output_dir,
     "known_source_gap_resolution_queue.csv"),row.names=FALSE,na="")
+  # Scientifically meaningful triage, preserving ALL 203 recorded source
+  # differences. These lanes prioritize review, not algorithm equivalence.
+  source_gap_lane<-ifelse(
+    gap_resolution$alternative_backend_or_estimand,
+    "01_different_estimator_or_backend",
+    ifelse(grepl("stochastic|bootstrap|monte|random|inferen|calibrat|coverage",
+      gap_resolution$gap_kind,ignore.case=TRUE),
+      "02_stochastic_or_inferential_contract",
+      ifelse(grepl("numeric|overflow|input|coerc|shape|valid|domain|parameter|time",
+        gap_resolution$gap_kind,ignore.case=TRUE),
+        "03_input_or_numerical_boundary",
+        ifelse(grepl("plot|graphic|return|class|text|schema|report|backend",
+          gap_resolution$gap_kind,ignore.case=TRUE),
+          "04_output_class_graphics_or_reporting",
+          "05_unclassified_independent_source_review"))))
+  gap_resolution$scientific_resolution_lane<-source_gap_lane
+  gap_resolution$source_review_status<-"OPEN_NOT_INDEPENDENTLY_VERIFIED"
+  gap_resolution$approved_boundary_policy<-FALSE
+  .checked(nrow(gap_resolution)==nrow(gaps)&&
+    !any(gap_resolution$approved_boundary_policy)&&
+    all(nzchar(gap_resolution$scientific_resolution_lane)),
+    "Every unresolved source gap must receive a review triage lane")
+  utils::write.csv(gap_resolution,file.path(output_dir,
+    "known_source_gap_resolution_queue.csv"),
+    row.names=FALSE,na="")
+  gap_lane_counts<-as.data.frame(table(
+    gap_resolution$scientific_resolution_lane),
+    stringsAsFactors=FALSE)
+  names(gap_lane_counts)<-c("scientific_resolution_lane","open_source_gaps")
+  utils::write.csv(gap_lane_counts,file.path(output_dir,
+    "source_gap_resolution_lane_counts.csv"),row.names=FALSE)
+
   lane_counts<-as.data.frame(table(review_triage$review_lane),
     stringsAsFactors=FALSE)
   names(lane_counts)<-c("review_lane","exports")
@@ -408,11 +482,22 @@ etr_prepare_independent_source_review<-function(
     !any(pilot$scientific_scope_approved)&&
     !any(pilot$independent_reviewer_approved),
     "Pilot contracts must not be silently auto-promoted")
+  pilot_gap_idx<-match(pilot$python_name,gaps$python_name)
+  .checked(!anyNA(pilot_gap_idx)&&
+    all(gaps$unresolved_source_gap[pilot_gap_idx]),
+    "Pilot review cannot proceed without its actual unresolved source gap")
   pilot_packet<-data.frame(
     priority=seq_len(nrow(pilot)),
     python_name=pilot$python_name,
     native_r_candidate=pilot$native_r_candidate,
     frozen_python_source=pilot$source_path,
+    pinned_python_tag=pilot$published_tag,
+    pinned_python_commit=pilot$published_tag_commit,
+    checked_in_fixture_file=pilot$independent_oracle_suite,
+    source_gap_kind=gaps$gap_kind[pilot_gap_idx],
+    documented_boundary_difference=
+      gaps$known_source_difference[pilot_gap_idx],
+    required_full_domain_resolution=gaps$review_resolution[pilot_gap_idx],
     original_numeric_fixture_pass=pilot$numerical_fixture_pass,
     full_accepted_input_domain_approved=FALSE,
     complete_error_semantics_approved=FALSE,
@@ -477,6 +562,16 @@ etr_prepare_independent_source_review<-function(
     "  with the source witness, required scientific resolution and",
     "  selected-oracle/alternative-backend flags.",
     "- review_lane_counts.csv: noncertifying inventory totals by lane.",
+    "- source_gap_resolution_lane_counts.csv: the 203 recorded unresolved",
+    "  source differences grouped by review priority, not by approval.",
+    "- selected_111_missing_literal_python_source_references.csv:",
+    "  every selected contract without its own direct literal source call",
+    "  in the assigned test file. Inspect these case-by-case, even when an",
+    "  export is referenced by a different fixture. This never implies",
+    "  that missing references were automatically made equivalent.",
+    "- four_numerical_pilots_external_review_priority.csv: original",
+    "  source pin, actual recorded source gaps, source fixtures and",
+    "  specific outstanding full-domain reviewer decisions.",
     "- selected_111_fixture_static_attribution.csv: matched fixture test",
     "  filenames from the captured testthat filter, number of declared",
     "  test_that cases in each file and literal etpy_get_export calls.",
