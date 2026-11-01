@@ -95,9 +95,18 @@ _mix_other.update(boundary_fit=True,random_effect_singular=True,
 _mix_py1=et.functional_mixed_effects_reporting_text(
     _mix_obj(et.FunctionalMixedEffectsResult,**_mix_other))
 ")
+  # Replay the exact frozen public Python export, in addition to the
+  # source's internal text oracle. Construct the same typed source object.
+  direct0<-reticulate::py_call(
+    etpy_get_export("functional_mixed_effects_reporting_text"),
+    result=reticulate::py_eval(
+      "_mix_obj(et.FunctionalMixedEffectsResult,**_mix_source)",
+      convert=FALSE))
+  expect_identical(reticulate::py_to_r(direct0),
+    reticulate::py_eval("_mix_py0",convert=TRUE))
   x<-.etr_mixed_text_fixture()
   expect_identical(etr_functional_mixed_effects_reporting_text(x),
-    reticulate::py_eval("_mix_py0",convert=TRUE))
+    reticulate::py_to_r(direct0))
   x$boundary_fit<-TRUE;x$random_effect_singular<-TRUE
   x$backend_warnings<-"optimizer warning"
   x$residual_correlation<-"ar1";x$residual_correlation_parameter<-.25
@@ -107,8 +116,15 @@ _mix_py1=et.functional_mixed_effects_reporting_text(
   x$trial_random_effect<-"functional_intercept"
   x$n_trials<-8L;x$trial_random_basis_size<-2L
   x$trial_random_effect_covariance_parameter_count<-3L
-  expect_identical(etr_functional_mixed_effects_reporting_text(x),
+  direct1<-reticulate::py_call(
+    etpy_get_export("functional_mixed_effects_reporting_text"),
+    result=reticulate::py_eval(
+      "_mix_obj(et.FunctionalMixedEffectsResult,**_mix_other)",
+      convert=FALSE))
+  expect_identical(reticulate::py_to_r(direct1),
     reticulate::py_eval("_mix_py1",convert=TRUE))
+  expect_identical(etr_functional_mixed_effects_reporting_text(x),
+    reticulate::py_to_r(direct1))
 })
 
 test_that("native mixed report distinguishes source conditional and full-refit bootstrap wording",{
