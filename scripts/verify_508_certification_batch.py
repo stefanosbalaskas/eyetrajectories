@@ -124,6 +124,7 @@ def verify(packet_dir: str | Path, expected_r_head: str | None = None) -> dict[s
 
     full, batch, cases, decisions = [read_csv(root / f) for f in FILES]
     columns(full, ("namespace", "python_name", "kind", "review_lane",
+                   "native_nonfunction_representation",
                    "recorded_r_git_head", "frozen_python_commit",
                    "source_gap_open", "native_nonfunction_source_gap_open",
                    "backend_or_estimand_distinct",
@@ -150,6 +151,13 @@ def verify(packet_dir: str | Path, expected_r_head: str | None = None) -> dict[s
           "Incorrect callable/nonfunction source-gap inventory")
     check(sum(r["backend_or_estimand_distinct"] == "TRUE" for r in full) == 19,
           "Incorrect alternative backend/estimand inventory")
+    check(sum(bool(r["native_nonfunction_representation"].strip())
+              for r in full) == 1 and
+          all((r["native_nonfunction_representation"] ==
+               ("etr_trajectory_set" if r["python_name"] == "TrajectorySet"
+                and r["kind"] != "function" else ""))
+              for r in full),
+          "Nonfunction native representation inventory must retain the one partial S3 class candidate")
     all_flags(full, ("currently_authoritatively_certified",),
               "FALSE", "source certification state")
     all_flags(full, ("developer_queue_is_not_scientific_certification",),
