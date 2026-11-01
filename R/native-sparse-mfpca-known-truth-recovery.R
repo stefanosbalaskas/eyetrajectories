@@ -10,7 +10,7 @@
     "named planar covariance block ISE must be finite")
   list(metric=list(name="covariance_block_ise",
     quantity="planar covariance block",
-    direction="lower_is_better",units="squared covariance × time²",
+    direction="lower_is_better",units="squared covariance \u00d7 time\u00b2",
     scope="covariance_block",
     description="Quadrature-weighted integrated squared error of one named planar covariance block."),
     value=as.numeric(value),component=NULL,source=source)
