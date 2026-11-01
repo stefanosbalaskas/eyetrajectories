@@ -256,7 +256,10 @@ def verify(packet_dir: str | Path, expected_r_head: str | None = None) -> dict[s
         columns(interfaces, ("namespace", "python_name", "kind",
                 "native_r_candidate", "recorded_r_git_head",
                 "frozen_python_commit", "signature_text_is_not_semantic_parity",
-                "independently_reproduced", "source_full_domain_certified"),
+                "independently_reproduced", "source_full_domain_certified",
+                "python_export_lookup_ok", "python_interface_inspected",
+                "native_r_function_present", "native_nonfunction_representation",
+                "first_review_blocker", "reviewer_next_action"),
                 "first-wave source interfaces")
         check(len(interfaces) == 36 and
               len({key(row) for row in interfaces}) == 36 and
@@ -269,6 +272,35 @@ def verify(packet_dir: str | Path, expected_r_head: str | None = None) -> dict[s
                   row["frozen_python_commit"] == FROZEN_PYTHON
                   for row in interfaces),
               "First-wave source interface identity mismatch")
+        for row in interfaces:
+            check(row["reviewer_next_action"].strip() and
+                  row["python_export_lookup_ok"] in {"TRUE", "FALSE"} and
+                  row["python_interface_inspected"] in {"TRUE", "FALSE"} and
+                  row["native_r_function_present"] in {"TRUE", "FALSE"},
+                  "First-wave reviewer triage missing explicit evidence state")
+            if row["python_export_lookup_ok"] == "FALSE":
+                required_blocker = "FROZEN_PYTHON_EXPORT_LOOKUP_FAILED"
+            elif row["python_interface_inspected"] == "FALSE":
+                required_blocker = "PYTHON_INTERFACE_INTROSPECTION_FAILED"
+            elif row["kind"] == "function":
+                check(row["native_nonfunction_representation"] ==
+                      "NOT_APPLICABLE_FUNCTION",
+                      "A function cannot claim nonfunction native representation")
+                required_blocker = (
+                    "FULL_DOMAIN_SCIENTIFIC_AND_EXTERNAL_REVIEW_MISSING"
+                    if row["native_r_function_present"] == "TRUE"
+                    else "NATIVE_R_FUNCTION_MISSING"
+                )
+            else:
+                check(row["native_r_function_present"] == "FALSE",
+                      "Python nonfunction must not masquerade as a native R function")
+                required_blocker = (
+                    "NATIVE_R_NONFUNCTION_REPRESENTATION_MISSING"
+                    if not row["native_nonfunction_representation"].strip()
+                    else "FULL_DOMAIN_SCIENTIFIC_AND_EXTERNAL_REVIEW_MISSING"
+                )
+            check(row["first_review_blocker"] == required_blocker,
+                  "First-wave reviewer blocker does not agree with source evidence")
         all_flags(interfaces, ("signature_text_is_not_semantic_parity",),
                   "TRUE", "source interface qualification disclaimer")
         all_flags(interfaces, ("independently_reproduced",
