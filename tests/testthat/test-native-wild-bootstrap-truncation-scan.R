@@ -132,19 +132,10 @@ def _source_public_scan_replay(fn):
     etpy_get_export("select_fpca_wild_bootstrap_truncation"),
     scan=py_scan,width_threshold=100,center_threshold=100,
     stability_run=0L,on_failure="error")
-  native_selected<-etr_select_fpca_wild_bootstrap_truncation(
-    etr_scan_wild_bootstrap_fpca_truncations(
-      .etr_wild_projection_fixture()$x,
-      .etr_wild_projection_fixture()$y,
-      candidate_components=c(2L,3L),
-      residual_components=2L,n_bootstrap=20L,
-      multiplier_draws=.etr_wild_projection_fixture()$draws,
-      confidence_level=.95),
-    width_threshold=100,center_threshold=100,stability_run=0L,
-    on_failure="error")
+  # The native R-only selection test independently verifies the same
+  # earliest h=2 decision; avoid a redundant second expensive R scan.
   expect_equal(as.numeric(et_to_r(reticulate::py_get_attr(
-    selected,"selected_components"))),
-    as.numeric(native_selected$selected_components),
+    selected,"selected_components"))),rep(2,24L),
     tolerance=0,ignore_attr=TRUE)
   selection_frame<-et_to_r(reticulate::py_call(
     etpy_get_export("fpca_wild_bootstrap_truncation_selection_frame"),
