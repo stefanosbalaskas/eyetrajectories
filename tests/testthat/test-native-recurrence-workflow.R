@@ -65,6 +65,20 @@ cfg=RecurrenceWorkflowConfig(curve=0,dimensions=('x',),
 a=run_recurrence_workflow(x,config=cfg)
 _w4_source={'state':a.embedding.values,'matrix':a.recurrence.matrix.toarray()}
 ")
+  # Public exported Python source workflow, not only a module-local call.
+  direct<-reticulate::py_call(
+    etpy_get_export("run_recurrence_workflow"),
+    trajectories=reticulate::py_eval("x",convert=FALSE),
+    config=reticulate::py_eval("cfg",convert=FALSE))
+  expect_equal(et_to_r(reticulate::py_get_attr(
+    reticulate::py_get_attr(direct,"embedding"),"values")),
+    reticulate::py_eval("_w4_source['state']",convert=TRUE),
+    tolerance=1e-12,ignore_attr=TRUE)
+  matrix_value<-reticulate::py_eval(
+    "lambda z: z.recurrence.matrix.toarray()",convert=FALSE)
+  expect_equal(et_to_r(reticulate::py_call(matrix_value,direct)),
+    reticulate::py_eval("_w4_source['matrix']",convert=TRUE),
+    tolerance=0,ignore_attr=TRUE)
   source<-reticulate::py_to_r(reticulate::py_eval("_w4_source",convert=FALSE))
   expect_equal(unname(native$embedding$values),
     unname(source$state),tolerance=1e-12)
