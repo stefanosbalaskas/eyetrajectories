@@ -309,6 +309,22 @@ etr_prepare_independent_source_review<-function(
     !any(readiness$fully_certified),
     "Full source review scope must remain 508 distinct unsigned exports")
   gidx<-match(readiness$python_name,gaps$python_name)
+  # Nonfunction class-contract differences live in their own pinned
+  # registry and cannot be hidden by the callable-function-only 203 CSV.
+  nonfun_gap<-utils::read.csv(file.path(root,"inst","extdata",
+    "native_nonfunction_source_gaps_v1.csv"),stringsAsFactors=FALSE,
+    check.names=FALSE)
+  nonfun_keys<-paste(nonfun_gap$namespace,
+    nonfun_gap$python_name,sep="::")
+  .checked(nrow(nonfun_gap)==1L&&!anyDuplicated(nonfun_keys)&&
+    isTRUE(nonfun_gap$unresolved[[1L]]),
+    "Native TrajectorySet class source gap must be explicit and unresolved")
+  ngidx<-match(paste(readiness$namespace,readiness$python_name,sep="::"),
+    nonfun_keys)
+  .checked(sum(!is.na(ngidx))==1L&&
+    identical(readiness$python_name[!is.na(ngidx)],"TrajectorySet")&&
+    identical(sum(readiness$nonfunction_source_difference_open),1L),
+    "One frozen Python class gap must reconcile to the 508 readiness ledger")
   queued_idx<-match(readiness$python_name,records$python_name)
   .checked(all(records$python_name%in%readiness$python_name)&&
     all(!is.na(queued_idx[match(records$python_name,
@@ -319,14 +335,17 @@ etr_prepare_independent_source_review<-function(
     python_name=readiness$python_name,
     kind=readiness$kind,
     native_r_candidate=readiness$native_r_candidate,
+    native_nonfunction_representation=readiness$native_nonfunction_representation,
     frozen_source_sha=readiness$frozen_source_sha,
     evidence_r_git_head=rep(recorded_heads,nrow(readiness)),
     mapped_native_function=readiness$kind=="function"&
       readiness$native_mapping_present,
     backend_or_estimand_distinct=readiness$native_backend_or_estimand_differs,
-    source_difference_open=readiness$published_source_difference_open,
-    source_gap_kind=ifelse(is.na(gidx),"",
-      gaps$gap_kind[gidx]),
+    source_difference_open=(readiness$published_source_difference_open |
+      readiness$nonfunction_source_difference_open),
+    nonfunction_source_gap_open=readiness$nonfunction_source_difference_open,
+    source_gap_kind=ifelse(!is.na(gidx),gaps$gap_kind[gidx],
+      ifelse(!is.na(ngidx),nonfun_gap$gap_kind[ngidx],"")),
     selected_oracle_candidate=!is.na(queued_idx),
     selected_oracle_file=ifelse(is.na(queued_idx),"",
       records$fixture_test[queued_idx]),
@@ -368,12 +387,14 @@ etr_prepare_independent_source_review<-function(
   is_selected<-review_scope$selected_oracle_candidate
   different_estimand<-review_scope$backend_or_estimand_distinct
   has_gap<-review_scope$source_difference_open
-  lane<-ifelse(!is_function,"nonfunction_contract_review",
+  lane<-ifelse(!is_function,
+    ifelse(has_gap,"nonfunction_open_source_gap",
+      "nonfunction_contract_review"),
     ifelse(different_estimand,"alternative_backend_or_estimand",
     ifelse(is_selected,"selected_source_oracle_review",
     ifelse(has_gap,"unselected_open_source_gap",
       "unselected_function_contract_review"))))
-  rank<-ifelse(!is_function,5L,
+  rank<-ifelse(!is_function,ifelse(has_gap,3L,5L),
     ifelse(different_estimand,2L,
     ifelse(is_selected,1L,ifelse(has_gap,3L,4L))))
   review_triage<-data.frame(
@@ -408,6 +429,29 @@ etr_prepare_independent_source_review<-function(
     "Full-surface source triage must preserve all unsigned exports")
   utils::write.csv(review_triage,file.path(output_dir,
     "all_508_contract_review_priority.csv"),
+    row.names=FALSE,na="")
+  # The 203 function gaps retain their historical queue unchanged.
+  # The first independently recorded CLASS source gap is separately
+  # handed to reviewers, never misreported as a callable source fixture.
+  nonfun_review<-data.frame(namespace=nonfun_gap$namespace,
+    python_name=nonfun_gap$python_name,
+    native_r_candidate=nonfun_gap$native_r_candidate,
+    frozen_python_commit=nonfun_gap$frozen_python_commit,
+    gap_kind=nonfun_gap$gap_kind,
+    recorded_source_difference=nonfun_gap$known_source_difference,
+    source_witness=nonfun_gap$source_witness,
+    required_resolution=nonfun_gap$required_resolution,
+    gap_open=nonfun_gap$unresolved,
+    independently_replayed=FALSE,
+    scientific_scope_approved=FALSE,
+    independent_reviewer_approved=FALSE,
+    fully_certified=FALSE,stringsAsFactors=FALSE)
+  .checked(nrow(nonfun_review)==1L&&
+    all(nonfun_review$gap_open)&&
+    !any(nonfun_review$fully_certified),
+    "Nonfunction class review queue must remain unsigned and blocked")
+  utils::write.csv(nonfun_review,file.path(output_dir,
+    "native_nonfunction_source_gap_resolution_queue.csv"),
     row.names=FALSE,na="")
   # Every declared source discrepancy remains visible, including known
   # alternative estimators that cannot be resolved by numeric tolerances.
