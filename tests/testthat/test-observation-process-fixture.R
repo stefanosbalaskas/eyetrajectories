@@ -1,9 +1,8 @@
 # Research-only tests; exercise fixture semantics, not inferential coverage.
-fixture_path <- file.path("scripts", "observation_process_fixture.R")
-if (!file.exists(fixture_path))
-  fixture_path <- file.path("..", "..", "scripts",
-                            "observation_process_fixture.R")
-source(fixture_path, local = TRUE)
+fixture_path <- testthat::test_path("fixtures",
+  "observation_process_fixture.R")
+stopifnot(file.exists(fixture_path))
+source(fixture_path, local=TRUE)
 
 testthat::test_that("latent population truth and registered covariates are distinct", {
   x <- et_obs_generate_complete(12L, 1241L)
