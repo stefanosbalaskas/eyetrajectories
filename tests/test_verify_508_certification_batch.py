@@ -37,7 +37,9 @@ def make_packet(folder):
                 "RECORDED_SOURCE_DIFFERENCE" if gap else
                 "FUNCTION_NO_RECORDED_GAP" if isfn else
                 "NONFUNCTION_NO_RECORDED_GAP")
-        full.append(dict(namespace="root", python_name=name,
+        full.append(dict(namespace=(
+                             "workflows" if i in workflow_constants
+                             else "root"), python_name=name,
                          kind="function" if isfn else "other_export",
                          native_r_candidate=f"etr_{name}" if isfn else "",
                          native_nonfunction_representation=(
