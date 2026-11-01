@@ -39,6 +39,8 @@ test_that("four-pilot external handoff emits hashed unsigned reviewed inputs",{
     developer_numeric_fixture_pass=TRUE,
     fully_certified=FALSE,independently_replayed_case=FALSE)
   boundaries<-data.frame(python_name=pilots$python_name,
+    opt_in_python_boundary_mode_matches_source_category=TRUE,
+    opt_in_mode_full_source_parity_certified=FALSE,
     observed_behavior_as_expected=TRUE,
     relation=c("documented_source_difference",
       "documented_source_difference",
