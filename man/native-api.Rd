@@ -148,7 +148,7 @@ etr_plot_recurrence(recurrence, ...)
 \item{a}{Numeric point-by-channel matrix.}
 \item{b}{Numeric point-by-channel matrix with matching channels.}
 \item{dimension_weights}{Finite, non-negative channel weights.}
-\item{normalize}{Whether trapezoidal quadrature weights should sum to one.}
+\item{normalize}{For trapezoidal weights, a scalar with Python 1.2 truthiness semantics on finite numeric, logical and character values: FALSE, zero and empty string keep original weights; nonzero finite numbers and nonempty strings normalize to unit total. Arbitrary Python objects and nonfinite time grids are not supported.}
 \item{n_components}{Integer component count or, for fitting, a variance fraction strictly between 0 and 1.}
 \item{fit}{Native etr_fpca fit.}
 \item{scores}{Optional finite numeric FPCA score vector (one external curve) or numeric matrix (curves by fitted components). When supplied, reconstructs these external scores to an unlabelled curve-by-time-by-dimension numeric array. When omitted, fitted curves are returned as the original native trajectory collection.}
