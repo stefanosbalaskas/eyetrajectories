@@ -446,6 +446,34 @@ stopifnot(nrow(fixture_attribution)==nrow(queue),
   all(!fixture_attribution$per_contract_test_execution_independently_attributed),
   all(!fixture_attribution$per_contract_python_oracle_independently_replayed),
   all(!fixture_attribution$fully_certified))
+# Do not hide missing direct source export calls behind 111/111
+# selected filenames. Emit independently reviewable row-level deficiencies
+# and a lossless resolution-lane count across every recorded source gap.
+missing_refs_path<-file.path(packet_root,
+  "selected_111_missing_literal_python_source_references.csv")
+gap_lanes_path<-file.path(packet_root,
+  "source_gap_resolution_lane_counts.csv")
+four_pilots_path<-file.path(packet_root,
+  "four_numerical_pilots_external_review_priority.csv")
+stopifnot(all(file.exists(c(missing_refs_path,gap_lanes_path,
+  four_pilots_path))))
+missing_refs<-utils::read.csv(missing_refs_path,
+  stringsAsFactors=FALSE,check.names=FALSE)
+gap_lanes<-utils::read.csv(gap_lanes_path,
+  stringsAsFactors=FALSE,check.names=FALSE)
+pilot_review<-utils::read.csv(four_pilots_path,
+  stringsAsFactors=FALSE,check.names=FALSE)
+stopifnot(
+  nrow(missing_refs)==sum(
+    !fixture_attribution$literal_etpy_get_export_call_for_this_contract),
+  !anyDuplicated(missing_refs$python_name),
+  all(missing_refs$python_name%in%queue$python_name),
+  all(!missing_refs$independently_verified_export_oracle),
+  all(!missing_refs$fully_certified),
+  sum(gap_lanes$open_source_gaps)==source_gap_count,
+  nrow(pilot_review)==4L,
+  all(!pilot_review$independent_reviewer_approved),
+  all(!pilot_review$scientific_scope_approved))
 stopifnot(nrow(triage)==508L,
   sum(triage$selected_oracle_candidate)==nrow(queue),
   nrow(gap_review)==source_gap_count,
@@ -456,6 +484,10 @@ message("Review triage: ",nrow(triage)," public exports; ",
   nrow(gap_review)," recorded source differences; ",
   sum(triage$backend_or_estimand_distinct),
   " alternative backends/estimands; zero independent approvals.")
+message("Outstanding direct-literal source references: ",
+  nrow(missing_refs),"; recorded source differences in triage: ",
+  sum(gap_lanes$open_source_gaps),
+  "; numerical pilot contracts still unsigned: ",nrow(pilot_review),".")
 message("Static source-fixture attribution: ",
   sum(fixture_attribution$fixture_filename_selected_in_both_suite_modes),
   "/",nrow(fixture_attribution)," mapped to captured test filename filter; ",
