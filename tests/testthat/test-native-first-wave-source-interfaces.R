@@ -66,6 +66,13 @@ test_that("nonfunction native representations are not silently inferred",{
   # enough evidence to set any approval or claim 128 source classes.
   populated<-!is.na(reg$native_representation)&
     nzchar(trimws(reg$native_representation))
-  expect_equal(sum(populated),0L)
+  expect_equal(sum(populated),1L)
+  expect_identical(reg$python_name[populated],"TrajectorySet")
+  expect_identical(reg$native_representation[populated],
+    "etr_trajectory_set")
+  expect_identical(reg$evidence_state[populated],"not_reviewed")
+  expect_true(all(!reg$numerical_or_value_approved))
+  expect_true(all(!reg$schema_boundary_approved))
+  expect_true(all(!reg$scientific_scope_approved))
   expect_true(all(!reg$independent_reviewer_approved))
 })
