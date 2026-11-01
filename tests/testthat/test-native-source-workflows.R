@@ -109,6 +109,13 @@ w3_x=et.TrajectorySet(time=w3_t,values=w3_y,
     metadata=pd.DataFrame(index=range(12)),
     coordinate_system='normalized',time_unit='s')
 w3_cfg=FPCAWorkflowConfig(n_components=1,scaling='none')
+from eyetrajectoriespy.workflows._dense_regression import FunctionOnScalarWorkflowConfig
+w3_design=pd.DataFrame({
+    'curve_id':[f'c{i:02d}' for i in range(1,13)],
+    'treatment':[i/12. for i in range(1,13)]
+})
+w3_fos_cfg=FunctionOnScalarWorkflowConfig(predictors=('treatment',),
+    unit='curve')
 ")
   source<-reticulate::py_call(
     etpy_get_export("run_fpca_workflow",.namespace="workflows"),
@@ -130,6 +137,27 @@ w3_cfg=FPCAWorkflowConfig(n_components=1,scaling='none')
   expect_equal(unname(tcrossprod(py_scores)),
     unname(tcrossprod(r_scores)),tolerance=1e-8)
   expect_false(native$provenance$source_schema_equivalent)
+  # A second direct W3 Python workflow exercises the observed-grid
+  # function-on-scalar regression, including its HC1 inference output.
+  native_fos<-etr_run_function_on_scalar_workflow(
+    z$x,z$design,
+    list(predictors="treatment",unit="curve",preprocessing=list()))
+  source_fos<-reticulate::py_call(
+    etpy_get_export("run_function_on_scalar_workflow",
+      .namespace="workflows"),
+    trajectories=reticulate::py_eval("w3_x",convert=FALSE),
+    design=reticulate::py_eval("w3_design",convert=FALSE),
+    config=reticulate::py_eval("w3_fos_cfg",convert=FALSE))
+  expect_identical(reticulate::py_to_r(source_fos$workflow_contract),
+    native_fos$workflow_contract)
+  expect_equal(unname(et_to_r(source_fos$fit$coefficients)),
+    unname(native_fos$fit$coefficients),tolerance=1e-9)
+  expect_equal(unname(et_to_r(source_fos$fit$standard_errors)),
+    unname(native_fos$fit$standard_errors),tolerance=1e-8)
+  expect_equal(as.integer(reticulate::py_to_r(
+    source_fos$fit$residual_degrees_of_freedom)),
+    native_fos$fit$residual_degrees_of_freedom)
+  expect_false(native_fos$provenance$source_schema_equivalent)
   expect_false(any(etr_native_parity_catalog()$
     one_to_one_native_contract_complete))
 })
