@@ -36,11 +36,22 @@ if(grepl("\\.9000$",version))
 # These scripts raise errors on failing required checks. An incoming CRAN
 # NOTE can be reviewed explicitly; the external CRAN farm isn't reproduced.
 cat("\n=== R CMD check --as-cran plus native source example ===\n")
-source("scripts/run_cran_qualification.R",local=TRUE)
+cran_gate_error<-tryCatch({
+  source("scripts/run_cran_qualification.R",local=TRUE)
+  NULL
+},error=function(e)conditionMessage(e))
+if(!is.null(cran_gate_error))
+  cat("EXPERIMENTAL_CRAN_GATE=FAIL: ",cran_gate_error,"\n",sep="")
 
 cat("\n=== Native + pinned Python 1.2 scientific author qualification ===\n")
-source("scripts/capture_native_source_qualification_evidence.R",
-  local=TRUE)
+scientific_gate_error<-tryCatch({
+  source("scripts/capture_native_source_qualification_evidence.R",
+    local=TRUE)
+  NULL
+},error=function(e)conditionMessage(e))
+if(!is.null(scientific_gate_error))
+  cat("EXPERIMENTAL_SCIENTIFIC_GATE=FAIL: ",scientific_gate_error,
+    "\n",sep="")
 
 head_after<-tryCatch(system2("git",c("rev-parse","HEAD"),stdout=TRUE),
   error=function(e)character())
@@ -52,8 +63,17 @@ outdir<-file.path("artifacts","experimental_release_candidates")
 dir.create(outdir,recursive=TRUE,showWarnings=FALSE)
 file<-file.path(outdir,paste0("local_candidate_",
   substr(head,1L,12L),".txt"))
+all_gates_passed<-is.null(cran_gate_error)&&is.null(scientific_gate_error)
 writeLines(c(
-  "RESULT=LOCAL_TESTS_PASSED; NOT READY FOR PUBLICATION",
+  paste0("RESULT=",if(all_gates_passed)
+    "LOCAL_TESTS_PASSED; NOT READY FOR PUBLICATION" else
+    "FAIL; REQUIRED_QUALIFICATION_INCOMPLETE"),
+  paste0("CRAN_GATE=",if(is.null(cran_gate_error))"PASS" else "FAIL"),
+  paste0("SCIENTIFIC_GATE=",if(is.null(scientific_gate_error))"PASS" else "FAIL"),
+  if(!is.null(cran_gate_error))
+    paste0("CRAN_GATE_ERROR=",cran_gate_error),
+  if(!is.null(scientific_gate_error))
+    paste0("SCIENTIFIC_GATE_ERROR=",scientific_gate_error),
   paste0("GIT_HEAD=",head),
   paste0("PACKAGE_VERSION=",version),
   paste0("START=",start_time),
@@ -73,3 +93,5 @@ writeLines(c(
 cat("\nLOCAL_EXPERIMENTAL_CANDIDATE_EVIDENCE=",normalizePath(file,
   winslash="/",mustWork=TRUE),"\n",sep="")
 cat("NO PACKAGE HAS BEEN PUBLISHED OR TAGGED.\n")
+if(!all_gates_passed)
+  stop("Experimental candidate FAILED: read both CRAN and scientific gate reports; no release approval.",call.=FALSE)
