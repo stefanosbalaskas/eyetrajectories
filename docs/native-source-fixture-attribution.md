@@ -402,6 +402,52 @@ implementation and not a third-party full-domain scientific
 certification. Known 203 source differences, 19 alternate backend
 or estimand cases and 0/508 independent signoffs remain open.
 
+## Native FPCA implementation added: external score reconstruction (runtime replay pending)
+
+The owner verified research HEAD `b2775ea6237778567e8f0d980bc015311f299468`:
+**311 R files parsed**, offline native R PASS, frozen Python 1.2
+source-qualified suite PASS, both evidence capture modes PASS, evidence
+integrity TRUE, `qualification_20261101T022016`. The selected
+111-source review queue retains **77/111 direct source-fixture
+references**; no independent contract was approved.
+
+A real native R API improvement now addresses an identified missing
+Python 1.2 FPCA feature. Frozen `fpca.py::reconstruct_fpca` supports
+`scores=None` or an explicit one- or two-dimensional score array.
+Native `etr_reconstruct_fpca(fit, n_components=NULL, scores=NULL)`
+now:
+
+- preserves the existing `etr_trajectory_set` return and curve
+  identifiers when `scores=NULL`;
+- reconstructs a new numeric curve × time × channel array from external
+  one-dimensional vectors or two-dimensional score matrices, without
+  assigning invented IDs;
+- defaults to `min(ncol(scores), fit$n_components)` on supplied
+  scores and checks that the specified component count is available;
+- rejects unsupported score rank, zero-length or nonfinite/nonnumeric
+  source values rather than silently recycling;
+- retains native component orientation and time/channel shape.
+
+The new `test-native-fpca-external-score-reconstruction.R`
+exercises fitted/held-out shapes, one- and two-component reconstructions,
+missing/extra score columns, invalid domains and the backwards-compatible
+native fitted-curve path. Its pinned Python mode invokes the public
+frozen `reconstruct_fpca` source with a `SimpleNamespace` carrying
+**the same frozen native fitted mean, components, and scores**; this
+isolates the reconstruction *function's* source numerical contract
+from Python-versus-R FPCA fitting sign indeterminacy. The test compares
+both training-score and external-score Python/R array outputs. R source,
+documentation and tests received structural syntax checks. No R or
+Python runtime execution of the new patch has occurred in the assistant
+environment; next owner replay is mandatory.
+
+Full one-to-one equivalence remains open because Python supports
+additional array coercion, typed results and broader exceptional-domain
+behavior. The new source test is a supplementary fixture, not proof
+that the 111 review queue file-to-contract mappings increased.
+**Do not change 203 recorded gap and 19 alternate scientific backend
+counts or 0/508 independent certifications from this patch.**
+
 ## Remaining evidence needed for a genuine per-export certification
 
 1. Independently rerun the frozen Python and native R repositories at their
