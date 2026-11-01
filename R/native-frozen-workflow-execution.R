@@ -75,7 +75,7 @@ etr_frozen_function_on_scalar_workflow_config <- function(
 #' @param delay Positive lag.
 #' @param radius Positive finite radius.
 #' @param delay_units Delay units, native executor requires samples.
-#' @param metric Metric name, native executor requires euclidean.
+#' @param metric Source metric: cityblock, euclidean, or chebyshev.
 #' @param theiler_window Exclusion lag, nonnegative integer.
 #' @param theiler_window_units Exclusion lag units.
 #' @param min_diagonal_length,min_vertical_length Positive RQA line minima.
