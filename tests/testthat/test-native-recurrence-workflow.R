@@ -67,9 +67,7 @@ _w4_source={'state':a.embedding.values,'matrix':a.recurrence.matrix.toarray()}
 ")
   # Public exported Python source workflow, not only a module-local call.
   direct<-reticulate::py_call(
-    reticulate::py_get_attr(reticulate::import(
-      "eyetrajectoriespy.workflows",convert=FALSE),
-      "run_recurrence_workflow"),
+    etpy_get_export("run_recurrence_workflow",.namespace="workflows"),
     trajectories=reticulate::py_eval("x",convert=FALSE),
     config=reticulate::py_eval("cfg",convert=FALSE))
   expect_equal(et_to_r(reticulate::py_get_attr(
