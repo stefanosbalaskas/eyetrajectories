@@ -480,13 +480,27 @@ gap_lanes<-utils::read.csv(gap_lanes_path,
   stringsAsFactors=FALSE,check.names=FALSE)
 pilot_review<-utils::read.csv(four_pilots_path,
   stringsAsFactors=FALSE,check.names=FALSE)
+# With 111/111 source literals the missing queue has zero rows; verify
+# its schema but do not negate absent or zero-length CSV columns.
+# Nonempty queues must retain correctly typed FALSE approval flags.
+required_missing_columns<-c("python_name","python_source_file",
+  "source_gap_kind","known_source_difference",
+  "independently_verified_export_oracle","fully_certified")
+stopifnot(all(required_missing_columns%in%names(missing_refs)))
+if(nrow(missing_refs)>0L){
+  stopifnot(
+    is.logical(missing_refs$independently_verified_export_oracle),
+    is.logical(missing_refs$fully_certified),
+    !anyNA(missing_refs$independently_verified_export_oracle),
+    !anyNA(missing_refs$fully_certified),
+    all(!missing_refs$independently_verified_export_oracle),
+    all(!missing_refs$fully_certified))
+}
 stopifnot(
   nrow(missing_refs)==sum(
     !fixture_attribution$literal_etpy_get_export_call_for_this_contract),
   !anyDuplicated(missing_refs$python_name),
   all(missing_refs$python_name%in%queue$python_name),
-  all(!missing_refs$independently_verified_export_oracle),
-  all(!missing_refs$fully_certified),
   sum(gap_lanes$open_source_gaps)==source_gap_count,
   nrow(pilot_review)==4L,
   all(!pilot_review$independent_reviewer_approved),
