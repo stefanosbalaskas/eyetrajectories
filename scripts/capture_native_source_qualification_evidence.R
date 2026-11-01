@@ -9,6 +9,7 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-generalized-fosr-contrast-source",
     "native-recovery-source-evaluators",
   "native-functional-recovery-evidence",
+  "native-direct-source-recovery-evidence-attribution",
     "native-functional-recovery-evidence",
     "native-direct-source-recovery-evidence-attribution",
     "native-generalized-fosr-coefficient-bands",
