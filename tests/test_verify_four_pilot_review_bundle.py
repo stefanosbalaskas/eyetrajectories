@@ -125,6 +125,25 @@ class TestReviewIntegrity(unittest.TestCase):
         with self.assertRaisesRegex(v.BundleError, "heads differ"):
             v.verify(self.root)
 
+    def test_missing_opt_in_review_field_fails_even_if_rehashed(self):
+        p = self.root / v.FILES[4]
+        rows = v.csv_rows(p)
+        for row in rows:
+            del row["opt_in_python_boundary_mode_matches_source_category"]
+        write_csv(p, rows)
+        self.rehash()
+        with self.assertRaisesRegex(v.BundleError, "Missing boundary observations columns"):
+            v.verify(self.root)
+
+    def test_forged_opt_in_full_approval_fails_even_if_rehashed(self):
+        p = self.root / v.FILES[4]
+        rows = v.csv_rows(p)
+        rows[0]["opt_in_mode_full_source_parity_certified"] = "TRUE"
+        write_csv(p, rows)
+        self.rehash()
+        with self.assertRaisesRegex(v.BundleError, "must be FALSE"):
+            v.verify(self.root)
+
     def test_symlink_source_evidence_fails(self):
         p = self.root / v.FILES[0]
         backup = self.root / "backup.csv"
