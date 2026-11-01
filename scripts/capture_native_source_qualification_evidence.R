@@ -8,8 +8,6 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-generalized-fosr-bootstrap-source",
     "native-generalized-fosr-contrast-source",
     "native-recovery-source-evaluators",
-  "native-functional-recovery-evidence",
-  "native-direct-source-recovery-evidence-attribution",
     "native-functional-recovery-evidence",
     "native-direct-source-recovery-evidence-attribution",
     "native-generalized-fosr-coefficient-bands",
@@ -17,7 +15,6 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-mixed-known-truth-recovery",
     "native-mixed-variance-decomposition-source",
     "native-fpca-known-truth-recovery",
-  "native-fpca-external-score-reconstruction",
     "native-fpca-external-score-reconstruction",
     "native-sparse-known-truth-recovery",
     "native-mixed-bootstrap-width-comparison",
@@ -69,6 +66,9 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-generalized-mixed-source-graphics",
     "native-pilot-source-adversarial",
     "native-mixed-model-source-text"),".R"))
+if(anyDuplicated(required_scientific_tests))stop(
+  "Duplicate scientific test files in evidence capture requirements.",
+  call.=FALSE)
 missing_scientific_tests<-required_scientific_tests[
   !file.exists(required_scientific_tests)]
 if(length(missing_scientific_tests))stop(
@@ -113,6 +113,9 @@ filter<-paste(c(
   "native-generalized-fosr-bootstrap-source",
   "native-generalized-fosr-contrast-source",
   "native-recovery-source-evaluators",
+  "native-functional-recovery-evidence",
+  "native-direct-source-recovery-evidence-attribution",
+  "native-fpca-external-score-reconstruction",
   "native-generalized-fosr-coefficient-bands",
   "native-mixed-coefficient-bands-source",
   "native-mixed-known-truth-recovery",
@@ -165,6 +168,13 @@ filter<-paste(c(
   "native-direct-source-stochastic-attribution",
   "native-direct-source-workflow-attribution",
   "native-pilot-source-adversarial"),collapse="|")
+# Existence and inclusion are separate: all required scientific tests must
+# be selected by the exact filter executed in BOTH offline and Python modes.
+unselected_required<-required_scientific_tests[
+  !grepl(filter,basename(required_scientific_tests))]
+if(length(unselected_required))stop(
+  "Evidence capture filter omits required scientific tests: ",
+  paste(unselected_required,collapse=", "),call.=FALSE)
 git_exe<-Sys.which("git")
 head_sha<-if(nzchar(git_exe)){
   git_out<-suppressWarnings(system2(git_exe,c("rev-parse","HEAD"),
