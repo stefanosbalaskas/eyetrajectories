@@ -69,6 +69,10 @@ test_that("frozen Python 1.2 reconstructs identical external score arrays",{
     scores=reticulate::r_to_py(fit$scores),
     n_components=as.integer(fit$n_components))
   source<-etpy_get_export("reconstruct_fpca")
+  # Explicitly preserve 1-D vectors: reticulate can unbox length-one R
+  # numeric vectors into Python scalars, which np.asarray treats as 0-D.
+  # The published Python 1.2 function accepts only 1-D or 2-D scores.
+  np<-reticulate::import("numpy",convert=FALSE)
   for(scores in list(c(.25,-.5),c(.25),
       matrix(c(.25,1.2,-.2,-.5,.4,0),nrow=3L),
       cbind(matrix(c(.25,1.2,-.2,-.5,.4,0),nrow=3L),9))){
@@ -76,7 +80,7 @@ test_that("frozen Python 1.2 reconstructs identical external score arrays",{
       if(length(scores)<k)next
       actual<-etr_reconstruct_fpca(fit,scores=scores,n_components=k)
       direct<-reticulate::py_call(source,result=model,
-        scores=reticulate::r_to_py(scores),n_components=k)
+        scores=np$atleast_1d(reticulate::r_to_py(scores)),n_components=k)
       expect_equal(unname(actual),unname(et_to_r(direct)),
         tolerance=1e-12,ignore_attr=TRUE,
         info=paste("external FPCA",length(scores),"k",k))
