@@ -1082,6 +1082,38 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     all(other$kind==api$kind[other_idx]) &&
     all(other$source_git_sha==api$source_git_sha[other_idx]),
     "non-function source-contract review inventory must match 128 frozen exports")
+  # Independently recorded nonfunction schema/method differences are
+  # distinct from the 203 callable-function source-gap records. Even an
+  # otherwise signed class cannot be FULL certified while these are open.
+  other_gap_path <- system.file("extdata",
+    "native_nonfunction_source_gaps_v1.csv",
+    package="eyetrajectories")
+  .etr_assert(nzchar(other_gap_path),
+    "missing native nonfunction source-difference registry")
+  other_gaps <- utils::read.csv(other_gap_path,
+    stringsAsFactors=FALSE,check.names=FALSE)
+  required_other_gap <- c("namespace","python_name",
+    "native_r_candidate","frozen_python_commit","gap_kind",
+    "known_source_difference","source_witness","required_resolution",
+    "unresolved")
+  gap_other_key <- paste(other_gaps$namespace,
+    other_gaps$python_name,sep="::")
+  matched_other_gap <- match(gap_other_key,other_key)
+  .etr_assert(identical(names(other_gaps),required_other_gap) &&
+    nrow(other_gaps)>=1L && !anyDuplicated(gap_other_key) &&
+    !anyNA(matched_other_gap) &&
+    is.logical(other_gaps$unresolved) &&
+    !anyNA(other_gaps$unresolved) &&
+    all(other_gaps$frozen_python_commit==
+      "c1cd95ad718327550f7e55393ff38582872f7a94") &&
+    all(vapply(other_gaps[required_other_gap[c(3L,5L,6L,7L,8L)]],
+      function(x)is.character(x)&&all(!is.na(x)&nzchar(x)),
+      logical(1L))),
+    "native nonfunction scientific source-gap register malformed")
+  other_gap_open <- rep(FALSE,nrow(other))
+  other_gap_open[matched_other_gap] <- other_gaps$unresolved
+  api$nonfunction_source_gap_unresolved <- rep(FALSE,nrow(api))
+  api$nonfunction_source_gap_unresolved[other_idx] <- other_gap_open
   other_approvals <- c("numerical_or_value_approved",
     "schema_boundary_approved","scientific_scope_approved",
     "independent_reviewer_approved")
@@ -1099,7 +1131,7 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     other_links)
   other_pass <- apply(other[other_approvals],1L,all) &
     other$evidence_state=="approved_and_reproducible" &
-    nzchar(other_representation) & reviewed_commit
+    nzchar(other_representation) & reviewed_commit & !other_gap_open
   api$contract_certification_candidate[other_idx] <-
     other$evidence_state!="not_reviewed"
   api$contract_certification_evidence_state[other_idx] <-
