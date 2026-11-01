@@ -8,6 +8,8 @@ files<-sort(list.files("man",pattern="\\.Rd$",full.names=TRUE))
 if(!length(files))
   stop("Rd preflight: no man/*.Rd manuals found",call.=FALSE)
 issues<-character()
+all_aliases<-character()
+alias_files<-character()
 for(file in files){
   lines<-trimws(readLines(file,warn=FALSE,encoding="UTF-8"))
   key<-function(name)paste0("\\",name,"{")
@@ -16,6 +18,24 @@ for(file in files){
     issues<-c(issues,paste(file,": expected one \\name{ section"))
   if(sum(startsWith(lines,key("title")))!=1L)
     issues<-c(issues,paste(file,": expected one \\title{ section"))
+  alias_lines<-grep("^\\\\alias\\{[^}]+\\}$",lines,value=TRUE)
+  if(length(alias_lines)){
+    all_aliases<-c(all_aliases,
+      sub("^\\\\alias\\{([^}]+)\\}$","\\1",alias_lines))
+    alias_files<-c(alias_files,rep(file,length(alias_lines)))
+  }
+  usage_open<-which(startsWith(lines,key("usage")))
+  if(length(usage_open)){
+    for(i in usage_open){
+      tail_ix<-which(lines=="}" & seq_along(lines)>i)
+      if(!length(tail_ix))next
+      block<-seq.int(i,tail_ix[1L])
+      too_long<-block[nchar(lines[block],type="width")>90L]
+      if(length(too_long))issues<-c(issues,
+        paste0(file,": long \\usage lines ",
+          paste(too_long,collapse=",")))
+    }
+  }
   double_directives<-c("name","alias","title","usage","value",
     "description","details","arguments","examples")
   wrong<-double_directives[vapply(double_directives,
@@ -28,6 +48,14 @@ for(file in files){
   },error=function(e)conditionMessage(e))
   if(length(parse_errors))issues<-c(issues,
     paste(file,":",paste(parse_errors,collapse="; ")))
+}
+if(length(all_aliases)){
+  duplicated<-unique(all_aliases[duplicated(all_aliases)])
+  for(alias in duplicated){
+    offenders<-unique(alias_files[all_aliases==alias])
+    issues<-c(issues,paste("duplicate Rd alias",alias,"in",
+      paste(offenders,collapse=", ")))
+  }
 }
 if(length(issues)){
   cat("RD_MANUAL_PREFLIGHT_FAIL count=",length(issues),"\n",sep="")
