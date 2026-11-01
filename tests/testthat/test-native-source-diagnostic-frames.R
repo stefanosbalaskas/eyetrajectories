@@ -258,7 +258,9 @@ _nonlinear_source=_diag_obj(et.MultivariateSurrogateNonlinearityResult,
   source_cross<-as.numeric(et_to_r(reticulate::py_call(
     extract,iaaft_axes,as.integer(1L))))
   source_observed<-as.numeric(et_to_r(reticulate::py_call(
-    extract,nonlinear_axes,as.integer(0L))))
+    reticulate::py_eval(
+      "lambda ax: ax.lines[0].get_xdata()",convert=FALSE),
+    nonlinear_axes)))
   source_hist_total<-reticulate::py_to_r(reticulate::py_call(
     reticulate::py_eval(
       "lambda ax: sum(p.get_height() for p in ax.patches)",
