@@ -69,6 +69,8 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-four-pilot-external-attestation",
     "native-508-certification-batches",
     "native-first-wave-source-interfaces",
+    "native-source-trajectory-object",
+    "native-nonfunction-source-gaps",
     "native-mixed-model-source-text"),".R"))
 if(anyDuplicated(required_scientific_tests))stop(
   "Duplicate scientific test files in evidence capture requirements.",
@@ -175,7 +177,9 @@ filter<-paste(c(
   "native-four-pilot-review-matrix",
   "native-four-pilot-external-attestation",
   "native-508-certification-batches",
-  "native-first-wave-source-interfaces"),collapse="|")
+  "native-first-wave-source-interfaces",
+  "native-source-trajectory-object",
+  "native-nonfunction-source-gaps"),collapse="|")
 # Existence and inclusion are separate: all required scientific tests must
 # be selected by the exact filter executed in BOTH offline and Python modes.
 unselected_required<-required_scientific_tests[
@@ -303,6 +307,11 @@ source_files<-unique(c(
   "scripts/verify_four_pilot_review_bundle.py",
   "tests/test_verify_four_pilot_review_bundle.py",
   "tests/testthat/test-native-508-certification-batches.R",
+  "tests/testthat/test-native-source-trajectory-object.R",
+  "tests/testthat/test-native-nonfunction-source-gaps.R",
+  "R/native-trajectory-provenance.R",
+  "inst/extdata/native_nonfunction_contract_review_v1.csv",
+  "inst/extdata/native_nonfunction_source_gaps_v1.csv",
   "tests/testthat/test-native-four-pilot-review-matrix.R",
   "tests/testthat/helper-frozen-python-source-symbol.R",
   "tests/testthat/test-native-functional-recovery-orchestration.R",
