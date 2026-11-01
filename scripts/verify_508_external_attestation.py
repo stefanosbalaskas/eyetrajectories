@@ -115,6 +115,8 @@ def verify_submission(packet_dir: str | Path, completed_cases: str | Path,
         for name in REQUIRED_DECISION_TRUE + ("full_domain_certification_approved",):
             base.check(row[name] in {"TRUE", "FALSE"},
                        f"Nonboolean decision in {name}")
+        base.check(row["reviewer_independent_of_implementation_team"] == "TRUE",
+                   "Signed independent review must declare reviewer independence")
         full = row["scope_decision"] == "FULL_SOURCE_PARITY"
         # Even a genuinely GPG-signed CSV is NOT the final project approval.
         # The completed template may request a FULL parity finding but cannot
@@ -129,7 +131,8 @@ def verify_submission(packet_dir: str | Path, completed_cases: str | Path,
                  if row["scope_decision"] == "FULL_SOURCE_PARITY"}
     for row in submitted_cases:
         orig = frozen_cases[(base.key(row), row["criterion"])]
-        for name in ("namespace", "python_name", "criterion"):
+        for name in ("namespace", "python_name", "kind", "native_r_candidate",
+                     "recorded_r_git_head", "frozen_python_commit", "criterion"):
             base.check(row[name] == orig[name],
                        "Signed case changes original source identity or requirement")
         for name in ("reviewer_case_passed", "independently_replayed",
