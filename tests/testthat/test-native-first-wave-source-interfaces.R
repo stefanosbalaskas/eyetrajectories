@@ -66,10 +66,19 @@ test_that("nonfunction native representations are not silently inferred",{
   # enough evidence to set any approval or claim 128 source classes.
   populated<-!is.na(reg$native_representation)&
     nzchar(trimws(reg$native_representation))
-  expect_equal(sum(populated),1L)
-  expect_identical(reg$python_name[populated],"TrajectorySet")
-  expect_identical(reg$native_representation[populated],
-    "etr_trajectory_set")
+  expected<-c(
+    "root::TrajectorySet"="etr_trajectory_set",
+    "workflows::WORKFLOW_SCHEMA_VERSION"=
+      "etr_frozen_workflow_values()$WORKFLOW_SCHEMA_VERSION",
+    "workflows::WORKFLOW_BUNDLE_SCHEMA_VERSION"=
+      "etr_frozen_workflow_values()$WORKFLOW_BUNDLE_SCHEMA_VERSION",
+    "workflows::WORKFLOW_BUNDLE_FORMAT"=
+      "etr_frozen_workflow_values()$WORKFLOW_BUNDLE_FORMAT")
+  expect_equal(sum(populated),4L)
+  observed<-setNames(reg$native_representation[populated],
+    paste(reg$namespace[populated],reg$python_name[populated],sep="::"))
+  expect_setequal(names(observed),names(expected))
+  expect_identical(unname(observed[names(expected)]),unname(expected))
   expect_identical(reg$evidence_state[populated],"not_reviewed")
   expect_true(all(!reg$numerical_or_value_approved))
   expect_true(all(!reg$schema_boundary_approved))
