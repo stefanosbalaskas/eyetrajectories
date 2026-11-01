@@ -8,10 +8,13 @@ test_that("two root wild exports and two subpackage workflows retain separate at
   expected<-list(
     "test-native-wild-bootstrap-projection.R"=
       "wild_bootstrap_fpca_projection",
-    "test-native-wild-bootstrap-truncation-scan.R"=
-      "scan_wild_bootstrap_fpca_truncations")
+    "test-native-wild-bootstrap-truncation-scan.R"=c(
+      "scan_wild_bootstrap_fpca_truncations",
+      "fpca_wild_bootstrap_truncation_scan_frame",
+      "select_fpca_wild_bootstrap_truncation",
+      "fpca_wild_bootstrap_truncation_selection_frame"))
   exports<-unlist(expected,use.names=FALSE)
-  expect_identical(length(exports),2L)
+  expect_identical(length(exports),5L)
   expect_false(anyDuplicated(exports)>0L)
   for(file in names(expected)){
     file_path<-file.path(root,"tests","testthat",file)
