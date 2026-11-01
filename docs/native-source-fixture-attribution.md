@@ -354,6 +354,54 @@ identity or external independent certification. Known audit
 limitations remain 203 difference records, 19 alternative
 backends/estimands and **0/508 independent approvals**.
 
+## Owner verified 77/111; supplemental typed recovery frame source tests now part of qualification
+
+Owner RStudio verified exact source qualification at
+`d1d0844ac99df2c43acd4b8f31b50f2303efea0a` with
+**310 native R source files parsed**, offline R source suite **PASS**,
+frozen Python 1.2 direct-source suite **PASS**, full evidence capture
+in both modes **PASS**, checkout integrity and file integrity **TRUE**.
+Frozen evidence bundle: `qualification_20261101T020859`.
+All 111 selected candidate fixtures matched the captured test filter,
+but only **77/111** had a literal public Python root export reference.
+The earlier 80/111 estimate was incorrect: multiple new source
+functions were invoked in only two fixture files. Count files and
+functions separately; never equate this with independent approval.
+
+A supplemental scientific source fixture,
+`test-native-functional-recovery-evidence.R`, is now included in
+both qualification modes. Its pre-existing typed Python 1.2 versus
+native R column-by-column scientific comparisons were preserved,
+and their previously dynamic source function lookup was replaced
+with literal public root exports for these three tests:
+
+- `functional_recovery_frame`: record-to-table metric names, values,
+  semantic 1-based component indices, scenario and replicate metadata.
+- `functional_recovery_failure_frame`: per-scenario failure counts,
+  rates and failure-rate Monte Carlo standard errors.
+- `functional_recovery_summary_frame`: sample standard deviations,
+  Monte Carlo SEs, source-matching quantiles and row/column schema.
+
+The existing R figure checks, source Matplotlib point comparisons,
+failure-domain checks and exact source record construction remain
+unchanged. A new
+`test-native-direct-source-recovery-evidence-attribution.R`
+guard checks that all three literal root Python calls are present,
+their R candidates exist, and the source-contract completion and
+independent approval flags remain **FALSE**. The fixture and guard
+are selected in native and pinned Python modes, tested by
+`test-native-source-evidence-runner.R`, and both are now included
+in the evidence integrity manifest.
+
+**This supplemental fixture is not automatically part of the
+existing 111-contract review queue; do not forecast a new 111
+attribution count from it without examining the next captured
+queue and file-to-contract mapping.** It is useful additional
+executable source-domain evidence, not a new standalone native
+implementation and not a third-party full-domain scientific
+certification. Known 203 source differences, 19 alternate backend
+or estimand cases and 0/508 independent signoffs remain open.
+
 ## Remaining evidence needed for a genuine per-export certification
 
 1. Independently rerun the frozen Python and native R repositories at their
