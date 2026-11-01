@@ -145,3 +145,24 @@ test_that("optional real fdapace joint score fits paired and async dimensions",{
   expect_true(async$provenance$input_layout=="asynchronous_sparse_channels")
   expect_identical(dim(async$fit$joint_scores),c(18L,2L))
 })
+
+# Actual frozen-Python 1.2 source-symbol inspection on published exports.
+# For alternate R estimands/backends this is NOT numerical source parity.
+test_that("unreviewed Python 1.2 source symbols are inspectable: fit_elastic_fpca, fit_sparse_mfpca, run_sparse_mfpca_async_workflow, run_sparse_mfpca_workflow, run_sparse_multilevel_workflow, run_sparse_prediction_workflow",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("pinned Python source-symbol audit requires source runtime")
+  .etr_expect_frozen_python_source_symbol(
+    etpy_get_export("fit_elastic_fpca"),"fit_elastic_fpca")
+  .etr_expect_frozen_python_source_symbol(
+    etpy_get_export("fit_sparse_mfpca"),"fit_sparse_mfpca")
+  .etr_expect_frozen_python_source_symbol(
+    etpy_get_export("run_sparse_mfpca_async_workflow",.namespace="workflows"),"run_sparse_mfpca_async_workflow")
+  .etr_expect_frozen_python_source_symbol(
+    etpy_get_export("run_sparse_mfpca_workflow",.namespace="workflows"),"run_sparse_mfpca_workflow")
+  .etr_expect_frozen_python_source_symbol(
+    etpy_get_export("run_sparse_multilevel_workflow",.namespace="workflows"),"run_sparse_multilevel_workflow")
+  .etr_expect_frozen_python_source_symbol(
+    etpy_get_export("run_sparse_prediction_workflow",.namespace="workflows"),"run_sparse_prediction_workflow")
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})
