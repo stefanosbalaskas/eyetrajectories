@@ -53,20 +53,49 @@ etr_run_recurrence_workflow <- function(trajectories,config){
       "curve must be a zero-based index or known ID")
     selected<-as.integer(cfg$curve)+1L
   }
+  # Native elapsed wall times are measured around the actual R operations.
+  # They are never substituted for Python timings or certified as Python
+  # runtime equivalence.
+  start_embedding<-proc.time()[["elapsed"]]
   embedding<-etr_delay_embed_trajectory(trajectories,
     embedding_dimension=as.integer(cfg$embedding_dimension),
     delay=as.integer(cfg$delay),delay_units="samples",
     dimensions=cfg$dimensions)
+  elapsed_embedding<-max(0,proc.time()[["elapsed"]]-start_embedding)
   embedded<-etr_trajectory_set(embedding$time,embedding$values,
     embedding$curve_ids,embedding$state_names,
     coordinate_system=embedding$coordinate_system,
     time_unit=embedding$time_unit,
     provenance=embedding$provenance)
+  start_recurrence<-proc.time()[["elapsed"]]
   recurrence<-etr_recurrence_matrix(embedded,curve=selected,
     radius=cfg$radius,theiler=as.integer(cfg$theiler_window))
+  elapsed_recurrence<-max(0,proc.time()[["elapsed"]]-start_recurrence)
+  start_rqa<-proc.time()[["elapsed"]]
   metrics<-.etr_recurrence_quantifiers_full(recurrence,
     min_diagonal_length=as.integer(cfg$min_diagonal_length),
     min_vertical_length=as.integer(cfg$min_vertical_length))
+  elapsed_rqa<-max(0,proc.time()[["elapsed"]]-start_rqa)
+  # Three real, native scientific steps follow the frozen W4 source order.
+  # Step function names identify the actual R implementation, not a
+  # fictitious invocation of the Python backend.
+  steps<-list(
+    etr_frozen_workflow_step_record("delay_embedding",
+      "etr_delay_embed_trajectory","completed",
+      parameters=list(embedding_dimension=cfg$embedding_dimension,
+        delay=cfg$delay,delay_units=cfg$delay_units,
+        dimensions=cfg$dimensions),elapsed_seconds=elapsed_embedding),
+    etr_frozen_workflow_step_record("recurrence",
+      "etr_recurrence_matrix","completed",
+      parameters=list(curve=cfg$curve,radius=cfg$radius,
+        metric=cfg$metric,theiler_window=cfg$theiler_window,
+        theiler_window_units=cfg$theiler_window_units),
+      elapsed_seconds=elapsed_recurrence),
+    etr_frozen_workflow_step_record("rqa",
+      ".etr_recurrence_quantifiers_full","completed",
+      parameters=list(min_diagonal_length=cfg$min_diagonal_length,
+        min_vertical_length=cfg$min_vertical_length),
+      elapsed_seconds=elapsed_rqa))
   frame<-as.data.frame(lapply(metrics,identity),check.names=FALSE)
   .etr_assert(nrow(frame)==1L,"RQA must describe one curve")
   decisions<-lapply(cfg[setdiff(names(cfg),"preprocessing")],
@@ -78,7 +107,7 @@ etr_run_recurrence_workflow <- function(trajectories,config){
   structure(list(workflow_schema_version=1L,
     workflow_contract="recurrence:v1",config=cfg,
     embedding=embedding,recurrence=recurrence,metrics=metrics,
-    decisions=decisions,
+    steps=steps,decisions=decisions,
     provenance=list(input_layout="complete_common_grid",
       state_representation="delay_embedding",
       preprocessing_executed=FALSE,fixed_radius_policy=TRUE,
