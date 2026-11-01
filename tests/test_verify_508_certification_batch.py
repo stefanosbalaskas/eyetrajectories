@@ -30,22 +30,60 @@ def make_packet(folder):
             385: "WORKFLOW_BUNDLE_SCHEMA_VERSION",
             386: "WORKFLOW_BUNDLE_FORMAT",
         }
+        schema_class_names = (
+            "WorkflowDecisionRecord",
+            "WorkflowStepRecord",
+            "PreprocessingStepConfig",
+            "PreprocessingPlan",
+            "FPCAWorkflowConfig",
+            "FPCAWorkflowResult",
+            "FunctionOnScalarWorkflowConfig",
+            "FunctionOnScalarWorkflowResult",
+            "FunctionalMixedEffectsWorkflowConfig",
+            "FunctionalMixedEffectsWorkflowResult",
+            "GeneralizedFunctionalWorkflowConfig",
+            "GeneralizedFunctionalWorkflowResult",
+            "RecurrenceWorkflowConfig",
+            "RecurrenceWorkflowResult",
+            "SparseFPCABandwidthSelectionConfig",
+            "SparseFPCAWorkflowConfig",
+            "SparseFPCAWorkflowResult",
+            "SparseMFPCABandwidthSelectionConfig",
+            "SparseMFPCAWorkflowConfig",
+            "SparseMFPCAWorkflowResult",
+            "ScoreUncertaintyConfig",
+            "ObservationDiagnosticConfig",
+            "SparseMultilevelWorkflowConfig",
+            "SparseMultilevelWorkflowResult",
+            "SparsePredictionWorkflowConfig",
+            "SparsePredictionWorkflowResult",
+            "SparseMFPCAAsyncWorkflowConfig",
+            "SparseMFPCAAsyncWorkflowResult",
+        )
+        native_schema_classes = {
+            390 + j: name for j, name in enumerate(schema_class_names)
+        }
         name = (f"fn_{i:03d}" if isfn else
                 ("TrajectorySet" if class_gap else
-                 workflow_constants.get(i, f"obj_{i - 380:03d}")))
+                 workflow_constants.get(i,
+                     native_schema_classes.get(i, f"obj_{i - 380:03d}"))))
         lane = ("DIFFERENT_BACKEND_OR_ESTIMAND" if backend else
                 "RECORDED_SOURCE_DIFFERENCE" if gap else
                 "FUNCTION_NO_RECORDED_GAP" if isfn else
                 "NONFUNCTION_NO_RECORDED_GAP")
         full.append(dict(namespace=(
-                             "workflows" if i in workflow_constants
+                             "workflows"
+                             if (i in workflow_constants or
+                                 i in native_schema_classes)
                              else "root"), python_name=name,
                          kind="function" if isfn else "other_export",
                          native_r_candidate=f"etr_{name}" if isfn else "",
                          native_nonfunction_representation=(
                              "etr_trajectory_set" if class_gap else
                              f"etr_frozen_workflow_values()${name}"
-                             if i in workflow_constants else ""),
+                             if i in workflow_constants else
+                             "etr_frozen_py12_" + name
+                             if i in native_schema_classes else ""),
                          review_lane=lane,
                          source_gap_open=str(gap).upper(),
                          native_nonfunction_source_gap_open=str(class_gap).upper(),
@@ -322,6 +360,18 @@ class TestUnsignedBatchIntegrity(unittest.TestCase):
         target = next(r for r in rows
                       if r["python_name"] == "WORKFLOW_BUNDLE_FORMAT")
         target["native_nonfunction_representation"] = "forged_R_value"
+        write_csv(p, rows)
+        self.update_manifest()
+        with self.assertRaisesRegex(v.ReviewBatchError,
+                                    "Nonfunction native representation inventory"):
+            v.verify(self.root)
+
+    def test_schema_backed_workflow_mapping_forgery_rehashed_fails(self):
+        p = self.root / v.FILES[0]
+        rows = v.read_csv(p)
+        target = next(r for r in rows
+                      if r["python_name"] == "FPCAWorkflowConfig")
+        target["native_nonfunction_representation"] = "unverified_R_config"
         write_csv(p, rows)
         self.update_manifest()
         with self.assertRaisesRegex(v.ReviewBatchError,
