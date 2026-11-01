@@ -104,6 +104,24 @@ try:
 except TypeError:
  _native_workflow_wrong_type_error=True
 ")
+  # Distinguish exception types through a repeated public Python API call.
+  reticulate::py_run_string("
+def _public_workflow_plot_errors(fn):
+    results=[]
+    for args in ({'plot':'missing'},
+                 {'plot':'fpca_component','component':0}):
+        try:
+            fn(None,**args)
+        except Exception as e:
+            results.append(type(e).__name__)
+        else:
+            results.append('NO_ERROR')
+    return results
+")
+  types<-et_to_r(reticulate::py_call(
+    reticulate::py_eval("_public_workflow_plot_errors",convert=FALSE),
+    etpy_get_export("plot_workflow_result")))
+  expect_identical(as.character(types),c("ValueError","TypeError"))
   expect_true(reticulate::py_to_r(reticulate::py_eval(
     "_native_workflow_unknown_plot_error",convert=FALSE)))
   expect_true(reticulate::py_to_r(reticulate::py_eval(
