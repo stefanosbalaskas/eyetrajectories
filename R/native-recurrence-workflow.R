@@ -1,5 +1,5 @@
 # Native R subset of frozen Python 1.2 W4 recurrence workflow.
-# Only Euclidean distance and sample-unit delays/windows are implemented.
+# Supports all three Python 1.2 distance metrics; sample-unit-only delays/windows.
 # Python dataclass/schema parity and independent approval remain open.
 
 #' Explicit source-aligned delay embedding and recurrence/RQA workflow
@@ -21,8 +21,10 @@ etr_run_recurrence_workflow <- function(trajectories,config){
     !anyNA(cfg$dimensions)&&!anyDuplicated(cfg$dimensions)&&
     all(cfg$dimensions%in%trajectories$dimension_names),
     "dimensions must name distinct existing channels")
-  .etr_assert(identical(cfg$metric,"euclidean"),
-    "only Euclidean recurrence is implemented")
+  .etr_assert(is.character(cfg$metric)&&length(cfg$metric)==1L&&
+    !is.na(cfg$metric)&&cfg$metric%in%
+      c("cityblock","euclidean","chebyshev"),
+    "metric must be one of cityblock, euclidean, chebyshev")
   .etr_assert(identical(cfg$delay_units,"samples")&&
     identical(cfg$theiler_window_units,"samples"),
     "time-unit delays or Theiler windows are not source-qualified")
@@ -69,7 +71,8 @@ etr_run_recurrence_workflow <- function(trajectories,config){
     provenance=embedding$provenance)
   start_recurrence<-proc.time()[["elapsed"]]
   recurrence<-etr_recurrence_matrix(embedded,curve=selected,
-    radius=cfg$radius,theiler=as.integer(cfg$theiler_window))
+    radius=cfg$radius,theiler=as.integer(cfg$theiler_window),
+    metric=cfg$metric)
   elapsed_recurrence<-max(0,proc.time()[["elapsed"]]-start_recurrence)
   start_rqa<-proc.time()[["elapsed"]]
   metrics<-.etr_recurrence_quantifiers_full(recurrence,
@@ -115,7 +118,8 @@ etr_run_recurrence_workflow <- function(trajectories,config){
       automatic_embedding_parameter_selection=FALSE,
       automatic_rqa_parameter_selection=FALSE,
       source_schema_equivalent=FALSE,
-      metric_scope="euclidean_samples_only"),
+      metric_scope="source_cityblock_euclidean_chebyshev_samples_only",
+      metric_used=cfg$metric),
     reports=list(rqa=etr_rqa_reporting_text(recurrence,metrics)),
     tables=list(rqa_metrics=frame)),
     class="etr_recurrence_workflow")
