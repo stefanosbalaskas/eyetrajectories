@@ -115,7 +115,7 @@ if (length(logs))
 # index with source filename/line for every failed expectation. Do not skip
 # tests or change the R CMD check verdict.
 test_logs <- list.files(file.path(report,"check"),
-  pattern="^testthat\\.Rout(?:\\.fail)?$",
+  pattern="^testthat\\.Rout(\\.fail)?$",
   recursive=TRUE,full.names=TRUE)
 if(length(test_logs)){
   for(source_log in test_logs){
