@@ -80,14 +80,19 @@ etr_capture_four_pilot_boundary_evidence<-function(root=".",packet_dir=NULL){
   # Expected source/native behavior is grounded in pinned source tests:
   # this is an explicit divergence ledger, NOT a parity PASS ledger.
   rows<-list()
-  record<-function(name,case,source,known_native,
+  record<-function(name,case,source,known_native,source_boundary_mode,
       expected_source,expected_native,relation){
     source_kind<-class_result(source)
     native_kind<-class_result(known_native)
+    mode_kind<-class_result(source_boundary_mode)
     rows[[length(rows)+1L]]<<-data.frame(
       python_name=name,case_id=case,
       python_observed_behavior=source_kind,
       native_r_observed_behavior=native_kind,
+      opt_in_python_boundary_mode_observed_behavior=mode_kind,
+      opt_in_python_boundary_mode_matches_source_category=
+        identical(mode_kind,source_kind),
+      opt_in_mode_full_source_parity_certified=FALSE,
       expected_python_behavior=expected_source,
       expected_native_r_behavior=expected_native,
       source_exception_if_any=source$error,
@@ -113,7 +118,9 @@ etr_capture_four_pilot_boundary_evidence<-function(root=".",packet_dir=NULL){
     etpy_get_export("alr_transform"),
     values=reticulate::r_to_py(simplex),epsilon=NaN))
   r_alr<-observe(function()etr_alr_transform(simplex,epsilon=NaN))
-  record("alr_transform","NaN_epsilon",src_alr,r_alr,
+  r_alr_opt_in<-observe(function()
+    etr_alr_transform(simplex,epsilon=NaN,python_boundary_mode=TRUE))
+  record("alr_transform","NaN_epsilon",src_alr,r_alr,r_alr_opt_in,
     "returns_all_nan","raises","documented_source_difference")
 
   # Source exp(1000) gives Inf; normalization contains NaN. Native fails.
@@ -127,8 +134,11 @@ etr_capture_four_pilot_boundary_evidence<-function(root=".",packet_dir=NULL){
         n_dimensions=as.integer(3L))))
   r_inverse<-observe(function()
     etr_inverse_alr(logits,reference_dimension=0L,n_dimensions=3L))
+  r_inverse_opt_in<-observe(function()
+    etr_inverse_alr(logits,reference_dimension=0L,n_dimensions=3L,
+      python_boundary_mode=TRUE))
   record("inverse_alr","finite_logit_exp_overflow",src_inverse,
-    r_inverse,"returns_nonfinite","raises",
+    r_inverse,r_inverse_opt_in,"returns_nonfinite","raises",
     "documented_source_difference")
 
   # Python np.diff(c(0,1,Inf)) remains positive; R requires finite time.
@@ -137,8 +147,10 @@ etr_capture_four_pilot_boundary_evidence<-function(root=".",packet_dir=NULL){
     etpy_get_export("functional_trapezoid_weights"),
     time=reticulate::r_to_py(inf_time)))
   r_weights<-observe(function()etr_trapezoid_weights(inf_time))
+  r_weights_opt_in<-observe(function()
+    etr_trapezoid_weights(inf_time,python_boundary_mode=TRUE))
   record("functional_trapezoid_weights","positive_infinite_endpoint",
-    src_weights,r_weights,"returns_nonfinite","raises",
+    src_weights,r_weights,r_weights_opt_in,"returns_nonfinite","raises",
     "documented_source_difference")
 
   # sklearn and R both reject nonfinite score inputs. Error CLASS/TEXT,
@@ -151,12 +163,16 @@ etr_capture_four_pilot_boundary_evidence<-function(root=".",packet_dir=NULL){
     etpy_get_export("score_distance_matrix"),fpca=py_fit))
   r_distance<-observe(function()etr_score_distance_matrix(
     list(scores=score,n_components=2L)))
+  r_distance_opt_in<-observe(function()etr_score_distance_matrix(
+    list(scores=score,n_components=2L),python_boundary_mode=TRUE))
   record("score_distance_matrix","nonfinite_score_error",
-    src_distance,r_distance,"raises","raises",
+    src_distance,r_distance,r_distance_opt_in,"raises","raises",
     "both_reject_error_schema_unreviewed")
 
   out<-do.call(rbind,rows)
   check(nrow(out)==4L&&all(out$observed_behavior_as_expected)&&
+    all(out$opt_in_python_boundary_mode_matches_source_category)&&
+    !any(out$opt_in_mode_full_source_parity_certified)&&
     !any(out$source_domain_equivalence_established|
       out$independent_reviewer_approved|
       out$independently_replayed_case|out$fully_certified),
@@ -174,7 +190,8 @@ etr_capture_four_pilot_boundary_evidence<-function(root=".",packet_dir=NULL){
     !any(reread$fully_certified),
     "Boundary CSV round-trip lost findings or approval gates")
   message("Developer frozen-source boundary observations: ",path)
-  message("3 documented source differences and 1 shared rejection; ",
-    "none establish full-domain parity or independent certification.")
+  message("3 default-native source differences and 1 shared rejection; ",
+    "opt-in Python boundary categories align on four probes, ",
+    "but neither mode establishes full-domain parity or certification.")
   invisible(list(evidence=out,path=path))
 }
