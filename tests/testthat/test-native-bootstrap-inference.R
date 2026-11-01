@@ -143,9 +143,9 @@ test_that("frozen 508-source register remains fail-closed",{
   expect_lte(sum(z$is_python_function & !z$named_native_candidate),144L)
   expect_gte(sum(z$native_implementation_started),211L)
   expect_equal(sum(z$native_implementation_stage==15L,na.rm=TRUE),5L)
-  expect_equal(sum(!is.na(z$native_representation_stage)),7L)
+  expect_equal(sum(!is.na(z$native_representation_stage)),32L)
   expect_equal(sum(!z$is_python_function &
-    is.na(z$native_representation_stage)),121L)
+    is.na(z$native_representation_stage)),96L)
   expect_true(all(!z$one_to_one_native_contract_complete))
   expect_error(etr_native_parity_catalog(require_complete=TRUE),"NOT complete")
   expect_identical(before,reticulate::py_available(initialize=FALSE))
