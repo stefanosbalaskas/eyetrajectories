@@ -269,6 +269,8 @@ source_files<-unique(c(
   "scripts/build_508_certification_review_batches.R",
   "scripts/verify_508_certification_batch.py",
   "tests/test_verify_508_certification_batch.py",
+  "scripts/verify_508_external_attestation.py",
+  "tests/test_verify_508_external_attestation.py",
   "scripts/verify_four_pilot_review_bundle.py",
   "tests/test_verify_four_pilot_review_bundle.py",
   "tests/testthat/test-native-508-certification-batches.R",
