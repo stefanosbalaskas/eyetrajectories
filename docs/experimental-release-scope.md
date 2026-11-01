@@ -96,3 +96,60 @@ combined experimental gate runs both CRAN-style and frozen Python 1.2
 scientific qualification independently, preserving separate PASS/FAIL
 results even when either one fails. This fix is not a new release or a
 completed R CMD check: owner-side rerun at exact repaired SHA is required.
+
+## November 2, second release-candidate run and remediation
+
+Owner executed the exact development commit
+`7d52d24ee4666cee1515fe0c23bf5509ea627d03` on Windows 11 /
+R 4.6.1. The first malformed Rd source-build failure was genuinely
+resolved: **93 manuals parsed; R CMD build PASS, installation PASS,
+PDF manual PASS, and the native scientific smoke PASS**.
+
+The full check nevertheless reported **1 ERROR, 4 WARNINGS and 4 NOTES**.
+These are actual defects, not waived counts:
+
+- R CMD check tests failed after `scripts/` was excluded from the
+  built tarball, leaving five research-only test helpers inaccessible.
+- Two scientific test cases invoked frozen Python fixtures
+  (`_gm_band` and `_mc_family`) before their opt-in Python 1.2 setup;
+  both failed in the offline and direct-source qualification modes.
+- Five R source files contained literal non-ASCII multiplication/squared
+  symbols; source text is now encoded with R Unicode escapes that
+  preserve the same *runtime* strings.
+- `etr_functional_mixed_effects_variance_decomposition` had two Rd
+  aliases. The canonical dedicated manual is retained.
+- Forty exported functions lacked a public help-page alias; three
+  scientific-domain reference pages now index these export names.
+  These concise umbrella references do not themselves certify full-domain
+  scientific behavior; full API-specific documentation remains a
+  publication-quality review task.
+- Six public function argument lists were out of sync with their Rd
+  usages. Five relevant flags and the two recurrence metric parameters
+  have been reconciled in the R manuals.
+- The package used `combn`, `head`, `tail` and `setNames` without
+  NAMESPACE imports; their standard package imports are now explicit.
+- Ten Rd usage sections contained overlong lines truncated in the PDF
+  manual; each was wrapped to fit the documented width.
+- Eight old private GitHub PR/issue links in README returned 404 to
+  public URL checks; their development references now remain as text
+  rather than broken public URLs.
+- Source-independent research fixtures now live under
+  `tests/testthat/fixtures/`. A new early preflight asserts that all
+  five packaged files are byte-for-byte identical to their canonical
+  scripts. Production scientific API and inference are unchanged.
+
+The second run's frozen source suite failed only in the two named
+Python initialization contexts visible in the shared log; this does
+NOT imply those were the only possible unexecuted boundary conditions.
+The source parity register and 508 scientific reviewer signatures
+remain unchanged.
+
+The CRAN incoming-feasibility NOTE for a first submission and current
+`0.4.1.9000` development version remains expected and requires
+publication-version review. No release tag, CRAN upload, independent
+certification or cross-platform Actions PASS is asserted.
+
+**Current exact branch HEAD remains unverified** until the owner reruns
+both `scripts/preflight_rd_manuals.R` and
+`scripts/qualify_experimental_candidate.R`. Never infer a green release
+from committed repairs alone.
