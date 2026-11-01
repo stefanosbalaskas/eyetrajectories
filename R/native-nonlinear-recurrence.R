@@ -281,19 +281,15 @@ etr_recurrence_radius_profile <- function(source,curve=1L,radii,
   .etr_assert(is.numeric(radii) && length(radii)>=2L &&
     all(is.finite(radii)) && all(radii>0) && all(diff(radii)>0),
     "radii must be strictly increasing positive finite values")
-  .etr_assert(identical(theiler_window_units,"samples"),
-    "time-based Theiler windows not yet supported by native R profile")
   .etr_assert(metric %in% c("euclidean","cityblock","chebyshev"),
     "metric must be euclidean, cityblock or chebyshev")
   if(is.character(curve))curve<-match(curve,source$curve_ids)
   .etr_assert(length(curve)==1L && !is.na(curve) &&
     curve %in% seq_along(source$curve_ids),
     "curve must identify an existing trajectory")
-  .etr_assert(is.numeric(theiler_window) &&
-    length(theiler_window)==1L &&
-    is.finite(theiler_window) &&
-    theiler_window>=0 && theiler_window==as.integer(theiler_window),
-    "theiler_window must be a nonnegative integer")
+  tt<-.etr_source_time_unit_samples(source$time,theiler_window,
+    theiler_window_units,source$time_unit,"theiler_window",
+    allow_zero=TRUE)
   if(is.null(dimensions))dimensions<-source$dimension_names
   .etr_assert(is.character(dimensions) && length(dimensions)>0L &&
     all(dimensions %in% source$dimension_names) && !anyDuplicated(dimensions),
@@ -301,7 +297,6 @@ etr_recurrence_radius_profile <- function(source,curve=1L,radii,
   idx<-match(dimensions,source$dimension_names)
   n<-length(source$time)
   .etr_assert(n<=2500L,"native dense recurrence radius profile limited to 2500 states")
-  tt<-as.integer(theiler_window)
   # Exact eligible-pair closed form: sum_{lag=theiler+1}^{n-1}(n-lag).
   # Avoid allocating three extra n-by-n matrices merely to count pairs.
   eligible<-as.double(n-tt)*as.double(n-tt-1L)/2
@@ -341,6 +336,8 @@ etr_recurrence_radius_profile <- function(source,curve=1L,radii,
     eligible_pair_count=as.integer(eligible),
     provenance=list(operation="recurrence_radius_profile",
       distance_matrix_materialized=FALSE,
+      declared_theiler_window=theiler_window,
+      declared_theiler_window_units=theiler_window_units,
       radius_grid_declared_by_user=TRUE,
       automatic_radius_selection=FALSE)),
     class="etr_recurrence_radius_profile")
@@ -349,9 +346,9 @@ etr_recurrence_radius_profile <- function(source,curve=1L,radii,
 #' Native fixed-radius sliding-window RQA
 #' @param trajectories Complete native common-grid trajectories.
 #' @param curve Curve ID or one-based index.
-#' @param window,step Window/step lengths in integer samples.
+#' @param window,step Positive window/step lengths, in samples or physical time.
 #' @param radius Finite nonnegative Euclidean radius (mandatory in R).
-#' @param metric Currently "euclidean"; Python alternative metrics pending.
+#' @param metric One of "cityblock", "euclidean" or "chebyshev".
 #' @param theiler_window Nonnegative integer Theiler lag.
 #' @param dimensions Optional selected channels.
 #' @param min_diagonal_length,min_vertical_length Run-length thresholds.
@@ -362,11 +359,18 @@ etr_windowed_rqa <- function(trajectories,curve=1L,window,step,
     theiler_window=0L,theiler_window_units="samples",dimensions=NULL,
     min_diagonal_length=2L,min_vertical_length=2L){
   etr_validate(trajectories,require_complete=TRUE)
-  .etr_assert(identical(metric,"euclidean") &&
-    identical(window_units,"samples") && identical(step_units,"samples") &&
-    identical(theiler_window_units,"samples") &&
-    is.null(target_recurrence_rate),
-    "native windowed RQA supports fixed-radius Euclidean sample-index contracts only")
+  .etr_assert(is.character(metric)&&length(metric)==1L&&
+    !is.na(metric)&&metric%in%c("cityblock","euclidean","chebyshev"),
+    "metric must be one of cityblock, euclidean, chebyshev")
+  .etr_assert(is.null(target_recurrence_rate),
+    "native windowed RQA supports fixed-radius contracts only")
+  window<-.etr_source_time_unit_samples(trajectories$time,window,
+    window_units,trajectories$time_unit,"window")
+  step<-.etr_source_time_unit_samples(trajectories$time,step,
+    step_units,trajectories$time_unit,"step")
+  theiler_window<-.etr_source_time_unit_samples(trajectories$time,
+    theiler_window,theiler_window_units,trajectories$time_unit,
+    "theiler_window",allow_zero=TRUE)
   .etr_assert(is.numeric(window) && length(window)==1L &&
     is.finite(window) && window>=3L && window==as.integer(window),
     "window must be an integer at least three")
@@ -396,7 +400,7 @@ etr_windowed_rqa <- function(trajectories,curve=1L,window,step,
       trajectories$coordinate_system,trajectories$time_unit,
       trajectories$provenance)
     rec<-etr_recurrence_matrix(x,curve=1L,radius=radius,
-                               theiler=theiler_window)
+                               theiler=theiler_window,metric=metric)
     a<-.etr_recurrence_quantifiers_full(rec,min_diagonal_length,min_vertical_length)
     data.frame(start_index=as.integer(i-1L),stop_index=as.integer(hi),
       start_time=x$time[1L],end_time=x$time[length(x$time)],
@@ -419,7 +423,12 @@ etr_windowed_rqa <- function(trajectories,curve=1L,window,step,
     time_unit=trajectories$time_unit,
     provenance=list(operation="windowed_rqa",
       curve_id=trajectories$curve_ids[curve],
-      radius_policy="fixed",tail_policy="full_windows_only_with_explicit_tail_count")),
+      radius_policy="fixed",metric=metric,
+      theiler_window_samples=theiler_window,
+      declared_time_window_units=window_units,
+      declared_time_step_units=step_units,
+      declared_theiler_window_units=theiler_window_units,
+      tail_policy="full_windows_only_with_explicit_tail_count")),
     class="etr_windowed_rqa")
 }
 
@@ -464,6 +473,8 @@ etr_windowed_rqa_trajectory_set <- function(trajectories,metrics,window,step,
   # Python uses NaN for undefined; native R stores NA for missing
   # values and explicitly tracks undefined entries as provenance.
   vals[bad]<-NA_real_
+  window<-per[[1L]]$window_samples
+  step<-per[[1L]]$step_samples
   overlap<-max(as.integer(window)-as.integer(step),0L)
   provenance<-list(operation="windowed_rqa_trajectory_set",
     metrics=metrics,overlap_samples=overlap,
