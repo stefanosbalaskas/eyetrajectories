@@ -177,6 +177,21 @@ test_that("new scientific source oracles are included in both qualification mode
   expect_identical(length(begin),1L)
   expect_true(any(finish>begin))
   filter_lines<-runner[begin:min(finish[finish>begin])]
+  # A name in a prerequisite list or hashed manifest is not evidence
+  # that testthat actually executed that suite in either capture mode.
+  for(name in c("native-fpca-external-score-reconstruction",
+    "native-functional-recovery-evidence",
+    "native-direct-source-recovery-evidence-attribution")){
+    expect_true(any(grepl(paste0('"',name,'"'),
+      filter_lines,fixed=TRUE)),
+      info=paste("required scientific suite not selected:",name))
+  }
+  for(guard in c("if(anyDuplicated(required_scientific_tests))stop(",
+    "unselected_required<-required_scientific_tests[",
+    "!grepl(filter,basename(required_scientific_tests))]")){
+    expect_true(any(grepl(guard,runner,fixed=TRUE)),
+      info=paste("missing fail-closed capture guard:",guard))
+  }
   for(name in c("native-functional-process-simulation",
     "native-functional-recovery-orchestration",
     "native-workflow-plot-dispatch",
