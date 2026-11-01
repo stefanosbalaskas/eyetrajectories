@@ -160,9 +160,11 @@ def verify(packet_dir: str | Path, expected_r_head: str | None = None) -> dict[s
             sum(r["relation"] == "both_reject_error_schema_unreviewed"
                 for r in boundaries) == 1,
             "Known source differences removed or misclassified")
-    flags(boundaries, ("observed_behavior_as_expected",),
+    flags(boundaries, ("observed_behavior_as_expected",
+                       "opt_in_python_boundary_mode_matches_source_category"),
           "TRUE", "boundary observations")
-    flags(boundaries, ("source_domain_equivalence_established",
+    flags(boundaries, ("opt_in_mode_full_source_parity_certified",
+                       "source_domain_equivalence_established",
                        "independent_reviewer_approved",
                        "independently_replayed_case", "fully_certified"),
           "FALSE", "boundary approvals")
