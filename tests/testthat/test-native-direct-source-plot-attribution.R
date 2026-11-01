@@ -47,3 +47,22 @@ test_that("two frozen sparse plot exports carry typed direct Python oracles",{
   expect_true(all(api$source_contract_gap_unresolved[idx]))
   expect_false(any(api$one_to_one_native_contract_complete[idx]))
 })
+
+test_that("both IAAFT plot exports have direct frozen Python geometry witnesses",{
+  root<-testthat::test_path("..","..")
+  env<-new.env(parent=baseenv())
+  sys.source(file.path(root,"scripts",
+    "source_fixture_static_attribution.R"),envir=env)
+  file<-file.path(root,"tests","testthat",
+    "test-native-source-diagnostic-frames.R")
+  found<-env$etr_source_fixture_static_inventory(file)
+  expected<-c("plot_multivariate_iaaft_diagnostics",
+    "plot_multivariate_surrogate_nonlinearity")
+  expect_true(found$cases>=1L)
+  expect_setequal(intersect(expected,found$export_literals),expected)
+  api<-etr_native_parity_catalog()
+  idx<-match(expected,api$python_name)
+  expect_false(anyNA(idx))
+  expect_true(all(api$source_contract_gap_unresolved[idx]))
+  expect_false(any(api$one_to_one_native_contract_complete[idx]))
+})
