@@ -22,9 +22,11 @@ def make_packet(folder):
     full = []
     for i in range(508):
         isfn = i < 380
-        gap = i < 203
+        gap = i < 203 or i == 383
+        class_gap = i == 383
         backend = i < 19
-        name = f"fn_{i:03d}" if isfn else f"obj_{i - 380:03d}"
+        name = (f"fn_{i:03d}" if isfn else
+                ("TrajectorySet" if class_gap else f"obj_{i - 380:03d}"))
         lane = ("DIFFERENT_BACKEND_OR_ESTIMAND" if backend else
                 "RECORDED_SOURCE_DIFFERENCE" if gap else
                 "FUNCTION_NO_RECORDED_GAP" if isfn else
@@ -34,6 +36,7 @@ def make_packet(folder):
                          native_r_candidate=f"etr_{name}" if isfn else "",
                          review_lane=lane,
                          source_gap_open=str(gap).upper(),
+                         native_nonfunction_source_gap_open=str(class_gap).upper(),
                          backend_or_estimand_distinct=str(backend).upper(),
                          currently_authoritatively_certified="FALSE",
                          developer_queue_is_not_scientific_certification="TRUE",
@@ -298,7 +301,18 @@ class TestUnsignedBatchIntegrity(unittest.TestCase):
         rows[0]["source_gap_open"] = "FALSE"
         write_csv(p, rows)
         self.update_manifest()
-        with self.assertRaisesRegex(v.ReviewBatchError, "source gap inventory"):
+        with self.assertRaisesRegex(v.ReviewBatchError, "source-gap inventory"):
+            v.verify(self.root)
+
+    def test_forged_trajectory_class_source_gap_rehashed_fails(self):
+        p = self.root / v.FILES[0]
+        rows = v.read_csv(p)
+        row = next(x for x in rows if x["python_name"] == "TrajectorySet")
+        row["source_gap_open"] = "FALSE"
+        row["native_nonfunction_source_gap_open"] = "FALSE"
+        write_csv(p, rows)
+        self.update_manifest()
+        with self.assertRaisesRegex(v.ReviewBatchError, "source-gap inventory"):
             v.verify(self.root)
 
     def test_unsigned_template_name_forgery_rehashed_fails(self):
