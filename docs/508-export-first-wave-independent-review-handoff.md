@@ -62,3 +62,48 @@ The authoritative pilot function register is inst/extdata/native_contract_certif
 A cryptographic signature only authenticates the signed bytes and signing key; it cannot itself establish scientific truth, reviewer independence, or full-domain equality. No developer-generated signature can substitute for a real external independent reviewer.
 
 The full 508-export certification gate remains fail-closed. A restricted-subset verdict never increments the full-domain numerator (currently 0/508). Draft PR #48 and independent-review issue #34 remain open.
+
+
+## Signed receipt for a REAL reviewer (not a self-signoff)
+
+The new read-only scripts/verify_508_external_attestation.py validates signed
+decisions for one to 36 exports in the first batch. The independent reviewer
+makes COPY files of both certification_first_batch_reviewer_checklist.csv
+and certification_first_batch_UNSIGNED_decisions.csv, completing ten
+case rows for each selected decision. Every case must have independently
+replayed/reviewed=TRUE and actual reviewer-generated evidence and findings.
+FULL_SOURCE_PARITY additionally requires all ten scope criteria and the
+complete independent reviewer gates to pass. Restricted/negative scientific
+findings are valid review outcomes but never full-domain approvals.
+
+The reviewer signs BOTH completed CSV files, for example:
+
+~~~bash
+gpg --armor --detach-sign --output completed_cases.csv.asc completed_cases.csv
+gpg --armor --detach-sign --output completed_decisions.csv.asc completed_decisions.csv
+~~~
+
+The maintainer must obtain and verify the complete GPG signer fingerprint
+from an OUT-OF-BAND source independent of the CSVs, then invoke:
+
+~~~bash
+python scripts/verify_508_external_attestation.py PACKET_DIR \
+  completed_cases.csv completed_decisions.csv \
+  completed_cases.csv.asc completed_decisions.csv.asc \
+  --expected-r-head FULL_TRUSTED_40_HEX_R_SHA \
+  --trusted-fingerprint FULL_OUT_OF_BAND_GPG_FINGERPRINT
+~~~
+
+The verifier checks the unchanged unsigned author packet, all source
+identifiers, ten independent cases per reviewed export, written findings,
+reviewer-supplied declarations, two valid detached GPG signatures and the
+out-of-band fingerprint. Signature acceptance does NOT prove that the signer
+is professionally independent or that their judgments are scientifically
+correct. The verifier **never writes** to any authorititative registry or
+increments the 508 numerator. An actual maintainer/reviewer adjudication
+of source-domain equivalence is separately required.
+
+Synthetic author-only unit tests for cryptographic receipt structure mock
+signature verification; they do NOT create or impersonate independent
+reviewers. Actual GPG cryptography is exercised only when a real reviewer
+submits signed documents and a separately trusted fingerprint.
