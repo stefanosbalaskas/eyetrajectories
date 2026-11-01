@@ -257,3 +257,35 @@ test_that("new scientific source oracles are included in both qualification mode
   }
 
 })
+
+test_that("111 selected Python exports require exact-head literal source evidence",{
+  runner<-testthat::test_path("..","..","scripts",
+    "capture_native_source_qualification_evidence.R")
+  lines<-readLines(runner,warn=FALSE)
+  required<-c(
+    "tests/testthat/helper-frozen-python-source-symbol.R",
+    "tests/testthat/test-native-source-fixture-static-attribution.R",
+    "tests/testthat/test-native-mixed-residual-comparison.R",
+    "tests/testthat/test-native-python-portable-writer.R",
+    "tests/testthat/test-native-fpca-component-envelopes.R",
+    "tests/testthat/test-native-functional-recovery-orchestration.R",
+    "tests/testthat/test-native-workflow-plot-dispatch.R",
+    "tests/testthat/test-native-bounded-model-workflows.R",
+    "tests/testthat/test-native-generalized-gee-fit.R",
+    "tests/testthat/test-native-generalized-gee-bootstrap.R",
+    "tests/testthat/test-native-workflow-bundle-export.R",
+    "tests/testthat/test-native-mixed-covariance-sensitivity.R",
+    "tests/testthat/test-native-mixed-participant-bootstraps.R",
+    "tests/testthat/test-native-thirdparty-functional-analogues.R",
+    "tests/testthat/test-native-final-sparse-elastic-analogues.R")
+  for(name in required){
+    expect_true(any(grepl(paste0('"',name,'"'),lines,fixed=TRUE)),
+      info=paste("evidence manifest must hash source witness",name))
+  }
+  expect_true(any(grepl(
+    "all(fixture_attribution$literal_etpy_get_export_call_for_this_contract)",
+    lines,fixed=TRUE)))
+  expect_true(any(grepl("nrow(missing_refs)==0L",lines,fixed=TRUE)))
+  expect_true(any(grepl("No certifications changed",lines,fixed=TRUE))||
+    any(grepl("certification remain unsigned",lines,fixed=TRUE)))
+})
