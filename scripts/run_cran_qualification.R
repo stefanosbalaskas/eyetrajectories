@@ -66,11 +66,13 @@ fixture_preflight_error <- tryCatch({
   source("scripts/preflight_packaged_test_fixtures.R",local=TRUE)
   NULL
 },error=function(e)conditionMessage(e))
-check_error <- if(!is.null(rd_preflight_error))
-  paste("Rd manual preflight failed:",rd_preflight_error) else
-  if(!is.null(fixture_preflight_error))
-    paste("Research fixture preflight failed:",fixture_preflight_error)
-  else NULL
+check_error <- if (!is.null(rd_preflight_error)) {
+  paste("Rd manual preflight failed:", rd_preflight_error)
+} else if (!is.null(fixture_preflight_error)) {
+  paste("Research fixture preflight failed:", fixture_preflight_error)
+} else {
+  NULL
+}
 cat("\n=== Full source-build R CMD check --as-cran ===\n")
 check <- if(!is.null(check_error)) NULL else tryCatch(
   rcmdcheck::rcmdcheck(
