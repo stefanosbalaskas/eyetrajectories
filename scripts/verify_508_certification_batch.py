@@ -151,13 +151,22 @@ def verify(packet_dir: str | Path, expected_r_head: str | None = None) -> dict[s
           "Incorrect callable/nonfunction source-gap inventory")
     check(sum(r["backend_or_estimand_distinct"] == "TRUE" for r in full) == 19,
           "Incorrect alternative backend/estimand inventory")
+    frozen_value_mappings = {
+        ("root", "TrajectorySet"): "etr_trajectory_set",
+        ("workflows", "WORKFLOW_SCHEMA_VERSION"):
+            "etr_frozen_workflow_values()$WORKFLOW_SCHEMA_VERSION",
+        ("workflows", "WORKFLOW_BUNDLE_SCHEMA_VERSION"):
+            "etr_frozen_workflow_values()$WORKFLOW_BUNDLE_SCHEMA_VERSION",
+        ("workflows", "WORKFLOW_BUNDLE_FORMAT"):
+            "etr_frozen_workflow_values()$WORKFLOW_BUNDLE_FORMAT",
+    }
     check(sum(bool(r["native_nonfunction_representation"].strip())
-              for r in full) == 1 and
-          all((r["native_nonfunction_representation"] ==
-               ("etr_trajectory_set" if r["python_name"] == "TrajectorySet"
-                and r["kind"] != "function" else ""))
-              for r in full),
-          "Nonfunction native representation inventory must retain the one partial S3 class candidate")
+              for r in full) == len(frozen_value_mappings) and
+          all(r["native_nonfunction_representation"] ==
+              frozen_value_mappings.get(key(r), "") for r in full) and
+          all(row["kind"] != "function" for row in full
+              if key(row) in frozen_value_mappings),
+          "Nonfunction native representation inventory must retain exactly four source-backed partial candidates")
     all_flags(full, ("currently_authoritatively_certified",),
               "FALSE", "source certification state")
     all_flags(full, ("developer_queue_is_not_scientific_certification",),
