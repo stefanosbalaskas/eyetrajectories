@@ -75,3 +75,24 @@ and native scientific matrices be executed on hosted runners. Do not
 weaken the tests or report a CI success without an actual executed job.
 
 The branch remains DRAFT. This gate creates no public distribution.
+
+## November 2 CRAN source-build blocker and repair
+
+The first combined release-candidate run at development HEAD
+`e97d7a17499ddf307f8a02c895e3fc73c5263687` stopped in
+`R CMD build` before `R CMD check` could execute. The cause was
+`man/etr_capture_environment.Rd`, whose manual control sequences had
+accidentally been stored as double-backslash text (`\\\\name`,
+`\\\\alias`, `\\\\title`, etc.) rather than valid Rd commands.
+The native scientific smoke example independently PASSed; it does not
+make the source build pass. The reported R CMD check ERROR/WARNING/NOTE
+counts of `NA` therefore mean NOT EXECUTED, not zero failures.
+
+The source Rd control sequences have now been corrected. A new
+`scripts/preflight_rd_manuals.R` parses and validates all tracked Rd
+files *before* the costly package build. The full qualification runner
+now distinguishes build aborts from executed package checks, and the
+combined experimental gate runs both CRAN-style and frozen Python 1.2
+scientific qualification independently, preserving separate PASS/FAIL
+results even when either one fails. This fix is not a new release or a
+completed R CMD check: owner-side rerun at exact repaired SHA is required.
