@@ -16,7 +16,7 @@ pinned to the published Python 1.2.0 source.
 }
 \usage{
 etr_windowed_rqa_sensitivity(trajectories, metrics, window_step_pairs,
-  window_units = "samples", step_units = "samples", radius,
+  window_units = "samples", step_units = "samples", radius = NULL,
   target_recurrence_rate = NULL, metric = "euclidean",
   theiler_window = 0L, theiler_window_units = "samples",
   dimensions = NULL, min_diagonal_length = 2L,
@@ -24,7 +24,8 @@ etr_windowed_rqa_sensitivity(trajectories, metrics, window_step_pairs,
 etr_windowed_rqa_functional_mean_band(trajectories, metrics,
   window, step, unit, participant_column = NULL,
   window_units = "samples", step_units = "samples",
-  radius, target_recurrence_rate = NULL, metric = "euclidean",
+  radius = NULL, target_recurrence_rate = NULL,
+  metric = "euclidean",
   theiler_window = 0L, theiler_window_units = "samples",
   dimensions = NULL, min_diagonal_length = 2L,
   min_vertical_length = 2L, confidence_level = 0.95,
@@ -39,15 +40,23 @@ etr_functional_recovery_reporting_text(assessment)
 \item{trajectories}{Complete native functional trajectories, with
 analyst-declared scientific coordinate system and time units.}
 \item{metrics}{Unique windowed RQA statistic names.}
-\item{window_step_pairs}{Nonempty list or two-column numeric matrix of
-declared (window, step) integer sample-count pairs.}
-\item{window,step}{Positive integer window and step in samples.}
-\item{window_units,step_units,theiler_window_units}{Currently only
-\code{"samples"} are supported; other units fail closed.}
-\item{radius}{Explicit finite fixed Euclidean recurrence radius.}
-\item{target_recurrence_rate}{Currently unsupported; use \code{NULL}.}
-\item{metric}{Currently \code{"euclidean"} for windowed RQA.}
-\item{theiler_window}{Nonnegative Theiler exclusion in samples.}
+\item{window_step_pairs}{Nonempty list or two-column numeric matrix
+of explicit (window, step) pairs. Sample-unit counts must be integers;
+physical-time widths may be fractional if exactly grid-convertible.}
+\item{window,step}{Positive explicit window and step widths in the
+declared sample or physical-time units.}
+\item{window_units,step_units,theiler_window_units}{Either sample units
+or compatible physical time (including s/ms aliases), converted to
+whole observed samples on an approximately regular time grid.}
+\item{radius}{Optional finite positive fixed recurrence radius; supply
+exactly one radius policy.}
+\item{target_recurrence_rate}{Optional target density strictly between
+zero and one, using a source-aligned inclusive-radius search. The
+achieved rate may differ owing to ties.}
+\item{metric}{Recurrence distance metric: \code{"euclidean"},
+\code{"cityblock"} or \code{"chebyshev"}.}
+\item{theiler_window}{Nonnegative Theiler exclusion in the units
+declared by theiler_window_units.}
 \item{dimensions}{Optional named source dimensions to analyze.}
 \item{min_diagonal_length,min_vertical_length}{RQA diagonal and vertical
 run-length thresholds.}
@@ -76,10 +85,13 @@ assessment-frame returns a native semantic value data frame, and
 reporting-text returns a compact source-aligned manuscript description.
 }
 \details{
-The published Python 1.2 source handles additional window units,
-automatic threshold choices, Python dataclasses and pandas outputs.
-This stage intentionally restricts the native statistical domain
-rather than claiming one-to-one public-source parity. Inference
+The native implementation supports explicit sample or convertible
+physical-time windows, optional source-aligned target-density threshold
+selection, and three distance metrics. When density controls the
+threshold, recurrence_rate is not allowed as a derived outcome.
+Python dataclasses, pandas schemas and some exceptional input domains
+remain scientifically distinct from the native representations.
+These capabilities do not establish full Python source parity. Inference
 resamples entire derived functions at the declared independent
 curve/participant unit, never overlapping time windows independently.
 The temporal distance between RQA window centers is not an estimate
