@@ -13,7 +13,7 @@
   etr_trajectory_set(tt,values,
     curve_ids=paste0("curve_",seq_len(5L)),
     dimension_names=c("x","y"),
-    coordinate_system="arbitrary",time_unit="s")
+    coordinate_system="unknown",time_unit="s")
 }
 
 test_that("functional L2 Python numeric-string and Boolean states are opt-in",{
