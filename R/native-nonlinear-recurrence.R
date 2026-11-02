@@ -41,6 +41,9 @@
 #' Compute undirected recurrence-network topology in R
 #' @param recurrence Native auto etr_recurrence with symmetric off-diagonal matrix.
 #' @return etr_recurrence_network list with topology and source provenance.
+#'   Native adjacency remains a dense logical matrix (up to 2500 states),
+#'   while triangle counting uses forward-neighbor intersections and
+#'   component enumeration uses queue-head breadth-first search.
 #' @export
 etr_recurrence_network <- function(recurrence){
   .etr_recurrence_internal(recurrence,"auto")
@@ -135,7 +138,8 @@ etr_recurrence_network <- function(recurrence){
       source_recurrence_rate_denominator=recurrence$provenance$recurrence_rate_denominator,
       local_clustering_degree_lt_2=0,
       transitivity_undefined_when_no_connected_triples=TRUE,
-      triangle_count=as.integer(n_triangles),
+      triangle_count=if(n_triangles <= .Machine$integer.max)
+        as.integer(n_triangles) else as.numeric(n_triangles),
       dense_adjacency_materialized=TRUE,
       triangle_count_method="forward_neighbor_intersections",
       connected_components_method="queue_head_breadth_first_search",
