@@ -288,7 +288,8 @@ etr_windowed_rqa_sensitivity <- function(trajectories,metrics,
 #' @param window,step Explicit integer sample-width and step.
 #' @param unit Inference unit, curve or participant.
 #' @param participant_column Required when inference units are participants.
-#' @param radius Mandatory finite fixed Euclidean radius in native R.
+#' @param radius Fixed positive radius or NULL when using a target rate.
+#' @param target_recurrence_rate Optional source-aligned target density in (0, 1).
 #' @param confidence_level,n_multiplier,random_state Multiplier band specification.
 #' @param ... Native fixed-radius windowed-RQA parameters.
 #' @export

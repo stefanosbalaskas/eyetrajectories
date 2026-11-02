@@ -303,7 +303,8 @@ test_that("direct frozen Python 1.2 target-rate RQA radius and achieved density 
   python_sensitivity<-reticulate::py_call(
     etpy_get_export("windowed_rqa_sensitivity"),
     trajectories=pyx,metrics=as.list("max_diagonal_length"),
-    window_step_pairs=reticulate::r_to_py(list(c(5L,2L),c(7L,3L))),
+    window_step_pairs=reticulate::r_to_py(list(
+      as.list(c(5L,2L)),as.list(c(7L,3L)))),
     target_recurrence_rate=.35,dimensions=as.list(x$dimension_names))
   design<-as.data.frame(et_to_r(
     reticulate::py_get_attr(python_sensitivity,"design_table")))

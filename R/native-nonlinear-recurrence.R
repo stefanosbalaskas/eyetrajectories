@@ -380,7 +380,11 @@ etr_recurrence_radius_profile <- function(source,curve=1L,radii,
 #' @param trajectories Complete native common-grid trajectories.
 #' @param curve Curve ID or one-based index.
 #' @param window,step Positive window/step lengths, in samples or physical time.
-#' @param radius Finite nonnegative Euclidean radius (mandatory in R).
+#' @param radius Optional positive finite radius; specify exactly one of
+#'   radius or target_recurrence_rate.
+#' @param target_recurrence_rate Optional target probability in (0, 1).
+#'   Uses the frozen Python 1.2 inclusive-radius 48-step bisection on
+#'   Theiler-eligible state pairs. Distance ties can cause overshoot.
 #' @param metric One of "cityblock", "euclidean" or "chebyshev".
 #' @param theiler_window Nonnegative integer Theiler lag.
 #' @param dimensions Optional selected channels.
