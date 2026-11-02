@@ -120,7 +120,7 @@ test_that("windowed-RQA sensitivity reports exact source reuse and centers",{
   expect_error(etr_windowed_rqa_sensitivity(x,
     metrics="recurrence_rate",
     window_step_pairs=list(c(5L,2L)),radius=1,
-    target_recurrence_rate=.1),"fixed-radius")
+    target_recurrence_rate=.1),"exactly one")
 })
 
 test_that("simultaneous RQA mean band uses whole independent units",{
@@ -227,4 +227,74 @@ test_that("pairwise RQA correlation uses frozen NumPy population-SD threshold",{
   expect_true(sample_gate)
   # Full pipeline correlation is exercised in the sensitivity source
   # fixture above. Here the executable numeric gate is explicit.
+})
+
+
+test_that("native target-density sliding RQA uses source 48-step inclusive radius",{
+  x<-.etr_test_functional_rqa_fixture()
+  result<-etr_windowed_rqa(x,curve=1L,window=5L,step=2L,
+    target_recurrence_rate=.35)
+  expect_s3_class(result,"etr_windowed_rqa")
+  expect_equal(nrow(result$table),7L)
+  expect_true(all(result$table$radius>0))
+  expect_true(all(result$table$recurrence_rate>=0&
+    result$table$recurrence_rate<=1))
+  expect_identical(result$provenance$radius_policy,
+    "target_recurrence_rate")
+  expect_equal(result$provenance$target_recurrence_rate,.35)
+  expect_error(etr_windowed_rqa(x,window=5L,step=2L,
+    radius=1,target_recurrence_rate=.35),"exactly one")
+  expect_error(etr_windowed_rqa(x,window=5L,step=2L),
+    "exactly one")
+  expect_error(etr_windowed_rqa(x,window=5L,step=2L,
+    target_recurrence_rate=1),"strictly between")
+  expect_error(etr_windowed_rqa(x,window=5L,step=2L,
+    radius=0),"positive finite")
+  expect_error(etr_windowed_rqa_trajectory_set(x,
+    metrics="recurrence_rate",window=5L,step=2L,
+    target_recurrence_rate=.35),"cannot be a functional outcome")
+  y<-etr_windowed_rqa_trajectory_set(x,
+    metrics="max_diagonal_length",window=5L,step=2L,
+    target_recurrence_rate=.35)
+  expect_identical(dim(y$trajectories$values),c(4L,7L,1L))
+  expect_true(all(is.finite(y$trajectories$values)))
+  z<-etr_windowed_rqa_sensitivity(x,
+    metrics="max_diagonal_length",window_step_pairs=list(
+      c(5L,2L),c(7L,3L)),target_recurrence_rate=.35)
+  expect_identical(nrow(z$design_table),2L)
+  expect_true(all(z$design_table$n_windows>=4L))
+})
+
+test_that("direct frozen Python 1.2 target-rate RQA radius and achieved density agree",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Frozen Python target-rate RQA oracle is opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  x<-.etr_test_functional_rqa_fixture()
+  ctor<-etpy_get_export("TrajectorySet")
+  pyx<-reticulate::py_call(ctor,
+    time=reticulate::r_to_py(x$time),
+    values=reticulate::r_to_py(x$values),
+    curve_ids=as.list(x$curve_ids),
+    dimension_names=as.list(x$dimension_names),
+    coordinate_system="arbitrary",time_unit="s")
+  for(metric in c("euclidean","cityblock","chebyshev")){
+    for(target in c(.2,.35,.65)){
+      native<-etr_windowed_rqa(x,curve=1L,window=5L,step=2L,
+        metric=metric,target_recurrence_rate=target)
+      source<-reticulate::py_call(
+        etpy_get_export("windowed_rqa"),
+        trajectories=pyx,curve=as.integer(0L),window=as.integer(5L),
+        step=as.integer(2L),target_recurrence_rate=target,
+        metric=metric)
+      table<-as.data.frame(et_to_r(
+        reticulate::py_get_attr(source,"table")))
+      expect_equal(native$table$radius,as.numeric(table$radius),
+        tolerance=1e-9,info=paste("radius",metric,target))
+      expect_equal(native$table$recurrence_rate,
+        as.numeric(table$recurrence_rate),tolerance=1e-12,
+        info=paste("density",metric,target))
+    }
+  }
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
 })

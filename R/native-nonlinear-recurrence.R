@@ -343,7 +343,40 @@ etr_recurrence_radius_profile <- function(source,curve=1L,radii,
     class="etr_recurrence_radius_profile")
 }
 
-#' Native fixed-radius sliding-window RQA
+# Reproduce frozen eyetrajectoriespy 1.2.0 recurrence.py
+# _auto_radius_for_target: 48 inclusive-radius bisections over eligible
+# Theiler-excluded unordered state pairs. This is pure native R; no bridge.
+.etr_windowed_rqa_source_target_radius<-function(x,target,metric,theiler){
+  .etr_assert(is.numeric(target)&&length(target)==1L&&
+    is.finite(target)&&target>0&&target<1,
+    "target_recurrence_rate must be strictly between 0 and 1")
+  states<-.etr_curve(x,1L)
+  .etr_assert(is.matrix(states)&&nrow(states)>=3L&&
+    nrow(states)<=2500L,"windowed recurrence requires 3 to 2500 states")
+  n<-nrow(states)
+  .etr_assert(theiler<n-1L,
+    "Theiler window leaves no eligible recurrence pairs")
+  spread<-apply(states,2L,function(z)max(z)-min(z))
+  high<-switch(metric,euclidean=sqrt(sum(spread^2)),
+    cityblock=sum(abs(spread)),chebyshev=max(abs(spread)))
+  .etr_assert(is.finite(high)&&high>0,
+    "recurrence analysis requires non-constant state vectors")
+  distances<-.etr_distance_matrix(states,states,metric=metric)
+  eligible<-upper.tri(distances) &
+    (abs(row(distances)-col(distances))>theiler)
+  d<-as.numeric(distances[eligible])
+  .etr_assert(length(d)>0L,
+    "Theiler window leaves no eligible recurrence pairs")
+  low<-0
+  for(iter in seq_len(48L)){
+    mid<-(low+high)/2
+    rr<-sum(d<=mid)/length(d)
+    if(rr<target)low<-mid else high<-mid
+  }
+  high
+}
+
+#' Native sliding-window RQA with fixed or target-rate radius
 #' @param trajectories Complete native common-grid trajectories.
 #' @param curve Curve ID or one-based index.
 #' @param window,step Positive window/step lengths, in samples or physical time.
@@ -354,7 +387,7 @@ etr_recurrence_radius_profile <- function(source,curve=1L,radii,
 #' @param min_diagonal_length,min_vertical_length Run-length thresholds.
 #' @export
 etr_windowed_rqa <- function(trajectories,curve=1L,window,step,
-    window_units="samples",step_units="samples",radius,
+    window_units="samples",step_units="samples",radius=NULL,
     target_recurrence_rate=NULL,metric="euclidean",
     theiler_window=0L,theiler_window_units="samples",dimensions=NULL,
     min_diagonal_length=2L,min_vertical_length=2L){
@@ -362,8 +395,18 @@ etr_windowed_rqa <- function(trajectories,curve=1L,window,step,
   .etr_assert(is.character(metric)&&length(metric)==1L&&
     !is.na(metric)&&metric%in%c("cityblock","euclidean","chebyshev"),
     "metric must be one of cityblock, euclidean, chebyshev")
-  .etr_assert(is.null(target_recurrence_rate),
-    "native windowed RQA supports fixed-radius contracts only")
+  .etr_assert(xor(is.null(radius),is.null(target_recurrence_rate)),
+    "supply exactly one of radius or target_recurrence_rate")
+  if(!is.null(radius))
+    .etr_assert(is.numeric(radius)&&length(radius)==1L&&
+      is.finite(radius)&&radius>0,
+      "radius must be a positive finite value")
+  else
+    .etr_assert(is.numeric(target_recurrence_rate)&&
+      length(target_recurrence_rate)==1L&&
+      is.finite(target_recurrence_rate)&&
+      target_recurrence_rate>0&&target_recurrence_rate<1,
+      "target_recurrence_rate must be strictly between 0 and 1")
   window<-.etr_source_time_unit_samples(trajectories$time,window,
     window_units,trajectories$time_unit,"window")
   step<-.etr_source_time_unit_samples(trajectories$time,step,
@@ -399,8 +442,18 @@ etr_windowed_rqa <- function(trajectories,curve=1L,window,step,
       trajectories$metadata[curve,,drop=FALSE],
       trajectories$coordinate_system,trajectories$time_unit,
       trajectories$provenance)
-    rec<-etr_recurrence_matrix(x,curve=1L,radius=radius,
+    chosen_radius<-if(is.null(radius))
+      .etr_windowed_rqa_source_target_radius(x,target_recurrence_rate,
+        metric,theiler_window) else radius
+    rec<-etr_recurrence_matrix(x,curve=1L,radius=chosen_radius,
                                theiler=theiler_window,metric=metric)
+    if(!is.null(target_recurrence_rate)) {
+      rec$target_recurrence_rate<-target_recurrence_rate
+      rec$provenance$radius_policy<-"target_recurrence_rate"
+      rec$provenance$target_recurrence_rate<-target_recurrence_rate
+      rec$provenance$target_rate_tie_policy<-
+        "inclusive-radius bisection; achieved recurrence rate is retained because distance ties can prevent an exact target"
+    }
     a<-.etr_recurrence_quantifiers_full(rec,min_diagonal_length,min_vertical_length)
     data.frame(start_index=as.integer(i-1L),stop_index=as.integer(hi),
       start_time=x$time[1L],end_time=x$time[length(x$time)],
@@ -423,7 +476,9 @@ etr_windowed_rqa <- function(trajectories,curve=1L,window,step,
     time_unit=trajectories$time_unit,
     provenance=list(operation="windowed_rqa",
       curve_id=trajectories$curve_ids[curve],
-      radius_policy="fixed",metric=metric,
+      radius_policy=if(is.null(radius))
+        "target_recurrence_rate" else "fixed",
+      target_recurrence_rate=target_recurrence_rate,metric=metric,
       theiler_window_samples=theiler_window,
       declared_time_window_units=window_units,
       declared_time_step_units=step_units,
@@ -439,7 +494,7 @@ etr_windowed_rqa <- function(trajectories,curve=1L,window,step,
 #' @inheritParams etr_windowed_rqa
 #' @export
 etr_windowed_rqa_trajectory_set <- function(trajectories,metrics,window,step,
-    window_units="samples",step_units="samples",radius,
+    window_units="samples",step_units="samples",radius=NULL,
     target_recurrence_rate=NULL,metric="euclidean",
     theiler_window=0L,theiler_window_units="samples",dimensions=NULL,
     min_diagonal_length=2L,min_vertical_length=2L,
@@ -451,6 +506,9 @@ etr_windowed_rqa_trajectory_set <- function(trajectories,metrics,window,step,
     "max_diagonal_length","diagonal_entropy","laminarity",
     "trapping_time","max_vertical_length","center_of_recurrence_mass")
   .etr_assert(all(metrics %in% allowed),"Unknown functional RQA metrics")
+  .etr_assert(is.null(target_recurrence_rate) ||
+    !("recurrence_rate" %in% metrics),
+    "recurrence_rate cannot be a functional outcome when target_recurrence_rate controls density")
   .etr_assert(undefined_policy %in% c("raise","keep"),
     "undefined_policy must be 'raise' or 'keep'")
   etr_validate(trajectories,require_complete=TRUE)

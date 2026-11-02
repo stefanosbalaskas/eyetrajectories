@@ -150,7 +150,7 @@ etr_functional_recovery_reporting_text <- function(assessment) {
 #' @export
 etr_windowed_rqa_sensitivity <- function(trajectories,metrics,
     window_step_pairs,window_units="samples",step_units="samples",
-    radius,target_recurrence_rate=NULL,metric="euclidean",
+    radius=NULL,target_recurrence_rate=NULL,metric="euclidean",
     theiler_window=0L,theiler_window_units="samples",dimensions=NULL,
     min_diagonal_length=2L,min_vertical_length=2L,
     undefined_policy="raise") {
@@ -295,7 +295,7 @@ etr_windowed_rqa_sensitivity <- function(trajectories,metrics,
 etr_windowed_rqa_functional_mean_band <- function(trajectories,
     metrics,window,step,unit,participant_column=NULL,
     window_units="samples",step_units="samples",
-    radius,target_recurrence_rate=NULL,metric="euclidean",
+    radius=NULL,target_recurrence_rate=NULL,metric="euclidean",
     theiler_window=0L,theiler_window_units="samples",dimensions=NULL,
     min_diagonal_length=2L,min_vertical_length=2L,
     confidence_level=.95,n_multiplier=2000L,random_state=0L){
