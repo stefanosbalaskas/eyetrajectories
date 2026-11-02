@@ -580,6 +580,11 @@ etr_windowed_rqa_trajectory_set <- function(trajectories,metrics,window,step,
     "max_diagonal_length","diagonal_entropy","laminarity",
     "trapping_time","max_vertical_length","center_of_recurrence_mass")
   .etr_assert(all(metrics %in% allowed),"Unknown functional RQA metrics")
+  # Resolve conflicting radius policies before validating a metric that is
+  # undefined under target-density control. This matches the underlying
+  # windowed RQA parameter contract and makes user errors unambiguous.
+  .etr_assert(xor(is.null(radius),is.null(target_recurrence_rate)),
+    "supply exactly one of radius or target_recurrence_rate")
   .etr_assert(is.null(target_recurrence_rate) ||
     !("recurrence_rate" %in% metrics),
     "recurrence_rate cannot be a functional outcome when target_recurrence_rate controls density")
