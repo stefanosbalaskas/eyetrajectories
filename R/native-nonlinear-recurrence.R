@@ -302,6 +302,8 @@ etr_recurrence_radius_profile <- function(source,curve=1L,radii,
   eligible<-as.double(n-tt)*as.double(n-tt-1L)/2
   .etr_assert(eligible>0L,"Theiler window leaves no eligible pairs")
   values<-matrix(source$values[curve,,idx,drop=FALSE],nrow=n,ncol=length(idx))
+  .etr_assert(all(is.finite(values)),
+    "recurrence radius profile requires complete finite selected states")
   # Preallocate pairwise distance storage instead of repeatedly
   # copying growing vectors inside the O(n^2) state-pair loop.
   distances<-numeric(eligible)
