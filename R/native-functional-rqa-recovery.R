@@ -1,3 +1,9 @@
+.etr_rqa_source_population_sd<-function(z) {
+  # Frozen Python functional_rqa.py _pairwise_exact_center_comparison
+  # checks np.std(z, ddof=0), not R stats::sd(z) (ddof=1).
+  sqrt(mean((z-mean(z))^2))
+}
+
 # Stage 26: research numerical integration of windowed functional RQA and
 # published Python 1.2 recovery metadata. All native; no Python bridge.
 
@@ -234,9 +240,9 @@ etr_windowed_rqa_sensitivity <- function(trajectories,metrics,
           # Source uses np.std(..., ddof=0) for the low-variance
           # correlation gate, not R's sample sd(ddof=1). For n=2 the
           # thresholds differ, so compare the source population SD.
-          pop_sd<-function(z)sqrt(mean((z-mean(z))^2))
-          cor<-if(n>=2L&&pop_sd(v)>.Machine$double.eps&&
-            pop_sd(w)>.Machine$double.eps)
+          cor<-if(n>=2L&&
+            .etr_rqa_source_population_sd(v)>.Machine$double.eps&&
+            .etr_rqa_source_population_sd(w)>.Machine$double.eps)
               stats::cor(v,w) else NaN
           pairwise[[length(pairwise)+1L]]<-data.frame(
             specification_a=ids[i],specification_b=ids[j],

@@ -215,14 +215,16 @@ test_that("pairwise RQA correlation uses frozen NumPy population-SD threshold",{
   # The frozen Python source uses np.std(ddof=0) > machine epsilon.
   # R's stats::sd(ddof=1) would erroneously permit this near-flat
   # two-point pair; use the same source condition in our calculation.
-  x<-c(1,1+2e-16)
-  y<-c(2,2+4e-16)
+  x<-c(0,4e-16)
+  y<-c(0,6e-16)
   eps<-.Machine$double.eps
-  expected_gate<-sqrt(mean((x-mean(x))^2))>eps &&
-    sqrt(mean((y-mean(y))^2))>eps
+  expected_gate<-.etr_rqa_source_population_sd(x)>eps &&
+    .etr_rqa_source_population_sd(y)>eps
   sample_gate<-stats::sd(x)>eps && stats::sd(y)>eps
+  expect_equal(.etr_rqa_source_population_sd(x),
+    sqrt(mean((x-mean(x))^2)),tolerance=0)
   expect_false(expected_gate)
-  expect_true(is.logical(sample_gate))
+  expect_true(sample_gate)
   # Full pipeline correlation is exercised in the sensitivity source
   # fixture above. Here the executable numeric gate is explicit.
 })
