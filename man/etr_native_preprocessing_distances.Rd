@@ -15,9 +15,12 @@ oracles are provided separately as optional tests; numerical/generalized
 equivalence is not automatically certified by installation.
 }
 \usage{
-etr_normalize_coordinates(x, width, height)
-etr_center_on_landmark(x, landmark_x, landmark_y)
-etr_normalize_time_interval(x, start = 0, end = 1)
+etr_normalize_coordinates(x, width, height,
+                          python_boundary_mode = FALSE)
+etr_center_on_landmark(x, landmark_x, landmark_y,
+                       python_boundary_mode = FALSE)
+etr_normalize_time_interval(x, start = 0, end = 1,
+                            python_boundary_mode = FALSE)
 etr_heading_function(x, dimensions = NULL, min_speed = 0,
                      undefined_policy = c("nan", "raise"))
 etr_trajectory_tortuosity_frame(x, dimensions = NULL, min_displacement = 0,
@@ -47,7 +50,7 @@ containing at least one strictly positive value.}
 \code{nearest_trajectory_indices()}.}
 \item{n_neighbors}{Positive integer number of nearest distinct curves.
 Requesting more than exist returns all available distinct curves.}
-\item{python_boundary_mode}{Logical opt-in for Python 1.2 NumPy slice-index semantics for n_neighbors. TRUE accepts Boolean TRUE as one neighbor and rejects a double such as 1.0; FALSE retains native R integer-valued numeric counts. This does not remove the documented distance-tie caveat.}
+\item{python_boundary_mode}{Logical opt-in to bounded Python 1.2 source-domain semantics for coordinate normalization, time normalization, landmark centering and nearest-neighbor slicing. Boolean coordinate extents (TRUE = 1, FALSE invalid) and Boolean time endpoints are converted for native numerical operations. Landmark centering accepts finite numeric-string and Boolean inputs through NumPy-like scalar or per-curve conversions; invalid strings and nonfinite values remain unsupported. Nearest-neighbor counts follow Python's Boolean/integer slice-index rules. FALSE preserves strict native R defaults; no Python bridge is used.}
 }
 \value{
 The first four functions return a native \code{etr_trajectory_set};
