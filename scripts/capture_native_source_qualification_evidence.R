@@ -266,7 +266,8 @@ tooling_patterns<-c("test_verify_four_pilot_review_bundle.py",
   "test_verify_508_certification_batch.py",
   "test_verify_508_external_attestation.py",
   "test_build_508_all_export_review_waves.py",
-  "test_verify_508_all_wave_attestation.py")
+  "test_verify_508_all_wave_attestation.py",
+  "test_reconcile_508_contract_progress.py")
 tooling_checks<-lapply(tooling_patterns,function(pattern){
   message("Author-side reviewer tooling: ",pattern)
   output<-tryCatch(
@@ -317,6 +318,8 @@ source_files<-unique(c(
   "scripts/capture_all_508_source_interfaces.R",
   "scripts/build_508_all_export_review_waves.py",
   "tests/test_build_508_all_export_review_waves.py",
+  "scripts/reconcile_508_contract_progress.py",
+  "tests/test_reconcile_508_contract_progress.py",
   "scripts/verify_508_all_wave_attestation.py",
   "tests/test_verify_508_all_wave_attestation.py",
   "scripts/capture_first_wave_source_interfaces.R",
@@ -847,3 +850,37 @@ message("All 508 export reviewer waves AUTHOR-INTEGRITY VERIFIED: ",
   "15 unsigned waves, 5,080 blank independent-review case criteria; ",
   "zero independent approvals. Evidence: ",wave_log)
 
+
+# Create a LIVE, unsigned developer-progress layer next to the immutable
+# scientific/reviewer packet. Optional per-contract developer evidence is
+# checked for exact frozen source pins and SHA256, never auto-approved.
+progress_script <- "scripts/reconcile_508_contract_progress.py"
+progress_log <- file.path(packet_root,
+  "developer_reconciliation_AUTHOR_ONLY.txt")
+developer_evidence_csv <- Sys.getenv("ET_508_DEVELOPER_EVIDENCE_CSV",
+  unset="")
+progress_args <- c(progress_script,shQuote(packet_root),
+  "--expected-r-head",head_sha)
+if(nzchar(developer_evidence_csv))
+  progress_args <- c(progress_args,"--evidence-csv",
+    shQuote(developer_evidence_csv))
+progress_output <- tryCatch(
+  suppressWarnings(system2(py_executable,args=progress_args,
+    stdout=TRUE,stderr=TRUE)),
+  error=function(e)structure(
+    paste0("DEVELOPER RECONCILIATION INVOCATION ERROR: ",
+      conditionMessage(e)),status=1L))
+progress_code <- attr(progress_output,"status")
+if(is.null(progress_code))progress_code<-0L
+writeLines(c(as.character(progress_output),
+  paste0("DEVELOPER_RECONCILIATION_EXIT_CODE=",as.integer(progress_code))),
+  progress_log,useBytes=TRUE)
+if(!identical(as.integer(progress_code),0L)){
+  for(line in tail(as.character(progress_output),100L))message(line)
+  stop("Developer-progress reconciliation failed: ",progress_log,
+    call.=FALSE)
+}
+message("Developer per-contract triage produced without independent ",
+  "certification: ",file.path(packet_root,
+    paste0("developer_reconciliation_",substr(head_sha,1L,12L)),
+    "developer_progress_summary.json"))
