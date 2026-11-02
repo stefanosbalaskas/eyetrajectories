@@ -314,6 +314,7 @@ source_files<-unique(c(
   "scripts/capture_four_pilot_numeric_evidence.R",
   "scripts/build_four_pilot_review_matrix.R",
   "scripts/build_508_certification_review_batches.R",
+  "scripts/capture_all_508_source_interfaces.R",
   "scripts/build_508_all_export_review_waves.py",
   "tests/test_build_508_all_export_review_waves.py",
   "scripts/verify_508_all_wave_attestation.py",
@@ -755,6 +756,20 @@ stopifnot(nrow(first_wave_interfaces$records)==36L,
   all(!first_wave_interfaces$records$independently_reproduced),
   all(file.exists(c(first_wave_interfaces$csv,
     first_wave_interfaces$manifest))))
+
+# Record all 508 actual Python interfaces and native counterparts.
+# This is a descriptive source-only census; all approvals remain FALSE.
+source("scripts/capture_all_508_source_interfaces.R",local=TRUE)
+all_508_interfaces<-etr_capture_all_508_source_interfaces(
+  root=".",packet_dir=packet_root)
+stopifnot(nrow(all_508_interfaces$records)==508L,
+  sum(all_508_interfaces$records$kind=="function")==380L,
+  sum(all_508_interfaces$records$kind!="function")==128L,
+  all(!all_508_interfaces$records$independently_replayed),
+  all(!all_508_interfaces$records$fully_source_certified),
+  all(file.exists(c(all_508_interfaces$csv,
+    all_508_interfaces$manifest))))
+
 
 # Verify the ACTUAL newly generated packet, not only synthetic test fixtures.
 # Both verifiers are read-only and distinguish author integrity from genuine

@@ -66,3 +66,14 @@ independent replication can promote an export in the authoritative R ledger.
 Until that occurs, the publicly reported independently certified count is
 zero. Do not use unsigned author receipts or a restricted-subset match to
 increment the full-domain denominator.
+
+## Observed interfaces for all 508 exports
+
+After successful source qualification, scripts/capture_all_508_source_interfaces.R
+records all 508 frozen Python export lookups, function signatures or object
+classes, corresponding exported native R formals or nonfunction
+representations, native body hashes, and the exact source-gap/backend
+blockers. Errors in individual Python interface inspection remain explicit
+in the CSV. The resulting all_508_source_interface_inventory.csv and
+all_508_source_interface_inventory_sha256.csv are author-side observations;
+every independent replay and certification flag is FALSE.
