@@ -485,3 +485,62 @@ test_that("functional RQA mean band preserves source equal-weight independent-un
   expect_identical(curve$band$unit_ids,x$curve_ids)
   expect_true(any(abs(curve$band$mean-grouped$band$mean)>1e-9))
 })
+
+
+test_that("frozen Python 1.2 functional RQA band deterministic moments agree",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Published Python 1.2 functional RQA mean-band source oracle opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  x<-.etr_test_source_mean_band_fixture()
+  pandas<-reticulate::import("pandas",convert=FALSE)
+  py_meta<-pandas$DataFrame(reticulate::r_to_py(list(
+    participant=as.list(x$metadata$participant))))
+  pyx<-reticulate::py_call(etpy_get_export("TrajectorySet"),
+    time=reticulate::r_to_py(x$time),
+    values=reticulate::r_to_py(x$values),
+    curve_ids=as.list(x$curve_ids),
+    dimension_names=as.list(x$dimension_names),
+    coordinate_system="arbitrary",time_unit="s",
+    metadata=py_meta)
+  for(unit in c("curve","participant")){
+    participant<-if(unit=="participant")"participant" else NULL
+    native<-etr_windowed_rqa_functional_mean_band(
+      x,metrics="recurrence_rate",window=5L,step=2L,
+      radius=.75,unit=unit,participant_column=participant,
+      n_multiplier=100L,random_state=123L)
+    source<-reticulate::py_call(
+      etpy_get_export("windowed_rqa_functional_mean_band"),
+      trajectories=pyx,metrics=as.list("recurrence_rate"),
+      window=as.integer(5L),step=as.integer(2L),
+      radius=.75,unit=unit,participant_column=participant,
+      n_multiplier=as.integer(100L),random_state=as.integer(123L))
+    original<-source$band
+    for(field in c("mean","pointwise_se")){
+      expect_equal(unname(native$band[[field]]),
+        unname(et_to_r(reticulate::py_get_attr(original,field))),
+        tolerance=1e-10,info=paste(unit,field))
+    }
+    expect_equal(native$band$time,
+      as.numeric(et_to_r(original$time)),tolerance=0)
+    expect_equal(native$band$unit_ids,
+      as.character(et_to_r(original$unit_ids)),tolerance=0)
+    expect_equal(native$band$curves_per_unit,
+      as.integer(et_to_r(original$provenance$functional_mean_band$
+        curves_per_unit)),tolerance=0)
+    expect_equal(native$functional_rqa$trajectories$values,
+      et_to_r(source$functional_rqa$trajectories$values),tolerance=1e-10)
+    expect_identical(native$provenance$participant_column,participant)
+    expect_identical(native$band$provenance$functional_mean_band$estimand,
+      as.character(et_to_r(original$provenance$functional_mean_band$
+        estimand)))
+    expect_identical(native$band$provenance$functional_mean_band$
+      random_engine,"base_R_not_NumPy")
+    expect_true(all(is.finite(native$band$max_statistics)))
+    expect_true(all(is.finite(et_to_r(original$max_statistics))))
+    # The Gaussian multiplier RNG differs by language. The deterministic
+    # mean and standard-error estimand must agree; realized bootstrap
+    # quantiles need scientific distributional assessment, not false equality.
+  }
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})
