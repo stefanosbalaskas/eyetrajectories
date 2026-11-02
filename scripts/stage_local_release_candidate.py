@@ -138,7 +138,7 @@ def check_candidate(folder: Path, version: str, r_command: str) -> str:
     statuses = re.findall(r"^Status:[ \t]*(.+?)\s*$", lines, re.M)
     finished = re.findall(r"^\* DONE[ \t]*$", lines, re.M)
     if len(statuses) != 1 or len(finished) != 1:
-        raise RuntimeError("Missing or ambiguous final R CMD check verdict")
+        raise RuntimeError("Missing final or ambiguous R CMD check verdict")
     # A zero-exit child and Status: OK are insufficient if mandatory
     # scientific tests, installed examples or the PDF manual were skipped.
     mandatory = {
