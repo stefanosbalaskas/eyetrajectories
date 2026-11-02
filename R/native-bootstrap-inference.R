@@ -128,13 +128,20 @@ etr_multiplier_functional_mean_band <- function(trajectories,
     participant_column=if(unit=="participant")participant_column else NULL,
     time=trajectories$time,dimension_names=trajectories$dimension_names,
     coordinate_system=trajectories$coordinate_system,time_unit=trajectories$time_unit,
-    provenance=list(functional_mean_band=list(
+    provenance=c(if(is.null(trajectories$provenance))list()
+      else trajectories$provenance,list(functional_mean_band=list(
       method="gaussian_multiplier_studentized_maximum",
-      n_multiplier=b,confidence_level=level,n_units=nu,
-      unit=unit,zero_variance_grid_points=sum(!active),
+      n_multiplier=b,confidence_level=level,random_state=random_state,
+      n_units=nu,unit=unit,participant_column=if(unit=="participant")
+        participant_column else NULL,
+      estimand=if(unit=="participant")
+        "equal_weight_mean_of_participant_mean_trajectories"
+        else "equal_weight_curve_mean",
+      curves_per_unit=as.integer(counts),
+      zero_variance_grid_points=sum(!active),
       simultaneous_domain="observed_time_by_dimension_grid",
       continuous_between_grid_points=FALSE,
-      random_engine="base_R_not_NumPy"))),
+      random_engine="base_R_not_NumPy")))),
     class="etr_functional_mean_band")
 }
 
