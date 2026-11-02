@@ -264,7 +264,8 @@ tooling_log_path<-file.path(output_dir,
   "python_unsigned_review_packet_tooling_tests.txt")
 tooling_patterns<-c("test_verify_four_pilot_review_bundle.py",
   "test_verify_508_certification_batch.py",
-  "test_verify_508_external_attestation.py")
+  "test_verify_508_external_attestation.py",
+  "test_build_508_all_export_review_waves.py")
 tooling_checks<-lapply(tooling_patterns,function(pattern){
   message("Author-side reviewer tooling: ",pattern)
   output<-tryCatch(
@@ -312,6 +313,8 @@ source_files<-unique(c(
   "scripts/capture_four_pilot_numeric_evidence.R",
   "scripts/build_four_pilot_review_matrix.R",
   "scripts/build_508_certification_review_batches.R",
+  "scripts/build_508_all_export_review_waves.py",
+  "tests/test_build_508_all_export_review_waves.py",
   "scripts/capture_first_wave_source_interfaces.R",
   "tests/testthat/test-native-first-wave-source-interfaces.R",
   "tests/testthat/test-native-frozen-workflow-values.R",
@@ -788,3 +791,41 @@ packet_verification_logs<-vapply(packet_verifier_patterns,function(script){
 stopifnot(length(packet_verification_logs)==2L,
   all(file.exists(packet_verification_logs)),
   !any(full_review_batches$decisions$full_domain_certification_approved))
+
+# Populate all 508 source-pinned export-specific, unsigned reviewer waves.
+# These remain author-side packet integrity records, never certifications.
+wave_script <- "scripts/build_508_all_export_review_waves.py"
+wave_log <- file.path(packet_root,
+  "all_508_export_waves_AUTHOR_INTEGRITY_CHECK.txt")
+wave_steps <- c("build", "verify")
+wave_runs <- lapply(wave_steps, function(action) {
+  output <- tryCatch(
+    suppressWarnings(system2(py_executable, args=c(
+      wave_script, action, shQuote(packet_root),
+      "--expected-r-head", head_sha),
+      stdout=TRUE, stderr=TRUE)),
+    error=function(e) structure(paste0("WAVE TOOL EXECUTION ERROR: ",
+      conditionMessage(e)), status=1L))
+  code <- attr(output,"status")
+  if(is.null(code))code<-0L
+  list(action=action, code=as.integer(code), output=as.character(output))
+})
+writeLines(unlist(lapply(wave_runs,function(run)c(
+  paste0("===== ",run$action," ====="),
+  run$output,
+  paste0("UNSIGNED_WAVE_TOOL_EXIT_CODE=",run$code))),
+  use.names=FALSE),wave_log,useBytes=TRUE)
+failed_waves<-vapply(wave_runs,function(run)!identical(run$code,0L),
+  logical(1L))
+if(any(failed_waves)) {
+  for(run in wave_runs[failed_waves])
+    for(line in tail(run$output,75L))message(line)
+  stop("Full 508-export unsigned review wave preparation/verification FAILED. ",
+    "Log: ",wave_log,call.=FALSE)
+}
+stopifnot(file.exists(file.path(packet_root,
+  "all_508_unsigned_review_waves","all_508_wave_manifest.json")))
+message("All 508 export reviewer waves AUTHOR-INTEGRITY VERIFIED: ",
+  "15 unsigned waves, 5,080 blank independent-review case criteria; ",
+  "zero independent approvals. Evidence: ",wave_log)
+
