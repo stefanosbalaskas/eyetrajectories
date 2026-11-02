@@ -68,6 +68,11 @@ class ReconciliationTests(unittest.TestCase):
         output = Path(z["output_dir"])
         rows = progress.baseline.read_csv(output / progress.PROGRESS)
         self.assertEqual(len(rows), 508)
+        template = progress.baseline.read_csv(output / progress.TEMPLATE)
+        self.assertEqual(len(template), 508)
+        self.assertTrue(all(x["source_signature_checked"] == "FALSE"
+                            for x in template))
+        self.assertTrue(all(x["evidence_sha256"] == "" for x in template))
         self.assertTrue(all(x["source_gap_closed"] == "FALSE" for x in rows))
         self.assertTrue(all(x["independently_certified"] == "FALSE" for x in rows))
         with self.assertRaisesRegex(progress.baseline.ReviewBatchError,
