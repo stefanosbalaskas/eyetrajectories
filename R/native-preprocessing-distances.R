@@ -152,7 +152,7 @@ etr_normalize_time_interval <- function(x,start=0,end=1,
       end<-as.numeric(end)
   }
   start <- .etr_preprocessing_scalar(start,"start")
-  end <- .etr_preprocessing_scalar(end")
+  end <- .etr_preprocessing_scalar(end,"end")
   .etr_assert(end>start,"end must be greater than start")
   old <- x$time
   time <- start+(old-old[1L])/(old[length(old)]-old[1L])*(end-start)
