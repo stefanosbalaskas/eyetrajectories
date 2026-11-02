@@ -220,6 +220,9 @@ selection_file<-file.path(output_dir,"test_selection_regex.txt")
 writeLines(filter,selection_file,useBytes=TRUE)
 stopifnot(file.exists(selection_file),length(readLines(
   selection_file,warn=FALSE))==1L)
+# Capture real test_that outcomes in each mode without rerunning tests.
+# Static literals inside a completed case are *not* proof of a source call.
+source("scripts/capture_case_execution_evidence.R",local=TRUE)
 qualify_once<-function(python=FALSE){
   label<-if(python)"python_1_2_direct_source" else "native_r_offline"
   if(python)Sys.setenv(ET_RUN_PYTHON_TESTS="true") else
@@ -227,9 +230,10 @@ qualify_once<-function(python=FALSE){
   on.exit(Sys.unsetenv("ET_RUN_PYTHON_TESTS"),add=TRUE)
   path<-file.path(output_dir,paste0(label,".txt"))
   failed<-NULL
+  structured_results<-NULL
   tryCatch(
     capture.output(
-      testthat::test_local(".",filter=filter,
+      structured_results<-testthat::test_local(".",filter=filter,
         reporter="summary",stop_on_failure=TRUE,stop_on_warning=TRUE),
       file=path,type="output"),
     error=function(e){failed<<-conditionMessage(e);invisible(NULL)})
@@ -240,6 +244,10 @@ qualify_once<-function(python=FALSE){
   }
   cat(outcome,"\n",file=path,append=TRUE,sep="")
   message(label, ": ",outcome," (",path,")")
+  if(is.null(failed)){
+    etr_capture_case_execution_evidence(structured_results,mode=label,
+      head=head_sha,output_dir=output_dir)
+  }
   if(!is.null(failed)) {
     lines<-readLines(path,warn=FALSE)
     # Print the diagnostic tail on the console as well as preserving
@@ -320,6 +328,7 @@ source_files<-unique(c(
   "tests/test_build_508_all_export_review_waves.py",
   "scripts/reconcile_508_contract_progress.py",
   "tests/test_reconcile_508_contract_progress.py",
+  "scripts/capture_case_execution_evidence.R",
   "scripts/verify_508_all_wave_attestation.py",
   "tests/test_verify_508_all_wave_attestation.py",
   "scripts/capture_first_wave_source_interfaces.R",
