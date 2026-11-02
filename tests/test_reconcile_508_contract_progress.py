@@ -200,6 +200,72 @@ class ReconciliationTests(unittest.TestCase):
                                     "forged approvals"):
             progress.reconcile(self.root, HEAD, pilot_evidence_csv=file)
 
+
+    def case_evidence_csv(self, forged=False, head=HEAD):
+        rows = [
+            {
+                "recorded_r_git_head": head,
+                "frozen_python_commit": progress.baseline.FROZEN_PYTHON,
+                "mode": "python_1_2_direct_source",
+                "file": "test-native-nonlinear-recurrence.R",
+                "test": "Python source direct numerical check",
+                "passed_expectations": "5",
+                "failed_expectations": "0",
+                "warning_count": "0",
+                "skipped": "FALSE",
+                "error": "FALSE",
+                "case_executed_without_skip": "TRUE",
+                "static_source_literal_count": "2",
+                "static_source_literals": "alr_transform;inverse_alr",
+            },
+            {
+                "recorded_r_git_head": head,
+                "frozen_python_commit": progress.baseline.FROZEN_PYTHON,
+                "mode": "python_1_2_direct_source",
+                "file": "test-native-nonlinear-recurrence.R",
+                "test": "Unexecuted conditional Python oracle",
+                "passed_expectations": "0",
+                "failed_expectations": "0",
+                "warning_count": "0",
+                "skipped": "TRUE",
+                "error": "FALSE",
+                "case_executed_without_skip": "FALSE",
+                "static_source_literal_count": "1",
+                "static_source_literals": "score_distance_matrix",
+            },
+        ]
+        if forged:
+            rows[1]["case_executed_without_skip"] = "TRUE"
+        path = self.root / "cases.csv"
+        write_rows(path, rows)
+        return path
+
+    def test_executed_python_case_literals_are_descriptive_not_parity(self):
+        csv_path = self.case_evidence_csv()
+        result = progress.reconcile(self.root, HEAD, case_evidence_csv=csv_path)
+        self.assertEqual(result["exports_with_executed_literal_reference_cases"], 2)
+        self.assertEqual(result["executed_cases_with_static_export_literals"], 2)
+        self.assertEqual(result["individually_replayed_python_source_calls_confirmed"], 0)
+        queue = progress.baseline.read_csv(
+            Path(result["output_dir"]) / progress.PROGRESS)
+        direct = next(x for x in queue if x["python_name"] == "alr_transform")
+        skipped = next(x for x in queue
+                       if x["python_name"] == "score_distance_matrix")
+        self.assertEqual(direct["executed_test_cases_with_static_source_literal"], "1")
+        self.assertEqual(direct["literal_reference_case_is_full_oracle_proof"], "FALSE")
+        self.assertEqual(skipped["executed_test_cases_with_static_source_literal"], "0")
+        self.assertEqual(direct["independently_certified"], "FALSE")
+
+    def test_forged_case_completion_and_wrong_commit_rejected(self):
+        file = self.case_evidence_csv(forged=True)
+        with self.assertRaisesRegex(progress.baseline.ReviewBatchError,
+                                    "inconsistent executed test case"):
+            progress.reconcile(self.root, HEAD, case_evidence_csv=file)
+        file = self.case_evidence_csv(head="b" * 40)
+        with self.assertRaisesRegex(progress.baseline.ReviewBatchError,
+                                    "source identity/mode mismatch"):
+            progress.reconcile(self.root, HEAD, case_evidence_csv=file)
+
     def test_invalid_evidence_boolean_fails_closed(self):
         d = self.evidence(301)
         d[progress.FLAGS[0]] = "PASS"
