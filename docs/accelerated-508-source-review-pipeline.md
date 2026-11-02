@@ -40,6 +40,15 @@ directory, a new `developer_reconciliation_<R_SHA_PREFIX>/` with:
   source-fixture candidates, SHA256-verified developer files, and review readiness.
 - `developer_progress_sha256.json`: checksums of these outputs.
 
+On a successful full qualification, the reconciler additionally imports the
+existing ten numerical comparisons from
+`four_pilot_developer_paired_numeric_replay.csv` as **four partial developer
+evidence records**. Each receives only the numerical-oracle check, not the
+other five gates. Thus the expected initial dashboard is four SHA256-verified
+partial developer records, zero complete six-gate developer reviews, **zero
+closed source gaps**, and **zero independent approvals**. The four pilot
+source-gap entries remain open.
+
 The original 508 queue, source-gap registry, external-review worksheets,
 GPG receipts and authoritative certification ledger are **not modified**.
 The historical 203 callable + 1 nonfunction source gaps stay open until a
