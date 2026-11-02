@@ -53,7 +53,12 @@ class StageTests(unittest.TestCase):
                     (folder/"eyetrajectories_0.4.2.tar.gz").write_bytes(b"test source bytes")
                 else:
                     (folder/"eyetrajectories.Rcheck").mkdir()
-                    (folder/"eyetrajectories.Rcheck/00check.log").write_text("* DONE\nStatus: 1 NOTE\n")
+                    (folder/"eyetrajectories.Rcheck/00check.log").write_text(
+                        "* checking tests ... OK\n"
+                        "  Running 'testthat.R'\n"
+                        "* checking examples ... OK\n"
+                        "* checking PDF version of manual ... OK\n"
+                        "* DONE\nStatus: 1 NOTE\n")
                 return types.SimpleNamespace(returncode=0,stdout="mock subprocess output")
             with patch.object(stage.subprocess,"run",side_effect=fake_run):
                 status=stage.check_candidate(folder,"0.4.2","R")
@@ -61,6 +66,24 @@ class StageTests(unittest.TestCase):
             manifest=json.loads((folder/"STAGING_MANIFEST.json").read_text())
             self.assertEqual(manifest["candidate_release_status"],"HOLD: platform and NOTE review required")
             self.assertEqual(len(manifest["candidate_check_tarball_sha256"]),64)
+
+    def test_staged_check_refuses_skipped_scientific_or_manual_phases(self):
+        with tempfile.TemporaryDirectory() as td:
+            folder = Path(td)
+            (folder/"STAGING_MANIFEST.json").write_text("{}")
+            def fake_run(cmd, cwd, **kwargs):
+                if cmd[2] == "build":
+                    (folder/"eyetrajectories_0.4.2.tar.gz").write_bytes(b"tar")
+                else:
+                    (folder/"eyetrajectories.Rcheck").mkdir()
+                    (folder/"eyetrajectories.Rcheck/00check.log").write_text(
+                        "* DONE\nStatus: OK\n")
+                return types.SimpleNamespace(returncode=0,stdout="")
+            with patch.object(stage.subprocess,"run",side_effect=fake_run):
+                with self.assertRaisesRegex(RuntimeError,"mandatory phases"):
+                    stage.check_candidate(folder,"0.4.2","R")
+            self.assertNotIn("candidate_check_tarball_sha256",
+                json.loads((folder/"STAGING_MANIFEST.json").read_text()))
 
     def test_missing_candidate_check_verdict_does_not_pass(self):
         with tempfile.TemporaryDirectory() as td:
