@@ -277,7 +277,7 @@ etr_cross_rqa_metrics <- function(recurrence,min_diagonal_length=2L,
 etr_recurrence_radius_profile <- function(source,curve=1L,radii,
     metric="euclidean",theiler_window=0L,theiler_window_units="samples",
     dimensions=NULL){
-  etr_validate(source,require_complete=TRUE)
+  etr_validate(source,require_complete=is.null(dimensions))
   .etr_assert(is.numeric(radii) && length(radii)>=2L &&
     all(is.finite(radii)) && all(radii>0) && all(diff(radii)>0),
     "radii must be strictly increasing positive finite values")
