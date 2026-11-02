@@ -870,7 +870,9 @@ developer_evidence_csv <- Sys.getenv("ET_508_DEVELOPER_EVIDENCE_CSV",
   unset="")
 progress_args <- c(progress_script,shQuote(packet_root),
   "--expected-r-head",head_sha,
-  "--pilot-evidence-csv",shQuote(four_pilot_numeric$path))
+  "--pilot-evidence-csv",shQuote(four_pilot_numeric$path),
+  "--case-evidence-csv",shQuote(file.path(output_dir,
+    "python_1_2_direct_source_executed_test_cases.csv")))
 if(nzchar(developer_evidence_csv))
   progress_args <- c(progress_args,"--evidence-csv",
     shQuote(developer_evidence_csv))
