@@ -35,7 +35,17 @@ class ReconciliationTests(unittest.TestCase):
                 "source_gap_open": "TRUE" if i < 203 or i == 380 else "FALSE",
                 "backend_or_estimand_distinct": "TRUE" if i < 19 else "FALSE",
                 "currently_authoritatively_certified": "FALSE",
+                "native_implementation_started": "TRUE",
+                "native_nonfunction_representation":
+                    "Synthetic native class representation" if i >= 380 else "",
+                "source_fixture_attributed": "TRUE" if i < 111 else "FALSE",
             })
+        # Frozen source roots of the four numerical developer pilots must be
+        # represented in the 508 export inventory, as in real packets.
+        for j, name in enumerate(("alr_transform", "inverse_alr",
+                                  "score_distance_matrix",
+                                  "functional_trapezoid_weights"), start=4):
+            self.rows[j]["python_name"] = name
         write_rows(self.root / progress.baseline.FILES[0], self.rows)
         self.mock_verify = patch.object(progress.baseline, "verify",
                                         return_value={"r_git_head": HEAD})
@@ -68,6 +78,18 @@ class ReconciliationTests(unittest.TestCase):
         output = Path(z["output_dir"])
         rows = progress.baseline.read_csv(output / progress.PROGRESS)
         self.assertEqual(len(rows), 508)
+        dispatch = progress.baseline.read_csv(output / progress.DISPATCH)
+        self.assertEqual(len(dispatch), 28)
+        self.assertEqual(sum(x["dispatch_lane"] == "KNOWN_GAP_PILOT_REPLAY"
+                             for x in dispatch), 4)
+        self.assertEqual(sum(x["dispatch_lane"] ==
+                             "FUNCTION_SOURCE_FULL_DOMAIN_REVIEW"
+                             for x in dispatch), 12)
+        self.assertEqual(sum(x["dispatch_lane"] ==
+                             "NONFUNCTION_REPRESENTATION_REVIEW"
+                             for x in dispatch), 12)
+        self.assertTrue(all(x["independently_certified"] == "FALSE"
+                            for x in dispatch))
         template = progress.baseline.read_csv(output / progress.TEMPLATE)
         self.assertEqual(len(template), 508)
         self.assertTrue(all(x["source_signature_checked"] == "FALSE"
@@ -138,8 +160,6 @@ class ReconciliationTests(unittest.TestCase):
                 "string_truthy", "empty_string_false"),
         }
         # Synthetic test inventory must use real frozen root export names.
-        for i, name in enumerate(cases):
-            self.rows[i]["python_name"] = name
         write_rows(self.root / progress.baseline.FILES[0], self.rows)
         records = []
         for name, ids in cases.items():
