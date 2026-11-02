@@ -31,7 +31,12 @@
         length(z)==1L&&(is.numeric(z)||is.logical(z)||
           is.character(z)),logical(1L))),
       paste(label,"must be a source-compatible scalar or per-curve vector"))
-    numbers<-suppressWarnings(as.numeric(unlist(values,use.names=FALSE)))
+    # Unlike unlist(), per-element conversion preserves each Python-like
+    # scalar's type. In particular, unlist(list("1.5", 2, TRUE)) first
+    # character-coerces TRUE into "TRUE", which as.numeric cannot parse.
+    # NumPy np.asarray(..., dtype=float) instead maps it to 1.
+    numbers<-vapply(values,function(z)
+      suppressWarnings(as.numeric(z)),numeric(1L))
     .etr_assert(length(numbers)==n&&all(is.finite(numbers)),
       paste(label,"must contain finite numeric-compatible values"))
     return(numbers)
