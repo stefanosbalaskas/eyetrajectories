@@ -479,3 +479,158 @@ test_that("frozen Python DelayEmbeddingResult cross-source numerical and schema 
   expect_false(any(etr_native_parity_catalog()$
     one_to_one_native_contract_complete))
 })
+
+
+test_that("auto recurrence supports explicit ordered source channels and physical Theiler time",{
+  t<-as.numeric(0:8)
+  v<-array(0,c(2L,length(t),3L))
+  for(k in seq_len(2L)){
+    v[k,,1L]<-c(0,1,3,4,6,7,8,10,12)+k/5
+    v[k,,2L]<-c(0,2,1,3,2,5,4,7,6)+k/3
+    v[k,,3L]<-c(1,3,2,2,4,5,8,7,9)+k/4
+  }
+  x<-etr_trajectory_set(t,v,c("left","right"),c("x","y","z"),
+    coordinate_system="arbitrary",time_unit="s")
+  order<-c("z","x")
+  for(metric in c("cityblock","euclidean","chebyshev"))
+    for(target in c(.2,.4,.65)){
+      z<-etr_recurrence_matrix(x,curve="right",
+        target_recurrence_rate=target,theiler=1,
+        theiler_window_units="s",dimensions=order,metric=metric)
+      selected<-etr_trajectory_set(t,
+        v[,,match(order,x$dimension_names),drop=FALSE],
+        x$curve_ids,order,coordinate_system="arbitrary",time_unit="s")
+      reference<-etr_recurrence_matrix(selected,curve="right",
+        target_recurrence_rate=target,theiler=1,metric=metric)
+      expect_equal(z$radius,reference$radius,tolerance=0)
+      expect_identical(z$matrix,reference$matrix)
+      expect_equal(z$recurrence_rate,reference$recurrence_rate,tolerance=0)
+      expect_identical(z$state_dimension,2L)
+      expect_identical(z$provenance$source_info$state_names,order)
+      expect_identical(z$theiler,1L)
+    }
+  expect_error(etr_recurrence_matrix(x,curve=1L,radius=1,
+    dimensions=c("x","x")),"distinct")
+  expect_error(etr_recurrence_matrix(x,curve=1L,radius=1,
+    dimensions="missing"),"known")
+  missing<-x;missing$values[1L,1L,2L]<-NA_real_
+  expect_s3_class(etr_recurrence_matrix(missing,curve="left",
+    radius=1,dimensions="x"),"etr_recurrence")
+  expect_error(etr_recurrence_matrix(missing,curve="left",radius=1),
+    "complete observations")
+})
+
+test_that("frozen Python 1.2 auto recurrence matches channel-order and physical-time semantics",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Frozen Python 1.2 channel selection oracle is opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  t<-as.numeric(0:8)
+  v<-array(0,c(2L,length(t),3L))
+  for(k in seq_len(2L)){
+    v[k,,1L]<-c(0,1,3,4,6,7,8,10,12)+k/5
+    v[k,,2L]<-c(0,2,1,3,2,5,4,7,6)+k/3
+    v[k,,3L]<-c(1,3,2,2,4,5,8,7,9)+k/4
+  }
+  x<-etr_trajectory_set(t,v,c("left","right"),c("x","y","z"),
+    coordinate_system="arbitrary",time_unit="s")
+  py<-reticulate::py_call(etpy_get_export("TrajectorySet"),
+    time=reticulate::r_to_py(t),values=reticulate::r_to_py(v),
+    curve_ids=as.list(x$curve_ids),
+    dimension_names=as.list(x$dimension_names),
+    coordinate_system="arbitrary",time_unit="s")
+  for(metric in c("cityblock","euclidean","chebyshev"))
+    for(target in c(.2,.4,.65)){
+      ours<-etr_recurrence_matrix(x,curve="right",
+        target_recurrence_rate=target,theiler=1L,
+        theiler_window_units="s",dimensions=c("z","x"),metric=metric)
+      theirs<-reticulate::py_call(etpy_get_export("recurrence_matrix"),
+        source=py,curve="right",target_recurrence_rate=target,
+        metric=metric,theiler_window=as.integer(1L),
+        theiler_window_units="s",dimensions=as.list(c("z","x")))
+      expect_equal(ours$radius,
+        as.numeric(et_to_r(reticulate::py_get_attr(theirs,"radius"))),
+        tolerance=1e-9)
+      expect_equal(ours$recurrence_rate,
+        as.numeric(et_to_r(reticulate::py_get_attr(theirs,
+          "achieved_recurrence_rate"))),tolerance=1e-12)
+      expect_equal(unname(ours$matrix),
+        unname(et_to_r(theirs$matrix$toarray())),tolerance=0)
+      expect_identical(ours$provenance$source_info$state_names,c("z","x"))
+    }
+}
+
+test_that("native embedded auto recurrence matches frozen delay-state source",{
+  t<-as.numeric(0:9)
+  v<-array(0,c(2L,length(t),2L))
+  for(k in seq_len(2L)){
+    v[k,,1L]<-c(0,1,3,4,5,8,9,10,12,13)+k/3
+    v[k,,2L]<-c(0,1,1,3,3,4,6,7,8,10)+k/5
+  }
+  x<-etr_trajectory_set(t,v,c("A","B"),c("x","y"),
+    coordinate_system="arbitrary",time_unit="s")
+  embedded<-etr_delay_embed_trajectory(x,embedding_dimension=2L,
+    delay=1L,dimensions=c("x","y"))
+  for(metric in c("cityblock","euclidean","chebyshev"))
+    for(target in c(.2,.4,.65)){
+      z<-etr_recurrence_matrix(embedded,curve="B",
+        target_recurrence_rate=target,theiler=1L,metric=metric)
+      proxy<-etr_trajectory_set(embedded$time,embedded$values,
+        embedded$curve_ids,embedded$state_names,
+        coordinate_system=embedded$coordinate_system,
+        time_unit=embedded$time_unit)
+      baseline<-etr_recurrence_matrix(proxy,curve="B",
+        target_recurrence_rate=target,theiler=1L,metric=metric)
+      expect_equal(z$radius,baseline$radius,tolerance=0)
+      expect_identical(z$matrix,baseline$matrix)
+      expect_equal(z$recurrence_rate,baseline$recurrence_rate,tolerance=0)
+      expect_identical(z$provenance$source_info$source_kind,
+        "DelayEmbeddingResult")
+      expect_identical(z$provenance$source_info$state_names,
+        embedded$state_names)
+    }
+  expect_error(etr_recurrence_matrix(embedded,curve="A",
+    radius=1,dimensions=embedded$state_names),
+    "dimensions cannot be supplied")
+})
+
+test_that("frozen Python 1.2 embedded recurrence direct numerical oracle",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Frozen Python 1.2 embedded recurrence oracle is opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  t<-as.numeric(0:9)
+  v<-array(0,c(2L,length(t),2L))
+  for(k in seq_len(2L)){
+    v[k,,1L]<-c(0,1,3,4,5,8,9,10,12,13)+k/3
+    v[k,,2L]<-c(0,1,1,3,3,4,6,7,8,10)+k/5
+  }
+  x<-etr_trajectory_set(t,v,c("A","B"),c("x","y"),
+    coordinate_system="arbitrary",time_unit="s")
+  pyx<-reticulate::py_call(etpy_get_export("TrajectorySet"),
+    time=reticulate::r_to_py(t),values=reticulate::r_to_py(v),
+    curve_ids=as.list(x$curve_ids),
+    dimension_names=as.list(x$dimension_names),
+    coordinate_system="arbitrary",time_unit="s")
+  native_embedded<-etr_delay_embed_trajectory(x,
+    embedding_dimension=2L,delay=1L,dimensions=c("x","y"))
+  py_embedded<-reticulate::py_call(etpy_get_export("delay_embed_trajectory"),
+    trajectories=pyx,embedding_dimension=as.integer(2L),
+    delay=as.integer(1L),dimensions=as.list(c("x","y")))
+  for(metric in c("cityblock","euclidean","chebyshev"))
+    for(target in c(.2,.4,.65)){
+      ours<-etr_recurrence_matrix(native_embedded,curve="B",
+        target_recurrence_rate=target,theiler=1L,metric=metric)
+      theirs<-reticulate::py_call(etpy_get_export("recurrence_matrix"),
+        source=py_embedded,curve="B",target_recurrence_rate=target,
+        theiler_window=as.integer(1L),metric=metric)
+      expect_equal(ours$radius,
+        as.numeric(et_to_r(reticulate::py_get_attr(theirs,"radius"))),
+        tolerance=1e-9)
+      expect_equal(ours$recurrence_rate,
+        as.numeric(et_to_r(reticulate::py_get_attr(theirs,
+          "achieved_recurrence_rate"))),tolerance=1e-12)
+      expect_equal(unname(ours$matrix),
+        unname(et_to_r(theirs$matrix$toarray())),tolerance=0)
+      expect_identical(ours$provenance$source_info$source_kind,
+        "DelayEmbeddingResult")
+    }
+}

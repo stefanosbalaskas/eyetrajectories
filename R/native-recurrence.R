@@ -33,11 +33,85 @@
 #'   Exactly one radius policy must be selected. The 48-step inclusive-radius
 #'   bisection matches the frozen Python 1.2 source threshold algorithm on
 #'   native numeric common-grid states.
+#' @param dimensions Optional explicit ordered names of source trajectory
+#'   channels to select. NULL retains the legacy native all-channel behavior.
+#'   Already embedded source objects require dimensions=NULL.
+#' @param theiler_window_units Source Theiler interval unit, "samples" by default,
+#'   or a compatible physical unit resolved from the source time grid.
 #' @export
 etr_recurrence_matrix <- function(x, curve = 1L, radius = NULL, theiler = 0L,
                                   metric = "euclidean",
-                                  target_recurrence_rate = NULL) {
-  etr_validate(x, require_complete = TRUE)
+                                  target_recurrence_rate = NULL,
+                                  dimensions = NULL,
+                                  theiler_window_units = "samples") {
+  # Frozen Python recurrence_matrix also accepts DelayEmbeddingResult.
+  # Reuse the verified native common-grid recurrence kernel while recording
+  # explicit embedding-specific source provenance; no Python bridge.
+  if(inherits(x,"etr_delay_embedding_set")) {
+    .etr_assert(is.null(dimensions),
+      "dimensions cannot be supplied for an already embedded state space")
+    .etr_assert(is.list(x)&&is.array(x$values)&&
+      length(dim(x$values))==3L&&is.numeric(x$values)&&
+      all(is.finite(x$values))&&
+      is.character(x$state_names)&&
+      length(x$state_names)==dim(x$values)[3L]&&
+      !anyNA(x$state_names)&&!anyDuplicated(x$state_names),
+      "embedded recurrence requires complete numeric states and named dimensions")
+    .etr_assert(is.numeric(x$embedding_dimension)&&
+      length(x$embedding_dimension)==1L&&
+      is.finite(x$embedding_dimension)&&
+      x$embedding_dimension>=1&&
+      x$embedding_dimension==as.integer(x$embedding_dimension)&&
+      is.numeric(x$delay_samples)&&
+      length(x$delay_samples)==1L&&
+      is.finite(x$delay_samples)&&x$delay_samples>=1&&
+      x$delay_samples==as.integer(x$delay_samples)&&
+      is.numeric(x$delay_time)&&length(x$delay_time)==1L,
+      "embedded recurrence requires valid delay and embedding metadata")
+    proxy<-etr_trajectory_set(x$time,x$values,x$curve_ids,
+      dimension_names=x$state_names,
+      coordinate_system=x$coordinate_system,
+      time_unit=x$time_unit,provenance=list())
+    rec<-etr_recurrence_matrix(proxy,curve=curve,radius=radius,
+      theiler=theiler,metric=metric,
+      target_recurrence_rate=target_recurrence_rate,
+      theiler_window_units=theiler_window_units)
+    rec$provenance$source_info<-list(
+      source_kind="DelayEmbeddingResult",
+      embedding_dimension=as.integer(x$embedding_dimension),
+      delay_samples=as.integer(x$delay_samples),
+      delay_time=as.numeric(x$delay_time),
+      state_names=x$state_names,
+      coordinate_system=x$coordinate_system,
+      source_provenance=if(is.null(x$provenance))list() else x$provenance)
+    return(rec)
+  }
+  # Python requires explicit dimensions for TrajectorySet source inputs.
+  # R retains NULL=all channels for existing backwards-compatible calls.
+  etr_validate(x, require_complete=is.null(dimensions))
+  if(!is.null(dimensions)){
+    .etr_assert(is.character(dimensions)&&length(dimensions)>0L&&
+      !anyNA(dimensions)&&all(nzchar(dimensions))&&
+      !anyDuplicated(dimensions)&&
+      all(dimensions %in% x$dimension_names),
+      "dimensions must select known, distinct trajectory channels")
+    cols<-match(dimensions,x$dimension_names)
+    proxy<-etr_trajectory_set(x$time,
+      x$values[,,cols,drop=FALSE],x$curve_ids,
+      dimension_names=dimensions,metadata=x$metadata,
+      coordinate_system=x$coordinate_system,
+      time_unit=x$time_unit,provenance=x$provenance)
+    rec<-etr_recurrence_matrix(proxy,curve=curve,radius=radius,
+      theiler=theiler,metric=metric,
+      target_recurrence_rate=target_recurrence_rate,
+      theiler_window_units=theiler_window_units)
+    rec$provenance$source_info<-list(
+      source_kind="TrajectorySet",
+      dimensions=dimensions,state_names=dimensions,
+      coordinate_system=x$coordinate_system,
+      source_provenance=x$provenance)
+    return(rec)
+  }
   if (is.character(curve)) curve <- match(curve, x$curve_ids)
   .etr_assert(length(curve) == 1L && !is.na(curve) && is.numeric(curve) &&
                 curve == as.integer(curve) && curve %in% seq_along(x$curve_ids),
@@ -55,10 +129,9 @@ etr_recurrence_matrix <- function(x, curve = 1L, radius = NULL, theiler = 0L,
                   target_recurrence_rate > 0 && target_recurrence_rate < 1,
                 "target_recurrence_rate must be strictly between 0 and 1")
   }
-  .etr_assert(is.numeric(theiler) && length(theiler) == 1L &&
-                is.finite(theiler) && theiler >= 0 &&
-                theiler == as.integer(theiler),
-              "theiler must be a non-negative integer")
+  theiler <- .etr_source_time_unit_samples(
+    x$time,theiler,theiler_window_units,x$time_unit,
+    name="theiler_window",allow_zero=TRUE)
   .etr_assert(is.character(metric) && length(metric) == 1L &&
     !is.na(metric) && metric %in% c("euclidean","cityblock","chebyshev"),
     "metric must be one of cityblock, euclidean, chebyshev")
