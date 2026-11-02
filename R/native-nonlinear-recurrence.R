@@ -45,27 +45,49 @@
 etr_recurrence_network <- function(recurrence){
   .etr_recurrence_internal(recurrence,"auto")
   adj<-recurrence$matrix;n<-nrow(adj)
-  .etr_assert(n<=750L,
-    "native dense recurrence-network analysis limited to 750 nodes")
+  # Match the dense recurrence builder's 2500-state domain without
+  # requiring 750-node truncation. A CSR/Python dataclass contract is still
+  # an open representation gap; all source topology calculations stay native.
+  .etr_assert(n<=2500L,
+    "native dense recurrence-network analysis limited to 2500 nodes")
   degrees<-as.integer(rowSums(adj))
-  triples<-degrees*(degrees-1)/2
+  triples<-as.double(degrees)*(as.double(degrees)-1)/2
+  # Count each triangle exactly once using forward-neighbor intersections;
+  # avoid allocating a degree-by-degree adjacency submatrix for every node.
+  # This is particularly useful on long, sparse recurrence sequences.
+  neighbors<-lapply(seq_len(n),function(i)which(adj[i,]))
+  forward<-lapply(seq_len(n),function(i)neighbors[[i]][neighbors[[i]]>i])
   triangles_by_node<-numeric(n)
-  for(i in seq_len(n)) {
-    nbr<-which(adj[i,])
-    if(length(nbr)>=2L)triangles_by_node[i]<-
-      sum(adj[nbr,nbr,drop=FALSE])/2
+  n_triangles<-0
+  for(i in seq_len(n)){
+    ahead<-forward[[i]]
+    if(length(ahead)<2L)next
+    for(j in ahead){
+      common<-intersect(ahead,forward[[j]])
+      if(!length(common))next
+      k<-length(common)
+      triangles_by_node[i]<-triangles_by_node[i]+k
+      triangles_by_node[j]<-triangles_by_node[j]+k
+      triangles_by_node[common]<-triangles_by_node[common]+1
+      n_triangles<-n_triangles+k
+    }
   }
-  n_triangles<-sum(triangles_by_node)/3
   clustering<-ifelse(triples>0,triangles_by_node/pmax(triples,1),0)
-  labels<-rep(-1L,n); component<-0L
+  labels<-rep(-1L,n);component<-0L
+  # Queue-head BFS avoids repeatedly copying and shrinking a frontier,
+  # preserving SciPy's ascending-root component enumeration.
   for(i in seq_len(n))if(labels[i]<0L){
-    frontier<-i;labels[i]<-component
-    while(length(frontier)){
-      cur<-frontier[1L];frontier<-frontier[-1L]
-      nearby<-which(adj[cur,] & labels<0L)
-      if(length(nearby)) {
+    queue<-integer(n);head<-1L;tail<-1L;queue[tail]<-i
+    labels[i]<-component
+    while(head<=tail){
+      cur<-queue[head];head<-head+1L
+      nearby<-neighbors[[cur]]
+      nearby<-nearby[labels[nearby]<0L]
+      if(length(nearby)){
         labels[nearby]<-component
-        frontier<-c(frontier,nearby)
+        ix<-tail+seq_along(nearby)
+        queue[ix]<-nearby
+        tail<-tail+length(nearby)
       }
     }
     component<-component+1L
@@ -115,6 +137,8 @@ etr_recurrence_network <- function(recurrence){
       transitivity_undefined_when_no_connected_triples=TRUE,
       triangle_count=as.integer(n_triangles),
       dense_adjacency_materialized=TRUE,
+      triangle_count_method="forward_neighbor_intersections",
+      connected_components_method="queue_head_breadth_first_search",
       automatic_community_detection=FALSE,
       automatic_dimension_interpretation=FALSE,
       interpretation_boundary=paste(
