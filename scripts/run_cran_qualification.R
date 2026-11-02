@@ -113,6 +113,69 @@ logs <- list.files(file.path(report, "check"), pattern = "^00check\\.log$",
 if (length(logs))
   file.copy(logs[1L], file.path(report, "00check.log"), overwrite = TRUE)
 
+# rcmdcheck's parsed $errors/$warnings/$notes can be EMPTY even when
+# R CMD check aborted (e.g., CRAN archive.rds network timeout). A zero count
+# alone is never a successful completed check.
+final_check_log_error <- NULL
+final_check_log_status <- NA_character_
+if (!is.null(check)) {
+  if (length(logs) != 1L) {
+    final_check_log_error <- paste0(
+      "Expected exactly one 00check.log, found ", length(logs))
+  } else {
+    completed_log <- readLines(logs[[1L]], warn = FALSE,
+                               encoding = "UTF-8")
+    completed_marker <- any(grepl(
+      "^\\* DONE[[:space:]]*$", completed_log))
+    statuses <- grep("^Status:[[:space:]]*", completed_log, value = TRUE)
+    required_phases <- c(
+      "^\\* checking tests[[:space:]]",
+      "^\\* checking examples[[:space:]]",
+      "^\\* checking PDF version of manual[[:space:]]")
+    missing_phases <- required_phases[!vapply(
+      required_phases, function(pattern)
+        any(grepl(pattern, completed_log)), logical(1L))]
+    if (!completed_marker || length(statuses) != 1L ||
+        length(missing_phases) ||
+        !any(grepl("Running 'testthat.R'", completed_log,
+                   fixed = TRUE))) {
+      final_check_log_error <- paste(
+        "R CMD check did NOT complete all mandatory phases:",
+        paste(c(
+          if (!completed_marker) "missing * DONE" else NULL,
+          if (length(statuses) != 1L) "missing/ambiguous Status" else NULL,
+          missing_phases,
+          if (!any(grepl("Running 'testthat.R'", completed_log,
+                         fixed = TRUE))) "testthat.R not executed" else NULL),
+          collapse = "; "))
+    } else {
+      final_check_log_status <- sub(
+        "^Status:[[:space:]]*", "", statuses[[1L]])
+      if (!(identical(final_check_log_status, "OK") ||
+            grepl("^[0-9]+ (ERROR|WARNING|NOTE)",
+                  final_check_log_status)) ||
+          !identical(grepl("ERROR", final_check_log_status, fixed = TRUE),
+                     errors > 0L) ||
+          !identical(grepl("WARNING", final_check_log_status, fixed = TRUE),
+                     warnings > 0L) ||
+          !identical(grepl("NOTE", final_check_log_status, fixed = TRUE),
+                     notes > 0L))
+        final_check_log_error <- paste(
+          "Inconsistent R CMD check final status and rcmdcheck counts:",
+          final_check_log_status,
+          sprintf("E/W/N=%s/%s/%s", errors, warnings, notes))
+    }
+  }
+}
+if (!is.null(final_check_log_error)) {
+  writeLines(final_check_log_error,
+             file.path(report, "INCOMPLETE_R_CMD_CHECK.txt"))
+  cat("R_CMD_CHECK_FINALITY=FAIL: ", final_check_log_error, "\n", sep = "")
+} else if (!is.null(check)) {
+  cat("R_CMD_CHECK_FINALITY=VERIFIED: ",
+      final_check_log_status, "\n", sep = "")
+}
+
 # R CMD check prints only the final handful of testthat failures. Preserve
 # the complete installed-package transcript, and write an exact diagnostic
 # index with source filename/line for every failed expectation. Do not skip
@@ -180,6 +243,7 @@ if (!is.null(example_error))
   writeLines(example_error, file.path(report, "native_example_ERROR.txt"))
 
 check_without_errors_or_warnings <- is.null(check_error) &&
+  is.null(final_check_log_error) &&
   !is.na(errors) && errors == 0L && warnings == 0L
 example_pass <- is.null(example_error)
 check_status <- if (!is.null(rd_preflight_error)) {
@@ -188,6 +252,8 @@ check_status <- if (!is.null(rd_preflight_error)) {
   "FAIL - PACKAGED RESEARCH FIXTURE PREFLIGHT"
 } else if (is.null(check)) {
   "FAIL - SOURCE BUILD (R CMD CHECK NOT RUN)"
+} else if (!is.null(final_check_log_error)) {
+  "FAIL - R CMD CHECK ABORTED OR INCOMPLETE"
 } else if (!check_without_errors_or_warnings || !example_pass) {
   "FAIL"
 } else if (!is.na(notes) && notes > 0L) {
@@ -201,6 +267,8 @@ summary <- c(
   paste("R CMD check errors:", errors),
   paste("R CMD check warnings:", warnings),
   paste("R CMD check notes:", notes),
+  paste("R CMD check finality:", if (is.null(final_check_log_error))
+    final_check_log_status else paste("INVALID:", final_check_log_error)),
   paste("Native source example:",
         if (example_pass) "PASS" else paste("FAIL:", example_error)),
   paste("Report directory:", report),
@@ -219,6 +287,7 @@ cat("\n", paste(summary, collapse = "\n"), "\n", sep = "")
 if (!check_without_errors_or_warnings || !example_pass)
   stop("CRAN-style qualification incomplete or failed (Rd preflight, source build, check, or smoke). Review report files.",
        call. = FALSE)
+cat("CRAN_VERDICT_CONFIRMED=PASS\n")
 if (!is.na(notes) && notes > 0L) {
   cat("Local R CMD check completed without errors/warnings. NOTE(s) require manual review.\n")
 } else {
