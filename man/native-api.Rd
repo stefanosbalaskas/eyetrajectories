@@ -111,10 +111,13 @@ etr_transform_fpca(fit, x)
 
 etr_reconstruct_fpca(fit, n_components = NULL, scores = NULL)
 
-etr_recurrence_matrix(x, curve = 1L, radius, theiler = 0L,
-  metric = "euclidean")
+etr_recurrence_matrix(x, curve = 1L, radius = NULL, theiler = 0L,
+  metric = "euclidean", target_recurrence_rate = NULL,
+  dimensions = NULL, theiler_window_units = "samples")
 
-etr_cross_recurrence_matrix(a, b, radius, metric = "euclidean")
+etr_cross_recurrence_matrix(a, b, radius = NULL, metric = "euclidean",
+  target_recurrence_rate = NULL, curve_a = NULL, curve_b = NULL,
+  dimensions_a = NULL, dimensions_b = NULL)
 
 etr_rqa_metrics(recurrence, min_diagonal_length = 2L, min_vertical_length = 2L)
 
@@ -157,7 +160,20 @@ etr_plot_recurrence(recurrence, ...)
 \item{fit}{Native etr_fpca fit.}
 \item{scores}{Optional finite numeric FPCA score vector (one external curve) or numeric matrix (curves by fitted components). When supplied, reconstructs these external scores to an unlabelled curve-by-time-by-dimension numeric array. When omitted, fitted curves are returned as the original native trajectory collection.}
 \item{curve}{Curve ID or 1-based index.}
-\item{radius}{Finite non-negative Euclidean recurrence radius.}
+\item{radius}{Optional fixed finite non-negative recurrence radius.
+Specify exactly one of radius or target_recurrence_rate.}
+\item{target_recurrence_rate}{Optional probability strictly between zero
+and one, selecting the source-aligned target-density threshold policy.
+Distance ties may prevent an exact target rate.}
+\item{dimensions}{Optional ordered selected channel names for native
+recurrence sources; NULL retains the native all-channel default.}
+\item{theiler_window_units}{Theiler interval units: samples or compatible
+physical time on a sufficiently regular observed grid.}
+\item{curve_a,curve_b}{Required curve identifiers for trajectory-set
+cross-recurrence inputs; NULL for numeric matrices.}
+\item{dimensions_a,dimensions_b}{Required matching ordered state-channel
+names for trajectory-set cross-recurrence; NULL for numeric matrices or
+already embedded state spaces.}
 \item{theiler}{Excluded sample lag for auto-recurrence.}
 \item{recurrence}{Native etr_recurrence object.}
 \item{min_diagonal_length}{Minimum counted diagonal line length.}
