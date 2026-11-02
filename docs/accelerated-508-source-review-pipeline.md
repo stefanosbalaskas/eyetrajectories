@@ -83,6 +83,18 @@ partial developer records, zero complete six-gate developer reviews, **zero
 closed source gaps**, and **zero independent approvals**. The four pilot
 source-gap entries remain open.
 
+
+**Case-level reviewer prioritization (November 2):** In the 12-function
+and 12-nonfunction no-recorded-gap lanes, completed Python-mode cases
+containing a static frozen export literal now sort ahead of file-only
+references, after any genuinely complete six-gate developer assessments.
+The dispatch records the per-export descriptive case count and explicitly
+marks `literal_reference_proves_oracle_invocation=FALSE`. This improves
+reviewer scheduling; it does **not** remove a source gap, demonstrate that
+a conditional Python call ran, validate full-domain behavior, or change
+independent approval status. The four known-gap pilots remain first and
+remain unresolved.
+
 The dispatch is a **proposed independent reviewer assignment**, not a
 certification fastlane. A known-gap pilot cannot be fully certified before
 its documented source differences are scientifically resolved. A function
