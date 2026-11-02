@@ -678,3 +678,50 @@ test_that("radius profiles accept source-selected channels and embedded states",
   expect_error(etr_recurrence_radius_profile(embedding,"B",
     radii,dimensions=embedding$state_names),"dimensions cannot be supplied")
 })
+
+
+test_that("frozen Python 1.2 recurrence radius-profile state CDF agrees",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Published Python radius-profile source oracle opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  t<-as.numeric(0:9)
+  v<-array(0,c(2L,10L,3L))
+  for(k in 1:2){
+    v[k,,1]<-c(0,1,3,4,5,8,9,10,12,13)+k/3
+    v[k,,2]<-c(0,1,1,3,3,4,6,7,8,10)+k/5
+    v[k,,3]<-c(1,2,4,7,3,5,8,6,9,10)+k/7
+  }
+  x<-etr_trajectory_set(t,v,c("A","B"),c("x","y","z"),
+    coordinate_system="arbitrary",time_unit="s")
+  pyx<-reticulate::py_call(etpy_get_export("TrajectorySet"),
+    time=reticulate::r_to_py(t),values=reticulate::r_to_py(v),
+    curve_ids=as.list(x$curve_ids),
+    dimension_names=as.list(x$dimension_names),
+    coordinate_system="arbitrary",time_unit="s")
+  radii<-c(.25,1,2,4,8,20)
+  for(m in c("euclidean","cityblock","chebyshev")){
+    ours<-etr_recurrence_radius_profile(x,"B",radii,
+      metric=m,theiler_window=1L,dimensions=c("z","x"))
+    theirs<-reticulate::py_call(etpy_get_export("recurrence_radius_profile"),
+      source=pyx,curve="B",radii=as.list(radii),metric=m,
+      theiler_window=as.integer(1L),dimensions=as.list(c("z","x")))
+    other<-as.data.frame(et_to_r(reticulate::py_get_attr(theirs,"table")))
+    for(col in names(ours$table))
+      expect_equal(as.numeric(ours$table[[col]]),
+        as.numeric(other[[col]]),tolerance=1e-12,info=paste(m,col))
+  }
+  native_embedding<-etr_delay_embed_trajectory(x,
+    embedding_dimension=2L,delay=1L,dimensions=c("x","y"))
+  py_embedding<-reticulate::py_call(etpy_get_export("delay_embed_trajectory"),
+    trajectories=pyx,embedding_dimension=as.integer(2L),
+    delay=as.integer(1L),dimensions=as.list(c("x","y")))
+  ours<-etr_recurrence_radius_profile(native_embedding,"B",radii,
+    theiler_window=1L)
+  theirs<-reticulate::py_call(etpy_get_export("recurrence_radius_profile"),
+    source=py_embedding,curve="B",radii=as.list(radii),
+    theiler_window=as.integer(1L))
+  other<-as.data.frame(et_to_r(reticulate::py_get_attr(theirs,"table")))
+  for(col in names(ours$table))
+    expect_equal(as.numeric(ours$table[[col]]),
+      as.numeric(other[[col]]),tolerance=1e-12,info=col)
+})
