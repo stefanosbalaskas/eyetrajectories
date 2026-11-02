@@ -557,7 +557,7 @@ test_that("frozen Python 1.2 auto recurrence matches channel-order and physical-
         unname(et_to_r(theirs$matrix$toarray())),tolerance=0)
       expect_identical(ours$provenance$source_info$state_names,c("z","x"))
     }
-}
+})
 
 test_that("native embedded auto recurrence matches frozen delay-state source",{
   t<-as.numeric(0:9)
@@ -633,4 +633,4 @@ test_that("frozen Python 1.2 embedded recurrence direct numerical oracle",{
       expect_identical(ours$provenance$source_info$source_kind,
         "DelayEmbeddingResult")
     }
-}
+})
