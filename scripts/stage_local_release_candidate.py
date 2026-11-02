@@ -57,7 +57,7 @@ def prepare(root: Path, out: Path, version: str) -> Path:
                     raise ValueError("Unsafe git archive entry " + member.name)
             archive.extractall(package, filter="data")
         desc = package / "DESCRIPTION"
-        desc.write_text(re.sub(r"^Version:\s*\S+\s*$", "Version: " + version,
+        desc.write_text(re.sub(r"^Version:[ \t]*[^\r\n]+$", "Version: " + version,
             desc.read_text(encoding="utf-8"), count=1, flags=re.M), encoding="utf-8")
         # Correct only stage documentation; leave research README/NEWS untouched.
         news = package / "NEWS.md"

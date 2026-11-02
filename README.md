@@ -31,6 +31,10 @@ separate external release dependency. See `NEWS.md` for recent changes and
 the `docs/experimental-release-scope.md` document in the research checkout
 for the bounded release plan.
 
+A local cross-platform qualification runner and isolated 0.4.2 candidate staging
+workflow are described in docs/local-release-qualification.md. The tooling
+never grants independent certifications or automatically publishes releases.
+
 ### Historical research progress (not the current release specification)
 
 ## Stage 20 — auditable native source-contract certification starts (research draft)

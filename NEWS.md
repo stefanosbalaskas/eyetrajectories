@@ -26,6 +26,13 @@
 
 ## Packaging and release gates
 
+- Added local Windows/WSL2/Docker qualification orchestration,
+  SHA-checked evidence and isolated unverified 0.4.2 candidate staging.
+  Use scripts/run_local_release_matrix.R and read
+  docs/local-release-qualification.md; cross-platform tests still require
+  the actual local environments and independent parity remains unsigned.
+
+
 - Local experimental candidate gate:
   source("scripts/qualify_experimental_candidate.R").
   It executes the existing full R CMD check --as-cran plus native-smoke
