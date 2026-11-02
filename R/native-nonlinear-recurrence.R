@@ -428,7 +428,7 @@ etr_windowed_rqa <- function(trajectories,curve=1L,window,step,
     target_recurrence_rate=NULL,metric="euclidean",
     theiler_window=0L,theiler_window_units="samples",dimensions=NULL,
     min_diagonal_length=2L,min_vertical_length=2L){
-  etr_validate(trajectories,require_complete=TRUE)
+  etr_validate(trajectories,require_complete=FALSE)
   .etr_assert(is.character(metric)&&length(metric)==1L&&
     !is.na(metric)&&metric%in%c("cityblock","euclidean","chebyshev"),
     "metric must be one of cityblock, euclidean, chebyshev")
@@ -466,6 +466,11 @@ etr_windowed_rqa <- function(trajectories,curve=1L,window,step,
     all(dimensions %in% trajectories$dimension_names) &&
     !anyDuplicated(dimensions),"dimensions must select distinct named channels")
   cols<-match(dimensions,trajectories$dimension_names)
+  # Frozen Python's recurrence_matrix checks only the state channels of
+  # the requested curve. Missing gaze on another curve or an unused channel
+  # must not invalidate this otherwise complete selected state space.
+  .etr_assert(all(is.finite(trajectories$values[curve,,cols,drop=FALSE])),
+    "windowed recurrence requires complete finite selected curve states")
   n<-length(trajectories$time)
   .etr_assert(window<=n,"window is longer than available trajectory")
   starts<-seq.int(1L,n-as.integer(window)+1L,by=as.integer(step))
@@ -512,7 +517,11 @@ etr_windowed_rqa <- function(trajectories,curve=1L,window,step,
     dropped_tail_samples=as.integer(drop),
     time_unit=trajectories$time_unit,
     provenance=list(operation="windowed_rqa",
+      source_provenance=trajectories$provenance,
       curve_id=trajectories$curve_ids[curve],
+      window_samples=as.integer(window),
+      step_samples=as.integer(step),
+      dropped_tail_samples=as.integer(drop),
       radius_policy=if(is.null(radius))
         "target_recurrence_rate" else "fixed",
       target_recurrence_rate=target_recurrence_rate,metric=metric,
@@ -548,7 +557,7 @@ etr_windowed_rqa_trajectory_set <- function(trajectories,metrics,window,step,
     "recurrence_rate cannot be a functional outcome when target_recurrence_rate controls density")
   .etr_assert(undefined_policy %in% c("raise","keep"),
     "undefined_policy must be 'raise' or 'keep'")
-  etr_validate(trajectories,require_complete=TRUE)
+  etr_validate(trajectories,require_complete=FALSE)
   per<-lapply(seq_along(trajectories$curve_ids),function(i)
     etr_windowed_rqa(trajectories,i,window,step,window_units,
       step_units,radius,target_recurrence_rate,metric,
@@ -571,13 +580,47 @@ etr_windowed_rqa_trajectory_set <- function(trajectories,metrics,window,step,
   window<-per[[1L]]$window_samples
   step<-per[[1L]]$step_samples
   overlap<-max(as.integer(window)-as.integer(step),0L)
+  metric_units<-c(recurrence_rate="proportion",
+    determinism="proportion",
+    mean_diagonal_length="state_steps",
+    max_diagonal_length="state_steps",
+    diagonal_entropy="nats",
+    laminarity="proportion",trapping_time="state_steps",
+    max_vertical_length="state_steps",
+    center_of_recurrence_mass="percent_of_sequence_length")
   provenance<-list(operation="windowed_rqa_trajectory_set",
-    metrics=metrics,overlap_samples=overlap,
+    source_provenance=trajectories$provenance,
+    source_coordinate_system=trajectories$coordinate_system,
+    source_dimension_names=dimensions,
+    metrics=metrics,metric_units=as.list(metric_units[metrics]),
+    window_samples=as.integer(window),step_samples=as.integer(step),
+    overlap_samples=overlap,
     overlap_fraction=overlap/window,
     overlapping_windows=overlap>0L,
     window_rows_are_independent=FALSE,
+    window_center_definition="midpoint_of_first_and_last_observed_sample",
+    source_time_support=c(trajectories$time[1L],
+      tail(trajectories$time,1L)),
+    functional_time_support=c(centers[1L],tail(centers,1L)),
+    leading_edge_span=centers[1L]-trajectories$time[1L],
+    trailing_edge_span=tail(trajectories$time,1L)-tail(centers,1L),
+    edge_policy="full_window_centers_only",
+    dropped_tail_samples=per[[1L]]$dropped_tail_samples,
+    tail_policy="full_windows_only_with_explicit_tail_count",
+    radius_policy=if(is.null(radius))"target_recurrence_rate" else "fixed",
+    fixed_radius=radius,
+    target_recurrence_rate=target_recurrence_rate,
+    recurrence_rate_controlled_by_design=!is.null(target_recurrence_rate),
+    distance_metric=metric,theiler_window=theiler_window,
+    theiler_window_units=theiler_window_units,
+    min_diagonal_length=as.integer(min_diagonal_length),
+    min_vertical_length=as.integer(min_vertical_length),
     undefined_policy=undefined_policy,
-    undefined_value_count=sum(bad))
+    undefined_value_count=sum(bad),
+    downstream_note=paste(
+      "Windowed metrics are functional summaries, not independent",
+      "window-level observations; preserve the curve/participant",
+      "sampling unit in downstream inference."))
   out<-etr_trajectory_set(centers,vals,trajectories$curve_ids,metrics,
     trajectories$metadata,"rqa_metrics",trajectories$time_unit,
     provenance=provenance)
