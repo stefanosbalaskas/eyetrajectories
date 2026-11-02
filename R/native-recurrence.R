@@ -52,7 +52,6 @@ etr_recurrence_matrix <- function(x, curve = 1L, radius = NULL, theiler = 0L,
       "dimensions cannot be supplied for an already embedded state space")
     .etr_assert(is.list(x)&&is.array(x$values)&&
       length(dim(x$values))==3L&&is.numeric(x$values)&&
-      all(is.finite(x$values))&&
       is.character(x$state_names)&&
       length(x$state_names)==dim(x$values)[3L]&&
       !anyNA(x$state_names)&&!anyDuplicated(x$state_names),
@@ -68,11 +67,22 @@ etr_recurrence_matrix <- function(x, curve = 1L, radius = NULL, theiler = 0L,
       x$delay_samples==as.integer(x$delay_samples)&&
       is.numeric(x$delay_time)&&length(x$delay_time)==1L,
       "embedded recurrence requires valid delay and embedding metadata")
-    proxy<-etr_trajectory_set(x$time,x$values,x$curve_ids,
+    # Python _state_from_source validates only the requested embedded
+    # curve: missing values in another embedding must not invalidate it.
+    if(is.character(curve))curve_index<-match(curve,x$curve_ids)
+    else curve_index<-curve
+    .etr_assert(is.numeric(curve_index)&&length(curve_index)==1L&&
+      is.finite(curve_index)&&curve_index==as.integer(curve_index)&&
+      curve_index %in% seq_along(x$curve_ids),
+      "curve must identify an existing embedded trajectory")
+    .etr_assert(all(is.finite(x$values[curve_index,,,drop=FALSE])),
+      "recurrence analysis requires complete finite selected curve states")
+    proxy<-etr_trajectory_set(x$time,
+      x$values[curve_index,,,drop=FALSE],x$curve_ids[curve_index],
       dimension_names=x$state_names,
       coordinate_system=x$coordinate_system,
       time_unit=x$time_unit,provenance=list())
-    rec<-etr_recurrence_matrix(proxy,curve=curve,radius=radius,
+    rec<-etr_recurrence_matrix(proxy,curve=1L,radius=radius,
       theiler=theiler,metric=metric,
       target_recurrence_rate=target_recurrence_rate,
       theiler_window_units=theiler_window_units)
@@ -96,12 +106,23 @@ etr_recurrence_matrix <- function(x, curve = 1L, radius = NULL, theiler = 0L,
       all(dimensions %in% x$dimension_names),
       "dimensions must select known, distinct trajectory channels")
     cols<-match(dimensions,x$dimension_names)
+    # Python _state_from_source selects one curve and named channels before
+    # checking finiteness. Keep unrelated missing gaze entirely outside the
+    # recurrence calculation, including its target-density radius search.
+    selected<-if(is.character(curve))match(curve,x$curve_ids) else curve
+    .etr_assert(is.numeric(selected)&&length(selected)==1L&&
+      is.finite(selected)&&selected==as.integer(selected)&&
+      selected %in% seq_along(x$curve_ids),
+      "curve must be an existing 1-based index or ID")
+    .etr_assert(all(is.finite(x$values[selected,,cols,drop=FALSE])),
+      "recurrence analysis requires complete finite selected curve states")
     proxy<-etr_trajectory_set(x$time,
-      x$values[,,cols,drop=FALSE],x$curve_ids,
-      dimension_names=dimensions,metadata=x$metadata,
+      x$values[selected,,cols,drop=FALSE],x$curve_ids[selected],
+      dimension_names=dimensions,
+      metadata=x$metadata[selected,,drop=FALSE],
       coordinate_system=x$coordinate_system,
       time_unit=x$time_unit,provenance=x$provenance)
-    rec<-etr_recurrence_matrix(proxy,curve=curve,radius=radius,
+    rec<-etr_recurrence_matrix(proxy,curve=1L,radius=radius,
       theiler=theiler,metric=metric,
       target_recurrence_rate=target_recurrence_rate,
       theiler_window_units=theiler_window_units)
@@ -241,9 +262,8 @@ etr_cross_recurrence_matrix <- function(a, b, radius=NULL,
     as_trajectory_proxy <- function(x,embedded,side) {
       if (!embedded) return(x)
       .etr_assert(is.list(x)&&is.array(x$values)&&
-        length(dim(x$values))==3L&&is.numeric(x$values)&&
-        all(is.finite(x$values)),
-        paste("embedded",side,"states must be complete finite 3D arrays"))
+        length(dim(x$values))==3L&&is.numeric(x$values),
+        paste("embedded",side,"states must be numeric 3D arrays"))
       .etr_assert(is.character(x$state_names)&&
         length(x$state_names)==dim(x$values)[3L]&&
         !anyNA(x$state_names)&&!anyDuplicated(x$state_names),
@@ -322,8 +342,10 @@ etr_cross_recurrence_matrix <- function(a, b, radius=NULL,
   source_curve_ids <- NULL
   source_time_unit <- NULL
   if(trajectory_input) {
-    etr_validate(a,require_complete=TRUE)
-    etr_validate(b,require_complete=TRUE)
+    # Match frozen Python: only the specifically requested curve/channel
+    # state tensors need complete observations; other curves can be sparse.
+    etr_validate(a,require_complete=FALSE)
+    etr_validate(b,require_complete=FALSE)
     .etr_assert(!is.null(curve_a)&&!is.null(curve_b),
       "both source curve identifiers are required for trajectory inputs")
     .etr_assert(!is.null(dimensions_a)&&!is.null(dimensions_b),
@@ -353,6 +375,9 @@ etr_cross_recurrence_matrix <- function(a, b, radius=NULL,
       "cross-recurrence state spaces must use the same coordinate_system")
     .etr_assert(identical(a$time_unit,b$time_unit),
       "cross-recurrence trajectories must use the same time_unit")
+    .etr_assert(all(is.finite(a$values[ia,,da,drop=FALSE]))&&
+      all(is.finite(b$values[ib,,db,drop=FALSE])),
+      "cross recurrence requires complete finite selected curve states")
     source_a<-list(source_kind="TrajectorySet",
       dimensions=dimensions_a,state_names=dimensions_a,
       coordinate_system=a$coordinate_system,
