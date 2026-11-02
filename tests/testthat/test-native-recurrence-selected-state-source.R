@@ -87,6 +87,49 @@ test_that("native cross recurrence selects one curve/channel on each side",{
     "complete finite selected")
 })
 
+test_that("embedded native recurrence and radius CDF ignore unrelated missing curves",{
+  x<-.etr_partial_recurrence_source_fixture()
+  # A deterministic native embedded-result fixture. The requested state
+  # dimension is x; unrelated curve c carries incomplete embedded states.
+  embedded<-structure(list(time=x$time,
+    values=x$values[,,1L,drop=FALSE],
+    curve_ids=x$curve_ids,state_names="x",
+    coordinate_system=x$coordinate_system,
+    time_unit=x$time_unit,provenance=x$provenance,
+    embedding_dimension=1L,delay_samples=1L,delay_time=1),
+    class="etr_delay_embedding_set")
+  for(metric in c("cityblock","euclidean","chebyshev")){
+    got<-etr_recurrence_matrix(embedded,curve="a",radius=2.5,
+      theiler=1L,metric=metric)
+    expected<-etr_recurrence_matrix(x,curve="a",dimensions="x",
+      radius=2.5,theiler=1L,metric=metric)
+    expect_equal(got$matrix,expected$matrix,tolerance=0)
+    expect_equal(got$recurrence_rate,expected$recurrence_rate,tolerance=0)
+    expect_identical(got$provenance$source_info$source_kind,
+      "DelayEmbeddingResult")
+    radii<-c(.5,2,5,10,20)
+    profile<-etr_recurrence_radius_profile(embedded,curve="a",
+      radii=radii,metric=metric,theiler_window=1L)
+    baseline<-etr_recurrence_radius_profile(x,curve="a",
+      dimensions="x",radii=radii,metric=metric,theiler_window=1L)
+    expect_equal(profile$table,baseline$table,tolerance=0)
+    expect_identical(profile$curve_id,"a")
+    expect_identical(profile$provenance$source_kind,
+      "DelayEmbeddingResult")
+  }
+  cross<-etr_cross_recurrence_matrix(embedded,embedded,radius=2.5,
+    curve_a="a",curve_b="b")
+  clean<-etr_cross_recurrence_matrix(x,x,radius=2.5,
+    curve_a="a",curve_b="b",dimensions_a="x",dimensions_b="x")
+  expect_equal(cross$matrix,clean$matrix,tolerance=0)
+  expect_identical(cross$provenance$source_a$source_kind,
+    "DelayEmbeddingResult")
+  expect_error(etr_recurrence_matrix(embedded,curve="c",radius=1),
+    "complete finite selected")
+  expect_error(etr_recurrence_radius_profile(embedded,curve="c",
+    radii=c(.5,1)),"complete finite selected")
+})
+
 test_that("frozen Python 1.2 selected-state recurrence oracles agree for three metrics",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("Frozen Python 1.2 recurrence source selected-state oracle is opt-in")
