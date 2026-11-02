@@ -68,6 +68,9 @@ etr_alr_transform <- function(values,reference_dimension=-1L,epsilon=1e-8,
   .etr_assert(is.logical(python_boundary_mode) &&
     length(python_boundary_mode)==1L && !is.na(python_boundary_mode),
     "python_boundary_mode must be a nonmissing logical scalar")
+  if(isTRUE(python_boundary_mode)&&is.logical(epsilon)&&
+      length(epsilon)==1L&&!is.na(epsilon))
+    epsilon<-as.numeric(epsilon)
   if(isTRUE(python_boundary_mode)) {
     # Frozen Python 1.2 only checks epsilon <= 0: NaN and +Inf pass
     # the comparison and may propagate nonfinite log-ratios.
@@ -118,6 +121,11 @@ etr_inverse_alr <- function(transformed,reference_dimension,n_dimensions,
   .etr_assert(is.logical(python_boundary_mode) &&
     length(python_boundary_mode)==1L && !is.na(python_boundary_mode),
     "python_boundary_mode must be a nonmissing logical scalar")
+  # Python treats bool as an integer in modulo and NumPy shape arguments.
+  # Mirror this only when the explicit source-boundary mode is requested.
+  if(isTRUE(python_boundary_mode)&&is.logical(n_dimensions)&&
+      length(n_dimensions)==1L&&!is.na(n_dimensions))
+    n_dimensions<-as.integer(n_dimensions)
   .etr_assert(is.numeric(n_dimensions) && length(n_dimensions)==1L &&
     is.finite(n_dimensions) && n_dimensions>=1L &&
     n_dimensions==as.integer(n_dimensions),
@@ -219,6 +227,8 @@ etr_fpca_score_frame <- function(result,prefix="FPC") {
 #' @param python_boundary_mode When TRUE, additionally accept a minimal
 #'   score-bearing R environment as a native analogue of Python's
 #'   duck-typed objects, and a bounded Matrix-package sparse score array.
+#'   Also enforce Python slice-index semantics: Boolean counts are valid,
+#'   while double 1.0 is not a valid NumPy index (unlike legacy native R).
 #'   Other Python-specific classes and error types
 #'   remain outside the audited subset.
 #' @return Unlabelled symmetric numeric matrix.
@@ -255,7 +265,8 @@ etr_score_distance_matrix <- function(fpca,n_components=NULL,
         is.logical(source_scores))&&
       nrow(source_scores)>=1L&&ncol(source_scores)>=1L&&
       all(is.finite(suppressWarnings(as.numeric(source_scores))))&&
-      is.numeric(fpca$n_components)&&
+      (is.numeric(fpca$n_components) ||
+        (isTRUE(python_boundary_mode)&&is.logical(fpca$n_components)))&&
       length(fpca$n_components)==1L&&
       is.finite(fpca$n_components)&&
       fpca$n_components==as.integer(fpca$n_components)&&
@@ -263,10 +274,22 @@ etr_score_distance_matrix <- function(fpca,n_components=NULL,
       fpca$n_components<=ncol(source_scores),
       "fpca must provide finite scores and a compatible n_components")
   }
-  if(is.null(n_components))n_components<-fpca$n_components
+  declared<-fpca$n_components
+  if(isTRUE(python_boundary_mode)&&is.logical(declared))
+    declared<-as.integer(declared)
+  if(is.null(n_components))n_components<-declared
+  if(isTRUE(python_boundary_mode)) {
+    # Frozen Python 1.2 delegates a literal [:, :n_components] slice
+    # to NumPy/scipy. Boolean counts are valid Python __index__ objects;
+    # floating-point 1.0 is NOT a valid slice index even if integral.
+    .etr_assert((is.integer(n_components)||is.logical(n_components))&&
+      length(n_components)==1L&&!is.na(n_components),
+      "n_components must be a Python integer/Boolean slice index")
+    n_components<-as.integer(n_components)
+  }
   .etr_assert(is.numeric(n_components) && length(n_components)==1L &&
     is.finite(n_components) && n_components==as.integer(n_components) &&
-    n_components>=1L && n_components<=fpca$n_components,
+    n_components>=1L && n_components<=declared,
     "n_components is outside the fitted range")
   # sklearn pairwise_distances accepts numeric-string and Boolean score arrays.
   # Do not coerce the caller's object, nor accept NaN, Inf or bad strings.
