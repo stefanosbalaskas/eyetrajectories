@@ -309,14 +309,23 @@ etr_recurrence_radius_profile <- function(source,curve=1L,radii,
     .etr_assert(is.null(dimensions),
       "dimensions cannot be supplied for an already embedded state space")
     .etr_assert(is.array(source$values)&&length(dim(source$values))==3L&&
-      is.numeric(source$values)&&all(is.finite(source$values))&&
-      is.character(source$state_names)&&
+      is.numeric(source$values)&&is.character(source$state_names)&&
       length(source$state_names)==dim(source$values)[3L],
-      "embedded radius profile requires finite 3D named states")
-    proxy<-etr_trajectory_set(source$time,source$values,source$curve_ids,
+      "embedded radius profile requires numeric 3D named states")
+    # Source _state_from_source checks only the selected embedded curve;
+    # never reject an otherwise valid profile for unrelated missing states.
+    selected<-if(is.character(curve))match(curve,source$curve_ids) else curve
+    .etr_assert(is.numeric(selected)&&length(selected)==1L&&
+      is.finite(selected)&&selected==as.integer(selected)&&
+      selected %in% seq_along(source$curve_ids),
+      "curve must identify an existing embedded trajectory")
+    .etr_assert(all(is.finite(source$values[selected,,,drop=FALSE])),
+      "embedded radius profile requires complete finite selected states")
+    proxy<-etr_trajectory_set(source$time,
+      source$values[selected,,,drop=FALSE],source$curve_ids[selected],
       source$state_names,coordinate_system=source$coordinate_system,
       time_unit=source$time_unit)
-    answer<-etr_recurrence_radius_profile(proxy,curve,radii,metric,
+    answer<-etr_recurrence_radius_profile(proxy,1L,radii,metric,
       theiler_window,theiler_window_units)
     answer$provenance$source_kind<-"DelayEmbeddingResult"
     answer$provenance$state_names<-source$state_names
