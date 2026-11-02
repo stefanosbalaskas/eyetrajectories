@@ -127,6 +127,30 @@ def check_candidate(folder: Path, version: str, r_command: str) -> str:
                       file=sys.stderr)
                 print("STAGED_R_CHILD_OUTPUT_TAIL_BEGIN\n" + tail +
                       "\nSTAGED_R_CHILD_OUTPUT_TAIL_END", file=sys.stderr)
+                if cmd[2] == "check":
+                    # R CMD check's last 13 test lines can omit the actual
+                    # failure assertion. Preserve the unedited testthat log
+                    # and display its first failure context for RStudio.
+                    check_tree = folder / "eyetrajectories.Rcheck"
+                    failure_logs = sorted(check_tree.rglob("testthat.Rout.fail"))
+                    if not failure_logs:
+                        failure_logs = sorted(check_tree.rglob("testthat.Rout"))
+                    if failure_logs:
+                        log_lines = failure_logs[0].read_text(
+                            encoding="utf-8", errors="replace").splitlines()
+                        indicators = ("══ Failed", "── 1. Failure",
+                                      "── 1. Error", "Failure (", "Error (")
+                        at = next((i for i, line in enumerate(log_lines)
+                                   if any(mark in line for mark in indicators)),
+                                  None)
+                        if at is not None:
+                            context = "\n".join(log_lines[
+                                max(0, at - 1):min(len(log_lines), at + 48)])
+                            print("STAGED_TEST_FAILURE_DETAIL_FILE=" +
+                                  str(failure_logs[0]), file=sys.stderr)
+                            print("STAGED_TEST_FAILURE_DETAILS_BEGIN\n" +
+                                  context + "\nSTAGED_TEST_FAILURE_DETAILS_END",
+                                  file=sys.stderr)
                 raise RuntimeError("R CMD " + cmd[2] + " exited " +
                     str(run.returncode) + "; full log: " + str(report))
             if cmd[2] == "build" and not (folder / tar_name).is_file():
