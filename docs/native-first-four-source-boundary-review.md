@@ -35,6 +35,51 @@ The source-gap inventory intentionally prevents a full-source-parity claim.
   `review_lane_counts.csv` in addition to the existing source evidence.
   These are **unsigned priority queues**, never certificate approvals.
 
+## November 3: source-scalar boundary extensions (new, unqualified)
+
+The frozen source at Python commit
+`c1cd95ad718327550f7e55393ff38582872f7a94` was inspected
+directly in `fpca.py`, `compositional.py` and `analysis.py`.
+The four first-party pilot contracts received the following **new
+bounded compatibility behaviors**, all only when explicitly requested
+with `python_boundary_mode=TRUE` where noted:
+
+- **`functional_trapezoid_weights`**: Python `bool(complex)` is
+  false for `0+0i` and true for nonzero real or imaginary parts.
+  Native R now accepts finite complex **normalization scalars** in
+  Python boundary mode. The scientific default still rejects them.
+  Complex-valued time grids and arbitrary Python object truthiness
+  are not certified.
+- **`alr_transform`**: Python's `epsilon <= 0` comparison treats
+  `True` as 1 and `False` as 0. R now normalizes a Boolean
+  `epsilon` to its corresponding scalar only in compatibility
+  mode. The prior NaN/Inf compatibility path is retained.
+- **`inverse_alr`**: retained the NumPy exception boundary for
+  Boolean shape arguments: `np.ones((n_curve,n_time,True))`
+  rejects Boolean shape elements even though Python modulo
+  arithmetic accepts them. Source boundary mode **does not**
+  coerce Boolean `n_dimensions`.
+- **`score_distance_matrix`**: Python accepts `n_components=True`
+  as a valid slice index and rejects `n_components=1.0` even
+  though it is numerically integral. Native R compatibility mode
+  now enforces the frozen Python slice-index type, including a
+  Boolean `fpca.n_components` attribute on minimal score objects.
+  Legacy native R numerically integral double input remains supported
+  by default. The 2-million-entry sparse densification cap remains.
+
+`tests/testthat/test-native-four-pilot-scalar-boundary-source.R`
+provides both native rejection/acceptance tests and an opt-in direct
+frozen Python 1.2 scientific oracle covering all four families.
+It is included in both native and Python qualification test filters
+and the source-file inventory.
+
+**Testing status:** source changes have been committed; Windows native
+and pinned Python qualification must be rerun at the new exact HEAD.
+Do not reclassify any of the **204 historical source-gap exports**,
+count the four as scientifically approved, or mark even one of
+the **508 independent certificates** as obtained. These are additional
+first-party source-domain comparisons, not full scientific review.
+
 ## Mandatory scientific/reviewer decision
 
 1. Re-run both qualification modes at the exact immutable native R commit,
