@@ -634,3 +634,47 @@ test_that("frozen Python 1.2 embedded recurrence direct numerical oracle",{
         "DelayEmbeddingResult")
     }
 })
+
+
+test_that("radius profiles accept source-selected channels and embedded states",{
+  t<-as.numeric(0:9)
+  v<-array(0,c(2L,10L,3L))
+  for(k in 1:2){
+    v[k,,1]<-c(0,1,3,4,5,8,9,10,12,13)+k/3
+    v[k,,2]<-c(0,1,1,3,3,4,6,7,8,10)+k/5
+    v[k,,3]<-c(1,2,4,7,3,5,8,6,9,10)+k/7
+  }
+  x<-etr_trajectory_set(t,v,c("A","B"),c("x","y","z"),
+    coordinate_system="arbitrary",time_unit="s")
+  radii<-c(.25,1,2,4,8,20)
+  for(m in c("euclidean","cityblock","chebyshev")){
+    a<-etr_recurrence_radius_profile(x,"B",radii,metric=m,
+      theiler_window=1L,dimensions=c("z","x"))
+    y<-etr_trajectory_set(t,v[,,c(3,1),drop=FALSE],
+      c("A","B"),c("z","x"),time_unit="s")
+    q<-etr_recurrence_radius_profile(y,"B",radii,metric=m,
+      theiler_window=1L)
+    expect_equal(a$table,q$table,tolerance=0)
+    expect_identical(a$provenance$state_names,c("z","x"))
+  }
+  missing<-x;missing$values[2,1,2]<-NA_real_
+  expect_s3_class(etr_recurrence_radius_profile(missing,"B",
+    radii,dimensions=c("z","x")),"etr_recurrence_radius_profile")
+  expect_error(etr_recurrence_radius_profile(missing,"B",radii),
+    "complete observations")
+  missing<-x;missing$values[2,1,1]<-NA_real_
+  expect_error(etr_recurrence_radius_profile(missing,"B",radii,
+    dimensions="x"),"complete finite selected states")
+  embedding<-etr_delay_embed_trajectory(x,embedding_dimension=2L,
+    delay=1L,dimensions=c("x","y"))
+  e<-etr_recurrence_radius_profile(embedding,"B",radii,
+    theiler_window=1L)
+  proxy<-etr_trajectory_set(embedding$time,embedding$values,
+    embedding$curve_ids,embedding$state_names,
+    time_unit=embedding$time_unit)
+  expect_equal(e$table,etr_recurrence_radius_profile(proxy,"B",
+    radii,theiler_window=1L)$table,tolerance=0)
+  expect_identical(e$provenance$source_kind,"DelayEmbeddingResult")
+  expect_error(etr_recurrence_radius_profile(embedding,"B",
+    radii,dimensions=embedding$state_names),"dimensions cannot be supplied")
+})
