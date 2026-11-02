@@ -60,6 +60,8 @@ def interpret_log(log: str, returncode: int, sha: str, require_py312: bool) -> t
         return "FAIL", f"Child process exit code {returncode}"
     expected = [
         f"EXPERIMENTAL_R_CANDIDATE_HEAD={sha}",
+        "R_CMD_CHECK_FINALITY=VERIFIED:",
+        "CRAN_VERDICT_CONFIRMED=PASS",
         "R CMD check errors: 0",
         "R CMD check warnings: 0",
         "Native source example: PASS",
@@ -168,8 +170,11 @@ def main(argv: list[str] | None = None) -> int:
                 else docker_command(root, args.docker_image or "", expression))
             commands.append((target, command))
         except (OSError, ValueError, subprocess.CalledProcessError) as err:
+            diagnostic = str(err)
+            if isinstance(err, subprocess.CalledProcessError) and err.output:
+                diagnostic += ": " + (err.output.decode("utf-8", "replace") if isinstance(err.output, bytes) else err.output).strip()[:2000]
             entries.append({"target": target, "status": "BLOCKED_NOT_EXECUTED",
-                "reason": str(err), "exit_code": None})
+                "reason": diagnostic, "exit_code": None})
     for target, command in commands:
         log = out / (target + ".log")
         started = time.monotonic()
@@ -197,6 +202,8 @@ def main(argv: list[str] | None = None) -> int:
     print("LOCAL_MATRIX_MANIFEST=" + str(out / "matrix_results.json"))
     for x in entries:
         print("LOCAL_MATRIX_RESULT=" + str(x["target"]) + ":" + str(x["status"]))
+        if x["status"] == "BLOCKED_NOT_EXECUTED":
+            print("LOCAL_MATRIX_BLOCKED_REASON=" + str(x["target"]) + ":" + str(x["reason"]).replace("\n", " ")[:1200])
     # Every requested target must have genuinely passed or passed-with-NOTEs.
     return 0 if entries and all(e["status"] in ("PASS", "PASS_WITH_NOTE_REVIEW") for e in entries) else 1
 

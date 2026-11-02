@@ -10,6 +10,7 @@ matrix = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(matrix)
 SHA = "a" * 40
 BASE = "EXPERIMENTAL_R_CANDIDATE_HEAD=" + SHA + "\n" + "\n".join([
+    "R_CMD_CHECK_FINALITY=VERIFIED: 1 NOTE", "CRAN_VERDICT_CONFIRMED=PASS",
     "R CMD check errors: 0", "R CMD check warnings: 0", "R CMD check notes: 1",
     "Native source example: PASS",
     "native_r_offline: QUALIFICATION COMPLETED WITHOUT TEST FAILURES",
@@ -25,6 +26,12 @@ class MatrixTests(unittest.TestCase):
         self.assertEqual(matrix.interpret_log(BASE.replace("python_1_2_direct_source:", "omitted:"), 0, SHA, False)[0], "FAIL")
         self.assertEqual(matrix.interpret_log(BASE, 1, SHA, False)[0], "FAIL")
         self.assertEqual(matrix.interpret_log(BASE, 0, "b" * 40, False)[0], "FAIL")
+
+    def test_aborted_cran_check_never_passes_with_zero_parsed_counts(self):
+        aborted = BASE.replace("CRAN_VERDICT_CONFIRMED=PASS", "R_CMD_CHECK_FINALITY=FAIL: missing * DONE")
+        self.assertEqual(matrix.interpret_log(aborted, 0, SHA, False)[0], "FAIL")
+        aborted = BASE.replace("R_CMD_CHECK_FINALITY=VERIFIED:", "R_CMD_CHECK_FINALITY=FAIL:")
+        self.assertEqual(matrix.interpret_log(aborted, 0, SHA, False)[0], "FAIL")
 
     def test_python312_is_not_inferred_from_python_12_package(self):
         self.assertEqual(matrix.interpret_log(BASE, 0, SHA, True)[0], "FAIL")

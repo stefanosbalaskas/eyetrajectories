@@ -23,7 +23,8 @@ The RStudio entrypoint calls Python's standard-library local orchestrator with
 your currently selected Rscript. The child R process runs the existing full
 scripts/qualify_experimental_candidate.R, which includes a real source-build
 R CMD check and BOTH scientific qualification modes. A missing or failed
-process, incomplete log, dirty checkout or mismatched commit fails closed.
+process, incomplete R CMD check final Status/* DONE marker, dirty checkout,
+network-aborted CRAN incoming check or mismatched commit fails closed.
 Full logs, SHA256 hashes, result JSON/CSV and exact Git HEAD are written OUTSIDE
 the source checkout, under sibling eyetrajectories_local_matrix/. One or more
 NOTEs return PASS_WITH_NOTE_REVIEW, NOT automatic publication approval.
@@ -56,7 +57,11 @@ Python, pinned eyetrajectoriespy and the PDF manual dependencies. Then:
 
 The orchestrator invokes wsl.exe, converts the checkout path with wslpath and
 runs the same full qualification using Linux Rscript. The evidence is separate.
-A missing WSL distribution is BLOCKED_NOT_EXECUTED, never PASS. A native Linux
+A missing WSL distribution is BLOCKED_NOT_EXECUTED, never PASS.
+The precise WSL launch error is printed as LOCAL_MATRIX_BLOCKED_REASON
+and preserved under matrix_results.json. Check `wsl --list --verbose`
+from PowerShell or `system2("wsl.exe", c("--list", "--verbose"))`
+from RStudio before configuring a Linux target. A native Linux
 filesystem checkout is preferable for final filesystem-fidelity checking.
 
 Docker requires an explicitly prebuilt image containing the needed R,
