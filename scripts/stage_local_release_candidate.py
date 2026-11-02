@@ -70,7 +70,7 @@ def prepare(root: Path, out: Path, version: str) -> Path:
         readme = package / "README.md"
         if readme.exists():
             content = readme.read_text(encoding="utf-8")
-            content = content.replace("currently\n" + String.raw` + old + String.raw`, "staged as release candidate\n" + String.raw` + version + String.raw` + " (not published)", 1)
+            content = content.replace("currently\n" + chr(96) + old + chr(96), "staged as release candidate\n" + chr(96) + version + chr(96) + " (not published)", 1)
             readme.write_text(content, encoding="utf-8")
         changes = {}
         for rel in ("DESCRIPTION", "NEWS.md", "README.md"):
