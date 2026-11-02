@@ -23,7 +23,8 @@ etr_heading_function(x, dimensions = NULL, min_speed = 0,
 etr_trajectory_tortuosity_frame(x, dimensions = NULL, min_displacement = 0,
                                 undefined_policy = c("nan", "raise"))
 etr_pairwise_frechet(x, dimensions = NULL, dimension_weights = NULL)
-etr_nearest_trajectory_indices(x, index, n_neighbors = 5L)
+etr_nearest_trajectory_indices(x, index, n_neighbors = 5L,
+                               python_boundary_mode = FALSE)
 }
 \arguments{
 \item{x}{An \code{etr_trajectory_set} with common, strictly increasing time
@@ -46,6 +47,7 @@ containing at least one strictly positive value.}
 \code{nearest_trajectory_indices()}.}
 \item{n_neighbors}{Positive integer number of nearest distinct curves.
 Requesting more than exist returns all available distinct curves.}
+\item{python_boundary_mode}{Logical opt-in for Python 1.2 NumPy slice-index semantics for n_neighbors. TRUE accepts Boolean TRUE as one neighbor and rejects a double such as 1.0; FALSE retains native R integer-valued numeric counts. This does not remove the documented distance-tie caveat.}
 }
 \value{
 The first four functions return a native \code{etr_trajectory_set};
