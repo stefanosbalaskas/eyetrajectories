@@ -79,6 +79,19 @@ an external gate.
 
 ## Stage an UNVERIFIED 0.4.2 candidate from Git HEAD
 
+**From RStudio's R console**, use R syntax (not the Python shell command):
+
+    Sys.unsetenv(c("ET_LOCAL_TARGETS", "ET_LOCAL_WSL_DISTRO"))
+    source("scripts/stage_local_release_candidate.R")
+
+This uses the current R installation, creates the separate stage, builds
+its tarball and performs actual R CMD check. A CRAN network timeout now
+fails the qualification rather than producing a false CLEAN PASS. To use
+Python shell commands directly, enter them in PowerShell/Terminal, not
+after the R `>` prompt.
+
+
+
 After exact-head evidence and review of the limited experimental scope:
 
     python scripts/stage_local_release_candidate.py --version 0.4.2 --build-check --r-command "C:\Program Files\R\R-4.6.1\bin\R.exe"
