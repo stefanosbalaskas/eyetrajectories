@@ -529,6 +529,7 @@ test_that("frozen Python 1.2 functional RQA band deterministic moments agree",{
       trajectories=pyx,metrics=as.list("recurrence_rate"),
       window=as.integer(5L),step=as.integer(2L),
       radius=.75,unit=unit,participant_column=participant,
+      dimensions=as.list(x$dimension_names),
       n_multiplier=as.integer(100L),random_state=as.integer(123L))
     original<-source$band
     for(field in c("mean","pointwise_se")){
