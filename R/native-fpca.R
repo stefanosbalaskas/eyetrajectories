@@ -61,13 +61,19 @@ etr_trapezoid_weights <- function(time, normalize = FALSE,
   } else {
     .etr_assert(length(normalize)==1L &&
       (is.logical(normalize) || is.character(normalize) ||
-        is.numeric(normalize)) &&
+        is.numeric(normalize) ||
+        (isTRUE(python_boundary_mode)&&is.complex(normalize))) &&
       (if(isTRUE(python_boundary_mode))
-        (!is.na(normalize) || is.nan(normalize))
+        (if(is.complex(normalize))
+          is.finite(Re(normalize))&&is.finite(Im(normalize))
+         else (!is.na(normalize) || is.nan(normalize)))
        else (!is.na(normalize) &&
          (!is.numeric(normalize) || is.finite(normalize)))),
       "normalize must be a valid numeric, logical or character scalar")
+    # Python's bool(complex) is true when either the real or imaginary part
+    # is nonzero. This is distinct from R's default logical coercion.
     truthy <- if(is.character(normalize))nzchar(normalize) else
+      if(is.complex(normalize))normalize!=(0+0i) else
       if(is.nan(normalize))TRUE else normalize!=0
   }
   if(isTRUE(truthy))w<-w/sum(w)
