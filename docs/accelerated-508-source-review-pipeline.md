@@ -20,6 +20,31 @@ After `git pull --ff-only`, from the repository root:
 source("scripts/capture_native_source_qualification_evidence.R")
 ```
 
+## Per-case execution evidence (no additional test run)
+
+The same two scientific qualification passes now also capture structured
+`testthat` case results without rerunning any tests:
+
+- `artifacts/native_source_contract_evidence/qualification_.../native_r_offline_executed_test_cases.csv`
+- `artifacts/native_source_contract_evidence/qualification_.../python_1_2_direct_source_executed_test_cases.csv`
+
+Each row records the source commit, test filename, test description, actual
+passed/failed/skipped/error/warning counts, and **literal frozen Python
+export names statically found inside that particular `test_that()` body**.
+A case is marked completed only if its result includes at least one passing
+expectation and no skips, warnings, failures or errors. For each uniquely
+identified export, the developer progress CSV counts Python-mode completed
+cases containing its literal reference. Ambiguous export names are not
+attributed. The progress summary records a SHA256 hash of the Python-mode
+case census. Skipped cases do not count.
+
+**This is first-party case-execution evidence, not proof that a particular
+conditional `etpy_get_export()` call executed.** It cannot establish full
+input-domain parity, per-export complete scientific contracts, independent
+replay or any certificate. It is nevertheless more informative than the
+previous file-level-only attribution and helps select genuine reviewer
+replay targets.
+
 The existing procedure runs native-R and pinned-Python qualification, builds
 the 508-export unsigned reviewer packet and 15 waves, verifies author-side
 integrity, and **then** runs:
@@ -34,6 +59,9 @@ directory, a new `developer_reconciliation_<R_SHA_PREFIX>/` with:
 
 - `contract_progress_508.csv`: one row for each immutable export.
 - `reviewer_priority_508.csv`: source-gap- and evidence-aware order.
+- `executed_test_cases_with_static_source_literal` in each 508-contract
+  progress row: descriptive executed-case attribution, never an approved
+  source-call or parity count.
 - `reviewer_dispatch_28.csv`: a compact, source-pinned 28-item external
   reviewer intake sheet in three separate lanes: four **known-gap pilots**
   for adversarial source replay, 12 functions without a recorded source gap
