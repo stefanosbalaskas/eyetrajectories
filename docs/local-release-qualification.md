@@ -76,11 +76,13 @@ an external gate.
 
 After exact-head evidence and review of the limited experimental scope:
 
-    python scripts/stage_local_release_candidate.py --version 0.4.2
+    python scripts/stage_local_release_candidate.py --version 0.4.2 --build-check --r-command "C:\Program Files\R\R-4.6.1\bin\R.exe"
 
 The Python 3.12+ staging helper creates an isolated sibling folder
 eyetrajectories_release_staging/, sources a clean git archive, and edits
-DESCRIPTION/README/NEWS in the staged copy only. The development source branch
+DESCRIPTION/README/NEWS in the staged copy only. With --build-check, it runs
+a real R CMD build and --as-cran check on the staged source tarball and hashes
+the resulting tarball; without the option, candidate checking is NOT EXECUTED. The development source branch
 remains at version 0.4.1.9000. A separate STAGING_MANIFEST.json records the
 original SHA and explicitly reports candidate_check=NOT EXECUTED,
 candidate_release_status=HOLD. This script does NOT build or upload anything.

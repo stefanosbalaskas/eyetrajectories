@@ -4,6 +4,9 @@ from pathlib import Path
 import subprocess
 import tempfile
 import unittest
+from unittest.mock import patch
+import json
+import types
 
 SCRIPT = Path(__file__).resolve().parents[1] / "stage_local_release_candidate.py"
 spec = importlib.util.spec_from_file_location("release_stage", SCRIPT)
@@ -38,6 +41,39 @@ class StageTests(unittest.TestCase):
             self.assertEqual(cmd("rev-parse","HEAD").stdout.decode().strip(),sha)
             with self.assertRaises(FileExistsError):
                 stage.prepare(root, Path(td)/"staging", "0.4.2")
+
+    def test_staged_check_requires_real_status_and_preserves_hold(self):
+        with tempfile.TemporaryDirectory() as td:
+            folder = Path(td)
+            (folder/"STAGING_MANIFEST.json").write_text(json.dumps({"candidate_check":"NOT EXECUTED","candidate_release_status":"HOLD"}))
+            def fake_run(cmd, cwd, **kwargs):
+                if cmd[2] == "build":
+                    (folder/"eyetrajectories_0.4.2.tar.gz").write_bytes(b"test source bytes")
+                else:
+                    (folder/"eyetrajectories.Rcheck").mkdir()
+                    (folder/"eyetrajectories.Rcheck/00check.log").write_text("* DONE\nStatus: 1 NOTE\n")
+                return types.SimpleNamespace(returncode=0,stdout="mock subprocess output")
+            with patch.object(stage.subprocess,"run",side_effect=fake_run):
+                status=stage.check_candidate(folder,"0.4.2","R")
+            self.assertEqual(status,"PASS_WITH_NOTE_REVIEW")
+            manifest=json.loads((folder/"STAGING_MANIFEST.json").read_text())
+            self.assertEqual(manifest["candidate_release_status"],"HOLD: platform and NOTE review required")
+            self.assertEqual(len(manifest["candidate_check_tarball_sha256"]),64)
+
+    def test_missing_candidate_check_verdict_does_not_pass(self):
+        with tempfile.TemporaryDirectory() as td:
+            folder=Path(td)
+            (folder/"STAGING_MANIFEST.json").write_text("{}")
+            def fake_run(cmd, cwd, **kwargs):
+                if cmd[2]=="build":
+                    (folder/"eyetrajectories_0.4.2.tar.gz").write_bytes(b"tar")
+                else:
+                    (folder/"eyetrajectories.Rcheck").mkdir()
+                    (folder/"eyetrajectories.Rcheck/00check.log").write_text("* DONE\n")
+                return types.SimpleNamespace(returncode=0,stdout="")
+            with patch.object(stage.subprocess,"run",side_effect=fake_run):
+                with self.assertRaisesRegex(RuntimeError,"Missing final"):
+                    stage.check_candidate(folder,"0.4.2","R")
 
     def test_invalid_version_fails(self):
         with self.assertRaises(ValueError):

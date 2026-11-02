@@ -102,11 +102,54 @@ def prepare(root: Path, out: Path, version: str) -> Path:
         raise
 
 
+def check_candidate(folder: Path, version: str, r_command: str) -> str:
+    """Build and check the staged source TARBALL; never approve publication."""
+    tar_name = "eyetrajectories_" + version + ".tar.gz"
+    report = folder / "STAGED_R_CMD_CHECK.log"
+    with report.open("w", encoding="utf-8", errors="replace") as output:
+        for cmd in ([r_command, "CMD", "build", "eyetrajectories"],
+                    [r_command, "CMD", "check", "--as-cran", tar_name]):
+            output.write("COMMAND=" + repr(cmd) + "\n")
+            output.flush()
+            try:
+                run = subprocess.run(cmd, cwd=folder, stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT, text=True, encoding="utf-8", errors="replace")
+            except OSError as err:
+                output.write("EXECUTION ERROR: " + str(err) + "\n")
+                raise RuntimeError("R executable unavailable; check NOT completed") from err
+            output.write(run.stdout + "\n")
+            output.flush()
+            if run.returncode:
+                raise RuntimeError("R build/check child failed; inspect " + str(report))
+            if cmd[2] == "build" and not (folder / tar_name).is_file():
+                raise RuntimeError("R CMD build did not create " + tar_name)
+    log_path = folder / "eyetrajectories.Rcheck" / "00check.log"
+    if not log_path.is_file():
+        raise RuntimeError("R CMD check did not create 00check.log")
+    lines = log_path.read_text(encoding="utf-8", errors="replace")
+    statuses = re.findall(r"^Status:[ \t]*(.+?)\s*$", lines, re.M)
+    if not statuses or "* DONE" not in lines:
+        raise RuntimeError("Missing final R CMD check verdict")
+    status = statuses[-1].strip()
+    if "ERROR" in status or "WARNING" in status or (status != "OK" and not re.fullmatch(r"[0-9]+ NOTE(?:s)?", status)):
+        raise RuntimeError("Candidate check is not clean: " + status)
+    evidence = json.loads((folder / "STAGING_MANIFEST.json").read_text(encoding="utf-8"))
+    evidence["candidate_check"] = "PASS_WITH_NOTE_REVIEW" if "NOTE" in status else "PASS"
+    evidence["candidate_check_verdict"] = status
+    evidence["candidate_check_log"] = str(report)
+    evidence["candidate_check_tarball_sha256"] = hashlib.sha256((folder / tar_name).read_bytes()).hexdigest()
+    evidence["candidate_release_status"] = "HOLD: platform and NOTE review required"
+    (folder / "STAGING_MANIFEST.json").write_text(json.dumps(evidence,indent=2)+"\n", encoding="utf-8")
+    return evidence["candidate_check"]
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", default=".")
     parser.add_argument("--version", default="0.4.2")
     parser.add_argument("--output-dir")
+    parser.add_argument("--build-check", action="store_true", help="Run real R CMD build and --as-cran check on staged tarball")
+    parser.add_argument("--r-command", default="R", help="R executable, or explicit path to R.exe on Windows")
     args = parser.parse_args(argv)
     root = Path(args.root).resolve()
     dest = Path(args.output_dir).resolve() if args.output_dir else root.parent / "eyetrajectories_release_staging"
@@ -115,8 +158,15 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as err:
         print("STAGING_FAIL: " + str(err), file=sys.stderr)
         return 1
+    if args.build_check:
+        try:
+            outcome = check_candidate(folder, args.version, args.r_command)
+            print("STAGED_CANDIDATE_R_CHECK=" + outcome)
+        except Exception as err:
+            print("STAGED_CANDIDATE_CHECK_FAIL: " + str(err), file=sys.stderr)
+            return 1
     print("STAGED_UNVERIFIED_RELEASE_CANDIDATE=" + str(folder))
-    print("NO BUILD, CHECK, TAG, MERGE, CRAN UPLOAD OR PUBLICATION WAS PERFORMED")
+    print("NO TAG, MERGE, CRAN UPLOAD OR PUBLICATION WAS PERFORMED")
     return 0
 
 
