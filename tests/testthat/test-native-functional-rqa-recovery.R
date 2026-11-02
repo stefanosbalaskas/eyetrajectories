@@ -461,8 +461,10 @@ test_that("functional RQA mean band preserves source equal-weight independent-un
     expect_identical(fp$estimand,if(unit=="participant")
       "equal_weight_mean_of_participant_mean_trajectories"
       else "equal_weight_curve_mean")
-    expect_identical(z$band$provenance$origin,
+    expect_identical(z$band$provenance$operation,
       "windowed_rqa_trajectory_set")
+    expect_identical(z$band$provenance$source_provenance$origin,
+      "mean_band_independent_unit_contract")
     expect_equal(z$band$lower,z$band$mean-
       z$band$critical_value*z$band$pointwise_se,tolerance=1e-12)
     expect_equal(z$band$upper,z$band$mean+
