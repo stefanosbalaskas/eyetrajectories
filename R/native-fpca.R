@@ -2,7 +2,8 @@
 #' @param time Finite increasing one-dimensional vector or list of scalar values coercible to numeric time.
 #' @param normalize Divide weights when truthy under Python 1.2 scalar
 #'   semantics (FALSE, 0 and the empty string are false; nonempty strings
-#'   and nonzero finite numeric scalars are true).
+#'   and nonzero finite numeric scalars are true). In explicit Python
+#'   boundary mode only, empty/nonempty lists use Python container truthiness.
 #' @param python_boundary_mode When TRUE, reproduce inspected Python 1.2
 #'   edge behavior for infinite strictly increasing grid endpoints and
 #'   NaN/Inf scalar normalization flags. Default FALSE retains finite-only
@@ -48,16 +49,27 @@ etr_trapezoid_weights <- function(time, normalize = FALSE,
   # scalar values, including bool("")=False and bool("0")=True.
   # Arbitrary Python user objects and nonfinite time grids remain outside
   # this intentionally bounded native scientific contract.
-  .etr_assert(length(normalize)==1L &&
-    (is.logical(normalize) || is.character(normalize) ||
-      is.numeric(normalize)) &&
-    (if(isTRUE(python_boundary_mode))
-      (!is.na(normalize) || is.nan(normalize))
-     else (!is.na(normalize) &&
-       (!is.numeric(normalize) || is.finite(normalize)))),
-    "normalize must be a valid numeric, logical or character scalar")
-  truthy<-if(is.character(normalize))nzchar(normalize) else
-    if(is.nan(normalize))TRUE else normalize!=0
+  # Python bool([])=FALSE and bool([anything])=TRUE. A list argument
+  # is accepted ONLY in explicit Python boundary mode: ordinary native R
+  # uses a scalar normalization flag, avoiding accidental list coercion.
+  list_flag <- is.list(normalize) && !is.data.frame(normalize) &&
+    is.null(dim(normalize))
+  if(list_flag) {
+    .etr_assert(isTRUE(python_boundary_mode),
+      "list normalize requires python_boundary_mode=TRUE")
+    truthy <- length(normalize)>0L
+  } else {
+    .etr_assert(length(normalize)==1L &&
+      (is.logical(normalize) || is.character(normalize) ||
+        is.numeric(normalize)) &&
+      (if(isTRUE(python_boundary_mode))
+        (!is.na(normalize) || is.nan(normalize))
+       else (!is.na(normalize) &&
+         (!is.numeric(normalize) || is.finite(normalize)))),
+      "normalize must be a valid numeric, logical or character scalar")
+    truthy <- if(is.character(normalize))nzchar(normalize) else
+      if(is.nan(normalize))TRUE else normalize!=0
+  }
   if(isTRUE(truthy))w<-w/sum(w)
   w
 }

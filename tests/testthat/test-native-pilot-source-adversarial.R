@@ -262,3 +262,59 @@ test_that("Boolean ALR and inverse arrays match published numeric coercion",{
   expect_false(any(etr_native_parity_catalog()$
     one_to_one_native_contract_complete))
 })
+
+
+test_that("source-compatible inverse ALR accepts regular nested 3D logits",{
+  # Python np.asarray accepts nested curve/time/logit sequences; native
+  # inverse now handles this source input class without a reticulate bridge.
+  nested<-list(list(c(-0.5,0.25),c(0.1,-0.35)),
+    list(c(0.5,-0.2),c(0.0,0.0)))
+  dense<-array(NA_real_,c(2L,2L,2L))
+  for(i in seq_len(2L))for(j in seq_len(2L))
+    dense[i,j,]<-nested[[i]][[j]]
+  native<-etr_inverse_alr(nested,reference_dimension=-1L,
+    n_dimensions=3L)
+  expect_identical(dim(native),c(2L,2L,3L))
+  expect_equal(native,etr_inverse_alr(dense,-1L,3L),
+    tolerance=1e-14)
+  expect_equal(as.numeric(apply(native,c(1L,2L),sum)),
+    rep(1,4L),tolerance=1e-13)
+  expect_error(etr_inverse_alr(list(list(c(0,1),c(0))),
+    reference_dimension=-1L,n_dimensions=3L),"equal scalar dimensions")
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Direct frozen Python inverse nested 3D inputs opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  source<-reticulate::py_call(etpy_get_export("inverse_alr"),
+    transformed=reticulate::r_to_py(nested),
+    reference_dimension=as.integer(-1L),
+    n_dimensions=as.integer(3L))
+  expect_equal(unname(native),unname(et_to_r(source)),tolerance=1e-12)
+})
+
+test_that("Python-boundary trapezoid normalizer accepts list truthiness",{
+  grid<-c(0,1,3)
+  expected<-c(0.5,1.5,1)
+  expect_equal(etr_trapezoid_weights(grid,
+    normalize=list(),python_boundary_mode=TRUE),expected,tolerance=0)
+  expect_equal(etr_trapezoid_weights(grid,
+    normalize=list("yes"),python_boundary_mode=TRUE),
+    expected/sum(expected),tolerance=1e-14)
+  expect_equal(etr_trapezoid_weights(grid,
+    normalize=list(FALSE),python_boundary_mode=TRUE),
+    expected/sum(expected),tolerance=1e-14)
+  expect_error(etr_trapezoid_weights(grid,normalize=list(TRUE)),
+    "python_boundary_mode")
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Direct Python list truthiness witness opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  for(flag in list(list(),list(TRUE),list(FALSE),list(0))){
+    observed<-reticulate::py_call(
+      etpy_get_export("functional_trapezoid_weights"),
+      time=reticulate::r_to_py(grid),
+      normalize=reticulate::r_to_py(flag))
+    native<-etr_trapezoid_weights(grid,
+      normalize=flag,python_boundary_mode=TRUE)
+    expect_equal(as.numeric(native),as.numeric(et_to_r(observed)),
+      tolerance=1e-14)
+  }
+})

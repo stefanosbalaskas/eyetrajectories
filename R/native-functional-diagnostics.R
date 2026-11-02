@@ -122,6 +122,10 @@ etr_inverse_alr <- function(transformed,reference_dimension,n_dimensions,
     is.finite(n_dimensions) && n_dimensions>=1L &&
     n_dimensions==as.integer(n_dimensions),
     "n_dimensions must be an integer >= 1")
+  # Source NumPy np.asarray() accepts regular 3D nested scalar sequences
+  # for inverse logits as well as for forward ALR inputs. Preserve the exact
+  # input geometry in native R (including zero/negative logits).
+  transformed<-.etr_simplex_nested_input(transformed)
   # Frozen Python np.asarray(..., dtype=float) accepts numeric-string
   # and Boolean arrays. Convert that finite, rectangular domain without expanding
   # the native overflow/nonfinite scientific contract.
