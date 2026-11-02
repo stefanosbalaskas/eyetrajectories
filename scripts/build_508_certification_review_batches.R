@@ -112,6 +112,56 @@ etr_build_508_certification_review_batches <- function(
     "DIFFERENT_BACKEND_OR_ESTIMAND","MISSING_NATIVE_FUNCTION",
     "ALREADY_FULLY_CERTIFIED"))
   ck(!anyNA(priority),"Unclassified export in certification queue")
+  # Carry ORIGINAL Python/R source-difference descriptions, executable
+  # source witnesses and required resolutions into all independent-review
+  # handoff rows. All 204 known gaps must have a nonblank evidence path.
+  fn_path<-file.path(root,"inst","extdata",
+    "native_source_contract_gaps_stage22.csv")
+  nf_path<-file.path(root,"inst","extdata",
+    "native_nonfunction_source_gaps_v1.csv")
+  ck(file.exists(fn_path)&&file.exists(nf_path),
+    "Source-difference witness registers missing")
+  fn_gaps<-utils::read.csv(fn_path,stringsAsFactors=FALSE,
+    check.names=FALSE)
+  nf_gaps<-utils::read.csv(nf_path,stringsAsFactors=FALSE,
+    check.names=FALSE)
+  ck(nrow(fn_gaps)==203L&&nrow(nf_gaps)==1L&&
+    all(c("python_name","gap_kind","known_source_difference",
+      "source_witness","review_resolution","unresolved_source_gap")%in%
+      names(fn_gaps))&&
+    all(c("namespace","python_name","gap_kind",
+      "known_source_difference","source_witness","required_resolution",
+      "unresolved")%in%names(nf_gaps))&&
+    all(fn_gaps$unresolved_source_gap)&&all(nf_gaps$unresolved)&&
+    !anyDuplicated(fn_gaps$python_name),
+    "The 203 callable + 1 nonfunction source-gap witnesses are incomplete")
+  fn_idx<-match(scope$python_name,fn_gaps$python_name)
+  nf_idx<-match(paste(scope$namespace,scope$python_name,sep="::"),
+    paste(nf_gaps$namespace,nf_gaps$python_name,sep="::"))
+  fn_match<-fn&!is.na(fn_idx)
+  nf_match<-!fn&!is.na(nf_idx)
+  ck(identical(fn_match,as.logical(fn&gap))&&
+    identical(nf_match,as.logical(!fn&gap)),
+    "Known source gaps and evidence witness mapping do not agree")
+  witness_kind<-difference_text<-witness_source<-witness_resolution<-
+    rep("",nrow(scope))
+  witness_kind[fn_match]<-fn_gaps$gap_kind[fn_idx[fn_match]]
+  witness_kind[nf_match]<-nf_gaps$gap_kind[nf_idx[nf_match]]
+  difference_text[fn_match]<-
+    fn_gaps$known_source_difference[fn_idx[fn_match]]
+  difference_text[nf_match]<-
+    nf_gaps$known_source_difference[nf_idx[nf_match]]
+  witness_source[fn_match]<-fn_gaps$source_witness[fn_idx[fn_match]]
+  witness_source[nf_match]<-nf_gaps$source_witness[nf_idx[nf_match]]
+  witness_resolution[fn_match]<-
+    fn_gaps$review_resolution[fn_idx[fn_match]]
+  witness_resolution[nf_match]<-
+    nf_gaps$required_resolution[nf_idx[nf_match]]
+  ck(all(nzchar(witness_kind[gap]))&&
+    all(nzchar(difference_text[gap]))&&
+    all(nzchar(witness_source[gap]))&&
+    all(nzchar(witness_resolution[gap])),
+    "Known gaps lack explicit Python source witness or resolution")
   full<-data.frame(
     review_priority=as.integer(priority),
     review_lane=lane,
@@ -129,6 +179,10 @@ etr_build_508_certification_review_batches <- function(
     source_gap_open=gap,
     native_nonfunction_source_gap_open=nonfunction_gap,
     backend_or_estimand_distinct=backend,
+    documented_gap_kind=witness_kind,
+    documented_source_difference=difference_text,
+    documented_python_source_witness=witness_source,
+    required_gap_resolution=witness_resolution,
     source_fixture_attributed=scope$selected_oracle_candidate,
     first_unresolved_requirement=ready$first_unresolved_requirement,
     all_unresolved_requirements=ready$all_unresolved_requirements,
