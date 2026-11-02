@@ -122,3 +122,13 @@ No 508-contract source parity or independent reviewer decision is inferred.
 
 These unit tests check orchestration, not native R scientific algorithms or
 R CMD check. External scientific certification remains explicitly unsigned.
+
+## Staging diagnostics and safe retries
+
+The Windows runner uses the top-level R CMD dispatcher at
+`file.path(R.home(), "bin", "R.exe")` rather than the architecture-specific
+internal `bin/x64/R.exe`. A failed subprocess prints its actual phase, exit
+code and final 50 lines of R output while preserving `STAGED_R_CMD_CHECK.log`.
+Each default staging attempt now receives its own dated directory beneath
+`eyetrajectories_release_staging/` so previous failed outputs are never
+silently deleted or overwritten. Missing WSL is separate from Windows checks.

@@ -11,7 +11,7 @@ py <- Sys.getenv("ET_LOCAL_MATRIX_PYTHON", unset = "")
 if (!nzchar(py)) py <- Sys.which("python")
 if (!nzchar(py))
   stop("Python 3.12+ executable not found.", call. = FALSE)
-r_command <- file.path(R.home("bin"),
+r_command <- file.path(R.home(), "bin",
   if (.Platform$OS.type == "windows") "R.exe" else "R")
 if (!file.exists(r_command))
   r_command <- Sys.which("R")

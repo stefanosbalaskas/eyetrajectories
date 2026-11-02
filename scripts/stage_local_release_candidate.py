@@ -120,7 +120,15 @@ def check_candidate(folder: Path, version: str, r_command: str) -> str:
             output.write(run.stdout + "\n")
             output.flush()
             if run.returncode:
-                raise RuntimeError("R build/check child failed; inspect " + str(report))
+                # Surface the actual R error in RStudio; retain full transcript.
+                tail = "\n".join(run.stdout.splitlines()[-50:])
+                print("STAGED_R_CHILD_FAILURE_PHASE=" + cmd[2], file=sys.stderr)
+                print("STAGED_R_CHILD_EXIT_STATUS=" + str(run.returncode),
+                      file=sys.stderr)
+                print("STAGED_R_CHILD_OUTPUT_TAIL_BEGIN\n" + tail +
+                      "\nSTAGED_R_CHILD_OUTPUT_TAIL_END", file=sys.stderr)
+                raise RuntimeError("R CMD " + cmd[2] + " exited " +
+                    str(run.returncode) + "; full log: " + str(report))
             if cmd[2] == "build" and not (folder / tar_name).is_file():
                 raise RuntimeError("R CMD build did not create " + tar_name)
     log_path = folder / "eyetrajectories.Rcheck" / "00check.log"
@@ -152,12 +160,17 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--r-command", default="R", help="R executable, or explicit path to R.exe on Windows")
     args = parser.parse_args(argv)
     root = Path(args.root).resolve()
-    dest = Path(args.output_dir).resolve() if args.output_dir else root.parent / "eyetrajectories_release_staging"
+    # Each default invocation gets a fresh isolated attempt; never overwrite
+    # an earlier failed candidate or its diagnostic logs.
+    dest = (Path(args.output_dir).resolve() if args.output_dir else
+        root.parent / "eyetrajectories_release_staging" /
+        dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%S%fZ"))
     try:
         folder = prepare(root, dest, args.version)
     except Exception as err:
         print("STAGING_FAIL: " + str(err), file=sys.stderr)
         return 1
+    print("STAGED_CANDIDATE_PATH=" + str(folder), flush=True)
     if args.build_check:
         try:
             outcome = check_candidate(folder, args.version, args.r_command)

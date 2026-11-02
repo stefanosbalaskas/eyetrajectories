@@ -7,6 +7,8 @@ import unittest
 from unittest.mock import patch
 import json
 import types
+import contextlib
+import io
 
 SCRIPT = Path(__file__).resolve().parents[1] / "stage_local_release_candidate.py"
 spec = importlib.util.spec_from_file_location("release_stage", SCRIPT)
@@ -74,6 +76,21 @@ class StageTests(unittest.TestCase):
             with patch.object(stage.subprocess,"run",side_effect=fake_run):
                 with self.assertRaisesRegex(RuntimeError,"Missing final"):
                     stage.check_candidate(folder,"0.4.2","R")
+
+    def test_failed_r_command_prints_real_error_and_preserves_log(self):
+        with tempfile.TemporaryDirectory() as td:
+            folder = Path(td)
+            (folder/"STAGING_MANIFEST.json").write_text('{}')
+            with patch.object(stage.subprocess,"run",
+                return_value=types.SimpleNamespace(returncode=7,
+                    stdout="error: missing installed R package\n")):
+                err = io.StringIO()
+                with contextlib.redirect_stderr(err):
+                    with self.assertRaisesRegex(RuntimeError, "R CMD build exited 7"):
+                        stage.check_candidate(folder,"0.4.2","R")
+            self.assertIn("STAGED_R_CHILD_FAILURE_PHASE=build", err.getvalue())
+            self.assertIn("error: missing installed R package", err.getvalue())
+            self.assertIn("error: missing installed R package", (folder/"STAGED_R_CMD_CHECK.log").read_text())
 
     def test_invalid_version_fails(self):
         with self.assertRaises(ValueError):
