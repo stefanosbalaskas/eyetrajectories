@@ -19,6 +19,7 @@ PROGRESS = "contract_progress_508.csv"
 PRIORITY = "reviewer_priority_508.csv"
 SUMMARY = "developer_progress_summary.json"
 MANIFEST = "developer_progress_sha256.json"
+TEMPLATE = "developer_evidence_UNSIGNED_TEMPLATE.csv"
 FLAGS = (
     "source_signature_checked",
     "accepted_input_domain_checked",
@@ -155,6 +156,8 @@ def reconcile(packet_dir: str | Path, expected_r_head: str,
         "callable_count": sum(q["kind"] == "function" for q in candidates),
         "nonfunction_count": sum(q["kind"] != "function" for q in candidates),
         "historical_documented_source_gaps": original_gap,
+        "selected_source_reference_candidates": sum(
+            q.get("source_fixture_attributed") == "TRUE" for q in queue),
         "historical_callable_gaps": sum(q["historical_source_gap_open"] == "TRUE"
                                         and q["kind"] == "function" for q in candidates),
         "evidence_records_verified_sha256": len(evidence),
@@ -174,10 +177,22 @@ def reconcile(packet_dir: str | Path, expected_r_head: str,
     }
     write_csv(target / PROGRESS, candidates)
     write_csv(target / PRIORITY, ranked)
+    # Supply an unsigned, unapproved starting point for developers to fill
+    # with case-specific evidence. Reviewers must not sign these templates.
+    # The template is NOT an accepted proof until copied, completed and
+    # individually verified in a later --evidence-csv invocation.
+    templates = []
+    for q in queue:
+        row = {field: q[field] for field in IDENTITY}
+        row.update({flag: "FALSE" for flag in FLAGS})
+        row.update(evidence_file="", evidence_sha256="",
+                   developer_findings="")
+        templates.append(row)
+    write_csv(target / TEMPLATE, templates)
     (target / SUMMARY).write_text(json.dumps(summary, indent=2) + "\n",
                                   encoding="utf-8")
     manifest = {name: baseline.sha256(target / name)
-                for name in (PROGRESS, PRIORITY, SUMMARY)}
+                for name in (PROGRESS, PRIORITY, SUMMARY, TEMPLATE)}
     (target / MANIFEST).write_text(json.dumps(manifest, indent=2) + "\n",
                                    encoding="utf-8")
     return {**summary, "output_dir": str(target)}
