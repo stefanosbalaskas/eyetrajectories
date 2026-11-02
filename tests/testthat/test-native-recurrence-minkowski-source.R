@@ -211,6 +211,17 @@ test_that("native cross-recurrence source target-rate policy selects all cross p
   expect_error(etr_cross_recurrence_matrix(a,b,
     target_recurrence_rate=1),"strictly between")
   expect_equal(etr_cross_recurrence_matrix(a,b,radius=0)$radius,0)
+  tied_a<-matrix(0,nrow=3L,ncol=1L)
+  tied_b<-matrix(1,nrow=2L,ncol=1L)
+  tied<-etr_cross_recurrence_matrix(tied_a,tied_b,
+    target_recurrence_rate=.4)
+  # The source algorithm is inclusive and must report achieved 100%:
+  # ties make the requested target rate unattainable.
+  expect_equal(tied$radius,1,tolerance=1e-12)
+  expect_equal(tied$recurrence_rate,1,tolerance=0)
+  expect_true(all(tied$matrix))
+  expect_error(etr_cross_recurrence_matrix(
+    tied_a,tied_a,target_recurrence_rate=.4),"non-constant")
 })
 
 test_that("frozen Python 1.2 cross-recurrence target rate matches native dense matrix",{
