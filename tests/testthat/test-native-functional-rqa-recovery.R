@@ -285,7 +285,7 @@ test_that("direct frozen Python 1.2 target-rate RQA radius and achieved density 
         etpy_get_export("windowed_rqa"),
         trajectories=pyx,curve=as.integer(0L),window=as.integer(5L),
         step=as.integer(2L),target_recurrence_rate=target,
-        metric=metric)
+        metric=metric,dimensions=as.list(x$dimension_names))
       table<-as.data.frame(et_to_r(
         reticulate::py_get_attr(source,"table")))
       expect_equal(native$table$radius,as.numeric(table$radius),
@@ -295,6 +295,24 @@ test_that("direct frozen Python 1.2 target-rate RQA radius and achieved density 
         info=paste("density",metric,target))
     }
   }
+  # The same source radius policy must propagate through the full
+  # functional sensitivity workflow, not only the base sliding-window API.
+  native_sensitivity<-etr_windowed_rqa_sensitivity(x,
+    metrics="max_diagonal_length",window_step_pairs=list(
+      c(5L,2L),c(7L,3L)),target_recurrence_rate=.35)
+  python_sensitivity<-reticulate::py_call(
+    etpy_get_export("windowed_rqa_sensitivity"),
+    trajectories=pyx,metrics=as.list("max_diagonal_length"),
+    window_step_pairs=reticulate::r_to_py(list(c(5L,2L),c(7L,3L))),
+    target_recurrence_rate=.35,dimensions=as.list(x$dimension_names))
+  design<-as.data.frame(et_to_r(
+    reticulate::py_get_attr(python_sensitivity,"design_table")))
+  expect_equal(native_sensitivity$design_table$window_samples,
+    as.integer(design$window_samples))
+  expect_equal(native_sensitivity$design_table$step_samples,
+    as.integer(design$step_samples))
+  expect_equal(native_sensitivity$design_table$overlap_fraction,
+    as.numeric(design$overlap_fraction),tolerance=1e-12)
   expect_false(any(etr_native_parity_catalog()$
     one_to_one_native_contract_complete))
 })
