@@ -33,6 +33,24 @@ Scientific output values preserve input curve IDs, metadata and
 unmodified channels. No smoothing, imputation or Python execution
 happens in the native functions.
 
+### Mixed scalar landmarks: November 3 correction
+
+Author-side RStudio qualification at `ee66a4df6b720b64e01188a5311f3a1a89db4aa0`
+reported one `center_on_landmark` test failure in both native-offline and
+Python-source modes. The source was an R-only conversion bug:
+`as.numeric(unlist(list("1.5", 2, TRUE)))` loses the Boolean type because
+`unlist()` first coerces the heterogeneous list to strings. The frozen
+Python source `np.asarray(..., dtype=float)` instead converts its
+elements to `[1.5, 2.0, 1.0]`.
+
+The R implementation now applies scalar numerical coercion independently
+inside `vapply(..., numeric(1L))`; malformed strings and nonfinite
+values still fail. The native regression includes two mixed-type
+landmark lists and compares against pure numeric inputs. The opt-in
+Python test additionally calls the actual frozen source with
+`[True, "2.5", 0]` and `[False, 1, "3.5"]`.
+This is a *specific source-domain alignment*, not full source review.
+
 ## Direct frozen-source evidence
 
 `tests/testthat/test-native-preprocessing-python-boundary-source.R`
