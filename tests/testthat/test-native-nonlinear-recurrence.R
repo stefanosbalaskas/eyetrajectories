@@ -274,3 +274,55 @@ test_that("Python 1.2 independent recurrence network, joint and radius oracles a
   expect_equal(functional$overlap_fraction,
     as.numeric(et_to_r(pfunctional$overlap_fraction)))
 })
+
+
+test_that("source-selected windowed RQA ignores unrelated missing channels",{
+  t<-as.numeric(0:17)
+  values<-array(0,c(2L,length(t),2L))
+  for(i in seq_len(2L)){
+    values[i,,1L]<-sin(t/3+i/4)+.08*t
+    values[i,,2L]<-cos(t/4+i/3)
+  }
+  x<-etr_trajectory_set(t,values,c("A","B"),c("x","y"),
+    coordinate_system="arbitrary",time_unit="s",
+    provenance=list(origin="selected_window_input"))
+  missing<-x
+  missing$values[1L,2L,2L]<-NA_real_
+  missing$values[2L,4L,2L]<-NA_real_
+  baseline<-etr_windowed_rqa(x,curve="A",window=6L,step=3L,
+    radius=1.2,dimensions="x")
+  selected<-etr_windowed_rqa(missing,curve="A",window=6L,
+    step=3L,radius=1.2,dimensions="x")
+  expect_equal(selected$table,baseline$table,tolerance=0)
+  expect_identical(selected$provenance$source_provenance,x$provenance)
+  expect_identical(selected$provenance$window_samples,6L)
+  expect_identical(selected$provenance$step_samples,3L)
+  expect_identical(selected$provenance$dropped_tail_samples,
+    selected$dropped_tail_samples)
+  target<-etr_windowed_rqa(missing,curve="A",window=6L,step=3L,
+    target_recurrence_rate=.35,dimensions="x")
+  expected_target<-etr_windowed_rqa(x,curve="A",window=6L,step=3L,
+    target_recurrence_rate=.35,dimensions="x")
+  expect_equal(target$table,expected_target$table,tolerance=0)
+  functional<-etr_windowed_rqa_trajectory_set(missing,
+    metrics="recurrence_rate",window=6L,step=3L,
+    radius=1.2,dimensions="x")
+  full<-etr_windowed_rqa_trajectory_set(x,
+    metrics="recurrence_rate",window=6L,step=3L,
+    radius=1.2,dimensions="x")
+  expect_equal(functional$trajectories$values,
+    full$trajectories$values,tolerance=0)
+  provenance<-functional$trajectories$provenance
+  expect_identical(provenance$source_provenance,x$provenance)
+  expect_identical(provenance$source_dimension_names,"x")
+  expect_identical(provenance$metric_units$recurrence_rate,"proportion")
+  expect_false(provenance$window_rows_are_independent)
+  expect_identical(provenance$radius_policy,"fixed")
+  expect_identical(provenance$dropped_tail_samples,
+    functional$dropped_tail_samples)
+  expect_error(etr_windowed_rqa(missing,curve="A",window=6L,
+    step=3L,radius=1.2,dimensions="y"),"complete finite selected")
+  expect_error(etr_windowed_rqa_trajectory_set(missing,
+    metrics="recurrence_rate",window=6L,step=3L,
+    radius=1.2,dimensions="y"),"complete finite selected")
+})
