@@ -93,28 +93,89 @@ etr_recurrence_matrix <- function(x, curve = 1L, radius = NULL, theiler = 0L,
             class = "etr_recurrence")
 }
 
+# Frozen eyetrajectoriespy 1.2 recurrence.py _cross_radius_for_target:
+# pooled state-space spread gives the upper search bound; the exact source
+# 48-step inclusive-radius bisection counts all source-a × source-b pairs.
+# Deliberately native dense R and bounded to the existing 5e6 pair domain.
+.etr_cross_recurrence_source_target_radius <- function(a,b,target,metric) {
+  .etr_assert(is.numeric(target) && length(target) == 1L &&
+    is.finite(target) && target > 0 && target < 1,
+    "target_recurrence_rate must be strictly between 0 and 1")
+  .etr_assert(nrow(a) > 0L && nrow(b) > 0L,
+    "cross recurrence requires non-empty state spaces")
+  .etr_assert(as.double(nrow(a)) * as.double(nrow(b)) <= 5e6,
+    "dense cross-recurrence exceeds 5 million pairs")
+  pooled_min <- pmin(apply(a,2L,min),apply(b,2L,min))
+  pooled_max <- pmax(apply(a,2L,max),apply(b,2L,max))
+  spread <- pooled_max - pooled_min
+  high <- switch(metric,euclidean=sqrt(sum(spread^2)),
+    cityblock=sum(abs(spread)),chebyshev=max(abs(spread)))
+  .etr_assert(is.finite(high) && high > 0,
+    "cross recurrence requires non-constant state vectors")
+  distances <- as.numeric(.etr_distance_matrix(a,b,metric=metric))
+  low <- 0
+  for (iteration in seq_len(48L)) {
+    mid <- (low + high) / 2
+    density <- sum(distances <= mid) / length(distances)
+    if (density < target) low <- mid else high <- mid
+  }
+  high
+}
+
 #' Native cross-recurrence matrix for two point sequences
 #'
 #' Timestamps and Theiler exclusions are not applied to cross-recurrence.
+#' Native matrix inputs and dense output are distinct from frozen Python
+#' TrajectorySet inputs and scipy sparse result-class contracts.
 #' @param a Complete points-by-channels numeric matrix.
 #' @param b Complete points-by-channels numeric matrix.
-#' @param radius Finite, non-negative distance radius.
+#' @param radius Fixed non-negative distance radius; NULL with a target
+#'   recurrence rate. The legacy native zero-radius boundary is preserved.
 #' @param metric One of cityblock (L1), euclidean (L2), chebyshev (L-infinity).
+#' @param target_recurrence_rate Optional probability in (0,1). Selects a
+#'   radius using the frozen Python 1.2 48-step inclusive-distance bisection,
+#'   retaining the achieved rate because ties can prevent an exact target.
 #' @export
-etr_cross_recurrence_matrix <- function(a, b, radius,
-                                        metric = "euclidean") {
+etr_cross_recurrence_matrix <- function(a, b, radius=NULL,
+                                        metric = "euclidean",
+                                        target_recurrence_rate=NULL) {
   a <- .etr_points(a, "a"); b <- .etr_points(b, "b")
   .etr_assert(ncol(a) == ncol(b), "channel count mismatch")
-  .etr_assert(is.numeric(radius) && length(radius) == 1L &&
-                is.finite(radius) && radius >= 0,
+  .etr_assert(xor(is.null(radius),is.null(target_recurrence_rate)),
+    "supply exactly one of radius or target_recurrence_rate")
+  if (!is.null(radius)) {
+    .etr_assert(is.numeric(radius) && length(radius) == 1L &&
+                  is.finite(radius) && radius >= 0,
               "radius must be finite and non-negative")
+  } else {
+    .etr_assert(is.numeric(target_recurrence_rate) &&
+                  length(target_recurrence_rate) == 1L &&
+                  is.finite(target_recurrence_rate) &&
+                  target_recurrence_rate > 0 &&
+                  target_recurrence_rate < 1,
+              "target_recurrence_rate must be strictly between 0 and 1")
+  }
   .etr_assert(as.double(nrow(a)) * as.double(nrow(b)) <= 5e6,
               "dense cross-recurrence exceeds 5 million pairs")
+  if (is.null(radius))
+    radius <- .etr_cross_recurrence_source_target_radius(a,b,
+      target_recurrence_rate,metric)
   m <- .etr_distance_matrix(a, b, metric=metric) <= radius
   structure(list(matrix = m, kind = "cross", curve_ids = NULL, radius = radius,
                  theiler = NA_integer_, eligible_pairs = length(m),
                  recurrence_rate = mean(m), time = NULL,
-                 metric=metric),
+                 metric=metric,
+                 target_recurrence_rate=target_recurrence_rate,
+                 provenance=list(source="native_R_cross_recurrence",
+                   metric=metric,
+                   radius_policy=if(is.null(target_recurrence_rate))
+                     "fixed" else "target_recurrence_rate",
+                   target_recurrence_rate=target_recurrence_rate,
+                   target_rate_tie_policy=if(is.null(target_recurrence_rate))
+                     NULL else paste("inclusive-radius bisection;",
+                       "achieved recurrence rate is retained because",
+                       "distance ties can prevent an exact target"),
+                   recurrence_rate_denominator="all_cross_state_pairs")),
             class = "etr_recurrence")
 }
 

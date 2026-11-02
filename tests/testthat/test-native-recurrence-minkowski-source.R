@@ -184,3 +184,75 @@ test_that("native auto recurrence target policy has source bisection geometry",{
   expect_false(any(etr_native_parity_catalog()$
     one_to_one_native_contract_complete))
 })
+
+
+test_that("native cross-recurrence source target-rate policy selects all cross pairs",{
+  a<-rbind(c(0,0),c(1,1),c(2,0),c(4,3))
+  b<-rbind(c(0.5,0.5),c(2,2),c(3,0))
+  for(metric in c("cityblock","euclidean","chebyshev"))
+    for(target in c(.2,.4,.65)){
+      z<-etr_cross_recurrence_matrix(a,b,
+        target_recurrence_rate=target,metric=metric)
+      expect_s3_class(z,"etr_recurrence")
+      expect_identical(dim(z$matrix),c(4L,3L))
+      expect_identical(z$provenance$radius_policy,
+        "target_recurrence_rate")
+      expect_equal(z$target_recurrence_rate,target,tolerance=0)
+      expect_true(is.finite(z$radius) && z$radius>0)
+      expect_equal(z$recurrence_rate,mean(z$matrix),tolerance=0)
+      expect_equal(z$eligible_pairs,12L)
+      expect_true(z$recurrence_rate>=0 && z$recurrence_rate<=1)
+    }
+  expect_error(etr_cross_recurrence_matrix(a,b),"exactly one")
+  expect_error(etr_cross_recurrence_matrix(a,b,radius=1,
+    target_recurrence_rate=.3),"exactly one")
+  expect_error(etr_cross_recurrence_matrix(a,b,
+    target_recurrence_rate=0),"strictly between")
+  expect_error(etr_cross_recurrence_matrix(a,b,
+    target_recurrence_rate=1),"strictly between")
+  expect_equal(etr_cross_recurrence_matrix(a,b,radius=0)$radius,0)
+})
+
+test_that("frozen Python 1.2 cross-recurrence target rate matches native dense matrix",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Frozen Python 1.2 cross-recurrence target source oracle opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  a<-rbind(c(0,0),c(1,1),c(2,0),c(4,3))
+  b<-rbind(c(.5,.5),c(2,2),c(3,0))
+  make_source<-function(points,curve_id) {
+    ctor<-etpy_get_export("TrajectorySet")
+    values<-array(0,c(1L,nrow(points),2L))
+    values[1L,,]<-points
+    reticulate::py_call(ctor,
+      time=reticulate::r_to_py(as.numeric(seq_len(nrow(points))-1L)),
+      values=reticulate::r_to_py(values),
+      curve_ids=as.list(curve_id),
+      dimension_names=as.list(c("x","y")),
+      coordinate_system="arbitrary",time_unit="s")
+  }
+  pa<-make_source(a,"a")
+  pb<-make_source(b,"b")
+  for(metric in c("cityblock","euclidean","chebyshev"))
+    for(target in c(.2,.4,.65)){
+      ours<-etr_cross_recurrence_matrix(a,b,
+        target_recurrence_rate=target,metric=metric)
+      theirs<-reticulate::py_call(etpy_get_export("cross_recurrence_matrix"),
+        source_a=pa,source_b=pb,curve_a=as.integer(0L),
+        curve_b=as.integer(0L),target_recurrence_rate=target,
+        metric=metric,dimensions_a=as.list(c("x","y")),
+        dimensions_b=as.list(c("x","y")))
+      radius<-as.numeric(et_to_r(
+        reticulate::py_get_attr(theirs,"radius")))
+      achieved<-as.numeric(et_to_r(
+        reticulate::py_get_attr(theirs,"achieved_recurrence_rate")))
+      matrix_source<-et_to_r(theirs$matrix$toarray())
+      expect_equal(ours$radius,radius,tolerance=1e-9,
+        info=paste("radius",metric,target))
+      expect_equal(ours$recurrence_rate,achieved,tolerance=1e-12,
+        info=paste("rate",metric,target))
+      expect_equal(unname(ours$matrix),unname(matrix_source),
+        tolerance=0,info=paste("matrix",metric,target))
+    }
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})
