@@ -59,6 +59,10 @@ def contract(row: dict[str, str], wave: str) -> dict[str, str]:
         "native_implementation_started": row["native_implementation_started"],
         "native_nonfunction_representation": row["native_nonfunction_representation"],
         "first_unresolved_requirement": row["first_unresolved_requirement"],
+        "documented_gap_kind": row.get("documented_gap_kind",""),
+        "documented_source_difference": row.get("documented_source_difference",""),
+        "documented_python_source_witness": row.get("documented_python_source_witness",""),
+        "required_gap_resolution": row.get("required_gap_resolution",""),
         "review_blocker": review_blocker(row),
         "source_full_domain_certified": "FALSE",
     }

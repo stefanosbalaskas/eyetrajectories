@@ -20,6 +20,10 @@ class Full508Tests(unittest.TestCase):
              "native_nonfunction_representation":"",
              "first_unresolved_requirement":"gap"}
         self.assertEqual(m.review_blocker(row),"KNOWN_SOURCE_GAP")
+        row["documented_source_difference"]="Python accepts a broader input domain"
+        row["documented_python_source_witness"]="pinned module source and local replay"
+        row["required_gap_resolution"]="Implement or restrict source domain"
+        self.assertIn("broader input",m.contract(row,"wave_01")["documented_source_difference"])
         self.assertEqual(m.contract(row,"wave_01")["source_full_domain_certified"],"FALSE")
         row["source_gap_open"]="FALSE"
         row["backend_or_estimand_distinct"]="TRUE"
