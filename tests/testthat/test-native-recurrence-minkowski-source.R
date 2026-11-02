@@ -374,3 +374,108 @@ test_that("direct Python 1.2 cross recurrence confirms source-object time and st
   expect_false(any(etr_native_parity_catalog()$
     one_to_one_native_contract_complete))
 })
+
+
+test_that("native source delay-embedding cross recurrence preserves state semantics",{
+  t<-as.numeric(0:9)
+  make_trajectory<-function(offset,id){
+    values<-array(0,c(1L,length(t),2L))
+    values[1L,,1L]<-c(0,1,3,4,5,8,9,10,12,13)+offset
+    values[1L,,2L]<-c(0,1,1,3,3,4,6,7,8,10)+offset
+    etr_trajectory_set(t,values,curve_ids=id,
+      dimension_names=c("x","y"),
+      coordinate_system="arbitrary",time_unit="s")
+  }
+  a<-etr_delay_embed_trajectory(make_trajectory(0,"A"),
+    embedding_dimension=2L,delay=1L,dimensions=c("x","y"))
+  b<-etr_delay_embed_trajectory(make_trajectory(.5,"B"),
+    embedding_dimension=2L,delay=1L,dimensions=c("x","y"))
+  expect_s3_class(a,"etr_delay_embedding_set")
+  expect_s3_class(b,"etr_delay_embedding_set")
+  raw_a<-matrix(a$values[1L,,,drop=FALSE],nrow=length(a$time))
+  raw_b<-matrix(b$values[1L,,,drop=FALSE],nrow=length(b$time))
+  for(metric in c("cityblock","euclidean","chebyshev"))
+    for(target in c(.2,.4,.65)){
+      z<-etr_cross_recurrence_matrix(a,b,
+        curve_a="A",curve_b="B",target_recurrence_rate=target,
+        metric=metric)
+      baseline<-etr_cross_recurrence_matrix(raw_a,raw_b,
+        target_recurrence_rate=target,metric=metric)
+      expect_equal(z$radius,baseline$radius,tolerance=0)
+      expect_identical(z$matrix,baseline$matrix)
+      expect_equal(z$recurrence_rate,baseline$recurrence_rate,tolerance=0)
+      expect_identical(z$curve_ids,c("A","B"))
+      expect_identical(z$provenance$source_a$source_kind,
+        "DelayEmbeddingResult")
+      expect_identical(z$provenance$source_b$state_names,
+        b$state_names)
+      expect_equal(z$time_a,a$time,tolerance=0)
+      expect_equal(z$time_b,b$time,tolerance=0)
+    }
+  expect_error(etr_cross_recurrence_matrix(a,b,
+    curve_a="A",curve_b="B",radius=.8,dimensions_a=a$state_names),
+    "dimensions_a cannot be supplied")
+  wrong_dim<-b;wrong_dim$embedding_dimension<-3L
+  expect_error(etr_cross_recurrence_matrix(a,wrong_dim,
+    curve_a="A",curve_b="B",radius=.8),"same embedding_dimension")
+  wrong_lag<-b;wrong_lag$delay_samples<-2L
+  expect_error(etr_cross_recurrence_matrix(a,wrong_lag,
+    curve_a="A",curve_b="B",radius=.8),"same delay_samples")
+  wrong_physical<-b;wrong_physical$delay_time<-1.5
+  expect_error(etr_cross_recurrence_matrix(a,wrong_physical,
+    curve_a="A",curve_b="B",radius=.8),"same physical delay")
+})
+
+test_that("frozen Python DelayEmbeddingResult cross-source numerical and schema oracle",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Frozen Python 1.2 embedded source oracle is opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  make_source<-function(offset,id){
+    t<-as.numeric(0:9)
+    values<-array(0,c(1L,length(t),2L))
+    values[1L,,1L]<-c(0,1,3,4,5,8,9,10,12,13)+offset
+    values[1L,,2L]<-c(0,1,1,3,3,4,6,7,8,10)+offset
+    native<-etr_trajectory_set(t,values,id,c("x","y"),
+      coordinate_system="arbitrary",time_unit="s")
+    python<-reticulate::py_call(etpy_get_export("TrajectorySet"),
+      time=reticulate::r_to_py(t),values=reticulate::r_to_py(values),
+      curve_ids=as.list(id),dimension_names=as.list(c("x","y")),
+      coordinate_system="arbitrary",time_unit="s")
+    rn<-etr_delay_embed_trajectory(native,
+      embedding_dimension=2L,delay=1L,dimensions=c("x","y"))
+    py<-reticulate::py_call(etpy_get_export("delay_embed_trajectory"),
+      trajectories=python,embedding_dimension=as.integer(2L),
+      delay=as.integer(1L),dimensions=as.list(c("x","y")))
+    list(native=rn,python=py)
+  }
+  a<-make_source(0,"A")
+  b<-make_source(.5,"B")
+  for(metric in c("cityblock","euclidean","chebyshev"))
+    for(target in c(.2,.4,.65)){
+      ours<-etr_cross_recurrence_matrix(a$native,b$native,
+        curve_a="A",curve_b="B",target_recurrence_rate=target,
+        metric=metric)
+      theirs<-reticulate::py_call(
+        etpy_get_export("cross_recurrence_matrix"),
+        source_a=a$python,source_b=b$python,curve_a="A",curve_b="B",
+        metric=metric,target_recurrence_rate=target)
+      expect_equal(ours$radius,
+        as.numeric(et_to_r(reticulate::py_get_attr(theirs,"radius"))),
+        tolerance=1e-9)
+      expect_equal(ours$recurrence_rate,
+        as.numeric(et_to_r(reticulate::py_get_attr(theirs,
+          "achieved_recurrence_rate"))),tolerance=1e-12)
+      expect_equal(unname(ours$matrix),
+        unname(et_to_r(theirs$matrix$toarray())),tolerance=0)
+      expect_equal(ours$time_a,
+        as.numeric(et_to_r(reticulate::py_get_attr(theirs,"time_a"))),
+        tolerance=0)
+      expect_equal(ours$time_b,
+        as.numeric(et_to_r(reticulate::py_get_attr(theirs,"time_b"))),
+        tolerance=0)
+      expect_identical(ours$provenance$source_a$source_kind,
+        "DelayEmbeddingResult")
+    }
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})

@@ -140,12 +140,99 @@ etr_recurrence_matrix <- function(x, curve = 1L, radius = NULL, theiler = 0L,
 #' @param dimensions_a,dimensions_b Required ordered state-channel names
 #'   for trajectory-set inputs; NULL for legacy numeric matrices. State names,
 #'   coordinate systems and time units must match in native trajectory mode.
+#'   A native `etr_delay_embedding_set` can instead supply its state names,
+#'   embedding dimension and delay metadata; for an embedded input its
+#'   corresponding dimensions argument must be NULL. Two embedded inputs
+#'   must also have compatible embedding and delay specifications.
 #' @export
 etr_cross_recurrence_matrix <- function(a, b, radius=NULL,
                                         metric = "euclidean",
                                         target_recurrence_rate=NULL,
                                         curve_a=NULL,curve_b=NULL,
                                         dimensions_a=NULL,dimensions_b=NULL) {
+  # Frozen Python source also accepts DelayEmbeddingResult. Native
+  # etr_delay_embedding_set supplies the same state-space geometry, but the
+  # R interface intentionally retains a dense matrix result instead of
+  # claiming identical Python scipy CSR or dataclass classes.
+  embedded_a <- inherits(a,"etr_delay_embedding_set")
+  embedded_b <- inherits(b,"etr_delay_embedding_set")
+  if (embedded_a || embedded_b) {
+    .etr_assert(
+      (embedded_a || inherits(a,"etr_trajectory_set")) &&
+      (embedded_b || inherits(b,"etr_trajectory_set")),
+      "embedded cross-recurrence sources must both be native trajectory/embedding objects")
+    .etr_assert(!embedded_a || is.null(dimensions_a),
+      "dimensions_a cannot be supplied for an already embedded state space")
+    .etr_assert(!embedded_b || is.null(dimensions_b),
+      "dimensions_b cannot be supplied for an already embedded state space")
+    as_trajectory_proxy <- function(x,embedded,side) {
+      if (!embedded) return(x)
+      .etr_assert(is.list(x)&&is.array(x$values)&&
+        length(dim(x$values))==3L&&is.numeric(x$values)&&
+        all(is.finite(x$values)),
+        paste("embedded",side,"states must be complete finite 3D arrays"))
+      .etr_assert(is.character(x$state_names)&&
+        length(x$state_names)==dim(x$values)[3L]&&
+        !anyNA(x$state_names)&&!anyDuplicated(x$state_names),
+        paste("embedded",side,"must carry unique named state variables"))
+      .etr_assert(is.numeric(x$embedding_dimension)&&
+        length(x$embedding_dimension)==1L&&
+        is.finite(x$embedding_dimension)&&
+        x$embedding_dimension>=1&&
+        x$embedding_dimension==as.integer(x$embedding_dimension)&&
+        is.numeric(x$delay_samples)&&
+        length(x$delay_samples)==1L&&
+        is.finite(x$delay_samples)&&x$delay_samples>=1&&
+        x$delay_samples==as.integer(x$delay_samples)&&
+        is.numeric(x$delay_time)&&length(x$delay_time)==1L,
+        paste("embedded",side,"must retain valid embedding and delay metadata"))
+      etr_trajectory_set(x$time,x$values,x$curve_ids,
+        dimension_names=x$state_names,
+        coordinate_system=x$coordinate_system,
+        time_unit=x$time_unit,
+        provenance=if(is.null(x$provenance))list() else x$provenance)
+    }
+    if (embedded_a && embedded_b) {
+      .etr_assert(identical(as.integer(a$embedding_dimension),
+        as.integer(b$embedding_dimension)),
+        "cross-recurrence embeddings must use the same embedding_dimension")
+      .etr_assert(identical(as.integer(a$delay_samples),
+        as.integer(b$delay_samples)),
+        "cross-recurrence embeddings must use the same delay_samples")
+      .etr_assert(identical(is.finite(a$delay_time),is.finite(b$delay_time)),
+        "cross-recurrence embeddings have incompatible delay-time semantics")
+      if (is.finite(a$delay_time) && is.finite(b$delay_time))
+        .etr_assert(isTRUE(all.equal(as.numeric(a$delay_time),
+          as.numeric(b$delay_time),tolerance=1e-8)),
+          "cross-recurrence embeddings must use the same physical delay")
+    }
+    source_a_original<-a
+    source_b_original<-b
+    resolved_dimensions_a<-if(embedded_a)a$state_names else dimensions_a
+    resolved_dimensions_b<-if(embedded_b)b$state_names else dimensions_b
+    answer<-etr_cross_recurrence_matrix(
+      as_trajectory_proxy(a,embedded_a,"A"),
+      as_trajectory_proxy(b,embedded_b,"B"),
+      radius=radius,metric=metric,
+      target_recurrence_rate=target_recurrence_rate,
+      curve_a=curve_a,curve_b=curve_b,
+      dimensions_a=resolved_dimensions_a,
+      dimensions_b=resolved_dimensions_b)
+    embed_provenance<-function(x)list(
+      source_kind="DelayEmbeddingResult",
+      embedding_dimension=as.integer(x$embedding_dimension),
+      delay_samples=as.integer(x$delay_samples),
+      delay_time=as.numeric(x$delay_time),
+      state_names=x$state_names,
+      coordinate_system=x$coordinate_system,
+      source_provenance=if(is.null(x$provenance))list() else x$provenance)
+    if(embedded_a)
+      answer$provenance$source_a<-embed_provenance(source_a_original)
+    if(embedded_b)
+      answer$provenance$source_b<-embed_provenance(source_b_original)
+    return(answer)
+  }
+
   # The legacy matrix/matrix API remains unchanged. In the trajectory-set
   # path follow frozen Python _state_from_source/cross_recurrence_matrix's
   # explicit named-channel and coordinate/time compatibility contract.
