@@ -265,7 +265,8 @@ tooling_log_path<-file.path(output_dir,
 tooling_patterns<-c("test_verify_four_pilot_review_bundle.py",
   "test_verify_508_certification_batch.py",
   "test_verify_508_external_attestation.py",
-  "test_build_508_all_export_review_waves.py")
+  "test_build_508_all_export_review_waves.py",
+  "test_verify_508_all_wave_attestation.py")
 tooling_checks<-lapply(tooling_patterns,function(pattern){
   message("Author-side reviewer tooling: ",pattern)
   output<-tryCatch(
@@ -315,6 +316,8 @@ source_files<-unique(c(
   "scripts/build_508_certification_review_batches.R",
   "scripts/build_508_all_export_review_waves.py",
   "tests/test_build_508_all_export_review_waves.py",
+  "scripts/verify_508_all_wave_attestation.py",
+  "tests/test_verify_508_all_wave_attestation.py",
   "scripts/capture_first_wave_source_interfaces.R",
   "tests/testthat/test-native-first-wave-source-interfaces.R",
   "tests/testthat/test-native-frozen-workflow-values.R",
