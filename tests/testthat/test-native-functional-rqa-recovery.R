@@ -423,3 +423,63 @@ test_that("frozen Python sensitivity physical-time numeric tables agree with nat
   expect_false(any(etr_native_parity_catalog()$
     one_to_one_native_contract_complete))
 })
+
+
+.etr_test_source_mean_band_fixture <- function(){
+  time<-as.numeric(0:17)
+  n<-6L
+  values<-array(0,c(n,length(time),1L))
+  for(i in seq_len(n))
+    values[i,,1L]<-sin(time/3+i/5)+.08*time+
+      .22*cos(time/4+i/3)+i*time/80
+  meta<-data.frame(participant=c("p1","p1","p1","p2","p2","p3"),
+    stringsAsFactors=FALSE)
+  etr_trajectory_set(time,values,paste0("curve_",1:6),"x",
+    metadata=meta,coordinate_system="arbitrary",time_unit="s",
+    provenance=list(origin="mean_band_independent_unit_contract"))
+}
+
+test_that("functional RQA mean band preserves source equal-weight independent-unit estimand",{
+  x<-.etr_test_source_mean_band_fixture()
+  for(unit in c("curve","participant")){
+    participant<-if(unit=="participant")"participant" else NULL
+    z<-etr_windowed_rqa_functional_mean_band(
+      x,metrics="recurrence_rate",window=5L,step=2L,
+      radius=.75,unit=unit,participant_column=participant,
+      n_multiplier=100L,random_state=123L)
+    expect_s3_class(z$band,"etr_functional_mean_band")
+    expect_identical(z$provenance$participant_column,participant)
+    expect_identical(z$provenance$resampling_unit,unit)
+    fp<-z$band$provenance$functional_mean_band
+    expect_identical(fp$unit,unit)
+    expect_identical(fp$participant_column,participant)
+    expect_identical(fp$random_state,123L)
+    expect_identical(fp$n_multiplier,100L)
+    expect_identical(fp$random_engine,"base_R_not_NumPy")
+    expect_equal(fp$n_units,length(z$band$unit_ids))
+    expect_equal(fp$curves_per_unit,z$band$curves_per_unit)
+    expect_identical(fp$estimand,if(unit=="participant")
+      "equal_weight_mean_of_participant_mean_trajectories"
+      else "equal_weight_curve_mean")
+    expect_identical(z$band$provenance$origin,
+      "windowed_rqa_trajectory_set")
+    expect_equal(z$band$lower,z$band$mean-
+      z$band$critical_value*z$band$pointwise_se,tolerance=1e-12)
+    expect_equal(z$band$upper,z$band$mean+
+      z$band$critical_value*z$band$pointwise_se,tolerance=1e-12)
+    expect_equal(z$band$critical_value,
+      .etr_bootstrap_upper_tail(z$band$max_statistics,.95),
+      tolerance=0)
+  }
+  curve<-etr_windowed_rqa_functional_mean_band(
+    x,metrics="recurrence_rate",window=5L,step=2L,
+    radius=.75,unit="curve",n_multiplier=100L,random_state=123L)
+  grouped<-etr_windowed_rqa_functional_mean_band(
+    x,metrics="recurrence_rate",window=5L,step=2L,
+    radius=.75,unit="participant",participant_column="participant",
+    n_multiplier=100L,random_state=123L)
+  expect_identical(grouped$band$unit_ids,c("p1","p2","p3"))
+  expect_equal(grouped$band$curves_per_unit,c(3L,2L,1L))
+  expect_identical(curve$band$unit_ids,x$curve_ids)
+  expect_true(any(abs(curve$band$mean-grouped$band$mean)>1e-9))
+})
