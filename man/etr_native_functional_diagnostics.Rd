@@ -37,7 +37,7 @@ etr_fit_phase_fpca(registration, representation = "displacement",
 \item{epsilon}{Strictly positive clipping floor for ALR, declared before analysis.}
 \item{python_boundary_mode}{Logical, opt-in Python 1.2 boundary validation where implemented; the default FALSE retains the documented native R input domain. This flag does not select a Python execution backend or certify full-domain equivalence.}
 \item{transformed}{Finite three-dimensional ALR values.}
-\item{n_dimensions}{Original number of channels, at least two.}
+\item{n_dimensions}{Original number of channels, at least one. The NumPy source shape contract does not accept Boolean shape sizes.}
 \item{result}{A native FPCA fit or registration result, as appropriate.}
 \item{component}{Zero-based index of a fitted FPCA component.}
 \item{sd_multipliers}{Finite standard deviation multipliers for component curves.}
