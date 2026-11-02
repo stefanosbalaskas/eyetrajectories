@@ -123,6 +123,22 @@ test_that("windowed-RQA sensitivity reports exact source reuse and centers",{
     target_recurrence_rate=.1),"exactly one")
 })
 
+test_that("RQA sensitivity checks radius-policy conflicts before metric admissibility",{
+  x<-.etr_test_functional_rqa_fixture()
+  pairs<-list(c(5L,2L))
+  expect_error(etr_windowed_rqa_sensitivity(x,
+    metrics="recurrence_rate",window_step_pairs=pairs,
+    radius=1,target_recurrence_rate=.1),
+    "supply exactly one of radius or target_recurrence_rate")
+  expect_error(etr_windowed_rqa_sensitivity(x,
+    metrics="recurrence_rate",window_step_pairs=pairs),
+    "supply exactly one of radius or target_recurrence_rate")
+  expect_error(etr_windowed_rqa_sensitivity(x,
+    metrics="recurrence_rate",window_step_pairs=pairs,
+    target_recurrence_rate=.1),
+    "recurrence_rate cannot be a functional outcome")
+})
+
 test_that("simultaneous RQA mean band uses whole independent units",{
   x<-.etr_test_functional_rqa_fixture()
   band<-etr_windowed_rqa_functional_mean_band(x,
