@@ -267,3 +267,110 @@ test_that("frozen Python 1.2 cross-recurrence target rate matches native dense m
   expect_false(any(etr_native_parity_catalog()$
     one_to_one_native_contract_complete))
 })
+
+
+test_that("native cross recurrence accepts explicit source trajectory state names",{
+  points_a<-rbind(c(0,0),c(1,1),c(2,0),c(4,3))
+  points_b<-rbind(c(.5,.5),c(2,2),c(3,0))
+  make_traj<-function(points,id,cs="arbitrary",unit="s",names=c("x","y")){
+    values<-array(0,c(1L,nrow(points),2L))
+    values[1L,,]<-points
+    etr_trajectory_set(as.numeric(seq_len(nrow(points))-1L),
+      values,curve_ids=id,dimension_names=names,
+      coordinate_system=cs,time_unit=unit,
+      provenance=list(origin="independent_test_fixture"))
+  }
+  a<-make_traj(points_a,"left")
+  b<-make_traj(points_b,"right")
+  for(metric in c("cityblock","euclidean","chebyshev")){
+    for(target in c(.2,.4,.65)){
+      native<-etr_cross_recurrence_matrix(a,b,
+        curve_a="left",curve_b="right",dimensions_a=c("x","y"),
+        dimensions_b=c("x","y"),
+        target_recurrence_rate=target,metric=metric)
+      baseline<-etr_cross_recurrence_matrix(points_a,points_b,
+        target_recurrence_rate=target,metric=metric)
+      expect_equal(native$radius,baseline$radius,tolerance=0)
+      expect_identical(native$matrix,baseline$matrix)
+      expect_equal(native$recurrence_rate,baseline$recurrence_rate,
+        tolerance=0)
+      expect_identical(native$curve_ids,c("left","right"))
+      expect_equal(native$time_a,a$time,tolerance=0)
+      expect_equal(native$time_b,b$time,tolerance=0)
+      expect_identical(native$time_unit,"s")
+      expect_identical(native$state_dimension,2L)
+      expect_identical(native$provenance$source_a$source_kind,"TrajectorySet")
+      expect_identical(native$provenance$source_a$state_names,c("x","y"))
+      expect_identical(native$provenance$time_alignment,"none")
+    }
+  }
+  expect_error(etr_cross_recurrence_matrix(a,b,radius=1),
+    "curve identifiers")
+  expect_error(etr_cross_recurrence_matrix(a,b,
+    curve_a="left",curve_b="right",radius=1),"dimension selections")
+  expect_error(etr_cross_recurrence_matrix(a,b,curve_a="left",curve_b="right",
+    dimensions_a="x",dimensions_b="y",radius=1),"same named state")
+  expect_error(etr_cross_recurrence_matrix(a,
+    make_traj(points_b,"right",cs="pixels"),curve_a="left",curve_b="right",
+    dimensions_a="x",dimensions_b="x",radius=1),"coordinate_system")
+  expect_error(etr_cross_recurrence_matrix(a,
+    make_traj(points_b,"right",unit="ms"),curve_a="left",curve_b="right",
+    dimensions_a="x",dimensions_b="x",radius=1),"same time_unit")
+  expect_error(etr_cross_recurrence_matrix(a,b,curve_a="missing",
+    curve_b="right",dimensions_a="x",dimensions_b="x",radius=1),
+    "curve ID")
+  expect_error(etr_cross_recurrence_matrix(a,points_b,
+    curve_a="left",curve_b="right",dimensions_a="x",
+    dimensions_b="x",radius=1),"both be trajectory sets")
+})
+
+test_that("direct Python 1.2 cross recurrence confirms source-object time and state contract",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Frozen Python TrajectorySet cross recurrence input parity opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  make_source<-function(points,id){
+    values<-array(0,c(1L,nrow(points),2L))
+    values[1L,,]<-points
+    native<-etr_trajectory_set(as.numeric(seq_len(nrow(points))-1L),
+      values,curve_ids=id,dimension_names=c("x","y"),
+      coordinate_system="arbitrary",time_unit="s")
+    python<-reticulate::py_call(etpy_get_export("TrajectorySet"),
+      time=reticulate::r_to_py(native$time),
+      values=reticulate::r_to_py(native$values),
+      curve_ids=as.list(native$curve_ids),
+      dimension_names=as.list(native$dimension_names),
+      coordinate_system="arbitrary",time_unit="s")
+    list(native=native,python=python)
+  }
+  a<-make_source(rbind(c(0,0),c(1,1),c(2,0),c(4,3)),"a")
+  b<-make_source(rbind(c(.5,.5),c(2,2),c(3,0)),"b")
+  for(metric in c("cityblock","euclidean","chebyshev"))
+    for(target in c(.2,.4,.65)){
+      ours<-etr_cross_recurrence_matrix(a$native,b$native,
+        curve_a="a",curve_b="b",dimensions_a=c("x","y"),
+        dimensions_b=c("x","y"),target_recurrence_rate=target,
+        metric=metric)
+      theirs<-reticulate::py_call(etpy_get_export("cross_recurrence_matrix"),
+        source_a=a$python,source_b=b$python,
+        curve_a="a",curve_b="b",dimensions_a=as.list(c("x","y")),
+        dimensions_b=as.list(c("x","y")),
+        target_recurrence_rate=target,metric=metric)
+      expect_equal(ours$radius,
+        as.numeric(et_to_r(reticulate::py_get_attr(theirs,"radius"))),
+        tolerance=1e-9)
+      expect_equal(ours$recurrence_rate,
+        as.numeric(et_to_r(reticulate::py_get_attr(theirs,
+          "achieved_recurrence_rate"))),tolerance=1e-12)
+      expect_equal(unname(ours$matrix),
+        unname(et_to_r(theirs$matrix$toarray())),tolerance=0)
+      expect_equal(ours$time_a,
+        as.numeric(et_to_r(reticulate::py_get_attr(theirs,"time_a"))),
+        tolerance=0)
+      expect_equal(ours$time_b,
+        as.numeric(et_to_r(reticulate::py_get_attr(theirs,"time_b"))),
+        tolerance=0)
+      expect_identical(ours$curve_ids,c("a","b"))
+  }
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})

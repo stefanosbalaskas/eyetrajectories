@@ -135,10 +135,85 @@ etr_recurrence_matrix <- function(x, curve = 1L, radius = NULL, theiler = 0L,
 #' @param target_recurrence_rate Optional probability in (0,1). Selects a
 #'   radius using the frozen Python 1.2 48-step inclusive-distance bisection,
 #'   retaining the achieved rate because ties can prevent an exact target.
+#' @param curve_a,curve_b Required named curve IDs or 1-based indices for
+#'   native trajectory-set inputs; NULL for legacy numeric matrices.
+#' @param dimensions_a,dimensions_b Required ordered state-channel names
+#'   for trajectory-set inputs; NULL for legacy numeric matrices. State names,
+#'   coordinate systems and time units must match in native trajectory mode.
 #' @export
 etr_cross_recurrence_matrix <- function(a, b, radius=NULL,
                                         metric = "euclidean",
-                                        target_recurrence_rate=NULL) {
+                                        target_recurrence_rate=NULL,
+                                        curve_a=NULL,curve_b=NULL,
+                                        dimensions_a=NULL,dimensions_b=NULL) {
+  # The legacy matrix/matrix API remains unchanged. In the trajectory-set
+  # path follow frozen Python _state_from_source/cross_recurrence_matrix's
+  # explicit named-channel and coordinate/time compatibility contract.
+  trajectory_input <- inherits(a,"etr_trajectory_set") &&
+    inherits(b,"etr_trajectory_set")
+  .etr_assert(trajectory_input ||
+    (!inherits(a,"etr_trajectory_set") &&
+     !inherits(b,"etr_trajectory_set")),
+    "cross-recurrence sources must both be trajectory sets or both matrices")
+  source_a <- NULL
+  source_b <- NULL
+  time_a <- NULL
+  time_b <- NULL
+  source_curve_ids <- NULL
+  source_time_unit <- NULL
+  if(trajectory_input) {
+    etr_validate(a,require_complete=TRUE)
+    etr_validate(b,require_complete=TRUE)
+    .etr_assert(!is.null(curve_a)&&!is.null(curve_b),
+      "both source curve identifiers are required for trajectory inputs")
+    .etr_assert(!is.null(dimensions_a)&&!is.null(dimensions_b),
+      "both explicit dimension selections are required for trajectory inputs")
+    resolve_curve<-function(x,id){
+      if(is.character(id))id<-match(id,x$curve_ids)
+      .etr_assert(length(id)==1L&&is.numeric(id)&&!is.na(id)&&
+        is.finite(id)&&id==as.integer(id)&&
+        id %in% seq_along(x$curve_ids),
+        "curve ID must identify an existing trajectory (1-based index)")
+      as.integer(id)
+    }
+    validate_dimensions<-function(x,names){
+      .etr_assert(is.character(names)&&length(names)>0L&&
+        !anyNA(names)&&all(nzchar(names))&&
+        !anyDuplicated(names)&&all(names %in% x$dimension_names),
+        "dimensions must select known, distinct named channels")
+      match(names,x$dimension_names)
+    }
+    ia<-resolve_curve(a,curve_a)
+    ib<-resolve_curve(b,curve_b)
+    da<-validate_dimensions(a,dimensions_a)
+    db<-validate_dimensions(b,dimensions_b)
+    .etr_assert(identical(dimensions_a,dimensions_b),
+      "cross-recurrence state spaces must use the same named state variables in the same order")
+    .etr_assert(identical(a$coordinate_system,b$coordinate_system),
+      "cross-recurrence state spaces must use the same coordinate_system")
+    .etr_assert(identical(a$time_unit,b$time_unit),
+      "cross-recurrence trajectories must use the same time_unit")
+    source_a<-list(source_kind="TrajectorySet",
+      dimensions=dimensions_a,state_names=dimensions_a,
+      coordinate_system=a$coordinate_system,
+      source_provenance=a$provenance)
+    source_b<-list(source_kind="TrajectorySet",
+      dimensions=dimensions_b,state_names=dimensions_b,
+      coordinate_system=b$coordinate_system,
+      source_provenance=b$provenance)
+    time_a<-a$time
+    time_b<-b$time
+    source_curve_ids<-c(a$curve_ids[ia],b$curve_ids[ib])
+    source_time_unit<-a$time_unit
+    a<-matrix(a$values[ia,,da,drop=FALSE],nrow=length(time_a),
+      ncol=length(da))
+    b<-matrix(b$values[ib,,db,drop=FALSE],nrow=length(time_b),
+      ncol=length(db))
+  }else{
+    .etr_assert(all(vapply(list(curve_a,curve_b,dimensions_a,dimensions_b),
+      is.null,logical(1L))),
+      "curve and dimension arguments require trajectory-set sources")
+  }
   a <- .etr_points(a, "a"); b <- .etr_points(b, "b")
   .etr_assert(ncol(a) == ncol(b), "channel count mismatch")
   .etr_assert(xor(is.null(radius),is.null(target_recurrence_rate)),
@@ -161,13 +236,17 @@ etr_cross_recurrence_matrix <- function(a, b, radius=NULL,
     radius <- .etr_cross_recurrence_source_target_radius(a,b,
       target_recurrence_rate,metric)
   m <- .etr_distance_matrix(a, b, metric=metric) <= radius
-  structure(list(matrix = m, kind = "cross", curve_ids = NULL, radius = radius,
+  structure(list(matrix = m, kind = "cross", curve_ids = source_curve_ids,
+                 radius = radius,
                  theiler = NA_integer_, eligible_pairs = length(m),
                  recurrence_rate = mean(m), time = NULL,
+                 time_a=time_a,time_b=time_b,
+                 state_dimension=as.integer(ncol(a)),time_unit=source_time_unit,
                  metric=metric,
                  target_recurrence_rate=target_recurrence_rate,
                  provenance=list(source="native_R_cross_recurrence",
-                   metric=metric,
+                   source_a=source_a,source_b=source_b,
+                   time_alignment="none",metric=metric,
                    radius_policy=if(is.null(target_recurrence_rate))
                      "fixed" else "target_recurrence_rate",
                    target_recurrence_rate=target_recurrence_rate,
