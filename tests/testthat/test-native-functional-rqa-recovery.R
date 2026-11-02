@@ -317,3 +317,109 @@ test_that("direct frozen Python 1.2 target-rate RQA radius and achieved density 
   expect_false(any(etr_native_parity_catalog()$
     one_to_one_native_contract_complete))
 })
+
+
+test_that("source sensitivity supports fractional physical-time windows and selected states",{
+  time<-seq(0,by=.01,length.out=18L)
+  vals<-array(0,c(4L,length(time),2L))
+  for(i in 1:4){
+    vals[i,,1L]<-sin((0:17)/3+i/5)+.05*(0:17)
+    vals[i,,2L]<-cos((0:17)/5+i/4)
+  }
+  x<-etr_trajectory_set(time,vals,paste0("curve_",1:4),c("x","y"),
+    coordinate_system="arbitrary",time_unit="s")
+  pairs<-list(c(.05,.02),c(.07,.03))
+  a<-etr_windowed_rqa_sensitivity(x,metrics="recurrence_rate",
+    window_step_pairs=pairs,window_units="s",step_units="s",
+    radius=1,dimensions="x")
+  expect_identical(a$design_table$window_samples,c(5L,7L))
+  expect_identical(a$design_table$step_samples,c(2L,3L))
+  expect_equal(a$design_table$requested_window,c(.05,.07))
+  expect_equal(a$design_table$requested_step,c(.02,.03))
+  expect_equal(a$provenance$requested_window_step_pairs,pairs,
+    tolerance=1e-12)
+  expect_equal(nrow(a$summary_table),8L)
+  expect_equal(nrow(a$pairwise_table),4L)
+  expect_true(all(a$design_table$n_analyzed_source_samples>0L))
+  expect_true(all(a$design_table$overlap_fraction>0))
+  expect_error(etr_windowed_rqa_sensitivity(x,
+    metrics="recurrence_rate",window_step_pairs=list(c(5.5,2)),
+    radius=1,dimensions="x"),"integer sample counts")
+  expect_error(etr_windowed_rqa_sensitivity(x,
+    metrics="recurrence_rate",window_step_pairs=list(c(.055,.02)),
+    window_units="s",step_units="s",radius=1,dimensions="x"),
+    "integer multiple")
+  missing<-x
+  missing$values[2L,3L,2L]<-NA_real_
+  selected<-etr_windowed_rqa_sensitivity(missing,
+    metrics="recurrence_rate",window_step_pairs=pairs,
+    window_units="s",step_units="s",radius=1,dimensions="x")
+  expect_equal(selected$design_table,a$design_table,tolerance=0)
+  expect_equal(selected$summary_table,a$summary_table,tolerance=0)
+  expect_equal(selected$pairwise_table,a$pairwise_table,tolerance=0)
+  missing$values[2L,3L,1L]<-NA_real_
+  expect_error(etr_windowed_rqa_sensitivity(missing,
+    metrics="recurrence_rate",window_step_pairs=pairs,
+    window_units="s",step_units="s",radius=1,dimensions="x"),
+    "complete finite selected")
+})
+
+test_that("frozen Python sensitivity physical-time numeric tables agree with native R",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Frozen Python 1.2 physical-time sensitivity source oracle opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  time<-seq(0,by=.01,length.out=18L)
+  vals<-array(0,c(4L,length(time),2L))
+  for(i in 1:4){
+    vals[i,,1L]<-sin((0:17)/3+i/5)+.05*(0:17)
+    vals[i,,2L]<-cos((0:17)/5+i/4)
+  }
+  x<-etr_trajectory_set(time,vals,paste0("curve_",1:4),c("x","y"),
+    coordinate_system="arbitrary",time_unit="s")
+  pyx<-reticulate::py_call(etpy_get_export("TrajectorySet"),
+    time=reticulate::r_to_py(time),values=reticulate::r_to_py(vals),
+    curve_ids=as.list(x$curve_ids),
+    dimension_names=as.list(x$dimension_names),
+    coordinate_system="arbitrary",time_unit="s")
+  pairs<-list(c(.05,.02),c(.07,.03))
+  for(metric in c("euclidean","cityblock","chebyshev")){
+    native<-etr_windowed_rqa_sensitivity(x,
+      metrics="recurrence_rate",window_step_pairs=pairs,
+      window_units="s",step_units="s",metric=metric,
+      radius=1,dimensions="x")
+    source<-reticulate::py_call(
+      etpy_get_export("windowed_rqa_sensitivity"),
+      trajectories=pyx,metrics=as.list("recurrence_rate"),
+      window_step_pairs=reticulate::r_to_py(list(
+        as.list(c(.05,.02)),as.list(c(.07,.03)))),
+      window_units="s",step_units="s",metric=metric,
+      radius=1,dimensions=as.list("x"))
+    table_names<-c("design_table","summary_table","pairwise_table")
+    for(which in table_names){
+      ours<-native[[which]]
+      other<-as.data.frame(et_to_r(
+        reticulate::py_get_attr(source,which)))
+      expect_identical(names(ours),names(other),
+        info=paste(metric,which,"schema"))
+      expect_identical(nrow(ours),nrow(other),
+        info=paste(metric,which,"rows"))
+      for(column in names(ours)){
+        if(is.numeric(ours[[column]])){
+          a<-as.numeric(ours[[column]])
+          b<-as.numeric(other[[column]])
+          expect_identical(is.na(a),is.na(b),
+            info=paste(metric,which,column,"undefined"))
+          if(any(is.finite(b)))
+            expect_equal(a[is.finite(b)],b[is.finite(b)],
+              tolerance=1e-9,info=paste(metric,which,column))
+        } else {
+          expect_equal(as.character(ours[[column]]),
+            as.character(other[[column]]),
+            info=paste(metric,which,column))
+        }
+      }
+    }
+  }
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})
