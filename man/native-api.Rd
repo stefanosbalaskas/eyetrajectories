@@ -86,7 +86,8 @@ etr_cumulative_path_length(x)
 
 etr_tortuosity(x)
 
-etr_l2_distance(a, b, time, dimension_weights = NULL)
+etr_l2_distance(a, b, time, dimension_weights = NULL,
+  python_boundary_mode = FALSE)
 
 etr_pairwise_l2(x, dimension_weights = NULL)
 
@@ -154,7 +155,7 @@ etr_plot_recurrence(recurrence, ...)
 \item{b}{Numeric point-by-channel matrix with matching channels.}
 \item{dimension_weights}{Finite, non-negative channel weights.}
 \item{normalize}{For trapezoidal weights, a scalar with Python 1.2 truthiness semantics: FALSE, zero, empty string and zero complex keep original weights; nonzero scalar numbers, nonempty strings and, only in source-boundary mode, nonzero finite complex scalars normalize to unit total. Empty/nonempty lists are supported only in the explicit boundary mode. General Python object truthiness remains outside the qualified domain.}
-\item{python_boundary_mode}{Logical flag requesting the explicitly supported Python 1.2 boundary-validation rules for native trapezoidal weighting. FALSE uses the native R domain; neither value invokes Python.}
+\item{python_boundary_mode}{Logical flag requesting a bounded native Python 1.2 source-input compatibility domain. For trapezoidal weighting it includes stated exceptional grids and truthy scalars. For functional L2 distance it permits finite numeric-string/Boolean matrices and weights through explicit conversion. FALSE uses native R validation. Neither value invokes Python, and full source-domain parity is not claimed.}
 \item{metric}{Distance metric for recurrence and cross-recurrence: \code{euclidean} (L2), \code{cityblock} (L1), or \code{chebyshev} (L-infinity). The default is Euclidean.}
 \item{n_components}{Integer component count or, for fitting, a variance fraction strictly between 0 and 1.}
 \item{fit}{Native etr_fpca fit.}
