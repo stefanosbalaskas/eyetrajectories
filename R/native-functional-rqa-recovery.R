@@ -231,8 +231,12 @@ etr_windowed_rqa_sensitivity <- function(trajectories,metrics,
           ok<-is.finite(v)&is.finite(w)
           v<-v[ok];w<-w[ok];n<-length(v)
           differences<-v-w
-          cor<-if(n>=2L&&stats::sd(v)>.Machine$double.eps&&
-            stats::sd(w)>.Machine$double.eps)
+          # Source uses np.std(..., ddof=0) for the low-variance
+          # correlation gate, not R's sample sd(ddof=1). For n=2 the
+          # thresholds differ, so compare the source population SD.
+          pop_sd<-function(z)sqrt(mean((z-mean(z))^2))
+          cor<-if(n>=2L&&pop_sd(v)>.Machine$double.eps&&
+            pop_sd(w)>.Machine$double.eps)
               stats::cor(v,w) else NaN
           pairwise[[length(pairwise)+1L]]<-data.frame(
             specification_a=ids[i],specification_b=ids[j],
@@ -253,10 +257,22 @@ etr_windowed_rqa_sensitivity <- function(trajectories,metrics,
   structure(list(analyses=analyses,design_table=design,
     summary_table=summary,pairwise_table=pairwise,metrics=metrics,
     provenance=list(operation="windowed_rqa_sensitivity",
-      specification_ids=ids,no_automatic_specification_selection=TRUE,
+      source_provenance=if(is.null(trajectories$provenance))
+        list() else trajectories$provenance,
+      specification_ids=ids,
+      requested_window_step_pairs=lapply(pairs,as.numeric),
+      resolved_window_step_samples=lapply(analyses,function(a)
+        as.integer(c(a$window_samples,a$step_samples))),
+      no_automatic_specification_selection=TRUE,
       pairwise_time_alignment="exact_shared_window_centers_only",
       interpolation_used_for_sensitivity_comparison=FALSE,
-      summary_statistics_are_descriptive_not_inferential=TRUE)),
+      summary_statistics_are_descriptive_not_inferential=TRUE,
+      profile_grid_spacing_interpretation=paste(
+        "derived-function temporal grid spacing; not an estimate of",
+        "independent-information resolution"),
+      window_dependence_interpretation=paste(
+        "sample-reuse diagnostics quantify deterministic overlap only;",
+        "serial dependence can remain even when overlap_fraction is zero"))),
     class="etr_windowed_rqa_sensitivity")
 }
 
@@ -295,6 +311,10 @@ etr_windowed_rqa_functional_mean_band <- function(trajectories,
   structure(list(functional_rqa=functional,band=band,unit=unit,
     participant_column=participant_column,
     provenance=list(operation="windowed_rqa_functional_mean_band",
+      functional_rqa_provenance=if(is.null(functional$provenance))
+        list() else functional$provenance,
+      functional_mean_band_provenance=if(is.null(band$provenance))
+        list() else band$provenance,
       resampling_unit=unit,
       window_rows_resampled_as_independent=FALSE,
       whole_function_resampling_contract=TRUE,
