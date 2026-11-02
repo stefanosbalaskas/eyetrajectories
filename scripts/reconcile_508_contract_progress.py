@@ -304,8 +304,13 @@ def reconcile(packet_dir: str | Path, expected_r_head: str,
             eligible = [q for q in eligible
                         if queue_by_key[(q["namespace"], q["python_name"])]
                         ["native_nonfunction_representation"].strip()]
+        # Prefer genuinely completed Python-mode test cases containing a
+        # literal source export reference over file-only source attribution.
+        # This is a reviewer triage preference, NOT proof that the Python
+        # oracle call was executed or that its contract was satisfied.
         eligible.sort(key=lambda q: (
             q["developer_evidence_ready_for_review"] != "TRUE",
+            -int(q["executed_test_cases_with_static_source_literal"]),
             queue_by_key[(q["namespace"], q["python_name"])]
                 .get("source_fixture_attributed") != "TRUE",
             q["python_name"], q["namespace"]))
@@ -340,6 +345,9 @@ def reconcile(packet_dir: str | Path, expected_r_head: str,
                 "backend_or_estimand_distinct": q["backend_or_estimand_distinct"],
                 "developer_evidence_gates_passed": q[
                     "developer_evidence_gates_passed"],
+                "executed_test_cases_with_static_source_literal": q[
+                    "executed_test_cases_with_static_source_literal"],
+                "literal_reference_proves_oracle_invocation": "FALSE",
                 "source_fixture_reference_file_only":
                     queue_by_key[(q["namespace"], q["python_name"])]
                         .get("source_fixture_attributed", "FALSE"),
