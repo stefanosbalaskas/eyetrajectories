@@ -98,7 +98,7 @@ class StageTests(unittest.TestCase):
                 (path/"testthat.Rout.fail").write_text(
                     "══ Failed ══════════\n"
                     "── 1. Failure (test-native-example.R:19:3): bad source case\n"
-                    "Expected source contract to agree\n")
+                    "Expected source contract to agree\n", encoding="utf-8")
                 return types.SimpleNamespace(returncode=1,stdout="R test failure")
             stderr = io.StringIO()
             with patch.object(stage.subprocess,"run",side_effect=fake_run):
