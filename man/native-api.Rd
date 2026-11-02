@@ -153,7 +153,7 @@ etr_plot_recurrence(recurrence, ...)
 \item{a}{Numeric point-by-channel matrix.}
 \item{b}{Numeric point-by-channel matrix with matching channels.}
 \item{dimension_weights}{Finite, non-negative channel weights.}
-\item{normalize}{For trapezoidal weights, a scalar with Python 1.2 truthiness semantics on finite numeric, logical and character values: FALSE, zero and empty string keep original weights; nonzero finite numbers and nonempty strings normalize to unit total. Arbitrary Python objects and nonfinite time grids are not supported.}
+\item{normalize}{For trapezoidal weights, a scalar with Python 1.2 truthiness semantics: FALSE, zero, empty string and zero complex keep original weights; nonzero scalar numbers, nonempty strings and, only in source-boundary mode, nonzero finite complex scalars normalize to unit total. Empty/nonempty lists are supported only in the explicit boundary mode. General Python object truthiness remains outside the qualified domain.}
 \item{python_boundary_mode}{Logical flag requesting the explicitly supported Python 1.2 boundary-validation rules for native trapezoidal weighting. FALSE uses the native R domain; neither value invokes Python.}
 \item{metric}{Distance metric for recurrence and cross-recurrence: \code{euclidean} (L2), \code{cityblock} (L1), or \code{chebyshev} (L-infinity). The default is Euclidean.}
 \item{n_components}{Integer component count or, for fitting, a variance fraction strictly between 0 and 1.}
