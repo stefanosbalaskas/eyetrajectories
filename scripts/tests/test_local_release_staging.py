@@ -85,6 +85,32 @@ class StageTests(unittest.TestCase):
             self.assertNotIn("candidate_check_tarball_sha256",
                 json.loads((folder/"STAGING_MANIFEST.json").read_text()))
 
+    def test_staged_check_prints_installed_test_failure_context(self):
+        with tempfile.TemporaryDirectory() as td:
+            folder = Path(td)
+            (folder/"STAGING_MANIFEST.json").write_text("{}")
+            def fake_run(cmd, cwd, **kwargs):
+                if cmd[2] == "build":
+                    (folder/"eyetrajectories_0.4.2.tar.gz").write_bytes(b"tar")
+                    return types.SimpleNamespace(returncode=0,stdout="built")
+                path = folder/"eyetrajectories.Rcheck"/"tests"
+                path.mkdir(parents=True)
+                (path/"testthat.Rout.fail").write_text(
+                    "══ Failed ══════════\n"
+                    "── 1. Failure (test-native-example.R:19:3): bad source case\n"
+                    "Expected source contract to agree\n")
+                return types.SimpleNamespace(returncode=1,stdout="R test failure")
+            stderr = io.StringIO()
+            with patch.object(stage.subprocess,"run",side_effect=fake_run):
+                with contextlib.redirect_stderr(stderr):
+                    with self.assertRaisesRegex(RuntimeError,
+                                                "R CMD check exited 1"):
+                        stage.check_candidate(folder,"0.4.2","R")
+            output = stderr.getvalue()
+            self.assertIn("STAGED_TEST_FAILURE_DETAILS_BEGIN",output)
+            self.assertIn("test-native-example.R:19:3",output)
+            self.assertIn("STAGED_TEST_FAILURE_DETAILS_END",output)
+
     def test_missing_candidate_check_verdict_does_not_pass(self):
         with tempfile.TemporaryDirectory() as td:
             folder=Path(td)
