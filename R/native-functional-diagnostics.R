@@ -232,7 +232,10 @@ etr_score_distance_matrix <- function(fpca,n_components=NULL,
   # Provide a bounded native analogue for Matrix objects in explicit
   # source-compatibility mode. The normal native scientific default
   # continues to require a dense numeric matrix.
-  source_scores <- fpca$scores
+  source_scores <- NULL
+  if(inherits(fpca,"etr_fpca") || is.list(fpca) ||
+      (isTRUE(python_boundary_mode) && is.environment(fpca)))
+    source_scores <- fpca$scores
   if(isTRUE(python_boundary_mode) && inherits(source_scores,"Matrix")) {
     .etr_assert(as.double(nrow(source_scores)) *
       as.double(ncol(source_scores)) <= 2e6,
