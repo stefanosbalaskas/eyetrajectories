@@ -34,6 +34,12 @@ directory, a new `developer_reconciliation_<R_SHA_PREFIX>/` with:
 
 - `contract_progress_508.csv`: one row for each immutable export.
 - `reviewer_priority_508.csv`: source-gap- and evidence-aware order.
+- `reviewer_dispatch_28.csv`: a compact, source-pinned 28-item external
+  reviewer intake sheet in three separate lanes: four **known-gap pilots**
+  for adversarial source replay, 12 functions without a recorded source gap
+  (not yet verified as fully equivalent), and 12 nonfunction representation
+  candidates. The source-pinned dispatch includes its own SHA256 manifest
+  entry. All 28 rows have FALSE replay, approval, and certification flags.
 - `developer_evidence_UNSIGNED_TEMPLATE.csv`: 508 unsigned, all-FALSE
   rows to copy and populate with individually reviewed developer evidence.
 - `developer_progress_summary.json`: counts for historical source gaps,
@@ -48,6 +54,13 @@ other five gates. Thus the expected initial dashboard is four SHA256-verified
 partial developer records, zero complete six-gate developer reviews, **zero
 closed source gaps**, and **zero independent approvals**. The four pilot
 source-gap entries remain open.
+
+The dispatch is a **proposed independent reviewer assignment**, not a
+certification fastlane. A known-gap pilot cannot be fully certified before
+its documented source differences are scientifically resolved. A function
+without a *recorded* gap still requires complete accepted-domain, numerical,
+schema, error and estimand review. Nonfunction representation is not inferred
+from a similarly named R constructor.
 
 The original 508 queue, source-gap registry, external-review worksheets,
 GPG receipts and authoritative certification ledger are **not modified**.
