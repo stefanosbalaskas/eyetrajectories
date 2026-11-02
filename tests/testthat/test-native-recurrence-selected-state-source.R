@@ -162,6 +162,26 @@ test_that("frozen Python 1.2 selected-state recurrence oracles agree for three m
       expect_equal(na$recurrence_rate,
         as.numeric(et_to_r(pa$achieved_recurrence_rate)),
         tolerance=1e-12,info=paste("auto rate",metric,policy))
+      radii<-c(.5,2,5,10,20)
+      np<-etr_recurrence_radius_profile(x,curve="a",radii=radii,
+        metric=metric,theiler_window=1L,dimensions="x")
+      pp<-reticulate::py_call(
+        etpy_get_export("recurrence_radius_profile"),
+        source=pyx,curve=as.integer(0L),radii=as.list(radii),
+        metric=metric,theiler_window=as.integer(1L),
+        dimensions=as.list("x"))
+      py_table<-as.data.frame(et_to_r(pp$table))
+      expect_identical(names(np$table),names(py_table))
+      for(field in names(np$table)){
+        local<-as.numeric(np$table[[field]])
+        frozen<-as.numeric(py_table[[field]])
+        expect_identical(is.na(local),is.na(frozen),
+          info=paste("profile defined",field,metric))
+        if(any(is.finite(frozen)))
+          expect_equal(local[is.finite(frozen)],
+            frozen[is.finite(frozen)],tolerance=1e-12,
+            info=paste("profile",field,metric))
+      }
       nc<-do.call(etr_cross_recurrence_matrix,c(list(
         a=x,b=x,curve_a="a",curve_b="b",dimensions_a="x",
         dimensions_b="x",metric=metric),native_args))
