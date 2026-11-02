@@ -25,9 +25,44 @@
 #' @param b Points-by-channels numeric matrix of same shape.
 #' @param time Shared increasing time grid.
 #' @param dimension_weights Optional dimension weights (non-negative).
+#' @param python_boundary_mode Opt in to the frozen Python 1.2
+#'   np.asarray(dtype=float) coercion of finite numeric-string and Boolean
+#'   two-dimensional point matrices and dimension weights. The default
+#'   native scientific validation remains strict; nonfinite source arithmetic
+#'   and arbitrary Python objects are outside this bounded analogue.
 #' @export
-etr_l2_distance <- function(a, b, time, dimension_weights = NULL) {
-  a <- .etr_points(a, "a"); b <- .etr_points(b, "b")
+etr_l2_distance <- function(a, b, time, dimension_weights = NULL,
+                            python_boundary_mode = FALSE) {
+  .etr_assert(is.logical(python_boundary_mode) &&
+    length(python_boundary_mode)==1L && !is.na(python_boundary_mode),
+    "python_boundary_mode must be a nonmissing logical scalar")
+  if(isTRUE(python_boundary_mode)) {
+    # Python analysis.py::functional_l2_distance applies np.asarray to
+    # both arguments before validating shape and missing data.
+    coerce_states <- function(z,label){
+      .etr_assert(is.matrix(z) && nrow(z)>=1L && ncol(z)>=1L &&
+        (is.numeric(z)||is.character(z)||is.logical(z)),
+        paste(label,"must be a 2D numeric-compatible state matrix"))
+      converted<-suppressWarnings(as.numeric(z))
+      .etr_assert(length(converted)==length(z) &&
+        all(is.finite(converted)),
+        paste(label,"must contain finite numeric-compatible states"))
+      matrix(converted,nrow=nrow(z),ncol=ncol(z))
+    }
+    a<-coerce_states(a,"a")
+    b<-coerce_states(b,"b")
+    if(!is.null(dimension_weights)) {
+      .etr_assert(is.atomic(dimension_weights) &&
+        is.null(dim(dimension_weights)) &&
+        (is.numeric(dimension_weights)||
+          is.character(dimension_weights)||
+          is.logical(dimension_weights)),
+        "dimension_weights must be a 1D numeric-compatible vector")
+      dimension_weights<-suppressWarnings(as.numeric(dimension_weights))
+    }
+  } else {
+    a <- .etr_points(a, "a"); b <- .etr_points(b, "b")
+  }
   .etr_assert(identical(dim(a), dim(b)), "curve dimensions must be identical")
   .etr_assert(length(time) == nrow(a), "time length must equal number of samples")
   w <- etr_trapezoid_weights(time)
