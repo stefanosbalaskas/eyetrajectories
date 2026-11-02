@@ -195,6 +195,34 @@ environment after each new Git HEAD; committed source alone is not a PASS.
 GitHub Actions runner admission and genuine independent 508-contract
 certification remain unresolved.
 
+## November 3 — frozen Python 1.2 functional-RQA oracle fixture
+
+Owner ran `482a7eeb0df2b7d7ce8a69d361a230a9aa8dea2e`.
+The two standalone Python regression suites passed (**11/11** reconciler,
+**7/7** staged-check fixture tests). Native R scientific qualification
+completed without failures, with **341 native case records** and **238**
+non-skipped case records. Python-source qualification then failed in one
+newly included test at `test-native-functional-rqa-recovery.R:527`:
+the frozen Python `windowed_rqa_functional_mean_band` call had not
+provided mandatory explicit `dimensions` for a `TrajectorySet`
+recurrence analysis. The owner-side check stopped before CRAN staging.
+
+Source-verified fix at `d2bb3846c1eb8a3c30bfdce669f1581568c363bc`:
+pass `dimensions=as.list(x$dimension_names)` in the frozen Python
+mean-band oracle. This matches the frozen `functional_rqa.py` API,
+where `dimensions` is forwarded to
+`windowed_rqa_trajectory_set` for every curve. The test still checks
+both independent-unit settings (`curve` and `participant`) and the
+same numerical comparisons; no skip or source-contract relaxation.
+Other Python recurrence calls in the test file already pass explicit
+dimensions. This is a **source-fixture correction**, not proof that
+the subsequent numerical comparisons have passed.
+
+**Current hold:** Fresh exact-head Python-source qualification and
+staged CRAN `0.4.2` still need to execute to completion. No independent
+scientific approval has been obtained; `0/508` and `204` recorded
+source-gap exports remain unchanged.
+
 ## November 2 — staged 0.4.2 check failure and targeted repairs
 
 The owner tested exact HEAD `9773875ca601fe7d3668889a217ee9861314cb77`
