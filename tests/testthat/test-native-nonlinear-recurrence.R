@@ -385,3 +385,88 @@ test_that("frozen Python 1.2 windowed and functional RQA match selected source c
   expect_false(any(etr_native_parity_catalog()$
     one_to_one_native_contract_complete))
 })
+
+
+test_that("native recurrence networks support 900 nodes with exact path and triangle components",{
+  n_groups<-300L
+  positions<-rep(10*seq.int(0L,n_groups-1L),each=3L)+
+    rep(c(0,.1,.2),n_groups)
+  t<-as.numeric(seq_along(positions)-1L)
+  x<-etr_trajectory_set(t,array(positions,dim=c(1L,length(t),1L)),
+    curve_ids="A",dimension_names="x",
+    coordinate_system="arbitrary",time_unit="s")
+  for(radius in c(.15,.25)){
+    rec<-etr_recurrence_matrix(x,curve="A",radius=radius)
+    network<-etr_recurrence_network(rec)
+    expect_s3_class(network,"etr_recurrence_network")
+    expect_identical(network$n_nodes,900L)
+    expect_identical(network$n_connected_components,300L)
+    expect_identical(network$component_sizes,rep(3L,300L))
+    expect_identical(network$component_labels,
+      rep(seq.int(0L,299L),each=3L))
+    expected_triangles<-if(radius>.2)300L else 0L
+    expected_edges<-if(radius>.2)900L else 600L
+    expect_identical(network$edge_count,expected_edges)
+    expect_equal(network$triangles,expected_triangles,tolerance=0)
+    expect_equal(network$transitivity,
+      if(radius>.2)1 else 0,tolerance=0)
+    expect_identical(network$provenance$triangle_count_method,
+      "forward_neighbor_intersections")
+    expect_identical(network$provenance$connected_components_method,
+      "queue_head_breadth_first_search")
+    expect_equal(network$isolated_node_fraction,0,tolerance=0)
+    expect_identical(nrow(etr_recurrence_network_node_frame(network)),900L)
+    expect_identical(nrow(etr_recurrence_network_summary_frame(network)),1L)
+  }
+})
+
+test_that("frozen Python 1.2 graph topology agrees beyond former 750-node R bound",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Frozen Python 1.2 large recurrence network graph oracle opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  n_groups<-300L
+  positions<-rep(10*seq.int(0L,n_groups-1L),each=3L)+
+    rep(c(0,.1,.2),n_groups)
+  t<-as.numeric(seq_along(positions)-1L)
+  vals<-array(positions,dim=c(1L,length(t),1L))
+  x<-etr_trajectory_set(t,vals,"A","x",
+    coordinate_system="arbitrary",time_unit="s")
+  px<-reticulate::py_call(etpy_get_export("TrajectorySet"),
+    time=reticulate::r_to_py(t),values=reticulate::r_to_py(vals),
+    curve_ids=as.list("A"),dimension_names=as.list("x"),
+    coordinate_system="arbitrary",time_unit="s")
+  for(radius in c(.15,.25)){
+    native<-etr_recurrence_network(
+      etr_recurrence_matrix(x,curve="A",radius=radius))
+    py_rec<-reticulate::py_call(etpy_get_export("recurrence_matrix"),
+      source=px,curve="A",radius=radius,dimensions=as.list("x"))
+    py<-reticulate::py_call(etpy_get_export("recurrence_network"),
+      recurrence=py_rec)
+    for(field in c("degree","normalized_degree","local_clustering",
+      "component_labels","component_sizes","edge_count",
+      "graph_density","transitivity","mean_local_clustering",
+      "n_connected_components","largest_component_fraction",
+      "isolated_node_fraction")){
+      expected<-et_to_r(reticulate::py_get_attr(py,field))
+      actual<-native[[field]]
+      expect_equal(as.numeric(actual),as.numeric(expected),
+        tolerance=1e-12,info=paste(field,"radius",radius))
+    }
+    expect_equal(unname(native$adjacency),
+      unname(et_to_r(py$adjacency$toarray())),tolerance=0)
+    for(framename in c("recurrence_network_node_frame",
+      "recurrence_network_summary_frame")){
+      nfn<-get(paste0("etr_",framename))
+      own<-nfn(native)
+      pyframe<-reticulate::py_call(etpy_get_export(framename),result=py)
+      other<-as.data.frame(et_to_r(pyframe))
+      expect_identical(names(own),names(other),info=framename)
+      expect_identical(nrow(own),nrow(other),info=framename)
+      for(col in names(own))
+        expect_equal(as.numeric(own[[col]]),as.numeric(other[[col]]),
+          tolerance=1e-12,info=paste(framename,col))
+    }
+  }
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})
