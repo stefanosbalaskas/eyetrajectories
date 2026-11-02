@@ -219,18 +219,34 @@ etr_pairwise_frechet <- function(x,dimensions=NULL,
 #' @param x Complete native trajectories.
 #' @param index Zero-based curve index, matching Python's public function.
 #' @param n_neighbors Positive requested neighbor count.
+#' @param python_boundary_mode Opt in to the frozen Python 1.2 NumPy
+#'   slice-index contract for n_neighbors: Python Boolean TRUE acts as
+#'   one and integer-valued doubles are rejected. The default native R
+#'   contract accepts finite integer-valued numeric counts.
 #' @return Zero-based integer indices in increasing distance order.
 #' @details Ties use ascending original index deterministically. The Python
 #'   NumPy default sort makes tie ordering platform/version-dependent, so
 #'   equivalence is only asserted for tests with unique distances.
 #' @export
-etr_nearest_trajectory_indices <- function(x,index,n_neighbors=5L) {
+etr_nearest_trajectory_indices <- function(x,index,n_neighbors=5L,
+    python_boundary_mode=FALSE) {
+  .etr_assert(is.logical(python_boundary_mode) &&
+    length(python_boundary_mode)==1L&&!is.na(python_boundary_mode),
+    "python_boundary_mode must be a nonmissing logical scalar")
   etr_validate(x,require_complete=TRUE)
   n <- dim(x$values)[1L]
   .etr_assert(is.numeric(index) && !is.logical(index) &&
                 length(index)==1L && is.finite(index) &&
                 index==as.integer(index) && index>=0L && index<n,
               "index must be a valid zero-based curve index")
+  if(isTRUE(python_boundary_mode)){
+    # Python analysis.py validates >0 then slices np.ndarray[:n_neighbors].
+    # NumPy accepts bool (via __index__) but rejects even float 1.0.
+    .etr_assert((is.integer(n_neighbors)||is.logical(n_neighbors)) &&
+      length(n_neighbors)==1L&&!is.na(n_neighbors),
+      "n_neighbors must be a Python integer or Boolean slice index")
+    n_neighbors<-as.integer(n_neighbors)
+  }
   .etr_assert(is.numeric(n_neighbors) && !is.logical(n_neighbors) &&
                 length(n_neighbors)==1L && is.finite(n_neighbors) &&
                 n_neighbors==as.integer(n_neighbors) &&
