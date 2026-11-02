@@ -118,9 +118,12 @@ test_that("windowed RQA accounts for non-independent overlapping windows",{
   expect_equal(w$dropped_tail_samples,0L)
   expect_error(etr_windowed_rqa(x,window=4,step=5,radius=1),
                "step")
+  # Frozen Python 1.2 requires exactly one of fixed radius or
+  # target_recurrence_rate; this formerly tested an R-only fixed-radius
+  # restriction, which Batch C intentionally removed.
   expect_error(etr_windowed_rqa(x,window=3,step=1,
                radius=1,target_recurrence_rate=.05),
-               "fixed-radius")
+               "supply exactly one of radius or target_recurrence_rate")
   f<-etr_windowed_rqa_trajectory_set(x,c("recurrence_rate","determinism"),
     window=6L,step=2L,radius=1.1,undefined_policy="keep")
   expect_s3_class(f,"etr_windowed_rqa_functional")
