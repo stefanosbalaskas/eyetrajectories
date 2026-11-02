@@ -240,6 +240,26 @@ class ReconciliationTests(unittest.TestCase):
         write_rows(path, rows)
         return path
 
+    def test_dispatch_prefers_executed_literal_evidence_without_certifying(self):
+        case_path = self.case_evidence_csv()
+        rows = progress.baseline.read_csv(case_path)
+        rows[0]["static_source_literal_count"] = "1"
+        rows[0]["static_source_literals"] = "export_300"
+        write_rows(case_path, rows)
+        result = progress.reconcile(self.root, HEAD, case_evidence_csv=case_path)
+        dispatch = progress.baseline.read_csv(
+            Path(result["output_dir"]) / progress.DISPATCH)
+        functions = [r for r in dispatch
+                     if r["dispatch_lane"] ==
+                     "FUNCTION_SOURCE_FULL_DOMAIN_REVIEW"]
+        self.assertEqual(functions[0]["python_name"], "export_300")
+        self.assertEqual(functions[0][
+            "executed_test_cases_with_static_source_literal"], "1")
+        self.assertEqual(functions[0][
+            "literal_reference_proves_oracle_invocation"], "FALSE")
+        self.assertTrue(all(q["independently_certified"] == "FALSE"
+                            for q in dispatch))
+
     def test_executed_python_case_literals_are_descriptive_not_parity(self):
         csv_path = self.case_evidence_csv()
         result = progress.reconcile(self.root, HEAD, case_evidence_csv=csv_path)
