@@ -27,9 +27,15 @@ test_that("functional L2 Python numeric-string and Boolean states are opt-in",{
   text_a<-matrix(as.character(a),nrow=nrow(a),ncol=ncol(a))
   text_b<-matrix(as.character(b),nrow=nrow(b),ncol=ncol(b))
   expect_error(etr_l2_distance(text_a,text_b,x$time),"complete numeric")
+  # R's as.character() deliberately rounds for display. Compare the
+  # coerced values, not the original full-precision numeric matrix.
+  rounded_a<-matrix(as.numeric(text_a),nrow=nrow(a),ncol=ncol(a))
+  rounded_b<-matrix(as.numeric(text_b),nrow=nrow(b),ncol=ncol(b))
+  expected_text<-etr_l2_distance(rounded_a,rounded_b,x$time,
+    dimension_weights=c(1,.25))
   expect_equal(etr_l2_distance(text_a,text_b,x$time,
     dimension_weights=c("1","0.25"),python_boundary_mode=TRUE),
-    d,tolerance=1e-12)
+    expected_text,tolerance=1e-12)
   aa<-matrix(rep(c(TRUE,FALSE),each=7L),7L,2L)
   bb<-matrix(rep(c(FALSE,TRUE),each=7L),7L,2L)
   expect_equal(etr_l2_distance(aa,bb,x$time,
