@@ -524,15 +524,15 @@ test_that("frozen Python 1.2 functional RQA band deterministic moments agree",{
       as.numeric(et_to_r(original$time)),tolerance=0)
     expect_equal(native$band$unit_ids,
       as.character(et_to_r(original$unit_ids)),tolerance=0)
+    py_provenance<-et_to_r(reticulate::py_get_attr(original,"provenance"))
     expect_equal(native$band$curves_per_unit,
-      as.integer(et_to_r(original$provenance$functional_mean_band$
+      as.integer(unlist(py_provenance$functional_mean_band$
         curves_per_unit)),tolerance=0)
     expect_equal(native$functional_rqa$trajectories$values,
       et_to_r(source$functional_rqa$trajectories$values),tolerance=1e-10)
     expect_identical(native$provenance$participant_column,participant)
     expect_identical(native$band$provenance$functional_mean_band$estimand,
-      as.character(et_to_r(original$provenance$functional_mean_band$
-        estimand)))
+      as.character(py_provenance$functional_mean_band$estimand))
     expect_identical(native$band$provenance$functional_mean_band$
       random_engine,"base_R_not_NumPy")
     expect_true(all(is.finite(native$band$max_statistics)))
