@@ -194,3 +194,44 @@ native scientific qualification need to be executed in the owner's
 environment after each new Git HEAD; committed source alone is not a PASS.
 GitHub Actions runner admission and genuine independent 508-contract
 certification remain unresolved.
+
+## November 2 — staged 0.4.2 check failure and targeted repairs
+
+The owner tested exact HEAD `9773875ca601fe7d3668889a217ee9861314cb77`
+with both scientific developer qualification and staged release validation.
+The first-party native/Python qualification passed (351 R syntax files,
+227 native completed test cases, 323 Python-mode completed test cases,
+and 0 independent certificates). Staged `0.4.2` successfully built
+and performed installed examples, tests and PDF manual processing, but
+`R CMD check --as-cran` exited with **1 ERROR, 2 WARNINGS and 1 NOTE**.
+The observed problem categories were code/Rd argument mismatches,
+undeclared optional `Matrix` usage in installed tests, and a
+`testthat.R` failure from the functional-RQA sensitivity path.
+
+The subsequent source repairs synchronize the recurrence,
+cross-recurrence, windowed RQA and functional RQA Rd usages with actual
+default values and public arguments. `Matrix` is now explicitly
+declared under `Suggests`. The RQA functional adapter validates
+mutually exclusive radius policies **before** excluding a derived
+recurrence-rate metric when target-density control is in use. This
+fixes the validation-order mismatch identified from the existing
+scientific regression tests without weakening either restriction.
+The full functional-RQA recovery tests are now included in both
+scientific qualification modes, not only in staged CRAN checks.
+
+**Status: UNVERIFIED REPAIRS.** The original failing check remains an
+actual failure. The new exact HEAD must pass both scientific modes
+and a **fresh, separately staged** version `0.4.2` source tarball
+before reviewing the remaining NOTE and cross-platform release gates.
+Do not reuse the failed staged tarball or claim these commits passed
+until the owner's RStudio results verify them. Independent full-domain
+approval remains 0/508, and the original 204 gap exports are unchanged.
+
+Run from the branch root after pulling the new Git HEAD:
+
+```r
+system("git pull --ff-only")
+source("scripts/capture_native_source_qualification_evidence.R")
+source("scripts/stage_local_release_candidate.R")
+```
+
