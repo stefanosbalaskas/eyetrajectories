@@ -136,9 +136,24 @@ def check_candidate(folder: Path, version: str, r_command: str) -> str:
         raise RuntimeError("R CMD check did not create 00check.log")
     lines = log_path.read_text(encoding="utf-8", errors="replace")
     statuses = re.findall(r"^Status:[ \t]*(.+?)\s*$", lines, re.M)
-    if not statuses or "* DONE" not in lines:
-        raise RuntimeError("Missing final R CMD check verdict")
-    status = statuses[-1].strip()
+    finished = re.findall(r"^\* DONE[ \t]*$", lines, re.M)
+    if len(statuses) != 1 or len(finished) != 1:
+        raise RuntimeError("Missing or ambiguous final R CMD check verdict")
+    # A zero-exit child and Status: OK are insufficient if mandatory
+    # scientific tests, installed examples or the PDF manual were skipped.
+    mandatory = {
+        "tests": r"^\* checking tests[ \t]",
+        "examples": r"^\* checking examples[ \t]",
+        "PDF manual": r"^\* checking PDF version of manual[ \t]",
+    }
+    missing = [label for label, pattern in mandatory.items()
+               if re.search(pattern, lines, re.M) is None]
+    if "Running 'testthat.R'" not in lines:
+        missing.append("installed testthat.R")
+    if missing:
+        raise RuntimeError("Staged R CMD check did not execute mandatory phases: "
+                           + ", ".join(missing))
+    status = statuses[0].strip()
     if "ERROR" in status or "WARNING" in status or (status != "OK" and not re.fullmatch(r"[0-9]+ NOTE(?:s)?", status)):
         raise RuntimeError("Candidate check is not clean: " + status)
     evidence = json.loads((folder / "STAGING_MANIFEST.json").read_text(encoding="utf-8"))
