@@ -117,3 +117,70 @@ w4m_x=et.TrajectorySet(
   expect_false(any(etr_native_parity_catalog()$
     one_to_one_native_contract_complete))
 })
+
+
+test_that("native auto recurrence target policy has source bisection geometry",{
+  t<-as.numeric(0:7)
+  values<-array(0,c(2L,length(t),2L))
+  values[1L,,1L]<-c(0,1,3,4,5,6,8,9)
+  values[1L,,2L]<-c(0,0,1,2,1,2,3,4)
+  values[2L,,1L]<-c(1,2,2,4,5,7,8,10)
+  values[2L,,2L]<-c(1,0,2,3,2,4,5,3)
+  x<-etr_trajectory_set(t,values,c("a","b"),c("x","y"),
+    coordinate_system="arbitrary",time_unit="s")
+  for(metric in c("cityblock","euclidean","chebyshev")){
+    for(target in c(.2,.4,.65)){
+      z<-etr_recurrence_matrix(x,curve="b",
+        target_recurrence_rate=target,theiler=1L,metric=metric)
+      expect_s3_class(z,"etr_recurrence")
+      expect_identical(z$provenance$radius_policy,"target_recurrence_rate")
+      expect_equal(z$target_recurrence_rate,target,tolerance=0)
+      expect_true(is.finite(z$radius)&&z$radius>0)
+      expect_true(z$recurrence_rate>=0&&z$recurrence_rate<=1)
+      expect_false(any(diag(z$matrix)))
+      expect_false(any(z$matrix[row(z$matrix)!=col(z$matrix)&
+        abs(row(z$matrix)-col(z$matrix))<=1L]))
+    }
+  }
+  expect_error(etr_recurrence_matrix(x,curve="a"),
+    "supply exactly one")
+  expect_error(etr_recurrence_matrix(x,curve="a",radius=1,
+    target_recurrence_rate=.3),"supply exactly one")
+  expect_error(etr_recurrence_matrix(x,curve="a",
+    target_recurrence_rate=0),"strictly between")
+  expect_error(etr_recurrence_matrix(x,curve="a",
+    target_recurrence_rate=1),"strictly between")
+  expect_equal(etr_recurrence_matrix(x,curve="a",radius=0)$radius,0)
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Frozen Python 1.2 target-rate recurrence source oracle opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  ctor<-etpy_get_export("TrajectorySet")
+  pyx<-reticulate::py_call(ctor,time=reticulate::r_to_py(t),
+    values=reticulate::r_to_py(values),
+    curve_ids=as.list(x$curve_ids),
+    dimension_names=as.list(x$dimension_names),
+    coordinate_system="arbitrary",time_unit="s")
+  for(metric in c("cityblock","euclidean","chebyshev")){
+    for(target in c(.2,.4,.65)){
+      native<-etr_recurrence_matrix(x,curve="b",
+        target_recurrence_rate=target,theiler=1L,metric=metric)
+      py<-reticulate::py_call(etpy_get_export("recurrence_matrix"),
+        source=pyx,curve=as.integer(1L),target_recurrence_rate=target,
+        theiler_window=as.integer(1L),metric=metric,
+        dimensions=as.list(x$dimension_names))
+      source_radius<-as.numeric(et_to_r(
+        reticulate::py_get_attr(py,"radius")))
+      source_rate<-as.numeric(et_to_r(
+        reticulate::py_get_attr(py,"achieved_recurrence_rate")))
+      source_matrix<-et_to_r(py$matrix$toarray())
+      expect_equal(native$radius,source_radius,tolerance=1e-9,
+        info=paste("radius",metric,target))
+      expect_equal(native$recurrence_rate,source_rate,tolerance=1e-12,
+        info=paste("rate",metric,target))
+      expect_equal(unname(native$matrix),unname(source_matrix),
+        tolerance=0,info=paste("matrix",metric,target))
+    }
+  }
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})

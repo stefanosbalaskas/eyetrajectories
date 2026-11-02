@@ -24,27 +24,51 @@
 #' The matrix is dense and intended for modest single-trial samples.
 #' @param x Complete native trajectory collection.
 #' @param curve 1-based curve index or curve identifier.
-#' @param radius Finite non-negative distance radius.
+#' @param radius Fixed non-negative distance radius, or NULL when a
+#'   target_recurrence_rate is supplied. The legacy native zero-radius
+#'   boundary is retained; Python 1.2 requires a strictly positive radius.
 #' @param theiler Non-negative integer number of excluded adjacent sample lags.
 #' @param metric One of cityblock (L1), euclidean (L2), chebyshev (L-infinity).
+#' @param target_recurrence_rate Optional probability strictly between 0 and 1.
+#'   Exactly one radius policy must be selected. The 48-step inclusive-radius
+#'   bisection matches the frozen Python 1.2 source threshold algorithm on
+#'   native numeric common-grid states.
 #' @export
-etr_recurrence_matrix <- function(x, curve = 1L, radius, theiler = 0L,
-                                  metric = "euclidean") {
+etr_recurrence_matrix <- function(x, curve = 1L, radius = NULL, theiler = 0L,
+                                  metric = "euclidean",
+                                  target_recurrence_rate = NULL) {
   etr_validate(x, require_complete = TRUE)
   if (is.character(curve)) curve <- match(curve, x$curve_ids)
   .etr_assert(length(curve) == 1L && !is.na(curve) && is.numeric(curve) &&
                 curve == as.integer(curve) && curve %in% seq_along(x$curve_ids),
               "curve must be an existing 1-based index or ID")
-  .etr_assert(is.numeric(radius) && length(radius) == 1L &&
-                is.finite(radius) && radius >= 0,
-              "radius must be non-negative and finite")
+  .etr_assert(xor(is.null(radius), is.null(target_recurrence_rate)),
+    "supply exactly one of radius or target_recurrence_rate")
+  if (!is.null(radius)) {
+    .etr_assert(is.numeric(radius) && length(radius) == 1L &&
+                  is.finite(radius) && radius >= 0,
+                "radius must be non-negative and finite")
+  } else {
+    .etr_assert(is.numeric(target_recurrence_rate) &&
+                  length(target_recurrence_rate) == 1L &&
+                  is.finite(target_recurrence_rate) &&
+                  target_recurrence_rate > 0 && target_recurrence_rate < 1,
+                "target_recurrence_rate must be strictly between 0 and 1")
+  }
   .etr_assert(is.numeric(theiler) && length(theiler) == 1L &&
                 is.finite(theiler) && theiler >= 0 &&
                 theiler == as.integer(theiler),
               "theiler must be a non-negative integer")
+  .etr_assert(is.character(metric) && length(metric) == 1L &&
+    !is.na(metric) && metric %in% c("euclidean","cityblock","chebyshev"),
+    "metric must be one of cityblock, euclidean, chebyshev")
   a <- .etr_curve(x, curve); n <- nrow(a)
   .etr_assert(n <= 2500L, "dense recurrence exceeds 2500 samples; use a sparse backend")
   .etr_assert(theiler < n - 1L, "Theiler window leaves no eligible pairs")
+  selected_policy <- if (is.null(radius)) "target_recurrence_rate" else "fixed"
+  if (is.null(radius))
+    radius <- .etr_windowed_rqa_source_target_radius(x,
+      target_recurrence_rate, metric, as.integer(theiler), curve=curve)
   m <- .etr_distance_matrix(a, a, metric=metric) <= radius
   eligible <- abs(row(m) - col(m)) > theiler
   diag(eligible) <- FALSE
@@ -56,9 +80,15 @@ etr_recurrence_matrix <- function(x, curve = 1L, radius, theiler = 0L,
                  eligible_pairs = sum(upper), recurrence_rate = rate,
                  time = x$time, time_unit = x$time_unit,
                  metric = metric, state_dimension = ncol(a),
-                 target_recurrence_rate = NULL,
+                 target_recurrence_rate = target_recurrence_rate,
                  provenance = list(source="native_R_recurrence",
                    metric=metric,
+                   radius_policy=selected_policy,
+                   target_recurrence_rate=target_recurrence_rate,
+                   target_rate_tie_policy=if (is.null(target_recurrence_rate))
+                     NULL else paste("inclusive-radius bisection;",
+                       "achieved recurrence rate is retained because",
+                       "distance ties can prevent an exact target"),
                    recurrence_rate_denominator="eligible_off_diagonal_pairs_outside_theiler_window")),
             class = "etr_recurrence")
 }

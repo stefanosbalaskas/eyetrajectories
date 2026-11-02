@@ -346,13 +346,14 @@ etr_recurrence_radius_profile <- function(source,curve=1L,radii,
 # Reproduce frozen eyetrajectoriespy 1.2.0 recurrence.py
 # _auto_radius_for_target: 48 inclusive-radius bisections over eligible
 # Theiler-excluded unordered state pairs. This is pure native R; no bridge.
-.etr_windowed_rqa_source_target_radius<-function(x,target,metric,theiler){
+.etr_windowed_rqa_source_target_radius<-function(x,target,metric,theiler,
+    curve=1L){
   .etr_assert(is.numeric(target)&&length(target)==1L&&
     is.finite(target)&&target>0&&target<1,
     "target_recurrence_rate must be strictly between 0 and 1")
-  states<-.etr_curve(x,1L)
-  .etr_assert(is.matrix(states)&&nrow(states)>=3L&&
-    nrow(states)<=2500L,"windowed recurrence requires 3 to 2500 states")
+  states<-.etr_curve(x,curve)
+  .etr_assert(is.matrix(states)&&nrow(states)>=2L&&
+    nrow(states)<=2500L,"native recurrence requires 2 to 2500 states")
   n<-nrow(states)
   .etr_assert(theiler<n-1L,
     "Theiler window leaves no eligible recurrence pairs")
