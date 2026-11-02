@@ -76,9 +76,76 @@ def inspect_evidence(path: str | Path, original: list[dict[str, str]],
     return seen
 
 
+def read_pilot_numeric_evidence(path: str | Path,
+                                original: list[dict[str, str]],
+                                head: str) -> dict[tuple[str, str], dict[str, str]]:
+    """Accept ten genuine *partial* numerical observations, not six-gate parity."""
+    pilot_path = Path(path).absolute()
+    check(pilot_path.is_file() and not pilot_path.is_symlink(),
+          "Four-pilot evidence file missing or symlinked")
+    rows = baseline.read_csv(pilot_path)
+    required = ("python_name", "case_id", "max_absolute_difference",
+                "tolerance", "shapes_equal", "developer_numeric_fixture_pass",
+                "recorded_r_git_head", "frozen_python_commit",
+                "independent_reviewer_approved", "independently_replayed_case",
+                "fully_certified")
+    baseline.columns(rows, required, "ten developer pilot comparisons")
+    names = {"alr_transform": 2, "inverse_alr": 2,
+             "score_distance_matrix": 2, "functional_trapezoid_weights": 4}
+    check(len(rows) == sum(names.values()),
+          "Expected ten first-party pilot numerical source observations")
+    expected_names = {k for k in names}
+    check({r["python_name"] for r in rows} == expected_names and
+          all(sum(q["python_name"] == name for q in rows) == n
+              for name, n in names.items()),
+          "Four-pilot numerical evidence has missing or unexpected functions")
+    check(len({(r["python_name"], r["case_id"]) for r in rows}) == len(rows),
+          "Duplicate developer numerical pilot case")
+    source = {q["python_name"]: q for q in original
+              if q["kind"] == "function"}
+    check(all(name in source for name in expected_names),
+          "Four pilot exports not uniquely mapped to frozen callable inventory")
+    for r in rows:
+        check(r["recorded_r_git_head"] == head and
+              r["frozen_python_commit"] == baseline.FROZEN_PYTHON,
+              "Pilot numerical source identity does not match exact checkout")
+        check(r["developer_numeric_fixture_pass"] == "TRUE" and
+              r["shapes_equal"] == "TRUE" and
+              all(r[field] == "FALSE" for field in
+                  ("independent_reviewer_approved", "independently_replayed_case",
+                   "fully_certified")),
+              "Pilot numerical evidence contains failed or forged approvals")
+        try:
+            difference = float(r["max_absolute_difference"])
+            tolerance = float(r["tolerance"])
+        except (ValueError, TypeError) as exc:
+            raise baseline.ReviewBatchError("Malformed pilot numeric tolerance") from exc
+        check(0 <= difference <= tolerance and tolerance >= 0 and
+              difference < float("inf") and tolerance < float("inf"),
+              "Pilot numerical comparison exceeds source tolerance")
+    digest = baseline.sha256(pilot_path)
+    partial = {}
+    for name in names:
+        q = source[name]
+        key = (q["namespace"], name)
+        entry = {field: q[field] for field in IDENTITY}
+        entry.update({flag: "FALSE" for flag in FLAGS})
+        entry["numerical_oracle_checked"] = "TRUE"
+        entry["evidence_file"] = str(pilot_path)
+        entry["evidence_sha256"] = digest
+        entry["developer_findings"] = (
+            "Only finite-domain, author-performed paired numerical pilot "
+            "observations passed; input, boundary, schema and full scientific "
+            "scope are NOT established. Historical source gap remains open."
+        )
+        partial[key] = entry
+    return partial
+
+
 def reconcile(packet_dir: str | Path, expected_r_head: str,
               evidence_csv: str | Path | None = None,
-              output_dir: str | Path | None = None) -> dict[str, object]:
+              output_dir: str | Path | None = None,
+              pilot_evidence_csv: str | Path | None = None) -> dict[str, object]:
     packet = Path(packet_dir).resolve(strict=True)
     check(baseline.HEX40.fullmatch(expected_r_head) is not None,
           "Provide a separately trusted 40-character R commit SHA")
@@ -89,8 +156,13 @@ def reconcile(packet_dir: str | Path, expected_r_head: str,
     check(len(queue) == 508 and
           len({baseline.key(x) for x in queue}) == 508,
           "Exactly 508 unique frozen source exports are required")
-    evidence = (inspect_evidence(evidence_csv, queue, expected_r_head)
-                if evidence_csv is not None else {})
+    evidence = (read_pilot_numeric_evidence(
+        pilot_evidence_csv, queue, expected_r_head)
+        if pilot_evidence_csv is not None else {})
+    if evidence_csv is not None:
+        # Individual source-pinned developer assessments override the
+        # four automatically detected *partial* numerical pilot flags.
+        evidence.update(inspect_evidence(evidence_csv, queue, expected_r_head))
     candidates = []
     for q in queue:
         key = baseline.key(q)
@@ -203,11 +275,13 @@ def main(argv=None) -> int:
     parser.add_argument("packet_dir")
     parser.add_argument("--expected-r-head", required=True)
     parser.add_argument("--evidence-csv")
+    parser.add_argument("--pilot-evidence-csv")
     parser.add_argument("--output-dir")
     args = parser.parse_args(argv)
     try:
         result = reconcile(args.packet_dir, args.expected_r_head,
-                           args.evidence_csv, args.output_dir)
+                           args.evidence_csv, args.output_dir,
+                           args.pilot_evidence_csv)
     except (baseline.ReviewBatchError, OSError, KeyError, ValueError,
             csv.Error) as exc:
         print("DEVELOPER_RECONCILIATION_REJECTED: " + str(exc),
