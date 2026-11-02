@@ -129,6 +129,57 @@ class ReconciliationTests(unittest.TestCase):
         with self.assertRaisesRegex(progress.baseline.ReviewBatchError, "Unknown"):
             progress.reconcile(self.root, HEAD, evidence_csv=file)
 
+    def pilot_csv(self, forged=False):
+        cases = {
+            "alr_transform": ("finite_reference_0", "finite_reference_2"),
+            "inverse_alr": ("finite_reference_0", "finite_reference_2"),
+            "score_distance_matrix": ("score_components_1", "score_components_2"),
+            "functional_trapezoid_weights": ("unnormalized", "normalized",
+                "string_truthy", "empty_string_false"),
+        }
+        # Synthetic test inventory must use real frozen root export names.
+        for i, name in enumerate(cases):
+            self.rows[i]["python_name"] = name
+        write_rows(self.root / progress.baseline.FILES[0], self.rows)
+        records = []
+        for name, ids in cases.items():
+            for case in ids:
+                records.append({
+                    "python_name": name, "case_id": case,
+                    "max_absolute_difference": "0",
+                    "tolerance": "1e-11", "shapes_equal": "TRUE",
+                    "developer_numeric_fixture_pass": "TRUE",
+                    "recorded_r_git_head": HEAD,
+                    "frozen_python_commit": progress.baseline.FROZEN_PYTHON,
+                    "independent_reviewer_approved": "FALSE",
+                    "independently_replayed_case": "FALSE",
+                    "fully_certified": "FALSE",
+                })
+        if forged:
+            records[0]["independently_replayed_case"] = "TRUE"
+        file = self.root / "pilot_numeric.csv"
+        write_rows(file, records)
+        return file
+
+    def test_source_pinned_numerical_pilots_are_partial_only(self):
+        file = self.pilot_csv()
+        z = progress.reconcile(self.root, HEAD, pilot_evidence_csv=file)
+        self.assertEqual(z["evidence_records_verified_sha256"], 4)
+        self.assertEqual(z["developer_evidence_ready_for_review"], 0)
+        self.assertEqual(z["source_gaps_closed"], 0)
+        queue = progress.baseline.read_csv(
+            Path(z["output_dir"]) / progress.PROGRESS)
+        one = next(q for q in queue if q["python_name"] == "alr_transform")
+        self.assertEqual(one["developer_evidence_gates_passed"], "1")
+        self.assertEqual(one["historical_source_gap_open"], "TRUE")
+        self.assertEqual(one["independently_certified"], "FALSE")
+
+    def test_pilot_forged_independent_claim_is_rejected(self):
+        file = self.pilot_csv(forged=True)
+        with self.assertRaisesRegex(progress.baseline.ReviewBatchError,
+                                    "forged approvals"):
+            progress.reconcile(self.root, HEAD, pilot_evidence_csv=file)
+
     def test_invalid_evidence_boolean_fails_closed(self):
         d = self.evidence(301)
         d[progress.FLAGS[0]] = "PASS"
