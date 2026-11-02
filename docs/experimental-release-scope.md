@@ -153,3 +153,44 @@ certification or cross-platform Actions PASS is asserted.
 both `scripts/preflight_rd_manuals.R` and
 `scripts/qualify_experimental_candidate.R`. Never infer a green release
 from committed repairs alone.
+
+## November 2 — qualifying Python 1.2 parity work and CRAN 0.4.2 together
+
+Keep the research checkout at its full, immutable Git HEAD (development
+version \`0.4.1.9000\`) and use two **independent** evidence gates from the
+same checkout, in this order:
+
+\`\`\`r
+system("git pull --ff-only")
+stopifnot(system("git status --porcelain", intern = TRUE) |> length() == 0L)
+source("scripts/capture_native_source_qualification_evidence.R")
+source("scripts/stage_local_release_candidate.R")
+\`\`\`
+
+The first command records developer scientific test-case evidence, 508
+contract reconciliation, and the 28-item unsigned review dispatch. Cases
+with completed Python-mode literal references are now preferred for review,
+but this is *not* a full scientific source-call replay or a certificate.
+
+The second command creates a separate version \`0.4.2\` copy using
+\`git archive\`, runs actual \`R CMD build\` and
+\`R CMD check --as-cran\` **on the staged tarball**, and retains the
+source-HEAD SHA in \`STAGING_MANIFEST.json\`. Its check verifier now also
+requires installed \`testthat.R\` execution, help examples, the PDF manual
+phase, and exactly one finished terminal verdict. An absent phase is FAIL,
+not a 0-warning PASS. All staged results remain on publication HOLD until
+manual NOTE review, external cross-platform checks, scoped scientific
+claims, and maintainer submission approval.
+
+For a *separate* full development-check report (in addition to staged
+tarball validation), run
+\`source("scripts/qualify_experimental_candidate.R")\`. It repeats the
+scientific and CRAN qualification and is not required for the faster
+two-gate sequence above.
+
+The first-party staging regression tests can be run with
+\`python scripts/tests/test_local_release_staging.py\`. Python test and
+native scientific qualification need to be executed in the owner's
+environment after each new Git HEAD; committed source alone is not a PASS.
+GitHub Actions runner admission and genuine independent 508-contract
+certification remain unresolved.
