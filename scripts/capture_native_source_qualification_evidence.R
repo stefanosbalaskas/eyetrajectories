@@ -860,7 +860,8 @@ progress_log <- file.path(packet_root,
 developer_evidence_csv <- Sys.getenv("ET_508_DEVELOPER_EVIDENCE_CSV",
   unset="")
 progress_args <- c(progress_script,shQuote(packet_root),
-  "--expected-r-head",head_sha)
+  "--expected-r-head",head_sha,
+  "--pilot-evidence-csv",shQuote(four_pilot_numeric$path))
 if(nzchar(developer_evidence_csv))
   progress_args <- c(progress_args,"--evidence-csv",
     shQuote(developer_evidence_csv))
