@@ -326,3 +326,62 @@ test_that("source-selected windowed RQA ignores unrelated missing channels",{
     metrics="recurrence_rate",window=6L,step=3L,
     radius=1.2,dimensions="y"),"complete finite selected")
 })
+
+
+test_that("frozen Python 1.2 windowed and functional RQA match selected source channels",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Published Python 1.2 windowed RQA selected-channel oracle opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  t<-as.numeric(0:17)
+  values<-array(0,c(2L,length(t),2L))
+  for(i in seq_len(2L)){
+    values[i,,1L]<-sin(t/3+i/4)+.08*t
+    values[i,,2L]<-cos(t/4+i/3)
+  }
+  x<-etr_trajectory_set(t,values,c("A","B"),c("x","y"),
+    coordinate_system="arbitrary",time_unit="s",
+    provenance=list(origin="window_source_direct"))
+  px<-reticulate::py_call(etpy_get_export("TrajectorySet"),
+    time=reticulate::r_to_py(x$time),
+    values=reticulate::r_to_py(x$values),
+    curve_ids=as.list(x$curve_ids),
+    dimension_names=as.list(x$dimension_names),
+    coordinate_system="arbitrary",time_unit="s")
+  for(metric in c("cityblock","euclidean","chebyshev")){
+    native<-etr_windowed_rqa(x,curve="A",window=6L,step=3L,
+      radius=1.2,metric=metric,dimensions="x")
+    py<-reticulate::py_call(etpy_get_export("windowed_rqa"),
+      trajectories=px,curve="A",window=as.integer(6L),
+      step=as.integer(3L),radius=1.2,metric=metric,
+      dimensions=as.list("x"))
+    source_table<-as.data.frame(et_to_r(
+      reticulate::py_get_attr(py,"table")))
+    for(column in c("start_index","stop_index","start_time",
+      "end_time","center_time","radius","recurrence_rate",
+      "determinism","mean_diagonal_length","max_diagonal_length",
+      "diagonal_entropy","laminarity","trapping_time",
+      "max_vertical_length","center_of_recurrence_mass")){
+      a<-as.numeric(native$table[[column]])
+      b<-as.numeric(source_table[[column]])
+      expect_identical(is.na(a),is.na(b),info=paste(metric,column))
+      if(any(is.finite(b)))
+        expect_equal(a[is.finite(b)],b[is.finite(b)],
+          tolerance=1e-10,info=paste(metric,column))
+    }
+  }
+  native_functional<-etr_windowed_rqa_trajectory_set(x,
+    metrics="recurrence_rate",window=6L,step=3L,
+    radius=1.2,dimensions="x")
+  source_functional<-reticulate::py_call(
+    etpy_get_export("windowed_rqa_trajectory_set"),
+    trajectories=px,metrics=as.list("recurrence_rate"),
+    window=as.integer(6L),step=as.integer(3L),
+    radius=1.2,dimensions=as.list("x"))
+  expect_equal(native_functional$trajectories$values,
+    et_to_r(source_functional$trajectories$values),tolerance=1e-10)
+  expect_equal(native_functional$trajectories$time,
+    as.numeric(et_to_r(source_functional$trajectories$time)),
+    tolerance=0)
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})
