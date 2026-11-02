@@ -126,16 +126,30 @@ etr_functional_recovery_reporting_text <- function(assessment) {
     "and is not an estimator-tuning input.")
 }
 
-.etr_validate_rqa_window_pairs <- function(pairs) {
+.etr_validate_rqa_window_pairs <- function(pairs,
+    window_units="samples",step_units="samples") {
   if(is.matrix(pairs)&&is.numeric(pairs)&&ncol(pairs)==2L)
     pairs<-lapply(seq_len(nrow(pairs)),function(i)as.numeric(pairs[i,]))
   .etr_assert(is.list(pairs)&&length(pairs)>=1L,
     "window_step_pairs must be a nonempty list or 2-column matrix")
+  .etr_assert(is.character(window_units)&&length(window_units)==1L&&
+    !is.na(window_units)&&nzchar(window_units)&&
+    is.character(step_units)&&length(step_units)==1L&&
+    !is.na(step_units)&&nzchar(step_units),
+    "window_units and step_units must be nonempty strings")
   for(i in seq_along(pairs)){
     v<-pairs[[i]]
-    .etr_assert(is.numeric(v)&&length(v)==2L&&
-      all(is.finite(v))&&all(v>0)&&all(v==as.integer(v)),
-      "window and step must be positive finite integer sample counts")
+    .etr_assert(is.numeric(v)&&!is.logical(v)&&length(v)==2L&&
+      all(is.finite(v))&&all(v>0),
+      "window and step must be positive finite numeric values")
+    # Python's validator allows physical-time fractional widths. Its
+    # sample-unit _resolve_samples rejects nonintegral sample counts.
+    if(identical(window_units,"samples")||identical(step_units,"samples"))
+      .etr_assert(all(v[c(identical(window_units,"samples"),
+        identical(step_units,"samples"))]==floor(v[c(
+          identical(window_units,"samples"),
+          identical(step_units,"samples"))])),
+        "window and step must be positive finite integer sample counts when using samples")
   }
   pairs
 }
@@ -143,7 +157,9 @@ etr_functional_recovery_reporting_text <- function(assessment) {
 #' Audited multiscale windowed RQA without automatic specification selection
 #' @param trajectories Native complete functional trajectories.
 #' @param metrics Unique RQA statistics to compare.
-#' @param window_step_pairs List of explicit sample (window,step) pairs.
+#' @param window_step_pairs List or two-column numeric matrix of explicit
+#'   (window,step) pairs. Fractional positive widths are supported for
+#'   physical time units; sample-unit widths must be integral.
 #' @param radius Positive declared Euclidean recurrence radius.
 #' @param ... Additional fixed native RQA parameters forwarded to windowed RQA.
 #' @return Native design, descriptive summary and exact-center pairwise tables.
@@ -154,8 +170,11 @@ etr_windowed_rqa_sensitivity <- function(trajectories,metrics,
     theiler_window=0L,theiler_window_units="samples",dimensions=NULL,
     min_diagonal_length=2L,min_vertical_length=2L,
     undefined_policy="raise") {
-  etr_validate(trajectories,require_complete=TRUE)
-  pairs<-.etr_validate_rqa_window_pairs(window_step_pairs)
+  # Source completeness is selected-curve/channel scoped inside
+  # windowed_rqa, not a blanket check over unrelated source channels.
+  etr_validate(trajectories,require_complete=FALSE)
+  pairs<-.etr_validate_rqa_window_pairs(window_step_pairs,
+    window_units=window_units,step_units=step_units)
   analyses<-lapply(pairs,function(p)etr_windowed_rqa_trajectory_set(
     trajectories,metrics=metrics,window=p[1L],step=p[2L],
     window_units=window_units,step_units=step_units,radius=radius,
