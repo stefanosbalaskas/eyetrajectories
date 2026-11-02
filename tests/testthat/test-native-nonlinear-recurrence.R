@@ -456,8 +456,9 @@ test_that("frozen Python 1.2 graph topology agrees beyond former 750-node R boun
       unname(et_to_r(py$adjacency$toarray())),tolerance=0)
     for(framename in c("recurrence_network_node_frame",
       "recurrence_network_summary_frame")){
-      nfn<-get(paste0("etr_",framename))
-      own<-nfn(native)
+      own<-if(identical(framename,"recurrence_network_node_frame"))
+        etr_recurrence_network_node_frame(native)
+        else etr_recurrence_network_summary_frame(native)
       pyframe<-reticulate::py_call(etpy_get_export(framename),result=py)
       other<-as.data.frame(et_to_r(pyframe))
       expect_identical(names(own),names(other),info=framename)
