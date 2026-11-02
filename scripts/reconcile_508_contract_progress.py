@@ -17,6 +17,7 @@ import verify_508_certification_batch as baseline
 
 PROGRESS = "contract_progress_508.csv"
 PRIORITY = "reviewer_priority_508.csv"
+DISPATCH = "reviewer_dispatch_28.csv"
 SUMMARY = "developer_progress_summary.json"
 MANIFEST = "developer_progress_sha256.json"
 TEMPLATE = "developer_evidence_UNSIGNED_TEMPLATE.csv"
@@ -209,6 +210,77 @@ def reconcile(packet_dir: str | Path, expected_r_head: str,
             "independent_replay_verified": "FALSE",
             "independently_certified": "FALSE",
         })
+    # A compact intake is easier to send to several independent reviewers
+    # than the undifferentiated 508-export manifest. These are *work items*
+    # only, not parity decisions, signed findings or certification approvals.
+    pilot_names = ("alr_transform", "inverse_alr",
+                   "score_distance_matrix", "functional_trapezoid_weights")
+    index_by_name = {(q["namespace"], q["python_name"]): q for q in candidates}
+    pilot = [index_by_name[("root", n)] for n in pilot_names]
+    check(all(x["historical_source_gap_open"] == "TRUE" for x in pilot),
+          "Four source-gap pilots cannot be silently promoted")
+    def select_candidates(function: bool, size: int):
+        eligible = [q for q in candidates
+                    if (q["kind"] == "function") == function
+                    and q["historical_source_gap_open"] == "FALSE"
+                    and q["backend_or_estimand_distinct"] == "FALSE"]
+        if function:
+            eligible = [q for q in eligible
+                        if queue_by_key[(q["namespace"], q["python_name"])]
+                        ["native_implementation_started"] == "TRUE"]
+        else:
+            eligible = [q for q in eligible
+                        if queue_by_key[(q["namespace"], q["python_name"])]
+                        ["native_nonfunction_representation"].strip()]
+        eligible.sort(key=lambda q: (
+            q["developer_evidence_ready_for_review"] != "TRUE",
+            queue_by_key[(q["namespace"], q["python_name"])]
+                .get("source_fixture_attributed") != "TRUE",
+            q["python_name"], q["namespace"]))
+        check(len(eligible) >= size,
+              "Not enough no-recorded-gap source candidates for dispatch")
+        return eligible[:size]
+    queue_by_key = {baseline.key(q): q for q in queue}
+    first_functions = select_candidates(True, 12)
+    first_nonfunctions = select_candidates(False, 12)
+    dispatch = []
+    for lane, rows, action in (
+        ("KNOWN_GAP_PILOT_REPLAY", pilot,
+         "Independently reproduce finite and adversarial Python/R cases; "
+         "source gap remains blocking"),
+        ("FUNCTION_SOURCE_FULL_DOMAIN_REVIEW", first_functions,
+         "Independently examine full input/error/numeric/schema domain; "
+         "no-recorded-gap is not parity evidence"),
+        ("NONFUNCTION_REPRESENTATION_REVIEW", first_nonfunctions,
+         "Independently review R representation against the frozen Python "
+         "class/value contract, including coercion and round-trip behavior"),
+    ):
+        for q in rows:
+            dispatch.append({
+                "dispatch_lane": lane,
+                "namespace": q["namespace"],
+                "python_name": q["python_name"],
+                "kind": q["kind"],
+                "native_r_candidate": q["native_r_candidate"],
+                "recorded_r_git_head": expected_r_head,
+                "frozen_python_commit": baseline.FROZEN_PYTHON,
+                "historical_source_gap_open": q["historical_source_gap_open"],
+                "backend_or_estimand_distinct": q["backend_or_estimand_distinct"],
+                "developer_evidence_gates_passed": q[
+                    "developer_evidence_gates_passed"],
+                "source_fixture_reference_file_only":
+                    queue_by_key[(q["namespace"], q["python_name"])]
+                        .get("source_fixture_attributed", "FALSE"),
+                "required_reviewer_action": action,
+                "independently_replayed": "FALSE",
+                "full_contract_approved": "FALSE",
+                "independently_certified": "FALSE",
+            })
+    check(len(dispatch) == 28 and
+          len({(q["namespace"], q["python_name"]) for q in dispatch}) == 28,
+          "Dispatch plan must cover 28 unique, source-pinned exports")
+    check(all(q["independently_certified"] == "FALSE" for q in dispatch),
+          "Reviewer dispatch must never self-certify exports")
     check(sum(q["independently_certified"] == "TRUE" for q in candidates) == 0,
           "Developer reconciliation cannot certify scientific contracts")
     target = (Path(output_dir) if output_dir is not None
@@ -239,6 +311,10 @@ def reconcile(packet_dir: str | Path, expected_r_head: str,
             q["developer_status"] == "DEVELOPER_EVIDENCE_READY_GAP_STILL_OPEN"
             for q in candidates),
         "source_gaps_closed": 0,
+        "reviewer_dispatch_work_items": len(dispatch),
+        "reviewer_dispatch_known_gap_pilots": len(pilot),
+        "reviewer_dispatch_no_gap_functions": len(first_functions),
+        "reviewer_dispatch_nonfunction_representations": len(first_nonfunctions),
         "independently_certified": 0,
         "review_packet_modified": False,
         "source_gap_registry_modified": False,
@@ -249,6 +325,7 @@ def reconcile(packet_dir: str | Path, expected_r_head: str,
     }
     write_csv(target / PROGRESS, candidates)
     write_csv(target / PRIORITY, ranked)
+    write_csv(target / DISPATCH, dispatch)
     # Supply an unsigned, unapproved starting point for developers to fill
     # with case-specific evidence. Reviewers must not sign these templates.
     # The template is NOT an accepted proof until copied, completed and
@@ -264,7 +341,7 @@ def reconcile(packet_dir: str | Path, expected_r_head: str,
     (target / SUMMARY).write_text(json.dumps(summary, indent=2) + "\n",
                                   encoding="utf-8")
     manifest = {name: baseline.sha256(target / name)
-                for name in (PROGRESS, PRIORITY, SUMMARY, TEMPLATE)}
+                for name in (PROGRESS, PRIORITY, DISPATCH, SUMMARY, TEMPLATE)}
     (target / MANIFEST).write_text(json.dumps(manifest, indent=2) + "\n",
                                    encoding="utf-8")
     return {**summary, "output_dir": str(target)}
