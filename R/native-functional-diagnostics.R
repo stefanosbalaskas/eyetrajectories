@@ -218,7 +218,8 @@ etr_fpca_score_frame <- function(result,prefix="FPC") {
 #' @param n_components Retained fitted score columns (NULL means all).
 #' @param python_boundary_mode When TRUE, additionally accept a minimal
 #'   score-bearing R environment as a native analogue of Python's
-#'   duck-typed objects. Other Python-specific classes and error types
+#'   duck-typed objects, and a bounded Matrix-package sparse score array.
+#'   Other Python-specific classes and error types
 #'   remain outside the audited subset.
 #' @return Unlabelled symmetric numeric matrix.
 #' @export
@@ -227,6 +228,17 @@ etr_score_distance_matrix <- function(fpca,n_components=NULL,
   .etr_assert(is.logical(python_boundary_mode) &&
     length(python_boundary_mode)==1L && !is.na(python_boundary_mode),
     "python_boundary_mode must be a nonmissing logical scalar")
+  # sklearn pairwise_distances accepts scipy sparse score arrays.
+  # Provide a bounded native analogue for Matrix objects in explicit
+  # source-compatibility mode. The normal native scientific default
+  # continues to require a dense numeric matrix.
+  source_scores <- fpca$scores
+  if(isTRUE(python_boundary_mode) && inherits(source_scores,"Matrix")) {
+    .etr_assert(as.double(nrow(source_scores)) *
+      as.double(ncol(source_scores)) <= 2e6,
+      "sparse score matrix exceeds bounded native densification domain")
+    source_scores <- as.matrix(source_scores)
+  }
   if(inherits(fpca,"etr_fpca")) {
     .etr_fpca_diagnostic_fit(fpca)
   } else {
@@ -235,17 +247,17 @@ etr_score_distance_matrix <- function(fpca,n_components=NULL,
     # matrix contract without pretending all Python object types port.
     .etr_assert((is.list(fpca) ||
       (isTRUE(python_boundary_mode) && is.environment(fpca)))&&
-      is.matrix(fpca$scores)&&
-      (is.numeric(fpca$scores)||is.character(fpca$scores)||
-        is.logical(fpca$scores))&&
-      nrow(fpca$scores)>=1L&&ncol(fpca$scores)>=1L&&
-      all(is.finite(suppressWarnings(as.numeric(fpca$scores))))&&
+      is.matrix(source_scores)&&
+      (is.numeric(source_scores)||is.character(source_scores)||
+        is.logical(source_scores))&&
+      nrow(source_scores)>=1L&&ncol(source_scores)>=1L&&
+      all(is.finite(suppressWarnings(as.numeric(source_scores))))&&
       is.numeric(fpca$n_components)&&
       length(fpca$n_components)==1L&&
       is.finite(fpca$n_components)&&
       fpca$n_components==as.integer(fpca$n_components)&&
       fpca$n_components>=1L&&
-      fpca$n_components<=ncol(fpca$scores),
+      fpca$n_components<=ncol(source_scores),
       "fpca must provide finite scores and a compatible n_components")
   }
   if(is.null(n_components))n_components<-fpca$n_components
@@ -255,9 +267,9 @@ etr_score_distance_matrix <- function(fpca,n_components=NULL,
     "n_components is outside the fitted range")
   # sklearn pairwise_distances accepts numeric-string and Boolean score arrays.
   # Do not coerce the caller's object, nor accept NaN, Inf or bad strings.
-  scores<-if(is.character(fpca$scores)||is.logical(fpca$scores))
-    matrix(suppressWarnings(as.numeric(fpca$scores)),
-      nrow=nrow(fpca$scores),ncol=ncol(fpca$scores)) else fpca$scores
+  scores<-if(is.character(source_scores)||is.logical(source_scores))
+    matrix(suppressWarnings(as.numeric(source_scores)),
+      nrow=nrow(source_scores),ncol=ncol(source_scores)) else source_scores
   x<-scores[,seq_len(n_components),drop=FALSE]
   out<-as.matrix(stats::dist(x,method="euclidean"))
   unname(out)
