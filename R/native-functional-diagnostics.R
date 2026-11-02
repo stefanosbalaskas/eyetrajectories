@@ -121,11 +121,8 @@ etr_inverse_alr <- function(transformed,reference_dimension,n_dimensions,
   .etr_assert(is.logical(python_boundary_mode) &&
     length(python_boundary_mode)==1L && !is.na(python_boundary_mode),
     "python_boundary_mode must be a nonmissing logical scalar")
-  # Python treats bool as an integer in modulo and NumPy shape arguments.
-  # Mirror this only when the explicit source-boundary mode is requested.
-  if(isTRUE(python_boundary_mode)&&is.logical(n_dimensions)&&
-      length(n_dimensions)==1L&&!is.na(n_dimensions))
-    n_dimensions<-as.integer(n_dimensions)
+  # Frozen NumPy requires an integer shape dimension; a Boolean is not an
+  # accepted np.ones() shape in the source inverse_alr() construction.
   .etr_assert(is.numeric(n_dimensions) && length(n_dimensions)==1L &&
     is.finite(n_dimensions) && n_dimensions>=1L &&
     n_dimensions==as.integer(n_dimensions),
