@@ -143,10 +143,76 @@ def read_pilot_numeric_evidence(path: str | Path,
     return partial
 
 
+def read_executed_case_census(path: str | Path, queue: list[dict[str, str]],
+                              head: str) -> tuple[dict[tuple[str, str], int], str]:
+    """Map completed test_that cases containing static literals to export names.
+
+    This does NOT prove that each conditional etpy_get_export call executed:
+    the case could pass without reaching a branch in which the literal occurs.
+    """
+    source = Path(path).absolute()
+    check(source.is_file() and not source.is_symlink(),
+          "Case-execution census missing or symlinked")
+    rows = baseline.read_csv(source)
+    required = ("recorded_r_git_head", "frozen_python_commit", "mode",
+                "file", "test", "passed_expectations", "failed_expectations",
+                "warning_count", "skipped", "error",
+                "case_executed_without_skip", "static_source_literal_count",
+                "static_source_literals")
+    baseline.columns(rows, required, "Python-mode executed test cases")
+    check(len(rows) > 0, "Empty case census")
+    inventory: dict[str, list[tuple[str, str]]] = {}
+    for q in queue:
+        inventory.setdefault(q["python_name"], []).append(baseline.key(q))
+    counts: dict[tuple[str, str], int] = {}
+    for row in rows:
+        check(row["recorded_r_git_head"] == head and
+              row["frozen_python_commit"] == baseline.FROZEN_PYTHON and
+              row["mode"] == "python_1_2_direct_source",
+              "Test case source identity/mode mismatch")
+        check(re.fullmatch(r"test-[A-Za-z0-9_-]+\.R", row["file"]) is not None,
+              "Executed case references unexpected source file")
+        check(all(row[field] in {"TRUE", "FALSE"} for field in
+                  ("skipped", "error", "case_executed_without_skip")),
+              "Test case outcome flags must be explicit booleans")
+        try:
+            passed, failed, warning, literal_count = [
+                int(row[field]) for field in
+                ("passed_expectations", "failed_expectations",
+                 "warning_count", "static_source_literal_count")]
+        except ValueError as exc:
+            raise baseline.ReviewBatchError("Invalid testthat expectation count") from exc
+        check(all(x >= 0 for x in (passed, failed, warning, literal_count)),
+              "Negative testthat expectation count")
+        is_complete = (passed > 0 and failed == warning == 0
+                       and row["skipped"] == "FALSE" and row["error"] == "FALSE"
+                       and bool(row["test"].strip()))
+        check((row["case_executed_without_skip"] == "TRUE") == is_complete,
+              "Forged or inconsistent executed test case flag")
+        text = row["static_source_literals"]
+        literals = text.split(";") if text else []
+        check(len(set(literals)) == len(literals) and
+              len(literals) == literal_count and
+              all(re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", item)
+                  for item in literals),
+              "Malformed test-case static Python export references")
+        if not is_complete:
+            continue
+        for name in literals:
+            # A Python export name may occur in multiple namespaces;
+            # attribution without a fully qualified reference is unsafe.
+            matches = inventory.get(name, [])
+            if len(matches) == 1:
+                key = matches[0]
+                counts[key] = counts.get(key, 0) + 1
+    return counts, baseline.sha256(source)
+
+
 def reconcile(packet_dir: str | Path, expected_r_head: str,
               evidence_csv: str | Path | None = None,
               output_dir: str | Path | None = None,
-              pilot_evidence_csv: str | Path | None = None) -> dict[str, object]:
+              pilot_evidence_csv: str | Path | None = None,
+              case_evidence_csv: str | Path | None = None) -> dict[str, object]:
     packet = Path(packet_dir).resolve(strict=True)
     check(baseline.HEX40.fullmatch(expected_r_head) is not None,
           "Provide a separately trusted 40-character R commit SHA")
@@ -164,6 +230,9 @@ def reconcile(packet_dir: str | Path, expected_r_head: str,
         # Individual source-pinned developer assessments override the
         # four automatically detected *partial* numerical pilot flags.
         evidence.update(inspect_evidence(evidence_csv, queue, expected_r_head))
+    executed_case_counts, case_census_sha = (
+        read_executed_case_census(case_evidence_csv, queue, expected_r_head)
+        if case_evidence_csv is not None else ({}, ""))
     candidates = []
     for q in queue:
         key = baseline.key(q)
@@ -200,6 +269,9 @@ def reconcile(packet_dir: str | Path, expected_r_head: str,
             "historical_source_gap_open": q["source_gap_open"],
             "backend_or_estimand_distinct": q["backend_or_estimand_distinct"],
             "developer_evidence_record_present": "TRUE" if ev else "FALSE",
+            "executed_test_cases_with_static_source_literal":
+                executed_case_counts.get(key, 0),
+            "literal_reference_case_is_full_oracle_proof": "FALSE",
             "developer_evidence_gates_passed": gates,
             "developer_evidence_gates_required": len(FLAGS),
             "developer_evidence_ready_for_review": "TRUE" if ready else "FALSE",
@@ -305,6 +377,14 @@ def reconcile(packet_dir: str | Path, expected_r_head: str,
         "historical_callable_gaps": sum(q["historical_source_gap_open"] == "TRUE"
                                         and q["kind"] == "function" for q in candidates),
         "evidence_records_verified_sha256": len(evidence),
+        "python_mode_case_census_sha256": case_census_sha,
+        "exports_with_executed_literal_reference_cases": sum(
+            q["executed_test_cases_with_static_source_literal"] > 0
+            for q in candidates),
+        "executed_cases_with_static_export_literals": sum(
+            q["executed_test_cases_with_static_source_literal"]
+            for q in candidates),
+        "individually_replayed_python_source_calls_confirmed": 0,
         "developer_evidence_ready_for_review": sum(
             q["developer_evidence_ready_for_review"] == "TRUE" for q in candidates),
         "gap_reconciliation_candidates": sum(
@@ -353,12 +433,14 @@ def main(argv=None) -> int:
     parser.add_argument("--expected-r-head", required=True)
     parser.add_argument("--evidence-csv")
     parser.add_argument("--pilot-evidence-csv")
+    parser.add_argument("--case-evidence-csv")
     parser.add_argument("--output-dir")
     args = parser.parse_args(argv)
     try:
         result = reconcile(args.packet_dir, args.expected_r_head,
                            args.evidence_csv, args.output_dir,
-                           args.pilot_evidence_csv)
+                           args.pilot_evidence_csv,
+                           args.case_evidence_csv)
     except (baseline.ReviewBatchError, OSError, KeyError, ValueError,
             csv.Error) as exc:
         print("DEVELOPER_RECONCILIATION_REJECTED: " + str(exc),
