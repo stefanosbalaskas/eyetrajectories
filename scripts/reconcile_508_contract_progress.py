@@ -1,0 +1,207 @@
+#!/usr/bin/env python3
+"""Reconcile developer evidence for 508 frozen exports, without self-certification.
+
+The signed independent-review register and original unsigned packet are
+read-only. A passing suite or a named test file is not a full-domain verdict.
+"""
+from __future__ import annotations
+
+import argparse
+import csv
+import json
+from pathlib import Path
+import re
+import sys
+
+import verify_508_certification_batch as baseline
+
+PROGRESS = "contract_progress_508.csv"
+PRIORITY = "reviewer_priority_508.csv"
+SUMMARY = "developer_progress_summary.json"
+MANIFEST = "developer_progress_sha256.json"
+FLAGS = (
+    "source_signature_checked",
+    "accepted_input_domain_checked",
+    "numerical_oracle_checked",
+    "boundary_and_exception_checked",
+    "result_schema_checked",
+    "scientific_estimand_checked",
+)
+IDENTITY = ("namespace", "python_name", "recorded_r_git_head",
+            "frozen_python_commit")
+EVIDENCE = (*IDENTITY, *FLAGS, "evidence_file", "evidence_sha256",
+            "developer_findings")
+HEX64 = re.compile(r"[a-f0-9]{64}\Z")
+
+
+def check(ok: bool, reason: str) -> None:
+    baseline.check(ok, reason)
+
+
+def write_csv(path: Path, rows: list[dict[str, object]]) -> None:
+    check(bool(rows), "Cannot write an empty progress export")
+    with path.open("w", newline="", encoding="utf-8") as out:
+        writer = csv.DictWriter(out, fieldnames=list(rows[0]), extrasaction="raise")
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+def inspect_evidence(path: str | Path, original: list[dict[str, str]],
+                     head: str) -> dict[tuple[str, str], dict[str, str]]:
+    rows = baseline.read_csv(Path(path))
+    baseline.columns(rows, EVIDENCE, "developer per-contract evidence")
+    source = {(r["namespace"], r["python_name"]): r for r in original}
+    seen: dict[tuple[str, str], dict[str, str]] = {}
+    for row in rows:
+        key = (row["namespace"], row["python_name"])
+        check(key in source and key not in seen,
+              "Unknown or duplicate evidence export: " + str(key))
+        q = source[key]
+        check(row["recorded_r_git_head"] == head and
+              row["frozen_python_commit"] == baseline.FROZEN_PYTHON and
+              row["recorded_r_git_head"] == q["recorded_r_git_head"],
+              "Developer evidence source pins do not match reviewed packet")
+        check(all(row[field] in {"TRUE", "FALSE"} for field in FLAGS),
+              "Developer gate must be explicitly TRUE or FALSE")
+        check(bool(row["developer_findings"].strip()),
+              "Every developer evidence record requires written findings")
+        evidence = Path(row["evidence_file"]).absolute()
+        check(evidence.is_file() and not evidence.is_symlink(),
+              "Developer evidence file missing or symlinked")
+        check(HEX64.fullmatch(row["evidence_sha256"]) is not None and
+              baseline.sha256(evidence) == row["evidence_sha256"],
+              "Developer evidence SHA256 mismatch")
+        seen[key] = row
+    return seen
+
+
+def reconcile(packet_dir: str | Path, expected_r_head: str,
+              evidence_csv: str | Path | None = None,
+              output_dir: str | Path | None = None) -> dict[str, object]:
+    packet = Path(packet_dir).resolve(strict=True)
+    check(baseline.HEX40.fullmatch(expected_r_head) is not None,
+          "Provide a separately trusted 40-character R commit SHA")
+    # Existing verified packet remains the source of export identities and
+    # original gap labels; that validator enforces all legacy safeguards.
+    baseline.verify(packet, expected_r_head=expected_r_head)
+    queue = baseline.read_csv(packet / baseline.FILES[0])
+    check(len(queue) == 508 and
+          len({baseline.key(x) for x in queue}) == 508,
+          "Exactly 508 unique frozen source exports are required")
+    evidence = (inspect_evidence(evidence_csv, queue, expected_r_head)
+                if evidence_csv is not None else {})
+    candidates = []
+    for q in queue:
+        key = baseline.key(q)
+        ev = evidence.get(key)
+        gates = sum(ev[f] == "TRUE" for f in FLAGS) if ev else 0
+        ready = gates == len(FLAGS)
+        gap = q["source_gap_open"] == "TRUE"
+        backend = q["backend_or_estimand_distinct"] == "TRUE"
+        if ready and gap:
+            state = "DEVELOPER_EVIDENCE_READY_GAP_STILL_OPEN"
+            rank = 2
+        elif ready and backend:
+            state = "DEVELOPER_EVIDENCE_READY_BACKEND_DISTINCT"
+            rank = 3
+        elif ready:
+            state = "DEVELOPER_EVIDENCE_READY_INDEPENDENT_REVIEW_PENDING"
+            rank = 1
+        elif gap:
+            state = "DOCUMENTED_GAP_REQUIRES_REVIEW"
+            rank = 5
+        elif backend:
+            state = "BACKEND_OR_ESTIMAND_DISTINCT"
+            rank = 6
+        else:
+            state = "NO_RECORDED_GAP_NOT_YET_EVIDENCE_READY"
+            rank = 4
+        candidates.append({
+            "namespace": q["namespace"],
+            "python_name": q["python_name"],
+            "kind": q["kind"],
+            "native_r_candidate": q["native_r_candidate"],
+            "recorded_r_git_head": expected_r_head,
+            "frozen_python_commit": baseline.FROZEN_PYTHON,
+            "historical_source_gap_open": q["source_gap_open"],
+            "backend_or_estimand_distinct": q["backend_or_estimand_distinct"],
+            "developer_evidence_record_present": "TRUE" if ev else "FALSE",
+            "developer_evidence_gates_passed": gates,
+            "developer_evidence_gates_required": len(FLAGS),
+            "developer_evidence_ready_for_review": "TRUE" if ready else "FALSE",
+            "evidence_sha256": ev["evidence_sha256"] if ev else "",
+            "developer_status": state,
+            "review_priority": rank,
+            "source_gap_closed": "FALSE",
+            "independent_replay_verified": "FALSE",
+            "independently_certified": "FALSE",
+        })
+    check(sum(q["independently_certified"] == "TRUE" for q in candidates) == 0,
+          "Developer reconciliation cannot certify scientific contracts")
+    target = (Path(output_dir) if output_dir is not None
+              else packet / ("developer_reconciliation_" + expected_r_head[:12]))
+    check(not target.exists(), "Progress output already exists; never overwrite evidence")
+    target.mkdir(parents=True)
+    ranked = sorted(candidates, key=lambda q:
+                    (q["review_priority"], q["kind"] != "function",
+                     q["python_name"], q["namespace"]))
+    original_gap = sum(q["historical_source_gap_open"] == "TRUE"
+                       for q in candidates)
+    summary = {
+        "format": "unsigned-508-developer-source-reconciliation-v1",
+        "recorded_r_git_head": expected_r_head,
+        "frozen_python_commit": baseline.FROZEN_PYTHON,
+        "export_count": len(candidates),
+        "callable_count": sum(q["kind"] == "function" for q in candidates),
+        "nonfunction_count": sum(q["kind"] != "function" for q in candidates),
+        "historical_documented_source_gaps": original_gap,
+        "historical_callable_gaps": sum(q["historical_source_gap_open"] == "TRUE"
+                                        and q["kind"] == "function" for q in candidates),
+        "evidence_records_verified_sha256": len(evidence),
+        "developer_evidence_ready_for_review": sum(
+            q["developer_evidence_ready_for_review"] == "TRUE" for q in candidates),
+        "gap_reconciliation_candidates": sum(
+            q["developer_status"] == "DEVELOPER_EVIDENCE_READY_GAP_STILL_OPEN"
+            for q in candidates),
+        "source_gaps_closed": 0,
+        "independently_certified": 0,
+        "review_packet_modified": False,
+        "source_gap_registry_modified": False,
+        "signed_review_required": True,
+        "note": ("Source gap closure requires explicit source-contract "
+                 "adjudication; developer evidence and suite PASS do not "
+                 "establish full parity or independent certification."),
+    }
+    write_csv(target / PROGRESS, candidates)
+    write_csv(target / PRIORITY, ranked)
+    (target / SUMMARY).write_text(json.dumps(summary, indent=2) + "\n",
+                                  encoding="utf-8")
+    manifest = {name: baseline.sha256(target / name)
+                for name in (PROGRESS, PRIORITY, SUMMARY)}
+    (target / MANIFEST).write_text(json.dumps(manifest, indent=2) + "\n",
+                                   encoding="utf-8")
+    return {**summary, "output_dir": str(target)}
+
+
+def main(argv=None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("packet_dir")
+    parser.add_argument("--expected-r-head", required=True)
+    parser.add_argument("--evidence-csv")
+    parser.add_argument("--output-dir")
+    args = parser.parse_args(argv)
+    try:
+        result = reconcile(args.packet_dir, args.expected_r_head,
+                           args.evidence_csv, args.output_dir)
+    except (baseline.ReviewBatchError, OSError, KeyError, ValueError,
+            csv.Error) as exc:
+        print("DEVELOPER_RECONCILIATION_REJECTED: " + str(exc),
+              file=sys.stderr)
+        return 1
+    for k, v in result.items():
+        print(f"{k}={v}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
