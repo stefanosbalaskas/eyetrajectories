@@ -57,6 +57,14 @@ test_that("native center_on_landmark converts named numeric-like source landmark
   explicit_numeric<-etr_center_on_landmark(x,
     c(1.5,2,1),c(0,1.25,0))
   expect_equal(explicit_list$values,explicit_numeric$values,tolerance=0)
+  expect_equal(explicit_list$values[,,3L],x$values[,,3L],tolerance=0)
+  # Regression: converting an entire mixed R list via unlist() coerces
+  # TRUE/FALSE into character strings, breaking the source NumPy domain.
+  mixed_boolean<-etr_center_on_landmark(x,
+    list(TRUE,"2.5",0L),list(FALSE,1L,"3.5"),
+    python_boundary_mode=TRUE)
+  mixed_baseline<-etr_center_on_landmark(x,c(1,2.5,0),c(0,1,3.5))
+  expect_equal(mixed_boolean$values,mixed_baseline$values,tolerance=0)
   expect_error(etr_center_on_landmark(x,c("1","broken","3"),1,
     python_boundary_mode=TRUE),"finite numeric-compatible")
   expect_error(etr_center_on_landmark(x,list("1"),1,
@@ -113,6 +121,17 @@ test_that("all three preprocessing boundary oracles replay frozen Python 1.2",{
     unname(et_to_r(py_landmark$values)),tolerance=1e-12)
   expect_identical(native_landmark$coordinate_system,
     as.character(et_to_r(py_landmark$coordinate_system)))
+  # Direct NumPy np.asarray(dtype=float) source witness for mixed scalar
+  # lists: Python Boolean remains 1/0 even beside numeric strings.
+  py_mixed<-reticulate::py_call(
+    etpy_get_export("center_on_landmark"),trajectories=py_x,
+    landmark_x=reticulate::r_to_py(list(TRUE,"2.5",0L)),
+    landmark_y=reticulate::r_to_py(list(FALSE,1L,"3.5")))
+  native_mixed<-etr_center_on_landmark(x,
+    list(TRUE,"2.5",0L),list(FALSE,1L,"3.5"),
+    python_boundary_mode=TRUE)
+  expect_equal(unname(native_mixed$values),
+    unname(et_to_r(py_mixed$values)),tolerance=1e-12)
   py_time<-reticulate::py_call(
     etpy_get_export("normalize_time"),trajectories=py_x,
     start=TRUE,end=as.integer(2L))
