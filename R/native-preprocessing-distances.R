@@ -19,6 +19,34 @@
   rep_len(as.numeric(values),n)
 }
 
+# Python preprocessing.py::center_on_landmark converts landmarks with
+# np.asarray(...,dtype=float), broadcasting scalars and requiring an
+# exact length-n_curves 1D vector otherwise. Preserve this restricted
+# input distinction in the explicit source-compatibility path.
+.etr_preprocessing_python_landmarks <- function(values,n,label) {
+  if(is.list(values) && !is.data.frame(values) && is.null(dim(values))) {
+    .etr_assert(length(values)==n &&
+      all(vapply(values,function(z)
+        is.atomic(z)&&is.null(dim(z))&&!is.factor(z)&&
+        length(z)==1L&&(is.numeric(z)||is.logical(z)||
+          is.character(z)),logical(1L))),
+      paste(label,"must be a source-compatible scalar or per-curve vector"))
+    numbers<-suppressWarnings(as.numeric(unlist(values,use.names=FALSE)))
+    .etr_assert(length(numbers)==n&&all(is.finite(numbers)),
+      paste(label,"must contain finite numeric-compatible values"))
+    return(numbers)
+  }
+  .etr_assert(is.atomic(values)&&is.null(dim(values))&&
+    !is.factor(values) &&
+    (is.numeric(values)||is.logical(values)||is.character(values)) &&
+    length(values)%in%c(1L,n),
+    paste(label,"must be a source-compatible scalar or per-curve vector"))
+  numbers<-suppressWarnings(as.numeric(values))
+  .etr_assert(all(is.finite(numbers)),
+    paste(label,"must contain finite numeric-compatible values"))
+  rep_len(numbers,n)
+}
+
 .etr_preprocessing_copy <- function(x,values=x$values,time=x$time,
                          coordinate_system=x$coordinate_system,
                          time_unit=x$time_unit,provenance_update=NULL) {
@@ -34,10 +62,25 @@
 #' locations into [0,1] or change other channels. This is Python-free R code.
 #' @param x Native trajectory set with at least two channels.
 #' @param width,height Strictly positive finite coordinate extents.
+#' @param python_boundary_mode When TRUE, accept Boolean positive extents
+#'   exactly as Python 1.2 arithmetic (TRUE=1; FALSE rejected). Default
+#'   native R strict scalar validation remains unchanged. No Python bridge.
 #' @return Native trajectory set with normalized coordinate system.
 #' @export
-etr_normalize_coordinates <- function(x,width,height) {
+etr_normalize_coordinates <- function(x,width,height,
+    python_boundary_mode=FALSE) {
+  .etr_assert(is.logical(python_boundary_mode)&&
+    length(python_boundary_mode)==1L&&!is.na(python_boundary_mode),
+    "python_boundary_mode must be a nonmissing logical scalar")
   etr_validate(x)
+  if(isTRUE(python_boundary_mode)){
+    # Frozen Python's comparisons and division treat bool as 0/1;
+    # False is rejected as a zero extent, True is a valid unit extent.
+    if(is.logical(width)&&length(width)==1L&&!is.na(width))
+      width<-as.numeric(width)
+    if(is.logical(height)&&length(height)==1L&&!is.na(height))
+      height<-as.numeric(height)
+  }
   width <- .etr_preprocessing_scalar(width,"width",strict_positive=TRUE)
   height <- .etr_preprocessing_scalar(height,"height",strict_positive=TRUE)
   .etr_assert(dim(x$values)[3L]>=2L,"At least two channels required")
@@ -55,14 +98,26 @@ etr_normalize_coordinates <- function(x,width,height) {
 #' own first point or mean, not by explicit supplied planar landmarks.
 #' @param x Native trajectory set with at least two channels.
 #' @param landmark_x,landmark_y Finite scalars or one landmark per curve.
+#' @param python_boundary_mode When TRUE, accept numeric-string and Boolean
+#'   landmarks as frozen Python np.asarray(dtype=float) does, including
+#'   true scalar broadcasting and explicit per-curve list inputs. Default
+#'   native R strict validation remains unchanged.
 #' @return Native trajectory set with landmark_relative coordinate system.
 #' @export
-etr_center_on_landmark <- function(x,landmark_x,landmark_y) {
+etr_center_on_landmark <- function(x,landmark_x,landmark_y,
+    python_boundary_mode=FALSE) {
+  .etr_assert(is.logical(python_boundary_mode)&&
+    length(python_boundary_mode)==1L&&!is.na(python_boundary_mode),
+    "python_boundary_mode must be a nonmissing logical scalar")
   etr_validate(x)
   n <- dim(x$values)[1L]
   .etr_assert(dim(x$values)[3L]>=2L,"At least two channels required")
-  lx <- .etr_preprocessing_landmarks(landmark_x,n,"landmark_x")
-  ly <- .etr_preprocessing_landmarks(landmark_y,n,"landmark_y")
+  lx <- if(isTRUE(python_boundary_mode))
+    .etr_preprocessing_python_landmarks(landmark_x,n,"landmark_x") else
+    .etr_preprocessing_landmarks(landmark_x,n,"landmark_x")
+  ly <- if(isTRUE(python_boundary_mode))
+    .etr_preprocessing_python_landmarks(landmark_y,n,"landmark_y") else
+    .etr_preprocessing_landmarks(landmark_y,n,"landmark_y")
   values <- x$values
   for (i in seq_len(n)) {
     values[i,,1L] <- values[i,,1L]-lx[i]
@@ -78,12 +133,26 @@ etr_center_on_landmark <- function(x,landmark_x,landmark_y) {
 #' R etr_normalize_time(method = "unit"|"origin") convenience function.
 #' @param x Native trajectory set.
 #' @param start,end Finite endpoints with end greater than start.
+#' @param python_boundary_mode When TRUE, reproduce Boolean 0/1 endpoint
+#'   arithmetic from frozen Python 1.2. FALSE retains native R strict
+#'   numeric scalar validation; no Python interpreter is required.
 #' @return Native trajectory set with time_unit="normalized".
 #' @export
-etr_normalize_time_interval <- function(x,start=0,end=1) {
+etr_normalize_time_interval <- function(x,start=0,end=1,
+    python_boundary_mode=FALSE) {
+  .etr_assert(is.logical(python_boundary_mode)&&
+    length(python_boundary_mode)==1L&&!is.na(python_boundary_mode),
+    "python_boundary_mode must be a nonmissing logical scalar")
   etr_validate(x)
+  if(isTRUE(python_boundary_mode)){
+    # Python's numeric normalization treats Boolean endpoints as 0/1.
+    if(is.logical(start)&&length(start)==1L&&!is.na(start))
+      start<-as.numeric(start)
+    if(is.logical(end)&&length(end)==1L&&!is.na(end))
+      end<-as.numeric(end)
+  }
   start <- .etr_preprocessing_scalar(start,"start")
-  end <- .etr_preprocessing_scalar(end,"end")
+  end <- .etr_preprocessing_scalar(end")
   .etr_assert(end>start,"end must be greater than start")
   old <- x$time
   time <- start+(old-old[1L])/(old[length(old)]-old[1L])*(end-start)
