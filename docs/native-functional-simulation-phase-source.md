@@ -122,8 +122,11 @@ Windows RStudio replay before being designated PASS.
 ## Remaining boundaries
 
 No full-domain scientific equivalence or independent
-508-export certification is asserted. Student-t curve
-scores, NumPy PCG64 stream identity, all Python dataclass
+508-export certification is asserted. Finite-variance
+Student-t curve scores have now been implemented in both
+simulation paths; see
+`docs/native-functional-simulation-student-t-source.md`.
+NumPy PCG64 stream identity, all Python dataclass
 input/output representations, general Python coercion/
 exception behavior and externally signed full-contract
 review remain open. The separately checked CRAN 0.4.2
