@@ -84,8 +84,11 @@ inventory. The source-gap CSV description is updated but
   for both domains; irregular dropout removes masked output rows.
   See `docs/native-functional-simulation-irregular-source.md`
   and `docs/native-functional-simulation-dense-missingness-source.md`.
-  Time-phase warps, Student-t scores and complete Python
-  dataclass/exception parity remain scientific integration work.
+  Power-phase variation is implemented with source exponent
+  replay and separate warped-time truth; see
+  `docs/native-functional-simulation-phase-source.md`.
+  Student-t scores and complete Python dataclass/exception
+  parity remain scientific integration work.
 - Gaussian draws depend on base R and therefore differ from
   NumPy's PCG64 samples for identical random_state.
 - The supported R input representation is finite numeric
