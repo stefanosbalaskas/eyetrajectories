@@ -50,4 +50,4 @@ etr_functional_mean_band_frame(result)
 \item{relative_gap_threshold}{Optional pre-specified descriptive near-tie threshold in [0,1).}
 }
 \value{Numeric array, matrix, component-matching list, diagnostic data frame, reporting text or native compositional FPCA result, according to the function.}
-\details{Exact native maximum-weight component matching is limited to 12 components. Diagnostic frame functions do not supply inferential guarantees. Scientific and 508-export contract qualification remain pending.}
+\details{Exact native maximum-weight component matching uses the historical subset dynamic program for up to 12 components and an exact cubic-time Hungarian assignment for larger fitted bases. Both optimize the absolute integrated component similarity; tied optimum permutations need not agree with SciPy tie choices. Diagnostic frames do not supply inferential guarantees. Scientific full-source and 508-export independent contract qualification remain pending.}
