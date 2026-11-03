@@ -14,7 +14,10 @@ etr_cross_validate_fpca_regression(trajectories, outcome,
 \item{candidate_components}{Positive integer retained FPC counts.}
 \item{family}{Only \code{"gaussian"} for this bounded source subset.}
 \item{loss}{\code{"rmse"} or \code{"mae"}, default RMSE.}
-\item{covariates}{Must be NULL; covariate models not yet supported.}
+\item{covariates}{NULL or a curve-aligned data.frame of finite numeric or
+logical covariate columns. Names must be unique and must not collide with
+\code{const} or reserved \code{FPC} score names. Columns are included
+in OLS inside the training fold and in the matching held-out prediction.}
 \item{n_splits}{KFold or GroupKFold partition count, from two up to
 the number of curves or unique groups respectively.}
 \item{scaling}{One of \code{"none"} or \code{"dimension_sd"}.}
@@ -37,5 +40,6 @@ basis. Whole-group held-out folds prevent participant leakage,
 while isolated native-R shuffled curve folds allow reproducible
 sensitivity studies. GroupKFold equal-size tie ordering and shuffled
 NumPy permutations are implementation-specific and not claimed equal.
-Binomial regression and covariates remain outside this native subset;
+Binomial regression and pandas nonnumeric-to-float covariate coercions
+remain outside this native subset;
 this is not independent full-domain source certification.}
