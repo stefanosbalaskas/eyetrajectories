@@ -13,7 +13,8 @@ claims.
 }
 \usage{
 etr_acceleration_magnitude(x)
-etr_distance_to_landmark(x, landmark_x, landmark_y)
+etr_distance_to_landmark(x, landmark_x, landmark_y,
+                         python_boundary_mode = FALSE)
 etr_signed_curvature(x, dimensions = NULL, min_speed = 0,
                      undefined_policy = c("nan", "raise"))
 etr_turning_rate(x, dimensions = NULL, min_speed = 0,
@@ -23,6 +24,7 @@ etr_turning_rate(x, dimensions = NULL, min_speed = 0,
 \item{x}{Native \code{etr_trajectory_set} collection on one common time grid.}
 \item{landmark_x}{Finite scalar or one finite x landmark per curve.}
 \item{landmark_y}{Finite scalar or one finite y landmark per curve.}
+\item{python_boundary_mode}{Logical; TRUE enables bounded frozen Python 1.2 NumPy dtype=float conversion of finite numeric-string, Boolean or mixed scalar/vector landmark coordinates and preserves the source derived-function provenance. FALSE preserves strict native finite numeric inputs and historical provenance behavior.}
 \item{dimensions}{Optional two distinct named channels in x/y order.
 Defaults to explicitly named \code{x} and \code{y} channels.
 No silent selection when they are absent.}
@@ -53,11 +55,12 @@ Turning rate is
 Both quantities are undefined under the specified minimum speed,
 without an added denominator epsilon or smoothed heading.
 
-The native R trajectory class does not currently retain the Python
-\code{TrajectorySet.provenance} mapping. Thus equivalent numerical
-algorithms and value shapes do not establish complete object, metadata
-or serialized-result parity. For research purposes, a separate
-independently executed Python/R numerical test is required.
+The native trajectory class retains a JSON-like provenance mapping.
+The explicit landmark-distance Python compatibility mode preserves
+incoming provenance and records the source derived_function value.
+The Python and R object classes, all supported scalar input domains,
+error schemas and serialized-result representations are not fully identical.
+A separate independent full-domain Python/R numerical review is still required.
 }
 \examples{
 time <- c(0, 0.25, 0.8, 1.4, 2)
