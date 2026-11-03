@@ -106,7 +106,7 @@ error/accepted-type identity is claimed. The native
 runner deliberately rejects malformed records instead
 of silently discarding scientific evidence. NumPy PCG64,
 the full unrestricted Python domain and independent
-509-style auditing claims are not established. The
+full-domain scientific certification are not established. The
 full 508-export third-party certification requirement
 remains unsigned. The separate CRAN 0.4.2 release
 candidate remains untouched.
