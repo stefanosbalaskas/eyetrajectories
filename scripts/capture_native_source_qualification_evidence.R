@@ -463,6 +463,7 @@ source_files<-unique(c(
   "tests/testthat/test-native-functional-simulation-student-t-source.R",
   "R/native-functional-simulation-phase.R",
   "R/native-functional-simulation-student-t.R",
+  "docs/native-functional-simulation-student-t-source.md",
   "docs/native-functional-simulation-phase-source.md",
   "R/native-functional-simulation-irregular.R",
   "docs/native-functional-simulation-irregular-source.md",
