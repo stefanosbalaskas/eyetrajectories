@@ -49,7 +49,7 @@ test_that("dense simulator rejects unsupported domains and nonorthogonal bases",
   args<-list(mean=x$mean,eigenfunctions=x$modes,
     eigenvalues=c(1,.4),truth_grid=x$grid,n_participants=3L)
   expect_error(do.call(f,c(args,list(observation_design="irregular"))),
-    "only dense")
+    "requires observation_times or samples_per_curve")
   expect_error(do.call(f,c(args,list(
     missingness=list(kind="mcar",probability=1)))),
     "missingness")
