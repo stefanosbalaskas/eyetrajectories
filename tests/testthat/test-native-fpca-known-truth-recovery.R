@@ -51,7 +51,7 @@ test_that("FPCA source recovery fails closed outside declared one-mode domain",{
   expect_error(etr_evaluate_fpca_recovery(invalid,z$truth),"scaling='none'")
   invalid<-z$fit;invalid$components<-array(1,c(2L,3L,1L))
   expect_error(etr_evaluate_fpca_recovery(invalid,z$truth),
-    "exactly one fitted")
+    "truth contains fewer components")
   invalid<-z$fit;invalid$dimension_names<-"different"
   expect_error(etr_evaluate_fpca_recovery(invalid,z$truth),
     "dimension names/order")
