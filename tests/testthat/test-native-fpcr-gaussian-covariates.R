@@ -88,12 +88,15 @@ test_that("nested Gaussian FPCR covariates stay aligned across both fold layers"
 
 test_that("FPCR covariates reject source-reserved or nonfinite input domains",{
   z <- .etr_fpcr_covariate_fixture()
-  f <- function(cv, ...) {
-    if(cv) etr_cross_validate_fpca_regression(z$x,z$y,
-      candidate_components=1L,n_splits=3L,covariates=...)
+  # Forward the covariate frame explicitly. Using covariates=...
+  # forwards unnamed dots into the target call and can bind the frame
+  # positionally to family instead of the intended covariates parameter.
+  f <- function(cv, frame) {
+    if (isTRUE(cv)) etr_cross_validate_fpca_regression(z$x,z$y,
+      candidate_components=1L,n_splits=3L,covariates=frame)
     else etr_nested_cross_validate_fpca_regression(z$x,z$y,
       candidate_components=1L,outer_splits=3L,inner_splits=2L,
-      covariates=...)
+      covariates=frame)
   }
   bads <- list(
     data.frame(w=1:11),
