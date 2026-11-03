@@ -235,6 +235,7 @@ _etr_recovery_keys=tuple(functional_recovery_value_key(value)
   # Actual source runner also accepts FunctionalRecoveryAssessment;
   # the R implementation uses an explicitly audited native record
   # rather than asserting Python dataclass identity.
-  expect_true(is.list(et_to_r(reticulate::py_eval(
-    "_etr_recovery_assessment.provenance",convert=FALSE))))
+  expect_identical(et_to_r(reticulate::py_eval(
+    "dict(_etr_recovery_assessment.provenance)",
+    convert=FALSE))$study,"source")
 })
