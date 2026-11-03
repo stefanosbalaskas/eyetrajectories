@@ -50,7 +50,8 @@ test_that("dense simulator rejects unsupported domains and nonorthogonal bases",
     eigenvalues=c(1,.4),truth_grid=x$grid,n_participants=3L)
   expect_error(do.call(f,c(args,list(observation_design="irregular"))),
     "only dense")
-  expect_error(do.call(f,c(args,list(missingness=list(kind="mcar")))),
+  expect_error(do.call(f,c(args,list(
+    missingness=list(kind="mcar",probability=1)))),
     "missingness")
   expect_error(do.call(f,c(args,list(score_distribution="student_t"))),
     "Gaussian")
