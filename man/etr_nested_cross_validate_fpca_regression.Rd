@@ -15,7 +15,10 @@ etr_nested_cross_validate_fpca_regression(trajectories, outcome,
 \item{candidate_components}{Positive integer retained FPC counts.}
 \item{family}{Only Gaussian.}
 \item{loss}{NULL for RMSE, rmse or mae.}
-\item{covariates}{Must be NULL.}
+\item{covariates}{NULL or curve-aligned finite numeric/logical data.frame.
+Covariates are subset to each outer training fold, then each inner
+training fold, before OLS fitting; held-out values are used only
+as fixed prediction features.}
 \item{outer_splits}{Outer KFold count.}
 \item{inner_splits}{Inner KFold count.}
 \item{selection_rule}{minimum or one_se.}
@@ -40,5 +43,5 @@ inner component selection use whole-participant folds, avoiding
 train/test participant leakage. The resulting outer prediction
 frame retains a group column. GroupKFold tie ordering and
 R versus NumPy RNG streams can differ. Binomial outcomes,
-covariates and complete Python return and exception domains
+pandas coercion semantics, and complete Python return and exception domains
 remain unsupported and are not independently certified.}
