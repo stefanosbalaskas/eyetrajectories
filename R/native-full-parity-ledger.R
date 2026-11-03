@@ -12,7 +12,7 @@
   normalize_time="etr_normalize_time_interval",
   normalize_coordinates="etr_normalize_coordinates",
   center_on_landmark="etr_center_on_landmark",
-  differentiate_trajectories="etr_velocity",
+  differentiate_trajectories="etr_differentiate_trajectories",
   speed_function="etr_speed",
   heading_function="etr_heading_function",
   cumulative_path_length="etr_cumulative_path_length",
