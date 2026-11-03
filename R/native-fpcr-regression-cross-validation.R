@@ -1,15 +1,17 @@
 # Source: frozen eyetrajectoriespy==1.2.0
 # c1cd95ad718327550f7e55393ff38582872f7a94
 # prediction.py::cross_validate_fpca_regression
-# Bounded native Gaussian, curve-wise, nonshuffled fold contract.
-# No Python, reticulate, shuffled or grouped fold equivalence claimed.
+# Native Gaussian FPCR with unshuffled/shuffled curve folds and
+# whole-participant held-out folds. R shuffle uses base R RNG,
+# not NumPy PCG64; sklearn GroupKFold ties can differ.
 
 #' Leakage-free native Gaussian FPCR held-out prediction
 #'
 #' Refits unsupervised dense FPCA and Gaussian scalar OLS *inside* each
 #' training fold. Reuses the same training FPCA basis for test projections.
-#' This implementation deliberately refuses Python source domains requiring
-#' shuffled/sklearn RNG, grouped folds, binomial outcomes or covariates.
+#' Supports group held-out and R-seeded curve shuffled folds.
+#' Exact Python shuffle RNG and GroupKFold tie semantics are unresolved;
+#' binomial outcomes and covariates remain out of this bounded domain.
 #' @param trajectories Complete native common-grid trajectory set.
 #' @param outcome Curve-aligned finite scalar outcomes.
 #' @param candidate_components Positive integer FPC counts to compare.
@@ -35,14 +37,29 @@ etr_cross_validate_fpca_regression<-function(
     "bounded native regression CV requires family='gaussian'")
   .etr_assert(is.null(covariates),
     "native regression CV does not accept covariates yet")
-  .etr_assert(identical(cv_unit,"curve")&&is.null(group_column),
-    "bounded native regression CV only supports curve folds")
-  .etr_assert(identical(shuffle,FALSE),
-    "bounded native regression CV requires shuffle=FALSE")
-  .etr_assert(is.null(random_state)||(
-    is.numeric(random_state)&&length(random_state)==1L&&
+  .etr_assert(is.character(cv_unit)&&length(cv_unit)==1L&&
+    !is.na(cv_unit)&&cv_unit%in%c("curve","group"),
+    "cv_unit must be 'curve' or 'group'")
+  .etr_assert(is.null(group_column)||(
+    is.character(group_column)&&length(group_column)==1L&&
+    !is.na(group_column)&&nzchar(group_column)),
+    "group_column must be a metadata column name or NULL")
+  if(identical(cv_unit,"group"))
+    .etr_assert(!is.null(group_column),
+      "group_column is required for group CV")
+  .etr_assert(is.logical(shuffle)&&length(shuffle)==1L&&!is.na(shuffle),
+    "shuffle must be one explicit logical flag")
+  if(identical(cv_unit,"curve")&&isTRUE(shuffle))
+    .etr_assert(is.numeric(random_state)&&
+      length(random_state)==1L&&is.finite(random_state)&&
+      random_state==floor(random_state)&&random_state>=0&&
+      random_state<=.Machine$integer.max,
+      "random_state must be a nonnegative R integer seed for shuffled curve folds")
+  else
+    .etr_assert(is.null(random_state)||(
+      is.numeric(random_state)&&length(random_state)==1L&&
       !is.na(random_state)&&is.finite(random_state)),
-    "random_state must be numeric or NULL")
+      "random_state must be numeric or NULL")
   .etr_assert(is.character(scaling)&&length(scaling)==1L&&
     !is.na(scaling)&&scaling%in%c("none","dimension_sd"),
     "scaling must be none or dimension_sd")
@@ -68,10 +85,11 @@ etr_cross_validate_fpca_regression<-function(
     n_splits>=2L&&n_splits<=n,
     "n_splits must be an integer between 2 and the number of curves")
   ns<-as.integer(n_splits)
-  # The existing native assignment follows deterministic sklearn KFold
-  # blocks exactly for shuffle=FALSE; group tie permutations are excluded.
-  folds<-.etr_cv_fold_assignment(trajectories,ns,"curve",
-    NULL,FALSE,NULL)$fold
+  # Group identity stays intact. Shuffled folds use isolated base-R RNG,
+  # so a shared seed need not reproduce NumPy/Scikit-learn permutations.
+  split<-.etr_cv_fold_assignment(trajectories,ns,cv_unit,
+    group_column,shuffle,random_state)
+  folds<-split$fold
   fold_rows<-vector("list",ns*length(components))
   assign_rows<-vector("list",ns)
   prediction_rows<-vector("list",n*length(components))
@@ -122,10 +140,12 @@ etr_cross_validate_fpca_regression<-function(
           prediction=predicted[[v]],stringsAsFactors=FALSE)
       }
     }
-    assign_rows[[fold+1L]]<-data.frame(
+    assignment<-data.frame(
       curve_id=trajectories$curve_ids[testing],
       fold=rep(as.integer(fold),length(testing)),
       stringsAsFactors=FALSE)
+    if(!is.null(split$groups))assignment$group<-split$groups[testing]
+    assign_rows[[fold+1L]]<-assignment
   }
   fold_losses<-do.call(rbind,fold_rows)
   assignments<-do.call(rbind,assign_rows)
@@ -137,13 +157,20 @@ etr_cross_validate_fpca_regression<-function(
   structure(list(
     fold_losses=fold_losses,assignments=assignments,
     predictions=predictions,component_counts=components,
-    family="gaussian",loss=resolved_loss,cv_unit="curve",
-    n_splits=ns,group_column=NULL,scaling=scaling,
-    random_state=NULL,provenance=list(
+    family="gaussian",loss=resolved_loss,cv_unit=cv_unit,
+    n_splits=ns,
+    group_column=if(identical(cv_unit,"group"))group_column else NULL,
+    scaling=scaling,
+    random_state=if(identical(cv_unit,"curve")&&isTRUE(shuffle))
+      random_state else NULL,provenance=list(
       method="outcome_tuned_fpca_regression_cv",
       fit_fpca_inside_fold=TRUE,
       fit_regression_inside_fold=TRUE,
-      group_leakage_prevented=FALSE,
+      group_leakage_prevented=identical(cv_unit,"group"),
+      shuffle=if(identical(cv_unit,"curve"))shuffle else FALSE,
+      random_engine=if(identical(cv_unit,"curve")&&isTRUE(shuffle))
+        "base_R_sample_not_NumPy" else "deterministic",
+      group_tie_policy="native_size_descending_label_tie_break",
       covariates=list(),
       scientific_warning=paste(
         "Grouped folds prevent train/test leakage but do not by themselves",
