@@ -58,7 +58,9 @@ etr_simulate_functional_scenario<-function(scenario,mean,eigenfunctions,
 #' @param scenarios Nonempty list of native functional simulation scenarios.
 #' @param mean,eigenfunctions Source generating functions.
 #' @param estimator Callback(observations, scenario), never receives truth.
-#' @param recovery Callback(fit, truth, scenario), returns named finite metrics.
+#' @param recovery Callback(fit, truth, scenario), returns named finite
+#'   numeric metrics or a structured etr_functional_recovery_assessment
+#'   carrying source metric definitions, components and provenance.
 #' @param failure_action "raise" (stop) or "record" (preserve failure).
 #' @return Native R result with all successful and failed replicates.
 #' @export
@@ -76,6 +78,7 @@ etr_run_functional_recovery_scenarios<-function(
     failure_action%in%c("raise","record"),
     "failure_action must be raise or record")
   rows<-list()
+  definitions<-list()
   for(scenario in scenarios)for(replicate in
       seq.int(0L,scenario$replicates-1L)){
     seed<-scenario$seed_start+replicate
@@ -95,27 +98,36 @@ etr_run_functional_recovery_scenarios<-function(
         error=function(e)structure(list(error=e,status="recovery_failed"),
           class="etr_recovery_attempt_error"))
       if(inherits(result,"etr_recovery_attempt_error"))return(result)
-      .etr_assert(is.numeric(result)&&is.null(dim(result))&&
-        length(result)>0L&&all(is.finite(result))&&
-        !is.null(names(result))&&!anyNA(names(result))&&
-        all(nzchar(names(result)))&&!anyDuplicated(names(result)),
-        "recovery must return named finite numeric metrics in native subset")
-      structure(list(metrics=result),class="etr_recovery_attempt_success")
+      payload<-.etr_recovery_runner_metrics(result)
+      structure(payload,class="etr_recovery_attempt_success")
     }
     result<-run()
     if(inherits(result,"etr_recovery_attempt_error")){
       if(failure_action=="raise")stop(result$error)
       rows[[length(rows)+1L]]<-c(prefix,list(
         status=result$status,metrics=numeric(),
+        metric_values=list(),assessment_provenance=list(),
         error_type=class(result$error)[1L],
         error_message=conditionMessage(result$error)))
     }else{
+      # Python's inconsistent definition rejection is outside its
+      # estimator/recovery failure_action handling: never silently
+      # classify an incompatible scientific metric as a failed run.
+      for(definition in result$definitions){
+        name<-definition$name
+        if(name%in%names(definitions))
+          .etr_assert(identical(definitions[[name]],definition),
+            paste0("recovery metric definitions are inconsistent for ",name))
+        else definitions[[name]]<-definition
+      }
       rows[[length(rows)+1L]]<-c(prefix,list(
         status="ok",metrics=result$metrics,
+        metric_values=result$metric_values,
+        assessment_provenance=result$assessment_provenance,
         error_type=NULL,error_message=NULL))
     }
   }
-  structure(list(records=rows,metric_definitions=list(),
+  structure(list(records=rows,metric_definitions=definitions,
     provenance=list(truth_available_to_estimator=FALSE,
       failure_action=failure_action,redraw_on_failure=FALSE,
       native_random_engine="base_R_not_NumPy_PCG64",
