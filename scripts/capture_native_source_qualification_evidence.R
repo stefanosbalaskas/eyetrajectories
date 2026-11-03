@@ -37,6 +37,7 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-source-windowed-rqa-time-units",
     "native-nonlinear-recurrence",
     "native-functional-process-simulation",
+    "native-functional-simulation-correlated-noise-source",
     "native-functional-recovery-orchestration",
     "native-workflow-plot-dispatch",
     "native-fpca-wild-family-test",
@@ -172,6 +173,7 @@ filter<-paste(c(
   # Every newly mapped source-candidate oracle must be executed in BOTH
   # evidence modes, not merely listed as a required or hashed file.
   "native-functional-process-simulation",
+    "native-functional-simulation-correlated-noise-source",
   "native-functional-recovery-orchestration",
   "native-workflow-plot-dispatch",
   "native-fpca-wild-family-test",
@@ -446,6 +448,8 @@ source_files<-unique(c(
   "tests/testthat/test-native-fpcr-future-prediction-interval.R",
   "tests/testthat/test-native-generalized-gee-fit.R",
   "tests/testthat/test-native-functional-process-simulation.R",
+  "tests/testthat/test-native-functional-simulation-correlated-noise-source.R",
+  "R/native-functional-simulation-noise.R",
   "tests/testthat/test-native-multivariate-iaaft-generator.R",
   "tests/testthat/test-native-multivariate-surrogate-nonlinearity.R",
   "tests/testthat/test-native-fpcr-bootstrap-uncertainty.R",
