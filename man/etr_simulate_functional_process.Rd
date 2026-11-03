@@ -64,7 +64,12 @@ contiguous interval of size floor(fraction times n_samples), with at least
 one masked sample when fraction is positive. All channels share each
 curve's mask. Dense outputs retain NA; irregular outputs remove masked
 samples from the published schedule, retaining complete pre-missing truth.}
-\item{phase_variation}{Must be NULL in the supported dense and irregular subsets.}
+\item{phase_variation}{NULL or a source power-phase mapping
+\code{list(kind="power",sd=s)} with finite nonnegative
+log-exponent standard deviation. Independently for each curve,
+the exponent is \code{exp(Normal(0,s))}; the latent mean and
+generating modes are evaluated directly at the transformed time,
+not interpolated or relabeled as new observation timestamps.}
 \item{score_distribution}{Only \code{"normal"} is supported.}
 \item{score_df}{Reserved for the unsupported Student-t score domain.}
 \item{orthonormal_tolerance}{Positive finite numerical tolerance for
@@ -76,9 +81,11 @@ When supplied, all four source fields must match declared geometry.
 Dense \code{measurement_noise} is a numeric curve-by-time-by-channel
 array; irregular \code{measurement_noise} is a list of one
 time-by-channel matrix per pre-missing curve. With declared missingness,
-an optional fifth field \code{missingness_mask} is a list of one logical
-vector per curve, permitting frozen Python realized-mask replay without
-matching random-number streams.}
+an optional \code{missingness_mask} field contains one logical vector
+per curve; with declared power-phase variation, an optional
+\code{phase_exponents} field contains one finite positive numeric exponent
+per curve, allowing exact frozen-Python realized-mask and
+realized-warp replay without matching random-number streams.}
 }
 \value{
 An \code{etr_functional_simulation_result} with
@@ -102,6 +109,13 @@ Irregular observation times are evaluated by the generating mean and
 eigenfunction callables directly, without interpolating the truth grid.
 Irregular missing samples are removed from the output curve/time lists;
 the full pre-missing arrays and logical masks remain in truth.
-Power-phase warps, Student-t scores, complete Python input/output
-types and independent full scientific certification remain unresolved.
+Power-phase warps are available on both dense and irregular trajectories.
+Raw observation times remain unwarped; the complete-grid
+`truth$phase_warps_on_truth_grid` and the original/warped pre-
+and post-missing schedules are retained separately. The
+`truth$latent_on_truth_grid` and observed latent signals are
+evaluated at the warped time by the generating functions.
+Student-t scores, complete Python input/output dataclass types,
+NumPy PCG64 streams and independent full scientific
+certification remain unresolved.
 }
