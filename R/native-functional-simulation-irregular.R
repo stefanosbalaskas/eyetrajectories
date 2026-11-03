@@ -175,6 +175,10 @@
     truth_grid,n)
   schedules<-sampling$schedules
   if(!is.null(source_draws)){
+    if("missingness_mask"%in%names(source_draws))
+      .etr_assert(is.list(source_draws$missingness_mask)&&
+        length(source_draws$missingness_mask)==n,
+        "source_draws missingness_mask must contain one vector per irregular curve")
     .etr_assert(is.list(source_draws$measurement_noise)&&
       length(source_draws$measurement_noise)==n,
       "source_draws measurement_noise must contain one matrix per irregular curve")
