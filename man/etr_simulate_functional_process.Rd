@@ -1,8 +1,8 @@
 \name{etr_simulate_functional_process}
 \alias{etr_simulate_functional_process}
-\title{Simulate dense Gaussian functional trajectories with auditable latent truth}
+\title{Simulate dense or irregular Gaussian functional trajectories with auditable latent truth}
 \description{
-Native R simulation of a bounded finite complete-grid subdomain of frozen
+Native R simulation of bounded dense and irregular functional domains of frozen
 eyetrajectoriespy 1.2.0 \code{simulate_functional_process}.
 Declares curve, participant and trial random scores independently,
 retains latent trajectories and measurement-noise realizations, and
@@ -34,9 +34,19 @@ etr_simulate_functional_process(
 \item{trials_per_participant}{Number of trials per participant.}
 \item{dimension_names}{Unique functional channel names.}
 \item{coordinate_system,time_unit}{Explicit trajectory coordinate and time units.}
-\item{observation_design}{Currently only \code{"dense"} is supported.}
-\item{observation_times,samples_per_curve}{Must be NULL in the dense subset.}
-\item{irregular_time_design}{Reserved for future irregular scheduling support.}
+\item{observation_design}{\code{"dense"} uses the exact common truth grid;
+\code{"irregular"} returns native curve-specific schedules with no interpolation.}
+\item{observation_times}{For irregular simulation, an optional list
+containing exactly one finite, strictly increasing numeric time vector per
+curve, each with at least two samples within the truth-grid domain.}
+\item{samples_per_curve}{For irregular simulation only: a positive
+integer count (at least two) or a two-integer minimum/maximum range.
+Provide this or \code{observation_times}, not both. Both are NULL for dense.}
+\item{irregular_time_design}{Native generated irregular schedules use
+\code{"uniform"} (interior uniform 0.01 to 0.99),
+\code{"center_clustered"} (0.01 + 0.98 times Beta(4,4)), or
+\code{"boundary_poor"} (interior uniform 0.15 to 0.85).
+Endpoints are retained; generated times are sorted.}
 \item{participant_eigenvalues,trial_eigenvalues}{Optional nonnegative
 participant-level and trial-level component variances.}
 \item{measurement_noise_sd}{Nonnegative scalar or one independent
@@ -49,11 +59,12 @@ symmetric square root. The declared matrix is preserved in source truth
 and provenance. Cannot be combined with positive noise SD.}
 \item{missingness}{Optional named mapping \code{list(kind="mcar",probability=p)}
 or \code{list(kind="block",fraction=f)} with finite p/f in [0,1).
-MCAR masks each common-grid sample independently; block masks one
-contiguous interval of size floor(fraction times n_time), with at least
+MCAR masks each observation time independently; block masks one
+contiguous interval of size floor(fraction times n_samples), with at least
 one masked sample when fraction is positive. All channels share each
-curve's mask, represented as NA in observations but retained in truth.}
-\item{phase_variation}{Must be NULL in the supported dense subset.}
+curve's mask. Dense outputs retain NA; irregular outputs remove masked
+samples from the published schedule, retaining complete pre-missing truth.}
+\item{phase_variation}{Must be NULL in the supported dense and irregular subsets.}
 \item{score_distribution}{Only \code{"normal"} is supported.}
 \item{score_df}{Reserved for the unsupported Student-t score domain.}
 \item{orthonormal_tolerance}{Positive finite numerical tolerance for
@@ -61,14 +72,18 @@ source quadrature orthonormality.}
 \item{random_state}{Native R random seed; not NumPy PCG64 equivalent.}
 \item{source_draws}{Optional captured source curve, participant, trial
 and measurement-noise draws for exact paired Python/R value replay.
-When supplied, all four arrays must have matching declared geometry.
-When missingness is declared, an optional fifth source field
-\code{missingness_mask} may contain a list of one logical vector per
-curve to replay the frozen Python truth masks without matching RNG streams.}
+When supplied, all four source fields must match declared geometry.
+Dense \code{measurement_noise} is a numeric curve-by-time-by-channel
+array; irregular \code{measurement_noise} is a list of one
+time-by-channel matrix per pre-missing curve. With declared missingness,
+an optional fifth field \code{missingness_mask} is a list of one logical
+vector per curve, permitting frozen Python realized-mask replay without
+matching random-number streams.}
 }
 \value{
 An \code{etr_functional_simulation_result} with
-\code{observations} as a native trajectory set and \code{truth}
+\code{observations} as a native common-grid \code{etr_trajectory_set}
+or curve-specific \code{etr_irregular_trajectory_set}, and \code{truth}
 containing latent values, separated scores, Gaussian noise, named
 covariance, metadata, and provenance.
 }
@@ -83,6 +98,10 @@ The returned observation values use the native missing-data sentinel NA
 at masked samples, while \code{truth$observed_pre_missing} retains
 the complete noisy signal and \code{truth$missingness_mask} retains
 one logical vector per curve. No silent zero-imputation occurs.
-Irregular, phase and Student-t simulation, complete Python input/output
+Irregular observation times are evaluated by the generating mean and
+eigenfunction callables directly, without interpolating the truth grid.
+Irregular missing samples are removed from the output curve/time lists;
+the full pre-missing arrays and logical masks remain in truth.
+Power-phase warps, Student-t scores, complete Python input/output
 types and independent full scientific certification remain unresolved.
 }
