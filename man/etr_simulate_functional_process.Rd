@@ -1,6 +1,6 @@
 \name{etr_simulate_functional_process}
 \alias{etr_simulate_functional_process}
-\title{Simulate dense or irregular Gaussian functional trajectories with auditable latent truth}
+\title{Simulate dense or irregular Gaussian and Student-t functional trajectories with auditable truth}
 \description{
 Native R simulation of bounded dense and irregular functional domains of frozen
 eyetrajectoriespy 1.2.0 \code{simulate_functional_process}.
@@ -70,8 +70,14 @@ log-exponent standard deviation. Independently for each curve,
 the exponent is \code{exp(Normal(0,s))}; the latent mean and
 generating modes are evaluated directly at the transformed time,
 not interpolated or relabeled as new observation timestamps.}
-\item{score_distribution}{Only \code{"normal"} is supported.}
-\item{score_df}{Reserved for the unsupported Student-t score domain.}
+\item{score_distribution}{\code{"normal"} or \code{"student_t"}.
+This controls curve-level functional component scores only.
+Participant-level and trial-level score effects remain Gaussian.}
+\item{score_df}{Degrees of freedom for \code{"student_t"}, finite and
+greater than two. The source variance correction
+\code{(score_df-2)/score_df} makes each Student-t curve-score
+component's population variance equal to its declared eigenvalue.
+The parameter is not evaluated when \code{score_distribution="normal"}.}
 \item{orthonormal_tolerance}{Positive finite numerical tolerance for
 source quadrature orthonormality.}
 \item{random_state}{Native R random seed; not NumPy PCG64 equivalent.}
@@ -115,7 +121,10 @@ Raw observation times remain unwarped; the complete-grid
 and post-missing schedules are retained separately. The
 `truth$latent_on_truth_grid` and observed latent signals are
 evaluated at the warped time by the generating functions.
-Student-t scores, complete Python input/output dataclass types,
-NumPy PCG64 streams and independent full scientific
-certification remain unresolved.
+Curve-level Student-t scores with finite degrees of freedom
+greater than two are implemented and preserve the source
+component variance. Participant and trial effects remain Gaussian.
+Complete Python input/output dataclass types, full source
+coercion/exception domains, NumPy PCG64 streams and independent
+full scientific certification remain unresolved.
 }
