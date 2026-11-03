@@ -501,6 +501,8 @@ source_files<-unique(c(
   "tests/testthat/test-native-landmark-distance-source-domain.R",
   "tests/testthat/test-native-differentiate-source-contract.R",
   "R/native-differentiate-source.R",
+  "man/etr_differentiate_trajectories.Rd",
+  "docs/native-differentiate-python-source-contract.md",
   "R/native-planar-geometry-parity.R",
   "R/native-exact-component-assignment.R",
   "R/native-fpca-extensions.R",
