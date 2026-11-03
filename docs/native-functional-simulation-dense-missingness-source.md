@@ -129,8 +129,11 @@ qualification run before being labelled passing.
   Power-phase time warps are now available on both observation
   designs, with original and warped schedules retained separately;
   see `docs/native-functional-simulation-phase-source.md`.
-  Student-t score distributions, full Python dataclass/error
-  schemas and many source coercion inputs remain unsupported.
+  Finite-variance Student-t curve scores are now implemented
+  across dense and irregular observation designs; see
+  `docs/native-functional-simulation-student-t-source.md`.
+  Full Python dataclass/error schemas and many source coercion
+  inputs remain unsupported.
 - The Python source's PCG64 and native base-R random streams
   differ. Distributional and retained-source-draw equivalence
   is scientifically distinct from draw-by-draw RNG identity.
