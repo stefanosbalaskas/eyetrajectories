@@ -26,7 +26,7 @@ required for \code{cv_unit="group"}.}
 shuffle; group CV is deterministic irrespective of this flag.}
 \item{random_state}{Nonnegative integer base-R seed for shuffled
 curve folds, ignored for unshuffled or grouped folds. Base-R random
-permutations cannot be equated with sklearn/NumPy PCG64.}
+permutations cannot be equated with sklearn's NumPy RandomState.}
 }
 \value{Retained fold-loss, assignment and out-of-fold prediction frames
 and source-shaped scientific provenance. Group assignments have
