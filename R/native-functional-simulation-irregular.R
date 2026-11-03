@@ -81,8 +81,7 @@
     length(dimension_names)>=1L&&!anyNA(dimension_names)&&
     all(nzchar(dimension_names))&&!anyDuplicated(dimension_names),
     "dimension_names must be unique nonempty strings")
-  .etr_assert(is.null(phase_variation),
-    "irregular native source subset requires no phase variation")
+  phase_spec<-.etr_functional_simulation_phase_spec(phase_variation)
   .etr_assert(identical(score_distribution,"normal"),
     "only Gaussian score_distribution is currently implemented")
   .etr_assert(is.numeric(eigenvalues)&&length(eigenvalues)>=1L&&
@@ -149,12 +148,13 @@
     required<-c("curve_scores","participant_scores",
       "trial_scores","measurement_noise")
     fields<-names(source_draws)
+    optional<-c(if(!is.null(missingness))"missingness_mask",
+      if(!is.null(phase_variation))"phase_exponents")
     .etr_assert(is.list(source_draws)&&!is.null(fields)&&
       !anyDuplicated(fields)&&
-      (identical(sort(fields),sort(required))||
-       (!is.null(missingness)&&identical(sort(fields),
-         sort(c(required,"missingness_mask"))))),
-      "source_draws must contain four source components and optionally missingness_mask")
+      all(required%in%fields)&&
+      all(fields%in%c(required,optional)),
+      "source_draws must contain four source components and only declared optional phase exponents or missingness masks")
     curve_scores<-source_draws$curve_scores
     participant_scores<-source_draws$participant_scores
     trial_scores<-source_draws$trial_scores
@@ -174,6 +174,8 @@
     observation_times,samples_per_curve,irregular_time_design,
     truth_grid,n)
   schedules<-sampling$schedules
+  phase_exponents<-.etr_functional_simulation_phase_draw(
+    phase_spec,n,source_draws)
   if(!is.null(source_draws)){
     if("missingness_mask"%in%names(source_draws))
       .etr_assert(is.list(source_draws$missingness_mask)&&
@@ -200,11 +202,17 @@
           paste0("eigenfunctions[",j-1L,"]"))
     value
   }
+  warped_grid<-matrix(rep(truth_grid,each=n),nrow=n,ncol=nt)
+  if(!is.null(phase_variation))
+    for(i in seq_len(n))
+      warped_grid[i,]<-.etr_functional_simulation_power_warp(
+        truth_grid,truth_grid,phase_exponents[i])
   latent_grid<-array(0,c(n,nt,nd))
   for(i in seq_len(n))
-    latent_grid[i,,]<-evaluate_curve(truth_grid,i)
-  warped_grid<-matrix(rep(truth_grid,each=n),nrow=n,ncol=nt)
+    latent_grid[i,,]<-evaluate_curve(as.numeric(warped_grid[i,]),i)
   pre_missing_times<-schedules
+  warped_pre_times<-vector("list",n)
+  warped_output_times<-vector("list",n)
   masks<-vector("list",n)
   noise<-vector("list",n)
   pre_latent<-vector("list",n)
@@ -214,7 +222,11 @@
   output_values<-vector("list",n)
   for(i in seq_len(n)) {
     time<-schedules[[i]]
-    pre_latent[[i]]<-evaluate_curve(time,i)
+    warped_pre_times[[i]]<-
+      if(is.null(phase_variation))time else
+        .etr_functional_simulation_power_warp(
+          time,truth_grid,phase_exponents[i])
+    pre_latent[[i]]<-evaluate_curve(warped_pre_times[[i]],i)
     nt_curve<-length(time)
     if(is.null(source_draws)) {
       if(all(abs(noise_covariance)<=1e-8)){
@@ -242,6 +254,7 @@
       paste0("missingness left fewer than two irregular observations for curve ",
         i-1L,"; the simulator does not silently resample"))
     output_times[[i]]<-time[keep]
+    warped_output_times[[i]]<-warped_pre_times[[i]][keep]
     output_latent[[i]]<-pre_latent[[i]][keep,,drop=FALSE]
     output_values[[i]]<-pre_observed[[i]][keep,,drop=FALSE]
   }
@@ -256,7 +269,8 @@
     measurement_noise_covariance=lapply(seq_len(nd),
       function(i)as.numeric(noise_covariance[i,])),
     participant_eigenvalues=pv,trial_eigenvalues=tv,
-    phase_variation_kind="none",phase_exponents=rep(1,n),
+    phase_variation_kind=phase_spec$kind,
+    phase_exponents=as.numeric(phase_exponents),
     missingness_kind=missing_spec$kind,
     missingness_specification=missingness,
     score_distribution="normal",n_components=k,
@@ -277,9 +291,9 @@
     latent_on_truth_grid=latent_grid,
     phase_warps_on_truth_grid=warped_grid,
     pre_missing_observation_times=pre_missing_times,
-    warped_pre_missing_observation_times=pre_missing_times,
+    warped_pre_missing_observation_times=warped_pre_times,
     observation_times=output_times,
-    warped_observation_times=output_times,
+    warped_observation_times=warped_output_times,
     latent_at_pre_missing_times=pre_latent,
     latent_at_observation_times=output_latent,
     measurement_noise=noise,
