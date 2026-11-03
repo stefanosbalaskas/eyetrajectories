@@ -87,8 +87,9 @@ full fold-loss, assignment, prediction and inner
 selection tables.
 
 Source-scoped statistical limitations remain explicit:
-Gaussian scalar regression only; no covariates,
-no binomial family, no guaranteed sklearn group-tie
+Gaussian scalar regression only; numeric Gaussian covariates
+are supported in the source-scoped subset (see
+`native-fpcr-gaussian-covariates-source.md`); no binomial family, no guaranteed sklearn group-tie
 ordering, no sklearn NumPy RandomState seed equivalence,
 and no Python dataclass identity. Participant grouping
 prevents leakage but does not in itself fit a

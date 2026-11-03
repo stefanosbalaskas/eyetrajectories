@@ -11,13 +11,16 @@
 #' training fold. Reuses the same training FPCA basis for test projections.
 #' Supports group held-out and R-seeded curve shuffled folds.
 #' Exact Python shuffle RNG and GroupKFold tie semantics are unresolved;
-#' binomial outcomes and covariates remain out of this bounded domain.
+#' binomial outcomes remain out of this bounded domain; numeric covariates
+#' are fitted inside each training fold and are never outcome-tuned globally.
 #' @param trajectories Complete native common-grid trajectory set.
 #' @param outcome Curve-aligned finite scalar outcomes.
 #' @param candidate_components Positive integer FPC counts to compare.
 #' @param family Must be \code{"gaussian"}.
 #' @param loss \code{"rmse"} or \code{"mae"}, default RMSE.
-#' @param covariates Must be NULL in the native source-aligned subset.
+#' @param covariates NULL or a curve-aligned numeric data.frame with unique
+#'   nonreserved column names and finite values. Training and held-out
+#'   rows are separated within each fold.
 #' @param n_splits Number of KFold or GroupKFold partitions (>=2).
 #' @param scaling Native dense FPCA scaling.
 #' @param cv_unit "curve" or "group"; group CV holds all trials
@@ -39,8 +42,7 @@ etr_cross_validate_fpca_regression<-function(
   etr_validate(trajectories,require_complete=TRUE)
   .etr_assert(identical(family,"gaussian"),
     "bounded native regression CV requires family='gaussian'")
-  .etr_assert(is.null(covariates),
-    "native regression CV does not accept covariates yet")
+
   .etr_assert(is.character(cv_unit)&&length(cv_unit)==1L&&
     !is.na(cv_unit)&&cv_unit%in%c("curve","group"),
     "cv_unit must be 'curve' or 'group'")
@@ -73,6 +75,7 @@ etr_cross_validate_fpca_regression<-function(
     resolved_loss%in%c("rmse","mae"),
     "gaussian loss must be 'rmse' or 'mae'")
   n<-length(trajectories$curve_ids)
+  covariate_matrix<-.etr_fpcr_numeric_covariates(covariates,n)
   .etr_assert(is.numeric(outcome)&&is.null(dim(outcome))&&
     length(outcome)==n&&all(is.finite(outcome)),
     "outcome must contain one finite scalar per trajectory")
@@ -81,7 +84,8 @@ etr_cross_validate_fpca_regression<-function(
     !anyNA(candidate_components)&&
     all(is.finite(candidate_components))&&
     all(candidate_components==floor(candidate_components))&&
-    all(candidate_components>=1L),
+    all(candidate_components>=1L)&&
+    all(candidate_components<=.Machine$integer.max),
     "candidate_components must contain positive integers")
   components<-sort(unique(as.integer(candidate_components)))
   .etr_assert(is.numeric(n_splits)&&length(n_splits)==1L&&
@@ -117,9 +121,13 @@ etr_cross_validate_fpca_regression<-function(
     test_scores<-etr_transform_fpca(fit,test)
     for(k in components){
       train_design<-cbind(rep(1,length(training)),
-        fit$scores[,seq_len(k),drop=FALSE])
+        fit$scores[,seq_len(k),drop=FALSE],
+        if(!is.null(covariate_matrix))
+          covariate_matrix[training,,drop=FALSE])
       test_design<-cbind(rep(1,length(testing)),
-        test_scores[,seq_len(k),drop=FALSE])
+        test_scores[,seq_len(k),drop=FALSE],
+        if(!is.null(covariate_matrix))
+          covariate_matrix[testing,,drop=FALSE])
       .etr_assert(qr(train_design)$rank==ncol(train_design),
         "native regression CV requires full-rank training FPC design")
       coef<-as.numeric(qr.solve(train_design,outcome[training]))
@@ -175,7 +183,8 @@ etr_cross_validate_fpca_regression<-function(
       random_engine=if(identical(cv_unit,"curve")&&isTRUE(shuffle))
         "base_R_sample_not_NumPy" else "deterministic",
       group_tie_policy="native_size_descending_label_tie_break",
-      covariates=list(),
+      covariates=if(is.null(covariate_matrix))list() else
+        as.list(colnames(covariate_matrix)),
       scientific_warning=paste(
         "Grouped folds prevent train/test leakage but do not by themselves",
         "model within-group residual dependence or equalize group weights."))),

@@ -8,7 +8,8 @@
 #' @param candidate_components Candidate positive integer retained counts.
 #' @param family Currently only gaussian.
 #' @param loss NULL (RMSE), rmse or mae.
-#' @param covariates Currently NULL only.
+#' @param covariates NULL or a curve-aligned finite numeric data.frame.
+#'   All inner and outer regression fits use training-only rows.
 #' @param outer_splits Outer KFold count.
 #' @param inner_splits Inner KFold count.
 #' @param selection_rule minimum or one_se.
@@ -26,7 +27,8 @@ etr_nested_cross_validate_fpca_regression <- function(
   shuffle=FALSE, random_state=0L) {
   etr_validate(trajectories,require_complete=TRUE)
   .etr_assert(identical(family,"gaussian"),"family must equal gaussian")
-  .etr_assert(is.null(covariates),"covariates must be NULL")
+  covariate_matrix<-.etr_fpcr_numeric_covariates(covariates,
+    length(trajectories$curve_ids))
   .etr_assert(is.character(cv_unit)&&length(cv_unit)==1L&&
     !is.na(cv_unit)&&cv_unit%in%c("curve","group"),
     "cv_unit must be curve or group")
@@ -79,7 +81,10 @@ etr_nested_cross_validate_fpca_regression <- function(
     train<-.etr_cv_subset(trajectories,train_idx)
     inner_cv<-etr_cross_validate_fpca_regression(
       train,outcome[train_idx],candidate_components=counts,
-      family=family,loss=loss,covariates=NULL,n_splits=ni,
+      family=family,loss=loss,
+      covariates=if(is.null(covariate_matrix))NULL else
+        as.data.frame(covariate_matrix[train_idx,,drop=FALSE]),
+      n_splits=ni,
       scaling=scaling,cv_unit=cv_unit,group_column=group_column,
       shuffle=if(identical(cv_unit,"curve"))shuffle else FALSE,
       random_state=if(identical(cv_unit,"curve")&&shuffle)
@@ -92,8 +97,14 @@ etr_nested_cross_validate_fpca_regression <- function(
       etr_fit_mfpca(train,n_components=as.integer(selected),scaling=scaling)
     else etr_fit_fpca(train,n_components=as.integer(selected),scaling=scaling)
     scores<-etr_transform_fpca(fit,.etr_cv_subset(trajectories,test_idx))
-    x_train<-cbind(1,fit$scores[,seq_len(selected),drop=FALSE])
-    x_test<-cbind(1,scores[,seq_len(selected),drop=FALSE])
+    x_train<-cbind(rep(1,length(train_idx)),
+      fit$scores[,seq_len(selected),drop=FALSE],
+      if(!is.null(covariate_matrix))
+        covariate_matrix[train_idx,,drop=FALSE])
+    x_test<-cbind(rep(1,length(test_idx)),
+      scores[,seq_len(selected),drop=FALSE],
+      if(!is.null(covariate_matrix))
+        covariate_matrix[test_idx,,drop=FALSE])
     .etr_assert(qr(x_train)$rank==ncol(x_train),"outer FPCR design is rank deficient")
     pred<-as.numeric(x_test%*%qr.solve(x_train,outcome[train_idx]))
     .etr_assert(all(is.finite(pred)),"outer FPCR predictions must be finite")
@@ -132,7 +143,8 @@ etr_nested_cross_validate_fpca_regression <- function(
       group_leakage_prevented=identical(cv_unit,"group"),
       random_engine=if(identical(cv_unit,"curve")&&shuffle)
         "base_R_sample_not_NumPy" else "deterministic",
-      covariates=list(),
+      covariates=if(is.null(covariate_matrix))list() else
+        as.list(colnames(covariate_matrix)),
       scientific_warning=paste(
         "Outer-fold performance estimates the predictive pipeline with",
         "inner FPC-count selection. It does not remove within-group",

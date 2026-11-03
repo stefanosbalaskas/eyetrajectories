@@ -46,8 +46,8 @@ test_that("bounded FPCR CV explicitly rejects unsupported published domains",{
     "group_column is required")
   expect_error(f(z$trajectories,z$outcome,family="binomial"),
     "family='gaussian'")
-  expect_error(f(z$trajectories,z$outcome,covariates=data.frame(a=1:12)),
-    "does not accept covariates")
+  expect_error(f(z$trajectories,z$outcome,covariates=data.frame(a=letters[1:12])),
+    "covariates must be numeric")
   expect_error(f(z$trajectories,z$outcome,candidate_components=99L,
     n_splits=3L),"training-fold maximum")
   expect_error(f(z$trajectories,c(z$outcome,NA_real_)),
