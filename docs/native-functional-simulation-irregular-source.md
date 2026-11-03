@@ -134,8 +134,9 @@ This is not full Python-to-R domain equivalence.
 Full typed Python `IrregularTrajectorySet` and
 `FunctionalSimulationTruth` dataclass identities,
 Python-specific input coercions, exception messages,
-NumPy PCG64 and Student-t scores, together with full independent
-source certification, remain open. Power-phase variation is now
+NumPy PCG64 and full independent source certification remain open.
+Finite-variance Student-t curve scores have been integrated; see
+`docs/native-functional-simulation-student-t-source.md`. Power-phase variation is now
 implemented for irregular and dense simulations; see
 `docs/native-functional-simulation-phase-source.md`. No automatic irregular-to-common-grid interpolation,
 silent resampling or synthetic exposure replacement
