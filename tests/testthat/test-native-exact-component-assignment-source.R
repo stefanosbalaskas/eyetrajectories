@@ -79,23 +79,39 @@ test_that("frozen Python SciPy assignment matches native 13-to-24 FPCs",{
   types<-reticulate::import("types",convert=FALSE)
   np<-reticulate::import("numpy",convert=FALSE)
   as_source<-function(f) {
-    # A single native channel has scale length one. Use an actual 1D
-    # NumPy array so Python's scale[None, None, :] slices correctly.
-    types$SimpleNamespace(time=reticulate::r_to_py(f$time),
+    # reticulate::r_to_py() may leave an atomic vector as Python list,
+    # depending on conversion and environment. The frozen Python source
+    # requires NumPy indexing weights[:, None] and scale[None, None, :].
+    # Explicitly build genuine NumPy arrays for each numeric source field.
+    types$SimpleNamespace(
+      time=np$asarray(reticulate::r_to_py(f$time),dtype="float64"),
       dimension_names=reticulate::r_to_py(as.list(f$dimension_names)),
       n_components=as.integer(f$n_components),
-      weights=reticulate::r_to_py(f$weights),
-      components=reticulate::r_to_py(f$components),
-      scale=np$array(reticulate::r_to_py(as.list(f$scale)),
+      weights=np$asarray(reticulate::r_to_py(f$weights),dtype="float64"),
+      components=np$asarray(reticulate::r_to_py(f$components),
+        dtype="float64"),
+      scale=np$asarray(reticulate::r_to_py(as.list(f$scale)),
         dtype="float64"))
   }
   for(k in c(13L,16L,24L)) {
     fit<-.etr_assignment_source_fits(k)
     native<-etr_match_fpca_components(fit$reference,fit$candidate,
       n_components=k)
+    py_reference<-as_source(fit$reference)
+    py_candidate<-as_source(fit$candidate)
+    # Assert source fixture shape/ndarray contracts BEFORE invoking
+    # the scientific oracle so a bridge failure is independently located.
+    for(py_fit in list(py_reference,py_candidate)) {
+      expect_identical(as.character(et_to_r(py_fit$weights$dtype$name)),
+        "float64")
+      expect_identical(as.integer(et_to_r(py_fit$weights$shape)),as.integer(k))
+      expect_identical(as.integer(et_to_r(py_fit$scale$shape)),1L)
+      expect_identical(as.integer(et_to_r(py_fit$components$shape)),
+        c(as.integer(k),as.integer(k),1L))
+    }
     py<-reticulate::py_call(etpy_get_export("match_fpca_components"),
-      reference=as_source(fit$reference),
-      candidate=as_source(fit$candidate),n_components=k)
+      reference=py_reference,
+      candidate=py_candidate,n_components=k)
     result<-et_to_r(py)
     expect_identical(native$assignments,as.integer(result[[1L]]))
     expect_equal(native$signed_similarity,as.numeric(result[[2L]]),
