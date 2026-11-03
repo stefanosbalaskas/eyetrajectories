@@ -33,7 +33,10 @@ class ReconciliationTests(unittest.TestCase):
                 "recorded_r_git_head": HEAD,
                 "frozen_python_commit": progress.baseline.FROZEN_PYTHON,
                 "source_gap_open": "TRUE" if i < 203 or i == 380 else "FALSE",
-                "backend_or_estimand_distinct": "TRUE" if i < 19 else "FALSE",
+                # 16 overlaps with known gaps, 3 are no-gap but
+                # backend-distinct: 19 distinct overall.
+                "backend_or_estimand_distinct": "TRUE"
+                if i < 16 or 203 <= i < 206 else "FALSE",
                 "currently_authoritatively_certified": "FALSE",
                 "native_implementation_started": "TRUE",
                 "native_nonfunction_representation":
@@ -73,6 +76,19 @@ class ReconciliationTests(unittest.TestCase):
         self.assertEqual(z["export_count"], 508)
         self.assertEqual(z["callable_count"], 380)
         self.assertEqual(z["historical_documented_source_gaps"], 204)
+        self.assertEqual(z["no_recorded_gap_exports_total"], 304)
+        self.assertEqual(z["no_recorded_gap_callable_exports_total"], 177)
+        self.assertEqual(z["no_recorded_gap_nonfunction_exports_total"], 127)
+        self.assertEqual(z["no_recorded_gap_fastlane_exports_total"], 301)
+        self.assertEqual(z["no_recorded_gap_fastlane_callable_exports"], 174)
+        self.assertEqual(z["no_recorded_gap_fastlane_nonfunction_exports"], 127)
+        self.assertEqual(z["no_recorded_gap_backend_distinct_exclusions"], 3)
+        self.assertEqual(z["no_recorded_gap_backend_distinct_callable_exclusions"], 3)
+        self.assertEqual(z["no_recorded_gap_backend_distinct_nonfunction_exclusions"], 0)
+        self.assertEqual(
+            [row["python_name"] for row in
+             z["no_recorded_gap_backend_distinct_export_keys"]],
+            ["export_203", "export_204", "export_205"])
         self.assertEqual(z["developer_evidence_ready_for_review"], 0)
         self.assertEqual(z["independently_certified"], 0)
         output = Path(z["output_dir"])
