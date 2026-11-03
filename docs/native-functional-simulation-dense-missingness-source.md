@@ -96,6 +96,30 @@ The tests run in both `native_r_offline` and
 modified source/test files are recorded in the author SHA
 evidence inventory.
 
+## Python tuple / R list indexing regression
+
+The first Windows direct-Python qualification run at research HEAD
+`93f05011d37e79e8e7adef0ee7cd25d40b4d1b8e` passed its
+native-R suite but reported two test-fixture mismatches when
+`pt$observed_pre_missing[[1L]]` (a Python tuple access made
+through reticulate) was compared to
+`native$truth$observed_pre_missing[[1L]]` (a native R list
+access). The direct numeric comparison of the **complete**
+published observations, source scores, latent truth and source
+masks succeeded for both MCAR and block modes, so this
+mismatch reflected indexing of different curve elements, not
+a discrepancy in the simulated source law.
+
+The source-oracle test now first evaluates
+`python_pre_missing <- et_to_r(pt$observed_pre_missing)`
+to obtain a native R list, and only then uses native one-based
+`[[i]]` indexing. It compares **all** pre-missing curve
+matrices plus each curve's unmasked channel samples. The
+simulator implementation, source RNG semantics and published
+numerical algorithm were not changed by this fixture repair.
+The corrected exact HEAD still requires a full Windows
+qualification run before being labelled passing.
+
 ## Unresolved Python–R source differences
 
 - Irregular sampling schedules, phase time warps, Student-t
