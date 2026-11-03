@@ -1,6 +1,7 @@
 # Frozen eyetrajectoriespy 1.2.0 prediction.py::nested_cross_validate_fpca_regression
 # Commit c1cd95ad718327550f7e55393ff38582872f7a94
-# Native source-bounded domain: Gaussian, no covariates, unshuffled curve folds.
+# Source-bounded Gaussian FPCR nested CV with whole-group held-out folds
+# and optionally R-shuffled curve folds; NumPy RNG and tie policies differ.
 #' Nested Gaussian FPCR cross-validation with independent outer assessment
 #' @param trajectories Native complete common-grid trajectories.
 #' @param outcome Finite scalar response per curve.
@@ -12,10 +13,10 @@
 #' @param inner_splits Inner KFold count.
 #' @param selection_rule minimum or one_se.
 #' @param scaling none or dimension_sd.
-#' @param cv_unit Currently curve only.
-#' @param group_column Currently NULL only.
-#' @param shuffle Must be FALSE.
-#' @param random_state Ignored because shuffle is FALSE.
+#' @param cv_unit Curve or grouped participant holdout unit.
+#' @param group_column Required metadata column for group CV.
+#' @param shuffle Optional seeded native R curve-fold shuffle.
+#' @param random_state Seed for shuffled curve folds; group folds ignore it.
 #' @export
 etr_nested_cross_validate_fpca_regression <- function(
   trajectories, outcome, candidate_components=c(1L,2L,3L,4L,5L),
@@ -26,9 +27,22 @@ etr_nested_cross_validate_fpca_regression <- function(
   etr_validate(trajectories,require_complete=TRUE)
   .etr_assert(identical(family,"gaussian"),"family must equal gaussian")
   .etr_assert(is.null(covariates),"covariates must be NULL")
-  .etr_assert(identical(cv_unit,"curve")&&is.null(group_column),
-    "cv_unit must equal curve with NULL group_column")
-  .etr_assert(identical(shuffle,FALSE),"shuffle must be FALSE")
+  .etr_assert(is.character(cv_unit)&&length(cv_unit)==1L&&
+    !is.na(cv_unit)&&cv_unit%in%c("curve","group"),
+    "cv_unit must be curve or group")
+  if(identical(cv_unit,"group"))
+    .etr_assert(is.character(group_column)&&
+      length(group_column)==1L&&!is.na(group_column)&&
+      nzchar(group_column),
+      "group_column is required for grouped nested CV")
+  .etr_assert(is.logical(shuffle)&&length(shuffle)==1L&&!is.na(shuffle),
+    "shuffle must be one explicit logical flag")
+  if(identical(cv_unit,"curve")&&shuffle)
+    .etr_assert(is.numeric(random_state)&&
+      length(random_state)==1L&&is.finite(random_state)&&
+      random_state>=0&&random_state==floor(random_state)&&
+      random_state<=.Machine$integer.max-as.integer(outer_splits)-1L,
+      "random_state must allow nonnegative inner/outer R shuffle seeds")
   .etr_assert(is.character(selection_rule)&&length(selection_rule)==1L&&
     !is.na(selection_rule)&&selection_rule%in%c("minimum","one_se"),
     "selection_rule must be minimum or one_se")
@@ -48,7 +62,9 @@ etr_nested_cross_validate_fpca_regression <- function(
     is.finite(inner_splits)&&inner_splits==floor(inner_splits)&&
     inner_splits>=2,"inner_splits invalid")
   no<-as.integer(outer_splits);ni<-as.integer(inner_splits)
-  fold_ids<-.etr_cv_fold_assignment(trajectories,no,"curve",NULL,FALSE,NULL)$fold
+  splits<-.etr_cv_fold_assignment(trajectories,no,cv_unit,
+    group_column,shuffle,random_state)
+  fold_ids<-splits$fold
   outer_rows<-vector("list",no);inner_rows<-vector("list",no)
   prediction_rows<-vector("list",n);cursor<-0L
   for(f in 0:(no-1L)) {
@@ -58,8 +74,10 @@ etr_nested_cross_validate_fpca_regression <- function(
     inner_cv<-etr_cross_validate_fpca_regression(
       train,outcome[train_idx],candidate_components=counts,
       family=family,loss=loss,covariates=NULL,n_splits=ni,
-      scaling=scaling,cv_unit="curve",group_column=NULL,
-      shuffle=FALSE,random_state=NULL)
+      scaling=scaling,cv_unit=cv_unit,group_column=group_column,
+      shuffle=if(identical(cv_unit,"curve"))shuffle else FALSE,
+      random_state=if(identical(cv_unit,"curve")&&shuffle)
+        as.integer(random_state)+as.integer(f)+1L else NULL)
     selected<-etr_select_fpca_regression_components(inner_cv,rule=selection_rule)
     summary<-etr_summarise_fpca_regression_cv(inner_cv)
     inner_rows[[f+1L]]<-data.frame(outer_fold=rep(as.integer(f),nrow(summary)),
@@ -82,10 +100,13 @@ etr_nested_cross_validate_fpca_regression <- function(
       n_test_curves=as.integer(length(test_idx)))
     for(j in seq_along(test_idx)){
       cursor<-cursor+1L
-      prediction_rows[[cursor]]<-data.frame(
+      row<-data.frame(
         curve_id=trajectories$curve_ids[test_idx[[j]]],
         outer_fold=as.integer(f),observed=outcome[test_idx[[j]]],
         prediction=pred[[j]],selected_n_components=as.integer(selected))
+      if(!is.null(splits$groups))
+        row$group<-splits$groups[test_idx[[j]]]
+      prediction_rows[[cursor]]<-row
     }
   }
   outer<-do.call(rbind,outer_rows);inside<-do.call(rbind,inner_rows)
@@ -95,10 +116,17 @@ etr_nested_cross_validate_fpca_regression <- function(
     predictions=predictions,family="gaussian",
     loss=if(is.null(loss))"rmse" else loss,selection_rule=selection_rule,
     component_counts=counts,outer_splits=no,inner_splits=ni,
-    cv_unit="curve",group_column=NULL,scaling=scaling,random_state=NULL,
+    cv_unit=cv_unit,
+    group_column=if(identical(cv_unit,"group"))group_column else NULL,
+    scaling=scaling,
+    random_state=if(identical(cv_unit,"curve")&&shuffle)
+      random_state else NULL,
     provenance=list(method="nested_outcome_tuned_fpca_regression_cv",
       nested_selection=TRUE,outer_performance_unseen_by_inner_selection=TRUE,
-      group_leakage_prevented=FALSE,covariates=list(),
+      group_leakage_prevented=identical(cv_unit,"group"),
+      random_engine=if(identical(cv_unit,"curve")&&shuffle)
+        "base_R_sample_not_NumPy" else "deterministic",
+      covariates=list(),
       scientific_warning=paste(
         "Outer-fold performance estimates the predictive pipeline with",
         "inner FPC-count selection. It does not remove within-group",
