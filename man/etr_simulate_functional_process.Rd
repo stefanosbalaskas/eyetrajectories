@@ -47,7 +47,13 @@ positive-semidefinite channel-by-channel covariance. If supplied,
 the simulator draws correlated Gaussian noise using an eigenvalue-based
 symmetric square root. The declared matrix is preserved in source truth
 and provenance. Cannot be combined with positive noise SD.}
-\item{missingness,phase_variation}{Must be NULL in the supported dense subset.}
+\item{missingness}{Optional named mapping \code{list(kind="mcar",probability=p)}
+or \code{list(kind="block",fraction=f)} with finite p/f in [0,1).
+MCAR masks each common-grid sample independently; block masks one
+contiguous interval of size floor(fraction times n_time), with at least
+one masked sample when fraction is positive. All channels share each
+curve's mask, represented as NA in observations but retained in truth.}
+\item{phase_variation}{Must be NULL in the supported dense subset.}
 \item{score_distribution}{Only \code{"normal"} is supported.}
 \item{score_df}{Reserved for the unsupported Student-t score domain.}
 \item{orthonormal_tolerance}{Positive finite numerical tolerance for
@@ -55,7 +61,10 @@ source quadrature orthonormality.}
 \item{random_state}{Native R random seed; not NumPy PCG64 equivalent.}
 \item{source_draws}{Optional captured source curve, participant, trial
 and measurement-noise draws for exact paired Python/R value replay.
-When supplied, all four arrays must have matching declared geometry.}
+When supplied, all four arrays must have matching declared geometry.
+When missingness is declared, an optional fifth source field
+\code{missingness_mask} may contain a list of one logical vector per
+curve to replay the frozen Python truth masks without matching RNG streams.}
 }
 \value{
 An \code{etr_functional_simulation_result} with
@@ -69,7 +78,11 @@ native sampling behavior. A supplied PSD covariance activates
 correlated cross-channel Gaussian sampling. Native base-R and NumPy
 random-number streams are different; source comparisons require
 paired retained draws and must not claim identical raw draws for a
-common seed. The accepted Python input domain, result class, missing
-gaze, phase, irregular and Student-t domains and independent full
-scientific certification remain unresolved.
+common seed. Dense MCAR and contiguous-block missingness are now available.
+The returned observation values use the native missing-data sentinel NA
+at masked samples, while \code{truth$observed_pre_missing} retains
+the complete noisy signal and \code{truth$missingness_mask} retains
+one logical vector per curve. No silent zero-imputation occurs.
+Irregular, phase and Student-t simulation, complete Python input/output
+types and independent full scientific certification remain unresolved.
 }
