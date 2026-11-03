@@ -77,13 +77,17 @@ test_that("frozen Python SciPy assignment matches native 13-to-24 FPCs",{
     skip("Frozen Python 1.2 >12-component SciPy source oracle opt-in")
   expect_identical(et_python_version(),"1.2.0")
   types<-reticulate::import("types",convert=FALSE)
+  np<-reticulate::import("numpy",convert=FALSE)
   as_source<-function(f) {
+    # A single native channel has scale length one. Use an actual 1D
+    # NumPy array so Python's scale[None, None, :] slices correctly.
     types$SimpleNamespace(time=reticulate::r_to_py(f$time),
       dimension_names=reticulate::r_to_py(as.list(f$dimension_names)),
       n_components=as.integer(f$n_components),
       weights=reticulate::r_to_py(f$weights),
       components=reticulate::r_to_py(f$components),
-      scale=reticulate::r_to_py(f$scale))
+      scale=np$array(reticulate::r_to_py(as.list(f$scale)),
+        dtype="float64"))
   }
   for(k in c(13L,16L,24L)) {
     fit<-.etr_assignment_source_fits(k)
