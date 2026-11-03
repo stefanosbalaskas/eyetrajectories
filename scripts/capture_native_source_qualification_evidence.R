@@ -450,6 +450,8 @@ source_files<-unique(c(
   "tests/testthat/test-native-functional-process-simulation.R",
   "tests/testthat/test-native-functional-simulation-correlated-noise-source.R",
   "R/native-functional-simulation-noise.R",
+  "man/etr_simulate_functional_process.Rd",
+  "docs/native-functional-simulation-correlated-noise-source.md",
   "tests/testthat/test-native-multivariate-iaaft-generator.R",
   "tests/testthat/test-native-multivariate-surrogate-nonlinearity.R",
   "tests/testthat/test-native-fpcr-bootstrap-uncertainty.R",
