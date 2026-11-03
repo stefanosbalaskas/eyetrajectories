@@ -453,6 +453,7 @@ source_files<-unique(c(
   "tests/testthat/test-native-functional-simulation-correlated-noise-source.R",
   "tests/testthat/test-native-functional-simulation-missingness-source.R",
   "R/native-functional-simulation-missingness.R",
+  "docs/native-functional-simulation-dense-missingness-source.md",
   "R/native-functional-simulation-noise.R",
   "man/etr_simulate_functional_process.Rd",
   "docs/native-functional-simulation-correlated-noise-source.md",
