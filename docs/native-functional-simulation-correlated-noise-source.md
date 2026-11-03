@@ -78,8 +78,11 @@ inventory. The source-gap CSV description is updated but
 ## Remaining source and CRAN boundaries
 
 - Only complete-grid dense Gaussian functional simulations
-  currently run in native R; irregular observation schedules,
-  missingness mechanisms, time-phase warps, Student-t
+  currently run in native R. MCAR and contiguous-block missingness
+  on that dense grid are now separately integrated with complete
+  pre-missing truth and direct frozen-source mask replay; see
+  `docs/native-functional-simulation-dense-missingness-source.md`.
+  Irregular observation schedules, time-phase warps, Student-t
   scores and complete Python dataclass/exception parity remain
   scientific integration work.
 - Gaussian draws depend on base R and therefore differ from
