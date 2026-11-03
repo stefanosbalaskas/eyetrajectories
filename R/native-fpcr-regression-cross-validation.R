@@ -11,13 +11,16 @@
 #' training fold. Reuses the same training FPCA basis for test projections.
 #' Supports group held-out and R-seeded curve shuffled folds.
 #' Exact Python shuffle RNG and GroupKFold tie semantics are unresolved;
-#' binomial outcomes remain out of this bounded domain; numeric covariates\n#' are fitted inside each training fold and are never outcome-tuned globally.
+#' binomial outcomes remain out of this bounded domain; numeric covariates
+#' are fitted inside each training fold and are never outcome-tuned globally.
 #' @param trajectories Complete native common-grid trajectory set.
 #' @param outcome Curve-aligned finite scalar outcomes.
 #' @param candidate_components Positive integer FPC counts to compare.
 #' @param family Must be \code{"gaussian"}.
 #' @param loss \code{"rmse"} or \code{"mae"}, default RMSE.
-#' @param covariates NULL or a curve-aligned numeric data.frame with unique\n#'   nonreserved column names and finite values. Training and held-out\n#'   rows are separated within each fold.
+#' @param covariates NULL or a curve-aligned numeric data.frame with unique
+#'   nonreserved column names and finite values. Training and held-out
+#'   rows are separated within each fold.
 #' @param n_splits Number of KFold or GroupKFold partitions (>=2).
 #' @param scaling Native dense FPCA scaling.
 #' @param cv_unit "curve" or "group"; group CV holds all trials
