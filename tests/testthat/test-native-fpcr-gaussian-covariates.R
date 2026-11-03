@@ -120,6 +120,29 @@ test_that("FPCR covariates reject source-reserved or nonfinite input domains",{
   }
 })
 
+test_that("curve-level nested covariates preserve nontrivial inner FPC selection",{
+  z <- .etr_fpcr_covariate_fixture()
+  for(rule in c("minimum","one_se")) {
+    run <- function(y) etr_nested_cross_validate_fpca_regression(
+      z$x,y,candidate_components=c(1L,2L),covariates=z$cov,
+      outer_splits=3L,inner_splits=2L,selection_rule=rule,
+      cv_unit="curve",shuffle=FALSE)
+    original <- run(z$y)
+    expect_s3_class(original,"etr_nested_fpcr_cv")
+    expect_identical(original$component_counts,c(1L,2L))
+    expect_identical(nrow(original$inner_summaries),6L)
+    expect_true(all(original$outer_folds$selected_n_components %in% c(1L,2L)))
+    first <- original$predictions$outer_fold==0L
+    id <- match(original$predictions$curve_id[first],z$x$curve_ids)
+    perturbed <- z$y;perturbed[id] <- perturbed[id]+50
+    moved <- run(perturbed)
+    expect_equal(original$predictions$prediction[first],
+      moved$predictions$prediction[first],tolerance=1e-12)
+    expect_identical(original$outer_folds$selected_n_components[1L],
+      moved$outer_folds$selected_n_components[1L])
+  }
+})
+
 test_that("pinned Python 1.2 finite-covariate Gaussian FPCR agrees on fixed folds",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("Pinned Python 1.2 numeric Gaussian FPCR covariate oracle opt-in")
