@@ -416,6 +416,7 @@ source_files<-unique(c(
   "R/native-functional-recovery-orchestration.R",
   "R/native-functional-recovery-assessment-orchestration.R",
   "docs/native-recovery-structured-assessment-source.md",
+  "man/etr_run_functional_recovery_scenarios.Rd",
   "R/native-workflow-plot-dispatch.R",
   "R/native-fpca-wild-family-test.R",
   "R/native-bounded-model-workflows.R",
