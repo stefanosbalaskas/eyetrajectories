@@ -3,7 +3,7 @@
 # prediction.py::cross_validate_fpca_regression
 # Native Gaussian FPCR with unshuffled/shuffled curve folds and
 # whole-participant held-out folds. R shuffle uses base R RNG,
-# not NumPy PCG64; sklearn GroupKFold ties can differ.
+# not sklearn NumPy RandomState; sklearn GroupKFold ties can differ.
 
 #' Leakage-free native Gaussian FPCR held-out prediction
 #'
@@ -18,7 +18,7 @@
 #' @param family Must be \code{"gaussian"}.
 #' @param loss \code{"rmse"} or \code{"mae"}, default RMSE.
 #' @param covariates Must be NULL in the native source-aligned subset.
-#' @param n_splits Deterministic KFold count >=2.
+#' @param n_splits Number of KFold or GroupKFold partitions (>=2).
 #' @param scaling Native dense FPCA scaling.
 #' @param cv_unit "curve" or "group"; group CV holds all trials
 #'   of a participant/group together in the same held-out fold.
