@@ -108,6 +108,32 @@ test_that("irregular source dropout removes samples but preserves complete truth
   frame<-etr_functional_simulation_truth_frame(x)
   expect_identical(as.integer(frame$n_observed_samples),
     as.integer(lengths(x$observations$time)))
+
+  # Native source-draw replay with irregular MCAR is explicit: masks
+  # are applied to each curve's original schedule, not to truth_grid.
+  fixed_masks<-lapply(schedules,function(time){
+    mask<-rep(FALSE,length(time));mask[2L]<-TRUE;mask
+  })
+  mc_args<-a
+  mc_args$missingness<-list(kind="mcar",probability=.3)
+  mc_args$source_draws<-list(curve_scores=x$truth$curve_scores,
+    participant_scores=x$truth$participant_scores,
+    trial_scores=x$truth$trial_scores,
+    measurement_noise=x$truth$measurement_noise,
+    missingness_mask=fixed_masks)
+  replay<-do.call(etr_simulate_functional_process,mc_args)
+  expect_identical(replay$truth$missingness_mask,fixed_masks)
+  for(i in seq_along(schedules)){
+    expect_identical(replay$observations$time[[i]],
+      schedules[[i]][-2L])
+    expect_equal(replay$observations$values[[i]],
+      x$truth$observed_pre_missing[[i]][-2L,,drop=FALSE],
+      tolerance=1e-12)
+  }
+  bad<-mc_args
+  bad$source_draws$missingness_mask<-fixed_masks[-1L]
+  expect_error(do.call(etr_simulate_functional_process,bad),
+    "source_draws missingness_mask")
 })
 
 test_that("irregular source schedules and missingness fail closed when malformed",{
