@@ -103,6 +103,31 @@ test/source/manual/doc SHA evidence, is explicit.
 The RStudio Windows run at this exact new research HEAD
 is still required before assigning a PASS.
 
+## Reticulate source-array attribute regression (2026-11-03)
+
+The first owner Windows run at research HEAD
+`20901563aa84e79b600f0615b781ac9e44f92a28`
+parsed 370 R source files and passed the native R qualification
+(275 completed non-skipped cases). The direct Python source suite
+reported time-coordinate assertion differences only in the new
+irregular replay: native curve times had no `dim` attribute,
+whereas the reticulate-converted one-dimensional NumPy source
+arrays retained `dim=c(number_of_samples)`. The reported
+failures did **not** report unequal numerical values.
+
+The direct source-oracle fixture now converts only the returned
+one-dimensional Python timestamp array representation to a bare R
+numeric vector after validating the shape and sample count.
+Both post-missing observation timestamps and pre-missing truth
+timestamps are compared at exact numerical tolerance zero,
+for every curve. This is **not** interpolation, numerical
+re-estimation, altered source sampling or a native-simulator
+algorithm change. Pre/post-missing matrix, score, noise and
+latent source-value comparisons remain in place.
+
+The correction is committed but requires a new exact-HEAD
+Windows qualification before any claim that both modes pass.
+
 ## Explicit limits and release scope
 
 This is not full Python-to-R domain equivalence.
