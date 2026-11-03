@@ -66,16 +66,34 @@ etr_functional_mixed_fitted <- function(fit) {
        method = fit$method, status = fit$scientific_status)
 }
 
-#' Native scalar-on-function score regression (Gaussian only)
+#' Native scalar-on-function score regression
 #'
-#' Fits a Gaussian least-squares model on retained native FPCA scores.
-#' This is conditional on the estimated FPCA basis and is not a joint
-#' measurement-error model. Use subject holdouts for predictive validation.
+#' The original Gaussian score-regression fit remains unchanged by default.
+#' In explicit Python 1.2 source-compatibility mode the native implementation
+#' also provides binomial logit regression and curve-aligned numeric covariates.
+#' Inference remains conditional on the estimated FPCA scores, not a joint
+#' functional measurement-error model. No Python is called.
 #' @param fit Native etr_fpca result.
 #' @param outcome Numeric response per curve, no missing values.
 #' @param n_components Number of retained scores used as predictors.
+#' @param family "gaussian" or "binomial"; binomial requires 0/1 outcomes
+#'   and explicit python_boundary_mode=TRUE.
+#' @param covariates Optional curve-aligned numeric data.frame in explicit
+#'   Python source mode; NULL retains the original native scalar fit.
+#' @param python_boundary_mode FALSE preserves the established finite
+#'   Gaussian native API; TRUE enables the bounded frozen Python 1.2
+#'   Gaussian/binomial and covariate contract. This is not full-domain parity.
 #' @export
-etr_fit_scalar_on_fpca <- function(fit, outcome, n_components = NULL) {
+etr_fit_scalar_on_fpca <- function(fit, outcome, n_components = NULL,
+    family="gaussian",covariates=NULL,python_boundary_mode=FALSE) {
+  .etr_assert(is.logical(python_boundary_mode) &&
+    length(python_boundary_mode)==1L && !is.na(python_boundary_mode),
+    "python_boundary_mode must be a nonmissing logical scalar")
+  if(isTRUE(python_boundary_mode))
+    return(.etr_scalar_on_fpca_source_fit(fit,outcome,n_components,
+      family,covariates))
+  .etr_assert(identical(family,"gaussian")&&is.null(covariates),
+    "binomial family and covariates require python_boundary_mode=TRUE")
   .etr_assert(inherits(fit, "etr_fpca"), "fit must be a native etr_fpca")
   if (is.null(n_components)) n_components <- fit$n_components
   .etr_assert(is.numeric(n_components) && length(n_components) == 1L &&
@@ -103,11 +121,19 @@ etr_fit_scalar_on_fpca <- function(fit, outcome, n_components = NULL) {
 #' @param fit A native etr_scalar_on_fpca regression.
 #' @param x A compatible complete trajectory set.
 #' @export
-etr_predict_scalar_on_fpca <- function(fit, x) {
+etr_predict_scalar_on_fpca <- function(fit, x, covariates=NULL) {
   .etr_assert(inherits(fit, "etr_scalar_on_fpca"),
               "fit must be etr_scalar_on_fpca")
   scores <- etr_transform_fpca(fit$score_basis, x)
   mat <- as.data.frame(scores[, seq_len(fit$n_components), drop = FALSE])
   names(mat) <- paste0("FPC", seq_len(ncol(mat)))
+  if(isTRUE(fit$python_source_mode)) {
+    mat <- .etr_scalar_on_fpca_source_covariates(mat,covariates,
+      fit$source_covariate_names)
+    return(as.numeric(stats::predict(fit$model,newdata=mat,
+      type=if(identical(fit$family,"binomial"))"response" else "response")))
+  }
+  .etr_assert(is.null(covariates),
+    "covariates require an explicitly source-compatible fitted model")
   stats::predict(fit$model, newdata = mat)
 }
