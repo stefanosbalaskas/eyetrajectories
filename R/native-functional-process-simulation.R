@@ -1,7 +1,9 @@
 # Source: frozen eyetrajectoriespy 1.2.0 simulate.py and
 # _functional_simulation.py. Dense complete-grid source subdomain only.
 # RNG is native R; Python numerical replay uses explicit retained draws.
-# No student-t, irregular, phase, missingness or correlated-noise parity.
+# No student-t, irregular, phase, or missingness parity.
+# Cross-channel PSD covariance is supported with native Gaussian samples
+# and retained-draw source oracles, not NumPy PCG64 stream identity.
 
 .etr_functional_simulation_evaluate<-function(fun,time,nd,name){
   .etr_assert(is.function(fun),paste(name,"must be callable"))
@@ -35,7 +37,9 @@
 #' @param participant_eigenvalues,trial_eigenvalues Nonnegative source
 #'   variance components, default zero.
 #' @param measurement_noise_sd Scalar or per-channel Gaussian noise SD.
-#' @param measurement_noise_covariance Must be NULL in native subset.
+#' @param measurement_noise_covariance NULL for independent Gaussian noise;
+#'   alternatively a finite symmetric positive-semidefinite channel-by-channel
+#'   covariance matrix. Cannot be combined with positive noise SD.
 #' @param missingness,phase_variation Must be NULL in native subset.
 #' @param score_distribution Only normal currently supported.
 #' @param score_df Reserved source option for unsupported Student-t scores.
@@ -77,8 +81,6 @@ etr_simulate_functional_process<-function(
     "only dense truth_grid observation schedules are supported")
   .etr_assert(is.null(missingness)&&is.null(phase_variation),
     "native dense source subset requires no missingness or phase variation")
-  .etr_assert(is.null(measurement_noise_covariance),
-    "correlated measurement noise covariance is not implemented")
   .etr_assert(identical(score_distribution,"normal"),
     "only Gaussian score_distribution is currently implemented")
   .etr_assert(is.numeric(eigenvalues)&&length(eigenvalues)>=1L&&
@@ -110,13 +112,10 @@ etr_simulate_functional_process<-function(
   tv<-.etr_scenario_variances(trial_eigenvalues,k,"trial_eigenvalues")
   if(is.null(pv))pv<-rep(0,k)
   if(is.null(tv))tv<-rep(0,k)
-  if(is.null(measurement_noise_sd))measurement_noise_sd<-0
-  .etr_assert(is.numeric(measurement_noise_sd)&&
-    length(measurement_noise_sd)%in%c(1L,nd)&&
-    all(is.finite(measurement_noise_sd))&&
-    all(measurement_noise_sd>=0),
-    "measurement_noise_sd must be finite nonnegative scalar or per dimension")
-  noise_sd<-rep(as.numeric(measurement_noise_sd),length.out=nd)
+  noise_spec<-.etr_functional_simulation_noise_spec(
+    measurement_noise_sd,measurement_noise_covariance,nd)
+  noise_sd<-noise_spec$sd
+  noise_covariance<-noise_spec$covariance
   seed<-.etr_scenario_integer(random_state,"random_state",0L)
   pidx<-rep(seq_len(np),each=trials)
   ids<-character(n)
@@ -138,8 +137,14 @@ etr_simulate_functional_process<-function(
       matrix(rep(sqrt(pv),each=np),np,k)
     trial_scores<-matrix(stats::rnorm(n*k),n,k)*
       matrix(rep(sqrt(tv),each=n),n,k)
-    noise<-array(stats::rnorm(n*nt*nd),c(n,nt,nd))
-    for(d in seq_len(nd))noise[,,d]<-noise[,,d]*noise_sd[d]
+    if(is.null(measurement_noise_covariance)){
+      # Preserve the pre-existing diagonal-native RNG contract exactly.
+      noise<-array(stats::rnorm(n*nt*nd),c(n,nt,nd))
+      for(d in seq_len(nd))noise[,,d]<-noise[,,d]*noise_sd[d]
+    }else{
+      noise<-.etr_functional_simulation_correlated_noise(
+        n,nt,nd,noise_spec$sqrt)
+    }
   }else{
     .etr_assert(is.list(source_draws)&&
       identical(sort(names(source_draws)),sort(c("curve_scores",
@@ -178,7 +183,7 @@ etr_simulate_functional_process<-function(
     raw_dense_to_irregular_interpolation_performed=FALSE,
     measurement_noise_sd=noise_sd,
     measurement_noise_covariance=lapply(seq_len(nd),function(i)
-      as.numeric(diag(noise_sd^2,nrow=nd,ncol=nd)[i,])),
+      as.numeric(noise_covariance[i,])),
     participant_eigenvalues=pv,trial_eigenvalues=tv,
     phase_variation_kind="none",missingness_kind="none",
     score_distribution="normal",n_components=k,
@@ -202,7 +207,7 @@ etr_simulate_functional_process<-function(
     latent_at_pre_missing_times=as_curves(latent),
     latent_at_observation_times=as_curves(latent),
     measurement_noise=as_curves(noise),
-    measurement_noise_covariance=diag(noise_sd^2,nrow=nd,ncol=nd),
+    measurement_noise_covariance=noise_covariance,
     observed_pre_missing=as_curves(values),
     missingness_mask=masks,metadata=metadata,
     dimension_names=dimension_names,
