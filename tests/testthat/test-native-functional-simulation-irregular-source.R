@@ -170,9 +170,9 @@ test_that("irregular source schedules and missingness fail closed when malformed
   bad<-a;bad$missingness<-list(kind="block",fraction=.99)
   expect_error(do.call(etr_simulate_functional_process,bad),
     "fewer than two irregular observations")
-  bad<-a;bad$phase_variation<-list(kind="power",sd=.1)
+  bad<-a;bad$phase_variation<-list(kind="power",sd=-.1)
   expect_error(do.call(etr_simulate_functional_process,bad),
-    "no phase variation")
+    "finite and non-negative")
 })
 
 test_that("real frozen Python 1.2 irregular source schedules and truth replay in R",{
