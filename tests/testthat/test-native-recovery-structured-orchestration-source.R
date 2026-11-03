@@ -4,9 +4,13 @@
 # Pinned SHA c1cd95ad718327550f7e55393ff38582872f7a94.
 # First-party source numerical and semantic tests; not independent certification.
 
-.etr_structured_runner_mean<-function(t)rep(.15+0*t,length(t))
+# The public functional simulator requires explicit n_time x
+# n_dimensions matrices even when the scenario has one channel.
+# Bare vectors here caused all scenarios to fail before estimation.
+.etr_structured_runner_mean<-function(t)
+  matrix(.15,nrow=length(t),ncol=1L)
 .etr_structured_runner_modes<-function()
-  list(function(t)rep(1,length(t)))
+  list(function(t)matrix(1,nrow=length(t),ncol=1L))
 .etr_structured_runner_scenarios<-function() {
   grid<-c(0,.25,.5,.75,1)
   list(
@@ -29,6 +33,16 @@
       missingness=list(kind="block",fraction=.16),
       measurement_noise_sd=.02,replicates=1L,seed_start=738L))
 }
+
+test_that("recovery fixture generates source-required n_time-by-one matrices",{
+  irregular_times<-c(0,.13,.5,.91,1)
+  expect_identical(dim(.etr_structured_runner_mean(irregular_times)),
+    c(5L,1L))
+  expect_identical(dim(.etr_structured_runner_modes()[[1L]](
+    irregular_times)),c(5L,1L))
+  expect_true(all(is.finite(.etr_structured_runner_mean(
+    irregular_times))))
+})
 
 test_that("structured assessment recovery works on dense Student-t and irregular phase truth",{
   scenarios<-.etr_structured_runner_scenarios()
