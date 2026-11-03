@@ -81,8 +81,9 @@ test_that("dense dropout validates probability fractions and source mask replay"
   expect_error(do.call(etr_simulate_functional_process,
     modifyList(a,list(missingness=list(kind="mar",probability=.2)))),
     "supports")
-  truth<-do.call(etr_simulate_functional_process,
-    modifyList(a,list(missingness=NULL)))
+  base_args<-a
+  base_args$missingness<-NULL
+  truth<-do.call(etr_simulate_functional_process,base_args)
   scores<-truth$truth
   mask<-replicate(10L,c(FALSE,TRUE,FALSE,TRUE,FALSE),simplify=FALSE)
   a$source_draws<-list(curve_scores=scores$curve_scores,
