@@ -364,6 +364,7 @@ source_files<-unique(c(
   "tests/test_build_508_all_export_review_waves.py",
   "scripts/reconcile_508_contract_progress.py",
   "tests/test_reconcile_508_contract_progress.py",
+  "docs/508-export-review-fastlane-accounting.md",
   "scripts/capture_case_execution_evidence.R",
   "scripts/verify_508_all_wave_attestation.py",
   "tests/test_verify_508_all_wave_attestation.py",
