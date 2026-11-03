@@ -118,3 +118,32 @@ for rule in ('minimum','one_se'):
     }
   }
 })
+
+
+test_that("nested FPCR rejects malformed split and component domains explicitly",{
+  z<-.etr_nested_cv_fixture()
+  run<-function(...) etr_nested_cross_validate_fpca_regression(
+    z$x,z$y,candidate_components=1L,...)
+  for(bad in list(NA_real_,NaN,Inf,-Inf,2.5,"3",numeric(),NULL))
+    expect_error(run(outer_splits=bad,shuffle=TRUE,random_state=7L),
+      "outer_splits invalid")
+  for(bad in list(NA_real_,NaN,Inf,-Inf,1.5,"2",numeric(),NULL))
+    expect_error(run(inner_splits=bad,shuffle=TRUE,random_state=7L),
+      "inner_splits invalid")
+  for(bad in list(c(1,NA_real_),c(1,NaN),c(1,Inf),
+                  1.5,-1,0,.Machine$integer.max+1))
+    expect_error(etr_nested_cross_validate_fpca_regression(
+      z$x,z$y,candidate_components=bad,outer_splits=3L,
+      inner_splits=2L),
+      "candidate_components must be positive integers")
+  expect_error(run(outer_splits=3L,inner_splits=2L,
+    shuffle=TRUE,random_state=.Machine$integer.max),
+    "nonnegative inner/outer R shuffle seeds")
+  expect_error(run(outer_splits=3L,inner_splits=2L,
+    shuffle=TRUE,random_state=NA_real_),
+    "nonnegative inner/outer R shuffle seeds")
+  ok<-run(outer_splits=3L,inner_splits=2L,
+    shuffle=TRUE,random_state=7L)
+  expect_s3_class(ok,"etr_nested_fpcr_cv")
+  expect_equal(nrow(ok$outer_folds),3L)
+})
