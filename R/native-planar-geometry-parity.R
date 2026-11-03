@@ -102,23 +102,48 @@ etr_acceleration_magnitude <- function(x) {
 #' @param x Native \code{etr_trajectory_set}.
 #' @param landmark_x Scalar or numeric vector of length n_curves.
 #' @param landmark_y Scalar or numeric vector of length n_curves.
+#' @param python_boundary_mode Logical; TRUE additionally accepts finite
+#'   numeric-string/Boolean scalar or per-curve landmarks using the
+#'   frozen NumPy dtype=float conversion domain, and writes Python's
+#'   derived-function provenance. FALSE retains strict native input rules.
 #' @return Native single-channel trajectory set.
 #' @export
-etr_distance_to_landmark <- function(x,landmark_x,landmark_y) {
+etr_distance_to_landmark <- function(x,landmark_x,landmark_y,
+    python_boundary_mode=FALSE) {
+  .etr_assert(is.logical(python_boundary_mode) &&
+    length(python_boundary_mode)==1L && !is.na(python_boundary_mode),
+    "python_boundary_mode must be a nonmissing logical scalar")
   etr_validate(x)
   n <- dim(x$values)[1L]; nt <- length(x$time)
   .etr_assert(dim(x$values)[3L]>=2L,"planar x/y channels required")
-  .etr_assert(is.numeric(landmark_x) && is.numeric(landmark_y) &&
-              !is.logical(landmark_x) && !is.logical(landmark_y) &&
-              length(landmark_x) %in% c(1L,n) &&
-              length(landmark_y) %in% c(1L,n) &&
-              all(is.finite(landmark_x)) && all(is.finite(landmark_y)),
-              "landmark coordinates must be finite numeric scalars or per-curve vectors")
+  if(isTRUE(python_boundary_mode)) {
+    lx <- .etr_preprocessing_python_landmarks(landmark_x,n,"landmark_x")
+    ly <- .etr_preprocessing_python_landmarks(landmark_y,n,"landmark_y")
+  } else {
+    .etr_assert(is.numeric(landmark_x) && is.numeric(landmark_y) &&
+                !is.logical(landmark_x) && !is.logical(landmark_y) &&
+                length(landmark_x) %in% c(1L,n) &&
+                length(landmark_y) %in% c(1L,n) &&
+                all(is.finite(landmark_x)) && all(is.finite(landmark_y)),
+                "landmark coordinates must be finite numeric scalars or per-curve vectors")
+    lx <- rep_len(landmark_x,n)
+    ly <- rep_len(landmark_y,n)
+  }
   xx <- matrix(x$values[,,1L],nrow=n,ncol=nt)
   yy <- matrix(x$values[,,2L],nrow=n,ncol=nt)
-  dx <- sweep(xx,1L,rep_len(landmark_x,n),"-")
-  dy <- sweep(yy,1L,rep_len(landmark_y,n),"-")
-  .etr_geometry_result(x,sqrt(dx^2+dy^2),"distance_to_landmark")
+  dx <- sweep(xx,1L,lx,"-")
+  dy <- sweep(yy,1L,ly,"-")
+  distances <- sqrt(dx^2+dy^2)
+  if(!isTRUE(python_boundary_mode))
+    return(.etr_geometry_result(x,distances,"distance_to_landmark"))
+  # Frozen kinematics.py::distance_to_landmark_function carries forward
+  # all existing named provenance keys and adds derived_function.
+  prov <- etr_trajectory_provenance(x)
+  prov["derived_function"] <- list("distance_to_landmark")
+  etr_trajectory_set(x$time,array(distances,c(n,nt,1L)),
+    curve_ids=x$curve_ids,dimension_names="distance_to_landmark",
+    metadata=x$metadata,coordinate_system=x$coordinate_system,
+    time_unit=x$time_unit,provenance=prov)
 }
 
 #' Native signed planar curvature
