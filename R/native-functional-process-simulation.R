@@ -1,7 +1,8 @@
 # Source: frozen eyetrajectoriespy 1.2.0 simulate.py and
 # _functional_simulation.py. Dense complete-grid source subdomain only.
 # RNG is native R; Python numerical replay uses explicit retained draws.
-# No student-t, irregular, phase, or missingness parity.
+# No student-t, irregular or phase parity. Dense missingness preserves
+# source masks and complete pre-missing truth.
 # Cross-channel PSD covariance is supported with native Gaussian samples
 # and retained-draw source oracles, not NumPy PCG64 stream identity.
 
@@ -40,7 +41,10 @@
 #' @param measurement_noise_covariance NULL for independent Gaussian noise;
 #'   alternatively a finite symmetric positive-semidefinite channel-by-channel
 #'   covariance matrix. Cannot be combined with positive noise SD.
-#' @param missingness,phase_variation Must be NULL in native subset.
+#' @param missingness NULL or named list(kind="mcar",probability=p)
+#'   or list(kind="block",fraction=f), with finite p/f in [0,1).
+#'   Missing samples affect all channels simultaneously, remaining NA.
+#' @param phase_variation Must be NULL in the dense source subset.
 #' @param score_distribution Only normal currently supported.
 #' @param score_df Reserved source option for unsupported Student-t scores.
 #' @param orthonormal_tolerance Absolute quadrature Gram tolerance.
@@ -48,6 +52,8 @@
 #' @param source_draws Optional externally retained zero-based source-law
 #'   numerical draw arrays (curve_scores, participant_scores,
 #'   trial_scores, measurement_noise) for exact fixed-draw comparison.
+#'   With declared missingness, optional fifth field missingness_mask
+#'   permits frozen Python realized logical-mask replay.
 #' @return Native R observations and fully auditable source-shaped truth;
 #'   Python frozen dataclass representation is not claimed.
 #' @export
@@ -79,8 +85,9 @@ etr_simulate_functional_process<-function(
   .etr_assert(identical(observation_design,"dense")&&
     is.null(observation_times)&&is.null(samples_per_curve),
     "only dense truth_grid observation schedules are supported")
-  .etr_assert(is.null(missingness)&&is.null(phase_variation),
-    "native dense source subset requires no missingness or phase variation")
+  .etr_assert(is.null(phase_variation),
+    "native dense source subset requires no phase variation")
+  missing_spec<-.etr_functional_simulation_missingness_spec(missingness)
   .etr_assert(identical(score_distribution,"normal"),
     "only Gaussian score_distribution is currently implemented")
   .etr_assert(is.numeric(eigenvalues)&&length(eigenvalues)>=1L&&
@@ -146,10 +153,15 @@ etr_simulate_functional_process<-function(
         n,nt,nd,noise_spec$sqrt)
     }
   }else{
+    required_draws<-c("curve_scores","participant_scores",
+      "trial_scores","measurement_noise")
+    declared_draws<-names(source_draws)
     .etr_assert(is.list(source_draws)&&
-      identical(sort(names(source_draws)),sort(c("curve_scores",
-        "participant_scores","trial_scores","measurement_noise"))),
-      "source_draws must declare exactly four realized source components")
+      !is.null(declared_draws)&&!anyDuplicated(declared_draws)&&
+      (identical(sort(declared_draws),sort(required_draws))||
+       (!is.null(missingness)&&identical(sort(declared_draws),
+          sort(c(required_draws,"missingness_mask"))))),
+      "source_draws must declare four realized components and optionally missingness_mask")
     curve_scores<-source_draws$curve_scores
     participant_scores<-source_draws$participant_scores
     trial_scores<-source_draws$trial_scores
@@ -170,10 +182,20 @@ etr_simulate_functional_process<-function(
   latent<-array(0,c(n,nt,nd))
   for(i in seq_len(n))for(d in seq_len(nd))for(t in seq_len(nt))
     latent[i,t,d]<-m[t,d]+sum(scores[i,]*modes[,t,d])
-  values<-latent+noise
+  pre_missing_values<-latent+noise
+  values<-pre_missing_values
   warp<-matrix(rep(truth_grid,each=n),nrow=n,ncol=nt)
   schedules<-replicate(n,as.numeric(truth_grid),simplify=FALSE)
-  masks<-replicate(n,rep(FALSE,nt),simplify=FALSE)
+  if(!is.null(source_draws)&&
+      "missingness_mask"%in%names(source_draws)){
+    masks<-.etr_functional_simulation_missingness_replay(
+      source_draws$missingness_mask,n,nt)
+  }else{
+    masks<-lapply(seq_len(n),function(i)
+      .etr_functional_simulation_missingness_draw(nt,missing_spec))
+  }
+  for(i in seq_len(n))
+    if(any(masks[[i]]))values[i,masks[[i]],]<-NA_real_
   as_curves<-function(data)lapply(seq_len(n),function(i)
     matrix(data[i,,,drop=FALSE],nrow=nt,ncol=nd))
   provenance<-list(
@@ -185,11 +207,13 @@ etr_simulate_functional_process<-function(
     measurement_noise_covariance=lapply(seq_len(nd),function(i)
       as.numeric(noise_covariance[i,])),
     participant_eigenvalues=pv,trial_eigenvalues=tv,
-    phase_variation_kind="none",missingness_kind="none",
+    phase_variation_kind="none",missingness_kind=missing_spec$kind,
     score_distribution="normal",n_components=k,
     native_random_engine=if(is.null(source_draws))
       "base_R_not_NumPy_PCG64" else "externally_retained_source_draws",
     full_source_contract_certified=FALSE)
+  if(!is.null(missingness))
+    provenance["missingness_specification"]<-list(missingness)
   observations<-etr_trajectory_set(truth_grid,values,ids,
     dimension_names,metadata=metadata,
     coordinate_system=coordinate_system,time_unit=time_unit,
@@ -208,7 +232,7 @@ etr_simulate_functional_process<-function(
     latent_at_observation_times=as_curves(latent),
     measurement_noise=as_curves(noise),
     measurement_noise_covariance=noise_covariance,
-    observed_pre_missing=as_curves(values),
+    observed_pre_missing=as_curves(pre_missing_values),
     missingness_mask=masks,metadata=metadata,
     dimension_names=dimension_names,
     coordinate_system=coordinate_system,time_unit=time_unit,
