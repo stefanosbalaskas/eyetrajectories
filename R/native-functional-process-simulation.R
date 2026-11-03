@@ -1,7 +1,7 @@
 # Source: frozen eyetrajectoriespy 1.2.0 simulate.py and
 # _functional_simulation.py. Dense complete-grid source subdomain only.
 # RNG is native R; Python numerical replay uses explicit retained draws.
-# No Student-t score parity. Dense source missingness preserves
+# Finite-variance Student-t curve scores and source missingness preserve
 # source masks and complete pre-missing truth.
 # Cross-channel PSD covariance is supported with native Gaussian samples
 # and retained-draw source oracles, not NumPy PCG64 stream identity.
@@ -53,8 +53,11 @@
 #'   Missing samples affect all channels simultaneously, remaining NA.
 #' @param phase_variation NULL or list(kind="power",sd=s), with finite
 #'   nonnegative log-exponent SD; changes latent evaluation timestamps.
-#' @param score_distribution Only normal currently supported.
-#' @param score_df Reserved source option for unsupported Student-t scores.
+#' @param score_distribution "normal" or "student_t" for curve
+#'   functional scores; participant and trial score effects remain Gaussian.
+#' @param score_df Student-t degrees of freedom, finite and greater
+#'   than two when score_distribution is "student_t". Curve scores are
+#'   variance-adjusted so each component retains its declared eigenvalue.
 #' @param orthonormal_tolerance Absolute quadrature Gram tolerance.
 #' @param random_state R seed, not NumPy PCG64 seed-equivalent.
 #' @param source_draws Optional externally retained zero-based source-law
@@ -116,8 +119,8 @@ etr_simulate_functional_process<-function(
     "only dense truth_grid observation schedules are supported")
   phase_spec<-.etr_functional_simulation_phase_spec(phase_variation)
   missing_spec<-.etr_functional_simulation_missingness_spec(missingness)
-  .etr_assert(identical(score_distribution,"normal"),
-    "only Gaussian score_distribution is currently implemented")
+  score_spec<-.etr_functional_simulation_score_spec(
+    score_distribution,score_df)
   .etr_assert(is.numeric(eigenvalues)&&length(eigenvalues)>=1L&&
     all(is.finite(eigenvalues))&&all(eigenvalues>0)&&
     all(diff(eigenvalues)<=0),
@@ -166,8 +169,8 @@ etr_simulate_functional_process<-function(
   restore<-.etr_simulation_rng(seed)
   on.exit(restore(),add=TRUE)
   if(is.null(source_draws)){
-    curve_scores<-matrix(stats::rnorm(n*k),n,k)*
-      matrix(rep(sqrt(eigenvalues),each=n),n,k)
+    curve_scores<-.etr_functional_simulation_sample_curve_scores(
+      n,eigenvalues,score_spec)
     participant_scores<-matrix(stats::rnorm(np*k),np,k)*
       matrix(rep(sqrt(pv),each=np),np,k)
     trial_scores<-matrix(stats::rnorm(n*k),n,k)*
@@ -267,7 +270,7 @@ etr_simulate_functional_process<-function(
     participant_eigenvalues=pv,trial_eigenvalues=tv,
     phase_variation_kind=phase_spec$kind,
     missingness_kind=missing_spec$kind,
-    score_distribution="normal",n_components=k,
+    score_distribution=score_spec$kind,n_components=k,
     native_random_engine=if(is.null(source_draws))
       "base_R_not_NumPy_PCG64" else "externally_retained_source_draws",
     full_source_contract_certified=FALSE)
@@ -300,8 +303,8 @@ etr_simulate_functional_process<-function(
     missingness_mask=masks,metadata=metadata,
     dimension_names=dimension_names,
     coordinate_system=coordinate_system,time_unit=time_unit,
-    observation_design="dense",score_distribution="normal",
-    score_distribution_parameters=list(kind="normal"),
+    observation_design="dense",score_distribution=score_spec$kind,
+    score_distribution_parameters=score_spec,
     random_state=seed,provenance=provenance)
   structure(list(observations=observations,truth=truth),
     class="etr_functional_simulation_result")
