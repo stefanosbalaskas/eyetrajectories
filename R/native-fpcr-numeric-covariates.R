@@ -27,7 +27,6 @@
   storage.mode(out) <- "double"
   .etr_assert(all(is.finite(out)),
     "covariates contain non-finite values")
-  unname_rows <- dimnames(out)
   dimnames(out) <- list(NULL, nm)
   out
 }
