@@ -170,8 +170,27 @@ def _etr_dropout_mode(t):
       unname(et_to_r(pt$latent_on_truth_grid)),tolerance=1e-12)
     expect_equal(unname(native$truth$measurement_noise_covariance),
       unname(et_to_r(pt$measurement_noise_covariance)),tolerance=1e-14)
-    expect_equal(unname(native$truth$observed_pre_missing[[1L]]),
-      unname(et_to_r(pt$observed_pre_missing[[1L]])),tolerance=1e-12)
+    # Reticulate Python-object [[1L]] indexes the second Python tuple
+    # element (index 1), not the first R curve. Convert the complete
+    # Python tuple to a native R list BEFORE indexing with R's [[i]].
+    # This also checks every curve's pre-missing truth instead of only
+    # the first and prevents a false source-parity failure.
+    python_pre_missing<-et_to_r(pt$observed_pre_missing)
+    expect_true(is.list(python_pre_missing))
+    expect_identical(length(python_pre_missing),
+      length(native$truth$observed_pre_missing))
+    for(i in seq_along(python_pre_missing)) {
+      expect_equal(unname(native$truth$observed_pre_missing[[i]]),
+        unname(python_pre_missing[[i]]),tolerance=1e-12,
+        info=paste("source pre-missing curve",i,spec$kind))
+      mask<-source_masks[[i]]
+      for(d in seq_len(length(args$dimension_names))) {
+        expect_equal(native$observations$values[i,!mask,d],
+          python_pre_missing[[i]][!mask,d],tolerance=1e-12,
+          info=paste("unmasked observations curve",i,
+            "channel",d,spec$kind))
+      }
+    }
     expect_identical(native$observations$provenance$missingness_kind,
       spec$kind)
     expect_identical(as.character(et_to_r(
