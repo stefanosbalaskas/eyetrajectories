@@ -40,9 +40,10 @@ test_that("native Gaussian FPCR refits FPCA and OLS inside deterministic folds",
 })
 test_that("bounded FPCR CV explicitly rejects unsupported published domains",{
   z<-.etr_fpcr_cv_fixture();f<-etr_cross_validate_fpca_regression
-  expect_error(f(z$trajectories,z$outcome,shuffle=TRUE),"shuffle=FALSE")
+  expect_error(f(z$trajectories,z$outcome,shuffle=TRUE,
+    random_state=-1),"nonnegative R integer seed")
   expect_error(f(z$trajectories,z$outcome,cv_unit="group"),
-    "only supports curve folds")
+    "group_column is required")
   expect_error(f(z$trajectories,z$outcome,family="binomial"),
     "family='gaussian'")
   expect_error(f(z$trajectories,z$outcome,covariates=data.frame(a=1:12)),
