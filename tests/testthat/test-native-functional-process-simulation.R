@@ -53,8 +53,9 @@ test_that("dense simulator rejects unsupported domains and nonorthogonal bases",
   expect_error(do.call(f,c(args,list(
     missingness=list(kind="mcar",probability=1)))),
     "missingness")
-  expect_error(do.call(f,c(args,list(score_distribution="student_t"))),
-    "Gaussian")
+  expect_error(do.call(f,c(args,list(
+    score_distribution="student_t",score_df=2))),
+    "finite and greater than 2")
   expect_error(do.call(f,c(args,list(measurement_noise_covariance=matrix(-1,1,1)))),
     "positive semidefinite")
   bad<-args;bad$eigenfunctions<-list(x$modes[[1L]],x$modes[[1L]])
