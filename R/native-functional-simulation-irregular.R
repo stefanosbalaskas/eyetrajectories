@@ -82,8 +82,8 @@
     all(nzchar(dimension_names))&&!anyDuplicated(dimension_names),
     "dimension_names must be unique nonempty strings")
   phase_spec<-.etr_functional_simulation_phase_spec(phase_variation)
-  .etr_assert(identical(score_distribution,"normal"),
-    "only Gaussian score_distribution is currently implemented")
+  score_spec<-.etr_functional_simulation_score_spec(
+    score_distribution,score_df)
   .etr_assert(is.numeric(eigenvalues)&&length(eigenvalues)>=1L&&
     all(is.finite(eigenvalues))&&all(eigenvalues>0)&&
     all(diff(eigenvalues)<=0),
@@ -138,8 +138,8 @@
   on.exit(restore(),add=TRUE)
 
   if(is.null(source_draws)){
-    curve_scores<-matrix(stats::rnorm(n*k),n,k)*
-      matrix(rep(sqrt(eigenvalues),each=n),n,k)
+    curve_scores<-.etr_functional_simulation_sample_curve_scores(
+      n,eigenvalues,score_spec)
     participant_scores<-matrix(stats::rnorm(np*k),np,k)*
       matrix(rep(sqrt(pv),each=np),np,k)
     trial_scores<-matrix(stats::rnorm(n*k),n,k)*
@@ -273,7 +273,7 @@
     phase_exponents=as.numeric(phase_exponents),
     missingness_kind=missing_spec$kind,
     missingness_specification=missingness,
-    score_distribution="normal",n_components=k,
+    score_distribution=score_spec$kind,n_components=k,
     truth_grid=as.numeric(truth_grid),
     native_random_engine=if(is.null(source_draws))
       "base_R_not_NumPy_PCG64" else "externally_retained_source_draws",
@@ -301,8 +301,8 @@
     observed_pre_missing=pre_observed,missingness_mask=masks,
     metadata=metadata,dimension_names=dimension_names,
     coordinate_system=coordinate_system,time_unit=time_unit,
-    observation_design="irregular",score_distribution="normal",
-    score_distribution_parameters=list(kind="normal"),
+    observation_design="irregular",score_distribution=score_spec$kind,
+    score_distribution_parameters=score_spec,
     random_state=seed,provenance=provenance)
   structure(list(observations=observations,truth=truth),
     class="etr_functional_simulation_result")
