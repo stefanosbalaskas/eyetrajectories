@@ -122,9 +122,13 @@ qualification run before being labelled passing.
 
 ## Unresolved Python–R source differences
 
-- Irregular sampling schedules, phase time warps, Student-t
-  score distributions, full Python dataclass/error schemas
-  and many source coercion inputs remain unsupported.
+- Explicit and generated irregular sampling schedules now have a
+  separate bounded native implementation using direct function
+  evaluation and dropout-as-deletion. See
+  `docs/native-functional-simulation-irregular-source.md`.
+  Phase time warps, Student-t score distributions, full Python
+  dataclass/error schemas and many source coercion inputs
+  remain unsupported.
 - The Python source's PCG64 and native base-R random streams
   differ. Distributional and retained-source-draw equivalence
   is scientifically distinct from draw-by-draw RNG identity.
