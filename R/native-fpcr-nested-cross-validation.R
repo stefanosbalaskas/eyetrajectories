@@ -35,6 +35,16 @@ etr_nested_cross_validate_fpca_regression <- function(
       length(group_column)==1L&&!is.na(group_column)&&
       nzchar(group_column),
       "group_column is required for grouped nested CV")
+  n<-length(trajectories$curve_ids)
+  .etr_assert(is.numeric(outer_splits)&&length(outer_splits)==1L&&
+    !is.na(outer_splits)&&is.finite(outer_splits)&&
+    outer_splits==floor(outer_splits)&&
+    outer_splits>=2&&outer_splits<=n,
+    "outer_splits invalid")
+  .etr_assert(is.numeric(inner_splits)&&length(inner_splits)==1L&&
+    !is.na(inner_splits)&&is.finite(inner_splits)&&
+    inner_splits==floor(inner_splits)&&inner_splits>=2,
+    "inner_splits invalid")
   .etr_assert(is.logical(shuffle)&&length(shuffle)==1L&&!is.na(shuffle),
     "shuffle must be one explicit logical flag")
   if(identical(cv_unit,"curve")&&shuffle)
@@ -46,21 +56,17 @@ etr_nested_cross_validate_fpca_regression <- function(
   .etr_assert(is.character(selection_rule)&&length(selection_rule)==1L&&
     !is.na(selection_rule)&&selection_rule%in%c("minimum","one_se"),
     "selection_rule must be minimum or one_se")
-  n<-length(trajectories$curve_ids)
   .etr_assert(is.numeric(outcome)&&is.null(dim(outcome))&&
     length(outcome)==n&&all(is.finite(outcome)),
     "outcome must be finite and curve aligned")
   .etr_assert(is.numeric(candidate_components)&&
-    length(candidate_components)>0L&&all(is.finite(candidate_components))&&
+    length(candidate_components)>0L&&!anyNA(candidate_components)&&
+    all(is.finite(candidate_components))&&
     all(candidate_components==floor(candidate_components))&&
-    all(candidate_components>=1),"candidate_components must be positive integers")
+    all(candidate_components>=1)&&
+    all(candidate_components<=.Machine$integer.max),
+    "candidate_components must be positive integers")
   counts<-sort(unique(as.integer(candidate_components)))
-  .etr_assert(is.numeric(outer_splits)&&length(outer_splits)==1L&&
-    is.finite(outer_splits)&&outer_splits==floor(outer_splits)&&
-    outer_splits>=2&&outer_splits<=n,"outer_splits invalid")
-  .etr_assert(is.numeric(inner_splits)&&length(inner_splits)==1L&&
-    is.finite(inner_splits)&&inner_splits==floor(inner_splits)&&
-    inner_splits>=2,"inner_splits invalid")
   no<-as.integer(outer_splits);ni<-as.integer(inner_splits)
   splits<-.etr_cv_fold_assignment(trajectories,no,cv_unit,
     group_column,shuffle,random_state)
