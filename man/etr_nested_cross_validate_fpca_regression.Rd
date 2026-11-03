@@ -28,7 +28,7 @@ every curve from one group remains within a single fold.}
 RNG; grouped folds are deterministic even if \code{shuffle=TRUE}.}
 \item{random_state}{Nonnegative integer R seed for shuffled curve
 folds; inner seeds use the source offsets outer_fold + 1. R and
-NumPy/scikit-learn shuffle permutations are not identical.}
+sklearn NumPy RandomState shuffle permutations are not identical.}
 }
 \value{Outer fold and inner selection summaries, held-out predictions and provenance.}
 \description{Source-bounded nested Gaussian FPCA regression: train all
