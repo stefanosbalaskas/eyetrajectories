@@ -232,16 +232,31 @@ def _etr_irr_phi(t):
     py_pre_times<-et_to_r(pt$pre_missing_observation_times)
     py_latent<-et_to_r(pt$latent_at_pre_missing_times)
     expect_true(is.list(py_times)&&is.list(py_values)&&
-      is.list(py_pre)&&is.list(py_noise))
+      is.list(py_pre)&&is.list(py_noise)&&is.list(py_pre_times))
+    # Python NumPy 1-D arrays may become R arrays with dim=c(n)
+    # after reticulate conversion. Native irregular time is a bare
+    # numeric vector by contract. Compare source values after
+    # removing only that representation attribute, not any values.
+    source_time_values<-function(x) {
+      expect_true(is.numeric(x)&&
+        (is.null(dim(x))||
+         (length(dim(x))==1L&&identical(dim(x),as.integer(length(x))))))
+      as.numeric(x)
+    }
     expect_identical(length(py_times),length(native$observations$time))
     expect_identical(native$truth$missingness_mask,py_masks)
     for(i in seq_along(py_times)){
-      expect_equal(native$observations$time[[i]],py_times[[i]],
-        tolerance=0)
+      expect_identical(length(native$observations$time[[i]]),
+        length(py_times[[i]]))
+      expect_equal(native$observations$time[[i]],
+        source_time_values(py_times[[i]]),tolerance=0)
       expect_equal(unname(native$observations$values[[i]]),
         unname(py_values[[i]]),tolerance=1e-12)
+      expect_identical(length(
+        native$truth$pre_missing_observation_times[[i]]),
+        length(py_pre_times[[i]]))
       expect_equal(native$truth$pre_missing_observation_times[[i]],
-        py_pre_times[[i]],tolerance=0)
+        source_time_values(py_pre_times[[i]]),tolerance=0)
       expect_equal(unname(native$truth$observed_pre_missing[[i]]),
         unname(py_pre[[i]]),tolerance=1e-12)
       expect_equal(unname(native$truth$latent_at_pre_missing_times[[i]]),
