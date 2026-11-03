@@ -98,7 +98,10 @@ etr_run_functional_recovery_scenarios<-function(
         error=function(e)structure(list(error=e,status="recovery_failed"),
           class="etr_recovery_attempt_error"))
       if(inherits(result,"etr_recovery_attempt_error"))return(result)
-      payload<-.etr_recovery_runner_metrics(result)
+      payload<-tryCatch(.etr_recovery_runner_metrics(result),
+        error=function(e)structure(list(error=e,status="recovery_failed"),
+          class="etr_recovery_attempt_error"))
+      if(inherits(payload,"etr_recovery_attempt_error"))return(payload)
       structure(payload,class="etr_recovery_attempt_success")
     }
     result<-run()
