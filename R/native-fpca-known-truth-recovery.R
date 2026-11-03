@@ -1,7 +1,8 @@
 # Frozen Python 1.2.0: recovery.py::evaluate_fpca_recovery
 # commit c1cd95ad718327550f7e55393ff38582872f7a94
-# Restricted to one estimated and one declared component. The Python
-# multi-component optimal assignment/principal-angle domain remains open.
+# One-mode preexisting developer-validated numerical path is preserved.
+# A new exact multi-mode path handles source weighted rectangular assignment,
+# covariance, matched component scores, and QR/SVD subspace angles.
 # No estimator, phase alignment, simulation, interpolation or scaling.
 
 .etr_fpca_recovery_metric <- function(name){
@@ -45,16 +46,19 @@
     value=as.numeric(value),component=component,source=NULL)
 }
 
-#' Known-truth FPCA recovery for one predeclared component
+#' Known-truth FPCA recovery for one or multiple retained components
 #'
-#' Validates exact grid, unit scales, dimension order, and one fitted/true
-#' mode. Computes source population covariance, signed component match,
-#' subspace angle, score alignment and mean curve reconstruction error.
-#' Does not match multiple components or claim full-domain parity.
+#' Validates exact grid, unit scales and dimension order. Computes source
+#' population covariance, optimal signed component matching, weighted
+#' principal angles, score correlation/RMSE and latent reconstruction ISE.
+#' Preserves previously qualified one-component numerical behavior;
+#' multiple components are matched with a native exact Hungarian solver.
+#' Does not claim complete source-domain equivalence or calibration.
 #' @param result Explicit source-shaped unscaled FPCA fit.
-#' @param truth Frozen functional simulation truth with one positive mode.
+#' @param truth Frozen functional simulation truth with at least as many
+#'   positive generating modes as fitted retained components.
 #' @return Source-shaped functional recovery assessment, with zero-based
-#'   matched truth index and no automatic component selection.
+#'   matched truth indices, sign alignment and no component selection.
 #' @export
 etr_evaluate_fpca_recovery<-function(result,truth){
   .etr_recovery_source_fields(result,c("time","provenance",
@@ -63,6 +67,13 @@ etr_evaluate_fpca_recovery<-function(result,truth){
   .etr_recovery_source_fields(truth,c("truth_grid","dimension_names",
     "mean","eigenfunctions","eigenvalues","scores",
     "latent_on_truth_grid"),"FPCA generating truth")
+  fitted_k<-if(is.array(result$components)&&
+    length(dim(result$components))==3L)dim(result$components)[1L] else NA_integer_
+  truth_k<-if(is.array(truth$eigenfunctions)&&
+    length(dim(truth$eigenfunctions))==3L)
+      dim(truth$eigenfunctions)[1L] else NA_integer_
+  if(isTRUE(fitted_k>1L)||isTRUE(truth_k>1L))
+    return(.etr_fpca_recovery_multi(result,truth))
   time<-truth$truth_grid
   .etr_assert(is.numeric(time)&&is.null(dim(time))&&
     length(time)>=3L&&all(is.finite(time))&&all(diff(time)>0),
