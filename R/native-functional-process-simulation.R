@@ -32,9 +32,15 @@
 #' @param n_participants,trials_per_participant Declared hierarchy counts.
 #' @param dimension_names Unique response dimension names.
 #' @param coordinate_system,time_unit Source metadata.
-#' @param observation_design Only "dense" currently supported.
-#' @param observation_times,samples_per_curve Must be NULL for dense data.
-#' @param irregular_time_design Reserved source option; not used for dense data.
+#' @param observation_design "dense" (complete common grid) or "irregular"
+#'   (curve-specific schedules; no interpolation).
+#' @param observation_times Optional explicit list of curve-specific finite
+#'   increasing time arrays within truth_grid support; for irregular only.
+#' @param samples_per_curve Optional integer count or two-element integer
+#'   range for native-generated irregular sampling; mutually exclusive
+#'   with observation_times. NULL for dense.
+#' @param irregular_time_design "uniform", "center_clustered" or
+#'   "boundary_poor" source sampling design for generated irregular grids.
 #' @param participant_eigenvalues,trial_eigenvalues Nonnegative source
 #'   variance components, default zero.
 #' @param measurement_noise_sd Scalar or per-channel Gaussian noise SD.
@@ -53,7 +59,9 @@
 #'   numerical draw arrays (curve_scores, participant_scores,
 #'   trial_scores, measurement_noise) for exact fixed-draw comparison.
 #'   With declared missingness, optional fifth field missingness_mask
-#'   permits frozen Python realized logical-mask replay.
+#'   permits frozen Python realized logical-mask replay. Irregular
+#'   observations use a per-curve list of numeric noise matrices,
+#'   each with rows equal to the pre-missing curve schedule.
 #' @return Native R observations and fully auditable source-shaped truth;
 #'   Python frozen dataclass representation is not claimed.
 #' @export
@@ -69,6 +77,23 @@ etr_simulate_functional_process<-function(
     score_distribution="normal",score_df=5,
     orthonormal_tolerance=1e-6,random_state=42L,
     source_draws=NULL){
+  if(identical(observation_design,"irregular"))
+    return(.etr_functional_simulation_irregular(
+      mean=mean,eigenfunctions=eigenfunctions,eigenvalues=eigenvalues,
+      truth_grid=truth_grid,n_participants=n_participants,
+      trials_per_participant=trials_per_participant,
+      dimension_names=dimension_names,coordinate_system=coordinate_system,
+      time_unit=time_unit,observation_times=observation_times,
+      samples_per_curve=samples_per_curve,
+      irregular_time_design=irregular_time_design,
+      participant_eigenvalues=participant_eigenvalues,
+      trial_eigenvalues=trial_eigenvalues,
+      measurement_noise_sd=measurement_noise_sd,
+      measurement_noise_covariance=measurement_noise_covariance,
+      missingness=missingness,phase_variation=phase_variation,
+      score_distribution=score_distribution,score_df=score_df,
+      orthonormal_tolerance=orthonormal_tolerance,
+      random_state=random_state,source_draws=source_draws))
   np<-.etr_scenario_integer(n_participants,"n_participants",1L)
   trials<-.etr_scenario_integer(trials_per_participant,
     "trials_per_participant",1L)
