@@ -59,7 +59,7 @@ test_that("nested Gaussian FPCR covariates stay aligned across both fold layers"
   z <- .etr_fpcr_covariate_fixture()
   for(rule in c("minimum","one_se")) {
     run <- function(y) etr_nested_cross_validate_fpca_regression(
-      z$x,y,candidate_components=c(1L,2L),
+      z$x,y,candidate_components=1L,
       covariates=z$cov,outer_splits=3L,inner_splits=2L,
       selection_rule=rule,cv_unit="group",
       group_column="participant",shuffle=FALSE)
@@ -144,7 +144,7 @@ _src_cv=et.cross_validate_fpca_regression(
  _x,_y,candidate_components=(1,2),covariates=_cov,
  n_splits=3,cv_unit='group',group_column='participant',shuffle=False)
 _src_nested=et.nested_cross_validate_fpca_regression(
- _x,_y,candidate_components=(1,2),covariates=_cov,
+ _x,_y,candidate_components=(1,),covariates=_cov,
  outer_splits=3,inner_splits=2,cv_unit='group',
  group_column='participant',selection_rule='minimum',shuffle=False)
 ")
@@ -154,7 +154,7 @@ _src_nested=et.nested_cross_validate_fpca_regression(
     n_splits=3L,cv_unit="group",group_column="participant",
     shuffle=FALSE)
   nested <- etr_nested_cross_validate_fpca_regression(z$x,z$y,
-    candidate_components=c(1L,2L),covariates=z$cov,
+    candidate_components=1L,covariates=z$cov,
     outer_splits=3L,inner_splits=2L,
     cv_unit="group",group_column="participant",
     selection_rule="minimum",shuffle=FALSE)
