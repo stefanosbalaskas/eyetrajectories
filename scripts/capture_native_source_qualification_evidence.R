@@ -495,6 +495,8 @@ source_files<-unique(c(
   "tests/testthat/test-native-fpca-known-truth-recovery.R",
   "tests/testthat/test-native-fpca-multicomponent-recovery-source.R",
   "R/native-fpca-multicomponent-recovery.R",
+  "man/etr_evaluate_fpca_recovery.Rd",
+  "docs/native-multicomponent-fpca-recovery-source.md",
   "R/native-fpca-known-truth-recovery.R",
   "tests/testthat/test-native-fpca-external-score-reconstruction.R",
   "tests/testthat/test-native-pilot-source-adversarial.R",
