@@ -134,9 +134,10 @@ This is not full Python-to-R domain equivalence.
 Full typed Python `IrregularTrajectorySet` and
 `FunctionalSimulationTruth` dataclass identities,
 Python-specific input coercions, exception messages,
-NumPy PCG64, power phase warps, Student-t scores and
-independently reviewed source certification remain
-open. No automatic irregular-to-common-grid interpolation,
+NumPy PCG64 and Student-t scores, together with full independent
+source certification, remain open. Power-phase variation is now
+implemented for irregular and dense simulations; see
+`docs/native-functional-simulation-phase-source.md`. No automatic irregular-to-common-grid interpolation,
 silent resampling or synthetic exposure replacement
 is permitted. The research branch changes do not modify
 the separately staged CRAN 0.4.2 candidate.
