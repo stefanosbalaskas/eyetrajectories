@@ -20,10 +20,14 @@
 #' @param covariates Must be NULL in the native source-aligned subset.
 #' @param n_splits Deterministic KFold count >=2.
 #' @param scaling Native dense FPCA scaling.
-#' @param cv_unit Must be \code{"curve"}.
-#' @param group_column Must be NULL.
-#' @param shuffle Must be FALSE to use source-equivalent KFold assignment.
-#' @param random_state Ignored with nonshuffled KFold, as in Python.
+#' @param cv_unit "curve" or "group"; group CV holds all trials
+#'   of a participant/group together in the same held-out fold.
+#' @param group_column For group CV, required metadata column containing
+#'   nonmissing group identifiers. Ignored for curve CV.
+#' @param shuffle Logical flag; for curve CV uses isolated base-R
+#'   random assignment. Group CV is deterministic regardless of shuffle.
+#' @param random_state Nonnegative native R seed for shuffled curve folds;
+#'   ignored for unshuffled/group modes. Does not reproduce NumPy draws.
 #' @return Source-shaped fold losses, test predictions, assignments and
 #'   provenance; never fits on held-out curves.
 #' @export
