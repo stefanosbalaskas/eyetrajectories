@@ -51,8 +51,9 @@ test_that("outer held-out outcomes cannot affect their own nested prediction",{
 test_that("nested FPCR refuses unsupported Python source domains",{
   z<-.etr_nested_cv_fixture()
   f<-etr_nested_cross_validate_fpca_regression
-  expect_error(f(z$x,z$y,shuffle=TRUE),"shuffle must be FALSE")
-  expect_error(f(z$x,z$y,cv_unit="group"),"cv_unit")
+  expect_error(f(z$x,z$y,shuffle=TRUE,random_state=-1L),
+    "nonnegative inner/outer R shuffle seeds")
+  expect_error(f(z$x,z$y,cv_unit="group"),"group_column is required")
   expect_error(f(z$x,z$y,family="binomial"),"family")
   expect_error(f(z$x,z$y,covariates=data.frame(z=1:12)),"covariates")
   expect_error(f(z$x,z$y,selection_rule="bad"),"selection_rule")
