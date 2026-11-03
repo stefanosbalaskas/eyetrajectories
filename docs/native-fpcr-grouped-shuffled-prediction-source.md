@@ -43,7 +43,8 @@ For `cv_unit="curve",shuffle=TRUE`, the method uses
 repeated calls at the same native seed produce identical
 assignments, component fits and held-out predictions.
 Native R and NumPy/scikit-learn random generators use
-different algorithms. The same seed therefore is **not**
+different algorithms (native R versus sklearn NumPy RandomState).
+The same seed therefore is **not**
 asserted to reproduce the same Python fold permutation.
 For `shuffle=FALSE`, prior deterministic sklearn KFold
 block-assignment and existing Gaussian prediction values
@@ -88,7 +89,7 @@ selection tables.
 Source-scoped statistical limitations remain explicit:
 Gaussian scalar regression only; no covariates,
 no binomial family, no guaranteed sklearn group-tie
-ordering, no NumPy PCG64/MT19937 seed equivalence,
+ordering, no sklearn NumPy RandomState seed equivalence,
 and no Python dataclass identity. Participant grouping
 prevents leakage but does not in itself fit a
 within-participant residual correlation model or
