@@ -178,3 +178,135 @@ _cv_group=et.cross_validate_fpca_regression(
   expect_false(any(etr_native_parity_catalog()$
     one_to_one_native_contract_complete))
 })
+
+test_that("nested FPCR selects components within groups without outer-group leakage",{
+  z<-.etr_fpcr_group_fixture()
+  for(rule in c("minimum","one_se")){
+    x<-etr_nested_cross_validate_fpca_regression(
+      z$trajectories,z$outcome,candidate_components=c(1L,2L),
+      outer_splits=3L,inner_splits=2L,
+      selection_rule=rule,cv_unit="group",
+      group_column="participant",shuffle=TRUE,random_state=121L)
+    expect_s3_class(x,"etr_nested_fpcr_cv")
+    expect_true(x$provenance$outer_performance_unseen_by_inner_selection)
+    expect_true(x$provenance$group_leakage_prevented)
+    expect_identical(x$cv_unit,"group")
+    expect_identical(x$group_column,"participant")
+    expect_identical(x$random_state,NULL)
+    expect_identical(nrow(x$outer_folds),3L)
+    expect_identical(nrow(x$inner_summaries),6L)
+    expect_identical(nrow(x$predictions),12L)
+    expect_identical(names(x$predictions),
+      c("curve_id","outer_fold","observed","prediction",
+        "selected_n_components","group"))
+    expect_identical(sort(x$predictions$curve_id),
+      sort(z$trajectories$curve_ids))
+    for(g in unique(x$predictions$group))
+      expect_identical(length(unique(x$predictions$outer_fold[
+        x$predictions$group==g])),1L)
+    for(fold in 0:2){
+      rows<-x$predictions[x$predictions$outer_fold==fold,]
+      expect_equal(x$outer_folds$loss[fold+1L],
+        sqrt(mean((rows$observed-rows$prediction)^2)),tolerance=1e-12)
+    }
+    again<-etr_nested_cross_validate_fpca_regression(
+      z$trajectories,z$outcome,candidate_components=c(1L,2L),
+      outer_splits=3L,inner_splits=2L,
+      selection_rule=rule,cv_unit="group",
+      group_column="participant",shuffle=FALSE)
+    expect_identical(x$predictions,again$predictions)
+    # Perturb all outcomes from the first outer held-out group:
+    # its predictions/selected k cannot change, only its observed loss.
+    first<-which(x$predictions$outer_fold==0L)
+    held_ids<-match(x$predictions$curve_id[first],
+      z$trajectories$curve_ids)
+    changed<-z$outcome;changed[held_ids]<-changed[held_ids]+100
+    shifted<-etr_nested_cross_validate_fpca_regression(
+      z$trajectories,changed,candidate_components=c(1L,2L),
+      outer_splits=3L,inner_splits=2L,
+      selection_rule=rule,cv_unit="group",
+      group_column="participant",shuffle=TRUE,random_state=121L)
+    expect_equal(x$predictions$prediction[first],
+      shifted$predictions$prediction[first],tolerance=1e-12)
+    expect_identical(x$outer_folds$selected_n_components[1L],
+      shifted$outer_folds$selected_n_components[1L])
+    expect_false(isTRUE(all.equal(x$outer_folds$loss[1L],
+      shifted$outer_folds$loss[1L])))
+  }
+})
+
+test_that("R-seeded shuffled nested FPCR respects outer/inner random-state isolation",{
+  z<-.etr_fpcr_group_fixture()
+  set.seed(38L);before<-.Random.seed
+  run<-function(seed)etr_nested_cross_validate_fpca_regression(
+    z$trajectories,z$outcome,candidate_components=1L,
+    outer_splits=3L,inner_splits=2L,
+    cv_unit="curve",shuffle=TRUE,random_state=seed)
+  a<-run(99L)
+  expect_identical(.Random.seed,before)
+  b<-run(99L)
+  expect_identical(.Random.seed,before)
+  expect_identical(a$outer_folds,b$outer_folds)
+  expect_identical(a$inner_summaries,b$inner_summaries)
+  expect_identical(a$predictions,b$predictions)
+  expect_identical(a$random_state,99L)
+  expect_identical(a$provenance$random_engine,
+    "base_R_sample_not_NumPy")
+  expect_false(a$provenance$group_leakage_prevented)
+})
+
+test_that("real Python 1.2 grouped nested FPCR matches source on three unequal participant blocks",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Pinned Python 1.2 grouped nested FPCR source oracle opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  reticulate::py_run_string("
+import numpy as np, pandas as pd, eyetrajectoriespy as et
+_tn=np.linspace(0,1,5);_za=np.linspace(-2,2,12)
+_zb=np.array([1,-1,2,-2,1.5,-1.5,1.2,-1.2,2.2,-2.2,.7,-.7])
+_vn=np.array([.2+a*np.sin(np.pi*_tn)+b*np.cos(2*np.pi*_tn)
+     for a,b in zip(_za,_zb)])[:,:,None]
+_yn=1+.5*_za-.2*_zb+.03*np.array([0,1,-1,0,1,-1,0,1,-1,0,1,-1])
+_xn=et.TrajectorySet(time=_tn,values=_vn,
+  curve_ids=tuple('curve'+str(i) for i in range(1,13)),
+  dimension_names=('x',),
+  metadata=pd.DataFrame({'participant':['P01']*5+['P02']*4+['P03']*3}),
+  coordinate_system='normalized',time_unit='normalized')
+_src_nested_group=et.nested_cross_validate_fpca_regression(
+ _xn,_yn,candidate_components=(1,2),outer_splits=3,
+ inner_splits=2,cv_unit='group',group_column='participant',
+ selection_rule='minimum',shuffle=True,random_state=121)
+")
+  direct<-reticulate::py_call(
+    etpy_get_export("nested_cross_validate_fpca_regression"),
+    trajectories=reticulate::py_eval("_xn",convert=FALSE),
+    outcome=reticulate::py_eval("_yn",convert=FALSE),
+    candidate_components=reticulate::py_eval("(1,2)",convert=FALSE),
+    outer_splits=3L,inner_splits=2L,cv_unit="group",
+    group_column="participant",selection_rule="minimum",
+    shuffle=TRUE,random_state=121L)
+  z<-.etr_fpcr_group_fixture()
+  native<-etr_nested_cross_validate_fpca_regression(
+    z$trajectories,z$outcome,candidate_components=c(1L,2L),
+    outer_splits=3L,inner_splits=2L,cv_unit="group",
+    group_column="participant",selection_rule="minimum",
+    shuffle=TRUE,random_state=121L)
+  for(field in c("outer_folds","inner_summaries","predictions")){
+    original<-et_to_r(reticulate::py_eval(
+      paste0("_src_nested_group.",field),convert=FALSE))
+    replay<-et_to_r(reticulate::py_get_attr(direct,field))
+    expect_equal(replay,original,tolerance=1e-8,ignore_attr=TRUE)
+    expect_identical(names(native[[field]]),names(original))
+    expect_identical(nrow(native[[field]]),nrow(original))
+    for(column in names(original)){
+      actual<-native[[field]][[column]]
+      expected<-original[[column]]
+      if(is.numeric(actual))
+        expect_equal(as.numeric(actual),as.numeric(expected),
+          tolerance=1e-8,
+          info=paste("grouped nested source",field,column))
+      else expect_identical(as.character(actual),as.character(expected))
+    }
+  }
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})
