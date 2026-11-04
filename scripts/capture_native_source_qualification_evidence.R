@@ -3,6 +3,9 @@
 # Run from package root:
 # source("scripts/capture_native_source_qualification_evidence.R")
 stopifnot(file.exists("DESCRIPTION"))
+# First validate R source syntax, the mandatory test selector, and
+# changed oracle-call hazards; do not initialize Python or reticulate.
+source("scripts/preflight_scientific_pr.R", local = TRUE)
 required_scientific_tests<-file.path("tests","testthat",paste0(
   "test-",c("native-generalized-fosr-prediction",
     "native-generalized-fosr-bootstrap-source",
