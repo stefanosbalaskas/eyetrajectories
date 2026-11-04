@@ -11,7 +11,7 @@ test_that("all source-evidence required tests match the real capture filter",{
     indices<-which(vapply(expressions,function(expr)
       is.call(expr)&&identical(expr[[1L]],as.name("<-"))&&
         identical(expr[[2L]],as.name(symbol)),logical(1L)))
-    expect_length(indices,1L,
+    expect_true(length(indices)==1L,
       info=paste("exactly one top-level assignment required for",symbol))
     expressions[[indices[[1L]]]][[3L]]
   }
@@ -20,7 +20,7 @@ test_that("all source-evidence required tests match the real capture filter",{
   expect_identical(length(required),length(unique(required)))
   expect_true(all(file.exists(file.path(root,required))))
   unmatched<-required[!grepl(selector,basename(required))]
-  expect_length(unmatched,0L,
+  expect_true(length(unmatched)==0L,
     info=paste("capture omits required scientific suites:",
       paste(unmatched,collapse=", ")))
   for(suite in c("native-numpy-input-coercion",
