@@ -79,16 +79,17 @@ _ET_L2_A=np.array([[0+7j,1-3j],[2+1j,4-2j],[6+9j,8+5j]],
 _ET_L2_B=np.zeros((3,2),dtype=np.complex128)
 _ET_L2_TIME=np.array([0+2j,1-7j,3+4j],dtype=np.complex128)
 _ET_L2_DW=np.array([1-6j,2+9j],dtype=np.complex128)
-def _ET_L2_CALL(a,b,time,dw):
+def _ET_L2_CALL(source_fn,a,b,time,dw):
     with warnings.catch_warnings():
         warnings.simplefilter('ignore')
         with np.errstate(over='ignore',invalid='ignore',divide='ignore'):
-            return et.functional_l2_distance(a,b,time=time,
+            return source_fn(a,b,time=time,
                 dimension_weights=dw)
 ")
   f<-reticulate::py_eval("_ET_L2_CALL",convert=FALSE)
   z<-.etr_l2_complex_fixture()
   py<-reticulate::py_call(f,
+    source_fn=etpy_get_export("functional_l2_distance"),
     a=reticulate::py_eval("_ET_L2_A",convert=FALSE),
     b=reticulate::py_eval("_ET_L2_B",convert=FALSE),
     time=reticulate::py_eval("_ET_L2_TIME",convert=FALSE),
@@ -100,19 +101,25 @@ def _ET_L2_CALL(a,b,time,dw):
     convert=FALSE)
   npb<-reticulate::py_eval("np.zeros((3,2),dtype=float)",convert=FALSE)
   tm<-reticulate::r_to_py(c(0,1,3))
-  py_inf<-reticulate::py_call(f,a=npa,b=npb,time=tm,
+  py_inf<-reticulate::py_call(f,
+    source_fn=etpy_get_export("functional_l2_distance"),
+    a=npa,b=npb,time=tm,
     dw=reticulate::r_to_py(c(1,2)))
   expect_identical(as.numeric(et_to_r(py_inf)),Inf)
   a_inf<-matrix(c(Inf,1,2,3,4,5),nrow=3L,byrow=TRUE)
   b0<-matrix(0,nrow=3L,ncol=2L)
   expect_identical(etr_l2_distance(a_inf,b0,c(0,1,3),c(1,2),
     python_boundary_mode=TRUE),Inf)
-  py_nan<-reticulate::py_call(f,a=npa,b=npa,time=tm,
+  py_nan<-reticulate::py_call(f,
+    source_fn=etpy_get_export("functional_l2_distance"),
+    a=npa,b=npa,time=tm,
     dw=reticulate::r_to_py(c(1,2)))
   expect_true(is.nan(as.numeric(et_to_r(py_nan))))
   expect_true(is.nan(etr_l2_distance(a_inf,a_inf,c(0,1,3),c(1,2),
     python_boundary_mode=TRUE)))
-  py_weight_nan<-reticulate::py_call(f,a=npb,b=npb,time=tm,
+  py_weight_nan<-reticulate::py_call(f,
+    source_fn=etpy_get_export("functional_l2_distance"),
+    a=npb,b=npb,time=tm,
     dw=reticulate::r_to_py(c(NaN,1)))
   expect_true(is.nan(as.numeric(et_to_r(py_weight_nan))))
   expect_true(is.nan(etr_l2_distance(b0,b0,c(0,1,3),c(NaN,1),
