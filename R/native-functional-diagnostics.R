@@ -58,9 +58,11 @@
 #' @param reference_dimension Python-style zero-based reference index (-1 = last).
 #' @param epsilon Positive clipping floor, part of the scientific specification.
 #' @param python_boundary_mode Explicitly reproduce Python 1.2 exceptional
-#'   NaN/Inf propagation on the inspected scalar/array boundary. FALSE
-#'   preserves the finite-only native scientific contract; this option
-#'   does not certify the full Python input/return contract.
+#'   NaN/Inf propagation and complex ndarray-to-real casting on the
+#'   inspected scalar/array boundary. In this mode, Boolean reference
+#'   indices follow Python integer indexing semantics. FALSE preserves
+#'   the finite-only native scientific contract. No full-source
+#'   input/return or independent certification is implied.
 #' @return Three-dimensional array with the reference channel removed.
 #' @export
 etr_alr_transform <- function(values,reference_dimension=-1L,epsilon=1e-8,
@@ -82,6 +84,15 @@ etr_alr_transform <- function(values,reference_dimension=-1L,epsilon=1e-8,
       is.finite(epsilon) && epsilon>0,"epsilon must be positive and finite")
   }
   values<-.etr_simplex_nested_input(values)
+  if(isTRUE(python_boundary_mode) && is.array(values) &&
+     length(dim(values))==3L && is.complex(values)) {
+    # np.asarray(complex ndarray, dtype=float) discards the imaginary
+    # part. This rule does not apply to Python lists of complex scalars.
+    values<-Re(values)
+  }
+  if(isTRUE(python_boundary_mode) && is.logical(reference_dimension) &&
+     length(reference_dimension)==1L && !is.na(reference_dimension))
+    reference_dimension<-as.integer(reference_dimension)
   # NumPy's published np.asarray(values, dtype=float) also accepts 3-D
   # numeric-string and Boolean arrays. Retain native fail-closed checks for nonfinite
   # and malformed values; conversion alone never approves full parity.
@@ -111,7 +122,8 @@ etr_alr_transform <- function(values,reference_dimension=-1L,epsilon=1e-8,
 #' Recover simplex-valued trajectories from additive log-ratios
 #' @param transformed Finite numeric 3D ALR array in default mode.
 #' @param python_boundary_mode When TRUE, reproduce Python 1.2 nonfinite
-#'   exponentiation and normalization on inspected numeric arrays.
+#'   exponentiation/normalization, complex ndarray-to-real coercion,
+#'   Boolean reference indices and integer-only NumPy output shapes.
 #'   The default keeps the native scientific finite-only contract.
 #' @param reference_dimension Python-style zero-based reference channel.
 #' @param n_dimensions Original number of simplex channels.
@@ -121,8 +133,11 @@ etr_inverse_alr <- function(transformed,reference_dimension,n_dimensions,
   .etr_assert(is.logical(python_boundary_mode) &&
     length(python_boundary_mode)==1L && !is.na(python_boundary_mode),
     "python_boundary_mode must be a nonmissing logical scalar")
-  # Frozen NumPy requires an integer shape dimension; a Boolean is not an
-  # accepted np.ones() shape in the source inverse_alr() construction.
+  # Frozen NumPy np.ones(shape) requires an integer shape dimension;
+  # Boolean and integer-valued float shape scalars are not accepted.
+  if(isTRUE(python_boundary_mode))
+    .etr_assert(is.integer(n_dimensions) && length(n_dimensions)==1L,
+      "n_dimensions must be a Python integer shape in source mode")
   .etr_assert(is.numeric(n_dimensions) && length(n_dimensions)==1L &&
     is.finite(n_dimensions) && n_dimensions>=1L &&
     n_dimensions==as.integer(n_dimensions),
@@ -131,6 +146,15 @@ etr_inverse_alr <- function(transformed,reference_dimension,n_dimensions,
   # for inverse logits as well as for forward ALR inputs. Preserve the exact
   # input geometry in native R (including zero/negative logits).
   transformed<-.etr_simplex_nested_input(transformed)
+  if(isTRUE(python_boundary_mode) && is.array(transformed) &&
+     length(dim(transformed))==3L && is.complex(transformed)) {
+    # Frozen Python np.asarray(..., dtype=float) casts a complex ndarray
+    # to its real part; do not silently cast in default R science mode.
+    transformed<-Re(transformed)
+  }
+  if(isTRUE(python_boundary_mode) && is.logical(reference_dimension) &&
+     length(reference_dimension)==1L && !is.na(reference_dimension))
+    reference_dimension<-as.integer(reference_dimension)
   # Frozen Python np.asarray(..., dtype=float) accepts numeric-string
   # and Boolean arrays. Convert that finite, rectangular domain without expanding
   # the native overflow/nonfinite scientific contract.
