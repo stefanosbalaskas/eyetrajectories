@@ -433,6 +433,7 @@ source_files<-unique(c(
   "tests/testthat/test-native-final-sparse-elastic-analogues.R",
   queue$oracle_test,
   "R/native-source-diagnostic-frames.R",
+  "docs/native-multivariate-numpy-histogram-source.md",
   "man/etr_native_source_diagnostic_frames.Rd",
   "R/native-sparse-scientific-graphics.R",
   "R/native-generalized-mixed-source-graphics.R",
