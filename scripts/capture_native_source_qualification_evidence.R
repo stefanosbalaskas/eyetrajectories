@@ -243,8 +243,6 @@ filter<-paste(c(
   "native-direct-source-workflow-attribution",
   "native-pilot-source-adversarial",
     "native-four-pilot-scalar-boundary-source",
-    "native-trapezoid-complex-source",
-    "native-functional-l2-complex-source",
     "native-functional-distance-source-domain",
     "native-preprocessing-python-boundary-source",
     "native-scalar-on-fpca-source-domain",
