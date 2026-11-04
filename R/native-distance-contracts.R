@@ -348,8 +348,12 @@ etr_dynamic_time_warping <- function(
 #' @export
 etr_pairwise_dtw_full <- function(
     x,dimensions=NULL,dimension_weights=NULL,window_radius=NULL,
-    step_pattern="symmetric1",normalize=FALSE) {
+    step_pattern="symmetric1",normalize=FALSE,
+    python_boundary_mode=FALSE) {
   idx <- .etr_preprocessing_dimensions(x,dimensions)
+  .etr_assert(is.logical(python_boundary_mode)&&
+    length(python_boundary_mode)==1L&&!is.na(python_boundary_mode),
+    "python_boundary_mode must be a nonmissing logical scalar")
   .etr_assert(is.character(step_pattern) &&
     length(step_pattern)==1L && !is.na(step_pattern) &&
     step_pattern %in% c("symmetric1","symmetric2"),
@@ -365,7 +369,7 @@ etr_pairwise_dtw_full <- function(
   etr_dynamic_time_warping(
     sample_a,sample_a,dimension_weights=dimension_weights,
     window_radius=window_radius,step_pattern=step_pattern,
-    normalize=normalize)
+    normalize=normalize,python_boundary_mode=python_boundary_mode)
   n <- dim(x$values)[1L]
   out <- matrix(0,n,n)
   if(n>=2L) for(i in seq_len(n-1L)) for(j in (i+1L):n) {
@@ -376,7 +380,7 @@ etr_pairwise_dtw_full <- function(
     out[i,j] <- etr_dynamic_time_warping(
       a,b,dimension_weights=dimension_weights,
       window_radius=window_radius,step_pattern=step_pattern,
-      normalize=normalize)
+      normalize=normalize,python_boundary_mode=python_boundary_mode)
     out[j,i] <- out[i,j]
   }
   out
