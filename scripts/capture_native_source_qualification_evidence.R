@@ -604,6 +604,7 @@ source_files<-unique(c(
   "R/advanced-functional-regression.R",
   "R/native-scalar-on-fpca-source.R",
   "man/etr-advanced-functional-regression.Rd",
+  "docs/native-complex-numpy-boundary-source.md",
   "man/native-api.Rd",
   "tests/testthat/test-native-sparse-known-truth-recovery.R",
   "tests/testthat/test-native-mixed-bootstrap-width-comparison.R",
