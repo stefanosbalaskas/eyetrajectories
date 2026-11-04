@@ -372,6 +372,20 @@ def reconcile(packet_dir: str | Path, expected_r_head: str,
                      q["python_name"], q["namespace"]))
     original_gap = sum(q["historical_source_gap_open"] == "TRUE"
                        for q in candidates)
+    # Separate the documented source-gap partition from reviewer fastlane
+    # eligibility. An alternative backend/estimand can have no *recorded*
+    # source gap while still requiring a separate scientific review lane.
+    no_gap = [q for q in candidates
+              if q["historical_source_gap_open"] == "FALSE"]
+    fastlane = [q for q in no_gap
+                if q["backend_or_estimand_distinct"] == "FALSE"]
+    excluded = [q for q in no_gap
+                if q["backend_or_estimand_distinct"] == "TRUE"]
+    count_kind = lambda rows, callable_: sum(
+        (q["kind"] == "function") == callable_ for q in rows)
+    check(len(no_gap) + original_gap == len(candidates) and
+          len(fastlane) + len(excluded) == len(no_gap),
+          "508 source-gap / reviewer-fastlane partitions do not reconcile")
     summary = {
         "format": "unsigned-508-developer-source-reconciliation-v1",
         "recorded_r_git_head": expected_r_head,
@@ -380,6 +394,22 @@ def reconcile(packet_dir: str | Path, expected_r_head: str,
         "callable_count": sum(q["kind"] == "function" for q in candidates),
         "nonfunction_count": sum(q["kind"] != "function" for q in candidates),
         "historical_documented_source_gaps": original_gap,
+        "no_recorded_gap_exports_total": len(no_gap),
+        "no_recorded_gap_callable_exports_total": count_kind(no_gap, True),
+        "no_recorded_gap_nonfunction_exports_total": count_kind(no_gap, False),
+        "no_recorded_gap_fastlane_exports_total": len(fastlane),
+        "no_recorded_gap_fastlane_callable_exports": count_kind(fastlane, True),
+        "no_recorded_gap_fastlane_nonfunction_exports": count_kind(fastlane, False),
+        "no_recorded_gap_backend_distinct_exclusions": len(excluded),
+        "no_recorded_gap_backend_distinct_callable_exclusions":
+            count_kind(excluded, True),
+        "no_recorded_gap_backend_distinct_nonfunction_exclusions":
+            count_kind(excluded, False),
+        "no_recorded_gap_backend_distinct_export_keys": [
+            {"namespace": q["namespace"], "python_name": q["python_name"],
+             "kind": q["kind"], "native_r_candidate": q["native_r_candidate"]}
+            for q in sorted(excluded, key=lambda q:
+                            (q["namespace"], q["python_name"]))],
         "selected_source_reference_candidates": sum(
             q.get("source_fixture_attributed") == "TRUE" for q in queue),
         "historical_callable_gaps": sum(q["historical_source_gap_open"] == "TRUE"
