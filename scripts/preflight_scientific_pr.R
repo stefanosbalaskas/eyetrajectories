@@ -25,7 +25,10 @@
 .etr_fast_complex_setter_sites <- function(lines) {
   # Re()/Im() are accessors, not R replacement functions. Keep this
   # deliberately narrow; assignment to a variable named Im is allowed.
-  clean <- sub("#.*$","",lines)
+  # Strip quoted test fixtures so a literal example such as
+  # "Im(y) <- 0" does not count as an executed replacement assignment.
+  clean <- gsub("\"[^\"]*\"|'[^']*'","",lines,perl=TRUE)
+  clean <- sub("#.*$","",clean)
   which(grepl(
     "(^|[^[:alnum:]_.])(Im|Re)[[:space:]]*\\([^\\n]*\\)[[:space:]]*<-",
     clean,perl=TRUE))
