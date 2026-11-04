@@ -73,10 +73,8 @@ etr_cross_validate_fpca_regression<-function(
   resolved_loss<-.etr_fpcr_resolve_loss(family,loss)
   n<-length(trajectories$curve_ids)
   covariate_matrix<-.etr_fpcr_numeric_covariates(covariates,n)
-  .etr_assert(is.numeric(outcome)&&is.null(dim(outcome))&&
-    length(outcome)==n&&all(is.finite(outcome)),
+  outcome<-.etr_fpcr_numeric_outcome(outcome,n,family,
     "outcome must contain one finite scalar per trajectory")
-  .etr_fpcr_validate_binomial_outcome(outcome,family)
   .etr_assert(is.numeric(candidate_components)&&
     length(candidate_components)>=1L&&
     !anyNA(candidate_components)&&

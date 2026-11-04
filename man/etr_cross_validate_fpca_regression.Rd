@@ -10,7 +10,7 @@ etr_cross_validate_fpca_regression(trajectories, outcome,
 }
 \arguments{
 \item{trajectories}{Complete native common-grid trajectory set.}
-\item{outcome}{Curve-aligned finite scalar outcomes, restricted to 0/1 for binomial.}
+\item{outcome}{Curve-aligned finite numeric or logical scalar outcomes. Logical TRUE/FALSE is converted to numeric 1/0; binomial outcomes must be 0/1.}
 \item{candidate_components}{Positive integer retained FPC counts.}
 \item{family}{\code{"gaussian"} or \code{"binomial"} for Bernoulli logistic regression.}
 \item{loss}{Gaussian: \code{"rmse"} (default) or \code{"mae"}. Binomial: \code{"log_loss"} (default) or \code{"brier"}.}
