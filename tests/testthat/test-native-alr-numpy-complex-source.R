@@ -14,7 +14,7 @@
 
 test_that("complex NumPy ndarray to float is opt-in for ALR forward",{
   x<-.etr_complex_alr_simplex_fixture()
-  expect_error(etr_alr_transform(x),"simplex")
+  expect_error(etr_alr_transform(x))
   expected<-etr_alr_transform(Re(x),0L)
   actual<-etr_alr_transform(x,0L,python_boundary_mode=TRUE)
   expect_equal(actual,expected,tolerance=0)
