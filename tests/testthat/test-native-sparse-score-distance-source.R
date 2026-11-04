@@ -1,5 +1,8 @@
 test_that("sparse score runtime namespaces are declared in DESCRIPTION",{
-  desc<-read.dcf(testthat::test_path("..","..","DESCRIPTION"))
+  desc_path<-testthat::test_path("..","..","DESCRIPTION")
+  if(!file.exists(desc_path))
+    desc_path<-file.path(find.package("eyetrajectories"),"DESCRIPTION")
+  desc<-read.dcf(desc_path)
   imports<-trimws(strsplit(desc[1L,"Imports"],",",fixed=TRUE)[[1L]])
   suggests<-trimws(strsplit(desc[1L,"Suggests"],",",fixed=TRUE)[[1L]])
   expect_true("methods"%in%imports,
