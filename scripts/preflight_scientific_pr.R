@@ -72,8 +72,7 @@
   explicit <- Sys.getenv("ET_SCIENTIFIC_PREFLIGHT_FILES",unset="")
   changed <- character()
   if(nzchar(explicit)) {
-    changed <- strsplit(explicit,.Platform$file.sep,fixed=TRUE)[[1L]]
-    # Prefer semicolon-separated paths for cross-platform consistency.
+    # Use semicolons so Windows paths keep their backslashes intact.
     changed <- unlist(strsplit(explicit,";",fixed=TRUE),use.names=FALSE)
   } else {
     git <- Sys.which("git")
