@@ -182,3 +182,54 @@ identify the defect category; patch the cause rather than disabling
 checks. Stage a **new** candidate from the subsequent exact integration
 commit and repeat `R CMD check --as-cran`. A previous failing stage
 can never be relabeled as a pass.
+
+
+## November 4 — actual staged-check WARNING resolved in source (not yet rechecked)
+
+The previously failed source candidate was staged from
+`d95288756df03f155d6b8577eb66f68d8d5e71ef` at
+`20261104T101840078027Z`. The read-only diagnostic recorded
+`Status: 1 WARNING, 2 NOTEs` and found exactly two **duplicate Rd aliases**:
+
+- `etr_run_functional_recovery_scenarios`: umbrella
+  `man/etr_native_release_workflow_exports.Rd` and the dedicated
+  `man/etr_run_functional_recovery_scenarios.Rd`.
+- `etr_simulate_functional_process`: umbrella
+  `man/etr_native_release_inference_exports.Rd` and the dedicated
+  `man/etr_simulate_functional_process.Rd`.
+
+The source repair removes only the duplicate `\\alias{...}` lines from
+the two **umbrella reference pages**. Both dedicated pages, both native
+functions, the other umbrella references and all source API contracts are
+preserved.
+
+The RStudio `scripts/stage_local_release_candidate.R` command now runs
+`scripts/preflight_rd_manuals.R` *before* building another staged
+candidate. The existing preflight validates Rd parsing and fails on any
+duplicate alias, so a recurrence is caught without running the expensive
+staged check. It must still be followed by a **fresh staged R CMD check**
+for full package verification.
+
+**NOTE audit is still open.** The original log's final status reported
+two NOTEs, but the first diagnostic parser recognized zero NOTE phase
+blocks. The updated inspector reports `NOTE_STATUS_COUNT` and
+`UNEXTRACTED_NOTES` separately and prints the **entire numbered original
+00check.log** whenever the final NOTE count exceeds the recognized
+sections. This is deliberately fail-closed: it does not fabricate NOTE
+reasons, and the original check remains FAIL/HOLD until the actual NOTE
+texts are reviewed and a new staged check is completed.
+
+Run the updated diagnostics **from the branch that contains these fixes**:
+
+```r
+system("python -m unittest discover -s scripts/tests -p test_inspect_staged_cran_failure.py")
+source("scripts/preflight_rd_manuals.R", encoding="UTF-8")
+source("scripts/inspect_staged_cran_failure.R", encoding="UTF-8")
+```
+
+On the exact fixed source head, the fast preflight must pass with no
+duplicate aliases. Share the full displayed NOTE context. Then rerun
+`source("scripts/stage_local_release_candidate.R", encoding="UTF-8")`
+from the **merged research branch** to build a new `0.4.2` tarball
+and obtain an entirely new source-check verdict; never overwrite or
+reinterpret the old failed stage.
