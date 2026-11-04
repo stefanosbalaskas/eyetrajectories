@@ -11,7 +11,7 @@
 
 The native `etr_cross_validate_fpca_regression` and
 `etr_nested_cross_validate_fpca_regression` functions accept
-`family="binomial"` with finite **0/1 outcomes**, including logical TRUE/FALSE vectors converted to numeric 1/0 in the same manner as frozen Python's NumPy `dtype=float` conversion. Gaussian CV likewise accepts logical outcomes. The FPCA basis,
+`family="binomial"` with finite **0/1 outcomes**, including logical TRUE/FALSE vectors and canonical finite decimal numeric-looking character vectors converted to numeric 1/0, following frozen Python's `np.asarray(outcome, dtype=float)` input path. Gaussian CV likewise accepts numeric, logical and bounded decimal character outcomes. The FPCA basis,
 binomial-logit coefficients and nested inner retained-FPC selection
 are fitted within the relevant **training** folds. Held-out outcomes
 are used only for scoring, not for coefficient estimation.
