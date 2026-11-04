@@ -43,8 +43,10 @@ test_that("functional L2 Python numeric-string and Boolean states are opt-in",{
   expect_error(etr_l2_distance(aa,bb,x$time),"complete numeric")
   text_bad<-text_a
   text_bad[1L,1L]<-"not-a-number"
+  # Source-boundary validation now permits Inf (as NumPy does) but
+  # still rejects an unparseable numeric string / NaN trajectory entry.
   expect_error(etr_l2_distance(text_bad,text_b,x$time,
-    python_boundary_mode=TRUE),"finite numeric-compatible")
+    python_boundary_mode=TRUE),"numeric-compatible states without NaN")
   expect_error(etr_l2_distance(text_a,text_b,x$time,
     dimension_weights=c("-1","1"),python_boundary_mode=TRUE),
     "dimension_weights")
