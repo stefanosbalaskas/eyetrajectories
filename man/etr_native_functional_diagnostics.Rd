@@ -32,12 +32,29 @@ etr_fit_phase_fpca(registration, representation = "displacement",
                    n_components = 0.95)
 }
 \arguments{
-\item{values}{Three-dimensional numeric array of compositional probabilities.}
-\item{reference_dimension}{Python-style zero-based reference component; -1 selects the last.}
+\item{values}{Three-dimensional numeric array of compositional probabilities.
+In explicit Python boundary mode, a complex atomic 3D ndarray-style input
+is cast to its real component as NumPy's dtype=float conversion does.}
+\item{reference_dimension}{Python-style zero-based reference component;
+-1 selects the last. In Python boundary mode a Boolean reference index is
+converted to 0 or 1, matching Python integer-index behavior.}
 \item{epsilon}{Strictly positive clipping floor for ALR, declared before analysis.}
-\item{python_boundary_mode}{Logical, opt-in Python 1.2 boundary validation where implemented; the default FALSE retains the documented native R input domain. For score-distance matrices, sparse Matrix inputs use native sparse row norms and Gram products, with a dense output of no more than five million cells. This flag does not select a Python execution backend or certify full-domain equivalence.}
-\item{transformed}{Finite three-dimensional ALR values.}
-\item{n_dimensions}{Original number of channels, at least one. The NumPy source shape contract does not accept Boolean shape sizes.}
+\item{python_boundary_mode}{Logical, opt-in Python 1.2 boundary validation
+where implemented; the default FALSE retains the native R input domain.
+For ALR and inverse ALR, accepts complex ndarray-style 3D input after
+discarding imaginary coordinates and Boolean reference indices. In
+inverse ALR it requires an integer storage-type dimension count as
+NumPy does when constructing an output shape; nonfinite source
+exponentiation is propagated rather than rejected. For score-distance
+matrices, sparse Matrix inputs use native sparse row norms and Gram
+products, with a dense output of no more than five million cells.
+This flag does not invoke Python or certify full-domain equivalence.}
+\item{transformed}{Finite three-dimensional ALR values in the
+strict default mode. In Python boundary mode, complex ndarray values
+are cast to real and NaN/Inf logarithms use source arithmetic.}
+\item{n_dimensions}{Original number of channels, at least one. The
+NumPy source-mode shape contract accepts integer scalars, not Boolean
+or floating-point scalars, even if numerically integral.}
 \item{result}{A native FPCA fit or registration result, as appropriate.}
 \item{component}{Zero-based index of a fitted FPCA component.}
 \item{sd_multipliers}{Finite standard deviation multipliers for component curves.}
