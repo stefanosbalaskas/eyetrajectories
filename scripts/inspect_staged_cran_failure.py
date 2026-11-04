@@ -70,7 +70,7 @@ def diagnose(candidate: Path) -> tuple[dict[str, object], str]:
     # recognized above. Never silently report zero NOTEs on a nonzero
     # final NOTE verdict. Preserve the full original log in that case.
     def status_count(kind: str) -> int:
-        matched = re.search(r"\\b([0-9]+)\\s+" + kind + r"S?\\b",
+        matched = re.search(r"\b([0-9]+)\s+" + kind + r"S?\b",
                             status, flags=re.I)
         return int(matched.group(1)) if matched else 0
     reported_notes = status_count("NOTE")
