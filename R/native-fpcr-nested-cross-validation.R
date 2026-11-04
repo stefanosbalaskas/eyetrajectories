@@ -60,10 +60,8 @@ etr_nested_cross_validate_fpca_regression <- function(
   .etr_assert(is.character(selection_rule)&&length(selection_rule)==1L&&
     !is.na(selection_rule)&&selection_rule%in%c("minimum","one_se"),
     "selection_rule must be minimum or one_se")
-  .etr_assert(is.numeric(outcome)&&is.null(dim(outcome))&&
-    length(outcome)==n&&all(is.finite(outcome)),
+  outcome<-.etr_fpcr_numeric_outcome(outcome,n,family,
     "outcome must be finite and curve aligned")
-  .etr_fpcr_validate_binomial_outcome(outcome,family)
   .etr_assert(is.numeric(candidate_components)&&
     length(candidate_components)>0L&&!anyNA(candidate_components)&&
     all(is.finite(candidate_components))&&
