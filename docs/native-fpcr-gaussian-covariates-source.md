@@ -31,7 +31,7 @@
 ## Source limitations (not full one-to-one certification)
 
 This bounded change does **not** implement binomial GLM, sklearn NumPy
-RandomState seed parity, full sklearn GroupKFold equal-size tie handling,
+RandomState seed parity, sklearn's mixed-size GroupKFold tie handling,
 or Python dataclass type identity. R numeric/logical data frames are
 accepted; pandas' more permissive dtype coercions (e.g. numeric-looking
 string columns) are not claimed equivalent. Near-singular numerical
@@ -52,7 +52,8 @@ certification is claimed.
    rank-deficient regressors.
 5. Opt-in paired frozen Python 1.2 exported grouped regression and
    nested regression comparisons using distinct participant-group
-   sizes to avoid known GroupKFold tie ambiguity.
+   sizes to avoid known mixed-size GroupKFold tie ambiguity.
+Separate source fixtures cover the all-equal-size group subdomain.
 
 The new test file is registered in both offline R and direct Python
 source qualification modes, alongside the added R source, manuals, and

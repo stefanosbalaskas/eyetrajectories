@@ -310,3 +310,94 @@ _src_nested_group=et.nested_cross_validate_fpca_regression(
   expect_false(any(etr_native_parity_catalog()$
     one_to_one_native_contract_complete))
 })
+
+
+test_that("equally sized participant groups follow pinned sklearn GroupKFold fold IDs",{
+  z<-.etr_fpcr_group_fixture()
+  z$trajectories$metadata$participant<-
+    rep(sprintf("P%02d",1:6),each=2L)
+  a<-etr_cross_validate_fpca_regression(
+    z$trajectories,z$outcome,candidate_components=c(1L,2L),
+    n_splits=3L,cv_unit="group",group_column="participant",
+    shuffle=TRUE,random_state=99L)
+  expect_identical(a$assignments$group,
+    c(rep("P03",2L),rep("P06",2L),
+      rep("P02",2L),rep("P05",2L),
+      rep("P01",2L),rep("P04",2L)))
+  expect_identical(a$assignments$fold,rep(0:2,each=4L))
+  expect_identical(as.integer(table(a$assignments$fold)),rep(4L,3L))
+  for(g in unique(a$assignments$group))
+    expect_length(unique(a$assignments$fold[
+      a$assignments$group==g]),1L)
+  expect_true(a$provenance$group_leakage_prevented)
+  expect_identical(a$random_state,NULL)
+  for(i in seq_len(nrow(a$fold_losses))) {
+    loss<-a$fold_losses[i,]
+    rows<-a$predictions[
+      a$predictions$fold==loss$fold&
+      a$predictions$n_components==loss$n_components,]
+    expect_equal(loss$loss,
+      sqrt(mean((rows$observed-rows$prediction)^2)),
+      tolerance=1e-12)
+  }
+})
+
+test_that("pinned Python 1.2 grouped FPCR agrees for all equal-size group ties",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Pinned Python 1.2 equal-sized GroupKFold FPCR source oracle opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  reticulate::py_run_string("
+import numpy as np, pandas as pd, eyetrajectoriespy as et
+_tie_t=np.linspace(0,1,5);_tie_z1=np.linspace(-2,2,12)
+_tie_z2=np.array([1,-1,2,-2,1.5,-1.5,1.2,-1.2,2.2,-2.2,.7,-.7])
+_tie_v=np.array([.2+a*np.sin(np.pi*_tie_t)+b*np.cos(2*np.pi*_tie_t)
+                 for a,b in zip(_tie_z1,_tie_z2)])[:,:,None]
+_tie_y=1+.5*_tie_z1-.2*_tie_z2+.03*np.array(
+  [0,1,-1,0,1,-1,0,1,-1,0,1,-1])
+_tie_groups=np.repeat([f'P{i:02d}' for i in range(1,7)],2)
+_tie_x=et.TrajectorySet(
+ time=_tie_t,values=_tie_v,
+ curve_ids=tuple('curve'+str(i) for i in range(1,13)),
+ dimension_names=('x',),
+ metadata=pd.DataFrame({'participant':_tie_groups}),
+ coordinate_system='normalized',time_unit='normalized')
+_tie_result=et.cross_validate_fpca_regression(
+ _tie_x,_tie_y,candidate_components=(1,2),n_splits=3,
+ cv_unit='group',group_column='participant',
+ shuffle=True,random_state=99)
+")
+  z<-.etr_fpcr_group_fixture()
+  z$trajectories$metadata$participant<-
+    rep(sprintf("P%02d",1:6),each=2L)
+  native<-etr_cross_validate_fpca_regression(
+    z$trajectories,z$outcome,candidate_components=c(1L,2L),
+    n_splits=3L,cv_unit="group",group_column="participant",
+    shuffle=TRUE,random_state=99L)
+  direct<-reticulate::py_call(
+    etpy_get_export("cross_validate_fpca_regression"),
+    trajectories=reticulate::py_eval("_tie_x",convert=FALSE),
+    outcome=reticulate::py_eval("_tie_y",convert=FALSE),
+    candidate_components=reticulate::py_eval("(1,2)",convert=FALSE),
+    n_splits=3L,cv_unit="group",group_column="participant",
+    shuffle=TRUE,random_state=99L)
+  for(field in c("fold_losses","assignments","predictions")){
+    expected<-et_to_r(reticulate::py_eval(
+      paste0("_tie_result.",field),convert=FALSE))
+    replay<-et_to_r(reticulate::py_get_attr(direct,field))
+    expect_equal(replay,expected,tolerance=1e-8,ignore_attr=TRUE)
+    actual<-native[[field]]
+    expect_identical(names(actual),names(expected))
+    expect_identical(nrow(actual),nrow(expected))
+    for(column in names(expected)){
+      if(is.numeric(actual[[column]]))
+        expect_equal(as.numeric(actual[[column]]),
+          as.numeric(expected[[column]]),tolerance=1e-8,
+          info=paste("equal-sized GroupKFold",field,column))
+      else
+        expect_identical(as.character(actual[[column]]),
+          as.character(expected[[column]]))
+    }
+  }
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})
