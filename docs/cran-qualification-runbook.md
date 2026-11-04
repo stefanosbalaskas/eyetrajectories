@@ -138,3 +138,47 @@ Windows outputs were located at:
 Next acceptance gates: R check on another supported platform and R version;
 review CRAN incoming policies for a **release** version and real public URLs;
 remove scientific inference HOLD only after independent calibration work.
+
+
+## November 4, 2026 — diagnose the existing failed staged `0.4.2` check
+
+The owner staged `0.4.2` from research commit
+`d95288756df03f155d6b8577eb66f68d8d5e71ef` and ran actual
+`R CMD build` / `R CMD check --as-cran`. The check completed with
+**1 WARNING and 2 NOTEs**. The stage correctly remained a **FAIL/HOLD**;
+the console summary did not expose individual warning and note text.
+Neither the exact scientific defect nor the disposition of the NOTEs
+can be determined from counts alone.
+
+From the repository root in RStudio, after checking out a commit that
+contains the diagnostic tool:
+
+```r
+source("scripts/inspect_staged_cran_failure.R", encoding="UTF-8")
+```
+
+This reads the newest **existing** sibling
+`eyetrajectories_release_staging/<timestamp>/eyetrajectories_0.4.2_from_<sha>/eyetrajectories.Rcheck/00check.log`,
+prints every recognized `* checking ... WARNING/NOTE/ERROR` section
+with its original surrounding detail, and writes
+`STAGED_CRAN_DIAGNOSTICS.txt` and
+`STAGED_CRAN_DIAGNOSTICS.json` alongside that previous candidate.
+The diagnostic records the **source Git commit** and the **original
+check status**. It does not run any check, modify source, modify
+`STAGING_MANIFEST.json`, change the CRAN status, approve NOTES,
+create a release, or independently certify any Python contracts.
+
+To inspect a non-latest stage, first set
+`Sys.setenv(ET_STAGED_CANDIDATE_PATH="C:/path/to/existing/candidate")`,
+then run the same `source(...)` command.
+The diagnostic itself can be regression-tested without R CMD check:
+
+```r
+system("python -m unittest discover -s scripts/tests -p test_inspect_staged_cran_failure.py")
+```
+
+**Required next action:** use the actual warning and NOTE detail to
+identify the defect category; patch the cause rather than disabling
+checks. Stage a **new** candidate from the subsequent exact integration
+commit and repeat `R CMD check --as-cran`. A previous failing stage
+can never be relabeled as a pass.
