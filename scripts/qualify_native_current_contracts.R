@@ -79,6 +79,7 @@ required<-c("native-generalized-fosr-prediction",
   "native-wild-monte-carlo-source-contracts",
   "native-scientific-source-frames",
   "native-source-diagnostic-frames",
+  "native-multivariate-surrogate-numpy-histogram-source",
   "native-generalized-mixed-source-graphics",
   # Run the same concrete source reporting witnesses as evidence capture,
   # rather than treating static file attribution as an executed Python oracle.
