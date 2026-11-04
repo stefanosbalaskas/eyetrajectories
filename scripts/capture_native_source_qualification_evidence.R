@@ -475,7 +475,6 @@ source_files<-unique(c(
   "tests/testthat/test-native-surrogate-numpy-histogram-source.R",
   "R/native-scientific-visualization.R",
   "man/etr_native_scientific_visualization.Rd",
-  "R/native-functional-diagnostics.R",
   "man/etr_native_functional_diagnostics.Rd",
   "tests/testthat/test-native-transfer-entropy-visual.R",
   "tests/testthat/test-native-te-numpy-auto-histograms.R",
