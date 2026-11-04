@@ -320,8 +320,15 @@ etr_score_distance_matrix <- function(fpca,n_components=NULL,
     # multiplication; Euclidean score distances require ordinary double
     # arithmetic even when all observed entries are zero/one. Converting
     # to a numeric *sparse* compressed-column matrix does not densify.
-    if(!inherits(x,"dgCMatrix"))
-      x<-methods::as(x,"dgCMatrix")
+    # Matrix >= 1.5 deprecates direct coercion to concrete dgCMatrix.
+    # Use virtual classes to preserve numeric sparse arithmetic and
+    # compressed-column storage without deprecated conversion paths.
+    if(!inherits(x,"dMatrix"))
+      x<-methods::as(x,"dMatrix")
+    if(!inherits(x,"CsparseMatrix"))
+      x<-methods::as(x,"CsparseMatrix")
+    .etr_assert(inherits(x,"sparseMatrix")&&inherits(x,"dMatrix"),
+      "numeric sparse score conversion must preserve sparse storage")
     squared_norms<-as.numeric(Matrix::rowSums(x*x))
     gram<-as.matrix(Matrix::tcrossprod(x))
     squared<-outer(squared_norms,squared_norms,"+")-2*gram

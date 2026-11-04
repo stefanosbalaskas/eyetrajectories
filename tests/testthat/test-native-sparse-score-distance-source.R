@@ -57,11 +57,36 @@ test_that("sparse source mode agrees with complete dense Euclidean R distances",
   expected<-as.matrix(stats::dist(as.matrix(pattern)))
   expect_equal(source,unname(expected),tolerance=1e-12)
   expect_equal(source[1L,2L],0,tolerance=0)
-  logical_sparse<-methods::as(pattern,"lgCMatrix")
+  logical_sparse<-methods::as(pattern,"lMatrix")
   logical_result<-etr_score_distance_matrix(
     list(scores=logical_sparse,n_components=2L),
     python_boundary_mode=TRUE)
   expect_equal(logical_result,unname(expected),tolerance=1e-12)
+})
+
+test_that("sparse numeric coercion stays warning-free on modern Matrix",{
+  testthat::skip_if_not_installed("Matrix")
+  original<-getOption("Matrix.warnDeprecatedCoerce")
+  on.exit(options(Matrix.warnDeprecatedCoerce=original),add=TRUE)
+  # Matrix warns/errors for deprecated concrete-class coercions. The
+  # production code must instead use virtual dMatrix/CsparseMatrix.
+  options(Matrix.warnDeprecatedCoerce=2L)
+  pattern<-Matrix::sparseMatrix(
+    i=c(1L,1L,2L,2L,3L),
+    j=c(1L,2L,1L,2L,1L),dims=c(3L,2L))
+  expect_silent(etr_score_distance_matrix(
+    list(scores=pattern,n_components=2L),
+    python_boundary_mode=TRUE))
+  logical_sparse<-methods::as(pattern,"lMatrix")
+  expect_silent(etr_score_distance_matrix(
+    list(scores=logical_sparse,n_components=2L),
+    python_boundary_mode=TRUE))
+  expected<-unname(as.matrix(stats::dist(as.matrix(pattern))))
+  observed<-etr_score_distance_matrix(
+    list(scores=logical_sparse,n_components=2L),
+    python_boundary_mode=TRUE)
+  expect_equal(observed,expected,tolerance=1e-12)
+  expect_equal(observed[1L,2L],0,tolerance=0)
 })
 
 test_that("sparse FPCA source rejects nonfinite slots and excessive dense output",{
