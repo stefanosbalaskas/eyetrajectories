@@ -21,7 +21,7 @@
     literals<-trimws(outcome)
     # Source-compatible subset: decimal, optional exponent, signs and
     # surrounding whitespace; no locale-specific grouping separators.
-    decimal<-"^[+-]?([0-9]+(\\\\.[0-9]*)?|\\\\.[0-9]+)([eE][+-]?[0-9]+)?$"
+    decimal<-"^[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)([eE][+-]?[0-9]+)?$"
     .etr_assert(!anyNA(literals)&&
       all(grepl(decimal,literals,perl=TRUE)),error_message)
     numeric_outcome<-suppressWarnings(as.numeric(literals))
