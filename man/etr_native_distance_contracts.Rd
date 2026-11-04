@@ -24,7 +24,8 @@ etr_dynamic_time_warping(a, b, dimension_weights = NULL,
                           python_boundary_mode = FALSE)
 etr_pairwise_dtw_full(x, dimensions = NULL, dimension_weights = NULL,
                       window_radius = NULL,
-                      step_pattern = "symmetric1", normalize = FALSE)
+                      step_pattern = "symmetric1", normalize = FALSE,
+                      python_boundary_mode = FALSE)
 }
 \arguments{
 \item{a,b}{Complete numeric point-by-dimension matrices. Both require
@@ -47,7 +48,9 @@ If TRUE, return raw cumulative distance divided by \code{n_a+n_b}.}
 path, local distances, weighted distances, counts and provenance.}
 \item{python_boundary_mode}{Logical. Explicitly opt in to bounded Python
 1.2 \code{np.asarray(..., dtype=float)} point and weight conversion.
-Defaults to FALSE, preserving strict native R input validation.}
+Defaults to FALSE, preserving strict native R input validation.
+For pairwise DTW, TRUE allows NumPy-compatible finite dimension weights;
+the trajectory values must still be a native complete trajectory set.}
 \item{x}{Complete native \code{etr_trajectory_set}.}
 \item{dimensions}{NULL to use all stored channels, or distinct ordered
 channel names selecting the comparison dimensions.}
