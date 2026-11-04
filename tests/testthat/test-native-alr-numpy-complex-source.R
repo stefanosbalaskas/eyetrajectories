@@ -39,7 +39,8 @@ test_that("inverse ALR complex ndarray and NumPy shape semantics are opt-in",{
   actual<-etr_inverse_alr(z,0L,3L,python_boundary_mode=TRUE)
   expect_equal(actual,expected,tolerance=0)
   expect_identical(dim(actual),c(1L,3L,3L))
-  expect_equal(apply(actual,c(1L,2L),sum),rep(1,3),tolerance=1e-14)
+  expect_equal(as.numeric(apply(actual,c(1L,2L),sum)),
+    rep(1,3),tolerance=1e-14)
   expect_equal(etr_inverse_alr(z,TRUE,3L,
     python_boundary_mode=TRUE),
     etr_inverse_alr(Re(z),1L,3L),tolerance=0)
