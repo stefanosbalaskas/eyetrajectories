@@ -56,16 +56,18 @@ import eyetrajectoriespy as et
 import warnings
 _ET_COMPLEX_SOURCE_GRID=np.array([0+7j,1-2j,3+5j],
   dtype=np.complex128)
-def _ET_COMPLEX_SOURCE_CALL(time, normalize):
+def _ET_COMPLEX_SOURCE_CALL(source_fn, time, normalize):
     with warnings.catch_warnings():
         warnings.simplefilter('ignore')
-        return et.functional_trapezoid_weights(time,normalize=normalize)
+        return source_fn(time,normalize=normalize)
 ")
   func<-reticulate::py_eval("_ET_COMPLEX_SOURCE_CALL",convert=FALSE)
   py_grid<-reticulate::py_eval("_ET_COMPLEX_SOURCE_GRID",convert=FALSE)
   r_grid<-complex(real=c(0,1,3),imaginary=c(7,-2,5))
   for(norm in c(FALSE,TRUE)) {
-    py<-reticulate::py_call(func,time=py_grid,normalize=norm)
+    py<-reticulate::py_call(func,
+      source_fn=etpy_get_export("functional_trapezoid_weights"),
+      time=py_grid,normalize=norm)
     native<-etr_trapezoid_weights(r_grid,normalize=norm,
       python_boundary_mode=TRUE)
     expect_equal(native,as.numeric(et_to_r(py)),tolerance=1e-14)
@@ -78,7 +80,9 @@ def _ET_COMPLEX_SOURCE_CALL(time, normalize):
     list(expr="complex(0,0)",val=0+0i))
   for(item in flags){
     py_flag<-reticulate::py_eval(item$expr,convert=FALSE)
-    py<-reticulate::py_call(func,time=py_grid,normalize=py_flag)
+    py<-reticulate::py_call(func,
+      source_fn=etpy_get_export("functional_trapezoid_weights"),
+      time=py_grid,normalize=py_flag)
     local<-etr_trapezoid_weights(r_grid,normalize=item$val,
       python_boundary_mode=TRUE)
     expect_equal(local,as.numeric(et_to_r(py)),tolerance=1e-14)
