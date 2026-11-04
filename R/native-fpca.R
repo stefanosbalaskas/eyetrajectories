@@ -1,13 +1,19 @@
 #' Trapezoidal weights on an irregular, strictly increasing grid
-#' @param time Finite increasing one-dimensional vector or list of scalar values coercible to numeric time.
+#' @param time Finite increasing one-dimensional vector or list of scalar
+#'   values coercible to numeric time. In opt-in Python boundary mode,
+#'   a complex atomic vector is cast to its real part as NumPy casts a
+#'   complex ndarray to dtype=float; regular R use rejects complex grids.
 #' @param normalize Divide weights when truthy under Python 1.2 scalar
 #'   semantics (FALSE, 0 and the empty string are false; nonempty strings
 #'   and nonzero finite numeric scalars are true). In explicit Python
-#'   boundary mode only, empty/nonempty lists use Python container truthiness.
+#'   boundary mode, nonzero, infinite and NaN-valued complex scalar flags
+#'   follow Python bool(complex); empty/nonempty lists use container truthiness.
 #' @param python_boundary_mode When TRUE, reproduce inspected Python 1.2
 #'   edge behavior for infinite strictly increasing grid endpoints and
-#'   NaN/Inf scalar normalization flags. Default FALSE retains finite-only
-#'   scientific validation. This is NOT a full-source parity assertion.
+#'   NaN/Inf scalar and complex normalization flags, including casting
+#'   a complex atomic grid to its real part as NumPy does. Default FALSE
+#'   retains finite-only scientific validation. This is NOT a full-source
+#'   parity assertion.
 #' @export
 etr_trapezoid_weights <- function(time, normalize = FALSE,
     python_boundary_mode = FALSE) {
@@ -35,7 +41,8 @@ etr_trapezoid_weights <- function(time, normalize = FALSE,
   .etr_assert(is.atomic(time) && is.null(dim(time)) &&
                 !is.factor(time) &&
                 (is.numeric(time) || is.logical(time) ||
-                 is.character(time)),
+                 is.character(time) ||
+                 (isTRUE(python_boundary_mode)&&is.complex(time))),
               "time must be a one-dimensional numeric sequence")
   time <- suppressWarnings(as.numeric(time))
   d <- diff(time); n <- length(time)
@@ -70,16 +77,22 @@ etr_trapezoid_weights <- function(time, normalize = FALSE,
         is.numeric(normalize) ||
         (isTRUE(python_boundary_mode)&&is.complex(normalize))) &&
       (if(isTRUE(python_boundary_mode))
-        (if(is.complex(normalize))
-          is.finite(Re(normalize))&&is.finite(Im(normalize))
-         else (!is.na(normalize) || is.nan(normalize)))
+        (if(is.complex(normalize)) {
+          parts<-c(Re(normalize),Im(normalize))
+          all(!is.na(parts)|is.nan(parts))
+         } else (!is.na(normalize) || is.nan(normalize)))
        else (!is.na(normalize) &&
          (!is.numeric(normalize) || is.finite(normalize)))),
       "normalize must be a valid numeric, logical or character scalar")
     # Python's bool(complex) is true when either the real or imaginary part
     # is nonzero. This is distinct from R's default logical coercion.
     truthy <- if(is.character(normalize))nzchar(normalize) else
-      if(is.complex(normalize))normalize!=(0+0i) else
+      if(is.complex(normalize)) {
+        # In Python, bool(complex(nan,0)) and bool(complex(inf,0))
+        # are TRUE, while both signed zeros are FALSE.
+        parts<-c(Re(normalize),Im(normalize))
+        any(is.nan(parts))||any(parts!=0)
+      } else
       if(is.nan(normalize))TRUE else normalize!=0
   }
   if(isTRUE(truthy))w<-w/sum(w)
