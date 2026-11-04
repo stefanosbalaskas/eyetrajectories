@@ -316,6 +316,12 @@ etr_score_distance_matrix <- function(fpca,n_components=NULL,
     # materializing n_curves * n_score_components input cells.
     .etr_assert(as.double(nrow(x))^2 <= 5e6,
       "sparse score distance output exceeds native 5e6-cell resource bound")
+    # Pattern and logical Matrix classes can request Boolean semiring
+    # multiplication; Euclidean score distances require ordinary double
+    # arithmetic even when all observed entries are zero/one. Converting
+    # to a numeric *sparse* compressed-column matrix does not densify.
+    if(!inherits(x,"dgCMatrix"))
+      x<-methods::as(x,"dgCMatrix")
     squared_norms<-as.numeric(Matrix::rowSums(x*x))
     gram<-as.matrix(Matrix::tcrossprod(x))
     squared<-outer(squared_norms,squared_norms,"+")-2*gram
