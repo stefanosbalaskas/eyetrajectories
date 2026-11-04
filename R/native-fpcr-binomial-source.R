@@ -10,6 +10,18 @@
   invisible(family)
 }
 
+# Frozen Python 1.2 _validate_outcome uses np.asarray(outcome, dtype=float).
+# In R, a logical vector is the direct analogue of a NumPy bool vector.
+# Convert TRUE/FALSE to 1/0 before fitting, scoring or report construction.
+.etr_fpcr_numeric_outcome <- function(outcome,n,family,error_message) {
+  .etr_assert((is.numeric(outcome)||is.logical(outcome))&&
+    is.null(dim(outcome))&&length(outcome)==n&&
+    all(is.finite(as.numeric(outcome))),error_message)
+  numeric_outcome<-as.numeric(outcome)
+  .etr_fpcr_validate_binomial_outcome(numeric_outcome,family)
+  numeric_outcome
+}
+
 .etr_fpcr_validate_binomial_outcome <- function(outcome,family) {
   if(identical(family,"binomial"))
     .etr_assert(all(outcome%in%c(0,1)),
