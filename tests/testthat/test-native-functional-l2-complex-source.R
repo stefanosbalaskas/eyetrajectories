@@ -133,8 +133,7 @@ def _ET_L2_CALL(source_fn,a,b,time,dw):
     "numeric-compatible states without NaN")
   expect_error(reticulate::py_call(
     etpy_get_export("functional_l2_distance"),
-    a=reticulate::r_to_py(invalid),b=npb,time=tm),
-    )
+    a=reticulate::r_to_py(invalid),b=npb,time=tm))
   expect_false(any(etr_native_parity_catalog()$
     one_to_one_native_contract_complete))
 })
