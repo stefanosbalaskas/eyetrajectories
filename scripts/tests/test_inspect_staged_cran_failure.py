@@ -105,11 +105,11 @@ class StagedDiagnosticTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp) / "eyetrajectories"
             root.mkdir()
-            raw = ("* checking Rd metadata ... WARNING\\n"
-                   "duplicate documentation alias\\n"
-                   "* checking dependencies in R code ... OK\\n"
-                   "  original unrecognized NOTE details\\n"
-                   "* DONE\\nStatus: 1 WARNING, 2 NOTEs\\n")
+            raw = ("* checking Rd metadata ... WARNING\n"
+                   "duplicate documentation alias\n"
+                   "* checking dependencies in R code ... OK\n"
+                   "  original unrecognized NOTE details\n"
+                   "* DONE\nStatus: 1 WARNING, 2 NOTEs\n")
             candidate = stage(root, "20261104T101840078027Z", raw)
             old = (candidate / "eyetrajectories.Rcheck" /
                    "00check.log").read_bytes()
