@@ -101,6 +101,46 @@ class StagedDiagnosticTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "exactly one"):
                 diag.diagnose(candidate)
 
+    def test_unrecognized_note_sections_show_original_full_log(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "eyetrajectories"
+            root.mkdir()
+            raw = ("* checking Rd metadata ... WARNING\\n"
+                   "duplicate documentation alias\\n"
+                   "* checking dependencies in R code ... OK\\n"
+                   "  original unrecognized NOTE details\\n"
+                   "* DONE\\nStatus: 1 WARNING, 2 NOTEs\\n")
+            candidate = stage(root, "20261104T101840078027Z", raw)
+            old = (candidate / "eyetrajectories.Rcheck" /
+                   "00check.log").read_bytes()
+            summary, text = diag.diagnose(candidate)
+            self.assertEqual(summary["reported_notes"], 2)
+            self.assertEqual(summary["recognized_note_sections"], 0)
+            self.assertEqual(summary["unextracted_notes"], 2)
+            self.assertIn("UNEXTRACTED_NOTES=2", text)
+            self.assertIn("ORIGINAL_00CHECK_LOG_COMPLETE_BEGIN", text)
+            self.assertIn("original unrecognized NOTE details", text)
+            self.assertIn("ORIGINAL_00CHECK_LOG_COMPLETE_END", text)
+            self.assertEqual((candidate / "eyetrajectories.Rcheck" /
+                              "00check.log").read_bytes(), old)
+
+    def test_duplicate_cran_aliases_resolved_in_umbrella_rd(self):
+        root = Path(__file__).resolve().parents[2]
+        pairs = [
+            ("etr_run_functional_recovery_scenarios",
+             "etr_native_release_workflow_exports.Rd",
+             "etr_run_functional_recovery_scenarios.Rd"),
+            ("etr_simulate_functional_process",
+             "etr_native_release_inference_exports.Rd",
+             "etr_simulate_functional_process.Rd"),
+        ]
+        for alias, umbrella, dedicated in pairs:
+            token = chr(92) + "alias{" + alias + "}"
+            self.assertNotIn(
+                token, (root / "man" / umbrella).read_text(encoding="utf-8"))
+            self.assertEqual((root / "man" / dedicated).read_text(
+                encoding="utf-8").count(token), 1)
+
     def test_no_phase_warning_details_does_not_invent_a_clean_verdict(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp) / "eyetrajectories"
