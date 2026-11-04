@@ -30,9 +30,12 @@
 
 ## Source limitations (not full one-to-one certification)
 
-This bounded change does **not** implement binomial GLM, sklearn NumPy
-RandomState seed parity, sklearn's nonmonotone mixed-size GroupKFold
-tie handling, or Python dataclass type identity. R numeric/logical data frames are
+The numeric-covariate implementation also supports a bounded
+Bernoulli logit branch (see `native-fpcr-binomial-glm-source.md`).
+This does **not** guarantee statsmodels versus R glm.fit convergence/
+separation identity, NumPy RandomState seed parity, sklearn's
+nonmonotone mixed-size GroupKFold tie handling or Python dataclass type
+identity. R numeric/logical data frames are
 accepted; pandas' more permissive dtype coercions (e.g. numeric-looking
 string columns) are not claimed equivalent. Near-singular numerical
 rank decisions may differ between R QR and NumPy SVD tolerances.

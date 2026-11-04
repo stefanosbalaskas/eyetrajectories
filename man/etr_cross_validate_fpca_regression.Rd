@@ -1,6 +1,6 @@
 \name{etr_cross_validate_fpca_regression}
 \alias{etr_cross_validate_fpca_regression}
-\title{Native leakage-aware Gaussian FPCR cross-validation}
+\title{Native leakage-aware Gaussian and binomial FPCR cross-validation}
 \usage{
 etr_cross_validate_fpca_regression(trajectories, outcome,
   candidate_components = c(1L, 2L, 3L, 4L, 5L),
@@ -10,14 +10,14 @@ etr_cross_validate_fpca_regression(trajectories, outcome,
 }
 \arguments{
 \item{trajectories}{Complete native common-grid trajectory set.}
-\item{outcome}{Curve-aligned finite Gaussian scalar outcomes.}
+\item{outcome}{Curve-aligned finite scalar outcomes, restricted to 0/1 for binomial.}
 \item{candidate_components}{Positive integer retained FPC counts.}
-\item{family}{Only \code{"gaussian"} for this bounded source subset.}
-\item{loss}{\code{"rmse"} or \code{"mae"}, default RMSE.}
+\item{family}{\code{"gaussian"} or \code{"binomial"} for Bernoulli logistic regression.}
+\item{loss}{Gaussian: \code{"rmse"} (default) or \code{"mae"}. Binomial: \code{"log_loss"} (default) or \code{"brier"}.}
 \item{covariates}{NULL or a curve-aligned data.frame of finite numeric or
 logical covariate columns. Names must be unique and must not collide with
 \code{const} or reserved \code{FPC} score names. Columns are included
-in OLS inside the training fold and in the matching held-out prediction.}
+in the Gaussian OLS or binomial logit model fitted inside each training fold and in matching held-out predictions.}
 \item{n_splits}{KFold or GroupKFold partition count, from two up to
 the number of curves or unique groups respectively.}
 \item{scaling}{One of \code{"none"} or \code{"dimension_sd"}.}
@@ -34,12 +34,12 @@ permutations cannot be equated with sklearn's NumPy RandomState.}
 \value{Retained fold-loss, assignment and out-of-fold prediction frames
 and source-shaped scientific provenance. Group assignments have
 an additional `group` label column when grouping is requested.}
-\description{Refits FPCA and Gaussian scalar regression inside each
+\description{Refits FPCA and Gaussian OLS or binomial logit regression inside each
 training fold and projects held-out trajectories using only the training
 basis. Whole-group held-out folds prevent participant leakage,
 while isolated native-R shuffled curve folds allow reproducible
-sensitivity studies. GroupKFold equal-size tie ordering and shuffled
-NumPy permutations are implementation-specific and not claimed equal.
-Binomial regression and pandas nonnumeric-to-float covariate coercions
-remain outside this native subset;
+sensitivity studies. Nonmonotone GroupKFold tie ordering and shuffled
+NumPy permutations remain implementation-specific. Binomial inference uses
+R stats::glm.fit; its IRLS and separation warnings can differ from statsmodels.
+Pandas nonnumeric-to-float covariate coercions remain outside this subset;
 this is not independent full-domain source certification.}

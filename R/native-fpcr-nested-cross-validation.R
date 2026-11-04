@@ -1,13 +1,14 @@
 # Frozen eyetrajectoriespy 1.2.0 prediction.py::nested_cross_validate_fpca_regression
 # Commit c1cd95ad718327550f7e55393ff38582872f7a94
-# Source-bounded Gaussian FPCR nested CV with whole-group held-out folds
-# and optionally R-shuffled curve folds; NumPy RNG and tie policies differ.
-#' Nested Gaussian FPCR cross-validation with independent outer assessment
+# Source-bounded Gaussian OLS or Bernoulli logit FPCR nested CV with
+# group-held-out folds; Python statsmodels and R glm.fit can differ.
+#' Nested Gaussian or binomial FPCR cross-validation with outer assessment
 #' @param trajectories Native complete common-grid trajectories.
 #' @param outcome Finite scalar response per curve.
 #' @param candidate_components Candidate positive integer retained counts.
-#' @param family Currently only gaussian.
-#' @param loss NULL (RMSE), rmse or mae.
+#' @param family Gaussian continuous or binomial 0/1 outcome family.
+#' @param loss Gaussian: rmse (default) or mae. Binomial: log_loss
+#'   (default) or brier.
 #' @param covariates NULL or a curve-aligned finite numeric data.frame.
 #'   All inner and outer regression fits use training-only rows.
 #' @param outer_splits Outer KFold count.
@@ -26,7 +27,8 @@ etr_nested_cross_validate_fpca_regression <- function(
   scaling="none", cv_unit="curve", group_column=NULL,
   shuffle=FALSE, random_state=0L) {
   etr_validate(trajectories,require_complete=TRUE)
-  .etr_assert(identical(family,"gaussian"),"family must equal gaussian")
+  .etr_fpcr_validate_family(family)
+  resolved_loss<-.etr_fpcr_resolve_loss(family,loss)
   covariate_matrix<-.etr_fpcr_numeric_covariates(covariates,
     length(trajectories$curve_ids))
   .etr_assert(is.character(cv_unit)&&length(cv_unit)==1L&&
@@ -61,6 +63,7 @@ etr_nested_cross_validate_fpca_regression <- function(
   .etr_assert(is.numeric(outcome)&&is.null(dim(outcome))&&
     length(outcome)==n&&all(is.finite(outcome)),
     "outcome must be finite and curve aligned")
+  .etr_fpcr_validate_binomial_outcome(outcome,family)
   .etr_assert(is.numeric(candidate_components)&&
     length(candidate_components)>0L&&!anyNA(candidate_components)&&
     all(is.finite(candidate_components))&&
@@ -106,11 +109,8 @@ etr_nested_cross_validate_fpca_regression <- function(
       if(!is.null(covariate_matrix))
         covariate_matrix[test_idx,,drop=FALSE])
     .etr_assert(qr(x_train)$rank==ncol(x_train),"outer FPCR design is rank deficient")
-    pred<-as.numeric(x_test%*%qr.solve(x_train,outcome[train_idx]))
-    .etr_assert(all(is.finite(pred)),"outer FPCR predictions must be finite")
-    error<-outcome[test_idx]-pred
-    chosen_loss<-if(is.null(loss))"rmse" else loss
-    score<-if(identical(chosen_loss,"rmse"))sqrt(mean(error^2)) else mean(abs(error))
+    pred<-.etr_fpcr_predict_fold(x_train,x_test,outcome[train_idx],family)
+    score<-.etr_fpcr_loss(outcome[test_idx],pred,family,resolved_loss)
     outer_rows[[f+1L]]<-data.frame(outer_fold=as.integer(f),
       selected_n_components=as.integer(selected),loss=score,
       n_train_curves=as.integer(length(train_idx)),
@@ -130,8 +130,8 @@ etr_nested_cross_validate_fpca_regression <- function(
   predictions<-do.call(rbind,prediction_rows)
   rownames(outer)<-NULL;rownames(inside)<-NULL;rownames(predictions)<-NULL
   structure(list(outer_folds=outer,inner_summaries=inside,
-    predictions=predictions,family="gaussian",
-    loss=if(is.null(loss))"rmse" else loss,selection_rule=selection_rule,
+    predictions=predictions,family=family,
+    loss=resolved_loss,selection_rule=selection_rule,
     component_counts=counts,outer_splits=no,inner_splits=ni,
     cv_unit=cv_unit,
     group_column=if(identical(cv_unit,"group"))group_column else NULL,

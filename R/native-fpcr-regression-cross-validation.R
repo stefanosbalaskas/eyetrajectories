@@ -1,23 +1,25 @@
 # Source: frozen eyetrajectoriespy==1.2.0
 # c1cd95ad718327550f7e55393ff38582872f7a94
 # prediction.py::cross_validate_fpca_regression
-# Native Gaussian FPCR with unshuffled/shuffled curve folds and
-# whole-participant held-out folds. R shuffle uses base R RNG,
-# not sklearn NumPy RandomState; sklearn GroupKFold ties can differ.
+# Native Gaussian OLS and bounded binomial logit FPCR with
+# whole-group held-out folds and native R seeded curve fold shuffle.
+# Binomial stats::glm.fit is not identical to statsmodels IRLS.
 
-#' Leakage-free native Gaussian FPCR held-out prediction
+#' Leakage-free native Gaussian and binomial FPCR held-out prediction
 #'
-#' Refits unsupervised dense FPCA and Gaussian scalar OLS *inside* each
-#' training fold. Reuses the same training FPCA basis for test projections.
+#' Refits unsupervised dense FPCA and Gaussian OLS or binomial logit GLM
+#' *inside* each training fold. Reuses the same training FPCA basis for
+#' test projections.
 #' Supports group held-out and R-seeded curve shuffled folds.
-#' Exact Python shuffle RNG and GroupKFold tie semantics are unresolved;
-#' binomial outcomes remain out of this bounded domain; numeric covariates
-#' are fitted inside each training fold and are never outcome-tuned globally.
+#' Exact Python shuffle RNG and nonmonotone GroupKFold ties remain unresolved.
+#' For binomial outcomes, R stats::glm.fit may differ from statsmodels;
+#' numeric covariates are fitted within training folds only.
 #' @param trajectories Complete native common-grid trajectory set.
 #' @param outcome Curve-aligned finite scalar outcomes.
 #' @param candidate_components Positive integer FPC counts to compare.
-#' @param family Must be \code{"gaussian"}.
-#' @param loss \code{"rmse"} or \code{"mae"}, default RMSE.
+#' @param family \code{"gaussian"} or \code{"binomial"} (binary 0/1).
+#' @param loss Gaussian: \code{"rmse"} (default) or \code{"mae"}.
+#'   Binomial: \code{"log_loss"} (default) or \code{"brier"}.
 #' @param covariates NULL or a curve-aligned numeric data.frame with unique
 #'   nonreserved column names and finite values. Training and held-out
 #'   rows are separated within each fold.
@@ -40,8 +42,7 @@ etr_cross_validate_fpca_regression<-function(
     scaling="none",cv_unit="curve",group_column=NULL,
     shuffle=FALSE,random_state=0L){
   etr_validate(trajectories,require_complete=TRUE)
-  .etr_assert(identical(family,"gaussian"),
-    "bounded native regression CV requires family='gaussian'")
+  .etr_fpcr_validate_family(family)
 
   .etr_assert(is.character(cv_unit)&&length(cv_unit)==1L&&
     !is.na(cv_unit)&&cv_unit%in%c("curve","group"),
@@ -69,16 +70,13 @@ etr_cross_validate_fpca_regression<-function(
   .etr_assert(is.character(scaling)&&length(scaling)==1L&&
     !is.na(scaling)&&scaling%in%c("none","dimension_sd"),
     "scaling must be none or dimension_sd")
-  resolved_loss<-if(is.null(loss))"rmse" else loss
-  .etr_assert(is.character(resolved_loss)&&
-    length(resolved_loss)==1L&&!is.na(resolved_loss)&&
-    resolved_loss%in%c("rmse","mae"),
-    "gaussian loss must be 'rmse' or 'mae'")
+  resolved_loss<-.etr_fpcr_resolve_loss(family,loss)
   n<-length(trajectories$curve_ids)
   covariate_matrix<-.etr_fpcr_numeric_covariates(covariates,n)
   .etr_assert(is.numeric(outcome)&&is.null(dim(outcome))&&
     length(outcome)==n&&all(is.finite(outcome)),
     "outcome must contain one finite scalar per trajectory")
+  .etr_fpcr_validate_binomial_outcome(outcome,family)
   .etr_assert(is.numeric(candidate_components)&&
     length(candidate_components)>=1L&&
     !anyNA(candidate_components)&&
@@ -130,13 +128,10 @@ etr_cross_validate_fpca_regression<-function(
           covariate_matrix[testing,,drop=FALSE])
       .etr_assert(qr(train_design)$rank==ncol(train_design),
         "native regression CV requires full-rank training FPC design")
-      coef<-as.numeric(qr.solve(train_design,outcome[training]))
-      predicted<-as.numeric(test_design%*%coef)
-      .etr_assert(all(is.finite(predicted)),
-        "FPCR Gaussian fold predictions must be finite")
-      err<-outcome[testing]-predicted
-      fold_loss<-if(identical(resolved_loss,"rmse"))
-        sqrt(mean(err^2)) else mean(abs(err))
+      predicted<-.etr_fpcr_predict_fold(train_design,test_design,
+        outcome[training],family)
+      fold_loss<-.etr_fpcr_loss(outcome[testing],predicted,
+        family,resolved_loss)
       pos<-pos+1L
       fold_rows[[pos]]<-data.frame(
         fold=as.integer(fold),n_components=as.integer(k),
@@ -169,7 +164,7 @@ etr_cross_validate_fpca_regression<-function(
   structure(list(
     fold_losses=fold_losses,assignments=assignments,
     predictions=predictions,component_counts=components,
-    family="gaussian",loss=resolved_loss,cv_unit=cv_unit,
+    family=family,loss=resolved_loss,cv_unit=cv_unit,
     n_splits=ns,
     group_column=if(identical(cv_unit,"group"))group_column else NULL,
     scaling=scaling,
