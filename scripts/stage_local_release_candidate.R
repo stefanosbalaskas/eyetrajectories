@@ -7,6 +7,9 @@ if (!file.exists("DESCRIPTION") ||
     !file.exists("scripts/stage_local_release_candidate.py"))
   stop("Run this entrypoint from eyetrajectories repository root.",
        call. = FALSE)
+# Fail before a costly staged tarball build if any tracked Rd manual is
+# malformed or two pages advertise the same alias. Do not suppress warnings.
+source("scripts/preflight_rd_manuals.R", local = TRUE)
 py <- Sys.getenv("ET_LOCAL_MATRIX_PYTHON", unset = "")
 if (!nzchar(py)) py <- Sys.which("python")
 if (!nzchar(py))
