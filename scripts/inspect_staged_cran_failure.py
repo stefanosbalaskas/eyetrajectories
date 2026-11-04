@@ -17,7 +17,14 @@ import re
 import sys
 
 
-PHASE = re.compile(r"^\* checking\b.*\.\.\.[ \t]*(ERROR|WARNING|NOTE)s?[ \t]*$", re.I)
+# R CMD check may insert a bracketed elapsed duration between the
+# literal '...' and the phase verdict, e.g. '... [33s] NOTE'. Keep
+# matching anchored to the complete phase line so unrelated NOTE text
+# is never promoted to a recognized check status.
+PHASE = re.compile(
+    r"^\* checking\b.*?\.\.\.[ \t]*(?:\[[^\]\r\n]*\][ \t]*)?"
+    r"(ERROR|WARNING|NOTE)s?[ \t]*$", re.I
+)
 START = re.compile(r"^\* (?:checking\b|DONE\b)", re.I)
 STATUS = re.compile(r"^Status:[ \t]*(.+?)[ \t]*$", re.M)
 

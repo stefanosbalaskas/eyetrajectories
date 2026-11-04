@@ -101,6 +101,73 @@ class StagedDiagnosticTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "exactly one"):
                 diag.diagnose(candidate)
 
+    def test_elapsed_time_note_is_recognized_in_successful_as_cran_log(self):
+        # Real Windows R 4.6.1 syntax on the 0.4.2 candidate at
+        # integration head 2f1d1d3... is '... [33s] NOTE', not '... NOTE'.
+        raw = (
+            "* using R version 4.6.1 (2026-06-24 ucrt)\n"
+            "* this is package 'eyetrajectories' version '0.4.2'\n"
+            "* checking CRAN incoming feasibility ... [33s] NOTE\n"
+            "Maintainer: 'A. Maintainer <maintainer@example.org>'\n"
+            "\n"
+            "New submission\n"
+            "* checking Rd metadata ... OK\n"
+            "* checking tests ... [47s] OK\n"
+            "* checking PDF version of manual ... OK\n"
+            "* checking HTML version of manual ... [15s] OK\n"
+            "* DONE\n"
+            "Status: 1 NOTE\n"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "eyetrajectories"
+            root.mkdir()
+            candidate = stage(root, "20261104T182739393869Z", raw)
+            original = (candidate / "eyetrajectories.Rcheck" /
+                        "00check.log").read_bytes()
+            manifest = (candidate / "STAGING_MANIFEST.json").read_bytes()
+            summary, report = diag.diagnose(candidate)
+            self.assertEqual(summary["original_check_status"], "1 NOTE")
+            self.assertEqual(summary["reported_notes"], 1)
+            self.assertEqual(summary["recognized_note_sections"], 1)
+            self.assertEqual(summary["unextracted_notes"], 0)
+            self.assertEqual(len(summary["sections"]), 1)
+            self.assertEqual(summary["sections"][0]["kind"], "NOTE")
+            self.assertIn("New submission",
+                          "\n".join(summary["sections"][0]["lines"]))
+            self.assertIn("NOTE_SECTIONS=1", report)
+            self.assertIn("UNEXTRACTED_NOTES=0", report)
+            self.assertNotIn("ORIGINAL_00CHECK_LOG_COMPLETE_BEGIN", report)
+            self.assertIn("CRAN_STATUS=HOLD", report)
+            self.assertEqual((candidate / "eyetrajectories.Rcheck" /
+                              "00check.log").read_bytes(), original)
+            self.assertEqual((candidate / "STAGING_MANIFEST.json").read_bytes(),
+                             manifest)
+
+    def test_elapsed_time_warning_and_note_preserve_full_phase_context(self):
+        raw = (
+            "* checking Rd metadata ... [2s] WARNING\n"
+            "duplicate documentation alias\n"
+            "* checking HTML version of manual ... [17s] NOTE\n"
+            "duplicate html anchors\n"
+            "* checking tests ... [47s] OK\n"
+            "* DONE\n"
+            "Status: 1 WARNING, 1 NOTE\n"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "eyetrajectories"
+            root.mkdir()
+            candidate = stage(root, "20261104T182739393869Z", raw)
+            summary, report = diag.diagnose(candidate)
+            self.assertEqual([s["kind"] for s in summary["sections"]],
+                             ["WARNING", "NOTE"])
+            self.assertEqual(summary["unextracted_notes"], 0)
+            self.assertIn("duplicate documentation alias", report)
+            self.assertIn("duplicate html anchors", report)
+            self.assertIn("WARNING_SECTIONS=1", report)
+            self.assertIn("NOTE_SECTIONS=1", report)
+            self.assertIn("CRAN_STATUS=HOLD", report)
+            self.assertNotIn("ORIGINAL_00CHECK_LOG_COMPLETE_BEGIN", report)
+
     def test_unrecognized_note_sections_show_original_full_log(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp) / "eyetrajectories"
