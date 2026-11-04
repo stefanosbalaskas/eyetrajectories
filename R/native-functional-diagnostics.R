@@ -321,7 +321,8 @@ etr_score_distance_matrix <- function(fpca,n_components=NULL,
     squared<-outer(squared_norms,squared_norms,"+")-2*gram
     .etr_assert(all(is.finite(squared)),
       "sparse FPCA score distances overflowed to nonfinite values")
-    out<-sqrt(pmax(0,squared))
+    # Keep the matrix as the first pmax argument so R retains its dim.
+    out<-sqrt(pmax(squared,0))
     diag(out)<-0
     out<-(out+t(out))/2
   } else {
