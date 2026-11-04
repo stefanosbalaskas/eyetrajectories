@@ -83,6 +83,9 @@ etr_l2_distance <- function(a, b, time, dimension_weights = NULL,
   } else {
     dw <- .etr_dimweights(ncol(a), dimension_weights)
   }
+  # NumPy sums an empty (n_time, 0) weighted square array to 0.
+  # Avoid R sweep's zero-width recycling warning on that source domain.
+  if(isTRUE(python_boundary_mode) && ncol(a)==0L)return(0)
   sqrt(sum(rowSums(sweep((a - b)^2, 2L, dw, "*")) * w))
 }
 
