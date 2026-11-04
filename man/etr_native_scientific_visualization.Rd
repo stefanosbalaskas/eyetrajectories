@@ -22,7 +22,8 @@ etr_plot_recurrence_rate_curve(result, ...)
 etr_plot_windowed_rqa(result,
   metrics = c("recurrence_rate", "determinism", "laminarity"), ...)
 etr_plot_local_divergence(result, ...)
-etr_plot_surrogate_nonlinearity(result, bins = 20L, ...)
+etr_plot_surrogate_nonlinearity(result, bins = 20L,
+  python_boundary_mode = FALSE, ...)
 etr_plot_poincare_return_map(crossings, fit = NULL, ...)
 }
 \arguments{
@@ -31,7 +32,13 @@ recurrence-network, radius-profile, windowed-RQA, local-divergence,
 largest-Lyapunov or surrogate-nonlinearity diagnostic result.}
 \item{normalized}{Use degree normalized by source node count.}
 \item{metrics}{Distinct available numeric windowed-RQA columns.}
-\item{bins}{Integer histogram-break count (>=2) for base R plotting.}
+\item{bins}{Integer histogram-break count (>=2) for base R plotting.
+In the explicit source-boundary mode, must be a Python-style integer
+within the native finite 10000-bin safety limit.}
+\item{python_boundary_mode}{If TRUE, reproduce exact finite NumPy
+equal-width integer-bin edges and left-inclusive counts for the
+surrogate-nonlinearity histogram. FALSE retains the existing base R
+histogram interpretation and validation.}
 \item{crossings}{One-dimensional native Poincare crossing result with
 at least two observed crossings.}
 \item{fit}{Optional compatible one-dimensional native local affine map.}
@@ -40,8 +47,10 @@ at least two observed crossings.}
 \value{
 Each function draws into the active R graphics device and returns the
 plotted numeric geometry invisibly. Return classes and graphics
-devices are not Matplotlib Axes, and R histogram binning is not
-claimed identical to NumPy/matplotlib.
+devices are not Matplotlib Axes. The source-boundary mode of
+\code{etr_plot_surrogate_nonlinearity()} aligns NumPy integer-bin
+histogram geometry for finite surrogate samples, but all other
+graphics and native R result classes retain their native behavior.
 }
 \details{
 The visualisations preserve the declared physical-time/lag
