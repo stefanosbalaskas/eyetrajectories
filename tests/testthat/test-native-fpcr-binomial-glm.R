@@ -115,11 +115,12 @@ test_that("binomial source domain rejects invalid labels and fold classes",{
   expect_error(cv(z$y,loss="rmse"),"binomial loss")
   expect_error(nested(z$y,loss="mae"),"binomial loss")
   expect_error(cv(z$y,family="invalid"),"formal argument|family")
-  # A single monotonic threshold in FPC1 is separated or nearly separated.
-  # The native GLM must fail explicitly instead of silently returning
-  # misleading boundary probabilities.
-  separated<-as.numeric(seq_len(36L)>18L)
-  expect_error(cv(separated),"binomial FPCA regression")
+  # The covariate threshold is linearly separable in every training
+  # fold, regardless of unsupervised FPC direction or sign.
+  # It must fail explicitly rather than returning boundary probabilities.
+  separated<-as.numeric(z$cov$w>0)
+  expect_error(cv(separated,covariates=z$cov),
+    "binomial FPCA regression")
 })
 
 test_that("pinned Python 1.2 binomial CV and nested predictive tables agree",{
