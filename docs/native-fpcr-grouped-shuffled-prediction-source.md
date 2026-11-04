@@ -96,10 +96,13 @@ full fold-loss, assignment, prediction and inner
 selection tables.
 
 Source-scoped statistical limitations remain explicit:
-Gaussian scalar regression only; numeric Gaussian covariates
-are supported in the source-scoped subset (see
-`native-fpcr-gaussian-covariates-source.md`); no binomial family, no guaranteed sklearn mixed-size group-tie
-ordering, no sklearn NumPy RandomState seed equivalence,
+Gaussian OLS and a bounded binomial logit model are supported,
+including finite numeric/logical covariates (see
+`native-fpcr-gaussian-covariates-source.md` and
+`native-fpcr-binomial-glm-source.md`); native binomial fitting uses
+R stats::glm.fit instead of statsmodels. Nonmonotone mixed-size
+GroupKFold ties and sklearn NumPy RandomState permutations remain
+outside guaranteed source-equivalent domains,
 and no Python dataclass identity. Participant grouping
 prevents leakage but does not in itself fit a
 within-participant residual correlation model or
