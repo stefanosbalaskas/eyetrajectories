@@ -51,7 +51,7 @@ test_that("fast scientific gate precedes source qualification and CRAN staging",
   expect_true(which(grepl(guard,r_source,fixed=TRUE))[1L] <
     which(grepl('pkgload::load_all(',r_source,fixed=TRUE))[1L])
   expect_true(which(grepl(guard,r_stage,fixed=TRUE))[1L] <
-    which(grepl('stage_local_release_candidate.py',r_stage,fixed=TRUE))[1L])
+    which(grepl('exit_code <- system2(',r_stage,fixed=TRUE))[1L])
   expect_false(any(etr_native_parity_catalog()$
     one_to_one_native_contract_complete))
 })
