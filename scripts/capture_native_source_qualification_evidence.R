@@ -538,6 +538,7 @@ source_files<-unique(c(
   "R/native-distances.R",
   "R/native-fpca-extensions.R",
   "R/native-functional-diagnostics.R",
+  "docs/native-alr-numpy-complex-source-domain.md",
   "tests/testthat/helper-native-generalized-gee-fixture.R",
   "tests/testthat/helper-native-wild-projection-fixture.R",
   "tests/testthat/helper-native-mixed-bootstrap-fixture.R",
