@@ -31,8 +31,8 @@
 ## Source limitations (not full one-to-one certification)
 
 This bounded change does **not** implement binomial GLM, sklearn NumPy
-RandomState seed parity, sklearn's mixed-size GroupKFold tie handling,
-or Python dataclass type identity. R numeric/logical data frames are
+RandomState seed parity, sklearn's nonmonotone mixed-size GroupKFold
+tie handling, or Python dataclass type identity. R numeric/logical data frames are
 accepted; pandas' more permissive dtype coercions (e.g. numeric-looking
 string columns) are not claimed equivalent. Near-singular numerical
 rank decisions may differ between R QR and NumPy SVD tolerances.
