@@ -214,6 +214,10 @@ filter<-paste(c(
   "native-all-function-mapping-complete",
   "native-certification",
   "native-source-contract-alignment",
+  # Keep the regex in sync with required_scientific_tests and source_files;
+  # inclusion is verified by unselected_required below in both modes.
+  "native-numpy-input-coercion",
+  "native-pairwise-numpy-weights",
   "native-source-fixture-static-attribution",
   "native-direct-source-report-attribution",
   "native-direct-source-frame-attribution",
