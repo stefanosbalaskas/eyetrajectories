@@ -11,7 +11,7 @@ etr_nested_cross_validate_fpca_regression(trajectories, outcome,
 }
 \arguments{
 \item{trajectories}{Complete native common-grid trajectories.}
-\item{outcome}{Finite scalar response per curve.}
+\item{outcome}{Finite numeric or logical scalar response per curve. Logical TRUE/FALSE is converted to 1/0; binomial responses must be 0/1.}
 \item{candidate_components}{Positive integer retained FPC counts.}
 \item{family}{\code{"gaussian"} or binary 0/1 \code{"binomial"}.}
 \item{loss}{Gaussian: rmse (default) or mae; binomial: log_loss (default) or brier.}
