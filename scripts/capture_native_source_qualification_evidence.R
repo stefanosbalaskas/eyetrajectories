@@ -94,7 +94,7 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-pilot-source-adversarial",
     "native-four-pilot-scalar-boundary-source",
     "native-alr-numpy-complex-source",
-    "native-trapezoid-complex-source"
+    "native-trapezoid-complex-source",
     "native-functional-l2-complex-source",
     "native-functional-distance-source-domain",
     "native-preprocessing-python-boundary-source",
