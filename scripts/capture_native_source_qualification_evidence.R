@@ -510,6 +510,7 @@ source_files<-unique(c(
   "R/native-sparse-mfpca-known-truth-recovery.R",
   "R/native-fpcr-future-prediction-interval.R",
   "R/native-fpcr-regression-cross-validation.R",
+  "R/native-cv-uncertainty.R",
   "man/etr_cross_validate_fpca_regression.Rd",
   "man/etr_nested_cross_validate_fpca_regression.Rd",
   "docs/native-fpcr-grouped-shuffled-prediction-source.md",
