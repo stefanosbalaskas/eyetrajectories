@@ -169,8 +169,11 @@ truthiness remains outside the qualified domain.}
 Python 1.2 source-input compatibility domain. For trapezoidal weighting
 it includes stated exceptional grids, complex ndarray-style time
 casting, and Python scalar/container truthiness. For functional L2
-distance it permits finite numeric-string/Boolean matrices and
-weights through explicit conversion. FALSE uses native R validation.
+distance it permits numeric-string/Boolean/complex matrices and
+dimension weights with explicit NumPy-style real conversion. The L2
+source mode also allows infinity and NaN-valued weights where Python
+propagates the same nonfinite arithmetic; input NaN trajectory
+coordinates remain rejected. FALSE uses native R finite validation.
 Neither value invokes Python, and full source-domain parity is not
 claimed.}
 \item{metric}{Distance metric for recurrence and cross-recurrence: \code{euclidean} (L2), \code{cityblock} (L1), or \code{chebyshev} (L-infinity). The default is Euclidean.}
