@@ -24,8 +24,11 @@ test_that("complex NumPy ndarray to float is opt-in for ALR forward",{
     python_boundary_mode=TRUE),
     etr_alr_transform(Re(x),reference_dimension=1L),
     tolerance=0)
-  # Finite imaginary components do not affect the source real-cast.
-  y<-x; Im(y)<-rep(c(Inf,-Inf,NaN),length.out=length(y))
+  # Nonfinite imaginary components must be discarded by the NumPy
+  # complex-ndarray dtype=float conversion in source-boundary mode.
+  y<-array(complex(real=as.numeric(Re(x)),
+    imaginary=rep(c(Inf,-Inf,NaN),length.out=length(x))),
+    dim=dim(x))
   expect_equal(etr_alr_transform(y,0L,python_boundary_mode=TRUE),
     expected,tolerance=0)
 })
