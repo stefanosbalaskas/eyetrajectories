@@ -23,8 +23,10 @@ test_that("ascending sorted group counts match GroupKFold observed fold IDs",{
     n_splits=3L,cv_unit="group",group_column="participant",
     shuffle=TRUE,random_state=11L)
   expected <- c(1L,0L,rep(2L,4L),rep(1L,3L),rep(0L,3L))
-  expect_identical(actual$assignments$fold,expected)
-  expect_identical(actual$assignments$group,z$group)
+  ordered <- actual$assignments[
+    match(z$x$curve_ids,actual$assignments$curve_id),,drop=FALSE]
+  expect_identical(ordered$fold,expected)
+  expect_identical(ordered$group,z$group)
   expect_identical(as.integer(table(actual$assignments$fold)),rep(4L,3L))
   expect_identical(actual$random_state,NULL)
   for(g in unique(z$group)) {
@@ -51,7 +53,9 @@ test_that("mixed-size nonmonotone group counts preserve native fallback",{
     z$x,z$y,candidate_components=1L,
     n_splits=3L,cv_unit="group",group_column="participant",
     shuffle=FALSE)
-  expect_identical(actual$assignments$fold,
+  aligned <- actual$assignments$fold[
+    match(z$x$curve_ids,actual$assignments$curve_id)]
+  expect_identical(aligned,
     c(rep(2L,2L),0L,rep(2L,2L),1L,rep(0L,3L),rep(1L,3L)))
   expect_true(actual$provenance$group_leakage_prevented)
 })
