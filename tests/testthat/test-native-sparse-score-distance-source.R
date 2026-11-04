@@ -1,3 +1,13 @@
+test_that("sparse score runtime namespaces are declared in DESCRIPTION",{
+  desc<-read.dcf(testthat::test_path("..","..","DESCRIPTION"))
+  imports<-trimws(strsplit(desc[1L,"Imports"],",",fixed=TRUE)[[1L]])
+  suggests<-trimws(strsplit(desc[1L,"Suggests"],",",fixed=TRUE)[[1L]])
+  expect_true("methods"%in%imports,
+    info="methods:: calls must be listed in DESCRIPTION Imports")
+  expect_true("Matrix"%in%suggests,
+    info="Matrix remains an optional suggested sparse backend")
+})
+
 # Frozen eyetrajectoriespy==1.2.0 analysis.py:
 # score_distance_matrix -> scikit-learn pairwise_distances(metric="euclidean").
 # Developer numerical witnesses only, NOT independent 508 certification.
