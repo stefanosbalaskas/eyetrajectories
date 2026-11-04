@@ -65,6 +65,17 @@ def diagnose(candidate: Path) -> tuple[dict[str, object], str]:
     manifest = (json.loads(manifest_path.read_text(encoding="utf-8"))
                 if manifest_path.is_file() else {})
     sections = warning_sections(source)
+    status = statuses[0].strip()
+    # R's terminal Status counts can exceed the individual phase markers
+    # recognized above. Never silently report zero NOTEs on a nonzero
+    # final NOTE verdict. Preserve the full original log in that case.
+    def status_count(kind: str) -> int:
+        matched = re.search(r"\\b([0-9]+)\\s+" + kind + r"S?\\b",
+                            status, flags=re.I)
+        return int(matched.group(1)) if matched else 0
+    reported_notes = status_count("NOTE")
+    observed_notes = sum(section["kind"] == "NOTE" for section in sections)
+    unextracted_notes = max(0, reported_notes - observed_notes)
     summary = {
         "diagnostic_only": True,
         "candidate_release_status": "HOLD - original staged R CMD check result unchanged",
@@ -73,7 +84,10 @@ def diagnose(candidate: Path) -> tuple[dict[str, object], str]:
         "source_git_head": manifest.get("source_git_head", "UNKNOWN"),
         "source_version": manifest.get("source_version", "UNKNOWN"),
         "candidate_version": manifest.get("candidate_version", "UNKNOWN"),
-        "original_check_status": statuses[0].strip(),
+        "original_check_status": status,
+        "reported_notes": reported_notes,
+        "recognized_note_sections": observed_notes,
+        "unextracted_notes": unextracted_notes,
         "sections": sections,
     }
     report = [
@@ -85,7 +99,9 @@ def diagnose(candidate: Path) -> tuple[dict[str, object], str]:
         "CANDIDATE_VERSION=" + str(summary["candidate_version"]),
         "CHECK_STATUS=" + str(summary["original_check_status"]),
         "WARNING_SECTIONS=" + str(sum(s["kind"] == "WARNING" for s in sections)),
-        "NOTE_SECTIONS=" + str(sum(s["kind"] == "NOTE" for s in sections)),
+        "NOTE_SECTIONS=" + str(observed_notes),
+        "NOTE_STATUS_COUNT=" + str(reported_notes),
+        "UNEXTRACTED_NOTES=" + str(unextracted_notes),
         "ERROR_SECTIONS=" + str(sum(s["kind"] == "ERROR" for s in sections)),
         "ORIGINAL_00CHECK_LOG=" + str(log),
     ]
@@ -98,6 +114,20 @@ def diagnose(candidate: Path) -> tuple[dict[str, object], str]:
         report.extend(["",
             "No individual phase sections matched the standard '* checking ... WARNING/NOTE' syntax.",
             "Inspect ORIGINAL_00CHECK_LOG directly. Do not interpret the status as passing."])
+    if unextracted_notes:
+        # Exact raw check text (with line numbers) gives the owner the
+        # unrecognized NOTE context without requiring a rebuild or
+        # inventing an explanation. Do not alter the original log.
+        report.extend(["",
+            "WARNING: R CMD check reports " + str(reported_notes) +
+            " NOTE(s), but only " + str(observed_notes) +
+            " NOTE phase(s) were recognized.",
+            "Showing the COMPLETE original 00check.log, numbered, to reveal",
+            "nonstandard check-note lines and their surrounding context.",
+            "ORIGINAL_00CHECK_LOG_COMPLETE_BEGIN"])
+        report.extend(f"{i:05d}: {line}" for i, line in
+                      enumerate(source.splitlines(), 1))
+        report.append("ORIGINAL_00CHECK_LOG_COMPLETE_END")
     report.extend(["", "CRAN_STATUS=HOLD - resolve WARNING and review all NOTEs",
                    "INDEPENDENT_PYTHON_CERTIFICATION=NOT IMPLIED"])
     return summary, "\n".join(report) + "\n"
