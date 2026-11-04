@@ -257,14 +257,24 @@ etr_trajectory_tortuosity_frame <- function(
 #' @param x Complete native common-grid trajectories.
 #' @param dimensions Optional ordered named channel selection.
 #' @param dimension_weights Optional non-negative weights, at least one > 0.
+#' @param python_boundary_mode When TRUE, accept finite NumPy-compatible
+#'   numeric-string and Boolean dimension weights before native Fréchet.
+#'   Strict native validation remains the default. Does not certify
+#'   full Python 1.2 input/return-type equivalence.
 #' @return Symmetric numeric n_curves by n_curves matrix with zero diagonal,
 #'   without labels (matching the Python NumPy array contract).
 #' @export
 etr_pairwise_frechet <- function(x,dimensions=NULL,
-                                 dimension_weights=NULL) {
+                                 dimension_weights=NULL,
+                                 python_boundary_mode=FALSE) {
   idx <- .etr_preprocessing_dimensions(x,dimensions)
+  .etr_assert(is.logical(python_boundary_mode)&&
+    length(python_boundary_mode)==1L&&!is.na(python_boundary_mode),
+    "python_boundary_mode must be a nonmissing logical scalar")
   if(is.null(dimension_weights)) {
     weights <- rep(1,length(idx))
+  } else if(isTRUE(python_boundary_mode)) {
+    weights <- .etr_distance_source_weights(dimension_weights,length(idx))
   } else {
     .etr_assert(is.numeric(dimension_weights) &&
                 !is.logical(dimension_weights) &&
@@ -282,7 +292,9 @@ etr_pairwise_frechet <- function(x,dimensions=NULL,
                 nrow=length(x$time),ncol=length(idx))
     b <- matrix(x$values[j,,idx,drop=FALSE],
                 nrow=length(x$time),ncol=length(idx))
-    ans[i,j] <- etr_frechet(a,b,weights)
+    ans[i,j] <- if(isTRUE(python_boundary_mode))
+      etr_discrete_frechet(a,b,weights) else
+      etr_frechet(a,b,weights)
     ans[j,i] <- ans[i,j]
   }
   ans

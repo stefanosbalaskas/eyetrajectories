@@ -25,7 +25,8 @@ etr_heading_function(x, dimensions = NULL, min_speed = 0,
                      undefined_policy = c("nan", "raise"))
 etr_trajectory_tortuosity_frame(x, dimensions = NULL, min_displacement = 0,
                                 undefined_policy = c("nan", "raise"))
-etr_pairwise_frechet(x, dimensions = NULL, dimension_weights = NULL)
+etr_pairwise_frechet(x, dimensions = NULL, dimension_weights = NULL,
+                     python_boundary_mode = FALSE)
 etr_nearest_trajectory_indices(x, index, n_neighbors = 5L,
                                python_boundary_mode = FALSE)
 }
@@ -45,12 +46,16 @@ present. Pairwise Frechet defaults to all stored channels.}
 to \code{NA_real_}; \code{"raise"} stops on undefined samples/curves.}
 \item{min_displacement}{Nonnegative endpoint displacement threshold.}
 \item{dimension_weights}{Optional finite non-negative channel weights,
-containing at least one strictly positive value.}
+containing at least one strictly positive value. In explicit source-boundary
+mode, Fréchet also accepts numeric-compatible logical and string weights.}
 \item{index}{Zero-based integer target curve index, matching Python's
 \code{nearest_trajectory_indices()}.}
 \item{n_neighbors}{Positive integer number of nearest distinct curves.
 Requesting more than exist returns all available distinct curves.}
-\item{python_boundary_mode}{Logical opt-in to bounded Python 1.2 source-domain semantics for coordinate normalization, time normalization, landmark centering and nearest-neighbor slicing. Boolean coordinate extents (TRUE = 1, FALSE invalid) and Boolean time endpoints are converted for native numerical operations. Landmark centering accepts finite numeric-string and Boolean inputs through NumPy-like scalar or per-curve conversions; invalid strings and nonfinite values remain unsupported. Nearest-neighbor counts follow Python's Boolean/integer slice-index rules. FALSE preserves strict native R defaults; no Python bridge is used.}
+\item{python_boundary_mode}{Logical opt-in to bounded Python 1.2 source-domain semantics for coordinate normalization, time normalization, landmark centering and nearest-neighbor slicing. Boolean coordinate extents (TRUE = 1, FALSE invalid) and Boolean time endpoints are converted for native numerical operations. Landmark centering accepts finite numeric-string and Boolean inputs through NumPy-like scalar or per-curve conversions; invalid strings and nonfinite values remain unsupported. Nearest-neighbor counts follow Python's Boolean/integer slice-index rules.
+Pairwise Fréchet accepts bounded finite NumPy-style dimension weights
+but retains native R distance computations and results. FALSE preserves
+strict native R defaults; no Python bridge is used.}
 }
 \value{
 The first four functions return a native \code{etr_trajectory_set};

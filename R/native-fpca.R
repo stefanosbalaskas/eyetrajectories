@@ -24,7 +24,13 @@ etr_trapezoid_weights <- function(time, normalize = FALSE,
         (is.numeric(x) || is.logical(x) || is.character(x)),
       logical(1L))),
       "time must be a one-dimensional sequence of numeric scalars")
-    time <- unlist(time, use.names = FALSE)
+    # np.asarray(list(...), dtype=float) converts each scalar before
+    # constructing the homogeneous array. R's unlist() first promotes
+    # mixed (character, logical, numeric) values to character, turning
+    # TRUE into "TRUE" and then NA. Preserve NumPy's elementwise coercion.
+    time <- vapply(time, function(value)
+      suppressWarnings(as.numeric(value)), numeric(1L),
+      USE.NAMES = FALSE)
   }
   .etr_assert(is.atomic(time) && is.null(dim(time)) &&
                 !is.factor(time) &&

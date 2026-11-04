@@ -1,3 +1,45 @@
+# Guard the complete evidence capture selector before running either long
+# qualification mode. The selector, requirements and source manifest are
+# separate and must not drift when new scientific suites are registered.
+test_that("all source-evidence required tests match the real capture filter",{
+  .etr_require_developer_checkout()
+  root<-testthat::test_path("..","..")
+  capture<-file.path(root,"scripts",
+    "capture_native_source_qualification_evidence.R")
+  expressions<-parse(file=capture,keep.source=FALSE)
+  rhs<-function(symbol) {
+    indices<-which(vapply(expressions,function(expr)
+      is.call(expr)&&identical(expr[[1L]],as.name("<-"))&&
+        identical(expr[[2L]],as.name(symbol)),logical(1L)))
+    expect_true(length(indices)==1L,
+      info=paste("exactly one top-level assignment required for",symbol))
+    expressions[[indices[[1L]]]][[3L]]
+  }
+  required<-eval(rhs("required_scientific_tests"),envir=baseenv())
+  selector<-eval(rhs("filter"),envir=baseenv())
+  expect_identical(length(required),length(unique(required)))
+  expect_true(all(file.exists(file.path(root,required))))
+  unmatched<-required[!grepl(selector,basename(required))]
+  expect_true(length(unmatched)==0L,
+    info=paste("capture omits required scientific suites:",
+      paste(unmatched,collapse=", ")))
+  for(suite in c("native-numpy-input-coercion",
+                 "native-pairwise-numpy-weights")){
+    filename<-paste0("test-",suite,".R")
+    expect_true(filename%in%basename(required))
+    expect_true(grepl(selector,filename))
+    expect_true(file.exists(file.path(root,"tests","testthat",filename)))
+    script<-readLines(capture,warn=FALSE)
+    expect_true(any(grepl(
+      paste0('"tests/testthat/',filename,'"'),script,fixed=TRUE)),
+      info=paste("source manifest missing",filename))
+    helper<-readLines(file.path(root,"scripts",
+      "qualify_native_current_contracts.R"),warn=FALSE)
+    expect_true(any(grepl(paste0('"',suite,'"'),helper,fixed=TRUE)),
+      info=paste("second qualification entrypoint missing",suite))
+  }
+})
+
 # A syntax regression in the evidence runner must be caught before
 # users invoke a full native/Python qualification cycle.
 test_that("native source qualification evidence runner parses", {
