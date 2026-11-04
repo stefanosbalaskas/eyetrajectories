@@ -87,27 +87,27 @@ test_that("pinned Python 1.2 ALR source exports agree on complex arrays and shap
   reticulate::py_run_string("
 import numpy as np
 import warnings
-def _ET_COMPLEX_ALR_ORACLE(fn, x, ref, ndim=None):
+def _ET_COMPLEX_ALR_ORACLE(fn, array_data, ref, ndim=None):
     with warnings.catch_warnings():
         warnings.simplefilter('ignore')
         with np.errstate(all='ignore'):
             if ndim is None:
-                return fn(x, reference_dimension=ref)
-            return fn(x, reference_dimension=ref, n_dimensions=ndim)
+                return fn(array_data, reference_dimension=ref)
+            return fn(array_data, reference_dimension=ref, n_dimensions=ndim)
 ")
   oracle<-reticulate::py_eval("_ET_COMPLEX_ALR_ORACLE",convert=FALSE)
   x<-.etr_complex_alr_simplex_fixture()
   for(ref in c(0L,1L,2L,-1L)){
     py<-reticulate::py_call(oracle,
       fn=etpy_get_export("alr_transform"),
-      x=reticulate::r_to_py(x),ref=ref)
+      array_data=reticulate::r_to_py(x),ref=ref)
     local<-etr_alr_transform(x,reference_dimension=ref,
       python_boundary_mode=TRUE)
     expect_equal(unname(local),unname(et_to_r(py)),tolerance=1e-13)
   }
   py_bool<-reticulate::py_call(oracle,
     fn=etpy_get_export("alr_transform"),
-    x=reticulate::r_to_py(x),ref=TRUE)
+    array_data=reticulate::r_to_py(x),ref=TRUE)
   expect_equal(unname(etr_alr_transform(x,TRUE,
     python_boundary_mode=TRUE)),unname(et_to_r(py_bool)),tolerance=1e-13)
   z<-array(complex(real=c(-3,2,1,-2,4,0),
@@ -115,7 +115,7 @@ def _ET_COMPLEX_ALR_ORACLE(fn, x, ref, ndim=None):
   for(ref in c(0L,1L,2L,-1L)){
     py<-reticulate::py_call(oracle,
       fn=etpy_get_export("inverse_alr"),
-      x=reticulate::r_to_py(z),ref=ref,ndim=3L)
+      array_data=reticulate::r_to_py(z),ref=ref,ndim=3L)
     local<-etr_inverse_alr(z,ref,3L,
       python_boundary_mode=TRUE)
     expect_equal(unname(local),unname(et_to_r(py)),tolerance=1e-13)
@@ -124,7 +124,7 @@ def _ET_COMPLEX_ALR_ORACLE(fn, x, ref, ndim=None):
     imaginary=c(2,-2,0,0)),c(2L,1L,2L))
   py_extreme<-reticulate::py_call(oracle,
     fn=etpy_get_export("inverse_alr"),
-    x=reticulate::r_to_py(nan_z),ref=0L,ndim=3L)
+    array_data=reticulate::r_to_py(nan_z),ref=0L,ndim=3L)
   local_extreme<-suppressWarnings(etr_inverse_alr(nan_z,0L,3L,
     python_boundary_mode=TRUE))
   expect_identical(is.nan(local_extreme),is.nan(et_to_r(py_extreme)))
@@ -133,12 +133,12 @@ def _ET_COMPLEX_ALR_ORACLE(fn, x, ref, ndim=None):
   z0<-array(numeric(),c(2L,3L,0L))
   py_single<-reticulate::py_call(oracle,
     fn=etpy_get_export("inverse_alr"),
-    x=reticulate::r_to_py(z0),ref=0L,ndim=1L)
+    array_data=reticulate::r_to_py(z0),ref=0L,ndim=1L)
   expect_equal(etr_inverse_alr(z0,0L,1L,
     python_boundary_mode=TRUE),et_to_r(py_single),tolerance=0)
   expect_error(reticulate::py_call(oracle,
     fn=etpy_get_export("inverse_alr"),
-    x=reticulate::r_to_py(z),ref=0L,ndim=3.0))
+    array_data=reticulate::r_to_py(z),ref=0L,ndim=3.0))
   expect_false(any(etr_native_parity_catalog()$
     one_to_one_native_contract_complete))
 })
