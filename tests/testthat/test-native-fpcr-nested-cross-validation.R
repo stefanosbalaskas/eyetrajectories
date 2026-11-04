@@ -54,7 +54,8 @@ test_that("nested FPCR refuses unsupported Python source domains",{
   expect_error(f(z$x,z$y,shuffle=TRUE,random_state=-1L),
     "nonnegative inner/outer R shuffle seeds")
   expect_error(f(z$x,z$y,cv_unit="group"),"group_column is required")
-  expect_error(f(z$x,z$y,family="binomial"),"family")
+  expect_error(f(z$x,z$y,family="binomial"),
+    "binomial outcome must contain only 0/1 values")
   expect_error(f(z$x,z$y,covariates=data.frame(z=letters[1:12])),"covariates")
   expect_error(f(z$x,z$y,selection_rule="bad"),"selection_rule")
   expect_error(f(z$x,z$y,outer_splits=1L),"outer_splits")
