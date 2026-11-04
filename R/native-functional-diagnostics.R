@@ -223,11 +223,13 @@ etr_fpca_score_frame <- function(result,prefix="FPC") {
 #' @param n_components Retained fitted score columns (NULL means all).
 #' @param python_boundary_mode When TRUE, additionally accept a minimal
 #'   score-bearing R environment as a native analogue of Python's
-#'   duck-typed objects, and a bounded Matrix-package sparse score array.
+#'   duck-typed objects, and a Matrix-package sparse score array without
+#'   densifying the input. The n-curve by n-curve output is necessarily dense
+#'   and guarded at five million cells. Matrix remains optional.
 #'   Also enforce Python slice-index semantics: Boolean counts are valid,
 #'   while double 1.0 is not a valid NumPy index (unlike legacy native R).
-#'   Other Python-specific classes and error types
-#'   remain outside the audited subset.
+#'   Other Python-specific classes and error types remain outside the
+#'   audited subset.
 #' @return Unlabelled symmetric numeric matrix.
 #' @export
 etr_score_distance_matrix <- function(fpca,n_components=NULL,
@@ -235,19 +237,30 @@ etr_score_distance_matrix <- function(fpca,n_components=NULL,
   .etr_assert(is.logical(python_boundary_mode) &&
     length(python_boundary_mode)==1L && !is.na(python_boundary_mode),
     "python_boundary_mode must be a nonmissing logical scalar")
-  # sklearn pairwise_distances accepts scipy sparse score arrays.
-  # Provide a bounded native analogue for Matrix objects in explicit
-  # source-compatibility mode. The normal native scientific default
-  # continues to require a dense numeric matrix.
+  # sklearn pairwise_distances accepts SciPy sparse score arrays.
+  # Use sparse-native Matrix operations in explicit Python boundary mode,
+  # rather than converting a possibly very wide sparse score matrix to
+  # dense first. Do not require Matrix for ordinary dense R users.
   source_scores <- NULL
   if(inherits(fpca,"etr_fpca") || is.list(fpca) ||
       (isTRUE(python_boundary_mode) && is.environment(fpca)))
     source_scores <- fpca$scores
-  if(isTRUE(python_boundary_mode) && inherits(source_scores,"Matrix")) {
-    .etr_assert(as.double(nrow(source_scores)) *
-      as.double(ncol(source_scores)) <= 2e6,
-      "sparse score matrix exceeds bounded native densification domain")
-    source_scores <- as.matrix(source_scores)
+  source_sparse <- isTRUE(python_boundary_mode) &&
+    inherits(source_scores,"sparseMatrix")
+  if(source_sparse) {
+    .etr_assert(requireNamespace("Matrix",quietly=TRUE),
+      "Matrix is required for Python-compatible sparse FPCA scores")
+    .etr_assert(nrow(source_scores)>=1L && ncol(source_scores)>=1L,
+      "sparse FPCA scores must have positive matrix dimensions")
+    # Sparse pattern matrices have implicit unit entries and no x slot.
+    # For all other sparse numeric matrices, inspect only stored values:
+    # as.numeric(source_scores) would silently materialize the full array.
+    stored <- if("x"%in%methods::slotNames(source_scores))
+      methods::slot(source_scores,"x") else
+      if(inherits(source_scores,"nMatrix"))TRUE else NA_real_
+    .etr_assert((is.numeric(stored)||is.logical(stored)) &&
+      all(is.finite(stored)),
+      "sparse FPCA scores must contain finite real numeric entries")
   }
   if(inherits(fpca,"etr_fpca")) {
     .etr_fpca_diagnostic_fit(fpca)
@@ -257,11 +270,12 @@ etr_score_distance_matrix <- function(fpca,n_components=NULL,
     # matrix contract without pretending all Python object types port.
     .etr_assert((is.list(fpca) ||
       (isTRUE(python_boundary_mode) && is.environment(fpca)))&&
-      is.matrix(source_scores)&&
-      (is.numeric(source_scores)||is.character(source_scores)||
-        is.logical(source_scores))&&
+      (is.matrix(source_scores)||source_sparse)&&
+      (source_sparse||is.numeric(source_scores)||
+        is.character(source_scores)||is.logical(source_scores))&&
       nrow(source_scores)>=1L&&ncol(source_scores)>=1L&&
-      all(is.finite(suppressWarnings(as.numeric(source_scores))))&&
+      (source_sparse ||
+        all(is.finite(suppressWarnings(as.numeric(source_scores)))))&&
       (is.numeric(fpca$n_components) ||
         (isTRUE(python_boundary_mode)&&is.logical(fpca$n_components)))&&
       length(fpca$n_components)==1L&&
@@ -290,11 +304,36 @@ etr_score_distance_matrix <- function(fpca,n_components=NULL,
     "n_components is outside the fitted range")
   # sklearn pairwise_distances accepts numeric-string and Boolean score arrays.
   # Do not coerce the caller's object, nor accept NaN, Inf or bad strings.
-  scores<-if(is.character(source_scores)||is.logical(source_scores))
+  scores<-if(!source_sparse &&
+       (is.character(source_scores)||is.logical(source_scores)))
     matrix(suppressWarnings(as.numeric(source_scores)),
       nrow=nrow(source_scores),ncol=ncol(source_scores)) else source_scores
   x<-scores[,seq_len(n_components),drop=FALSE]
-  out<-as.matrix(stats::dist(x,method="euclidean"))
+  if(source_sparse) {
+    # Sparse Euclidean geometry: squared row norms and a sparse Gram
+    # product, with a dense output whose size is intrinsically n_curves^2.
+    # This is a bounded native SciPy/scikit-learn analogue; it avoids
+    # materializing n_curves * n_score_components input cells.
+    .etr_assert(as.double(nrow(x))^2 <= 5e6,
+      "sparse score distance output exceeds native 5e6-cell resource bound")
+    # Pattern and logical Matrix classes can request Boolean semiring
+    # multiplication; Euclidean score distances require ordinary double
+    # arithmetic even when all observed entries are zero/one. Converting
+    # to a numeric *sparse* compressed-column matrix does not densify.
+    if(!inherits(x,"dgCMatrix"))
+      x<-methods::as(x,"dgCMatrix")
+    squared_norms<-as.numeric(Matrix::rowSums(x*x))
+    gram<-as.matrix(Matrix::tcrossprod(x))
+    squared<-outer(squared_norms,squared_norms,"+")-2*gram
+    .etr_assert(all(is.finite(squared)),
+      "sparse FPCA score distances overflowed to nonfinite values")
+    # Keep the matrix as the first pmax argument so R retains its dim.
+    out<-sqrt(pmax(squared,0))
+    diag(out)<-0
+    out<-(out+t(out))/2
+  } else {
+    out<-as.matrix(stats::dist(x,method="euclidean"))
+  }
   unname(out)
 }
 

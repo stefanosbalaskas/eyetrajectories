@@ -35,7 +35,7 @@ etr_fit_phase_fpca(registration, representation = "displacement",
 \item{values}{Three-dimensional numeric array of compositional probabilities.}
 \item{reference_dimension}{Python-style zero-based reference component; -1 selects the last.}
 \item{epsilon}{Strictly positive clipping floor for ALR, declared before analysis.}
-\item{python_boundary_mode}{Logical, opt-in Python 1.2 boundary validation where implemented; the default FALSE retains the documented native R input domain. This flag does not select a Python execution backend or certify full-domain equivalence.}
+\item{python_boundary_mode}{Logical, opt-in Python 1.2 boundary validation where implemented; the default FALSE retains the documented native R input domain. For score-distance matrices, sparse Matrix inputs use native sparse row norms and Gram products, with a dense output of no more than five million cells. This flag does not select a Python execution backend or certify full-domain equivalence.}
 \item{transformed}{Finite three-dimensional ALR values.}
 \item{n_dimensions}{Original number of channels, at least one. The NumPy source shape contract does not accept Boolean shape sizes.}
 \item{result}{A native FPCA fit or registration result, as appropriate.}
@@ -43,7 +43,7 @@ etr_fit_phase_fpca(registration, representation = "displacement",
 \item{sd_multipliers}{Finite standard deviation multipliers for component curves.}
 \item{threshold}{Cumulative explained variance threshold in (0, 1].}
 \item{prefix}{Component score column prefix.}
-\item{fpca}{Native fitted FPCA object.}
+\item{fpca}{Native fitted FPCA object, or a minimal validated score-bearing list. With \code{python_boundary_mode=TRUE}, accepts Matrix-package sparse score matrices without densification of the input; Matrix remains optional for ordinary native use.}
 \item{n_components}{Number of retained FPCA components or requested variance fraction, as appropriate.}
 \item{trajectories}{Native complete common-grid or irregular trajectory set, depending on the diagnostic.}
 \item{dimension_weights}{Optional nonnegative spatial-channel weights.}
