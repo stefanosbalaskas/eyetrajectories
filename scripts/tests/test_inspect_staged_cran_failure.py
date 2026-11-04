@@ -105,18 +105,18 @@ class StagedDiagnosticTests(unittest.TestCase):
         # Real Windows R 4.6.1 syntax on the 0.4.2 candidate at
         # integration head 2f1d1d3... is '... [33s] NOTE', not '... NOTE'.
         raw = (
-            "* using R version 4.6.1 (2026-06-24 ucrt)\\n"
-            "* this is package 'eyetrajectories' version '0.4.2'\\n"
-            "* checking CRAN incoming feasibility ... [33s] NOTE\\n"
-            "Maintainer: 'A. Maintainer <maintainer@example.org>'\\n"
-            "\\n"
-            "New submission\\n"
-            "* checking Rd metadata ... OK\\n"
-            "* checking tests ... [47s] OK\\n"
-            "* checking PDF version of manual ... OK\\n"
-            "* checking HTML version of manual ... [15s] OK\\n"
-            "* DONE\\n"
-            "Status: 1 NOTE\\n"
+            "* using R version 4.6.1 (2026-06-24 ucrt)\n"
+            "* this is package 'eyetrajectories' version '0.4.2'\n"
+            "* checking CRAN incoming feasibility ... [33s] NOTE\n"
+            "Maintainer: 'A. Maintainer <maintainer@example.org>'\n"
+            "\n"
+            "New submission\n"
+            "* checking Rd metadata ... OK\n"
+            "* checking tests ... [47s] OK\n"
+            "* checking PDF version of manual ... OK\n"
+            "* checking HTML version of manual ... [15s] OK\n"
+            "* DONE\n"
+            "Status: 1 NOTE\n"
         )
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp) / "eyetrajectories"
@@ -133,7 +133,7 @@ class StagedDiagnosticTests(unittest.TestCase):
             self.assertEqual(len(summary["sections"]), 1)
             self.assertEqual(summary["sections"][0]["kind"], "NOTE")
             self.assertIn("New submission",
-                          "\\n".join(summary["sections"][0]["lines"]))
+                          "\n".join(summary["sections"][0]["lines"]))
             self.assertIn("NOTE_SECTIONS=1", report)
             self.assertIn("UNEXTRACTED_NOTES=0", report)
             self.assertNotIn("ORIGINAL_00CHECK_LOG_COMPLETE_BEGIN", report)
@@ -145,13 +145,13 @@ class StagedDiagnosticTests(unittest.TestCase):
 
     def test_elapsed_time_warning_and_note_preserve_full_phase_context(self):
         raw = (
-            "* checking Rd metadata ... [2s] WARNING\\n"
-            "duplicate documentation alias\\n"
-            "* checking HTML version of manual ... [17s] NOTE\\n"
-            "duplicate html anchors\\n"
-            "* checking tests ... [47s] OK\\n"
-            "* DONE\\n"
-            "Status: 1 WARNING, 1 NOTE\\n"
+            "* checking Rd metadata ... [2s] WARNING\n"
+            "duplicate documentation alias\n"
+            "* checking HTML version of manual ... [17s] NOTE\n"
+            "duplicate html anchors\n"
+            "* checking tests ... [47s] OK\n"
+            "* DONE\n"
+            "Status: 1 WARNING, 1 NOTE\n"
         )
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp) / "eyetrajectories"
