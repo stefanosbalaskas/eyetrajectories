@@ -10,7 +10,6 @@
 \alias{etr_fpca_wild_bootstrap_projection_family_test}
 \alias{etr_functional_mixed_effects_covariance_sensitivity}
 \alias{etr_scan_wild_bootstrap_fpca_truncations}
-\alias{etr_simulate_functional_process}
 \alias{etr_simulate_functional_scenario}
 \alias{etr_wild_bootstrap_fpca_projection}
 \title{Native functional estimation, inference and simulation exports}
