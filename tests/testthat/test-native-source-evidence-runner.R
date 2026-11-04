@@ -24,7 +24,9 @@ test_that("all source-evidence required tests match the real capture filter",{
     info=paste("capture omits required scientific suites:",
       paste(unmatched,collapse=", ")))
   for(suite in c("native-numpy-input-coercion",
-                 "native-pairwise-numpy-weights")){
+                 "native-pairwise-numpy-weights",
+                 "native-trapezoid-complex-source",
+                 "native-functional-l2-complex-source")){
     filename<-paste0("test-",suite,".R")
     expect_true(filename%in%basename(required))
     expect_true(grepl(selector,filename))
