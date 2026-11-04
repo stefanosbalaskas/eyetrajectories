@@ -124,6 +124,17 @@ def _ET_L2_CALL(source_fn,a,b,time,dw):
   expect_true(is.nan(as.numeric(et_to_r(py_weight_nan))))
   expect_true(is.nan(etr_l2_distance(b0,b0,c(0,1,3),c(NaN,1),
     python_boundary_mode=TRUE)))
+  # The former finite-only error wording was incorrect: Python
+  # accepts Inf but raises when a character element cannot convert.
+  invalid<-matrix(c("not-a-number","1","2","3","4","5"),
+    nrow=3L,byrow=TRUE)
+  expect_error(etr_l2_distance(invalid,b0,c(0,1,3),
+    python_boundary_mode=TRUE),
+    "numeric-compatible states without NaN")
+  expect_error(reticulate::py_call(
+    etpy_get_export("functional_l2_distance"),
+    a=reticulate::r_to_py(invalid),b=npb,time=tm),
+    )
   expect_false(any(etr_native_parity_catalog()$
     one_to_one_native_contract_complete))
 })
