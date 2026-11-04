@@ -28,12 +28,16 @@ simultaneously present in training and held-out test data.
 Each source-shaped `assignments` frame includes the
 `group` label; `provenance$group_leakage_prevented`
 is TRUE. Folds are deterministic and ignore shuffle and
-random_state, as in source GroupKFold. The native R
-size-descending, label-tiebreaking policy can differ from
-sklearn GroupKFold for equal-sized group ties and is not
-represented as bitwise identical full-domain source behavior.
-The direct paired oracle tests use **distinct group sizes**
-to avoid that uncontrolled boundary.
+random_state, as in source GroupKFold. The native R now reproduces the frozen sklearn GroupKFold fold
+assignment for **all-equal-sized** groups by visiting sorted labels in
+reverse order before greedy lightest-fold allocation. The bounded
+source-aligned behavior is directly tested for six equal-sized groups.
+For groups with **unequal sizes and ties within size strata**, NumPy's
+default argsort/Quicksort tie behavior can still differ from the
+native deterministic label order. The direct previously existing
+paired oracle tests use **distinct group sizes**; the added source
+oracle covers the all-equal-size case. This is not full-domain
+GroupKFold certification.
 
 ### Shuffled curve folds
 
@@ -89,7 +93,7 @@ selection tables.
 Source-scoped statistical limitations remain explicit:
 Gaussian scalar regression only; numeric Gaussian covariates
 are supported in the source-scoped subset (see
-`native-fpcr-gaussian-covariates-source.md`); no binomial family, no guaranteed sklearn group-tie
+`native-fpcr-gaussian-covariates-source.md`); no binomial family, no guaranteed sklearn mixed-size group-tie
 ordering, no sklearn NumPy RandomState seed equivalence,
 and no Python dataclass identity. Participant grouping
 prevents leakage but does not in itself fit a
