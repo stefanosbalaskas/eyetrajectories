@@ -32,12 +32,17 @@ random_state, as in source GroupKFold. The native R now reproduces the frozen sk
 assignment for **all-equal-sized** groups by visiting sorted labels in
 reverse order before greedy lightest-fold allocation. The bounded
 source-aligned behavior is directly tested for six equal-sized groups.
-For groups with **unequal sizes and ties within size strata**, NumPy's
+The native R also now follows this reversed-label source policy
+when **the counts are nondecreasing in lexically sorted group-label
+order**, including mixed group sizes such as 1/1/2/2/3/3. This
+additional bounded domain has native fold-ID and pinned Python 1.2
+predictive/nested CV comparisons in
+`test-native-fpcr-groupkfold-sorted-counts.R`.
+For **nonmonotone counts with ties across size strata**, NumPy's
 default argsort/Quicksort tie behavior can still differ from the
-native deterministic label order. The direct previously existing
-paired oracle tests use **distinct group sizes**; the added source
-oracle covers the all-equal-size case. This is not full-domain
-GroupKFold certification.
+native deterministic label ordering. The previously existing paired
+oracles use distinct group sizes and all-equal-size groups. This
+change does not establish full-domain GroupKFold certification.
 
 ### Shuffled curve folds
 
