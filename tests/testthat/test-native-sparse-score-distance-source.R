@@ -46,12 +46,22 @@ test_that("sparse source mode agrees with complete dense Euclidean R distances",
     expect_equal(actual,unname(expected),tolerance=1e-12)
   }
   # Pattern and logical sparse score matrices are finite numeric sources.
+  # Pattern rows 1 and 2 overlap in TWO coordinates. Boolean
+  # semiring Gram multiplication would incorrectly give their dot
+  # product as one instead of two, producing a false positive distance.
   pattern<-Matrix::sparseMatrix(
-    i=c(1L,2L,3L),j=c(1L,2L,1L),dims=c(3L,2L))
+    i=c(1L,1L,2L,2L,3L),
+    j=c(1L,2L,1L,2L,1L),dims=c(3L,2L))
   source<-etr_score_distance_matrix(
     list(scores=pattern,n_components=2L),python_boundary_mode=TRUE)
   expected<-as.matrix(stats::dist(as.matrix(pattern)))
   expect_equal(source,unname(expected),tolerance=1e-12)
+  expect_equal(source[1L,2L],0,tolerance=0)
+  logical_sparse<-methods::as(pattern,"lgCMatrix")
+  logical_result<-etr_score_distance_matrix(
+    list(scores=logical_sparse,n_components=2L),
+    python_boundary_mode=TRUE)
+  expect_equal(logical_result,unname(expected),tolerance=1e-12)
 })
 
 test_that("sparse FPCA source rejects nonfinite slots and excessive dense output",{
