@@ -3,7 +3,6 @@
 \alias{etr_run_fpca_workflow}
 \alias{etr_run_function_on_scalar_workflow}
 \alias{etr_run_functional_mixed_effects_workflow}
-\alias{etr_run_functional_recovery_scenarios}
 \alias{etr_run_generalized_functional_workflow}
 \alias{etr_run_recurrence_workflow}
 \alias{etr_run_sparse_fpca_workflow}
