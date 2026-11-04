@@ -66,6 +66,8 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-certification",
     "native-source-contract-gaps",
     "native-source-contract-alignment",
+    "native-transfer-entropy-visual",
+    "native-te-numpy-auto-histograms",
     "native-numpy-input-coercion",
   "native-pairwise-numpy-weights",
     "native-source-fixture-static-attribution",
@@ -214,6 +216,8 @@ filter<-paste(c(
   "native-all-function-mapping-complete",
   "native-certification",
   "native-source-contract-alignment",
+  "native-transfer-entropy-visual",
+  "native-te-numpy-auto-histograms",
   # Keep the regex in sync with required_scientific_tests and source_files;
   # inclusion is verified by unselected_required below in both modes.
   "native-numpy-input-coercion",
@@ -460,6 +464,10 @@ source_files<-unique(c(
   "tests/testthat/test-native-source-contract-alignment.R",
   "tests/testthat/test-native-numpy-input-coercion.R",
   "tests/testthat/test-native-pairwise-numpy-weights.R",
+  "tests/testthat/test-native-transfer-entropy-visual.R",
+  "tests/testthat/test-native-te-numpy-auto-histograms.R",
+  "R/native-transfer-entropy-visual.R",
+  "man/etr_native_transfer_entropy_visual.Rd",
   "tests/testthat/test-native-source-fixture-static-attribution.R",
   "tests/testthat/test-native-direct-source-report-attribution.R",
   "tests/testthat/test-native-direct-source-frame-attribution.R",
