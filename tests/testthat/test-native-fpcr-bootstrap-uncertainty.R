@@ -205,3 +205,128 @@ _python_fpcr_fixed={
   expect_false(any(etr_native_parity_catalog()$
     one_to_one_native_contract_complete))
 })
+
+
+test_that("fixed unequal-size whole-participant FPCR resamples preserve the sampling unit",{
+  z<-.etr_fpcr_uncertainty_fixture()
+  # Seven participants, with unequal 3,1,2,3,1,2,2 curve memberships.
+  memberships<-rep(sprintf("p%02d",1:7),times=c(3L,1L,2L,3L,1L,2L,2L))
+  z$x$metadata$subject<-memberships
+  groups<-lapply(unique(memberships),function(id)
+    as.integer(which(memberships==id)-1L))
+  units<-lapply(seq_len(20L),function(i)
+    if(i%%2L==1L)c(1L,1L,2L,3L,4L,5L,6L) else
+      c(7L,6L,5L,4L,3L,2L,2L))
+  draws<-lapply(units,function(u)
+    as.integer(unlist(groups[u],use.names=FALSE)))
+  set.seed(715L);before<-.Random.seed
+  result<-etr_bootstrap_fpca_regression_uncertainty(
+    z$x,z$y,n_bootstrap=20L,n_components=1L,
+    resample_unit="participant",participant_column="subject",
+    random_state=7L,bootstrap_indices=draws)
+  expect_identical(.Random.seed,before)
+  expect_identical(result$sampled_source_curve_indices,draws)
+  expect_identical(dim(result$bootstrap_slopes),c(20L,15L,1L))
+  expect_equal(result$slope_lower[,1L],
+    as.numeric(apply(result$bootstrap_slopes[,,1L],2L,
+      stats::quantile,probs=.025,names=FALSE,type=7L)),tolerance=1e-10)
+  expect_identical(result$provenance$fpca_regression_uncertainty$
+    random_engine,"externally_fixed_source_participant_indices")
+  broken<-draws
+  broken[[1L]]<-broken[[1L]][-1L]
+  expect_error(etr_bootstrap_fpca_regression_uncertainty(
+    z$x,z$y,n_bootstrap=20L,n_components=1L,
+    resample_unit="participant",participant_column="subject",
+    bootstrap_indices=broken),"whole-participant")
+  broken<-draws
+  broken[[1L]]<-c(broken[[1L]][-1L],broken[[1L]][1L])
+  expect_error(etr_bootstrap_fpca_regression_uncertainty(
+    z$x,z$y,n_bootstrap=20L,n_components=1L,
+    resample_unit="participant",participant_column="subject",
+    bootstrap_indices=broken),"whole-participant")
+})
+
+test_that("pinned Python 1.2 full participant FPCR bootstrap numerics match fixed whole-group draws",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("pinned Python 1.2 participant FPCR fixed-draw oracle opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  z<-.etr_fpcr_uncertainty_fixture()
+  # Repeated participant units, source zero-based group indices. Different
+  # orderings are deliberately included to test the paired slope refit.
+  units<-lapply(seq_len(20L),function(i){
+    if(i%%3L==1L)c(0L,1L,1L,2L,3L,4L,5L) else
+      if(i%%3L==2L)c(6L,5L,4L,3L,2L,2L,1L) else
+        c(0L,2L,3L,4L,5L,6L,6L)
+  })
+  draws<-lapply(units,function(u)
+    as.integer(unlist(lapply(u,function(p)c(2L*p,2L*p+1L)),
+      use.names=FALSE)))
+  native<-etr_bootstrap_fpca_regression_uncertainty(
+    z$x,z$y,n_bootstrap=20L,n_components=1L,
+    resample_unit="participant",participant_column="subject",
+    random_state=23L,bootstrap_indices=draws)
+  reticulate::py_run_string("
+import numpy as np
+import pandas as pd
+from unittest.mock import patch
+import eyetrajectoriespy as et
+import eyetrajectoriespy.regression_inference as ri
+time=np.linspace(0.0,1.0,15)
+n=14
+values=np.empty((n,15,1))
+for j in range(1,15):
+ values[j-1,:,0]=(np.sin(np.pi*time)*(1+j/16)
+     +.16*np.cos(2*np.pi*time)*(j%4)/3+time*j/18)
+y=.2+1.2*np.arange(1,15)/14+.2*np.sin(np.arange(1,15))
+x=et.TrajectorySet(time=time,values=values,
+ curve_ids=tuple(f'c{j:02d}' for j in range(1,15)),
+ dimension_names=('gaze',),
+ metadata=pd.DataFrame({'subject':np.repeat(
+     [f'p{j:02d}' for j in range(1,8)],2)}),
+ coordinate_system='normalized',time_unit='s')
+_units=[([0,1,1,2,3,4,5] if b%3==0 else
+         [6,5,4,3,2,2,1] if b%3==1 else
+         [0,2,3,4,5,6,6]) for b in range(20)]
+_rows=[np.array([2*u+d for u in group for d in (0,1)],dtype=int)
+       for group in _units]
+assert any(len(set(v))<len(v) for v in _units)
+_iterator=iter(_rows)
+def _fixed_participant_indices(*args,**kwargs):
+ return next(_iterator)
+with patch.object(ri,'_participant_bootstrap_indices',
+                  side_effect=_fixed_participant_indices):
+ exact=ri.bootstrap_fpca_regression_uncertainty(
+     x,y,n_bootstrap=20,n_components=1,
+     resample_unit='participant',participant_column='subject',random_state=23)
+_python_fpcr_participant_fixed={
+ 'bootstrap_slopes':exact.bootstrap_slopes,
+ 'bootstrap_mean_predictions':exact.bootstrap_mean_predictions,
+ 'bootstrap_intercepts':exact.bootstrap_intercepts,
+ 'slope_lower':exact.slope_lower,
+ 'slope_median':exact.slope_median,
+ 'slope_upper':exact.slope_upper,
+ 'slope_se':exact.slope_se,
+ 'prediction_lower':exact.prediction_lower,
+ 'prediction_median':exact.prediction_median,
+ 'prediction_upper':exact.prediction_upper,
+ 'prediction_se':exact.prediction_se
+}
+")
+  source<-reticulate::py_to_r(reticulate::py_eval(
+    "_python_fpcr_participant_fixed",convert=FALSE))
+  expect_equal(unname(native$bootstrap_slopes),
+    unname(source$bootstrap_slopes),tolerance=1e-6)
+  expect_equal(unname(native$bootstrap_mean_predictions),
+    unname(source$bootstrap_mean_predictions),tolerance=1e-6)
+  expect_equal(as.numeric(native$bootstrap_intercepts),
+    as.numeric(source$bootstrap_intercepts),tolerance=1e-6)
+  for(field in c("slope_lower","slope_median","slope_upper","slope_se"))
+    expect_equal(unname(native[[field]]),unname(source[[field]]),
+      tolerance=1e-6,info=paste("participant FPCR",field))
+  for(field in c("prediction_lower","prediction_median",
+      "prediction_upper","prediction_se"))
+    expect_equal(as.numeric(native[[field]]),as.numeric(source[[field]]),
+      tolerance=1e-6,info=paste("participant FPCR",field))
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})
