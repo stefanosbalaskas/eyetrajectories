@@ -139,9 +139,23 @@ etr_functional_recovery_reporting_text <- function(assessment) {
     "window_units and step_units must be nonempty strings")
   for(i in seq_along(pairs)){
     v<-pairs[[i]]
+    # Frozen Python 1.2 accepts any two-item Sequence whose elements are
+    # Python/NumPy numeric scalars, including (5, 2.0), but rejects bool.
+    # A source-like R list(list(5L,2.0),...) must not be rejected merely
+    # because it is not an atomic numeric vector. Do not unlist() mixed
+    # values: its coercion can turn Boolean TRUE into text unexpectedly.
+    if(is.list(v) && !is.data.frame(v) && is.null(dim(v))){
+      .etr_assert(length(v)==2L && all(vapply(v,function(z)
+        is.numeric(z)&&!is.logical(z)&&!is.factor(z)&&
+          length(z)==1L&&is.null(dim(z))&&is.finite(z)&&z>0,
+        logical(1L))),
+        "window and step must be positive finite numeric values")
+      v<-vapply(v,as.numeric,numeric(1L),USE.NAMES=FALSE)
+    }
     .etr_assert(is.numeric(v)&&!is.logical(v)&&length(v)==2L&&
       all(is.finite(v))&&all(v>0),
       "window and step must be positive finite numeric values")
+    pairs[[i]]<-as.numeric(v)
     # Python's validator allows physical-time fractional widths. Its
     # sample-unit _resolve_samples rejects nonintegral sample counts.
     if(identical(window_units,"samples")||identical(step_units,"samples"))
