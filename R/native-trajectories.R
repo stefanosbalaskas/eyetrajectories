@@ -158,6 +158,12 @@ etr_trajectory_set <- function(time, values, curve_ids = NULL, dimension_names =
                 (isTRUE(python_boundary_mode) || all(nzchar(dimension_names))) &&
                 !anyDuplicated(dimension_names), "dimension_names must be unique strings")
   if (is.null(metadata)) metadata <- data.frame(row.names = seq_len(shape[1]))
+  # Frozen pandas .empty is TRUE when EITHER axis is empty. The source
+  # dataclass discards an empty supplied metadata frame and rebuilds a
+  # zero-column frame indexed by all curve IDs, even if row count differs.
+  if (isTRUE(python_boundary_mode) && is.data.frame(metadata) &&
+      (nrow(metadata)==0L || ncol(metadata)==0L))
+    metadata <- data.frame(row.names = seq_len(shape[1]))
   .etr_assert(is.data.frame(metadata) && nrow(metadata) == shape[1],
               "metadata must be a data.frame with one row per curve")
   if (isTRUE(python_boundary_mode))

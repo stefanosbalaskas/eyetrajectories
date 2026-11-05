@@ -312,3 +312,47 @@ test_that("Python nested numeric-text NaN and infinities follow frozen dtype=flo
   expect_equal(source[1L,3L,],native$values[1L,3L,],tolerance=0)
   expect_false(any(etr_native_parity_catalog()$one_to_one_native_contract_complete))
 })
+
+
+# local batch #02: pandas empty metadata canonicalization
+
+test_that("TrajectorySet Python mode reconstructs genuinely empty metadata", {
+  x<-array(1:6,c(2L,3L,1L))
+  for (md in list(data.frame(),
+                  data.frame(group=character()),
+                  data.frame(row.names=1:2))) {
+    native<-etr_trajectory_set(c(0,1,2),x,c("a","b"),"x",
+      metadata=md,python_boundary_mode=TRUE)
+    expect_identical(dim(native$metadata),c(2L,0L))
+    expect_identical(rownames(native$metadata),c("a","b"))
+  }
+  expect_error(etr_trajectory_set(c(0,1,2),x,c("a","b"),"x",
+    metadata=data.frame()),"one row per curve")
+  expect_error(etr_trajectory_set(c(0,1,2),x,c("a","b"),"x",
+    metadata=data.frame(group="A"),python_boundary_mode=TRUE),
+    "one row per curve")
+})
+
+test_that("pinned Python 1.2 TrajectorySet empty pandas frame oracle", {
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Published Python 1.2 empty metadata oracle is opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  x<-array(1:6,c(2L,3L,1L))
+  ctor<-etpy_get_export("TrajectorySet",.namespace="root")
+  pd<-reticulate::import("pandas",convert=FALSE)
+  py_empty<-pd$DataFrame()
+  py_x<-reticulate::py_call(ctor,
+    time=reticulate::r_to_py(c(0,1,2)),
+    values=reticulate::r_to_py(x),
+    curve_ids=reticulate::r_to_py(c("a","b")),
+    dimension_names=reticulate::r_to_py("x"),
+    metadata=py_empty)
+  native<-etr_trajectory_set(c(0,1,2),x,c("a","b"),"x",
+    metadata=data.frame(),python_boundary_mode=TRUE)
+  expect_identical(
+    as.character(reticulate::py_to_r(py_x$metadata$index$tolist())),
+    rownames(native$metadata))
+  expect_identical(dim(native$metadata),c(2L,0L))
+  expect_true(reticulate::py_to_r(py_x$metadata$empty))
+  expect_false(any(etr_native_parity_catalog()$one_to_one_native_contract_complete))
+})

@@ -108,6 +108,15 @@ etr_alr_transform <- function(values,reference_dimension=-1L,epsilon=1e-8,
   # Published Python 1.2 accepts a one-channel simplex and returns an
   # empty last-axis ALR array; inverse_alr maps it back to all ones.
   .etr_assert(k>=1L,"ALR requires at least one simplex dimension")
+  if(isTRUE(python_boundary_mode)) {
+    # Frozen alr_transform computes ref = reference_dimension % k and
+    # uses arr[:, :, [ref]]. Python float 1.0 is NOT a valid NumPy index,
+    # although it compares equal to integer 1 during channel exclusion.
+    # The native default keeps its established integral-double indexing.
+    .etr_assert(is.integer(reference_dimension) &&
+      length(reference_dimension)==1L && !is.na(reference_dimension),
+      "reference_dimension must be a Python integer/Boolean index")
+  }
   ref<-.etr_fpca_index(reference_dimension,k,"reference_dimension")
   clipped<-pmax(values,epsilon)
   totals<-apply(clipped,c(1L,2L),sum)
