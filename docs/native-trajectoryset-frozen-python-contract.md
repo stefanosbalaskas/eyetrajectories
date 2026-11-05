@@ -33,11 +33,11 @@ opt-in pinned 1.2 source environment.
 
 | Dimension | Frozen Python 1.2 | Native R candidate |
 |---|---|---|
-| Missing gaze | `np.nan` values are preserved | Native constructor permits R `NA` but rejects `NaN` |
-| Input coercion | `np.asarray(..., dtype=float)` accepts broader array-like values | Native requires an R numeric 3D array |
-| Zero curves | Dataclass `__post_init__` does not explicitly forbid a zero-curve first axis | Native R constructor requires one or more curves |
+| Missing gaze | `np.nan` values are preserved | Strict native constructor permits R `NA` but rejects `NaN`; opt-in boundary mode accepts NaN/Inf |
+| Input coercion | `np.asarray(..., dtype=float)` accepts broader array-like values | Strict native requires a numeric 3D array; opt-in boundary mode accepts regular numeric-like atomic 3D arrays |
+| Zero curves | Dataclass `__post_init__` does not explicitly forbid a zero-curve first axis | Strict native requires curves; opt-in boundary mode accepts zero curves |
 | Immutability | `@dataclass(frozen=True)` prevents reassignment of fields | S3 list fields can be changed |
-| Curve indexing | Python `subset` takes zero-based integer indices, including standard negative indices | R `etr_subset` uses 1-based IDs/indices and rejects repeated indices |
+| Curve indexing | Python `subset` takes zero-based integer indices, including standard negative indices | Default `etr_subset` is 1-based; opt-in boundary mode uses Python-style zero-based/negative indices, with duplicate ID rejection |
 | Metadata | pandas DataFrame, index relabeled to curve IDs | base R data.frame with separate R rowname handling |
 | Exceptions | Python exceptions for source validation | Native R errors/messages and rejection boundaries differ |
 
