@@ -41,7 +41,9 @@ converted to 0 or 1, matching Python integer-index behavior.}
 \item{epsilon}{Strictly positive clipping floor for ALR, declared before analysis.}
 \item{python_boundary_mode}{Logical, opt-in Python 1.2 boundary validation
 where implemented; the default FALSE retains the native R input domain.
-For ALR and inverse ALR, accepts complex ndarray-style 3D input after
+For ALR and inverse ALR, preserves 3D output shape when the
+curve or time axis is empty, matching frozen Python 1.2 source semantics.
+It also accepts complex ndarray-style 3D input after
 discarding imaginary coordinates and Boolean reference indices. In
 inverse ALR it requires an integer storage-type dimension count as
 NumPy does when constructing an output shape; nonfinite source

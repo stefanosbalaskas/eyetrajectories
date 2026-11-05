@@ -103,6 +103,24 @@ etr_alr_transform <- function(values,reference_dimension=-1L,epsilon=1e-8,
     if(all(is.finite(numeric_values)))
       values<-array(numeric_values,dim=dim(values))
   }
+  # Frozen Python alr_transform accepts a 3-D float array with zero
+  # curves or zero time samples. validate_simplex is then vacuous, and
+  # NumPy's axis-preserving broadcast produces a 3-D empty output.
+  # Base R apply()/sweep() may drop or reject zero-sized margins, so
+  # reproduce the exact output shape without evaluating those reductions.
+  # Strict native validation remains unchanged.
+  if(isTRUE(python_boundary_mode) && is.array(values) &&
+      length(dim(values))==3L && is.numeric(values) &&
+      (dim(values)[1L]==0L || dim(values)[2L]==0L)) {
+    k<-dim(values)[3L]
+    .etr_assert(k>=1L,"ALR requires at least one simplex dimension")
+    .etr_assert(is.integer(reference_dimension) &&
+      length(reference_dimension)==1L && !is.na(reference_dimension),
+      "reference_dimension must be a Python integer/Boolean index")
+    .etr_fpca_index(reference_dimension,k,"reference_dimension")
+    return(array(numeric(0),
+      dim=c(dim(values)[1L],dim(values)[2L],k-1L)))
+  }
   etr_validate_simplex(values)
   d<-dim(values); k<-d[3L]
   # Published Python 1.2 accepts a one-channel simplex and returns an
@@ -186,6 +204,13 @@ etr_inverse_alr <- function(transformed,reference_dimension,n_dimensions,
   d<-dim(transformed)
   ref<-.etr_fpca_index(reference_dimension,as.integer(n_dimensions),
                    "reference_dimension")
+  # NumPy inverse_alr supports zero curve/time axes, even for the
+  # one-channel simplex (z last-axis size 0). Preserve both empty axes
+  # and the full output channel count. No overflow policy is changed.
+  if(isTRUE(python_boundary_mode) &&
+      (d[1L]==0L || d[2L]==0L))
+    return(array(numeric(0),
+      dim=c(d[1L],d[2L],as.integer(n_dimensions))))
   others<-setdiff(seq_len(n_dimensions),ref)
   out<-array(1,c(d[1L],d[2L],as.integer(n_dimensions)))
   for(j in seq_along(others))out[,,others[j]]<-exp(transformed[,,j])
