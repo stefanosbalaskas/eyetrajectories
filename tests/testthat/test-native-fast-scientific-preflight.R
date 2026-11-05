@@ -19,6 +19,14 @@ test_that("scientific PR gate detects reticulate py_call callable shadowing",{
   expect_identical(helper$.etr_fast_pycall_x_sites(nested),1L)
   expect_identical(helper$.etr_fast_pycall_x_sites(
     parse(text="reticulate::py_call(oracle, value=5, x=2)")),1L)
+  # Missing AST arguments occur in ordinary source such as matrix[, 1L].
+  # The walker must not bind R_MissingArg to a for-loop variable.
+  expect_identical(helper$.etr_fast_pycall_x_sites(
+    parse(text="z <- measurements[, 1L]")),0L)
+  expect_identical(helper$.etr_fast_pycall_x_sites(
+    parse(text="reticulate::py_call(oracle, measurements[, 1L], ref=0L)")),0L)
+  expect_identical(helper$.etr_fast_pycall_x_sites(
+    parse(text="check(fn(, 4L), reticulate::py_call(oracle, x=values))")),1L)
 })
 
 test_that("scientific PR gate detects nonexistent complex setters",{
