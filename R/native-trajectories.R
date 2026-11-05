@@ -83,9 +83,9 @@ etr_trajectory_set <- function(time, values, curve_ids = NULL, dimension_names =
                 all(diff(time) > 0),
               "time must be finite, strictly increasing, length >= 2")
   shape <- dim(values)
-  .etr_assert(shape[1] >= if (isTRUE(python_boundary_mode)) 0L else 1L &&
+  .etr_assert(shape[1] >= (if (isTRUE(python_boundary_mode)) 0L else 1L) &&
                 shape[2] == length(time) &&
-                shape[3] >= if (isTRUE(python_boundary_mode)) 0L else 1L,
+                shape[3] >= (if (isTRUE(python_boundary_mode)) 0L else 1L),
               "values dimensions must agree with time and contain curves/channels")
   if (!isTRUE(python_boundary_mode))
     .etr_assert(!any(is.infinite(values) | is.nan(values)),
@@ -249,7 +249,8 @@ etr_subset <- function(x, curves, python_boundary_mode = FALSE) {
                   (is.numeric(curves) || is.logical(curves)) &&
                   all(is.finite(curves)),
                 "Python indices must be finite numeric-like values")
-    idx <- as.integer(curves)
+    idx <- suppressWarnings(as.integer(curves))
+    .etr_assert(all(!is.na(idx)), "Python indices exceed native integer range")
     n <- length(x$curve_ids)
     .etr_assert(all(idx >= -n & idx < n),
                 "Python curve index out of range")
