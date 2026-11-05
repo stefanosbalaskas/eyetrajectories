@@ -63,3 +63,29 @@ The 203 original callable gap rows remain in their original source
 register; the class has its own separate one-row unsigned scientific
 resolution queue. The provisional class mapping improves representation
 inventory coverage to **1/128**, but not certified class coverage.
+
+## November 5 opt-in constructor/subset domain extension — awaiting runtime qualification
+
+At the development branch, `etr_trajectory_set(...,
+python_boundary_mode=TRUE)` accepts the **bounded atomic-array** portion of
+the frozen `TrajectorySet` source constructor: 1-D numeric-like finite time,
+regular 3-D numeric/Boolean/numeric-string values, `NaN` missing samples,
+infinite value observations, zero curves and zero dimensions. R `NA` values
+are explicitly converted to NumPy-style `NaN` in this mode. This is an
+**opt-in source-boundary representation**, not the default scientific contract.
+
+`etr_validate` and `etr_with_values` preserve that explicit mode;
+`etr_subset(x, indices, python_boundary_mode=TRUE)` uses Python-style
+zero-based/negative curve indices and permits empty selections. Duplicate
+indices still fail at the constructor's unique-ID validation (as in
+`dataclasses.replace` on the frozen class).
+
+The existing direct Python 1.2 source test now covers NaN/Inf values,
+negative indices and zero-curve subsets; native tests also protect the
+strict default contract. The new code **has not yet run** in the owner's
+RStudio environment. Independent full-domain certification remains 0/508.
+
+**Still outside the complete source contract:** all NumPy array-like inputs,
+pandas index/value equivalence, Python dataclass immutability, exact Python
+exception types, nested metadata conversion and all methods' full boundary
+domains. The single known nonfunction `TrajectorySet` gap stays OPEN.
