@@ -25,6 +25,14 @@ test_that("minimal score-bearing R list matches native FPCA geometry",{
   expect_error(etr_score_distance_matrix(
     list(scores=c(1,2),n_components=1L)),"compatible")
   expect_error(etr_score_distance_matrix(list()),"compatible")
+  # sklearn converts valid numeric strings to floating-point scores.
+  text_scores<-matrix(c("0","3","1","5"),nrow=2L)
+  expect_equal(
+    etr_score_distance_matrix(list(scores=text_scores,n_components=2L)),
+    matrix(c(0,5,5,0),2L,2L),tolerance=1e-12)
+  bad_scores<-text_scores;bad_scores[1L,1L]<-"not-a-number"
+  expect_error(etr_score_distance_matrix(
+    list(scores=bad_scores,n_components=2L)),"finite scores")
 })
 
 test_that("source certification remains strict despite repaired fixture",{
@@ -63,6 +71,78 @@ test_that("published Python 1.2 score object oracle is opt-in",{
     expect_equal(unname(native),unname(et_to_r(py)),
       tolerance=1e-12)
   }
+  text_scores<-matrix(c("0","3","1","5"),nrow=2L)
+  py_text<-reticulate::import("numpy")$array(
+    reticulate::r_to_py(text_scores))
+  text_object<-reticulate::import("types")$SimpleNamespace(
+    scores=py_text,n_components=as.integer(2L))
+  py_distance<-reticulate::py_call(
+    etpy_get_export("score_distance_matrix"),fpca=text_object)
+  expect_equal(unname(etr_score_distance_matrix(
+      list(scores=text_scores,n_components=2L))),
+    unname(et_to_r(py_distance)),tolerance=1e-12)
+  # Numerical witness only; broad duck-typing/scikit-learn semantics open.
   expect_equal(sum(etr_native_parity_catalog()$
     one_to_one_native_contract_complete),0L)
+})
+
+test_that("Boolean score matrices coerce like frozen Python sklearn input",{
+  scores<-matrix(c(TRUE,FALSE,TRUE,FALSE,TRUE,FALSE),
+    nrow=3L,ncol=2L)
+  source_like<-list(scores=scores,n_components=2L)
+  native<-etr_score_distance_matrix(source_like)
+  numeric_scores<-matrix(as.numeric(scores),nrow=3L)
+  expected<-unname(as.matrix(stats::dist(numeric_scores)))
+  expect_equal(unname(native),expected,tolerance=1e-14)
+  expect_identical(dim(native),c(3L,3L))
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Pinned Python Boolean FPCA score oracle opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  source_fit<-reticulate::import("types")$SimpleNamespace(
+    scores=reticulate::r_to_py(scores),
+    n_components=as.integer(2L))
+  published<-reticulate::py_call(
+    etpy_get_export("score_distance_matrix"),fpca=source_fit)
+  expect_equal(unname(native),unname(et_to_r(published)),
+    tolerance=1e-12)
+  expect_true(etr_native_parity_catalog()$source_contract_gap_unresolved[
+    etr_native_parity_catalog()$python_name=="score_distance_matrix"])
+})
+
+
+test_that("bounded sparse FPCA scores support sklearn Euclidean source subset",{
+  skip_if_not_installed("Matrix")
+  scores<-matrix(c(0,1,2,0,0,3),nrow=3L,ncol=2L)
+  sparse<-Matrix::Matrix(scores,sparse=TRUE)
+  source_like<-list(scores=sparse,n_components=2L)
+  expect_error(etr_score_distance_matrix(source_like),
+    "finite scores")
+  native<-etr_score_distance_matrix(source_like,
+    python_boundary_mode=TRUE)
+  expect_identical(dim(native),c(3L,3L))
+  expect_equal(unname(native),
+    unname(as.matrix(stats::dist(scores))),
+    tolerance=1e-12)
+  expect_equal(etr_score_distance_matrix(source_like,n_components=1L,
+    python_boundary_mode=TRUE),
+    unname(as.matrix(stats::dist(scores[,1L,drop=FALSE]))),
+    tolerance=1e-12)
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Published Python 1.2 sparse scipy input oracle is opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  scipy<-reticulate::import("scipy.sparse",convert=FALSE)
+  types<-reticulate::import("types",convert=FALSE)
+  source_fit<-types$SimpleNamespace(
+    scores=scipy$csr_matrix(reticulate::r_to_py(scores)),
+    n_components=as.integer(2L))
+  for(k in c(1L,2L)){
+    published<-reticulate::py_call(
+      etpy_get_export("score_distance_matrix"),fpca=source_fit,
+      n_components=as.integer(k))
+    expect_equal(unname(etr_score_distance_matrix(source_like,
+      n_components=k,python_boundary_mode=TRUE)),
+      unname(et_to_r(published)),tolerance=1e-12)
+  }
+  expect_true(etr_native_parity_catalog()$source_contract_gap_unresolved[
+    etr_native_parity_catalog()$python_name=="score_distance_matrix"])
 })

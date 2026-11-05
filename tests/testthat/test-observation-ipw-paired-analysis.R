@@ -1,8 +1,7 @@
 # Research-only independent-study paired comparison regression checks.
-helper <- file.path("scripts","analyze_missing_gaze_ipw_helpers.R")
-if(!file.exists(helper))
-  helper <- file.path("..","..","scripts",
-                      "analyze_missing_gaze_ipw_helpers.R")
+helper <- testthat::test_path("fixtures",
+  "analyze_missing_gaze_ipw_helpers.R")
+stopifnot(file.exists(helper))
 source(helper,local=TRUE)
 
 make_ipw_pair_fixture <- function(){

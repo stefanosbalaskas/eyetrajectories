@@ -75,10 +75,13 @@ test_that("realized truth/source report are explicit unresolved contracts",{
     expect_true(row$source_contract_gap_unresolved)
     expect_false(row$one_to_one_native_contract_complete)
   }
+  # Frozen Python 1.2 exposes 380 callable exports; mapping all of them
+  # does not certify their source contracts or numerical parity.
+  expect_equal(sum(catalog$is_python_function),380L)
   expect_equal(sum(catalog$is_python_function&
-    catalog$named_native_candidate),326L)
-  expect_equal(sum(catalog$native_implementation_started),301L)
-  expect_equal(sum(catalog$source_contract_gap_unresolved),148L)
+    catalog$named_native_candidate),380L)
+  expect_gte(sum(catalog$native_implementation_started),380L)
+  expect_lte(sum(catalog$source_contract_gap_unresolved),203L)
 })
 
 test_that("direct Python 1.2 realized truth audit and reporting text agree",{

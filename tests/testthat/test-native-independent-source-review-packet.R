@@ -1,0 +1,133 @@
+test_that("independent source-review packet is safe and fully unsigned",{
+  .etr_require_developer_checkout()
+  path<-testthat::test_path("..","..","scripts",
+    "prepare_independent_source_review.R")
+  expect_true(file.exists(path))
+  expect_silent(parse(file=path,keep.source=FALSE))
+  source_lines<-readLines(path,warn=FALSE)
+  for(term in c("source_full_domain_review=FALSE",
+    "invalid_input_error_domain_review=FALSE",
+    "independently_replayed_python_oracle=FALSE",
+    "independently_replayed_native_r=FALSE",
+    "estimand_scientific_review=FALSE",
+    "reviewer_independent_of_authors=FALSE",
+    'review_decision="PENDING_INDEPENDENT_REVIEW"',
+    "fully_certified=FALSE",
+    "file_integrity_manifest.csv",
+    "native_r_offline.txt",
+    "python_1_2_direct_source.txt",
+    "native_source_contract_gaps_stage22.csv","head",
+    "four_numerical_pilots_external_review_priority.csv",
+    "all_508_public_export_independent_review_scope.csv",
+    "all_508_contract_review_priority.csv",
+    "known_source_gap_resolution_queue.csv",
+    "source_gap_resolution_lane_counts.csv",
+    "selected_111_missing_literal_python_source_references.csv",
+    "direct_missing$independently_verified_export_oracle<-FALSE",
+    'source_review_status<-"OPEN_NOT_INDEPENDENTLY_VERIFIED"',
+    "approved_boundary_policy<-FALSE",
+    "documented_boundary_difference=",
+    "required_full_domain_resolution=",
+    "review_lane_counts.csv",
+    "selected_111_fixture_static_attribution.csv",
+    "test_selection_regex.txt",
+    "source_fixture_static_attribution.R",
+    "etr_source_fixture_static_inventory",
+    "test_selection_regex_md5",
+    "selected_fixture_file_in_capture_filter",
+    "selected_fixture_literal_python_export_call",
+    "selected_fixture_file_declared_test_cases",
+    "fixture_filename_selected_in_both_suite_modes",
+    "test_that_cases_declared_in_entire_fixture_file",
+    "literal_etpy_get_export_call_for_this_contract",
+    "per_contract_test_execution_independently_attributed=FALSE",
+    "per_contract_python_oracle_independently_replayed=FALSE",
+    "sum(review_triage$kind==\"function\")==380L",
+    "!any(review_triage$independent_source_contract_approved)",
+    "!any(gap_resolution$resolved)",
+    "nrow(readiness)==508L",
+    "backend_or_estimand_distinct=readiness$native_backend_or_estimand_differs",
+    "sum(readiness$kind==\"function\")==380L",
+    "sum(readiness$kind!=\"function\")==128L",
+    "per_export_complete_domain_review=FALSE",
+    "per_export_independent_oracle_replay=FALSE",
+    "per_export_schema_error_review=FALSE",
+    "per_export_scientific_scope_review=FALSE",
+    "per_export_independent_reviewer_approved=FALSE",
+    "nrow(pilot)==4L")){
+    expect_true(any(grepl(term,source_lines,fixed=TRUE)),
+      info=paste("expected independent evidence safeguard",term))
+  }
+  # The packet builder may never alter the authoritative approval registers.
+  expect_false(any(grepl(
+    "write\\.csv\\(.*native_contract_certification_pilots_v1",
+    source_lines)))
+  expect_false(any(grepl(
+    "write\\.csv\\(.*native_nonfunction_contract_review_v1",
+    source_lines)))
+})
+
+test_that("missing direct source witnesses have explicit fail-closed triage",{
+  .etr_require_developer_checkout()
+  path<-testthat::test_path("..","..","scripts",
+    "prepare_independent_source_review.R")
+  lines<-readLines(path,warn=FALSE)
+  expect_true(any(grepl(
+    "direct_missing<-attribution[",lines,fixed=TRUE)))
+  expect_true(any(grepl(
+    "!attribution$literal_etpy_get_export_call_for_this_contract",
+    lines,fixed=TRUE)))
+  expect_true(any(grepl(
+    "nrow(direct_missing)==sum(!literal_reference)",
+    lines,fixed=TRUE)))
+  expect_true(any(grepl("!anyDuplicated(direct_missing$python_name)",
+    lines,fixed=TRUE)))
+  expect_true(any(grepl("!any(direct_missing$fully_certified)",
+    lines,fixed=TRUE)))
+  expect_true(any(grepl("gap_resolution$source_review_status",
+    lines,fixed=TRUE)))
+  expect_true(any(grepl("nrow(gap_resolution)==nrow(gaps)",
+    lines,fixed=TRUE)))
+  # A static reference found in a different fixture is NOT silently
+  # reassigned to the contract whose assigned file lacks that reference.
+  expect_true(any(grepl(
+    "literal_reference_in_different_selected_file",lines,fixed=TRUE)))
+  expect_false(any(grepl(
+    "fully_certified<-TRUE",lines,fixed=TRUE)))
+})
+
+test_that("zero missing source references preserve a typed independent-review queue",{
+  .etr_require_developer_checkout()
+  root<-testthat::test_path("..","..")
+  producer<-readLines(file.path(root,"scripts",
+    "prepare_independent_source_review.R"),warn=FALSE)
+  consumer<-readLines(file.path(root,"scripts",
+    "capture_native_source_qualification_evidence.R"),warn=FALSE)
+  expect_true(any(grepl(
+    "direct_missing$independently_verified_export_oracle<-",
+    producer,fixed=TRUE)))
+  expect_true(any(grepl("rep(FALSE,nrow(direct_missing))",
+    producer,fixed=TRUE)))
+  expect_true(any(grepl("if(nrow(missing_refs)>0L)",
+    consumer,fixed=TRUE)))
+  expect_true(any(grepl(
+    "all(required_missing_columns%in%names(missing_refs))",
+    consumer,fixed=TRUE)))
+  empty<-data.frame(
+    python_name=character(),
+    python_source_file=character(),
+    source_gap_kind=character(),
+    known_source_difference=character(),
+    independently_verified_export_oracle=logical(),
+    fully_certified=logical(),
+    stringsAsFactors=FALSE)
+  path<-tempfile(fileext=".csv")
+  on.exit(unlink(path),add=TRUE)
+  utils::write.csv(empty,path,row.names=FALSE,na="")
+  reread<-utils::read.csv(path,stringsAsFactors=FALSE,
+    check.names=FALSE)
+  expect_identical(nrow(reread),0L)
+  expect_true(all(names(empty)%in%names(reread)))
+  expect_false(any(reread$fully_certified))
+  expect_false(any(reread$independently_verified_export_oracle))
+})

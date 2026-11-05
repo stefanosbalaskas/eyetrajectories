@@ -181,19 +181,21 @@ test_that("real Python 1.2 recovery records verify all frames and plotted points
   py<-reticulate::py_call(sim$FunctionalRecoveryResult,
     records=reticulate::r_to_py(rows),
     metric_definitions=reticulate::r_to_py(list(pd)))
-  ctab<-function(name){
-    fn<-etpy_get_export(name)
+  ctab<-function(fn){
     as.data.frame(et_to_r(reticulate::py_call(fn,result=py)),
       stringsAsFactors=FALSE)
   }
   for(entry in list(
     list(name="functional_recovery_frame",
+      source_fn=etpy_get_export("functional_recovery_frame"),
       native=etr_functional_recovery_frame(native)),
     list(name="functional_recovery_failure_frame",
+      source_fn=etpy_get_export("functional_recovery_failure_frame"),
       native=etr_functional_recovery_failure_frame(native)),
     list(name="functional_recovery_summary_frame",
+      source_fn=etpy_get_export("functional_recovery_summary_frame"),
       native=etr_functional_recovery_summary_frame(native)))) {
-    expected<-ctab(entry$name)
+    expected<-ctab(entry$source_fn)
     actual<-entry$native
     expect_identical(names(actual),names(expected))
     expect_equal(nrow(actual),nrow(expected))

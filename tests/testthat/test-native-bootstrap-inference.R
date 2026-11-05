@@ -144,6 +144,9 @@ test_that("frozen 508-source register remains fail-closed",{
   expect_gte(sum(z$native_implementation_started),211L)
   expect_equal(sum(z$native_implementation_stage==15L,na.rm=TRUE),5L)
   expect_equal(sum(!is.na(z$native_representation_stage)),7L)
+  expect_equal(sum(nzchar(z$nonfunction_native_representation)),32L)
+  expect_equal(sum(!z$is_python_function &
+    !nzchar(z$nonfunction_native_representation)),96L)
   expect_equal(sum(!z$is_python_function &
     is.na(z$native_representation_stage)),121L)
   expect_true(all(!z$one_to_one_native_contract_complete))

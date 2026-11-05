@@ -57,12 +57,52 @@
 #' @param values Numeric array of shape curve by time by dimension.
 #' @param reference_dimension Python-style zero-based reference index (-1 = last).
 #' @param epsilon Positive clipping floor, part of the scientific specification.
+#' @param python_boundary_mode Explicitly reproduce Python 1.2 exceptional
+#'   NaN/Inf propagation and complex ndarray-to-real casting on the
+#'   inspected scalar/array boundary. In this mode, Boolean reference
+#'   indices follow Python integer indexing semantics. FALSE preserves
+#'   the finite-only native scientific contract. No full-source
+#'   input/return or independent certification is implied.
 #' @return Three-dimensional array with the reference channel removed.
 #' @export
-etr_alr_transform <- function(values,reference_dimension=-1L,epsilon=1e-8) {
-  .etr_assert(is.numeric(epsilon) && length(epsilon)==1L &&
-    is.finite(epsilon) && epsilon>0,"epsilon must be positive and finite")
+etr_alr_transform <- function(values,reference_dimension=-1L,epsilon=1e-8,
+    python_boundary_mode=FALSE) {
+  .etr_assert(is.logical(python_boundary_mode) &&
+    length(python_boundary_mode)==1L && !is.na(python_boundary_mode),
+    "python_boundary_mode must be a nonmissing logical scalar")
+  if(isTRUE(python_boundary_mode)&&is.logical(epsilon)&&
+      length(epsilon)==1L&&!is.na(epsilon))
+    epsilon<-as.numeric(epsilon)
+  if(isTRUE(python_boundary_mode)) {
+    # Frozen Python 1.2 only checks epsilon <= 0: NaN and +Inf pass
+    # the comparison and may propagate nonfinite log-ratios.
+    .etr_assert(is.numeric(epsilon) && length(epsilon)==1L &&
+      (is.nan(epsilon) || (!is.na(epsilon) && epsilon>0)),
+      "epsilon must satisfy frozen Python 1.2 epsilon > 0 or NaN")
+  } else {
+    .etr_assert(is.numeric(epsilon) && length(epsilon)==1L &&
+      is.finite(epsilon) && epsilon>0,"epsilon must be positive and finite")
+  }
   values<-.etr_simplex_nested_input(values)
+  if(isTRUE(python_boundary_mode) && is.array(values) &&
+     length(dim(values))==3L && is.complex(values)) {
+    # np.asarray(complex ndarray, dtype=float) discards the imaginary
+    # part. This rule does not apply to Python lists of complex scalars.
+    values<-Re(values)
+  }
+  if(isTRUE(python_boundary_mode) && is.logical(reference_dimension) &&
+     length(reference_dimension)==1L && !is.na(reference_dimension))
+    reference_dimension<-as.integer(reference_dimension)
+  # NumPy's published np.asarray(values, dtype=float) also accepts 3-D
+  # numeric-string and Boolean arrays. Retain native fail-closed checks for nonfinite
+  # and malformed values; conversion alone never approves full parity.
+  if(is.array(values) &&
+      (is.character(values)||is.logical(values)) &&
+      length(dim(values))==3L) {
+    numeric_values<-suppressWarnings(as.numeric(values))
+    if(all(is.finite(numeric_values)))
+      values<-array(numeric_values,dim=dim(values))
+  }
   etr_validate_simplex(values)
   d<-dim(values); k<-d[3L]
   # Published Python 1.2 accepts a one-channel simplex and returns an
@@ -80,19 +120,59 @@ etr_alr_transform <- function(values,reference_dimension=-1L,epsilon=1e-8) {
 }
 
 #' Recover simplex-valued trajectories from additive log-ratios
-#' @param transformed Finite numeric 3D ALR array.
+#' @param transformed Finite numeric 3D ALR array in default mode.
+#' @param python_boundary_mode When TRUE, reproduce Python 1.2 nonfinite
+#'   exponentiation/normalization, complex ndarray-to-real coercion,
+#'   Boolean reference indices and integer-only NumPy output shapes.
+#'   The default keeps the native scientific finite-only contract.
 #' @param reference_dimension Python-style zero-based reference channel.
 #' @param n_dimensions Original number of simplex channels.
 #' @export
-etr_inverse_alr <- function(transformed,reference_dimension,n_dimensions) {
+etr_inverse_alr <- function(transformed,reference_dimension,n_dimensions,
+    python_boundary_mode=FALSE) {
+  .etr_assert(is.logical(python_boundary_mode) &&
+    length(python_boundary_mode)==1L && !is.na(python_boundary_mode),
+    "python_boundary_mode must be a nonmissing logical scalar")
+  # Frozen NumPy np.ones(shape) requires an integer shape dimension;
+  # Boolean and integer-valued float shape scalars are not accepted.
+  if(isTRUE(python_boundary_mode))
+    .etr_assert(is.integer(n_dimensions) && length(n_dimensions)==1L,
+      "n_dimensions must be a Python integer shape in source mode")
   .etr_assert(is.numeric(n_dimensions) && length(n_dimensions)==1L &&
     is.finite(n_dimensions) && n_dimensions>=1L &&
     n_dimensions==as.integer(n_dimensions),
     "n_dimensions must be an integer >= 1")
+  # Source NumPy np.asarray() accepts regular 3D nested scalar sequences
+  # for inverse logits as well as for forward ALR inputs. Preserve the exact
+  # input geometry in native R (including zero/negative logits).
+  transformed<-.etr_simplex_nested_input(transformed)
+  if(isTRUE(python_boundary_mode) && is.array(transformed) &&
+     length(dim(transformed))==3L && is.complex(transformed)) {
+    # Frozen Python np.asarray(..., dtype=float) casts a complex ndarray
+    # to its real part; do not silently cast in default R science mode.
+    transformed<-Re(transformed)
+  }
+  if(isTRUE(python_boundary_mode) && is.logical(reference_dimension) &&
+     length(reference_dimension)==1L && !is.na(reference_dimension))
+    reference_dimension<-as.integer(reference_dimension)
+  # Frozen Python np.asarray(..., dtype=float) accepts numeric-string
+  # and Boolean arrays. Convert that finite, rectangular domain without expanding
+  # the native overflow/nonfinite scientific contract.
+  if(is.array(transformed) &&
+      (is.character(transformed)||is.logical(transformed)) &&
+      length(dim(transformed))==3L) {
+    numeric_values<-suppressWarnings(as.numeric(transformed))
+    if(all(is.finite(numeric_values)) ||
+        (isTRUE(python_boundary_mode) &&
+          all(!is.na(numeric_values) | is.nan(numeric_values))))
+      transformed<-array(numeric_values,dim=dim(transformed))
+  }
   .etr_assert(is.array(transformed) && is.numeric(transformed) &&
     length(dim(transformed))==3L &&
     dim(transformed)[3L]==n_dimensions-1L &&
-    all(is.finite(transformed)),
+    (if(isTRUE(python_boundary_mode))
+      all(!is.na(transformed) | is.nan(transformed))
+     else all(is.finite(transformed))),
     "transformed data have incompatible dimensions or nonfinite values")
   d<-dim(transformed)
   ref<-.etr_fpca_index(reference_dimension,as.integer(n_dimensions),
@@ -101,8 +181,9 @@ etr_inverse_alr <- function(transformed,reference_dimension,n_dimensions) {
   out<-array(1,c(d[1L],d[2L],as.integer(n_dimensions)))
   for(j in seq_along(others))out[,,others[j]]<-exp(transformed[,,j])
   denom<-apply(out,c(1L,2L),sum)
-  .etr_assert(all(is.finite(denom) & denom>0),
-    "inverse ALR exponentiation overflowed; cannot normalize the simplex")
+  if(!isTRUE(python_boundary_mode))
+    .etr_assert(all(is.finite(denom) & denom>0),
+      "inverse ALR exponentiation overflowed; cannot normalize the simplex")
   sweep(out,c(1L,2L),denom,"/")
 }
 
@@ -164,34 +245,126 @@ etr_fpca_score_frame <- function(result,prefix="FPC") {
 #' Pairwise Euclidean distances in native fitted FPCA score space
 #' @param fpca Native etr_fpca fit.
 #' @param n_components Retained fitted score columns (NULL means all).
+#' @param python_boundary_mode When TRUE, additionally accept a minimal
+#'   score-bearing R environment as a native analogue of Python's
+#'   duck-typed objects, and a Matrix-package sparse score array without
+#'   densifying the input. The n-curve by n-curve output is necessarily dense
+#'   and guarded at five million cells. Matrix remains optional.
+#'   Also enforce Python slice-index semantics: Boolean counts are valid,
+#'   while double 1.0 is not a valid NumPy index (unlike legacy native R).
+#'   Other Python-specific classes and error types remain outside the
+#'   audited subset.
 #' @return Unlabelled symmetric numeric matrix.
 #' @export
-etr_score_distance_matrix <- function(fpca,n_components=NULL) {
+etr_score_distance_matrix <- function(fpca,n_components=NULL,
+    python_boundary_mode=FALSE) {
+  .etr_assert(is.logical(python_boundary_mode) &&
+    length(python_boundary_mode)==1L && !is.na(python_boundary_mode),
+    "python_boundary_mode must be a nonmissing logical scalar")
+  # sklearn pairwise_distances accepts SciPy sparse score arrays.
+  # Use sparse-native Matrix operations in explicit Python boundary mode,
+  # rather than converting a possibly very wide sparse score matrix to
+  # dense first. Do not require Matrix for ordinary dense R users.
+  source_scores <- NULL
+  if(inherits(fpca,"etr_fpca") || is.list(fpca) ||
+      (isTRUE(python_boundary_mode) && is.environment(fpca)))
+    source_scores <- fpca$scores
+  source_sparse <- isTRUE(python_boundary_mode) &&
+    inherits(source_scores,"sparseMatrix")
+  if(source_sparse) {
+    .etr_assert(requireNamespace("Matrix",quietly=TRUE),
+      "Matrix is required for Python-compatible sparse FPCA scores")
+    .etr_assert(nrow(source_scores)>=1L && ncol(source_scores)>=1L,
+      "sparse FPCA scores must have positive matrix dimensions")
+    # Sparse pattern matrices have implicit unit entries and no x slot.
+    # For all other sparse numeric matrices, inspect only stored values:
+    # as.numeric(source_scores) would silently materialize the full array.
+    stored <- if("x"%in%methods::slotNames(source_scores))
+      methods::slot(source_scores,"x") else
+      if(inherits(source_scores,"nMatrix"))TRUE else NA_real_
+    .etr_assert((is.numeric(stored)||is.logical(stored)) &&
+      all(is.finite(stored)),
+      "sparse FPCA scores must contain finite real numeric entries")
+  }
   if(inherits(fpca,"etr_fpca")) {
     .etr_fpca_diagnostic_fit(fpca)
   } else {
     # Published Python 1.2 uses only .scores and .n_components, with
     # duck-typed FPCA-compatible objects. Permit that minimal finite
     # matrix contract without pretending all Python object types port.
-    .etr_assert(is.list(fpca)&&
-      is.matrix(fpca$scores)&&is.numeric(fpca$scores)&&
-      nrow(fpca$scores)>=1L&&ncol(fpca$scores)>=1L&&
-      all(is.finite(fpca$scores))&&
-      is.numeric(fpca$n_components)&&
+    .etr_assert((is.list(fpca) ||
+      (isTRUE(python_boundary_mode) && is.environment(fpca)))&&
+      (is.matrix(source_scores)||source_sparse)&&
+      (source_sparse||is.numeric(source_scores)||
+        is.character(source_scores)||is.logical(source_scores))&&
+      nrow(source_scores)>=1L&&ncol(source_scores)>=1L&&
+      (source_sparse ||
+        all(is.finite(suppressWarnings(as.numeric(source_scores)))))&&
+      (is.numeric(fpca$n_components) ||
+        (isTRUE(python_boundary_mode)&&is.logical(fpca$n_components)))&&
       length(fpca$n_components)==1L&&
       is.finite(fpca$n_components)&&
       fpca$n_components==as.integer(fpca$n_components)&&
       fpca$n_components>=1L&&
-      fpca$n_components<=ncol(fpca$scores),
+      fpca$n_components<=ncol(source_scores),
       "fpca must provide finite scores and a compatible n_components")
   }
-  if(is.null(n_components))n_components<-fpca$n_components
+  declared<-fpca$n_components
+  if(isTRUE(python_boundary_mode)&&is.logical(declared))
+    declared<-as.integer(declared)
+  if(is.null(n_components))n_components<-declared
+  if(isTRUE(python_boundary_mode)) {
+    # Frozen Python 1.2 delegates a literal [:, :n_components] slice
+    # to NumPy/scipy. Boolean counts are valid Python __index__ objects;
+    # floating-point 1.0 is NOT a valid slice index even if integral.
+    .etr_assert((is.integer(n_components)||is.logical(n_components))&&
+      length(n_components)==1L&&!is.na(n_components),
+      "n_components must be a Python integer/Boolean slice index")
+    n_components<-as.integer(n_components)
+  }
   .etr_assert(is.numeric(n_components) && length(n_components)==1L &&
     is.finite(n_components) && n_components==as.integer(n_components) &&
-    n_components>=1L && n_components<=fpca$n_components,
+    n_components>=1L && n_components<=declared,
     "n_components is outside the fitted range")
-  x<-fpca$scores[,seq_len(n_components),drop=FALSE]
-  out<-as.matrix(stats::dist(x,method="euclidean"))
+  # sklearn pairwise_distances accepts numeric-string and Boolean score arrays.
+  # Do not coerce the caller's object, nor accept NaN, Inf or bad strings.
+  scores<-if(!source_sparse &&
+       (is.character(source_scores)||is.logical(source_scores)))
+    matrix(suppressWarnings(as.numeric(source_scores)),
+      nrow=nrow(source_scores),ncol=ncol(source_scores)) else source_scores
+  x<-scores[,seq_len(n_components),drop=FALSE]
+  if(source_sparse) {
+    # Sparse Euclidean geometry: squared row norms and a sparse Gram
+    # product, with a dense output whose size is intrinsically n_curves^2.
+    # This is a bounded native SciPy/scikit-learn analogue; it avoids
+    # materializing n_curves * n_score_components input cells.
+    .etr_assert(as.double(nrow(x))^2 <= 5e6,
+      "sparse score distance output exceeds native 5e6-cell resource bound")
+    # Pattern and logical Matrix classes can request Boolean semiring
+    # multiplication; Euclidean score distances require ordinary double
+    # arithmetic even when all observed entries are zero/one. Converting
+    # to a numeric *sparse* compressed-column matrix does not densify.
+    # Matrix >= 1.5 deprecates direct coercion to concrete dgCMatrix.
+    # Use virtual classes to preserve numeric sparse arithmetic and
+    # compressed-column storage without deprecated conversion paths.
+    if(!inherits(x,"dMatrix"))
+      x<-methods::as(x,"dMatrix")
+    if(!inherits(x,"CsparseMatrix"))
+      x<-methods::as(x,"CsparseMatrix")
+    .etr_assert(inherits(x,"sparseMatrix")&&inherits(x,"dMatrix"),
+      "numeric sparse score conversion must preserve sparse storage")
+    squared_norms<-as.numeric(Matrix::rowSums(x*x))
+    gram<-as.matrix(Matrix::tcrossprod(x))
+    squared<-outer(squared_norms,squared_norms,"+")-2*gram
+    .etr_assert(all(is.finite(squared)),
+      "sparse FPCA score distances overflowed to nonfinite values")
+    # Keep the matrix as the first pmax argument so R retains its dim.
+    out<-sqrt(pmax(squared,0))
+    diag(out)<-0
+    out<-(out+t(out))/2
+  } else {
+    out<-as.matrix(stats::dist(x,method="euclidean"))
+  }
   unname(out)
 }
 

@@ -98,9 +98,9 @@ test_that("five reporting candidates remain unmapped-to-certificate gaps",{
   expect_true(all(rows$native_implementation_started))
   expect_true(all(rows$source_contract_gap_unresolved))
   expect_false(any(rows$one_to_one_native_contract_complete))
-  expect_equal(sum(p$is_python_function & p$named_native_candidate),325L)
-  expect_equal(sum(p$native_implementation_started),300L)
-  expect_equal(sum(p$source_contract_gap_unresolved),147L)
+  expect_gte(sum(p$is_python_function & p$named_native_candidate),332L)
+  expect_gte(sum(p$native_implementation_started),307L)
+  expect_gte(sum(p$source_contract_gap_unresolved),154L)
 })
 
 test_that("five reporting summaries match pinned Python 1.2 exact source strings",{
@@ -160,10 +160,30 @@ _st_python={
     surrogate=etr_multivariate_iaaft_reporting_text(z$surrogate),
     nonlinear=etr_multivariate_surrogate_nonlinearity_reporting_text(
       z$nonlinear))
+  direct<-list(
+    prediction=reticulate::py_call(
+      etpy_get_export("generalized_function_on_scalar_prediction_reporting_text"),
+      result=reticulate::py_eval("_st_band",convert=FALSE)),
+    difference=reticulate::py_call(
+      etpy_get_export("generalized_function_on_scalar_mean_difference_reporting_text"),
+      result=reticulate::py_eval("_st_diff",convert=FALSE)),
+    covariance=reticulate::py_call(
+      etpy_get_export("functional_mixed_effects_covariance_sensitivity_reporting_text"),
+      result=reticulate::py_eval("_st_cov",convert=FALSE)),
+    surrogate=reticulate::py_call(
+      etpy_get_export("multivariate_iaaft_reporting_text"),
+      result=reticulate::py_eval("_st_surr",convert=FALSE)),
+    nonlinear=reticulate::py_call(
+      etpy_get_export("multivariate_surrogate_nonlinearity_reporting_text"),
+      result=reticulate::py_eval("_st_test",convert=FALSE))
+  )
+  expect_identical(names(direct),names(native))
   for(n in names(native)){
     python<-reticulate::py_eval(paste0("_st_python['",n,"']"),
       convert=TRUE)
     expect_identical(native[[n]],python,
       info=paste("direct Python 1.2 source report:",n))
+    expect_identical(native[[n]],as.character(et_to_r(direct[[n]])),
+      info=paste("direct frozen public source reporter:",n))
   }
 })

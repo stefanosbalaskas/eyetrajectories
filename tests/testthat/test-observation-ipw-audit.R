@@ -1,9 +1,7 @@
 # Regression for the 27 Oct 2026 trial/summary IPW audit mismatch.
-helper <- file.path("scripts","audit_missing_gaze_ipw_helpers.R")
-if (!file.exists(helper)) {
-  helper <- file.path("..","..","scripts",
-                      "audit_missing_gaze_ipw_helpers.R")
-}
+helper <- testthat::test_path("fixtures",
+  "audit_missing_gaze_ipw_helpers.R")
+stopifnot(file.exists(helper))
 source(helper,local=TRUE)
 
 testthat::test_that("observed_fraction is reconciled to mean_observed_fraction",{

@@ -196,10 +196,16 @@ etr_plot_local_divergence <- function(result,...) {
 #' Histogram of the IAAFT surrogate statistic and observed marker
 #' @param result Native surrogate nonlinearity diagnostic.
 #' @param bins Finite integer count (>=2) for R histogram binning.
+#' @param python_boundary_mode If TRUE, reproduce the inspected NumPy
+#'   equal-width histogram breaks and left-inclusive bin counts for finite
+#'   surrogate statistics and a Python integer bin count. Default FALSE
+#'   preserves the existing R histogram behavior and validation.
+#'   Graphics still return base R geometry, not Matplotlib Axes.
 #' @param ... Graphics options.
 #' @return Invisibly, breaks and counts alongside observed statistic.
 #' @export
-etr_plot_surrogate_nonlinearity <- function(result,bins=20L,...) {
+etr_plot_surrogate_nonlinearity <- function(
+    result,bins=20L,python_boundary_mode=FALSE,...) {
   .etr_assert(inherits(result,"etr_surrogate_nonlinearity")&&
     is.numeric(result$surrogate_statistics)&&
     length(result$surrogate_statistics)>=1L&&
@@ -209,11 +215,35 @@ etr_plot_surrogate_nonlinearity <- function(result,bins=20L,...) {
     is.finite(result$observed_statistic)&&
     is.finite(result$p_value)&&result$p_value>=0&&result$p_value<=1,
     "result must be a finite native IAAFT nonlinearity diagnostic")
-  .etr_assert(is.numeric(bins)&&length(bins)==1L&&
-    is.finite(bins)&&bins==as.integer(bins)&&bins>=2L,
-    "bins must be an integer >= 2")
-  h<-graphics::hist(result$surrogate_statistics,
-    breaks=as.integer(bins),plot=FALSE)
+  .etr_assert(is.logical(python_boundary_mode)&&
+    length(python_boundary_mode)==1L&&!is.na(python_boundary_mode),
+    "python_boundary_mode must be a nonmissing logical scalar")
+  if(isTRUE(python_boundary_mode)) {
+    # Python nonlinear_plotting.py checks isinstance(bins, int), then
+    # passes an integer count to Matplotlib, which delegates to NumPy.
+    .etr_assert(is.integer(bins)&&length(bins)==1L&&
+      !is.na(bins)&&bins>=2L&&bins<=10000L,
+      "bins must be a Python integer >= 2 within native 10000-bin limit")
+    values<-as.numeric(result$surrogate_statistics)
+    rng<-range(values)
+    if(rng[1L]==rng[2L])rng<-rng+c(-.5,.5)
+    breaks<-seq(rng[1L],rng[2L],length.out=as.integer(bins)+1L)
+    h<-graphics::hist(values,breaks=breaks,right=FALSE,
+      include.lowest=TRUE,plot=FALSE)
+    # R histogram has a fuzzy-edge tolerance. NumPy treats every bin
+    # as [left,right) except the final bin, which includes its right edge.
+    # Override counts and corresponding densities with that exact rule.
+    h$counts<-as.integer(tabulate(findInterval(values,breaks,
+      rightmost.closed=TRUE),nbins=as.integer(bins)))
+    h$density<-h$counts/(length(values)*diff(h$breaks))
+    h$intensities<-h$density
+  } else {
+    .etr_assert(is.numeric(bins)&&length(bins)==1L&&
+      is.finite(bins)&&bins==as.integer(bins)&&bins>=2L,
+      "bins must be an integer >= 2")
+    h<-graphics::hist(result$surrogate_statistics,
+      breaks=as.integer(bins),plot=FALSE)
+  }
   graphics::plot(h,xlab=result$statistic,ylab="Surrogate count",
     main=sprintf("%s surrogate test (p=%.3g)",
       toupper(result$method),result$p_value),...)
@@ -221,7 +251,8 @@ etr_plot_surrogate_nonlinearity <- function(result,bins=20L,...) {
   graphics::legend("topright",legend="Observed",lty=2,bty="n")
   invisible(list(breaks=h$breaks,counts=h$counts,
     observed=result$observed_statistic,
-    python_matplotlib_histogram_binning_equivalent=FALSE))
+    python_matplotlib_histogram_binning_equivalent=
+      isTRUE(python_boundary_mode)))
 }
 
 #' Plot one-dimensional empirical Poincare return map without projection

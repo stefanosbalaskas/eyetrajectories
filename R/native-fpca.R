@@ -1,8 +1,25 @@
 #' Trapezoidal weights on an irregular, strictly increasing grid
-#' @param time Finite increasing one-dimensional vector or list of scalar values coercible to numeric time.
-#' @param normalize Divide weights by their sum when TRUE.
+#' @param time Finite increasing one-dimensional vector or list of scalar
+#'   values coercible to numeric time. In opt-in Python boundary mode,
+#'   a complex atomic vector is cast to its real part as NumPy casts a
+#'   complex ndarray to dtype=float; regular R use rejects complex grids.
+#' @param normalize Divide weights when truthy under Python 1.2 scalar
+#'   semantics (FALSE, 0 and the empty string are false; nonempty strings
+#'   and nonzero finite numeric scalars are true). In explicit Python
+#'   boundary mode, nonzero, infinite and NaN-valued complex scalar flags
+#'   follow Python bool(complex); empty/nonempty lists use container truthiness.
+#' @param python_boundary_mode When TRUE, reproduce inspected Python 1.2
+#'   edge behavior for infinite strictly increasing grid endpoints and
+#'   NaN/Inf scalar and complex normalization flags, including casting
+#'   a complex atomic grid to its real part as NumPy does. Default FALSE
+#'   retains finite-only scientific validation. This is NOT a full-source
+#'   parity assertion.
 #' @export
-etr_trapezoid_weights <- function(time, normalize = FALSE) {
+etr_trapezoid_weights <- function(time, normalize = FALSE,
+    python_boundary_mode = FALSE) {
+  .etr_assert(is.logical(python_boundary_mode) &&
+    length(python_boundary_mode)==1L && !is.na(python_boundary_mode),
+    "python_boundary_mode must be a nonmissing logical scalar")
   # Python 1.2 np.asarray accepts a 1-D sequence of scalar numeric
   # elements. Preserve this common scientific input domain in native R,
   # without allowing a matrix/data.frame or automatic time interpolation.
@@ -13,23 +30,72 @@ etr_trapezoid_weights <- function(time, normalize = FALSE) {
         (is.numeric(x) || is.logical(x) || is.character(x)),
       logical(1L))),
       "time must be a one-dimensional sequence of numeric scalars")
-    time <- unlist(time, use.names = FALSE)
+    # np.asarray(list(...), dtype=float) converts each scalar before
+    # constructing the homogeneous array. R's unlist() first promotes
+    # mixed (character, logical, numeric) values to character, turning
+    # TRUE into "TRUE" and then NA. Preserve NumPy's elementwise coercion.
+    time <- vapply(time, function(value)
+      suppressWarnings(as.numeric(value)), numeric(1L),
+      USE.NAMES = FALSE)
   }
   .etr_assert(is.atomic(time) && is.null(dim(time)) &&
                 !is.factor(time) &&
                 (is.numeric(time) || is.logical(time) ||
-                 is.character(time)),
+                 is.character(time) ||
+                 (isTRUE(python_boundary_mode)&&is.complex(time))),
               "time must be a one-dimensional numeric sequence")
   time <- suppressWarnings(as.numeric(time))
-  .etr_assert(length(time) >= 2L && all(is.finite(time)) &&
-                all(diff(time) > 0),
-              "time must be strictly increasing and finite")
   d <- diff(time); n <- length(time)
+  if(isTRUE(python_boundary_mode)) {
+    # Python 1.2 validates only np.diff(time)>0: +/-Inf endpoints can
+    # pass, while NaN differences still fail.
+    .etr_assert(n>=2L && all(!is.na(d)) && all(d>0),
+      "time must be strictly increasing and one-dimensional")
+  } else {
+    .etr_assert(n>=2L && all(is.finite(time)) &&
+      all(!is.na(d)) && all(d>0),
+      "time must be strictly increasing and finite")
+  }
   w <- c(d[1] / 2, if (n > 2L) (d[-1] + d[-length(d)]) / 2,
          utils::tail(d, 1) / 2)
-  # Normalize remains an R logical flag in native scientific workflows.
-  # Python's broader truthiness acceptance is NOT full-contract parity.
-  if (isTRUE(normalize)) w <- w / sum(w)
+  # Match Python bool(scalar) on finite numeric, logical and string
+  # scalar values, including bool("")=False and bool("0")=True.
+  # Arbitrary Python user objects and nonfinite time grids remain outside
+  # this intentionally bounded native scientific contract.
+  # Python bool([])=FALSE and bool([anything])=TRUE. A list argument
+  # is accepted ONLY in explicit Python boundary mode: ordinary native R
+  # uses a scalar normalization flag, avoiding accidental list coercion.
+  list_flag <- is.list(normalize) && !is.data.frame(normalize) &&
+    is.null(dim(normalize))
+  if(list_flag) {
+    .etr_assert(isTRUE(python_boundary_mode),
+      "list normalize requires python_boundary_mode=TRUE")
+    truthy <- length(normalize)>0L
+  } else {
+    .etr_assert(length(normalize)==1L &&
+      (is.logical(normalize) || is.character(normalize) ||
+        is.numeric(normalize) ||
+        (isTRUE(python_boundary_mode)&&is.complex(normalize))) &&
+      (if(isTRUE(python_boundary_mode))
+        (if(is.complex(normalize)) {
+          parts<-c(Re(normalize),Im(normalize))
+          all(!is.na(parts)|is.nan(parts))
+         } else (!is.na(normalize) || is.nan(normalize)))
+       else (!is.na(normalize) &&
+         (!is.numeric(normalize) || is.finite(normalize)))),
+      "normalize must be a valid numeric, logical or character scalar")
+    # Python's bool(complex) is true when either the real or imaginary part
+    # is nonzero. This is distinct from R's default logical coercion.
+    truthy <- if(is.character(normalize))nzchar(normalize) else
+      if(is.complex(normalize)) {
+        # In Python, bool(complex(nan,0)) and bool(complex(inf,0))
+        # are TRUE, while both signed zeros are FALSE.
+        parts<-c(Re(normalize),Im(normalize))
+        any(is.nan(parts))||any(parts!=0)
+      } else
+      if(is.nan(normalize))TRUE else normalize!=0
+  }
+  if(isTRUE(truthy))w<-w/sum(w)
   w
 }
 
@@ -153,24 +219,56 @@ etr_transform_fpca <- function(fit, x) {
   centered %*% t(basis)
 }
 
-#' Reconstruct original curves from native FPCA components
+#' Reconstruct fitted or externally scored curves from native FPCA components
 #' @param fit Native FPCA result.
-#' @param n_components Number of retained components to reconstruct.
+#' @param n_components Number of retained components to reconstruct. With
+#'   external scores, defaults to the lesser of supplied score columns and
+#'   fitted components, matching the frozen Python 1.2 source.
+#' @param scores Optional finite numeric score vector (one curve) or matrix
+#'   (curves by components). Unlike an original fitted curve, an externally
+#'   scored curve has no known source curve ID.
+#' @return A native trajectory set when `scores` is NULL, preserving the
+#'   existing R API. When external `scores` are supplied, an unlabelled
+#'   numeric array of shape curves by time by dimensions, matching the Python
+#'   1.2 `reconstruct_fpca` numerical return contract.
 #' @export
-etr_reconstruct_fpca <- function(fit, n_components = NULL) {
+etr_reconstruct_fpca <- function(fit, n_components = NULL, scores = NULL) {
   .etr_assert(inherits(fit, "etr_fpca"), "fit must be a native etr_fpca")
-  if (is.null(n_components)) n_components <- fit$n_components
+  external <- !is.null(scores)
+  if (!external) {
+    score_matrix <- fit$scores
+  } else {
+    # Source np.asarray(..., dtype=float) accepts 1D or 2D score arrays.
+    # Native R stays fail-closed on nonfinite and nonnumeric score data.
+    .etr_assert(is.numeric(scores) && !is.object(scores) &&
+                  (is.null(dim(scores)) || length(dim(scores)) == 2L) &&
+                  length(scores) > 0L && all(is.finite(scores)),
+                "scores must be a finite numeric vector or two-dimensional matrix")
+    score_matrix <- if(is.null(dim(scores)))
+      matrix(as.numeric(scores),nrow=1L) else scores
+    .etr_assert(nrow(score_matrix) >= 1L && ncol(score_matrix) >= 1L,
+                "scores must contain at least one curve and component")
+  }
+  if (is.null(n_components))
+    n_components <- if(external)
+      min(ncol(score_matrix),fit$n_components) else fit$n_components
   .etr_assert(is.numeric(n_components) && length(n_components) == 1L &&
-                !is.na(n_components) && n_components == as.integer(n_components) &&
-                n_components >= 1 && n_components <= fit$n_components,
+                is.finite(n_components) &&
+                n_components == as.integer(n_components) &&
+                n_components >= 1L && n_components <= fit$n_components,
               "n_components must be between 1 and retained component count")
-  n <- nrow(fit$scores); nt <- length(fit$time); nd <- length(fit$dimension_names)
+  .etr_assert(ncol(score_matrix) >= n_components,
+              "scores contain fewer columns than requested components")
+  n <- nrow(score_matrix)
+  nt <- length(fit$time)
+  nd <- length(fit$dimension_names)
   y <- array(NA_real_, c(n, nt, nd))
   for (j in seq_len(nd)) for (t in seq_len(nt)) {
     y[, t, j] <- fit$mean[t, j] +
-      as.vector(fit$scores[, seq_len(n_components), drop = FALSE] %*%
-                  fit$components[seq_len(n_components), t, j])
+      as.vector(score_matrix[, seq_len(n_components), drop = FALSE] %*%
+                  as.numeric(fit$components[seq_len(n_components), t, j]))
   }
+  if (external) return(y)
   etr_trajectory_set(fit$time, y, fit$curve_ids, fit$dimension_names,
                      coordinate_system = fit$coordinate_system, time_unit = fit$time_unit)
 }

@@ -1,3 +1,9 @@
+.etr_rqa_source_population_sd<-function(z) {
+  # Frozen Python functional_rqa.py _pairwise_exact_center_comparison
+  # checks np.std(z, ddof=0), not R stats::sd(z) (ddof=1).
+  sqrt(mean((z-mean(z))^2))
+}
+
 # Stage 26: research numerical integration of windowed functional RQA and
 # published Python 1.2 recovery metadata. All native; no Python bridge.
 
@@ -120,16 +126,30 @@ etr_functional_recovery_reporting_text <- function(assessment) {
     "and is not an estimator-tuning input.")
 }
 
-.etr_validate_rqa_window_pairs <- function(pairs) {
+.etr_validate_rqa_window_pairs <- function(pairs,
+    window_units="samples",step_units="samples") {
   if(is.matrix(pairs)&&is.numeric(pairs)&&ncol(pairs)==2L)
     pairs<-lapply(seq_len(nrow(pairs)),function(i)as.numeric(pairs[i,]))
   .etr_assert(is.list(pairs)&&length(pairs)>=1L,
     "window_step_pairs must be a nonempty list or 2-column matrix")
+  .etr_assert(is.character(window_units)&&length(window_units)==1L&&
+    !is.na(window_units)&&nzchar(window_units)&&
+    is.character(step_units)&&length(step_units)==1L&&
+    !is.na(step_units)&&nzchar(step_units),
+    "window_units and step_units must be nonempty strings")
   for(i in seq_along(pairs)){
     v<-pairs[[i]]
-    .etr_assert(is.numeric(v)&&length(v)==2L&&
-      all(is.finite(v))&&all(v>0)&&all(v==as.integer(v)),
-      "window and step must be positive finite integer sample counts")
+    .etr_assert(is.numeric(v)&&!is.logical(v)&&length(v)==2L&&
+      all(is.finite(v))&&all(v>0),
+      "window and step must be positive finite numeric values")
+    # Python's validator allows physical-time fractional widths. Its
+    # sample-unit _resolve_samples rejects nonintegral sample counts.
+    if(identical(window_units,"samples")||identical(step_units,"samples"))
+      .etr_assert(all(v[c(identical(window_units,"samples"),
+        identical(step_units,"samples"))]==floor(v[c(
+          identical(window_units,"samples"),
+          identical(step_units,"samples"))])),
+        "window and step must be positive finite integer sample counts when using samples")
   }
   pairs
 }
@@ -137,19 +157,24 @@ etr_functional_recovery_reporting_text <- function(assessment) {
 #' Audited multiscale windowed RQA without automatic specification selection
 #' @param trajectories Native complete functional trajectories.
 #' @param metrics Unique RQA statistics to compare.
-#' @param window_step_pairs List of explicit sample (window,step) pairs.
+#' @param window_step_pairs List or two-column numeric matrix of explicit
+#'   (window,step) pairs. Fractional positive widths are supported for
+#'   physical time units; sample-unit widths must be integral.
 #' @param radius Positive declared Euclidean recurrence radius.
 #' @param ... Additional fixed native RQA parameters forwarded to windowed RQA.
 #' @return Native design, descriptive summary and exact-center pairwise tables.
 #' @export
 etr_windowed_rqa_sensitivity <- function(trajectories,metrics,
     window_step_pairs,window_units="samples",step_units="samples",
-    radius,target_recurrence_rate=NULL,metric="euclidean",
+    radius=NULL,target_recurrence_rate=NULL,metric="euclidean",
     theiler_window=0L,theiler_window_units="samples",dimensions=NULL,
     min_diagonal_length=2L,min_vertical_length=2L,
     undefined_policy="raise") {
-  etr_validate(trajectories,require_complete=TRUE)
-  pairs<-.etr_validate_rqa_window_pairs(window_step_pairs)
+  # Source completeness is selected-curve/channel scoped inside
+  # windowed_rqa, not a blanket check over unrelated source channels.
+  etr_validate(trajectories,require_complete=FALSE)
+  pairs<-.etr_validate_rqa_window_pairs(window_step_pairs,
+    window_units=window_units,step_units=step_units)
   analyses<-lapply(pairs,function(p)etr_windowed_rqa_trajectory_set(
     trajectories,metrics=metrics,window=p[1L],step=p[2L],
     window_units=window_units,step_units=step_units,radius=radius,
@@ -231,8 +256,12 @@ etr_windowed_rqa_sensitivity <- function(trajectories,metrics,
           ok<-is.finite(v)&is.finite(w)
           v<-v[ok];w<-w[ok];n<-length(v)
           differences<-v-w
-          cor<-if(n>=2L&&stats::sd(v)>.Machine$double.eps&&
-            stats::sd(w)>.Machine$double.eps)
+          # Source uses np.std(..., ddof=0) for the low-variance
+          # correlation gate, not R's sample sd(ddof=1). For n=2 the
+          # thresholds differ, so compare the source population SD.
+          cor<-if(n>=2L&&
+            .etr_rqa_source_population_sd(v)>.Machine$double.eps&&
+            .etr_rqa_source_population_sd(w)>.Machine$double.eps)
               stats::cor(v,w) else NaN
           pairwise[[length(pairwise)+1L]]<-data.frame(
             specification_a=ids[i],specification_b=ids[j],
@@ -253,10 +282,22 @@ etr_windowed_rqa_sensitivity <- function(trajectories,metrics,
   structure(list(analyses=analyses,design_table=design,
     summary_table=summary,pairwise_table=pairwise,metrics=metrics,
     provenance=list(operation="windowed_rqa_sensitivity",
-      specification_ids=ids,no_automatic_specification_selection=TRUE,
+      source_provenance=if(is.null(trajectories$provenance))
+        list() else trajectories$provenance,
+      specification_ids=ids,
+      requested_window_step_pairs=lapply(pairs,as.numeric),
+      resolved_window_step_samples=lapply(analyses,function(a)
+        as.integer(c(a$window_samples,a$step_samples))),
+      no_automatic_specification_selection=TRUE,
       pairwise_time_alignment="exact_shared_window_centers_only",
       interpolation_used_for_sensitivity_comparison=FALSE,
-      summary_statistics_are_descriptive_not_inferential=TRUE)),
+      summary_statistics_are_descriptive_not_inferential=TRUE,
+      profile_grid_spacing_interpretation=paste(
+        "derived-function temporal grid spacing; not an estimate of",
+        "independent-information resolution"),
+      window_dependence_interpretation=paste(
+        "sample-reuse diagnostics quantify deterministic overlap only;",
+        "serial dependence can remain even when overlap_fraction is zero"))),
     class="etr_windowed_rqa_sensitivity")
 }
 
@@ -266,14 +307,15 @@ etr_windowed_rqa_sensitivity <- function(trajectories,metrics,
 #' @param window,step Explicit integer sample-width and step.
 #' @param unit Inference unit, curve or participant.
 #' @param participant_column Required when inference units are participants.
-#' @param radius Mandatory finite fixed Euclidean radius in native R.
+#' @param radius Fixed positive radius or NULL when using a target rate.
+#' @param target_recurrence_rate Optional source-aligned target density in (0, 1).
 #' @param confidence_level,n_multiplier,random_state Multiplier band specification.
 #' @param ... Native fixed-radius windowed-RQA parameters.
 #' @export
 etr_windowed_rqa_functional_mean_band <- function(trajectories,
     metrics,window,step,unit,participant_column=NULL,
     window_units="samples",step_units="samples",
-    radius,target_recurrence_rate=NULL,metric="euclidean",
+    radius=NULL,target_recurrence_rate=NULL,metric="euclidean",
     theiler_window=0L,theiler_window_units="samples",dimensions=NULL,
     min_diagonal_length=2L,min_vertical_length=2L,
     confidence_level=.95,n_multiplier=2000L,random_state=0L){
@@ -295,7 +337,13 @@ etr_windowed_rqa_functional_mean_band <- function(trajectories,
   structure(list(functional_rqa=functional,band=band,unit=unit,
     participant_column=participant_column,
     provenance=list(operation="windowed_rqa_functional_mean_band",
+      functional_rqa_provenance=if(is.null(functional$provenance))
+        list() else functional$provenance,
+      functional_mean_band_provenance=if(is.null(band$provenance))
+        list() else band$provenance,
       resampling_unit=unit,
+      participant_column=if(identical(unit,"participant"))
+        participant_column else NULL,
       window_rows_resampled_as_independent=FALSE,
       whole_function_resampling_contract=TRUE,
       within_function_temporal_dependence_preserved=TRUE,

@@ -11,10 +11,19 @@ test_that("all 508 published exports receive a fail-closed evidence queue",{
   expect_identical(readiness$fully_certified,
     api$one_to_one_native_contract_complete)
   expect_gte(sum(readiness$native_mapping_present[
-    api$is_python_function]),327L)
+    api$is_python_function]),332L)
   expect_gte(sum(readiness$native_implementation_started[
-    api$is_python_function]),302L)
-  expect_gte(sum(readiness$published_source_difference_open),149L)
+    api$is_python_function]),307L)
+  expect_gte(sum(readiness$published_source_difference_open),154L)
+  # Source gaps include 203 callable-function contracts and a separate
+  # frozen Python TrajectorySet constructor/method domain counterexample.
+  expect_equal(sum(readiness$nonfunction_source_difference_open),1L)
+  class_gap<-readiness[readiness$python_name=="TrajectorySet",,drop=FALSE]
+  expect_identical(nrow(class_gap),1L)
+  expect_true(class_gap$nonfunction_source_difference_open)
+  expect_identical(class_gap$first_unresolved_requirement,
+    "unresolved_nonfunction_source_difference")
+  expect_false(class_gap$fully_certified)
   expect_equal(sum(readiness$fully_certified),0L)
   expect_true(all(nzchar(readiness$first_unresolved_requirement)))
   expect_true(all(nzchar(readiness$all_unresolved_requirements)))
@@ -30,11 +39,69 @@ test_that("all 508 published exports receive a fail-closed evidence queue",{
     "unresolved_published_source_difference"))
   expect_true(all(grepl("independent_review_approval_missing",
     mapped$all_unresolved_requirements,fixed=TRUE)))
-  missing<-readiness[readiness$python_name==
+  # Every frozen Python function now has a real exported native R
+  # analogue. This is 100% *mapping* coverage, NOT source parity.
+  # A previous test required an unmapped function and became invalid
+  # when the native source mapping census reached 380/380.
+  functions<-readiness[readiness$kind=="function",,drop=FALSE]
+  expect_identical(nrow(functions),380L)
+  expect_true(all(functions$native_mapping_present))
+  # A previously omitted implementation marker blocked 111-row source
+  # evidence capture despite the exported native quadrature implementation.
+  weights<-functions[functions$python_name=="functional_trapezoid_weights",
+    ,drop=FALSE]
+  expect_identical(nrow(weights),1L)
+  expect_true(weights$native_implementation_started)
+  expect_true(weights$published_source_difference_open)
+  expect_false(weights$fully_certified)
+  # Implemented vs mapped are separate tracked states. If any
+  # mapped candidate has not started implementation, retain its
+  # explicit unresolved requirement instead of fabricating progress.
+  unstarted<-functions[!functions$native_implementation_started,,drop=FALSE]
+  if(nrow(unstarted)){
+    expect_true(all(unstarted$first_unresolved_requirement==
+      "native_implementation_missing"))
+    expect_true(all(grepl("native_implementation_missing",
+      unstarted$all_unresolved_requirements,fixed=TRUE)))
+  }
+  expect_true(all(nzchar(functions$native_r_candidate)))
+  expect_true(all(functions$native_r_candidate%in%
+    getNamespaceExports("eyetrajectories")))
+  missing<-functions[!functions$native_mapping_present,,drop=FALSE]
+  expect_identical(nrow(missing),0L)
+  expect_false(any(grepl("native_mapping_missing",
+    functions$all_unresolved_requirements,fixed=TRUE)))
+  # Mapping completion must never elevate scientific source contracts:
+  # retain all unsigned source, numeric, schema, and independent-review
+  # gates, including the 128 nonfunction exports.
+  expect_identical(sum(readiness$fully_certified),0L)
+  # A full-source certificate is impossible for explicitly declared
+  # native method/backend alternatives until the source algorithm and its
+  # input/output domain are independently reviewed and implemented.
+  alternatives<-readiness[readiness$native_backend_or_estimand_differs,,drop=FALSE]
+  expect_gte(nrow(alternatives),19L)
+  expect_true(all(alternatives$native_mapping_present))
+  expect_false(any(alternatives$fully_certified))
+  expect_true(all(grepl("native_backend_or_estimand_not_source_equivalent",
+    alternatives$all_unresolved_requirements,fixed=TRUE)))
+
+  expect_true(all(grepl("independent_review_approval_missing",
+    readiness$all_unresolved_requirements,fixed=TRUE)))
+  expect_true(all(grepl("approved_numerical_oracle_missing",
+    readiness$all_unresolved_requirements,fixed=TRUE)))
+  # A newly implemented source subset must remain blocked for scientific
+  # source-domain and independently approved contract gaps.
+  simulated<-readiness[readiness$python_name==
     "simulate_functional_process",,drop=FALSE]
-  expect_equal(nrow(missing),1L)
-  expect_identical(missing$first_unresolved_requirement,
-    "native_mapping_missing")
+  expect_identical(nrow(simulated),1L)
+  expect_true(simulated$native_mapping_present)
+  expect_true(simulated$native_implementation_started)
+  expect_true(simulated$published_source_difference_open)
+  expect_identical(simulated$first_unresolved_requirement,
+    "unresolved_published_source_difference")
+  expect_false(simulated$fully_certified)
+  expect_true(grepl("independent_review_approval_missing",
+    simulated$all_unresolved_requirements,fixed=TRUE))
   expect_true(any(readiness$kind!="function"))
 })
 

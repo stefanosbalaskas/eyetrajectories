@@ -31,13 +31,13 @@ etr_recurrence_radius_profile(source, curve = 1L, radii,
   metric = "euclidean", theiler_window = 0L,
   theiler_window_units = "samples", dimensions = NULL)
 etr_windowed_rqa(trajectories, curve = 1L, window, step,
-  window_units = "samples", step_units = "samples", radius,
+  window_units = "samples", step_units = "samples", radius = NULL,
   target_recurrence_rate = NULL, metric = "euclidean",
   theiler_window = 0L, theiler_window_units = "samples",
   dimensions = NULL, min_diagonal_length = 2L,
   min_vertical_length = 2L)
 etr_windowed_rqa_trajectory_set(trajectories, metrics, window, step,
-  window_units = "samples", step_units = "samples", radius,
+  window_units = "samples", step_units = "samples", radius = NULL,
   target_recurrence_rate = NULL, metric = "euclidean",
   theiler_window = 0L, theiler_window_units = "samples",
   dimensions = NULL, min_diagonal_length = 2L,
@@ -56,19 +56,23 @@ qualifying RQA line lengths.}
 the first supplies a radius-profile source.}
 \item{curve}{One-based numeric curve index or existing curve identifier.}
 \item{radii}{Prespecified strictly increasing positive finite radius vector.}
-\item{metric}{Radius-profile source metric:
-\code{"euclidean"}, \code{"cityblock"}, or \code{"chebyshev"}.
-Windowed RQA currently supports only Euclidean distance.}
+\item{metric}{Source recurrence metric: \code{"euclidean"},
+\code{"cityblock"}, or \code{"chebyshev"}, including windowed RQA.}
 \item{theiler_window}{Nonnegative excluded sample-index lag.}
-\item{theiler_window_units}{Currently only \code{"samples"}.}
+\item{theiler_window_units}{Sample units or convertible physical-time units
+on an approximately regular observed grid.}
 \item{dimensions}{Optional distinct named channel selection.}
-\item{window,step}{Window and step lengths expressed in samples; windows
-must contain at least three samples, and \code{step <= window}.}
-\item{window_units,step_units}{Currently only \code{"samples"}.}
-\item{radius}{Fixed finite nonnegative Euclidean recurrence radius.}
-\item{target_recurrence_rate}{Must be NULL in this native-R
-windowed implementation; automatic target-density selection has not
-been numerically qualified.}
+\item{window,step}{Window and step lengths in explicit sample or physical
+units, resolved to whole observed samples; windows need at least three
+samples and \code{step <= window}.}
+\item{window_units,step_units}{Sample units or convertible physical-time
+units without resampling or interpolation.}
+\item{radius}{Optional positive finite fixed recurrence radius.
+Specify exactly one of radius or target_recurrence_rate.}
+\item{target_recurrence_rate}{Optional target density strictly between
+zero and one. Uses source-aligned inclusive-radius threshold selection,
+whose achieved rate may differ because of distance ties. When this
+controls the density, recurrence_rate cannot be a derived outcome.}
 \item{metrics}{Distinct named RQA metrics forming functional channels.}
 \item{undefined_policy}{\code{"raise"} to reject undefined RQA metrics
 or \code{"keep"} to preserve them as explicit missing values.}
@@ -95,11 +99,13 @@ graph threshold or community detection is performed.
 Joint recurrence requires strictly synchronized input and does not
 resample, shift, or harmonize component thresholds.
 
-Dense recurrence network analysis is limited to 750 state nodes;
+Dense recurrence network analysis is limited to 2500 state nodes;
 native radius profiles to 2500. These caps differ from Python's sparse
-implementations. Radius profiles accept only sample-based Theiler
-windows and TrajectorySet input. Windowed RQA is limited to fixed-radius
-Euclidean sample windows; Python has more metrics and threshold policies.
+implementations. Radius profiles accept convertible physical-time
+Theiler windows and TrajectorySet input. Windowed RQA supports fixed-radius or explicitly
+requested target-density thresholds, all three source distance metrics,
+and convertible physical-time windows/steps on approximately regular
+grids. Target-density selection is not an independent parity certificate.
 The current R objects are partial scientific-result representations,
 not certified binary/serialization equivalents of Python dataclasses.
 

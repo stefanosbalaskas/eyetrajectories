@@ -12,7 +12,7 @@
   normalize_time="etr_normalize_time_interval",
   normalize_coordinates="etr_normalize_coordinates",
   center_on_landmark="etr_center_on_landmark",
-  differentiate_trajectories="etr_velocity",
+  differentiate_trajectories="etr_differentiate_trajectories",
   speed_function="etr_speed",
   heading_function="etr_heading_function",
   cumulative_path_length="etr_cumulative_path_length",
@@ -22,7 +22,60 @@
   dynamic_time_warping_distance="etr_dynamic_time_warping",
   pairwise_dynamic_time_warping_distances="etr_pairwise_dtw_full",
   load_portable_result="etr_read_python_portable_result",
+  export_portable_result="etr_export_python_portable_result",
+  bootstrap_fpca_component_envelopes="etr_bootstrap_fpca_component_envelopes",
+  run_fpca_workflow="etr_run_fpca_workflow",
+  run_function_on_scalar_workflow="etr_run_function_on_scalar_workflow",
+  bootstrap_fpca_regression_uncertainty="etr_bootstrap_fpca_regression_uncertainty",
+  run_recurrence_workflow="etr_run_recurrence_workflow",
+  simulate_functional_process="etr_simulate_functional_process",
+  simulate_functional_scenario="etr_simulate_functional_scenario",
+  run_functional_recovery_scenarios="etr_run_functional_recovery_scenarios",
+  plot_workflow_result="etr_plot_workflow_result",
+  save_workflow_figure="etr_save_workflow_figure",
+  fpca_wild_bootstrap_projection_family_test="etr_fpca_wild_bootstrap_projection_family_test",
+  run_functional_mixed_effects_workflow="etr_run_functional_mixed_effects_workflow",
+  run_sparse_fpca_workflow="etr_run_sparse_fpca_workflow",
+  fit_generalized_function_on_scalar_regression="etr_fit_generalized_function_on_scalar_regression",
+  run_generalized_functional_workflow="etr_run_generalized_functional_workflow",
+  bootstrap_generalized_function_on_scalar_coefficients="etr_bootstrap_generalized_function_on_scalar_coefficients",
+  export_workflow_bundle="etr_export_workflow_bundle",
+  wild_bootstrap_fpca_projection="etr_wild_bootstrap_fpca_projection",
+  scan_wild_bootstrap_fpca_truncations="etr_scan_wild_bootstrap_fpca_truncations",
+  functional_mixed_effects_covariance_sensitivity="etr_functional_mixed_effects_covariance_sensitivity",
+  bootstrap_functional_mixed_effects_coefficients="etr_bootstrap_functional_mixed_effects_coefficients",
+  bootstrap_functional_mixed_effects_full_refit="etr_bootstrap_functional_mixed_effects_full_refit",
+  to_skfda_grid="etr_to_skfda_grid",
+  to_skfda_basis="etr_to_skfda_basis",
+  detect_functional_outliers_skfda="etr_detect_functional_outliers_skfda",
+  to_fdapy_irregular="etr_to_fdapy_irregular",
+  fit_sparse_fpca_fdapy="etr_fit_sparse_fpca_fdapy",
+  fit_elastic_fpca="etr_fit_elastic_fpca",
+  fit_sparse_mfpca="etr_fit_sparse_mfpca",
+  run_sparse_mfpca_async_workflow="etr_run_sparse_mfpca_async_workflow",
+  run_sparse_mfpca_workflow="etr_run_sparse_mfpca_workflow",
+  run_sparse_multilevel_workflow="etr_run_sparse_multilevel_workflow",
+  run_sparse_prediction_workflow="etr_run_sparse_prediction_workflow",
   capture_environment="etr_capture_environment",
+  generalized_function_on_scalar_predict="etr_generalized_function_on_scalar_predict",
+  functional_mixed_effects_reporting_text="etr_functional_mixed_effects_reporting_text",
+  bootstrap_generalized_function_on_scalar_predictions="etr_bootstrap_generalized_function_on_scalar_predictions",
+  generalized_function_on_scalar_prediction_bands="etr_generalized_function_on_scalar_prediction_bands",
+  generalized_function_on_scalar_mean_difference_band="etr_generalized_function_on_scalar_mean_difference_band",
+  generalized_function_on_scalar_simultaneous_bands="etr_generalized_function_on_scalar_simultaneous_bands",
+  functional_mixed_effects_simultaneous_bands="etr_functional_mixed_effects_simultaneous_bands",
+  compare_functional_mixed_effects_bootstraps="etr_compare_functional_mixed_effects_bootstraps",
+  evaluate_hierarchy_truth_recovery="etr_evaluate_hierarchy_truth_recovery",
+  evaluate_registration_recovery="etr_evaluate_registration_recovery",
+  evaluate_functional_mixed_effects_recovery="etr_evaluate_functional_mixed_effects_recovery",
+  evaluate_fpca_recovery="etr_evaluate_fpca_recovery",
+  evaluate_sparse_fpca_recovery="etr_evaluate_sparse_fpca_recovery",
+  evaluate_sparse_mfpca_recovery="etr_evaluate_sparse_mfpca_recovery",
+  fpca_regression_future_prediction_interval="etr_fpca_regression_future_prediction_interval",
+  cross_validate_fpca_regression="etr_cross_validate_fpca_regression",
+  nested_cross_validate_fpca_regression="etr_nested_cross_validate_fpca_regression",
+  generate_multivariate_iaaft_surrogates="etr_generate_multivariate_iaaft_surrogates",
+  multivariate_surrogate_nonlinearity_test="etr_multivariate_surrogate_nonlinearity_test",
   validate_common_grid="etr_validate_common_grid",
   validate_simplex="etr_validate_simplex",
   validate_no_long_missing_runs="etr_validate_no_long_missing_runs",
@@ -413,7 +466,34 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
               api$python_name %in% integration_group_7_names,7L,
               ifelse(api$is_python_function &
                 api$python_name %in% integration_group_8_names,8L,NA_integer_))))))
-  composition_and_score_integration_names <- c("alr_transform","inverse_alr","component_trajectories",
+  # Quadrature weights are a tested native implementation, not only an
+  # exported mapping; include this source pilot in the implementation ledger.
+  # Baseline native R algorithms predate the later integration inventory.
+  # Each has an exported R implementation. This marks implementation
+  # started ONLY; it provides no Python source-contract certification.
+  baseline_native_names <- c(
+    "plot_recurrence", "recurrence_matrix", "rqa_metrics",
+    "cross_recurrence_matrix", "from_long_dataframe",
+    "validate_trajectory_set", "resample_to_grid",
+    "interpolate_short_gaps", "smooth_trajectories",
+    "fit_fpca", "fit_mfpca", "transform_fpca",
+    "reconstruct_fpca", "register_to_landmarks",
+    "fit_multilevel_fpca", "differentiate_trajectories",
+    "speed_function", "cumulative_path_length",
+    "functional_l2_distance", "fit_scalar_on_function_regression",
+    "split_conformal_fpca_anomaly", "plot_trajectory_overlay",
+    "plot_fpca_variance", "fit_sparse_fpca"
+  )
+  .etr_assert(length(baseline_native_names)==24L &&
+    !anyDuplicated(baseline_native_names) &&
+    all(baseline_native_names %in%
+      api$python_name[api$is_python_function]) &&
+    all(nzchar(unname(analogues[baseline_native_names]))),
+    "baseline native implementation inventory is inconsistent")
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name %in% baseline_native_names] <- 1L
+  composition_and_score_integration_names <- c("functional_trapezoid_weights",
+    "alr_transform","inverse_alr","component_trajectories",
     "select_n_components","fpca_score_frame","score_distance_matrix",
     "pairwise_functional_distances","sparse_dimension_summary",
     "warping_displacement","phase_summary","phase_trajectory_set",
@@ -718,8 +798,147 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     api$python_name %in% native_fpcr_slope_band_name] <- 57L
   api$native_implementation_stage[api$is_python_function &
     api$python_name=="capture_environment"] <- 58L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="generalized_function_on_scalar_predict"] <- 59L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="functional_mixed_effects_reporting_text"] <- 60L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="bootstrap_generalized_function_on_scalar_predictions"] <- 61L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="generalized_function_on_scalar_prediction_bands"] <- 62L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="generalized_function_on_scalar_mean_difference_band"] <- 63L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="evaluate_hierarchy_truth_recovery"] <- 64L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="evaluate_registration_recovery"] <- 65L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="generalized_function_on_scalar_simultaneous_bands"] <- 66L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="functional_mixed_effects_simultaneous_bands"] <- 67L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="evaluate_functional_mixed_effects_recovery"] <- 68L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="functional_mixed_effects_variance_decomposition"] <- 69L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="evaluate_fpca_recovery"] <- 70L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="evaluate_sparse_fpca_recovery"] <- 71L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="compare_functional_mixed_effects_bootstraps"] <- 72L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="evaluate_sparse_mfpca_recovery"] <- 73L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="fpca_regression_future_prediction_interval"] <- 74L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="cross_validate_fpca_regression"] <- 75L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="nested_cross_validate_fpca_regression"] <- 76L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="generate_multivariate_iaaft_surrogates"] <- 77L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="multivariate_surrogate_nonlinearity_test"] <- 78L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="export_portable_result"] <- 79L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="bootstrap_fpca_component_envelopes"] <- 80L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="run_fpca_workflow"] <- 81L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="run_function_on_scalar_workflow"] <- 82L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="bootstrap_fpca_regression_uncertainty"] <- 83L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="run_recurrence_workflow"] <- 84L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="simulate_functional_process"] <- 85L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="simulate_functional_scenario"] <- 86L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="run_functional_recovery_scenarios"] <- 87L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="plot_workflow_result"] <- 88L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="save_workflow_figure"] <- 89L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="fpca_wild_bootstrap_projection_family_test"] <- 90L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="run_functional_mixed_effects_workflow"] <- 91L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="run_sparse_fpca_workflow"] <- 92L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="fit_generalized_function_on_scalar_regression"] <- 93L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="run_generalized_functional_workflow"] <- 94L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="bootstrap_generalized_function_on_scalar_coefficients"] <- 95L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="export_workflow_bundle"] <- 96L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="wild_bootstrap_fpca_projection"] <- 97L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="scan_wild_bootstrap_fpca_truncations"] <- 98L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="functional_mixed_effects_covariance_sensitivity"] <- 99L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="bootstrap_functional_mixed_effects_coefficients"] <- 100L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="bootstrap_functional_mixed_effects_full_refit"] <- 101L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="to_skfda_grid"] <- 102L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="to_skfda_basis"] <- 103L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="detect_functional_outliers_skfda"] <- 104L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="to_fdapy_irregular"] <- 105L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="fit_sparse_fpca_fdapy"] <- 106L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="fit_elastic_fpca"] <- 107L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="fit_sparse_mfpca"] <- 108L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="run_sparse_mfpca_async_workflow"] <- 109L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="run_sparse_mfpca_workflow"] <- 110L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="run_sparse_multilevel_workflow"] <- 111L
+  api$native_implementation_stage[api$is_python_function &
+    api$python_name=="run_sparse_prediction_workflow"] <- 112L
   api$native_implementation_started <-
     !is.na(api$native_implementation_stage)
+  # A mapped R analogue may use a scientifically DIFFERENT estimator or
+  # optional backend. This non-parity flag is independent of source-gap
+  # row status and permanently blocks source certification until the
+  # implementation and review inventory are deliberately revised.
+  different_backend_or_estimand<-c(
+    "fit_elastic_fpca",
+    "fit_sparse_mfpca",
+    "run_sparse_mfpca_workflow",
+    "run_sparse_mfpca_async_workflow",
+    "run_sparse_multilevel_workflow",
+    "run_sparse_prediction_workflow",
+    "functional_mixed_effects_covariance_sensitivity",
+    "bootstrap_functional_mixed_effects_coefficients",
+    "bootstrap_functional_mixed_effects_full_refit",
+    "to_skfda_grid",
+    "to_skfda_basis",
+    "detect_functional_outliers_skfda",
+    "to_fdapy_irregular",
+    "fit_sparse_fpca_fdapy",
+    "fit_sparse_fpca",
+    "fit_functional_mixed_effects_regression",
+    "fit_multilevel_fpca",
+    "run_functional_mixed_effects_workflow",
+    "run_sparse_fpca_workflow"
+  )
+  .etr_assert(all(different_backend_or_estimand %in% names(analogues))&&
+    !anyDuplicated(different_backend_or_estimand),
+    "native scientific-alternative source registry is malformed")
+  api$native_backend_or_estimand_differs_from_python <-
+    api$is_python_function &
+    api$python_name %in% different_backend_or_estimand
   # TrajectorySet native representation covers key fields and with_values/subset
   # provenance behavior in R, but not all source class/schema contracts.
   api$native_representation_stage <- ifelse(
@@ -840,6 +1059,9 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
   api$one_to_one_native_contract_complete <- FALSE
   api$one_to_one_native_contract_complete[match(register$python_name,
     api$python_name)] <- pass
+  .etr_assert(!any(api$one_to_one_native_contract_complete &
+    api$native_backend_or_estimand_differs_from_python),
+    "scientifically different native estimator or backend cannot receive a full Python 1.2 source certificate")
   # The 508-symbol certificate includes 128 non-function exports.
   # Classes/constants have a separate FULL-domain schema/value and reviewer
   # evidence register. This never treats a class as an R callable mapping.
@@ -860,6 +1082,38 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     all(other$kind==api$kind[other_idx]) &&
     all(other$source_git_sha==api$source_git_sha[other_idx]),
     "non-function source-contract review inventory must match 128 frozen exports")
+  # Independently recorded nonfunction schema/method differences are
+  # distinct from the 203 callable-function source-gap records. Even an
+  # otherwise signed class cannot be FULL certified while these are open.
+  other_gap_path <- system.file("extdata",
+    "native_nonfunction_source_gaps_v1.csv",
+    package="eyetrajectories")
+  .etr_assert(nzchar(other_gap_path),
+    "missing native nonfunction source-difference registry")
+  other_gaps <- utils::read.csv(other_gap_path,
+    stringsAsFactors=FALSE,check.names=FALSE)
+  required_other_gap <- c("namespace","python_name",
+    "native_r_candidate","frozen_python_commit","gap_kind",
+    "known_source_difference","source_witness","required_resolution",
+    "unresolved")
+  gap_other_key <- paste(other_gaps$namespace,
+    other_gaps$python_name,sep="::")
+  matched_other_gap <- match(gap_other_key,other_key)
+  .etr_assert(identical(names(other_gaps),required_other_gap) &&
+    nrow(other_gaps)>=1L && !anyDuplicated(gap_other_key) &&
+    !anyNA(matched_other_gap) &&
+    is.logical(other_gaps$unresolved) &&
+    !anyNA(other_gaps$unresolved) &&
+    all(other_gaps$frozen_python_commit==
+      "c1cd95ad718327550f7e55393ff38582872f7a94") &&
+    all(vapply(other_gaps[required_other_gap[c(3L,5L,6L,7L,8L)]],
+      function(x)is.character(x)&&all(!is.na(x)&nzchar(x)),
+      logical(1L))),
+    "native nonfunction scientific source-gap register malformed")
+  other_gap_open <- rep(FALSE,nrow(other))
+  other_gap_open[matched_other_gap] <- other_gaps$unresolved
+  api$nonfunction_source_gap_unresolved <- rep(FALSE,nrow(api))
+  api$nonfunction_source_gap_unresolved[other_idx] <- other_gap_open
   other_approvals <- c("numerical_or_value_approved",
     "schema_boundary_approved","scientific_scope_approved",
     "independent_reviewer_approved")
@@ -868,6 +1122,11 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     "class/constant certification approvals must be explicit booleans")
   other_representation <- as.character(other$native_representation)
   other_representation[is.na(other_representation)] <- ""
+  # Native candidate mapping and full scientific certification are separate.
+  # One S3 candidate exists for TrajectorySet but its documented Python
+  # constructor/method differences remain open and fail the approval gate.
+  api$nonfunction_native_representation <- rep("",nrow(api))
+  api$nonfunction_native_representation[other_idx] <- other_representation
   other_links <- as.character(other$review_evidence)
   other_links[is.na(other_links)] <- ""
   # A full commit SHA in the review URL prevents an unpinned generic PR link
@@ -877,7 +1136,7 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     other_links)
   other_pass <- apply(other[other_approvals],1L,all) &
     other$evidence_state=="approved_and_reproducible" &
-    nzchar(other_representation) & reviewed_commit
+    nzchar(other_representation) & reviewed_commit & !other_gap_open
   api$contract_certification_candidate[other_idx] <-
     other$evidence_state!="not_reviewed"
   api$contract_certification_evidence_state[other_idx] <-

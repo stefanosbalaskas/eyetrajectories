@@ -21,6 +21,9 @@ test_that("maps Python portable-result loader only as a candidate", {
   expect_false(row$behavioral_schema_parity_pass)
   expect_false(row$independent_numeric_parity_pass)
   expect_equal(sum(!is.na(register$native_representation_stage)),7L)
+  expect_equal(sum(nzchar(register$nonfunction_native_representation)),32L)
+  expect_equal(sum(!nzchar(register$nonfunction_native_representation) &
+    !register$is_python_function),96L)
   expect_equal(sum(register$status==
      "class_or_constant_native_representation_not_reviewed"),121L)
   expect_true(all(!register$one_to_one_native_contract_complete))

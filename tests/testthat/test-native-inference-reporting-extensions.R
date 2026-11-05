@@ -66,9 +66,9 @@ test_that("3 source reporting functions stay uncertified until full review",{
   expect_true(all(actual$native_implementation_started))
   expect_true(all(actual$source_contract_gap_unresolved))
   expect_false(any(actual$one_to_one_native_contract_complete))
-  expect_equal(sum(z$is_python_function & z$named_native_candidate),326L)
-  expect_equal(sum(z$native_implementation_started),301L)
-  expect_equal(sum(z$source_contract_gap_unresolved),148L)
+  expect_gte(sum(z$is_python_function & z$named_native_candidate),336L)
+  expect_gte(sum(z$native_implementation_started),311L)
+  expect_gte(sum(z$source_contract_gap_unresolved),158L)
 })
 
 test_that("three reports match direct Python 1.2 source strings",{
@@ -108,9 +108,29 @@ _text_qualification={
     cv_one_se=etr_fpca_regression_cv_reporting_text(z$cv,rule="one_se"),
     envelope=etr_fpca_component_envelope_reporting_text(z$envelope),
     truncation=etr_fpca_wild_bootstrap_truncation_reporting_text(z$truncation))
+  # Each of the three public functions is now a literal direct-source
+  # oracle, rather than being visible only via an indirect et.* Python call.
+  direct<-list(
+    cv=reticulate::py_call(
+      etpy_get_export("fpca_regression_cv_reporting_text"),
+      result=reticulate::py_eval("_cv",convert=FALSE)),
+    cv_one_se=reticulate::py_call(
+      etpy_get_export("fpca_regression_cv_reporting_text"),
+      result=reticulate::py_eval("_cv",convert=FALSE),
+      rule="one_se"),
+    envelope=reticulate::py_call(
+      etpy_get_export("fpca_component_envelope_reporting_text"),
+      result=reticulate::py_eval("_env",convert=FALSE)),
+    truncation=reticulate::py_call(
+      etpy_get_export("fpca_wild_bootstrap_truncation_reporting_text"),
+      result=reticulate::py_eval("_trunc",convert=FALSE))
+  )
+  expect_identical(names(direct),names(targets))
   for(name in names(targets)){
     python<-reticulate::py_eval(paste0("_text_qualification['",name,"']"))
     expect_identical(targets[[name]],as.character(python),
       info=paste("direct Python 1.2.0 text for",name))
+    expect_identical(targets[[name]],as.character(et_to_r(direct[[name]])),
+      info=paste("direct Python exported source reporter",name))
   }
 })

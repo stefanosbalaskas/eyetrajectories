@@ -164,31 +164,39 @@ etr_match_fpca_components <- function(reference,candidate,
   .etr_assert(all(is.finite(sim)),
     "Component similarity is undefined for a zero-norm component")
   k<-nrow(sim)
-  .etr_assert(k<=12L,
-    "native exact assignment limited to 12 components; do not approximate")
-  # Exact dynamic programming over subsets. The SciPy source also solves a
-  # maximum-weight one-to-one assignment; ties need not match SciPy.
-  count<-as.integer(2^k)
-  best<-rep(-Inf,count);best[1L]<-0
-  paths<-vector("list",count);paths[[1L]]<-integer()
-  for(mask in 0:(count-1L)) {
-    idx<-mask+1L
-    if(!is.finite(best[idx]))next
-    row<-sum(as.integer(intToBits(mask)[seq_len(k)]))+1L
-    if(row>k)next
-    for(j in seq_len(k))if(bitwAnd(mask,bitwShiftL(1L,j-1L))==0L) {
-      nextmask<-bitwOr(mask,bitwShiftL(1L,j-1L))
-      score<-best[idx]+abs(sim[row,j])
-      dest<-nextmask+1L
-      if(score>best[dest]) {
-        best[dest]<-score
-        paths[[dest]]<-c(paths[[idx]],j-1L)
+  if(k>12L) {
+    # The exact Python source uses linear_sum_assignment(-abs(sim)).
+    # Retain the historical 2^k exact DP for <=12 components and use
+    # the exact cubic-time Hungarian algorithm for larger fitted bases.
+    # Subtracting from max(abs(sim)) preserves the source optimum
+    # while keeping all costs finite and non-negative.
+    cost<-max(abs(sim))-abs(sim)
+    assignment<-.etr_exact_assignment_hungarian(cost)
+  } else {
+    # Exact subset-DP for the historical small-domain native contract.
+    # SciPy and R may choose different assignments only on tied optima.
+    count<-as.integer(2^k)
+    best<-rep(-Inf,count);best[1L]<-0
+    paths<-vector("list",count);paths[[1L]]<-integer()
+    for(mask in 0:(count-1L)) {
+      idx<-mask+1L
+      if(!is.finite(best[idx]))next
+      row<-sum(as.integer(intToBits(mask)[seq_len(k)]))+1L
+      if(row>k)next
+      for(j in seq_len(k))if(bitwAnd(mask,bitwShiftL(1L,j-1L))==0L) {
+        nextmask<-bitwOr(mask,bitwShiftL(1L,j-1L))
+        score<-best[idx]+abs(sim[row,j])
+        dest<-nextmask+1L
+        if(score>best[dest]) {
+          best[dest]<-score
+          paths[[dest]]<-c(paths[[idx]],j-1L)
+        }
       }
     }
+    assignment<-as.integer(paths[[count]])
   }
-  assignment<-as.integer(paths[[count]])
   .etr_assert(length(assignment)==k && !anyDuplicated(assignment),
-    "Failed to solve component assignment")
+    "Failed to solve exact component assignment")
   signed<-sim[cbind(seq_len(k),assignment+1L)]
   list(assignments=assignment,signed_similarity=as.numeric(signed))
 }

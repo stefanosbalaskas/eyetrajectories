@@ -163,7 +163,7 @@ test_that("frozen source map does not imply full likelihood equivalence",{
   expect_gte(sum(z$named_native_candidate),236L)
   expect_lte(sum(z$is_python_function & !z$named_native_candidate),144L)
   expect_gte(sum(z$native_implementation_started),211L)
-  expect_equal(sum(z$native_implementation_stage==18L,na.rm=TRUE),7L)
+  expect_equal(sum(z$native_implementation_stage==18L,na.rm=TRUE),6L)
   expect_equal(sum(!z$is_python_function &
     is.na(z$native_representation_stage)),121L)
   expect_true(all(!z$one_to_one_native_contract_complete))

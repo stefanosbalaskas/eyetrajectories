@@ -100,6 +100,15 @@ test_that("windowed-RQA sensitivity reports exact source reuse and centers",{
   }
   expect_true(a$provenance$no_automatic_specification_selection)
   expect_false(a$provenance$interpolation_used_for_sensitivity_comparison)
+  expect_equal(a$provenance$requested_window_step_pairs,
+    list(c(5,2),c(7,3)))
+  expect_equal(a$provenance$resolved_window_step_samples,
+    list(c(5L,2L),c(7L,3L)))
+  expect_identical(a$provenance$source_provenance,x$provenance)
+  expect_match(a$provenance$profile_grid_spacing_interpretation,
+    "not an estimate of independent-information resolution")
+  expect_match(a$provenance$window_dependence_interpretation,
+    "serial dependence can remain")
   expect_error(etr_windowed_rqa_sensitivity(x,
     metrics="recurrence_rate",
     window_step_pairs=list(c(5L,2L),c(5L,2L)),radius=1),
@@ -111,7 +120,23 @@ test_that("windowed-RQA sensitivity reports exact source reuse and centers",{
   expect_error(etr_windowed_rqa_sensitivity(x,
     metrics="recurrence_rate",
     window_step_pairs=list(c(5L,2L)),radius=1,
-    target_recurrence_rate=.1),"fixed-radius")
+    target_recurrence_rate=.1),"exactly one")
+})
+
+test_that("RQA sensitivity checks radius-policy conflicts before metric admissibility",{
+  x<-.etr_test_functional_rqa_fixture()
+  pairs<-list(c(5L,2L))
+  expect_error(etr_windowed_rqa_sensitivity(x,
+    metrics="recurrence_rate",window_step_pairs=pairs,
+    radius=1,target_recurrence_rate=.1),
+    "supply exactly one of radius or target_recurrence_rate")
+  expect_error(etr_windowed_rqa_sensitivity(x,
+    metrics="recurrence_rate",window_step_pairs=pairs),
+    "supply exactly one of radius or target_recurrence_rate")
+  expect_error(etr_windowed_rqa_sensitivity(x,
+    metrics="recurrence_rate",window_step_pairs=pairs,
+    target_recurrence_rate=.1),
+    "recurrence_rate cannot be a functional outcome")
 })
 
 test_that("simultaneous RQA mean band uses whole independent units",{
@@ -131,6 +156,10 @@ test_that("simultaneous RQA mean band uses whole independent units",{
     band$functional_rqa$trajectories$time)
   expect_false(band$provenance$window_rows_resampled_as_independent)
   expect_true(band$provenance$whole_function_resampling_contract)
+  expect_identical(band$provenance$functional_rqa_provenance,
+    band$functional_rqa$provenance)
+  expect_identical(band$provenance$functional_mean_band_provenance,
+    band$band$provenance)
   same<-etr_windowed_rqa_functional_mean_band(x,
     metrics="recurrence_rate",window=5L,step=2L,
     unit="participant",participant_column="participant",
@@ -193,6 +222,342 @@ test_that("direct published Python 1.2 recovery registry oracle is opt-in",{
   local<-etr_functional_recovery_value_key(
     list(metric=list(name="mean_ise"),component=0L,source="participant"))
   expect_identical(as.character(et_to_r(py_key)),local)
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})
+
+
+test_that("pairwise RQA correlation uses frozen NumPy population-SD threshold",{
+  # The frozen Python source uses np.std(ddof=0) > machine epsilon.
+  # R's stats::sd(ddof=1) would erroneously permit this near-flat
+  # two-point pair; use the same source condition in our calculation.
+  x<-c(0,4e-16)
+  y<-c(0,6e-16)
+  eps<-.Machine$double.eps
+  expected_gate<-.etr_rqa_source_population_sd(x)>eps &&
+    .etr_rqa_source_population_sd(y)>eps
+  sample_gate<-stats::sd(x)>eps && stats::sd(y)>eps
+  expect_equal(.etr_rqa_source_population_sd(x),
+    sqrt(mean((x-mean(x))^2)),tolerance=0)
+  expect_false(expected_gate)
+  expect_true(sample_gate)
+  # Full pipeline correlation is exercised in the sensitivity source
+  # fixture above. Here the executable numeric gate is explicit.
+})
+
+
+test_that("native target-density sliding RQA uses source 48-step inclusive radius",{
+  x<-.etr_test_functional_rqa_fixture()
+  result<-etr_windowed_rqa(x,curve=1L,window=5L,step=2L,
+    target_recurrence_rate=.35)
+  expect_s3_class(result,"etr_windowed_rqa")
+  expect_equal(nrow(result$table),7L)
+  expect_true(all(result$table$radius>0))
+  expect_true(all(result$table$recurrence_rate>=0&
+    result$table$recurrence_rate<=1))
+  expect_identical(result$provenance$radius_policy,
+    "target_recurrence_rate")
+  expect_equal(result$provenance$target_recurrence_rate,.35)
+  expect_error(etr_windowed_rqa(x,window=5L,step=2L,
+    radius=1,target_recurrence_rate=.35),"exactly one")
+  expect_error(etr_windowed_rqa(x,window=5L,step=2L),
+    "exactly one")
+  expect_error(etr_windowed_rqa(x,window=5L,step=2L,
+    target_recurrence_rate=1),"strictly between")
+  expect_error(etr_windowed_rqa(x,window=5L,step=2L,
+    radius=0),"positive finite")
+  expect_error(etr_windowed_rqa_trajectory_set(x,
+    metrics="recurrence_rate",window=5L,step=2L,
+    target_recurrence_rate=.35),"cannot be a functional outcome")
+  y<-etr_windowed_rqa_trajectory_set(x,
+    metrics="max_diagonal_length",window=5L,step=2L,
+    target_recurrence_rate=.35)
+  expect_identical(dim(y$trajectories$values),c(4L,7L,1L))
+  expect_true(all(is.finite(y$trajectories$values)))
+  z<-etr_windowed_rqa_sensitivity(x,
+    metrics="max_diagonal_length",window_step_pairs=list(
+      c(5L,2L),c(7L,3L)),target_recurrence_rate=.35)
+  expect_identical(nrow(z$design_table),2L)
+  expect_true(all(z$design_table$n_windows>=4L))
+})
+
+test_that("direct frozen Python 1.2 target-rate RQA radius and achieved density agree",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Frozen Python target-rate RQA oracle is opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  x<-.etr_test_functional_rqa_fixture()
+  ctor<-etpy_get_export("TrajectorySet")
+  pyx<-reticulate::py_call(ctor,
+    time=reticulate::r_to_py(x$time),
+    values=reticulate::r_to_py(x$values),
+    curve_ids=as.list(x$curve_ids),
+    dimension_names=as.list(x$dimension_names),
+    coordinate_system="arbitrary",time_unit="s")
+  for(metric in c("euclidean","cityblock","chebyshev")){
+    for(target in c(.2,.35,.65)){
+      native<-etr_windowed_rqa(x,curve=1L,window=5L,step=2L,
+        metric=metric,target_recurrence_rate=target)
+      source<-reticulate::py_call(
+        etpy_get_export("windowed_rqa"),
+        trajectories=pyx,curve=as.integer(0L),window=as.integer(5L),
+        step=as.integer(2L),target_recurrence_rate=target,
+        metric=metric,dimensions=as.list(x$dimension_names))
+      table<-as.data.frame(et_to_r(
+        reticulate::py_get_attr(source,"table")))
+      expect_equal(native$table$radius,as.numeric(table$radius),
+        tolerance=1e-9,info=paste("radius",metric,target))
+      expect_equal(native$table$recurrence_rate,
+        as.numeric(table$recurrence_rate),tolerance=1e-12,
+        info=paste("density",metric,target))
+    }
+  }
+  # The same source radius policy must propagate through the full
+  # functional sensitivity workflow, not only the base sliding-window API.
+  native_sensitivity<-etr_windowed_rqa_sensitivity(x,
+    metrics="max_diagonal_length",window_step_pairs=list(
+      c(5L,2L),c(7L,3L)),target_recurrence_rate=.35)
+  python_sensitivity<-reticulate::py_call(
+    etpy_get_export("windowed_rqa_sensitivity"),
+    trajectories=pyx,metrics=as.list("max_diagonal_length"),
+    window_step_pairs=reticulate::r_to_py(list(
+      as.list(c(5L,2L)),as.list(c(7L,3L)))),
+    target_recurrence_rate=.35,dimensions=as.list(x$dimension_names))
+  design<-as.data.frame(et_to_r(
+    reticulate::py_get_attr(python_sensitivity,"design_table")))
+  expect_equal(native_sensitivity$design_table$window_samples,
+    as.integer(design$window_samples))
+  expect_equal(native_sensitivity$design_table$step_samples,
+    as.integer(design$step_samples))
+  expect_equal(native_sensitivity$design_table$overlap_fraction,
+    as.numeric(design$overlap_fraction),tolerance=1e-12)
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})
+
+
+test_that("source sensitivity supports fractional physical-time windows and selected states",{
+  time<-seq(0,by=.01,length.out=18L)
+  vals<-array(0,c(4L,length(time),2L))
+  for(i in 1:4){
+    vals[i,,1L]<-sin((0:17)/3+i/5)+.05*(0:17)
+    vals[i,,2L]<-cos((0:17)/5+i/4)
+  }
+  x<-etr_trajectory_set(time,vals,paste0("curve_",1:4),c("x","y"),
+    coordinate_system="arbitrary",time_unit="s")
+  pairs<-list(c(.05,.02),c(.07,.03))
+  a<-etr_windowed_rqa_sensitivity(x,metrics="recurrence_rate",
+    window_step_pairs=pairs,window_units="s",step_units="s",
+    radius=1,dimensions="x")
+  expect_identical(a$design_table$window_samples,c(5L,7L))
+  expect_identical(a$design_table$step_samples,c(2L,3L))
+  expect_equal(a$design_table$requested_window,c(.05,.07))
+  expect_equal(a$design_table$requested_step,c(.02,.03))
+  expect_equal(a$provenance$requested_window_step_pairs,pairs,
+    tolerance=1e-12)
+  expect_equal(nrow(a$summary_table),8L)
+  expect_equal(nrow(a$pairwise_table),4L)
+  expect_true(all(a$design_table$n_analyzed_source_samples>0L))
+  expect_true(all(a$design_table$overlap_fraction>0))
+  expect_error(etr_windowed_rqa_sensitivity(x,
+    metrics="recurrence_rate",window_step_pairs=list(c(5.5,2)),
+    radius=1,dimensions="x"),"integer sample counts")
+  expect_error(etr_windowed_rqa_sensitivity(x,
+    metrics="recurrence_rate",window_step_pairs=list(c(.055,.02)),
+    window_units="s",step_units="s",radius=1,dimensions="x"),
+    "integer multiple")
+  missing<-x
+  missing$values[2L,3L,2L]<-NA_real_
+  selected<-etr_windowed_rqa_sensitivity(missing,
+    metrics="recurrence_rate",window_step_pairs=pairs,
+    window_units="s",step_units="s",radius=1,dimensions="x")
+  expect_equal(selected$design_table,a$design_table,tolerance=0)
+  expect_equal(selected$summary_table,a$summary_table,tolerance=0)
+  expect_equal(selected$pairwise_table,a$pairwise_table,tolerance=0)
+  missing$values[2L,3L,1L]<-NA_real_
+  expect_error(etr_windowed_rqa_sensitivity(missing,
+    metrics="recurrence_rate",window_step_pairs=pairs,
+    window_units="s",step_units="s",radius=1,dimensions="x"),
+    "complete finite selected")
+})
+
+test_that("frozen Python sensitivity physical-time numeric tables agree with native R",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Frozen Python 1.2 physical-time sensitivity source oracle opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  time<-seq(0,by=.01,length.out=18L)
+  vals<-array(0,c(4L,length(time),2L))
+  for(i in 1:4){
+    vals[i,,1L]<-sin((0:17)/3+i/5)+.05*(0:17)
+    vals[i,,2L]<-cos((0:17)/5+i/4)
+  }
+  x<-etr_trajectory_set(time,vals,paste0("curve_",1:4),c("x","y"),
+    coordinate_system="arbitrary",time_unit="s")
+  pyx<-reticulate::py_call(etpy_get_export("TrajectorySet"),
+    time=reticulate::r_to_py(time),values=reticulate::r_to_py(vals),
+    curve_ids=as.list(x$curve_ids),
+    dimension_names=as.list(x$dimension_names),
+    coordinate_system="arbitrary",time_unit="s")
+  pairs<-list(c(.05,.02),c(.07,.03))
+  for(metric in c("euclidean","cityblock","chebyshev")){
+    native<-etr_windowed_rqa_sensitivity(x,
+      metrics="recurrence_rate",window_step_pairs=pairs,
+      window_units="s",step_units="s",metric=metric,
+      radius=1,dimensions="x")
+    source<-reticulate::py_call(
+      etpy_get_export("windowed_rqa_sensitivity"),
+      trajectories=pyx,metrics=as.list("recurrence_rate"),
+      window_step_pairs=reticulate::r_to_py(list(
+        as.list(c(.05,.02)),as.list(c(.07,.03)))),
+      window_units="s",step_units="s",metric=metric,
+      radius=1,dimensions=as.list("x"))
+    table_names<-c("design_table","summary_table","pairwise_table")
+    for(which in table_names){
+      ours<-native[[which]]
+      other<-as.data.frame(et_to_r(
+        reticulate::py_get_attr(source,which)))
+      expect_identical(names(ours),names(other),
+        info=paste(metric,which,"schema"))
+      expect_identical(nrow(ours),nrow(other),
+        info=paste(metric,which,"rows"))
+      for(column in names(ours)){
+        if(is.numeric(ours[[column]])){
+          a<-as.numeric(ours[[column]])
+          b<-as.numeric(other[[column]])
+          expect_identical(is.na(a),is.na(b),
+            info=paste(metric,which,column,"undefined"))
+          if(any(is.finite(b)))
+            expect_equal(a[is.finite(b)],b[is.finite(b)],
+              tolerance=1e-9,info=paste(metric,which,column))
+        } else {
+          expect_equal(as.character(ours[[column]]),
+            as.character(other[[column]]),
+            info=paste(metric,which,column))
+        }
+      }
+    }
+  }
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})
+
+
+.etr_test_source_mean_band_fixture <- function(){
+  time<-as.numeric(0:17)
+  n<-6L
+  values<-array(0,c(n,length(time),1L))
+  for(i in seq_len(n))
+    values[i,,1L]<-sin(time/3+i/5)+.08*time+
+      .22*cos(time/4+i/3)+i*time/80
+  meta<-data.frame(participant=c("p1","p1","p1","p2","p2","p3"),
+    stringsAsFactors=FALSE)
+  etr_trajectory_set(time,values,paste0("curve_",1:6),"x",
+    metadata=meta,coordinate_system="arbitrary",time_unit="s",
+    provenance=list(origin="mean_band_independent_unit_contract"))
+}
+
+test_that("functional RQA mean band preserves source equal-weight independent-unit estimand",{
+  x<-.etr_test_source_mean_band_fixture()
+  for(unit in c("curve","participant")){
+    participant<-if(unit=="participant")"participant" else NULL
+    z<-etr_windowed_rqa_functional_mean_band(
+      x,metrics="recurrence_rate",window=5L,step=2L,
+      radius=.75,unit=unit,participant_column=participant,
+      n_multiplier=100L,random_state=123L)
+    expect_s3_class(z$band,"etr_functional_mean_band")
+    expect_identical(z$provenance$participant_column,participant)
+    expect_identical(z$provenance$resampling_unit,unit)
+    fp<-z$band$provenance$functional_mean_band
+    expect_identical(fp$unit,unit)
+    expect_identical(fp$participant_column,participant)
+    expect_identical(fp$random_state,123L)
+    expect_identical(fp$n_multiplier,100L)
+    expect_identical(fp$random_engine,"base_R_not_NumPy")
+    expect_equal(fp$n_units,length(z$band$unit_ids))
+    expect_equal(fp$curves_per_unit,z$band$curves_per_unit)
+    expect_identical(fp$estimand,if(unit=="participant")
+      "equal_weight_mean_of_participant_mean_trajectories"
+      else "equal_weight_curve_mean")
+    expect_identical(z$band$provenance$operation,
+      "windowed_rqa_trajectory_set")
+    expect_identical(z$band$provenance$source_provenance$origin,
+      "mean_band_independent_unit_contract")
+    expect_equal(z$band$lower,z$band$mean-
+      z$band$critical_value*z$band$pointwise_se,tolerance=1e-12)
+    expect_equal(z$band$upper,z$band$mean+
+      z$band$critical_value*z$band$pointwise_se,tolerance=1e-12)
+    expect_equal(z$band$critical_value,
+      .etr_bootstrap_upper_tail(z$band$max_statistics,.95),
+      tolerance=0)
+  }
+  curve<-etr_windowed_rqa_functional_mean_band(
+    x,metrics="recurrence_rate",window=5L,step=2L,
+    radius=.75,unit="curve",n_multiplier=100L,random_state=123L)
+  grouped<-etr_windowed_rqa_functional_mean_band(
+    x,metrics="recurrence_rate",window=5L,step=2L,
+    radius=.75,unit="participant",participant_column="participant",
+    n_multiplier=100L,random_state=123L)
+  expect_identical(grouped$band$unit_ids,c("p1","p2","p3"))
+  expect_equal(grouped$band$curves_per_unit,c(3L,2L,1L))
+  expect_identical(curve$band$unit_ids,x$curve_ids)
+  expect_true(any(abs(curve$band$mean-grouped$band$mean)>1e-9))
+})
+
+
+test_that("frozen Python 1.2 functional RQA band deterministic moments agree",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Published Python 1.2 functional RQA mean-band source oracle opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  x<-.etr_test_source_mean_band_fixture()
+  pandas<-reticulate::import("pandas",convert=FALSE)
+  py_meta<-pandas$DataFrame(reticulate::r_to_py(list(
+    participant=as.list(x$metadata$participant))))
+  pyx<-reticulate::py_call(etpy_get_export("TrajectorySet"),
+    time=reticulate::r_to_py(x$time),
+    values=reticulate::r_to_py(x$values),
+    curve_ids=as.list(x$curve_ids),
+    dimension_names=as.list(x$dimension_names),
+    coordinate_system="arbitrary",time_unit="s",
+    metadata=py_meta)
+  for(unit in c("curve","participant")){
+    participant<-if(unit=="participant")"participant" else NULL
+    native<-etr_windowed_rqa_functional_mean_band(
+      x,metrics="recurrence_rate",window=5L,step=2L,
+      radius=.75,unit=unit,participant_column=participant,
+      n_multiplier=100L,random_state=123L)
+    source<-reticulate::py_call(
+      etpy_get_export("windowed_rqa_functional_mean_band"),
+      trajectories=pyx,metrics=as.list("recurrence_rate"),
+      window=as.integer(5L),step=as.integer(2L),
+      radius=.75,unit=unit,participant_column=participant,
+      dimensions=as.list(x$dimension_names),
+      n_multiplier=as.integer(100L),random_state=as.integer(123L))
+    original<-source$band
+    for(field in c("mean","pointwise_se")){
+      expect_equal(unname(native$band[[field]]),
+        unname(et_to_r(reticulate::py_get_attr(original,field))),
+        tolerance=1e-10,info=paste(unit,field))
+    }
+    expect_equal(native$band$time,
+      as.numeric(et_to_r(original$time)),tolerance=0)
+    expect_equal(native$band$unit_ids,
+      as.character(et_to_r(original$unit_ids)),tolerance=0)
+    py_provenance<-et_to_r(reticulate::py_get_attr(original,"provenance"))
+    expect_equal(native$band$curves_per_unit,
+      as.integer(unlist(py_provenance$functional_mean_band$
+        curves_per_unit)),tolerance=0)
+    expect_equal(native$functional_rqa$trajectories$values,
+      et_to_r(source$functional_rqa$trajectories$values),tolerance=1e-10)
+    expect_identical(native$provenance$participant_column,participant)
+    expect_identical(native$band$provenance$functional_mean_band$estimand,
+      as.character(py_provenance$functional_mean_band$estimand))
+    expect_identical(native$band$provenance$functional_mean_band$
+      random_engine,"base_R_not_NumPy")
+    expect_true(all(is.finite(native$band$max_statistics)))
+    expect_true(all(is.finite(et_to_r(original$max_statistics))))
+    # The Gaussian multiplier RNG differs by language. The deterministic
+    # mean and standard-error estimand must agree; realized bootstrap
+    # quantiles need scientific distributional assessment, not false equality.
+  }
   expect_false(any(etr_native_parity_catalog()$
     one_to_one_native_contract_complete))
 })

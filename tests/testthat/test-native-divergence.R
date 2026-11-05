@@ -32,7 +32,82 @@ test_that("multichannel delay embedding preserves exact source order",{
   expect_error(etr_delay_embed_trajectory(x,3L,2L,dimensions=NULL),
     "dimensions must be explicit")
   expect_error(etr_delay_embed_trajectory(x,2L,2L,
-    delay_units="ms",dimensions="x"),"not yet qualified")
+    delay_units="ms",dimensions="x"),"integer multiple")
+  physical<-etr_delay_embed_trajectory(x,embedding_dimension=3L,
+    delay=100,delay_units="ms",dimensions=c("y","x"))
+  expect_identical(physical$values,e$values)
+  expect_identical(physical$delay_samples,2L)
+})
+
+test_that("native Rosenstein and Kantz accept source time-unit horizons",{
+  x<-.etr_divergence_test_fixture()
+  e<-etr_delay_embed_trajectory(x,2L,100,
+    delay_units="ms",dimensions=c("x","y"))
+  ro<-etr_local_divergence_curve(e,curve="c01",
+    theiler_window=150,max_horizon=400,
+    theiler_window_units="ms",max_horizon_units="ms")
+  rs<-etr_local_divergence_curve(e,curve="c01",
+    theiler_window=3L,max_horizon=8L)
+  expect_identical(ro$theiler_window_samples,3L)
+  expect_identical(ro$max_horizon_samples,8L)
+  expect_identical(ro$nearest_neighbor_indices,
+    rs$nearest_neighbor_indices)
+  expect_equal(ro$mean_log_divergence,rs$mean_log_divergence,tolerance=0)
+  ka<-etr_kantz_divergence_curve(e,"c01",radius=3,
+    theiler_window=.15,max_horizon=.4,min_neighbors=2L,
+    theiler_window_units="s",max_horizon_units="s")
+  ks<-etr_kantz_divergence_curve(e,"c01",radius=3,
+    theiler_window=3L,max_horizon=8L,min_neighbors=2L)
+  expect_equal(ka$mean_log_divergence,ks$mean_log_divergence,tolerance=0)
+  expect_identical(ka$theiler_window_samples,3L)
+  expect_identical(ka$max_horizon_samples,8L)
+  expect_error(etr_local_divergence_curve(e,"c01",
+    theiler_window=3L,max_horizon=.075,
+    max_horizon_units="s"),"integer multiple")
+})
+
+test_that("frozen Python 1.2 time-unit divergence numerical oracle",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Frozen Python temporal Rosenstein/Kantz oracle is opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  x<-.etr_divergence_test_fixture()
+  pyx<-reticulate::py_call(etpy_get_export("TrajectorySet"),
+    time=reticulate::r_to_py(x$time),
+    values=reticulate::r_to_py(x$values),
+    curve_ids=as.list(x$curve_ids),
+    dimension_names=as.list(x$dimension_names),
+    coordinate_system="normalized",time_unit="s")
+  pye<-reticulate::py_call(etpy_get_export("delay_embed_trajectory"),
+    trajectories=pyx,embedding_dimension=2L,
+    delay=100L,delay_units="ms",
+    dimensions=as.list(c("x","y")))
+  e<-etr_delay_embed_trajectory(x,2L,100,
+    delay_units="ms",dimensions=c("x","y"))
+  expect_equal(unname(e$values),unname(et_to_r(pye$values)),
+    tolerance=1e-12)
+  pyr<-reticulate::py_call(etpy_get_export("local_divergence_curve"),
+    embedding=pye,curve="c01",theiler_window=150L,
+    max_horizon=400L,theiler_window_units="ms",
+    max_horizon_units="ms")
+  nr<-etr_local_divergence_curve(e,"c01",150,400,
+    theiler_window_units="ms",max_horizon_units="ms")
+  expect_identical(nr$theiler_window_samples,
+    as.integer(reticulate::py_to_r(pyr$theiler_window_samples)))
+  expect_equal(nr$mean_log_divergence,
+    as.numeric(et_to_r(pyr$mean_log_divergence)),tolerance=1e-9)
+  expect_identical(nr$pair_counts,
+    as.integer(et_to_r(pyr$pair_counts)))
+  pyk<-reticulate::py_call(etpy_get_export("kantz_divergence_curve"),
+    embedding=pye,curve="c01",radius=3,
+    theiler_window=150L,max_horizon=400L,min_neighbors=2L,
+    theiler_window_units="ms",max_horizon_units="ms")
+  nk<-etr_kantz_divergence_curve(e,"c01",radius=3,
+    theiler_window=150,max_horizon=400,min_neighbors=2L,
+    theiler_window_units="ms",max_horizon_units="ms")
+  expect_equal(nk$mean_log_divergence,
+    as.numeric(et_to_r(pyk$mean_log_divergence)),tolerance=1e-9)
+  expect_equal(nk$reference_counts,
+    as.integer(et_to_r(pyk$reference_counts)))
 })
 
 test_that("Rosenstein local divergence tracks all eligible forward pairs",{

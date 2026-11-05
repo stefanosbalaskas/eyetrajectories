@@ -94,7 +94,11 @@ test_that("radius profiles count empirical CDF exactly without choosing a radius
   expect_error(etr_recurrence_radius_profile(x,radii=c(1,2),
                metric="unknown"),"metric")
   expect_error(etr_recurrence_radius_profile(x,radii=c(1,2),
-               theiler_window_units="time"),"not yet supported")
+               theiler_window_units="time"),"cannot be converted")
+  physical<-etr_recurrence_radius_profile(x,"A",c(.5,1,1.5,3),
+    theiler_window=1,theiler_window_units="s")
+  expect_identical(physical$theiler_window_samples,1L)
+  expect_equal(physical$table,p$table,tolerance=0)
 })
 
 test_that("windowed RQA accounts for non-independent overlapping windows",{
@@ -114,9 +118,12 @@ test_that("windowed RQA accounts for non-independent overlapping windows",{
   expect_equal(w$dropped_tail_samples,0L)
   expect_error(etr_windowed_rqa(x,window=4,step=5,radius=1),
                "step")
+  # Frozen Python 1.2 requires exactly one of fixed radius or
+  # target_recurrence_rate; this formerly tested an R-only fixed-radius
+  # restriction, which Batch C intentionally removed.
   expect_error(etr_windowed_rqa(x,window=3,step=1,
                radius=1,target_recurrence_rate=.05),
-               "fixed-radius")
+               "supply exactly one of radius or target_recurrence_rate")
   f<-etr_windowed_rqa_trajectory_set(x,c("recurrence_rate","determinism"),
     window=6L,step=2L,radius=1.1,undefined_policy="keep")
   expect_s3_class(f,"etr_windowed_rqa_functional")
@@ -266,4 +273,201 @@ test_that("Python 1.2 independent recurrence network, joint and radius oracles a
     "functional-window RQA")
   expect_equal(functional$overlap_fraction,
     as.numeric(et_to_r(pfunctional$overlap_fraction)))
+})
+
+
+test_that("source-selected windowed RQA ignores unrelated missing channels",{
+  t<-as.numeric(0:17)
+  values<-array(0,c(2L,length(t),2L))
+  for(i in seq_len(2L)){
+    values[i,,1L]<-sin(t/3+i/4)+.08*t
+    values[i,,2L]<-cos(t/4+i/3)
+  }
+  x<-etr_trajectory_set(t,values,c("A","B"),c("x","y"),
+    coordinate_system="arbitrary",time_unit="s",
+    provenance=list(origin="selected_window_input"))
+  missing<-x
+  missing$values[1L,2L,2L]<-NA_real_
+  missing$values[2L,4L,2L]<-NA_real_
+  baseline<-etr_windowed_rqa(x,curve="A",window=6L,step=3L,
+    radius=1.2,dimensions="x")
+  selected<-etr_windowed_rqa(missing,curve="A",window=6L,
+    step=3L,radius=1.2,dimensions="x")
+  expect_equal(selected$table,baseline$table,tolerance=0)
+  expect_identical(selected$provenance$source_provenance,x$provenance)
+  expect_identical(selected$provenance$window_samples,6L)
+  expect_identical(selected$provenance$step_samples,3L)
+  expect_identical(selected$provenance$dropped_tail_samples,
+    selected$dropped_tail_samples)
+  target<-etr_windowed_rqa(missing,curve="A",window=6L,step=3L,
+    target_recurrence_rate=.35,dimensions="x")
+  expected_target<-etr_windowed_rqa(x,curve="A",window=6L,step=3L,
+    target_recurrence_rate=.35,dimensions="x")
+  expect_equal(target$table,expected_target$table,tolerance=0)
+  functional<-etr_windowed_rqa_trajectory_set(missing,
+    metrics="recurrence_rate",window=6L,step=3L,
+    radius=1.2,dimensions="x")
+  full<-etr_windowed_rqa_trajectory_set(x,
+    metrics="recurrence_rate",window=6L,step=3L,
+    radius=1.2,dimensions="x")
+  expect_equal(functional$trajectories$values,
+    full$trajectories$values,tolerance=0)
+  provenance<-functional$trajectories$provenance
+  expect_identical(provenance$source_provenance,x$provenance)
+  expect_identical(provenance$source_dimension_names,"x")
+  expect_identical(provenance$metric_units$recurrence_rate,"proportion")
+  expect_false(provenance$window_rows_are_independent)
+  expect_identical(provenance$radius_policy,"fixed")
+  expect_identical(provenance$dropped_tail_samples,
+    functional$dropped_tail_samples)
+  expect_error(etr_windowed_rqa(missing,curve="A",window=6L,
+    step=3L,radius=1.2,dimensions="y"),"complete finite selected")
+  expect_error(etr_windowed_rqa_trajectory_set(missing,
+    metrics="recurrence_rate",window=6L,step=3L,
+    radius=1.2,dimensions="y"),"complete finite selected")
+})
+
+
+test_that("frozen Python 1.2 windowed and functional RQA match selected source channels",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Published Python 1.2 windowed RQA selected-channel oracle opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  t<-as.numeric(0:17)
+  values<-array(0,c(2L,length(t),2L))
+  for(i in seq_len(2L)){
+    values[i,,1L]<-sin(t/3+i/4)+.08*t
+    values[i,,2L]<-cos(t/4+i/3)
+  }
+  x<-etr_trajectory_set(t,values,c("A","B"),c("x","y"),
+    coordinate_system="arbitrary",time_unit="s",
+    provenance=list(origin="window_source_direct"))
+  px<-reticulate::py_call(etpy_get_export("TrajectorySet"),
+    time=reticulate::r_to_py(x$time),
+    values=reticulate::r_to_py(x$values),
+    curve_ids=as.list(x$curve_ids),
+    dimension_names=as.list(x$dimension_names),
+    coordinate_system="arbitrary",time_unit="s")
+  for(metric in c("cityblock","euclidean","chebyshev")){
+    native<-etr_windowed_rqa(x,curve="A",window=6L,step=3L,
+      radius=1.2,metric=metric,dimensions="x")
+    py<-reticulate::py_call(etpy_get_export("windowed_rqa"),
+      trajectories=px,curve="A",window=as.integer(6L),
+      step=as.integer(3L),radius=1.2,metric=metric,
+      dimensions=as.list("x"))
+    source_table<-as.data.frame(et_to_r(
+      reticulate::py_get_attr(py,"table")))
+    for(column in c("start_index","stop_index","start_time",
+      "end_time","center_time","radius","recurrence_rate",
+      "determinism","mean_diagonal_length","max_diagonal_length",
+      "diagonal_entropy","laminarity","trapping_time",
+      "max_vertical_length","center_of_recurrence_mass")){
+      a<-as.numeric(native$table[[column]])
+      b<-as.numeric(source_table[[column]])
+      expect_identical(is.na(a),is.na(b),info=paste(metric,column))
+      if(any(is.finite(b)))
+        expect_equal(a[is.finite(b)],b[is.finite(b)],
+          tolerance=1e-10,info=paste(metric,column))
+    }
+  }
+  native_functional<-etr_windowed_rqa_trajectory_set(x,
+    metrics="recurrence_rate",window=6L,step=3L,
+    radius=1.2,dimensions="x")
+  source_functional<-reticulate::py_call(
+    etpy_get_export("windowed_rqa_trajectory_set"),
+    trajectories=px,metrics=as.list("recurrence_rate"),
+    window=as.integer(6L),step=as.integer(3L),
+    radius=1.2,dimensions=as.list("x"))
+  expect_equal(native_functional$trajectories$values,
+    et_to_r(source_functional$trajectories$values),tolerance=1e-10)
+  expect_equal(native_functional$trajectories$time,
+    as.numeric(et_to_r(source_functional$trajectories$time)),
+    tolerance=0)
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})
+
+
+test_that("native recurrence networks support 900 nodes with exact path and triangle components",{
+  n_groups<-300L
+  positions<-rep(10*seq.int(0L,n_groups-1L),each=3L)+
+    rep(c(0,.1,.2),n_groups)
+  t<-as.numeric(seq_along(positions)-1L)
+  x<-etr_trajectory_set(t,array(positions,dim=c(1L,length(t),1L)),
+    curve_ids="A",dimension_names="x",
+    coordinate_system="arbitrary",time_unit="s")
+  for(radius in c(.15,.25)){
+    rec<-etr_recurrence_matrix(x,curve="A",radius=radius)
+    network<-etr_recurrence_network(rec)
+    expect_s3_class(network,"etr_recurrence_network")
+    expect_identical(network$n_nodes,900L)
+    expect_identical(network$n_connected_components,300L)
+    expect_identical(network$component_sizes,rep(3L,300L))
+    expect_identical(network$component_labels,
+      rep(seq.int(0L,299L),each=3L))
+    expected_triangles<-if(radius>.2)300L else 0L
+    expected_edges<-if(radius>.2)900L else 600L
+    expect_identical(network$edge_count,expected_edges)
+    expect_equal(network$triangles,expected_triangles,tolerance=0)
+    expect_equal(network$transitivity,
+      if(radius>.2)1 else 0,tolerance=0)
+    expect_identical(network$provenance$triangle_count_method,
+      "forward_neighbor_intersections")
+    expect_identical(network$provenance$connected_components_method,
+      "queue_head_breadth_first_search")
+    expect_equal(network$isolated_node_fraction,0,tolerance=0)
+    expect_identical(nrow(etr_recurrence_network_node_frame(network)),900L)
+    expect_identical(nrow(etr_recurrence_network_summary_frame(network)),1L)
+  }
+})
+
+test_that("frozen Python 1.2 graph topology agrees beyond former 750-node R bound",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Frozen Python 1.2 large recurrence network graph oracle opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  n_groups<-300L
+  positions<-rep(10*seq.int(0L,n_groups-1L),each=3L)+
+    rep(c(0,.1,.2),n_groups)
+  t<-as.numeric(seq_along(positions)-1L)
+  vals<-array(positions,dim=c(1L,length(t),1L))
+  x<-etr_trajectory_set(t,vals,"A","x",
+    coordinate_system="arbitrary",time_unit="s")
+  px<-reticulate::py_call(etpy_get_export("TrajectorySet"),
+    time=reticulate::r_to_py(t),values=reticulate::r_to_py(vals),
+    curve_ids=as.list("A"),dimension_names=as.list("x"),
+    coordinate_system="arbitrary",time_unit="s")
+  for(radius in c(.15,.25)){
+    native<-etr_recurrence_network(
+      etr_recurrence_matrix(x,curve="A",radius=radius))
+    py_rec<-reticulate::py_call(etpy_get_export("recurrence_matrix"),
+      source=px,curve="A",radius=radius,dimensions=as.list("x"))
+    py<-reticulate::py_call(etpy_get_export("recurrence_network"),
+      recurrence=py_rec)
+    for(field in c("degree","normalized_degree","local_clustering",
+      "component_labels","component_sizes","edge_count",
+      "graph_density","transitivity","mean_local_clustering",
+      "n_connected_components","largest_component_fraction",
+      "isolated_node_fraction")){
+      expected<-et_to_r(reticulate::py_get_attr(py,field))
+      actual<-native[[field]]
+      expect_equal(as.numeric(actual),as.numeric(expected),
+        tolerance=1e-12,info=paste(field,"radius",radius))
+    }
+    expect_equal(unname(native$adjacency),
+      unname(et_to_r(py$adjacency$toarray())),tolerance=0)
+    for(framename in c("recurrence_network_node_frame",
+      "recurrence_network_summary_frame")){
+      own<-if(identical(framename,"recurrence_network_node_frame"))
+        etr_recurrence_network_node_frame(native)
+        else etr_recurrence_network_summary_frame(native)
+      pyframe<-reticulate::py_call(etpy_get_export(framename),result=py)
+      other<-as.data.frame(et_to_r(pyframe))
+      expect_identical(names(own),names(other),info=framename)
+      expect_identical(nrow(own),nrow(other),info=framename)
+      for(col in names(own))
+        expect_equal(as.numeric(own[[col]]),as.numeric(other[[col]]),
+          tolerance=1e-12,info=paste(framename,col))
+    }
+  }
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
 })

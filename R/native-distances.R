@@ -25,13 +25,67 @@
 #' @param b Points-by-channels numeric matrix of same shape.
 #' @param time Shared increasing time grid.
 #' @param dimension_weights Optional dimension weights (non-negative).
+#' @param python_boundary_mode Opt in to the frozen Python 1.2
+#'   np.asarray(dtype=float) coercion of numeric-string, Boolean and
+#'   complex two-dimensional point matrices, using only their real parts,
+#'   and compatible one-dimensional dimension weights. Source mode permits
+#'   infinity and source NaN arithmetic where Python does, but rejects NaN
+#'   in the input point matrices. The default native validation remains
+#'   strict and finite. Arbitrary Python objects remain unsupported.
 #' @export
-etr_l2_distance <- function(a, b, time, dimension_weights = NULL) {
-  a <- .etr_points(a, "a"); b <- .etr_points(b, "b")
+etr_l2_distance <- function(a, b, time, dimension_weights = NULL,
+                            python_boundary_mode = FALSE) {
+  .etr_assert(is.logical(python_boundary_mode) &&
+    length(python_boundary_mode)==1L && !is.na(python_boundary_mode),
+    "python_boundary_mode must be a nonmissing logical scalar")
+  if(isTRUE(python_boundary_mode)) {
+    # Python analysis.py::functional_l2_distance applies np.asarray to
+    # both arguments before validating shape and missing data.
+    coerce_states <- function(z,label){
+      .etr_assert(is.matrix(z) && nrow(z)>=1L && ncol(z)>=0L &&
+        (is.numeric(z)||is.character(z)||is.logical(z)||
+          is.complex(z)),
+        paste(label,"must be a 2D numeric-compatible state matrix"))
+      converted<-suppressWarnings(as.numeric(z))
+      .etr_assert(length(converted)==length(z) &&
+        all(!is.na(converted)),
+        paste(label,"must contain numeric-compatible states without NaN"))
+      matrix(converted,nrow=nrow(z),ncol=ncol(z))
+    }
+    a<-coerce_states(a,"a")
+    b<-coerce_states(b,"b")
+    if(!is.null(dimension_weights)) {
+      .etr_assert(is.atomic(dimension_weights) &&
+        is.null(dim(dimension_weights)) &&
+        (is.numeric(dimension_weights)||
+          is.character(dimension_weights)||
+          is.logical(dimension_weights)||
+          is.complex(dimension_weights)),
+        "dimension_weights must be a 1D numeric-compatible vector")
+      dimension_weights<-suppressWarnings(as.numeric(dimension_weights))
+    }
+  } else {
+    a <- .etr_points(a, "a"); b <- .etr_points(b, "b")
+  }
   .etr_assert(identical(dim(a), dim(b)), "curve dimensions must be identical")
   .etr_assert(length(time) == nrow(a), "time length must equal number of samples")
-  w <- etr_trapezoid_weights(time)
-  dw <- .etr_dimweights(ncol(a), dimension_weights)
+  w <- etr_trapezoid_weights(time,
+    python_boundary_mode=python_boundary_mode)
+  if(isTRUE(python_boundary_mode) && !is.null(dimension_weights)) {
+    # Published Python validates only shape and dw<0. Thus +Inf and
+    # NaN weights are permitted in source mode and propagate through
+    # arithmetic, whereas strict native R always rejects nonfinite dw.
+    .etr_assert(length(dimension_weights)==ncol(a) &&
+      all(!is.na(dimension_weights)|is.nan(dimension_weights)) &&
+      !any(dimension_weights<0,na.rm=TRUE),
+      "dimension_weights must be non-negative with one value per dimension")
+    dw<-dimension_weights
+  } else {
+    dw <- .etr_dimweights(ncol(a), dimension_weights)
+  }
+  # NumPy sums an empty (n_time, 0) weighted square array to 0.
+  # Avoid R sweep's zero-width recycling warning on that source domain.
+  if(isTRUE(python_boundary_mode) && ncol(a)==0L)return(0)
   sqrt(sum(rowSums(sweep((a - b)^2, 2L, dw, "*")) * w))
 }
 

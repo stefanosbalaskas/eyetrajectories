@@ -25,17 +25,22 @@ etr_native_certification_readiness_frame <- function(
   needed<-c("namespace","python_name","kind","is_python_function",
     "native_r_candidate","named_native_candidate",
     "native_implementation_started","source_contract_gap_unresolved",
+    "nonfunction_source_gap_unresolved",
+    "nonfunction_native_representation",
     "contract_certification_evidence_state",
     "independent_numeric_parity_pass","behavioral_schema_parity_pass",
     "scientific_inference_qualified","independent_contract_review_pass",
-    "one_to_one_native_contract_complete")
+    "one_to_one_native_contract_complete",
+    "native_backend_or_estimand_differs_from_python")
   .etr_assert(all(needed%in%names(api)),
     "certification review register does not contain required evidence fields")
   names_out<-c("native_mapping_missing","native_implementation_missing",
     "unresolved_published_source_difference","approved_numerical_oracle_missing",
     "complete_behavioral_schema_review_missing",
     "scientific_scope_approval_missing","independent_review_approval_missing",
-    "reproducible_source_evidence_missing")
+    "reproducible_source_evidence_missing",
+    "native_backend_or_estimand_not_source_equivalent",
+    "unresolved_nonfunction_source_difference")
   reasons<-lapply(seq_len(nrow(api)),function(i){
     if(isTRUE(api$one_to_one_native_contract_complete[i]))
       return(character())
@@ -48,6 +53,10 @@ etr_native_certification_readiness_frame <- function(
     }
     if(isTRUE(api$source_contract_gap_unresolved[i]))
       out<-c(out,names_out[3L])
+    if(isTRUE(api$nonfunction_source_gap_unresolved[i]))
+      out<-c(out,names_out[10L])
+    if(isTRUE(api$native_backend_or_estimand_differs_from_python[i]))
+      out<-c(out,names_out[9L])
     if(!isTRUE(api$independent_numeric_parity_pass[i]))
       out<-c(out,names_out[4L])
     if(!isTRUE(api$behavioral_schema_parity_pass[i]))
@@ -71,10 +80,14 @@ etr_native_certification_readiness_frame <- function(
   first[approved]<-"complete"
   ans<-data.frame(namespace=api$namespace,python_name=api$python_name,
     kind=api$kind,native_r_candidate=api$native_r_candidate,
+    native_nonfunction_representation=api$nonfunction_native_representation,
     frozen_source_sha=api$source_git_sha,
     native_mapping_present=api$named_native_candidate,
     native_implementation_started=api$native_implementation_started,
+    native_backend_or_estimand_differs=
+      api$native_backend_or_estimand_differs_from_python,
     published_source_difference_open=api$source_contract_gap_unresolved,
+    nonfunction_source_difference_open=api$nonfunction_source_gap_unresolved,
     numerical_oracle_approved=api$independent_numeric_parity_pass,
     source_schema_approved=api$behavioral_schema_parity_pass,
     scientific_scope_approved=api$scientific_inference_qualified,

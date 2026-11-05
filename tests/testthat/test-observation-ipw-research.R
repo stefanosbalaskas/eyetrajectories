@@ -1,10 +1,7 @@
 # Research-only test coverage for design-known missingness point diagnostics.
-fx <- file.path("scripts","observation_process_fixture.R")
-ipw <- file.path("scripts","observation_ipw_research.R")
-if (!file.exists(fx)) {
-  fx <- file.path("..","..","scripts","observation_process_fixture.R")
-  ipw <- file.path("..","..","scripts","observation_ipw_research.R")
-}
+fx <- testthat::test_path("fixtures","observation_process_fixture.R")
+ipw <- testthat::test_path("fixtures","observation_ipw_research.R")
+stopifnot(file.exists(fx),file.exists(ipw))
 source(fx,local=TRUE)
 source(ipw,local=TRUE)
 

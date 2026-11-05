@@ -1,12 +1,8 @@
 # Research-only direct specification tests for participant-normalized Hájek.
-fixture <- file.path("scripts","observation_process_fixture.R")
-ipw <- file.path("scripts","observation_ipw_research.R")
-hajek <- file.path("scripts","observation_hajek_research.R")
-if (!file.exists(fixture)) {
-  fixture <- file.path("..","..","scripts","observation_process_fixture.R")
-  ipw <- file.path("..","..","scripts","observation_ipw_research.R")
-  hajek <- file.path("..","..","scripts","observation_hajek_research.R")
-}
+fixture <- testthat::test_path("fixtures","observation_process_fixture.R")
+ipw <- testthat::test_path("fixtures","observation_ipw_research.R")
+hajek <- testthat::test_path("fixtures","observation_hajek_research.R")
+stopifnot(file.exists(fixture),file.exists(ipw),file.exists(hajek))
 source(fixture,local=TRUE)
 source(ipw,local=TRUE)
 source(hajek,local=TRUE)

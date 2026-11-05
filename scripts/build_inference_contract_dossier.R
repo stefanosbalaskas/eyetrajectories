@@ -60,10 +60,79 @@ source_names<-c(
   "plot_fpca_wild_bootstrap_monte_carlo_diagnostics",
   "plot_fpca_wild_bootstrap_simultaneous_interval",
   "fpca_wild_bootstrap_projection_simultaneous_interval",
-  "fpca_regression_slope_simultaneous_band"
+  "fpca_regression_slope_simultaneous_band",
+  "generalized_function_on_scalar_predict",
+  "functional_mixed_effects_reporting_text",
+  "bootstrap_generalized_function_on_scalar_predictions",
+  "generalized_function_on_scalar_prediction_bands",
+  "generalized_function_on_scalar_mean_difference_band",
+  "evaluate_hierarchy_truth_recovery",
+  "evaluate_registration_recovery",
+  "generalized_function_on_scalar_simultaneous_bands",
+  "functional_mixed_effects_simultaneous_bands",
+  "evaluate_functional_mixed_effects_recovery",
+  "functional_mixed_effects_variance_decomposition",
+  "evaluate_fpca_recovery",
+  "evaluate_sparse_fpca_recovery",
+  "compare_functional_mixed_effects_bootstraps",
+  "evaluate_sparse_mfpca_recovery",
+  "fpca_regression_future_prediction_interval",
+  "cross_validate_fpca_regression",
+  "nested_cross_validate_fpca_regression",
+  "generate_multivariate_iaaft_surrogates",
+  "multivariate_surrogate_nonlinearity_test",
+  "export_portable_result",
+  "bootstrap_fpca_component_envelopes",
+  "run_fpca_workflow",
+  "run_function_on_scalar_workflow",
+  "bootstrap_fpca_regression_uncertainty",
+  "run_recurrence_workflow",
+  "simulate_functional_process",
+  "simulate_functional_scenario",
+  "run_functional_recovery_scenarios",
+  "plot_workflow_result",
+  "save_workflow_figure",
+  "fpca_wild_bootstrap_projection_family_test",
+  "run_functional_mixed_effects_workflow",
+  "run_sparse_fpca_workflow",
+  "fit_generalized_function_on_scalar_regression",
+  "run_generalized_functional_workflow",
+  "bootstrap_generalized_function_on_scalar_coefficients",
+  "export_workflow_bundle",
+  "wild_bootstrap_fpca_projection",
+  "scan_wild_bootstrap_fpca_truncations",
+  "functional_mixed_effects_covariance_sensitivity",
+  "bootstrap_functional_mixed_effects_coefficients",
+  "bootstrap_functional_mixed_effects_full_refit",
+  "to_skfda_grid",
+  "to_skfda_basis",
+  "detect_functional_outliers_skfda",
+  "to_fdapy_irregular",
+  "fit_sparse_fpca_fdapy",
+  "fit_elastic_fpca",
+  "fit_sparse_mfpca",
+  "run_sparse_mfpca_async_workflow",
+  "run_sparse_mfpca_workflow",
+  "run_sparse_multilevel_workflow",
+  "run_sparse_prediction_workflow",
+  "alr_transform",
+  "inverse_alr",
+  "score_distance_matrix",
+  "functional_trapezoid_weights"
 )
-stopifnot(length(source_names)==53L,!anyDuplicated(source_names))
+stopifnot(length(source_names)==111L,!anyDuplicated(source_names))
 idx<-match(source_names,readiness$python_name)
+# Keep the scientific evidence gate strict, but explain which exact
+# source contract needs genuine implementation work or inventory repair.
+if(anyNA(idx))
+  stop("Selected source contracts absent from frozen readiness registry: ",
+    paste(source_names[is.na(idx)],collapse=", "),call.=FALSE)
+not_implemented<-source_names[!readiness$native_implementation_started[idx]]
+if(length(not_implemented))
+  stop("Selected source contracts have no recorded native implementation: ",
+    paste(not_implemented,collapse=", "),
+    ". Fix the implementation or authoritative inventory; never sign a",
+    " missing scientific contract.",call.=FALSE)
 stopifnot(!anyNA(idx),all(readiness$kind[idx]=="function"),
   all(readiness$native_mapping_present[idx]),
   all(readiness$native_implementation_started[idx]),
@@ -98,6 +167,44 @@ source_test<-ifelse(seq_along(source_names)<=8L,
                     ifelse(seq_along(source_names)<=52L,
                       "tests/testthat/test-native-wild-simultaneous-source-calibration.R",
                       "tests/testthat/test-native-fpcr-slope-source-calibration.R"))))))))))))
+source_test[54L]<-"tests/testthat/test-native-generalized-fosr-prediction.R"
+source_test[55L]<-"tests/testthat/test-native-mixed-model-source-text.R"
+source_test[56:57]<-"tests/testthat/test-native-generalized-fosr-bootstrap-source.R"
+source_test[58L]<-"tests/testthat/test-native-generalized-fosr-contrast-source.R"
+source_test[59:60]<-"tests/testthat/test-native-recovery-source-evaluators.R"
+source_test[61L]<-"tests/testthat/test-native-generalized-fosr-coefficient-bands.R"
+source_test[62L]<-"tests/testthat/test-native-mixed-coefficient-bands-source.R"
+source_test[63L]<-"tests/testthat/test-native-mixed-known-truth-recovery.R"
+source_test[64L]<-"tests/testthat/test-native-mixed-variance-decomposition-source.R"
+source_test[65L]<-"tests/testthat/test-native-fpca-known-truth-recovery.R"
+source_test[66L]<-"tests/testthat/test-native-sparse-known-truth-recovery.R"
+source_test[67L]<-"tests/testthat/test-native-mixed-bootstrap-width-comparison.R"
+source_test[68L]<-"tests/testthat/test-native-sparse-mfpca-known-truth-recovery.R"
+source_test[69L]<-"tests/testthat/test-native-fpcr-future-prediction-interval.R"
+source_test[70L]<-"tests/testthat/test-native-fpcr-regression-cross-validation.R"
+source_test[71L]<-"tests/testthat/test-native-fpcr-nested-cross-validation.R"
+source_test[72L]<-"tests/testthat/test-native-multivariate-iaaft-generator.R"
+source_test[73L]<-"tests/testthat/test-native-multivariate-surrogate-nonlinearity.R"
+source_test[74L]<-"tests/testthat/test-native-python-portable-writer.R"
+source_test[75L]<-"tests/testthat/test-native-fpca-component-envelopes.R"
+source_test[76:77]<-"tests/testthat/test-native-source-workflows.R"
+source_test[78L]<-"tests/testthat/test-native-fpcr-bootstrap-uncertainty.R"
+source_test[79L]<-"tests/testthat/test-native-recurrence-workflow.R"
+source_test[80L]<-"tests/testthat/test-native-functional-process-simulation.R"
+source_test[81:82]<-"tests/testthat/test-native-functional-recovery-orchestration.R"
+source_test[83:84]<-"tests/testthat/test-native-workflow-plot-dispatch.R"
+source_test[85L]<-"tests/testthat/test-native-fpca-wild-family-test.R"
+source_test[86:87]<-"tests/testthat/test-native-bounded-model-workflows.R"
+source_test[88:89]<-"tests/testthat/test-native-generalized-gee-fit.R"
+source_test[90L]<-"tests/testthat/test-native-generalized-gee-bootstrap.R"
+source_test[91L]<-"tests/testthat/test-native-workflow-bundle-export.R"
+source_test[92L]<-"tests/testthat/test-native-wild-bootstrap-projection.R"
+source_test[93L]<-"tests/testthat/test-native-wild-bootstrap-truncation-scan.R"
+source_test[94L]<-"tests/testthat/test-native-mixed-covariance-sensitivity.R"
+source_test[95:96]<-"tests/testthat/test-native-mixed-participant-bootstraps.R"
+source_test[97:101]<-"tests/testthat/test-native-thirdparty-functional-analogues.R"
+source_test[102:107]<-"tests/testthat/test-native-final-sparse-elastic-analogues.R"
+source_test[108:111]<-"tests/testthat/test-native-pilot-source-adversarial.R"
 source_file<-rep("src/eyetrajectoriespy/reporting.py",length(source_names))
 source_file[12L]<-"src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py"
 source_file[13L]<-"src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py"
@@ -128,9 +235,63 @@ source_file[49L]<-"src/eyetrajectoriespy/wild_testing.py"
 source_file[50:51]<-"src/eyetrajectoriespy/plotting.py"
 source_file[52L]<-"src/eyetrajectoriespy/wild_simultaneous.py"
 source_file[53L]<-"src/eyetrajectoriespy/regression_inference.py"
-fixture_state<-ifelse(seq_along(source_names)<=37L,
-  "user_reported_local_native_and_python_1_2_pass_2026_10_30_unarchived",
-  "new_tests_pending_local_native_and_python_oracle")
+source_file[54L]<-"src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py"
+source_file[55L]<-"src/eyetrajectoriespy/reporting.py"
+source_file[56:57]<-"src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py"
+source_file[58L]<-"src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py"
+source_file[59:60]<-"src/eyetrajectoriespy/recovery.py"
+source_file[61L]<-"src/eyetrajectoriespy/generalized_function_on_scalar.py"
+source_file[62L]<-"src/eyetrajectoriespy/functional_mixed_effects_inference.py"
+source_file[63L]<-"src/eyetrajectoriespy/recovery.py"
+source_file[64L]<-"src/eyetrajectoriespy/functional_mixed_effects_covariance_sensitivity.py"
+source_file[65L]<-"src/eyetrajectoriespy/recovery.py"
+source_file[66L]<-"src/eyetrajectoriespy/recovery.py"
+source_file[67L]<-"src/eyetrajectoriespy/functional_mixed_effects_full_refit.py"
+source_file[68L]<-"src/eyetrajectoriespy/recovery.py"
+source_file[69L]<-"src/eyetrajectoriespy/regression_inference.py"
+source_file[70L]<-"src/eyetrajectoriespy/prediction.py"
+source_file[71L]<-"src/eyetrajectoriespy/prediction.py"
+source_file[72L]<-"src/eyetrajectoriespy/multivariate_surrogates.py"
+source_file[73L]<-"src/eyetrajectoriespy/multivariate_surrogates.py"
+source_file[74L]<-"src/eyetrajectoriespy/portable_results.py"
+source_file[75L]<-"src/eyetrajectoriespy/stability.py"
+source_file[76:77]<-"src/eyetrajectoriespy/workflows/_dense_regression.py"
+source_file[78L]<-"src/eyetrajectoriespy/regression_inference.py"
+source_file[79L]<-"src/eyetrajectoriespy/workflows/_recurrence.py"
+source_file[80:82]<-"src/eyetrajectoriespy/simulate.py"
+source_file[83:84]<-"src/eyetrajectoriespy/workflows/_plotting.py"
+source_file[85L]<-"src/eyetrajectoriespy/wild_testing.py"
+source_file[86L]<-"src/eyetrajectoriespy/workflows/_dense_regression.py"
+source_file[87L]<-"src/eyetrajectoriespy/workflows/_sparse_fpca.py"
+source_file[88L]<-"src/eyetrajectoriespy/generalized_function_on_scalar.py"
+source_file[89L]<-"src/eyetrajectoriespy/workflows/_dense_regression.py"
+source_file[90L]<-"src/eyetrajectoriespy/generalized_function_on_scalar.py"
+source_file[91L]<-"src/eyetrajectoriespy/workflows/_core.py"
+source_file[92L]<-"src/eyetrajectoriespy/wild_regression.py"
+source_file[93L]<-"src/eyetrajectoriespy/wild_selection.py"
+source_file[94L]<-"src/eyetrajectoriespy/functional_mixed_effects_covariance_sensitivity.py"
+source_file[95L]<-"src/eyetrajectoriespy/functional_mixed_effects_inference.py"
+source_file[96L]<-"src/eyetrajectoriespy/functional_mixed_effects_full_refit.py"
+source_file[97:99]<-"src/eyetrajectoriespy/backends.py"
+source_file[100:101]<-"src/eyetrajectoriespy/sparse.py"
+source_file[102L]<-"src/eyetrajectoriespy/elastic.py"
+source_file[103L]<-"src/eyetrajectoriespy/sparse_multivariate.py"
+source_file[104L]<-"src/eyetrajectoriespy/workflows/_sparse_async.py"
+source_file[105L]<-"src/eyetrajectoriespy/workflows/_sparse_mfpca.py"
+source_file[106L]<-"src/eyetrajectoriespy/workflows/_sparse_multilevel.py"
+source_file[107L]<-"src/eyetrajectoriespy/workflows/_sparse_prediction.py"
+source_file[108:109]<-"src/eyetrajectoriespy/compositional.py"
+source_file[110L]<-"src/eyetrajectoriespy/analysis.py"
+source_file[111L]<-"src/eyetrajectoriespy/fpca.py"
+# Reported owner RStudio evidence at c61e14f (2026-10-31T210921):
+# both offline native R and pinned Python 1.2 source suite verdicts PASS,
+# exact checkout and file-integrity TRUE, 107 selected candidate dossiers.
+# This is a HISTORICAL aggregate suite result, not individually adjudicated
+# full-domain oracles and not an independent reviewer approval. New commits
+# require a fresh exact-head execution/capture; NEVER inherit certified PASS.
+fixture_state<-ifelse(seq_along(source_names)<=107L,
+  "historical_owner_aggregate_both_modes_PASS_at_c61e14f_not_per_contract_adjudicated_not_independent",
+  "new_pilot_boundary_tests_not_yet_owner_run_on_current_commit")
 stopifnot(all(file.exists(source_test)))
 data<-data.frame(
   python_name=source_names,
@@ -152,11 +313,13 @@ data<-data.frame(
   missing_evidence=readiness$all_unresolved_requirements[idx],
   stringsAsFactors=FALSE
 )
-stopifnot(nrow(data)==53L,!any(data$fully_certified))
+stopifnot(nrow(data)==111L,!any(data$fully_certified))
 output_dir<-file.path("artifacts","native_inference_contract_review")
 dir.create(output_dir,recursive=TRUE,showWarnings=FALSE)
 output<-file.path(output_dir,"python_1_2_scientific_contract_review_queue.csv")
 utils::write.csv(data,output,row.names=FALSE,na="")
 message("Wrote unsigned source-contract review queue: ",
   normalizePath(output,winslash="/",mustWork=TRUE))
-message("All 53 contracts remain uncertified pending full-domain and independent review.")
+message("All ",nrow(data),
+  " selected source contracts remain uncertified pending full-domain and independent review;",
+  " this dossier is not an independent certification.")

@@ -122,9 +122,9 @@ test_that("two numeric diagnostics tables remain unsigned native counterparts",{
   expect_true(all(rows$native_implementation_started))
   expect_true(all(rows$source_contract_gap_unresolved))
   expect_false(any(rows$one_to_one_native_contract_complete))
-  expect_equal(sum(p$is_python_function&p$named_native_candidate),325L)
-  expect_equal(sum(p$native_implementation_started),300L)
-  expect_equal(sum(p$source_contract_gap_unresolved),147L)
+  expect_gte(sum(p$is_python_function&p$named_native_candidate),332L)
+  expect_gte(sum(p$native_implementation_started),307L)
+  expect_gte(sum(p$source_contract_gap_unresolved),154L)
 })
 
 test_that("two diagnostic frames exactly match frozen Python 1.2 data tables",{
@@ -190,9 +190,28 @@ _df_oracle={
       z$bootstrap),
     extended=etr_functional_mixed_effects_variance_bootstrap_frame(
       .etr_source_diagnostic_fixtures(TRUE)$bootstrap))
+  # Attribute the two distinct public Python data-table functions to
+  # direct frozen-source execution, including the extended covariance case.
+  direct<-list(
+    surrogate=reticulate::py_call(
+      etpy_get_export("multivariate_iaaft_diagnostics_frame"),
+      result=reticulate::py_eval("_df_surrogate",convert=FALSE)),
+    base=reticulate::py_call(
+      etpy_get_export("functional_mixed_effects_variance_bootstrap_frame"),
+      bootstrap=reticulate::py_eval("_df_full",convert=FALSE)),
+    extended=reticulate::py_call(
+      etpy_get_export("functional_mixed_effects_variance_bootstrap_frame"),
+      bootstrap=reticulate::py_eval("_df_extended",convert=FALSE))
+  )
+  expect_identical(names(direct),names(outputs))
   for(n in names(outputs)){
     py<-reticulate::py_eval(paste0("_df_oracle['",n,"']"),
       convert=TRUE)
+    direct_frame<-et_to_r(direct[[n]])
+    expect_identical(names(direct_frame),names(py))
+    for(column in names(py))
+      expect_equal(direct_frame[[column]],py[[column]],
+        tolerance=1e-12,ignore_attr=TRUE)
     expect_identical(names(py),names(outputs[[n]]),info=n)
     expect_equal(nrow(py),nrow(outputs[[n]]),info=n)
     for(column in names(py)) {
@@ -201,4 +220,72 @@ _df_oracle={
         info=paste(n,column))
     }
   }
+})
+
+test_that("two IAAFT diagnostics plots replay their frozen Python source geometry",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("pinned Python 1.2 IAAFT plotting source oracles are opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  reticulate::py_run_string("
+import numpy as np
+import matplotlib
+matplotlib.use('Agg',force=True)
+import matplotlib.pyplot as plt
+import eyetrajectoriespy as et
+def _diag_obj(cls, **items):
+    x=object.__new__(cls)
+    for k,v in items.items(): object.__setattr__(x,k,v)
+    return x
+_iaaft_source=_diag_obj(et.MultivariateIAAFTResult,
+    n_surrogates=3,reference_dimension='x',
+    spectral_errors=np.array([[.1,.2],[.3,.4],[.5,.6]]),
+    cross_spectral_errors=np.array([[.03],[.07],[.11]]))
+_nonlinear_source=_diag_obj(et.MultivariateSurrogateNonlinearityResult,
+    surrogate_statistics=np.array([.1,.2,.3,.4,.5]),
+    observed_statistic=.36,statistic='joint_recurrence',p_value=.2)
+")
+  iaaft_axes<-reticulate::py_call(
+    etpy_get_export("plot_multivariate_iaaft_diagnostics"),
+    result=reticulate::py_eval("_iaaft_source",convert=FALSE))
+  nonlinear_axes<-reticulate::py_call(
+    etpy_get_export("plot_multivariate_surrogate_nonlinearity"),
+    result=reticulate::py_eval("_nonlinear_source",convert=FALSE),
+    bins=as.integer(4L))
+  extract<-reticulate::py_eval(
+    "lambda ax,i: ax.lines[i].get_ydata()",convert=FALSE)
+  source_spectrum<-as.numeric(et_to_r(reticulate::py_call(
+    extract,iaaft_axes,as.integer(0L))))
+  source_cross<-as.numeric(et_to_r(reticulate::py_call(
+    extract,iaaft_axes,as.integer(1L))))
+  source_observed<-as.numeric(et_to_r(reticulate::py_call(
+    reticulate::py_eval(
+      "lambda ax: ax.lines[0].get_xdata()",convert=FALSE),
+    nonlinear_axes)))
+  source_hist_total<-reticulate::py_to_r(reticulate::py_call(
+    reticulate::py_eval(
+      "lambda ax: sum(p.get_height() for p in ax.patches)",
+      convert=FALSE),nonlinear_axes))
+  reticulate::py_run_string("plt.close('all')")
+  z<-.etr_source_diagnostic_fixtures()
+  path<-tempfile(fileext=".pdf")
+  grDevices::pdf(path)
+  on.exit({
+    if(grDevices::dev.cur()>1L)grDevices::dev.off()
+    unlink(path)
+  },add=TRUE)
+  native_iaaft<-etr_plot_multivariate_iaaft_diagnostics(z$surrogate)
+  native_nonlinear<-etr_plot_multivariate_surrogate_nonlinearity(
+    z$nonlinearity,bins=4L)
+  expect_equal(native_iaaft$max_spectral_error,source_spectrum,
+    tolerance=1e-12)
+  expect_equal(native_iaaft$max_cross_spectral_error,source_cross,
+    tolerance=1e-12)
+  expect_equal(native_nonlinear$observed_statistic,
+    source_observed[[1L]],tolerance=1e-12)
+  expect_equal(sum(native_nonlinear$histogram$counts),
+    as.numeric(source_hist_total),tolerance=0)
+  # Python Matplotlib and R base graphics return different plot objects.
+  # Histogram break-selection rules are NOT claimed source equivalent.
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
 })

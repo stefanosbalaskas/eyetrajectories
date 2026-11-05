@@ -3,7 +3,12 @@
 \title{Native IAAFT surrogate test of an explicitly declared Lyapunov statistic}
 \description{Independent base-R iterative amplitude-adjusted Fourier-transform surrogates with explicit Rosenstein sample-index statistic and plus-one Monte Carlo tail probability. Published Python 1.2 is the source of the mathematical contract; random draws are not identical across R and NumPy.}
 \usage{
-etr_surrogate_nonlinearity_test(trajectories, curve, dimension, statistic, embedding_dimension, delay, theiler_window, max_horizon, fit_start, fit_end, delay_units = "samples", theiler_window_units = "samples", max_horizon_units = "samples", fit_units = "samples", method = "iaaft", n_surrogates = 199L, alternative = "greater", max_iterations = 1000L, tolerance = 1e-8, random_state = NULL)
+etr_surrogate_nonlinearity_test(trajectories, curve, dimension, statistic,
+  embedding_dimension, delay, theiler_window, max_horizon, fit_start, fit_end,
+  delay_units = "samples", theiler_window_units = "samples",
+  max_horizon_units = "samples", fit_units = "samples", method = "iaaft",
+  n_surrogates = 199L, alternative = "greater", max_iterations = 1000L,
+  tolerance = 1e-8, random_state = NULL)
 }
 \arguments{
 \item{trajectories}{A complete native common-grid trajectory set.}

@@ -1,0 +1,75 @@
+# Native bounded square-root velocity FPCA: original curve traversal timing
+# is preserved. Frozen Python 1.2 elastic.py uses fdasrsf Karcher mean,
+# dynamic programming warping and shape PCA, NOT implemented here.
+
+#' Fit square-root-velocity FPCA without elastic time registration
+#' @param trajectories Complete native planar trajectories.
+#' @param n_components Predeclared integer number of velocity components.
+#' @param rotation,scale_curves Both must be FALSE for native screen geometry.
+#' @param lam Must be zero; no regularized reparameterization fitted.
+#' @param method Must be identity_only: source DP warping unsupported.
+#' @return Native SRVF FPCA of unregistered planar curves with identity warp.
+#'   Not Python fdasrsf ElasticFPCAResult, not phase invariant.
+#' @export
+etr_fit_elastic_fpca<-function(trajectories,n_components=3L,
+    rotation=FALSE,scale_curves=FALSE,lam=0,method="identity_only"){
+  etr_validate(trajectories,require_complete=TRUE)
+  .etr_assert(length(trajectories$dimension_names)>=2L,
+    "square-root velocity FPCA requires at least two planar channels")
+  .etr_assert(identical(rotation,FALSE)&&identical(scale_curves,FALSE)&&
+    identical(lam,0)&&identical(method,"identity_only"),
+    "native R does not implement fdasrsf rotation scaling Karcher elastic DP alignment; use method='identity_only'")
+  .etr_assert(is.numeric(n_components)&&
+    length(n_components)==1L&&is.finite(n_components)&&
+    n_components==floor(n_components)&&n_components>=1L,
+    "n_components must be a positive explicit integer")
+  n<-length(trajectories$curve_ids);nt<-length(trajectories$time)
+  .etr_assert(n_components<=min(n-1L,nt*2L),
+    "n_components exceeds centered SRVF rank bound")
+  time<-trajectories$time
+  raw<-trajectories$values[,,seq_len(2L),drop=FALSE]
+  .etr_assert(all(is.finite(raw)),
+    "planar trajectories must contain finite complete coordinates")
+  velocity<-array(0,c(n,nt,2L))
+  for(i in seq_len(n)){
+    for(j in 1:2){
+      z<-raw[i,,j]
+      velocity[i,1L,j]<-(z[2L]-z[1L])/(time[2L]-time[1L])
+      velocity[i,nt,j]<-(z[nt]-z[nt-1L])/(time[nt]-time[nt-1L])
+      if(nt>2L){
+        velocity[i,2:(nt-1L),j]<-(
+          z[3:nt]-z[1:(nt-2L)])/
+          (time[3:nt]-time[1:(nt-2L)])
+      }
+    }
+  }
+  speed<-sqrt(velocity[,,1L]^2+velocity[,,2L]^2)
+  denom<-sqrt(speed)
+  q<-velocity
+  for(j in 1:2){
+    q[,,j]<-ifelse(denom>sqrt(.Machine$double.eps),
+      velocity[,,j]/pmax(denom,sqrt(.Machine$double.eps)),0)
+  }
+  names<-trajectories$dimension_names[1:2]
+  srvf<-etr_trajectory_set(time,q,
+    trajectories$curve_ids,names,
+    coordinate_system="unknown",time_unit=trajectories$time_unit)
+  fpca<-etr_fit_fpca(srvf,n_components=as.integer(n_components),
+    scaling="none")
+  warp<-matrix(rep(time,each=n),nrow=n,ncol=nt)
+  structure(list(
+    aligned=trajectories,warping_functions=warp,
+    scores=fpca$scores,principal_directions=fpca$components,
+    mean_curve=apply(raw,c(2L,3L),mean),
+    sqrt_velocity=q,fpca=fpca,
+    backend="native_R_SRVF_unregistered",
+    source_backend="fdasrsf_Karcher_DP_not_run",
+    phase_amplitude_separated=FALSE,
+    timing_warning="Identity warping preserves measured gaze traversal times; elastic phase alignment not performed",
+    provenance=list(rotation=FALSE,scale_curves=FALSE,lam=0,
+      method="identity_only",
+      source_python_equivalent=FALSE,
+      source_shape_pca_not_reproduced=TRUE,
+      full_source_contract_certified=FALSE)),
+    class="etr_unregistered_srvf_fpca")
+}

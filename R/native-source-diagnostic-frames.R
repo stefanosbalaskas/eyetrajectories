@@ -213,11 +213,16 @@ etr_plot_multivariate_iaaft_diagnostics <- function(result,...) {
 #' @param result A native nonlinearity result with observed and simulated
 #'   statistics, declared statistic identifier and plus-one p-value.
 #' @param bins Predeclared integer histogram-bin count (at least two).
+#' @param python_boundary_mode When TRUE, use NumPy's exact equally spaced
+#'   integer-bin histogram boundaries, fixed 0.5 constant-data expansion and
+#'   left-inclusive counts (with rightmost edge included). This aligns the
+#'   source histogram numerics, not Matplotlib Axes or Python dataclass types.
+#'   The default FALSE retains the previous R histogram implementation.
 #' @param ... Additional base graphics histogram arguments.
 #' @return Invisibly, histogram geometry and observed statistic.
 #' @export
 etr_plot_multivariate_surrogate_nonlinearity <- function(result,
-    bins=20L,...) {
+    bins=20L,python_boundary_mode=FALSE,...) {
   .etr_scientific_frame_fields(result,c("surrogate_statistics",
     "observed_statistic","statistic","p_value"))
   values<-.etr_source_text_vector(result$surrogate_statistics,
@@ -226,17 +231,35 @@ etr_plot_multivariate_surrogate_nonlinearity <- function(result,
     "observed_statistic")
   p<-.etr_source_text_number(result$p_value,"p_value",min=0,max=1)
   name<-.etr_source_text_word(result$statistic,"statistic")
-  b<-.etr_source_text_int(bins,"bins",min=2L)
-  # Fixed bins emulate NumPy's equal-width binning; ensure a finite
-  # nonzero range for the constant-sample case.
+  .etr_assert(is.logical(python_boundary_mode)&&
+    length(python_boundary_mode)==1L&&!is.na(python_boundary_mode),
+    "python_boundary_mode must be a nonmissing logical scalar")
+  if(isTRUE(python_boundary_mode)) {
+    # Python nonlinear_plotting.py checks an integer count, then
+    # Matplotlib delegates exact bin boundaries/counts to NumPy.
+    .etr_assert(is.integer(bins)&&length(bins)==1L&&
+      !is.na(bins)&&bins>=2L&&bins<=10000L,
+      "bins must be a Python integer >= 2 within native 10000-bin limit")
+    b<-as.integer(bins)
+  } else b<-.etr_source_text_int(bins,"bins",min=2L)
   limits<-range(values)
   if(limits[1L]==limits[2L]){
-    half<-if(limits[1L]==0)0.5 else abs(limits[1L])*0.5
+    half<-if(isTRUE(python_boundary_mode))0.5 else
+      if(limits[1L]==0)0.5 else abs(limits[1L])*0.5
     limits<-limits+c(-half,half)
   }
   breaks<-seq(limits[1L],limits[2L],length.out=b+1L)
   h<-graphics::hist(values,breaks=breaks,plot=FALSE,
     right=FALSE,include.lowest=TRUE)
+  if(isTRUE(python_boundary_mode)){
+    # R's histogram uses fuzzy endpoint tolerance; NumPy uses
+    # [left,right) bins, with only the final right edge inclusive.
+    # Replace both counts and plot densities with exact source values.
+    h$counts<-as.integer(tabulate(
+      findInterval(values,breaks,rightmost.closed=TRUE),nbins=b))
+    h$density<-h$counts/(length(values)*diff(h$breaks))
+    h$intensities<-h$density
+  }
   graphics::plot(h,main=paste0(
     "Multivariate IAAFT surrogate test (p=",sprintf("%.3g",p),")"),
     xlab=name,ylab="Surrogate count",col="grey75",border="grey45",...)

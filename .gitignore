@@ -8,3 +8,6 @@
 .Renviron
 .Rprofile
 /artifacts/
+
+__pycache__/
+*.pyc

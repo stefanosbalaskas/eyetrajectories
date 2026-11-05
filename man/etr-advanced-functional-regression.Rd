@@ -21,12 +21,16 @@ etr_functional_mixed_fitted(
 etr_fit_scalar_on_fpca(
   fit,
   outcome,
-  n_components = NULL
+  n_components = NULL,
+  family = "gaussian",
+  covariates = NULL,
+  python_boundary_mode = FALSE
 )
 
 etr_predict_scalar_on_fpca(
   fit,
-  x
+  x,
+  covariates = NULL
 )
 }
 \arguments{
@@ -36,7 +40,10 @@ etr_predict_scalar_on_fpca(
 \item{basis_k}{Spline basis dimension for the smooth functional intercept.}
 \item{fit}{A fitted native R model result of the expected class.}
 \item{outcome}{Finite numeric outcome for each curve.}
-\item{n_components}{Fixed number of native FPCA components.}
+\item{n_components}{Fixed number of native FPCA components. In Python source mode, Boolean TRUE may select one score, while floating-point slice indices are deliberately disallowed.}
+\item{family}{Gaussian linear or binomial logistic family. The binomial source analogue requires explicit Python source-compatibility mode.}
+\item{covariates}{Optional curve-aligned finite numeric data.frame. Accepted only in explicit source mode and required for external predictions from a model fitted with covariates.}
+\item{python_boundary_mode}{Logical, FALSE preserves the previous Gaussian-only native fit. TRUE enables the bounded Python 1.2 Gaussian/binomial and covariate source contract without invoking Python or certifying whole-domain equivalence.}
 }
 \details{
 These methods have explicitly limited scientific scope.

@@ -71,10 +71,14 @@
   .etr_assert(n_splits<=length(labels),
     "n_splits cannot exceed number of unique groups")
   sizes<-vapply(labels,function(g)sum(gr==g),integer(1L))
-  # Descending size, deterministic group-ID tie break. GroupKFold's
-  # tie assignment can differ; preserve leak-free holdout, not identical
-  # Python random state or tie fold identities.
-  order<-order(-sizes,labels)
+  # Frozen sklearn GroupKFold visits np.argsort(group_counts)[::-1].
+  # If counts follow nondecreasing lexicographic group-label order,
+  # source NumPy argsort visits their indices in ascending order and
+  # the reversed pass visits indices in descending order, including ties.
+  # Preserve the existing native deterministic policy for all other
+  # sequences: NumPy quicksort may permute nonadjacent mixed-size ties.
+  order<-if(all(diff(sizes)>=0L))
+    rev(seq_along(labels)) else order(-sizes,labels)
   totals<-numeric(n_splits)
   group_folds<-integer(length(labels))
   for(j in order) {

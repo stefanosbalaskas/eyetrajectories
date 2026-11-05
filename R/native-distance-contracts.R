@@ -2,14 +2,91 @@
 # Source of record: eyetrajectoriespy v1.2.0, analysis.py and types.py.
 # Python/reticulate are used only by opt-in tests, not any function here.
 
-.etr_distances_inputs <- function(a,b,dimension_weights=NULL,operation="distance") {
-  a <- .etr_points(a,"a")
-  b <- .etr_points(b,"b")
+# Bounded native analogue of Python 1.2 np.asarray(..., dtype=float)
+# for 2D point sequences: each element is converted separately, never
+# after R's unlist() has promoted mixed bool/string scalars to text.
+.etr_distance_source_points <- function(value,label) {
+  candidate <- value
+  if(is.list(value)&&!is.data.frame(value)&&is.null(dim(value))) {
+    .etr_assert(length(value)>0L,
+      paste(label,"must contain at least one point"))
+    rows <- lapply(value,function(row) {
+      if(is.list(row)&&is.null(dim(row))&&!is.data.frame(row)) {
+        .etr_assert(length(row)>0L&&all(vapply(row,function(z)
+          is.atomic(z)&&is.null(dim(z))&&!is.factor(z)&&
+          length(z)==1L&&
+          (is.numeric(z)||is.logical(z)||is.character(z)),
+          logical(1L))),
+          paste(label,"requires numeric-compatible point rows"))
+        return(vapply(row,function(z)
+          suppressWarnings(as.numeric(z)),numeric(1L),
+          USE.NAMES=FALSE))
+      }
+      .etr_assert(is.atomic(row)&&is.null(dim(row))&&!is.factor(row)&&
+        (is.numeric(row)||is.logical(row)||is.character(row))&&
+        length(row)>0L,
+        paste(label,"requires numeric-compatible point rows"))
+      suppressWarnings(as.numeric(row))
+    })
+    d <- length(rows[[1L]])
+    .etr_assert(all(lengths(rows)==d),
+      paste(label,"point rows must have equal dimensions"))
+    candidate <- matrix(unlist(rows,use.names=FALSE),
+      nrow=length(rows),ncol=d,byrow=TRUE)
+  } else {
+    .etr_assert(is.matrix(value)&&!is.factor(value)&&
+      (is.numeric(value)||is.logical(value)||is.character(value)),
+      paste(label,"must be a 2D numeric-compatible point matrix"))
+    candidate <- matrix(suppressWarnings(as.numeric(value)),
+      nrow=nrow(value),ncol=ncol(value))
+  }
+  .etr_assert(nrow(candidate)>=1L&&ncol(candidate)>=1L&&
+    all(is.finite(candidate)),
+    paste(label,"must be a finite complete point-by-dimension matrix"))
+  candidate
+}
+
+.etr_distance_source_weights <- function(w,d) {
+  if(is.list(w)&&!is.data.frame(w)&&is.null(dim(w))) {
+    .etr_assert(length(w)==d&&all(vapply(w,function(z)
+      is.atomic(z)&&is.null(dim(z))&&!is.factor(z)&&
+      length(z)==1L&&(is.numeric(z)||is.logical(z)||is.character(z)),
+      logical(1L))),
+      "dimension_weights must contain one numeric-compatible scalar per dimension")
+    w <- vapply(w,function(z)suppressWarnings(as.numeric(z)),
+      numeric(1L),USE.NAMES=FALSE)
+  } else {
+    .etr_assert(is.atomic(w)&&is.null(dim(w))&&!is.factor(w)&&
+      (is.numeric(w)||is.logical(w)||is.character(w))&&
+      length(w)==d,
+      "dimension_weights must be a numeric-compatible vector")
+    w <- suppressWarnings(as.numeric(w))
+  }
+  .etr_assert(all(is.finite(w))&&all(w>=0)&&any(w>0),
+    "dimension_weights must be finite non-negative and contain at least one positive value")
+  w
+}
+
+.etr_distances_inputs <- function(a,b,dimension_weights=NULL,
+                                  operation="distance",
+                                  python_boundary_mode=FALSE) {
+  .etr_assert(is.logical(python_boundary_mode)&&
+    length(python_boundary_mode)==1L&&!is.na(python_boundary_mode),
+    "python_boundary_mode must be a nonmissing logical scalar")
+  if(isTRUE(python_boundary_mode)) {
+    a <- .etr_distance_source_points(a,"a")
+    b <- .etr_distance_source_points(b,"b")
+  } else {
+    a <- .etr_points(a,"a")
+    b <- .etr_points(b,"b")
+  }
   .etr_assert(ncol(a)==ncol(b),
               paste(operation,": a and b must have the same number of dimensions"))
   d <- ncol(a)
   if (is.null(dimension_weights)) {
     w <- rep(1,d)
+  } else if(isTRUE(python_boundary_mode)) {
+    w <- .etr_distance_source_weights(dimension_weights,d)
   } else {
     .etr_assert(is.numeric(dimension_weights) &&
       !is.logical(dimension_weights) && length(dimension_weights)==d &&
@@ -64,14 +141,21 @@
 #' @param dimension_weights Nonnegative weights, at least one positive.
 #' @param return_coupling Logical; return a scalar if FALSE, or a native
 #'   result with full coupling, local distances and provenance if TRUE.
+#' @param python_boundary_mode When TRUE, accept source NumPy-like finite
+#'   2D point matrices and nested scalar rows with numeric strings and
+#'   logical values, and numeric-compatible nonnegative dimension weights.
+#'   FALSE preserves strict native R matrix/weight validation.
+#'   Other Python coercion classes and >5e6 point pairs are not promised.
 #' @return Distance scalar or an etr_discrete_frechet_result list.
 #' @export
 etr_discrete_frechet <- function(a,b,dimension_weights=NULL,
-                                 return_coupling=FALSE) {
+                                 return_coupling=FALSE,
+                                 python_boundary_mode=FALSE) {
   .etr_assert(is.logical(return_coupling) &&
     length(return_coupling)==1L && !is.na(return_coupling),
     "return_coupling must be TRUE or FALSE")
-  x <- .etr_distances_inputs(a,b,dimension_weights,"discrete Frechet")
+  x <- .etr_distances_inputs(a,b,dimension_weights,"discrete Frechet",
+    python_boundary_mode=python_boundary_mode)
   local <- .etr_dtw_local_cost(x$a,x$b,x$weights)
   n <- x$n_a; m <- x$n_b
   cum <- matrix(Inf,n,m)
@@ -139,7 +223,8 @@ etr_discrete_frechet <- function(a,b,dimension_weights=NULL,
 #' @export
 etr_dynamic_time_warping <- function(
     a,b,dimension_weights=NULL,window_radius=NULL,
-    step_pattern="symmetric1",normalize=FALSE,return_path=FALSE) {
+    step_pattern="symmetric1",normalize=FALSE,return_path=FALSE,
+    python_boundary_mode=FALSE) {
   .etr_assert(is.character(step_pattern) && length(step_pattern)==1L &&
     !is.na(step_pattern) && step_pattern %in% c("symmetric1","symmetric2"),
     "step_pattern must be 'symmetric1' or 'symmetric2'")
@@ -149,7 +234,8 @@ etr_dynamic_time_warping <- function(
     !is.na(return_path),"return_path must be TRUE or FALSE")
   .etr_assert(!normalize || step_pattern=="symmetric2",
               "normalize=TRUE is available only for symmetric2")
-  x <- .etr_distances_inputs(a,b,dimension_weights,"DTW")
+  x <- .etr_distances_inputs(a,b,dimension_weights,"DTW",
+    python_boundary_mode=python_boundary_mode)
   n <- x$n_a; m <- x$n_b
   if(!is.null(window_radius)){
     .etr_assert(is.numeric(window_radius) && !is.logical(window_radius) &&
@@ -262,8 +348,12 @@ etr_dynamic_time_warping <- function(
 #' @export
 etr_pairwise_dtw_full <- function(
     x,dimensions=NULL,dimension_weights=NULL,window_radius=NULL,
-    step_pattern="symmetric1",normalize=FALSE) {
+    step_pattern="symmetric1",normalize=FALSE,
+    python_boundary_mode=FALSE) {
   idx <- .etr_preprocessing_dimensions(x,dimensions)
+  .etr_assert(is.logical(python_boundary_mode)&&
+    length(python_boundary_mode)==1L&&!is.na(python_boundary_mode),
+    "python_boundary_mode must be a nonmissing logical scalar")
   .etr_assert(is.character(step_pattern) &&
     length(step_pattern)==1L && !is.na(step_pattern) &&
     step_pattern %in% c("symmetric1","symmetric2"),
@@ -279,7 +369,7 @@ etr_pairwise_dtw_full <- function(
   etr_dynamic_time_warping(
     sample_a,sample_a,dimension_weights=dimension_weights,
     window_radius=window_radius,step_pattern=step_pattern,
-    normalize=normalize)
+    normalize=normalize,python_boundary_mode=python_boundary_mode)
   n <- dim(x$values)[1L]
   out <- matrix(0,n,n)
   if(n>=2L) for(i in seq_len(n-1L)) for(j in (i+1L):n) {
@@ -290,7 +380,7 @@ etr_pairwise_dtw_full <- function(
     out[i,j] <- etr_dynamic_time_warping(
       a,b,dimension_weights=dimension_weights,
       window_radius=window_radius,step_pattern=step_pattern,
-      normalize=normalize)
+      normalize=normalize,python_boundary_mode=python_boundary_mode)
     out[j,i] <- out[i,j]
   }
   out

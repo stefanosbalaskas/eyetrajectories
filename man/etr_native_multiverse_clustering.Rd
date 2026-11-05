@@ -7,11 +7,24 @@
 \title{Native R nonlinear parameter multiverses, FPCA clustering and distance-contract sensitivity}
 \description{Five independent Python-free numerical functions evaluating complete analyst-declared sensitivity grids, K-means over fitted FPCA scores, and comparisons of raw distance rankings and nearest-neighbor structures.}
 \usage{
-etr_lyapunov_parameter_sensitivity(trajectories, curve, dimensions, embedding_dimensions, delays, theiler_windows, fit_intervals, max_horizon, delay_units = "samples", theiler_window_units = "samples", fit_units = "samples", max_horizon_units = "samples")
-etr_kantz_parameter_sensitivity(trajectories, curve, dimensions, embedding_dimensions, delays, radii, min_neighbors, theiler_windows, fit_intervals, max_horizon, delay_units = "samples", theiler_window_units = "samples", fit_units = "samples", max_horizon_units = "samples")
-etr_rqa_parameter_sensitivity(trajectories, curve, dimensions, embedding_dimensions, delays, theiler_windows, min_diagonal_lengths, min_vertical_lengths, radii = NULL, target_recurrence_rates = NULL, delay_units = "samples", theiler_window_units = "samples", distance_metric = "euclidean")
-etr_cluster_fpca_scores(fpca, n_clusters, n_components = NULL, random_state = 0L, n_init = "auto")
-etr_trajectory_distance_sensitivity(trajectories, specifications, dimensions = NULL, dimension_weights = NULL, neighbor_k = 3L)
+etr_lyapunov_parameter_sensitivity(trajectories, curve, dimensions,
+  embedding_dimensions, delays, theiler_windows, fit_intervals, max_horizon,
+  delay_units = "samples", theiler_window_units = "samples",
+  fit_units = "samples", max_horizon_units = "samples")
+etr_kantz_parameter_sensitivity(trajectories, curve, dimensions,
+  embedding_dimensions, delays, radii, min_neighbors, theiler_windows,
+  fit_intervals, max_horizon, delay_units = "samples",
+  theiler_window_units = "samples", fit_units = "samples",
+  max_horizon_units = "samples")
+etr_rqa_parameter_sensitivity(trajectories, curve, dimensions,
+  embedding_dimensions, delays, theiler_windows, min_diagonal_lengths,
+  min_vertical_lengths, radii = NULL, target_recurrence_rates = NULL,
+  delay_units = "samples", theiler_window_units = "samples",
+  distance_metric = "euclidean")
+etr_cluster_fpca_scores(fpca, n_clusters, n_components = NULL,
+  random_state = 0L, n_init = "auto")
+etr_trajectory_distance_sensitivity(trajectories, specifications,
+  dimensions = NULL, dimension_weights = NULL, neighbor_k = 3L)
 }
 \arguments{
 \item{trajectories}{Complete native common-grid trajectories; no preprocessing is applied.}

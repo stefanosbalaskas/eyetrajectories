@@ -1,4 +1,4 @@
-# Stage 18 — restricted native functional repeated-measures model.
+# Restricted native functional repeated-measures model.
 # The estimator below is explicitly a two-level METHOD-OF-MOMENTS model,
 # NOT the spline-based likelihood/reml/GLS backend in Python 1.2.
 # Residual audits follow Python 1.2 diagnostics.py conventions.
@@ -334,6 +334,77 @@ etr_functional_mixed_effects_residual_pair_frame <- function(result,
 #' @export
 etr_functional_mixed_effects_variance_decomposition <- function(fit,
     model_label=NULL){
+  if(!inherits(fit,"etr_functional_mixed_moments")){
+    # Source-shaped frozen Python 1.2.0 FunctionalMixedEffectsResult.
+    # Do not coerce a restricted moment fit into a REML/GLS model.
+    .etr_recovery_source_fields(fit,c(
+      "time","random_basis","random_intercept_covariance",
+      "residual_variance"),"source mixed fit")
+    name<-if(is.null(model_label))"model" else model_label
+    .etr_assert(is.character(name)&&length(name)==1L&&
+      !is.na(name)&&nzchar(name),"model_label must be non-empty when supplied")
+    grid<-fit$time
+    .etr_assert(is.numeric(grid)&&is.null(dim(grid))&&
+      length(grid)>=1L&&all(is.finite(grid)),
+      "source mixed time must be finite numeric grid")
+    nt<-length(grid)
+    B<-fit$random_basis
+    .etr_assert(is.matrix(B)&&is.numeric(B)&&
+      nrow(B)==nt&&ncol(B)>=1L&&all(is.finite(B)),
+      "source mixed random_basis must match time by basis")
+    .etr_assert(is.numeric(fit$residual_variance)&&
+      length(fit$residual_variance)==1L&&
+      is.finite(fit$residual_variance),
+      "source residual_variance must be finite numeric scalar")
+    rows<-list()
+    add<-function(component,values,kind){
+      rows[[length(rows)+1L]]<<-data.frame(
+        model=rep(name,nt),component=rep(component,nt),
+        component_type=rep(kind,nt),time=grid,
+        value=as.numeric(values),stringsAsFactors=FALSE)
+    }
+    quadratic<-function(basis,covariance,label){
+      .etr_assert(is.matrix(basis)&&is.numeric(basis)&&
+        nrow(basis)==nt&&ncol(basis)>=1L&&
+        all(is.finite(basis)),
+        paste(label,"basis must be finite time by basis matrix"))
+      k<-ncol(basis)
+      .etr_assert(is.matrix(covariance)&&is.numeric(covariance)&&
+        identical(dim(covariance),c(k,k))&&
+        all(is.finite(covariance)),
+        paste(label,"covariance must be finite square basis matrix"))
+      rowSums((basis%*%covariance)*basis)
+    }
+    add("participant_intercept_variance",
+      quadratic(B,fit$random_intercept_covariance,
+        "participant intercept"),"variance")
+    if(!is.null(fit[["random_slope_covariance",exact=TRUE]])){
+      add("participant_slope_variance",
+        quadratic(B,fit$random_slope_covariance,
+          "participant slope"),"variance")
+      .etr_assert(!is.null(fit[["random_intercept_slope_covariance",exact=TRUE]]),
+        "random slope covariance is present without intercept/slope cross-covariance")
+      # Source emits a signed covariance, not a variance or percentage.
+      add("participant_intercept_slope_cross_covariance",
+        quadratic(B,fit$random_intercept_slope_covariance,
+          "participant intercept/slope"),"covariance")
+    }
+    # An absent short optional field must not match the longer
+    # trial_random_effect_covariance field.
+    trial<-fit[["trial_random_effect",exact=TRUE]]
+    if(!is.null(trial)){
+      .etr_assert(identical(trial,"functional_intercept"),
+        "unsupported source trial_random_effect")
+      .etr_assert(!is.null(fit$trial_random_basis)&&
+        !is.null(fit$trial_random_effect_covariance),
+        "trial random-effect result is missing its basis/covariance")
+      add("trial_variance",
+        quadratic(fit$trial_random_basis,
+          fit$trial_random_effect_covariance,"trial"),"variance")
+    }
+    add("residual_variance",rep(fit$residual_variance,nt),"variance")
+    return(do.call(rbind,rows))
+  }
   .etr_mixed_moments_fit(fit)
   name<-if(is.null(model_label))"model" else model_label
   .etr_assert(is.character(name)&&length(name)==1L&&nzchar(name),

@@ -13,7 +13,8 @@ diagnostic visualizations. Python source frozen at eyetrajectoriespy 1.2.0.
 etr_multivariate_iaaft_diagnostics_frame(result)
 etr_functional_mixed_effects_variance_bootstrap_frame(bootstrap)
 etr_plot_multivariate_iaaft_diagnostics(result, ...)
-etr_plot_multivariate_surrogate_nonlinearity(result, bins = 20L, ...)
+etr_plot_multivariate_surrogate_nonlinearity(result, bins = 20L,
+  python_boundary_mode = FALSE, ...)
 }
 \arguments{
 \item{result}{Explicit R list with the relevant multivariate surrogate or
@@ -21,7 +22,12 @@ nonlinearity scientific quantities, including diagnostic spectral errors.}
 \item{bootstrap}{Full-refit participant-bootstrap R list with coefficient
 draws, covariance arrays, variance/eigenvalue summaries, flags and warnings.}
 \item{bins}{Number of equally spaced surrogate-statistic histogram bins,
-an integer at least two.}
+an integer at least two. Python boundary mode requires an R integer scalar
+from 2 through a native safety limit of 10000.}
+\item{python_boundary_mode}{If TRUE, reproduce NumPy integer-bin
+breaks including fixed half-unit constant-data expansion and left-inclusive
+counts with a closed final right edge. FALSE retains existing base R
+histogram semantics. This does not emulate Python Matplotlib Axes.}
 \item{...}{Additional arguments passed to the base R plotting function.}
 }
 \value{

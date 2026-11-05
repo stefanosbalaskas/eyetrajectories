@@ -7,10 +7,20 @@
 \title{Native R observed-grid simultaneous mean and FPCA bootstrap uncertainty}
 \description{Python-free Gaussian multiplier mean bands, fixed-target sign-aligned FPCA score bootstrap, matched-spectrum bootstrap, FPC shape simultaneous bands and an auditable component band frame.}
 \usage{
-etr_multiplier_functional_mean_band(trajectories, confidence_level = 0.95, n_multiplier = 2000L, unit = "curve", participant_column = NULL, random_state = 0L)
-etr_bootstrap_fpca_score_uncertainty(trajectories, targets = NULL, n_bootstrap = 500L, n_components = 3L, scaling = "none", resample_unit = "curve", participant_column = NULL, level = 0.95, random_state = 0L)
-etr_bootstrap_fpca_spectrum_uncertainty(trajectories, n_bootstrap = 500L, n_components = 3L, scaling = "none", resample_unit = "curve", participant_column = NULL, confidence_level = 0.95, simultaneous_scope = "component", random_state = 0L)
-etr_bootstrap_fpca_component_bands(trajectories, n_bootstrap = 500L, n_components = 3L, scaling = "none", resample_unit = "curve", participant_column = NULL, confidence_level = 0.95, simultaneous_scope = "component", relative_gap_threshold = NULL, on_near_tie = "error", random_state = 0L)
+etr_multiplier_functional_mean_band(trajectories, confidence_level = 0.95,
+  n_multiplier = 2000L, unit = "curve", participant_column = NULL, random_state = 0L)
+etr_bootstrap_fpca_score_uncertainty(trajectories, targets = NULL,
+  n_bootstrap = 500L, n_components = 3L, scaling = "none",
+  resample_unit = "curve", participant_column = NULL, level = 0.95, random_state = 0L)
+etr_bootstrap_fpca_spectrum_uncertainty(trajectories, n_bootstrap = 500L,
+  n_components = 3L, scaling = "none", resample_unit = "curve",
+  participant_column = NULL, confidence_level = 0.95,
+  simultaneous_scope = "component", random_state = 0L)
+etr_bootstrap_fpca_component_bands(trajectories, n_bootstrap = 500L,
+  n_components = 3L, scaling = "none", resample_unit = "curve",
+  participant_column = NULL, confidence_level = 0.95,
+  simultaneous_scope = "component", relative_gap_threshold = NULL,
+  on_near_tie = "error", random_state = 0L)
 etr_fpca_component_band_frame(result)
 }
 \arguments{

@@ -80,8 +80,10 @@
   if(n==0L)return(character(0))
   con <- rawConnection(blob,open="rb")
   on.exit(close(con),add=TRUE)
+  # UTF-32 scalar values fit signed 32-bit integers (<= 0x10FFFF).
+  # signed=FALSE is unsupported for R 4-byte integer readBin on Windows.
   ints <- readBin(con,what="integer",n=n*width,size=4L,
-                  signed=FALSE,endian="little")
+                  signed=TRUE,endian="little")
   .etr_assert(length(ints)==n*width && all(!is.na(ints)),
               "invalid NumPy UTF-32 code points")
   matrix_code <- matrix(ints,nrow=width,ncol=n)

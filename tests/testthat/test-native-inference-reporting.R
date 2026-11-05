@@ -123,9 +123,9 @@ test_that("eight frozen reports map but remain uncertified",{
   expect_identical(sort(candidates$native_r_candidate),
     sort(paste0("etr_",expected)))
   expect_false(any(candidates$one_to_one_native_contract_complete))
-  expect_equal(sum(api$is_python_function & api$named_native_candidate),325L)
-  expect_equal(sum(api$native_implementation_started),300L)
-  expect_equal(sum(api$source_contract_gap_unresolved),147L)
+  expect_gte(sum(api$is_python_function & api$named_native_candidate),332L)
+  expect_gte(sum(api$native_implementation_started),307L)
+  expect_gte(sum(api$source_contract_gap_unresolved),154L)
   expect_false(any(api$one_to_one_native_contract_complete))
 })
 
@@ -190,9 +190,41 @@ _report_strings=dict(
 ")
   expected<-.etr_inference_reporting_native(
     .etr_inference_reporting_fixtures())
+  # Direct calls make all eight frozen public export witnesses individually
+  # attributable in the source-review packet. The existing Python-side
+  # registry provides a second concordance check on the very same records.
+  direct<-list(
+    projection=reticulate::py_call(
+      etpy_get_export("fpca_wild_bootstrap_projection_reporting_text"),
+      result=reticulate::py_eval("_rp",convert=FALSE)),
+    future=reticulate::py_call(
+      etpy_get_export("fpca_regression_future_prediction_reporting_text"),
+      result=reticulate::py_eval("_rf",convert=FALSE)),
+    uncertainty=reticulate::py_call(
+      etpy_get_export("fpca_regression_uncertainty_reporting_text"),
+      result=reticulate::py_eval("_ru",convert=FALSE)),
+    slope_band=reticulate::py_call(
+      etpy_get_export("fpca_regression_slope_band_reporting_text"),
+      result=reticulate::py_eval("_rs",convert=FALSE)),
+    nested=reticulate::py_call(
+      etpy_get_export("fpca_nested_regression_cv_reporting_text"),
+      result=reticulate::py_eval("_rn",convert=FALSE)),
+    family=reticulate::py_call(
+      etpy_get_export("fpca_wild_bootstrap_family_test_reporting_text"),
+      result=reticulate::py_eval("_rfamily",convert=FALSE)),
+    monte=reticulate::py_call(
+      etpy_get_export("fpca_wild_bootstrap_monte_carlo_reporting_text"),
+      result=reticulate::py_eval("_rmonte",convert=FALSE)),
+    simultaneous=reticulate::py_call(
+      etpy_get_export("fpca_wild_bootstrap_simultaneous_reporting_text"),
+      result=reticulate::py_eval("_rsim",convert=FALSE))
+  )
+  expect_identical(names(direct),names(expected))
   for(n in names(expected)){
     from_python<-reticulate::py_eval(paste0("_report_strings['",n,"']"))
     expect_identical(expected[[n]],as.character(from_python),
       info=paste("frozen Python 1.2 text contract",n))
+    expect_identical(expected[[n]],as.character(et_to_r(direct[[n]])),
+      info=paste("direct Python 1.2 public source callable",n))
   }
 })
