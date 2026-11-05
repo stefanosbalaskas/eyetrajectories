@@ -143,7 +143,7 @@ time vector to its real part, matching NumPy's complex ndarray
 \item{provenance}{Optional JSON-like named native R list of source and preprocessing decisions. For \code{etr_from_long}, the source audit is added by default and user-supplied named keys are applied as shallow overrides.}
 \item{x}{Native trajectory set, or a fitted object as documented in the specific function.}
 \item{require_complete}{Whether to reject missing samples.}
-\item{python_boundary_mode}{If TRUE, enable bounded Python 1.2 TrajectorySet constructor/subset behavior for NaN observations, zero-curve arrays and zero-based/negative subset indices. Default FALSE preserves the native scientific contract. Does not reproduce all NumPy, pandas or dataclass semantics.}
+\item{python_boundary_mode}{If TRUE, enable bounded Python 1.2 TrajectorySet constructor/subset behavior for NaN observations, zero-curve arrays, regular nested numeric-like sequences, complex ndarray-to-real casting, ID-indexed metadata and zero-based/negative subset indices. Default FALSE preserves the native scientific contract. Does not reproduce all NumPy, pandas or dataclass semantics.}
 \item{data}{Long-format data frame with individual gaze samples.}
 \item{curve_columns}{Names of curve identifier columns.}
 \item{time_column}{Name of time variable.}
