@@ -10,10 +10,13 @@ recovery assessments with component/source labels and metric definitions.
 \usage{
 etr_run_functional_recovery_scenarios(
   scenarios, mean, eigenfunctions, estimator, recovery,
-  failure_action = "raise"
+  failure_action = "raise", source_draws_by_replicate = NULL,
+  observation_times_by_replicate = NULL
 )
 }
 \arguments{
+\item{source_draws_by_replicate}{Ordered records of retained source draws per replicate.}
+\item{observation_times_by_replicate}{Ordered fixed irregular schedules per replicate.}
 \item{scenarios}{Nonempty list of declared native
 \code{etr_functional_simulation_scenario} records.}
 \item{mean}{Callable generating the functional population mean.}
