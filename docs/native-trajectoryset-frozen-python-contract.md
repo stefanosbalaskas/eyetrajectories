@@ -89,3 +89,30 @@ RStudio environment. Independent full-domain certification remains 0/508.
 pandas index/value equivalence, Python dataclass immutability, exact Python
 exception types, nested metadata conversion and all methods' full boundary
 domains. The single known nonfunction `TrajectorySet` gap stays OPEN.
+
+
+## November 5 next batch — array-like input and metadata domain (unverified)
+
+The subsequent source branch extends the bounded opt-in Python mode with
+regular nested (curves × time × channels) lists of numeric/logical/numeric-string
+vectors, mixed scalar sequences of observation times, and explicit casting of
+complex atomic R arrays to real as `np.asarray(..., dtype=float)` does for
+complex NumPy ndarrays. No complex sequence coercion beyond inspected atomic
+arrays is claimed.
+
+The native `metadata` data.frame uses curve IDs as row names in opt-in
+mode, reflecting the frozen pandas index assignment. Both source-style
+zero-based integer indices and numeric-string integer indices are accepted
+in opt-in `etr_subset`; the default 1-based interface is unchanged.
+
+Direct frozen Python oracles were added for the nested sequence case, source
+metadata index and string-index reordering, plus complex NumPy ndarray
+casting. Before the owner's tests are run these are **authored hypotheses**,
+not validated scientific results.
+
+Unresolved Python source differences include arbitrary array-like containers,
+full pandas dtypes and indexing/serialization, dataclass immutability,
+exception types, Python identifier-type uniqueness before string coercion,
+NumPy integer dtype corner cases, and complete public class method behavior.
+The one known nonfunction gap stays open and all 508 independent certificates
+remain unsigned.
