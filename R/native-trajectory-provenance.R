@@ -43,7 +43,8 @@ etr_with_values <- function(x,values=x$values,time=NULL,
     values,x$curve_ids,x$dimension_names,x$metadata,
     if(is.null(coordinate_system))x$coordinate_system else coordinate_system,
     if(is.null(time_unit))x$time_unit else time_unit,
-    provenance=prov)
+    provenance=prov,
+    python_boundary_mode=isTRUE(attr(x,"python_boundary_mode")))
 }
 
 #' Freeze native scientific trajectory state in a versioned R snapshot
