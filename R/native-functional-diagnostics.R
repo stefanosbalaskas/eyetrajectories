@@ -317,6 +317,12 @@ etr_score_distance_matrix <- function(fpca,n_components=NULL,
   .etr_assert(is.logical(python_boundary_mode) &&
     length(python_boundary_mode)==1L && !is.na(python_boundary_mode),
     "python_boundary_mode must be a nonmissing logical scalar")
+  # In source-boundary mode, also accept duck-typed FPCA objects with
+  # declared component counts above the actual finite score matrix width.
+  # An explicit integer k slices available columns (as NumPy does); a
+  # fractional declared count requires an explicit integer slice value.
+  # This does NOT validate malformed full FPCAResult objects or certify
+  # the complete sklearn input, error and overflow contracts.
   # sklearn pairwise_distances accepts SciPy sparse score arrays.
   # Use sparse-native Matrix operations in explicit Python boundary mode,
   # rather than converting a possibly very wide sparse score matrix to
@@ -360,9 +366,10 @@ etr_score_distance_matrix <- function(fpca,n_components=NULL,
         (isTRUE(python_boundary_mode)&&is.logical(fpca$n_components)))&&
       length(fpca$n_components)==1L&&
       is.finite(fpca$n_components)&&
-      fpca$n_components==as.integer(fpca$n_components)&&
-      fpca$n_components>=1L&&
-      fpca$n_components<=ncol(source_scores),
+      fpca$n_components>=1L &&
+      (if(isTRUE(python_boundary_mode)) TRUE else
+        fpca$n_components==as.integer(fpca$n_components)&&
+        fpca$n_components<=ncol(source_scores)),
       "fpca must provide finite scores and a compatible n_components")
   }
   declared<-fpca$n_components
@@ -388,7 +395,14 @@ etr_score_distance_matrix <- function(fpca,n_components=NULL,
        (is.character(source_scores)||is.logical(source_scores)))
     matrix(suppressWarnings(as.numeric(source_scores)),
       nrow=nrow(source_scores),ncol=ncol(source_scores)) else source_scores
-  x<-scores[,seq_len(n_components),drop=FALSE]
+  # Frozen Python 1.2 accepts a duck-typed FPCA .n_components that
+  # overstates the physical score columns. NumPy [:, :k] silently stops
+  # at the last actual column; base R [, 1:k] would raise subscript errors.
+  # Preserve stricter fitted-R validation in default mode. In the opt-in
+  # source boundary mode this is only valid for at least one score column.
+  used_components<-if(isTRUE(python_boundary_mode))
+    min(as.integer(n_components),ncol(scores)) else as.integer(n_components)
+  x<-scores[,seq_len(used_components),drop=FALSE]
   if(source_sparse) {
     # Sparse Euclidean geometry: squared row norms and a sparse Gram
     # product, with a dense output whose size is intrinsically n_curves^2.

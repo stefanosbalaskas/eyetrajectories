@@ -49,9 +49,13 @@ It also accepts complex ndarray-style 3D input after
 discarding imaginary coordinates and Boolean reference indices. In
 inverse ALR it requires an integer storage-type dimension count as
 NumPy does when constructing an output shape; nonfinite source
-exponentiation is propagated rather than rejected. For score-distance
-matrices, sparse Matrix inputs use native sparse row norms and Gram
-products, with a dense output of no more than five million cells.
+exponentiation is propagated rather than rejected. For score-distance matrices, sparse Matrix inputs use native sparse
+row norms and Gram products, with a dense output of no more than five
+million cells. In explicit Python boundary mode, minimal duck-typed
+FPCA score objects may declare more components than their score matrix
+actually contains: a requested integer slice uses the available columns,
+matching NumPy; a fractional declared count requires an explicit integer
+slice count. Strict default native FPCA-object validation is preserved.
 This flag does not invoke Python or certify full-domain equivalence.}
 \item{transformed}{Finite three-dimensional ALR values in the
 strict default mode. In Python boundary mode, complex ndarray values
