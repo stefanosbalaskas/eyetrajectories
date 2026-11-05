@@ -41,26 +41,72 @@
 #' @param provenance Optional JSON-like named R list recording the source,
 #'   preprocessing steps and specifications; empty by default. This is a
 #'   native representation of Python's provenance mapping, not a fitted model.
+#' @param python_boundary_mode When TRUE, enable a bounded Python 1.2
+#'   TrajectorySet constructor/subset domain (NaN, zero curves and zero-based
+#'   indexing) without relaxing the default R scientific contract.
+#'   This is not full dataclass or pandas compatibility.
 #' @export
 etr_trajectory_set <- function(time, values, curve_ids = NULL, dimension_names = NULL,
                                metadata = NULL, coordinate_system = "unknown",
-                               time_unit = "unknown", provenance = list()) {
-  .etr_assert(is.numeric(time) && length(time) >= 2L && all(is.finite(time)) &&
-                all(diff(time) > 0), "time must be finite, strictly increasing, length >= 2")
-  .etr_assert(is.array(values) && is.numeric(values) && length(dim(values)) == 3L,
-              "values must be a numeric 3D array: curve x time x dimension")
+                               time_unit = "unknown", provenance = list(),
+                               python_boundary_mode = FALSE) {
+  .etr_assert(is.logical(python_boundary_mode) &&
+                length(python_boundary_mode) == 1L &&
+                !is.na(python_boundary_mode),
+              "python_boundary_mode must be a nonmissing logical scalar")
+  if (isTRUE(python_boundary_mode)) {
+    # Frozen Python TrajectorySet.__post_init__ uses np.asarray(..., dtype=float).
+    # R compatibility is intentionally bounded to regular 3D atomic arrays.
+    .etr_assert(is.atomic(time) && is.null(dim(time)) &&
+                  !is.factor(time) &&
+                  (is.numeric(time) || is.logical(time) || is.character(time)),
+                "time must be a one-dimensional numeric-like sequence")
+    time <- suppressWarnings(as.numeric(time))
+    .etr_assert(is.array(values) && length(dim(values)) == 3L &&
+                  !is.factor(values) &&
+                  (is.numeric(values) || is.logical(values) || is.character(values)),
+                "values must be a numeric-compatible 3D array")
+    shape <- dim(values)
+    converted <- suppressWarnings(as.numeric(values))
+    .etr_assert(all(!is.na(converted) | is.nan(converted) | is.na(values)),
+                "values are not convertible to NumPy float")
+    values <- array(converted, dim = shape)
+    # R's NA missing sentinel has no separate NumPy float counterpart.
+    values[is.na(values)] <- NaN
+  } else {
+    .etr_assert(is.numeric(time) && length(time) >= 2L && all(is.finite(time)) &&
+                  all(diff(time) > 0), "time must be finite, strictly increasing, length >= 2")
+    .etr_assert(is.array(values) && is.numeric(values) && length(dim(values)) == 3L,
+                "values must be a numeric 3D array: curve x time x dimension")
+  }
+  .etr_assert(length(time) >= 2L && all(is.finite(time)) &&
+                all(diff(time) > 0),
+              "time must be finite, strictly increasing, length >= 2")
   shape <- dim(values)
-  .etr_assert(shape[1] >= 1L && shape[2] == length(time) && shape[3] >= 1L,
+  .etr_assert(shape[1] >= if (isTRUE(python_boundary_mode)) 0L else 1L &&
+                shape[2] == length(time) &&
+                shape[3] >= if (isTRUE(python_boundary_mode)) 0L else 1L,
               "values dimensions must agree with time and contain curves/channels")
-  .etr_assert(!any(is.infinite(values) | is.nan(values)),
-              "values may contain NA but not NaN or infinity")
+  if (!isTRUE(python_boundary_mode))
+    .etr_assert(!any(is.infinite(values) | is.nan(values)),
+                "values may contain NA but not NaN or infinity")
   if (is.null(curve_ids)) curve_ids <- paste0("curve_", seq_len(shape[1]))
   if (is.null(dimension_names)) dimension_names <- paste0("dim_", seq_len(shape[3]))
+  if (isTRUE(python_boundary_mode)) {
+    # Frozen dataclass converts identifiers with map(str) after uniqueness.
+    .etr_assert(is.atomic(curve_ids) && is.atomic(dimension_names) &&
+                  !anyNA(curve_ids) && !anyNA(dimension_names),
+                "curve and dimension IDs must be atomic without missing values")
+    curve_ids <- as.character(curve_ids)
+    dimension_names <- as.character(dimension_names)
+  }
   .etr_assert(is.character(curve_ids) && length(curve_ids) == shape[1] &&
-                !anyNA(curve_ids) && all(nzchar(curve_ids)) &&
+                !anyNA(curve_ids) &&
+                (isTRUE(python_boundary_mode) || all(nzchar(curve_ids))) &&
                 !anyDuplicated(curve_ids), "curve_ids must be unique nonempty strings")
   .etr_assert(is.character(dimension_names) && length(dimension_names) == shape[3] &&
-                !anyNA(dimension_names) && all(nzchar(dimension_names)) &&
+                !anyNA(dimension_names) &&
+                (isTRUE(python_boundary_mode) || all(nzchar(dimension_names))) &&
                 !anyDuplicated(dimension_names), "dimension_names must be unique strings")
   if (is.null(metadata)) metadata <- data.frame(row.names = seq_len(shape[1]))
   .etr_assert(is.data.frame(metadata) && nrow(metadata) == shape[1],
@@ -73,11 +119,14 @@ etr_trajectory_set <- function(time, values, curve_ids = NULL, dimension_names =
               "time_unit must be a single nonempty string")
   .etr_assert(.etr_provenance_valid(provenance),
               "provenance must be a JSON-like named R list with unique nonempty keys")
-  structure(list(time = as.numeric(time), values = values,
+  result <- structure(list(time = as.numeric(time), values = values,
                  curve_ids = curve_ids, dimension_names = dimension_names,
                  metadata = metadata, coordinate_system = coordinate_system,
                  time_unit = time_unit, provenance = provenance),
             class = "etr_trajectory_set")
+  if (isTRUE(python_boundary_mode))
+    attr(result, "python_boundary_mode") <- TRUE
+  result
 }
 
 #' Validate native trajectories
@@ -89,7 +138,8 @@ etr_validate <- function(x, require_complete = FALSE) {
               "x must be a native etr_trajectory_set")
   etr_trajectory_set(x$time, x$values, x$curve_ids, x$dimension_names,
                      x$metadata, x$coordinate_system, x$time_unit,
-                     if (is.null(x$provenance)) list() else x$provenance)
+                     if (is.null(x$provenance)) list() else x$provenance,
+                     python_boundary_mode = isTRUE(attr(x, "python_boundary_mode")))
   if (isTRUE(require_complete)) {
     .etr_assert(!anyNA(x$values), "complete observations required; handle missing gaze explicitly")
   }
@@ -184,9 +234,32 @@ etr_as_long <- function(x) {
 #' Extract selected trajectories
 #' @param x Native collection.
 #' @param curves Integer indices or curve IDs (never silently reorders).
+#' @inheritParams etr_trajectory_set
 #' @export
-etr_subset <- function(x, curves) {
+etr_subset <- function(x, curves, python_boundary_mode = FALSE) {
   etr_validate(x)
+  .etr_assert(is.logical(python_boundary_mode) &&
+                length(python_boundary_mode) == 1L &&
+                !is.na(python_boundary_mode),
+              "python_boundary_mode must be a nonmissing logical scalar")
+  if (isTRUE(python_boundary_mode)) {
+    # Frozen TrajectorySet.subset uses np.asarray(indices, dtype=int)
+    # then Python/NumPy zero-based indexing, including negative indices.
+    .etr_assert(is.atomic(curves) && is.null(dim(curves)) &&
+                  (is.numeric(curves) || is.logical(curves)) &&
+                  all(is.finite(curves)),
+                "Python indices must be finite numeric-like values")
+    idx <- as.integer(curves)
+    n <- length(x$curve_ids)
+    .etr_assert(all(idx >= -n & idx < n),
+                "Python curve index out of range")
+    pos <- if (length(idx)) ifelse(idx < 0L, idx + n + 1L, idx + 1L) else integer()
+    return(etr_trajectory_set(x$time, x$values[pos, , , drop = FALSE],
+      x$curve_ids[pos], x$dimension_names,
+      x$metadata[pos, , drop = FALSE], x$coordinate_system, x$time_unit,
+      if (is.null(x$provenance)) list() else x$provenance,
+      python_boundary_mode = TRUE))
+  }
   if (is.character(curves)) {
     .etr_assert(all(curves %in% x$curve_ids), "unknown curve identifier")
     curves <- match(curves, x$curve_ids)
