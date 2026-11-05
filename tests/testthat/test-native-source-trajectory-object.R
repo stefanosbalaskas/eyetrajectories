@@ -109,3 +109,70 @@ test_that("pinned frozen Python 1.2 TrajectorySet.with_values agrees on finite c
     native$provenance$source)
   expect_false(any(etr_native_parity_catalog()$one_to_one_native_contract_complete))
 })
+
+
+test_that("opt-in Python TrajectorySet constructor keeps NaN and empty curves",{
+  vals<-array(c(1,NaN,Inf,4,5,6),c(2L,3L,1L))
+  expect_error(etr_trajectory_set(c(0,1,2),vals,c("a","b"),"x"),
+    "NaN or infinity")
+  x<-etr_trajectory_set(c("0","1","2"),vals,c("a","b"),"x",
+    python_boundary_mode=TRUE)
+  expect_s3_class(x,"etr_trajectory_set")
+  expect_true(is.nan(x$values[2L,1L,1L]))
+  expect_true(any(is.infinite(x$values)))
+  expect_true(isTRUE(attr(x,"python_boundary_mode")))
+  expect_true(etr_validate(x))
+  y<-etr_with_values(x,x$values,provenance_update=list(method="source"))
+  expect_true(isTRUE(attr(y,"python_boundary_mode")))
+  expect_identical(is.nan(y$values),is.nan(x$values))
+  expect_identical(y$provenance$method,"source")
+
+  empty<-etr_subset(x,integer(),python_boundary_mode=TRUE)
+  expect_identical(dim(empty$values),c(0L,3L,1L))
+  expect_length(empty$curve_ids,0L)
+  expect_true(etr_validate(empty))
+  expect_error(etr_subset(x,integer()),"unique valid 1-based")
+  expect_error(etr_subset(x,c(0L,0L),python_boundary_mode=TRUE),
+    "curve_ids must be unique")
+  expect_error(etr_subset(x,2L,python_boundary_mode=TRUE),"out of range")
+  expect_error(etr_subset(x,-3L,python_boundary_mode=TRUE),"out of range")
+  expect_identical(etr_subset(x,0L,python_boundary_mode=TRUE)$curve_ids,"a")
+  expect_identical(etr_subset(x,-1L,python_boundary_mode=TRUE)$curve_ids,"b")
+  expect_identical(etr_subset(x,c(0L,-1L),
+    python_boundary_mode=TRUE)$curve_ids,c("a","b"))
+  expect_identical(etr_subset(x,1L)$curve_ids,"a")
+  expect_true(isTRUE(attr(etr_subset(x,1L),"python_boundary_mode")))
+  expect_identical(etr_subset(x,1L)$values[1L,,1L],
+    x$values[1L,,1L])
+  expect_false(any(etr_native_parity_catalog()$one_to_one_native_contract_complete))
+})
+
+test_that("pinned Python 1.2 TrajectorySet NaN and zero-based subset oracle",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Frozen Python TrajectorySet zero-curve source oracle opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  vals<-array(c(1,NaN,Inf,4,5,6),c(2L,3L,1L))
+  x<-etr_trajectory_set(c(0,1,2),vals,c("a","b"),"x",
+    python_boundary_mode=TRUE)
+  py_ctor<-etpy_get_export("TrajectorySet",.namespace="root")
+  py_x<-reticulate::py_call(py_ctor,
+    time=reticulate::r_to_py(c(0,1,2)),
+    values=reticulate::r_to_py(vals),
+    curve_ids=reticulate::r_to_py(c("a","b")),
+    dimension_names=reticulate::r_to_py("x"))
+  python_values<-reticulate::py_to_r(py_x$values)
+  expect_identical(dim(python_values),dim(x$values))
+  expect_identical(is.nan(python_values),is.nan(x$values))
+  expect_identical(is.infinite(python_values),is.infinite(x$values))
+  py_sub<-py_x$subset(reticulate::r_to_py(c(0L,-1L)))
+  native_sub<-etr_subset(x,c(0L,-1L),python_boundary_mode=TRUE)
+  expect_identical(as.character(reticulate::py_to_r(py_sub$curve_ids)),
+    native_sub$curve_ids)
+  expect_equal(unname(reticulate::py_to_r(py_sub$values)),
+    unname(native_sub$values),tolerance=0)
+  py_empty<-py_x$subset(reticulate::r_to_py(integer()))
+  native_empty<-etr_subset(x,integer(),python_boundary_mode=TRUE)
+  expect_identical(as.integer(reticulate::py_to_r(py_empty$n_curves)),0L)
+  expect_identical(dim(native_empty$values),c(0L,3L,1L))
+  expect_false(any(etr_native_parity_catalog()$one_to_one_native_contract_complete))
+})

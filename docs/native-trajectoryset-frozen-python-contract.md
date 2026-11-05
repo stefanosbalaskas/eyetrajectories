@@ -33,11 +33,11 @@ opt-in pinned 1.2 source environment.
 
 | Dimension | Frozen Python 1.2 | Native R candidate |
 |---|---|---|
-| Missing gaze | `np.nan` values are preserved | Native constructor permits R `NA` but rejects `NaN` |
-| Input coercion | `np.asarray(..., dtype=float)` accepts broader array-like values | Native requires an R numeric 3D array |
-| Zero curves | Dataclass `__post_init__` does not explicitly forbid a zero-curve first axis | Native R constructor requires one or more curves |
+| Missing gaze | `np.nan` values are preserved | Strict native constructor permits R `NA` but rejects `NaN`; opt-in boundary mode accepts NaN/Inf |
+| Input coercion | `np.asarray(..., dtype=float)` accepts broader array-like values | Strict native requires a numeric 3D array; opt-in boundary mode accepts regular numeric-like atomic 3D arrays |
+| Zero curves | Dataclass `__post_init__` does not explicitly forbid a zero-curve first axis | Strict native requires curves; opt-in boundary mode accepts zero curves |
 | Immutability | `@dataclass(frozen=True)` prevents reassignment of fields | S3 list fields can be changed |
-| Curve indexing | Python `subset` takes zero-based integer indices, including standard negative indices | R `etr_subset` uses 1-based IDs/indices and rejects repeated indices |
+| Curve indexing | Python `subset` takes zero-based integer indices, including standard negative indices | Default `etr_subset` is 1-based; opt-in boundary mode uses Python-style zero-based/negative indices, with duplicate ID rejection |
 | Metadata | pandas DataFrame, index relabeled to curve IDs | base R data.frame with separate R rowname handling |
 | Exceptions | Python exceptions for source validation | Native R errors/messages and rejection boundaries differ |
 
@@ -63,3 +63,29 @@ The 203 original callable gap rows remain in their original source
 register; the class has its own separate one-row unsigned scientific
 resolution queue. The provisional class mapping improves representation
 inventory coverage to **1/128**, but not certified class coverage.
+
+## November 5 opt-in constructor/subset domain extension — awaiting runtime qualification
+
+At the development branch, `etr_trajectory_set(...,
+python_boundary_mode=TRUE)` accepts the **bounded atomic-array** portion of
+the frozen `TrajectorySet` source constructor: 1-D numeric-like finite time,
+regular 3-D numeric/Boolean/numeric-string values, `NaN` missing samples,
+infinite value observations, zero curves and zero dimensions. R `NA` values
+are explicitly converted to NumPy-style `NaN` in this mode. This is an
+**opt-in source-boundary representation**, not the default scientific contract.
+
+`etr_validate` and `etr_with_values` preserve that explicit mode;
+`etr_subset(x, indices, python_boundary_mode=TRUE)` uses Python-style
+zero-based/negative curve indices and permits empty selections. Duplicate
+indices still fail at the constructor's unique-ID validation (as in
+`dataclasses.replace` on the frozen class).
+
+The existing direct Python 1.2 source test now covers NaN/Inf values,
+negative indices and zero-curve subsets; native tests also protect the
+strict default contract. The new code **has not yet run** in the owner's
+RStudio environment. Independent full-domain certification remains 0/508.
+
+**Still outside the complete source contract:** all NumPy array-like inputs,
+pandas index/value equivalence, Python dataclass immutability, exact Python
+exception types, nested metadata conversion and all methods' full boundary
+domains. The single known nonfunction `TrajectorySet` gap stays OPEN.
