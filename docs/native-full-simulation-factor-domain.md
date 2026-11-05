@@ -1,0 +1,7 @@
+# Batch 19 — source-domain expansion for factorial simulation designs
+
+Frozen Python **eyetrajectoriespy==1.2.0** `simulate.py::expand_functional_simulation_scenarios` iterates over `itertools.product(*levels)` and permits factor sweeps across all dataclass fields except `name` and `seed_start`. The latter remains controlled by `seed_policy`; disjoint blocks offset by `index * base.replicates` even if the `replicates` field is itself varied. Python name slugs distinguish scalar, sequences, structured mappings, NumPy matrices and `None`.
+
+The previous native R implementation exposed only eight scalar factor types and rejected matrix, hierarchical, missingness, time-grid and multivariate level specifications. This patch expands the **existing** `etr_expand_functional_simulation_scenarios` instead of creating another function. It constructs the complete Cartesian design in Python order, validates every realized scenario through the existing constructor, supports NULL factor levels (single bracket assignment), and generates source-like names and seeds. Existing scalar-factor behavior remains intact.
+
+The actual stochastic simulators are unchanged: this patch extends **study-design specification and enumeration** rather than performing additional simulations, and cannot by itself establish statistical recovery or full source equivalence. Cross-language object identities and arbitrary user-defined Python object protocols remain outside the qualified R domain. The 203 callable source gaps remain unresolved; no independent certificates are claimed.

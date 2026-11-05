@@ -87,8 +87,8 @@ etr_functional_simulation_reporting_text(result, digits = 3L)
 \item{labels}{Named JSON-compatible provenance labels.}
 \item{scenarios}{Ordered list of native simulation scenario records.}
 \item{base}{One native scenario used for explicit factor expansion.}
-\item{factors}{Named nonempty list of supported scalar factor levels.}
-\item{seed_policy}{Shared replicate seeds or disjoint scenario blocks.}
+\item{factors}{Named nonempty list of source scenario-field levels, including vector, matrix, mapping and explicitly NULL-valued levels. Name and seed_start are reserved and cannot be factors.}
+\item{seed_policy}{Shared replicate seeds or disjoint scenario blocks; disjoint offsets use the base scenario replicate count, as in the frozen source.}
 }
 \value{
 \code{etr_workflow_config()}, \code{etr_preprocessing_step_config()} and
