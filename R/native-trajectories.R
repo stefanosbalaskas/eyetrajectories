@@ -52,7 +52,9 @@
                     (is.numeric(cell) || is.logical(cell) || is.character(cell)),
                   "nested values must have equal numeric-like channels")
       converted <- suppressWarnings(as.numeric(cell))
-      .etr_assert(all(!is.na(converted) | is.na(cell)),
+      # NumPy float conversion accepts numeric-text NaN, Inf and -Inf.
+      # Reject malformed strings but preserve numeric missing/overflow.
+      .etr_assert(all(!is.na(converted) | is.nan(converted) | is.na(cell)),
                   "nested values contain a nonnumeric string")
       if (k > 0L) out[i, j, ] <- converted
     }
