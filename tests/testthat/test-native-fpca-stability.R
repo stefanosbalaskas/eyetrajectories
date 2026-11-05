@@ -188,9 +188,13 @@ test_that("pinned Python 1.2 eigenspace and empirical outlier oracle is opt-in",
   native<-etr_compare_fpca_subspaces(fit,fit,0L,2L)
   expect_equal(native$principal_cosines,as.numeric(
     et_to_r(pycomp$principal_cosines)),tolerance=1e-8)
-  expect_equal(native$normalized_projector_distance,
-    as.numeric(et_to_r(pycomp$normalized_projector_distance)),
-    tolerance=1e-8)
+  # Self-comparison has exactly zero theoretical projector distance.
+  # Python's SVD may produce sqrt(machine epsilon) roundoff.
+  py_projector_distance <- as.numeric(
+    et_to_r(pycomp$normalized_projector_distance))
+  expect_identical(native$normalized_projector_distance, 0)
+  expect_lte(abs(py_projector_distance),
+    10 * sqrt(.Machine$double.eps))
   pyout<-reticulate::py_call(etpy_get_export("diagnose_fpca_outliers"),
     result=pyfit,trajectories=pyx,
     n_components=as.integer(2L),score_covariance="empirical")
