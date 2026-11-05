@@ -142,9 +142,8 @@ test_that("opt-in Python TrajectorySet constructor keeps NaN and empty curves",{
     python_boundary_mode=TRUE)$curve_ids,c("a","b"))
   expect_identical(etr_subset(x,1L)$curve_ids,"a")
   expect_true(isTRUE(attr(etr_subset(x,1L),"python_boundary_mode")))
-  expect_true(is.nan(etr_subset(x,1L)$values[1L,2L,1L]) ||
-              is.infinite(etr_subset(x,1L)$values[1L,2L,1L]) ||
-              is.finite(etr_subset(x,1L)$values[1L,2L,1L]))
+  expect_identical(etr_subset(x,1L)$values[1L,,1L],
+    x$values[1L,,1L])
   expect_false(any(etr_native_parity_catalog()$one_to_one_native_contract_complete))
 })
 
