@@ -139,6 +139,19 @@ etr_functional_recovery_reporting_text <- function(assessment) {
     "window_units and step_units must be nonempty strings")
   for(i in seq_along(pairs)){
     v<-pairs[[i]]
+    if(is.list(v)&&is.null(dim(v))&&!is.data.frame(v)) {
+      # Published Python 1.2 accepts a Sequence of two numeric scalars.
+      # An R nested scalar list is the closest native representation of
+      # a Python (window, step) tuple. Validate each scalar *before*
+      # unlisting so a Boolean is never silently coerced to an integer.
+      .etr_assert(length(v)==2L&&all(vapply(v,function(value)
+        is.numeric(value)&&!is.logical(value)&&
+        is.null(dim(value))&&length(value)==1L&&
+        is.finite(value),logical(1L))),
+        "window and step must be positive finite numeric values")
+      v<-vapply(v,as.numeric,numeric(1L))
+      pairs[[i]]<-v
+    }
     .etr_assert(is.numeric(v)&&!is.logical(v)&&length(v)==2L&&
       all(is.finite(v))&&all(v>0),
       "window and step must be positive finite numeric values")
