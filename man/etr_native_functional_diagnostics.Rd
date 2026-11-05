@@ -11,7 +11,7 @@
 \alias{etr_phase_summary}
 \alias{etr_phase_trajectory_set}
 \alias{etr_fit_phase_fpca}
-\title{Stage 9 native R functional transformations and scientific diagnostics}
+\title{Native R functional transformations and scientific diagnostics}
 \description{Twelve Python-free implementations of selected eyetrajectoriespy 1.2.0 functional transformations, distance summaries and phase diagnostics. Native R implementations have been authored; comprehensive one-to-one Python contract equivalence has not been established.}
 \usage{
 etr_alr_transform(values, reference_dimension = -1L, epsilon = 1e-8,
@@ -55,8 +55,12 @@ million cells. In explicit Python boundary mode, minimal duck-typed
 FPCA score objects may declare more components than their score matrix
 actually contains: a requested integer slice uses the available columns,
 matching NumPy; a fractional declared count requires an explicit integer
-slice count. Strict default native FPCA-object validation is preserved.
-This flag does not invoke Python or certify full-domain equivalence.}
+slice count. In score-distance source mode, dense and sparse matrices use
+scikit-learn-style squared norms and Gram products and can return Inf or NaN
+from numerical overflow, or lose tiny distances through cancellation. Strict
+native R mode retains the more stable \code{stats::dist} computation.
+Strict default native FPCA-object validation is preserved. This flag does
+not invoke Python or certify full-domain equivalence.}
 \item{transformed}{Finite three-dimensional ALR values in the
 strict default mode. In Python boundary mode, complex ndarray values
 are cast to real and NaN/Inf logarithms use source arithmetic.}

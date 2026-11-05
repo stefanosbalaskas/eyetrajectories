@@ -308,6 +308,10 @@ etr_fpca_score_frame <- function(result,prefix="FPC") {
 #'   and guarded at five million cells. Matrix remains optional.
 #'   Also enforce Python slice-index semantics: Boolean counts are valid,
 #'   while double 1.0 is not a valid NumPy index (unlike legacy native R).
+#'   The source-compatible distance kernel follows sklearn's squared-norm
+#'   and Gram calculation, including overflow (Inf), indeterminate Inf-Inf
+#'   (NaN), and cancellation of small distances for large common offsets.
+#'   Default R mode retains stats::dist's more stable pairwise differences.
 #'   Other Python-specific classes and error types remain outside the
 #'   audited subset.
 #' @return Unlabelled symmetric numeric matrix.
@@ -426,9 +430,26 @@ etr_score_distance_matrix <- function(fpca,n_components=NULL,
     squared_norms<-as.numeric(Matrix::rowSums(x*x))
     gram<-as.matrix(Matrix::tcrossprod(x))
     squared<-outer(squared_norms,squared_norms,"+")-2*gram
-    .etr_assert(all(is.finite(squared)),
-      "sparse FPCA score distances overflowed to nonfinite values")
+    # Frozen Python 1.2 calls sklearn.metrics.pairwise_distances,
+    # which does not reject squared-norm/Gram overflow after validating
+    # finite source scores: distinct huge rows can yield Inf; shared huge
+    # rows can yield NaN through Inf-Inf. This is an opt-in source mode,
+    # so preserve those source outputs rather than failing closed here.
     # Keep the matrix as the first pmax argument so R retains its dim.
+    out<-sqrt(pmax(squared,0))
+    diag(out)<-0
+    out<-(out+t(out))/2
+  } else if(isTRUE(python_boundary_mode)) {
+    # In the frozen source, even *dense* pairwise Euclidean distances are
+    # computed from squared norms and an inner-product matrix, not from
+    # the more stable pairwise differences of stats::dist(). Preserve that
+    # reproducibility boundary here, including cancellation and overflow.
+    # In science-first default R mode we continue to use stats::dist().
+    .etr_assert(as.double(nrow(x))^2 <= 5e6,
+      "dense source score distance output exceeds native 5e6-cell resource bound")
+    squared_norms<-rowSums(x*x)
+    gram<-tcrossprod(x)
+    squared<-outer(squared_norms,squared_norms,"+")-2*gram
     out<-sqrt(pmax(squared,0))
     diag(out)<-0
     out<-(out+t(out))/2
