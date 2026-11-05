@@ -114,6 +114,9 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-frozen-workflow-schema",
     "native-frozen-workflow-execution",
     "native-source-trajectory-object",
+    "native-dtw-frechet-source-options",
+    "native-distance-source-boundaries",
+    "native-distances-parity-ledger",
     "native-nonfunction-source-gaps",
     "native-mixed-model-source-text"),".R"))
 if(anyDuplicated(required_scientific_tests))stop(
@@ -267,6 +270,9 @@ filter<-paste(c(
   "native-frozen-workflow-schema",
   "native-frozen-workflow-execution",
   "native-source-trajectory-object",
+  "native-dtw-frechet-source-options",
+  "native-distance-source-boundaries",
+  "native-distances-parity-ledger",
   "native-nonfunction-source-gaps"),collapse="|")
 # Existence and inclusion are separate: all required scientific tests must
 # be selected by the exact filter executed in BOTH offline and Python modes.
@@ -424,6 +430,9 @@ source_files<-unique(c(
   "tests/test_verify_four_pilot_review_bundle.py",
   "tests/testthat/test-native-508-certification-batches.R",
   "tests/testthat/test-native-source-trajectory-object.R",
+  "tests/testthat/test-native-dtw-frechet-source-options.R",
+  "tests/testthat/test-native-distance-source-boundaries.R",
+  "tests/testthat/test-native-distances-parity-ledger.R",
   "tests/testthat/test-native-nonfunction-source-gaps.R",
   "R/native-trajectory-provenance.R",
   "inst/extdata/native_nonfunction_contract_review_v1.csv",

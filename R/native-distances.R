@@ -117,8 +117,12 @@ etr_pairwise_l2 <- function(x, dimension_weights = NULL) {
               paste(label,"must be numeric-compatible"))
   if(is.complex(z)) z<-Re(z)
   converted<-suppressWarnings(as.numeric(z))
+  # NumPy dtype=float accepts text "NaN" as a floating-point NaN.
+  # Pass it through to finite-input validation; malformed text must still
+  # fail conversion.  Otherwise c("1", "NaN") incorrectly reports a
+  # nonnumeric scalar instead of the source's finite-weights rejection.
   .etr_assert(length(converted)==length(z) &&
-                all(!is.na(converted) | is.na(z)),
+                all(!is.na(converted) | is.nan(converted) | is.na(z)),
               paste(label,"contains a nonnumeric scalar"))
   converted
 }

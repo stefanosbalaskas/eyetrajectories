@@ -58,6 +58,10 @@ test_that("source NumPy finite, shape and weights domain remains fail-closed",{
     python_boundary_mode=TRUE),"finite")
   expect_error(etr_dtw(a,b,dimension_weights=c("1","NaN"),
     python_boundary_mode=TRUE),"finite")
+  expect_error(etr_frechet(a,b,dimension_weights=c("NaN","1"),
+    python_boundary_mode=TRUE),"finite")
+  expect_error(etr_dtw(a,b,dimension_weights=c("-Inf","1"),
+    python_boundary_mode=TRUE),"finite")
   expect_error(etr_frechet(a,b,dimension_weights=matrix(c(1,2),1L),
     python_boundary_mode=TRUE),"1D")
   expect_error(etr_dtw(a,b,dimension_weights=c("1","oops"),
@@ -107,6 +111,16 @@ test_that("frozen Python 1.2 direct Fréchet and DTW source comparisons",{
       etr_frechet(a_nested,b_nested,python_boundary_mode=TRUE)
       else etr_dtw(a_nested,b_nested,python_boundary_mode=TRUE)
     expect_equal(as.numeric(et_to_r(ref)),native,tolerance=1e-12)
+  }
+  # Direct pinned source confirms NumPy parses NaN numeric text before
+  # rejecting non-finite channel weights (not as a malformed string).
+  for(fn in c("discrete_frechet_distance","dynamic_time_warping_distance")) {
+    for(weight in list(c("1","NaN"),c("-Inf","1"))) {
+      expect_error(reticulate::py_call(etpy_get_export(fn),
+        a=reticulate::r_to_py(a), b=reticulate::r_to_py(b),
+        dimension_weights=reticulate::r_to_py(weight)),
+        "finite non-negative")
+    }
   }
   # ndarray complex casts real under source; Python lists of complex fail.
   np<-reticulate::import("numpy",convert=FALSE)
