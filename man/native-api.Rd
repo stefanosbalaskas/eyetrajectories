@@ -91,9 +91,10 @@ etr_l2_distance(a, b, time, dimension_weights = NULL,
 
 etr_pairwise_l2(x, dimension_weights = NULL)
 
-etr_frechet(a, b, dimension_weights = NULL)
+etr_frechet(a, b, dimension_weights = NULL, return_coupling = FALSE)
 
-etr_dtw(a, b, dimension_weights = NULL)
+etr_dtw(a, b, dimension_weights = NULL, window_radius = NULL,
+  step_pattern = "symmetric1", normalize = FALSE, return_path = FALSE)
 
 etr_pairwise_dtw(x, dimension_weights = NULL)
 
@@ -159,7 +160,11 @@ time vector to its real part, matching NumPy's complex ndarray
 \item{a}{Numeric point-by-channel matrix.}
 \item{b}{Numeric point-by-channel matrix with matching channels.}
 \item{dimension_weights}{Finite, non-negative channel weights.}
-\item{normalize}{For trapezoidal weights, a scalar with Python 1.2
+\item{return_coupling}{If TRUE, return the 0-based deterministic discrete Fréchet coupling and local costs.}
+\item{window_radius}{Optional non-negative integer Sakoe-Chiba index-window radius for DTW.}
+\item{step_pattern}{DTW transition weighting: symmetric1 or symmetric2.}
+\item{return_path}{If TRUE, return 0-based DTW path, local and weighted costs, and provenance.}
+\item{normalize}{For DTW, TRUE normalizes only the symmetric2 step pattern by n_points_a + n_points_b. For trapezoidal weights, a scalar with Python 1.2
 truthiness semantics: FALSE, zero, empty string and zero complex keep
 original weights. Nonzero numeric scalars, nonempty strings and, in the
 explicit Python boundary mode, nonzero, infinite or NaN-valued complex
