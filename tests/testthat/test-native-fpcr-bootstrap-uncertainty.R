@@ -330,3 +330,151 @@ _python_fpcr_participant_fixed={
   expect_false(any(etr_native_parity_catalog()$
     one_to_one_native_contract_complete))
 })
+
+
+test_that("end-to-end FPCR bootstrap-prediction-slope source pipeline replays fixed participants and external targets",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("full frozen Python 1.2 FPCR pipeline oracle is opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  z<-.etr_fpcr_uncertainty_fixture()
+  chosen<-c(2L,7L,13L)
+  external<-etr_trajectory_set(z$x$time,
+    z$x$values[chosen,,,drop=FALSE]+.025,
+    curve_ids=c("e02","e07","e13"),
+    dimension_names=z$x$dimension_names,
+    metadata=z$x$metadata[chosen,,drop=FALSE],
+    coordinate_system=z$x$coordinate_system,
+    time_unit=z$x$time_unit)
+  units<-lapply(0:19,function(i){
+    if(i%%3L==0L)c(0L,1L,1L,2L,3L,4L,5L) else
+      if(i%%3L==1L)c(6L,5L,4L,3L,2L,2L,1L) else
+        c(0L,2L,3L,4L,5L,6L,6L)
+  })
+  indices<-lapply(units,function(u)
+    as.integer(unlist(lapply(u,function(p)c(2L*p,2L*p+1L)),
+      use.names=FALSE)))
+  local_boot<-etr_bootstrap_fpca_regression_uncertainty(
+    z$x,z$y,targets=external,n_bootstrap=20L,n_components=1L,
+    resample_unit="participant",participant_column="subject",
+    level=.9,random_state=23L,bootstrap_indices=indices)
+  expect_identical(local_boot$target_source,"external")
+  expect_identical(local_boot$target_curve_ids,c("e02","e07","e13"))
+  expect_identical(dim(local_boot$bootstrap_mean_predictions),c(20L,3L))
+  reticulate::py_run_string("
+
+import numpy as np
+import pandas as pd
+from unittest.mock import patch
+import eyetrajectoriespy as et
+import eyetrajectoriespy.regression_inference as ri
+_f15_n=14
+_f15_time=np.linspace(0.,1.,15)
+_f15_val=np.empty((_f15_n,15,1))
+for j in range(1,15):
+ _f15_val[j-1,:,0]=(np.sin(np.pi*_f15_time)*(1+j/16)
+    +.16*np.cos(2*np.pi*_f15_time)*(j%4)/3+_f15_time*j/18)
+_f15_y=.2+1.2*np.arange(1,15)/14+.2*np.sin(np.arange(1,15))
+_f15_tr=et.TrajectorySet(time=_f15_time,values=_f15_val,
+ curve_ids=tuple(f'c{j:02d}' for j in range(1,15)),
+ dimension_names=('gaze',),
+ metadata=pd.DataFrame({'subject':np.repeat(
+ [f'p{j:02d}' for j in range(1,8)],2)}),
+ coordinate_system='normalized',time_unit='s')
+_f15_target=et.TrajectorySet(time=_f15_time,
+ values=_f15_val[[1,6,12]]+.025,
+ curve_ids=('e02','e07','e13'),dimension_names=('gaze',),
+ metadata=pd.DataFrame({'subject':['p01','p04','p07']}),
+ coordinate_system='normalized',time_unit='s')
+_f15_units=[([0,1,1,2,3,4,5] if i%3==0 else
+  [6,5,4,3,2,2,1] if i%3==1 else [0,2,3,4,5,6,6])
+  for i in range(20)]
+_f15_rows=[np.asarray([2*p+d for p in u for d in (0,1)],dtype=int)
+  for u in _f15_units]
+_f15_iter=iter(_f15_rows)
+def _f15_fixed_groups(*args,**kwargs):
+ return next(_f15_iter)
+with patch.object(ri,'_participant_bootstrap_indices',
+ side_effect=_f15_fixed_groups):
+ _f15_boot=ri.bootstrap_fpca_regression_uncertainty(
+   _f15_tr,_f15_y,targets=_f15_target,n_bootstrap=20,
+   n_components=1,resample_unit='participant',
+   participant_column='subject',level=.9,random_state=23)
+_f15_pi=ri.fpca_regression_future_prediction_interval(
+ _f15_boot,_f15_y,confidence_level=.9,random_state=17)
+_f15_band=ri.fpca_regression_slope_simultaneous_band(
+ _f15_boot,confidence_level=.9,simultaneous_scope='dimension')
+_f15_ridx=np.random.default_rng(
+ np.random.SeedSequence(17).spawn(1)[0]).integers(
+  0,14,size=_f15_boot.bootstrap_mean_predictions.shape)
+_f15_pf=ri.fpca_regression_future_prediction_frame(_f15_pi)
+_f15_sf=ri.fpca_regression_slope_band_frame(_f15_band)
+assert _f15_pi.predictive_draws.shape==(20,3)
+assert _f15_band.lower.shape==(15,1)
+assert _f15_pf.shape==(3,8)
+assert _f15_sf.shape==(15,7)
+assert np.allclose(_f15_pi.sampled_residuals,
+ _f15_pi.centered_residuals[_f15_ridx])
+
+")
+  py_boot<-reticulate::py_eval("_f15_boot",convert=FALSE)
+  for(field in c("reference_slope","bootstrap_slopes",
+    "reference_mean_predictions","bootstrap_mean_predictions",
+    "bootstrap_intercepts","prediction_lower","prediction_median",
+    "prediction_upper","prediction_se","slope_lower","slope_median",
+    "slope_upper","slope_se")){
+    expected<-et_to_r(reticulate::py_get_attr(py_boot,field))
+    actual<-local_boot[[field]]
+    expect_equal(unname(actual),unname(expected),
+      tolerance=1e-6,ignore_attr=TRUE,
+      info=paste("external target participant FPCR",field))
+  }
+  ridx<-reticulate::py_to_r(reticulate::py_eval(
+    "_f15_ridx",convert=FALSE))
+  local_pi<-etr_fpca_regression_future_prediction_interval(
+    local_boot,z$y,confidence_level=.9,random_state=17L,
+    residual_indices=ridx)
+  py_pi<-reticulate::py_eval("_f15_pi",convert=FALSE)
+  for(field in c("centered_residuals","sampled_residuals",
+    "predictive_draws","lower","median","upper","predictive_se")){
+    expected<-et_to_r(reticulate::py_get_attr(py_pi,field))
+    expect_equal(unname(local_pi[[field]]),unname(expected),
+      tolerance=1e-6,ignore_attr=TRUE,
+      info=paste("external target future predictive",field))
+  }
+  local_band<-etr_fpca_regression_slope_simultaneous_band(
+    local_boot,confidence_level=.9,simultaneous_scope="dimension")
+  py_band<-reticulate::py_eval("_f15_band",convert=FALSE)
+  for(field in c("lower","upper","pointwise_se",
+    "critical_values","max_statistics")){
+    expected<-et_to_r(reticulate::py_get_attr(py_band,field))
+    expect_equal(unname(local_band[[field]]),unname(expected),
+      tolerance=1e-6,ignore_attr=TRUE,
+      info=paste("external target simultaneous slope",field))
+  }
+  local_pred_table<-etr_fpca_regression_future_prediction_frame(local_pi)
+  python_pred_table<-reticulate::py_to_r(reticulate::py_eval(
+    "_f15_pf",convert=FALSE))
+  expect_identical(names(local_pred_table),names(python_pred_table))
+  expect_equal(as.character(local_pred_table$curve_id),
+    as.character(python_pred_table$curve_id))
+  for(field in setdiff(names(local_pred_table),"curve_id"))
+    expect_equal(as.numeric(local_pred_table[[field]]),
+      as.numeric(python_pred_table[[field]]),tolerance=1e-6,
+      info=paste("external future frame",field))
+  local_slope_table<-etr_fpca_regression_slope_band_frame(local_band)
+  python_slope_table<-reticulate::py_to_r(reticulate::py_eval(
+    "_f15_sf",convert=FALSE))
+  expect_identical(names(local_slope_table),names(python_slope_table))
+  expect_equal(as.character(local_slope_table$dimension),
+    as.character(python_slope_table$dimension))
+  for(field in setdiff(names(local_slope_table),"dimension"))
+    expect_equal(as.numeric(local_slope_table[[field]]),
+      as.numeric(python_slope_table[[field]]),tolerance=1e-6,
+      info=paste("external slope band frame",field))
+  expect_false(local_pi$provenance$
+    fpca_regression_future_prediction_interval$simultaneous_across_targets)
+  expect_false(local_band$provenance$
+    fpca_regression_slope_band$continuous_between_grid_points)
+  expect_false(any(etr_native_parity_catalog()$
+    one_to_one_native_contract_complete))
+})
