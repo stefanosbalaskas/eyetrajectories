@@ -3,6 +3,9 @@
 # Run from package root:
 # source("scripts/capture_native_source_qualification_evidence.R")
 stopifnot(file.exists("DESCRIPTION"))
+# First validate R source syntax, the mandatory test selector, and
+# changed oracle-call hazards; do not initialize Python or reticulate.
+source("scripts/preflight_scientific_pr.R", local = TRUE)
 required_scientific_tests<-file.path("tests","testthat",paste0(
   "test-",c("native-generalized-fosr-prediction",
     "native-generalized-fosr-bootstrap-source",
@@ -66,6 +69,7 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-certification",
     "native-source-contract-gaps",
     "native-source-contract-alignment",
+    "native-fast-scientific-preflight",
     "native-sparse-score-distance-source",
     "native-scientific-visualization",
     "native-surrogate-numpy-histogram-source",
@@ -196,6 +200,7 @@ filter<-paste(c(
   "native-nonlinear-recurrence",
   "native-mixed-model-source-text",
   "native-source-environment",
+  "native-fast-scientific-preflight",
   "native-source-evidence-runner",
   "native-independent-source-review-packet",
   "native-private-helper-names",
@@ -224,6 +229,7 @@ filter<-paste(c(
   "native-all-function-mapping-complete",
   "native-certification",
   "native-source-contract-alignment",
+  "native-fast-scientific-preflight",
   "native-alr-numpy-complex-source",
   "native-trapezoid-complex-source",
   "native-functional-l2-complex-source",
@@ -473,6 +479,8 @@ source_files<-unique(c(
   "R/native-sparse-multilevel-prediction-workflows.R",
   "tests/testthat/test-native-all-function-mapping-complete.R",
   "scripts/qualify_native_current_contracts.R",
+  "scripts/preflight_scientific_pr.R",
+  "tests/testthat/test-native-fast-scientific-preflight.R",
   "tests/testthat/test-native-source-evidence-runner.R",
   "tests/testthat/test-native-certification-readiness.R",
   "tests/testthat/test-native-certification.R",

@@ -7,6 +7,9 @@ if (!file.exists("DESCRIPTION") ||
     !file.exists("scripts/stage_local_release_candidate.py"))
   stop("Run this entrypoint from eyetrajectories repository root.",
        call. = FALSE)
+# Fail fast on tracked R syntax, scientific-test selector drift, and
+# edited Python oracle argument collisions before any staged build.
+source("scripts/preflight_scientific_pr.R", local = TRUE)
 # Fail before a costly staged tarball build if any tracked Rd manual is
 # malformed or two pages advertise the same alias. Do not suppress warnings.
 source("scripts/preflight_rd_manuals.R", local = TRUE)
