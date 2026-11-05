@@ -12,10 +12,20 @@
         if (!is.null(argnames) &&
             "x" %in% argnames[-1L]) hits <<- hits + 1L
       }
-      if (length(node)>1L)
-        for (part in as.list(node)[-1L]) walk(part)
-    } else if (is.expression(node)||is.list(node)) {
-      for (part in as.list(node)) walk(part)
+      # Empty arguments (e.g. x[, 1L]) are R_MissingArg objects.
+      # Binding one to a for-loop variable and evaluating it errors.
+      # Inspect directly by indexed call access before descending.
+      if (length(node) > 1L) {
+        for (i in seq_along(node)[-1L]) {
+          if (!identical(node[[i]], quote(expr = )))
+            walk(node[[i]])
+        }
+      }
+    } else if (is.expression(node) || is.list(node)) {
+      for (i in seq_along(node)) {
+        if (!identical(node[[i]], quote(expr = )))
+          walk(node[[i]])
+      }
     }
   }
   walk(expr)
