@@ -92,14 +92,24 @@ etr_l2_distance <- function(a, b, time, dimension_weights = NULL,
 #' Pairwise integrated L2 distances
 #' @param x Complete trajectory collection.
 #' @param dimension_weights Optional non-negative channel weights.
+#' @param python_boundary_mode When TRUE, forward bounded frozen Python 1.2
+#'   NumPy numeric input/coercion and nonfinite arithmetic to the native L2
+#'   source mode. Missing NaN trajectories remain rejected. Default FALSE
+#'   preserves the strict native scientific contract.
 #' @export
-etr_pairwise_l2 <- function(x, dimension_weights = NULL) {
+etr_pairwise_l2 <- function(x, dimension_weights = NULL,
+                            python_boundary_mode = FALSE) {
+  .etr_assert(is.logical(python_boundary_mode) &&
+                length(python_boundary_mode)==1L &&
+                !is.na(python_boundary_mode),
+              "python_boundary_mode must be a nonmissing logical scalar")
   etr_validate(x, require_complete = TRUE)
   n <- dim(x$values)[1]
   d <- matrix(0, n, n, dimnames = list(x$curve_ids, x$curve_ids))
   for (i in seq_len(n)) for (j in seq_len(n)) if (i < j) {
     d[i, j] <- etr_l2_distance(.etr_curve(x, i), .etr_curve(x, j),
-                               x$time, dimension_weights)
+                               x$time, dimension_weights,
+                               python_boundary_mode = python_boundary_mode)
     d[j, i] <- d[i, j]
   }
   d
@@ -431,16 +441,92 @@ etr_dtw <- function(a, b, dimension_weights = NULL,
   ),class=c("etr_dtw_result","list"))
 }
 
-#' Pairwise DTW distances over complete curves
+#' Pairwise source-aligned DTW distances over complete curves
+#'
+#' Optional ordered dimension selection, explicit Sakoe-Chiba sample-index
+#' window, and symmetric2 normalization follow frozen Python 1.2
+#' analysis.py::pairwise_dynamic_time_warping_distances. No timestamps are
+#' passed to dynamic programming. A default call preserves prior native
+#' two-argument semantics and curve-ID matrix dimnames.
 #' @inheritParams etr_pairwise_l2
+#' @param dimensions Optional ordered, distinct character channel names.
+#'   NULL selects all stored channels in their original order. R character
+#'   vectors represent Python name sequences; Python string-versus-sequence
+#'   type identity cannot be fully represented by an R character scalar.
+#' @param window_radius Optional nonnegative integer index-window radius.
+#' @param step_pattern One of symmetric1 (default) or symmetric2.
+#' @param normalize Logical; TRUE only with symmetric2 and divides by
+#'   n_points_a + n_points_b.
 #' @export
-etr_pairwise_dtw <- function(x, dimension_weights = NULL) {
+etr_pairwise_dtw <- function(x, dimension_weights = NULL,
+                             dimensions = NULL, window_radius = NULL,
+                             step_pattern = "symmetric1", normalize = FALSE,
+                             python_boundary_mode = FALSE) {
+  # The frozen pairwise Python function validates options before the
+  # TrajectorySet and before inspecting whether any curves are present.
+  .etr_assert(is.character(step_pattern) && length(step_pattern)==1L &&
+                !is.na(step_pattern) &&
+                step_pattern %in% c("symmetric1","symmetric2"),
+              "step_pattern must be 'symmetric1' or 'symmetric2'")
+  .etr_assert(is.logical(normalize) && length(normalize)==1L &&
+                !is.na(normalize),"normalize must be boolean")
+  .etr_assert(!isTRUE(normalize) || step_pattern=="symmetric2",
+              "normalize=TRUE is available only for symmetric2")
+  .etr_assert(is.logical(python_boundary_mode) &&
+                length(python_boundary_mode)==1L &&
+                !is.na(python_boundary_mode),
+              "python_boundary_mode must be a nonmissing logical scalar")
   etr_validate(x, require_complete = TRUE)
-  n <- dim(x$values)[1]
-  d <- matrix(0, n, n, dimnames = list(x$curve_ids, x$curve_ids))
-  for (i in seq_len(n)) for (j in seq_len(n)) if (i < j) {
-    d[i, j] <- etr_dtw(.etr_curve(x, i), .etr_curve(x, j), dimension_weights)
-    d[j, i] <- d[i, j]
+  if(is.null(dimensions)) {
+    selected<-x$dimension_names
+  } else {
+    .etr_assert(is.character(dimensions) && length(dimensions)>=1L &&
+                  !anyNA(dimensions),
+                "dimensions must contain an ordered character sequence")
+    .etr_assert(!anyDuplicated(dimensions),
+                "dimensions must not contain duplicates")
+    .etr_assert(all(dimensions %in% x$dimension_names),
+                "Unknown trajectory dimensions")
+    selected<-dimensions
+  }
+  indices<-match(selected,x$dimension_names)
+  n<-dim(x$values)[1L]
+  d<-matrix(0,n,n,dimnames=list(x$curve_ids,x$curve_ids))
+  if(n>0L) {
+    .etr_assert(length(indices)>=1L,
+                "a and b must contain at least one dimension")
+    # Python validates weights and radius once even if a one-curve
+    # collection has no off-diagonal distances to compute.
+    dw<-if(isTRUE(python_boundary_mode))
+      .etr_source_distance_weights(dimension_weights,length(indices))
+      else .etr_dimweights(length(indices),dimension_weights)
+    # The frozen source rejects all-zero weights. Preserve the legacy
+    # native default where an all-zero-weight distance was legal.
+    explicit_source_options<-isTRUE(python_boundary_mode) ||
+      !is.null(dimensions) || !is.null(window_radius) ||
+      step_pattern!="symmetric1" || isTRUE(normalize)
+    if(explicit_source_options)
+      .etr_assert(any(dw>0),
+                  "dimension_weights must contain at least one positive value")
+    if(!is.null(window_radius)) {
+      .etr_assert(is.integer(window_radius) && length(window_radius)==1L &&
+                    !is.na(window_radius),
+                  "window_radius must be an integer or NULL")
+      .etr_assert(window_radius>=0L,
+                  "window_radius must be non-negative")
+    }
+    nt<-length(x$time)
+    for(i in seq_len(n)) for(j in seq_len(n)) if(i<j) {
+      a<-matrix(x$values[i,,indices,drop=FALSE],nrow=nt,
+                ncol=length(indices))
+      b<-matrix(x$values[j,,indices,drop=FALSE],nrow=nt,
+                ncol=length(indices))
+      value<-etr_dtw(a,b,dimension_weights=dw,
+        window_radius=window_radius,step_pattern=step_pattern,
+        normalize=normalize,python_boundary_mode=python_boundary_mode)
+      d[i,j]<-value
+      d[j,i]<-value
+    }
   }
   d
 }

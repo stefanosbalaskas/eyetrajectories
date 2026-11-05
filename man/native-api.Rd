@@ -89,7 +89,7 @@ etr_tortuosity(x)
 etr_l2_distance(a, b, time, dimension_weights = NULL,
   python_boundary_mode = FALSE)
 
-etr_pairwise_l2(x, dimension_weights = NULL)
+etr_pairwise_l2(x, dimension_weights = NULL, python_boundary_mode = FALSE)
 
 etr_frechet(a, b, dimension_weights = NULL, return_coupling = FALSE,
   python_boundary_mode = FALSE)
@@ -98,7 +98,9 @@ etr_dtw(a, b, dimension_weights = NULL, window_radius = NULL,
   step_pattern = "symmetric1", normalize = FALSE, return_path = FALSE,
   python_boundary_mode = FALSE)
 
-etr_pairwise_dtw(x, dimension_weights = NULL)
+etr_pairwise_dtw(x, dimension_weights = NULL, dimensions = NULL,
+  window_radius = NULL, step_pattern = "symmetric1", normalize = FALSE,
+  python_boundary_mode = FALSE)
 
 etr_trapezoid_weights(time, normalize = FALSE,
   python_boundary_mode = FALSE)
@@ -173,7 +175,10 @@ explicit Python boundary mode, nonzero, infinite or NaN-valued complex
 scalars normalize to unit total. Empty/nonempty lists have container
 truthiness only in source-boundary mode. General Python object
 truthiness remains outside the qualified domain.}
-\item{python_boundary_mode}{For Fréchet and DTW, TRUE also enables
+\item{python_boundary_mode}{For pairwise L2 and DTW, TRUE also
+propagates bounded frozen Python 1.2 numeric coercion and nonfinite
+L2 semantics; otherwise existing native defaults remain. For Fréchet
+and DTW, TRUE also enables
 rectangular nested 2D point sequences, numeric-string/Boolean/complex
 matrices and weighted NumPy float-domain conversions. Defaults remain
 strict scientific numeric matrices. Logical flag requesting a bounded native
@@ -198,7 +203,8 @@ Specify exactly one of radius or target_recurrence_rate.}
 and one, selecting the source-aligned target-density threshold policy.
 Distance ties may prevent an exact target rate.}
 \item{dimensions}{Optional ordered selected channel names for native
-recurrence sources; NULL retains the native all-channel default.}
+recurrence sources and pairwise DTW; NULL retains all channels.
+For pairwise DTW, the order controls dimension-weight alignment.}
 \item{theiler_window_units}{Theiler interval units: samples or compatible
 physical time on a sufficiently regular observed grid.}
 \item{curve_a,curve_b}{Required curve identifiers for trajectory-set
