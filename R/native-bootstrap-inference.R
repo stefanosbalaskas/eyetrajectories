@@ -75,10 +75,16 @@
 #' @param unit Curve or independent participant units.
 #' @param participant_column Required participant metadata when used.
 #' @param random_state Isolated base-R RNG seed; not NumPy-identical.
+#' @param gaussian_multiplier_draws Optional fixed numeric matrix with
+#'   n_multiplier rows and one column per independent inference unit.
+#'   When supplied, no random numbers are generated and random_state is
+#'   not used; this supports exact same-draw Python/R numerical replay.
+#'   It is a native R audit extension, not a frozen Python 1.2 parameter.
 #' @export
 etr_multiplier_functional_mean_band <- function(trajectories,
     confidence_level=.95,n_multiplier=2000L,unit="curve",
-    participant_column=NULL,random_state=0L) {
+    participant_column=NULL,random_state=0L,
+    gaussian_multiplier_draws=NULL) {
   etr_validate(trajectories,require_complete=TRUE)
   .etr_assert(trajectories$coordinate_system!="probability_simplex",
     "simplex responses require an explicit log-ratio transform")
@@ -108,10 +114,25 @@ etr_multiplier_functional_mean_band <- function(trajectories,
   sd_grid<-matrix(apply(unit_vals,c(2L,3L),stats::sd),nt,nd)
   se<-sd_grid/sqrt(nu)
   active<-sd_grid>.Machine$double.eps
-  restore<-.etr_simulation_rng(random_state);on.exit(restore(),add=TRUE)
+  # Exact common-random-number replays make the stochastic scientific
+  # estimand auditable without pretending base R and NumPy PCG64 have the
+  # same seeded streams. The unit order is the native source curve or
+  # first-observed participant order, never a window-row resample.
+  if(!is.null(gaussian_multiplier_draws)) {
+    .etr_assert(is.matrix(gaussian_multiplier_draws)&&
+      is.numeric(gaussian_multiplier_draws)&&
+      !is.complex(gaussian_multiplier_draws)&&
+      identical(dim(gaussian_multiplier_draws),c(b,nu))&&
+      all(is.finite(gaussian_multiplier_draws)),
+      "gaussian_multiplier_draws must be a finite numeric matrix with n_multiplier rows and n_units columns")
+  }else{
+    restore<-.etr_simulation_rng(random_state)
+    on.exit(restore(),add=TRUE)
+  }
   stats<-numeric(b)
   if(any(active))for(i in seq_len(b)){
-    w<-stats::rnorm(nu)
+    w<-if(is.null(gaussian_multiplier_draws))stats::rnorm(nu)
+      else as.numeric(gaussian_multiplier_draws[i,])
     process<-matrix(0,nt,nd)
     for(t in seq_len(nt))for(d in seq_len(nd))
       process[t,d]<-sum(w*residual[,t,d])/sqrt(nu)
@@ -141,7 +162,9 @@ etr_multiplier_functional_mean_band <- function(trajectories,
       zero_variance_grid_points=sum(!active),
       simultaneous_domain="observed_time_by_dimension_grid",
       continuous_between_grid_points=FALSE,
-      random_engine="base_R_not_NumPy")))),
+      random_engine=if(is.null(gaussian_multiplier_draws))
+        "base_R_not_NumPy" else "caller_supplied_fixed_Gaussian_matrix",
+      fixed_draw_replay=!is.null(gaussian_multiplier_draws))))),
     class="etr_functional_mean_band")
 }
 

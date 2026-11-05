@@ -324,6 +324,9 @@ etr_windowed_rqa_sensitivity <- function(trajectories,metrics,
 #' @param radius Fixed positive radius or NULL when using a target rate.
 #' @param target_recurrence_rate Optional source-aligned target density in (0, 1).
 #' @param confidence_level,n_multiplier,random_state Multiplier band specification.
+#' @param gaussian_multiplier_draws Optional fixed source-aligned matrix of
+#'   Gaussian multiplier draws, one row per replicate and one column per
+#'   independent curve or participant. Allows exact finite-sample replay.
 #' @param ... Native fixed-radius windowed-RQA parameters.
 #' @export
 etr_windowed_rqa_functional_mean_band <- function(trajectories,
@@ -332,7 +335,8 @@ etr_windowed_rqa_functional_mean_band <- function(trajectories,
     radius=NULL,target_recurrence_rate=NULL,metric="euclidean",
     theiler_window=0L,theiler_window_units="samples",dimensions=NULL,
     min_diagonal_length=2L,min_vertical_length=2L,
-    confidence_level=.95,n_multiplier=2000L,random_state=0L){
+    confidence_level=.95,n_multiplier=2000L,random_state=0L,
+    gaussian_multiplier_draws=NULL){
   .etr_assert(identical(unit,"curve")||identical(unit,"participant"),
     "unit must be 'curve' or 'participant'")
   functional<-etr_windowed_rqa_trajectory_set(
@@ -347,7 +351,8 @@ etr_windowed_rqa_functional_mean_band <- function(trajectories,
   band<-etr_multiplier_functional_mean_band(
     functional$trajectories,confidence_level=confidence_level,
     n_multiplier=n_multiplier,unit=unit,
-    participant_column=participant_column,random_state=random_state)
+    participant_column=participant_column,random_state=random_state,
+    gaussian_multiplier_draws=gaussian_multiplier_draws)
   structure(list(functional_rqa=functional,band=band,unit=unit,
     participant_column=participant_column,
     provenance=list(operation="windowed_rqa_functional_mean_band",

@@ -29,7 +29,8 @@ etr_windowed_rqa_functional_mean_band(trajectories, metrics,
   theiler_window = 0L, theiler_window_units = "samples",
   dimensions = NULL, min_diagonal_length = 2L,
   min_vertical_length = 2L, confidence_level = 0.95,
-  n_multiplier = 2000L, random_state = 0L)
+  n_multiplier = 2000L, random_state = 0L,
+  gaussian_multiplier_draws = NULL)
 etr_functional_recovery_metric_catalog()
 etr_functional_recovery_metric_catalog_frame()
 etr_functional_recovery_value_key(value)
@@ -72,6 +73,11 @@ windowed RQA metrics. The mean-band wrapper requires complete values.}
 by participant when \code{unit="participant"}.}
 \item{confidence_level,n_multiplier,random_state}{Gaussian multiplier
 simultaneous mean-band calibration settings. R/NumPy RNGs differ.}
+\item{gaussian_multiplier_draws}{Optional finite source-aligned numeric
+matrix with one row per Gaussian multiplier replicate and one column per
+independent curve or participant. This explicit native extension enables
+same-draw numerical replay with frozen Python 1.2, without claiming RNG-stream
+or typed-result-class equivalence.}
 \item{value}{Native semantic recovery value with \code{metric},
 \code{source} and zero-based \code{component} fields.}
 \item{assessment}{Native assessment list with a nonempty \code{values}

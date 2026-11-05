@@ -8,7 +8,8 @@
 \description{Python-free Gaussian multiplier mean bands, fixed-target sign-aligned FPCA score bootstrap, matched-spectrum bootstrap, FPC shape simultaneous bands and an auditable component band frame.}
 \usage{
 etr_multiplier_functional_mean_band(trajectories, confidence_level = 0.95,
-  n_multiplier = 2000L, unit = "curve", participant_column = NULL, random_state = 0L)
+  n_multiplier = 2000L, unit = "curve", participant_column = NULL,
+  random_state = 0L, gaussian_multiplier_draws = NULL)
 etr_bootstrap_fpca_score_uncertainty(trajectories, targets = NULL,
   n_bootstrap = 500L, n_components = 3L, scaling = "none",
   resample_unit = "curve", participant_column = NULL, level = 0.95, random_state = 0L)
@@ -38,7 +39,12 @@ etr_fpca_component_band_frame(result)
 \item{simultaneous_scope}{Component-wise or within-metric family-wise maximum calibration.}
 \item{relative_gap_threshold}{Optional component identifiability screen threshold [0,1).}
 \item{on_near_tie}{Error, warn or ignore an explicitly detected near tie.}
-\item{random_state}{Isolated base-R RNG seed. Equal Python/NumPy seeds do not give equal random draws.}
+\item{random_state}{Isolated base-R RNG seed. Equal Python/NumPy seeds do not give equal random draws. When fixed draws are supplied, the seed is unused.}
+\item{gaussian_multiplier_draws}{Optional finite numeric matrix of shape
+\code{n_multiplier} by number of independent curve or participant units,
+used as exact Gaussian multiplier realizations. Bypasses the R RNG for
+numerical source replay; this native R parameter does not exist in the
+frozen Python 1.2 public interface.}
 \item{result}{Native FPC component band for tidy conversion.}
 }
 \value{A native uncertainty result or long-form component-band data frame.}
