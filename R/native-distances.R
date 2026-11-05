@@ -105,27 +105,109 @@ etr_pairwise_l2 <- function(x, dimension_weights = NULL) {
   d
 }
 
+# Frozen eyetrajectoriespy==1.2.0, analysis.py:
+# _validate_discrete_frechet_inputs / _validate_dynamic_time_warping_inputs
+# call np.asarray(..., dtype=float) before checking 2D shape, completeness
+# and positive finite dimension weights. This is a bounded native-R analogue;
+# Python lists of complex scalars and arbitrary Python objects are excluded.
+.etr_source_distance_atomic <- function(z, label) {
+  .etr_assert(is.atomic(z) && !is.factor(z) &&
+                (is.numeric(z) || is.character(z) || is.logical(z) ||
+                 is.complex(z)),
+              paste(label,"must be numeric-compatible"))
+  if(is.complex(z)) z<-Re(z)
+  converted<-suppressWarnings(as.numeric(z))
+  .etr_assert(length(converted)==length(z) &&
+                all(!is.na(converted) | is.na(z)),
+              paste(label,"contains a nonnumeric scalar"))
+  converted
+}
+
+.etr_source_distance_points <- function(z, label) {
+  if(is.list(z) && !is.object(z) && is.null(dim(z))) {
+    rows<-length(z)
+    .etr_assert(rows>=1L && all(vapply(z,function(row)
+      is.atomic(row) && is.null(dim(row)) && !is.factor(row) &&
+      (is.numeric(row)||is.character(row)||is.logical(row)||is.complex(row)),
+      logical(1L))),paste(label,"must contain numeric-like point rows"))
+    channels<-length(z[[1L]])
+    .etr_assert(channels>=1L && all(lengths(z)==channels),
+                paste(label,"must be a nonempty rectangular 2D sequence"))
+    out<-matrix(NA_real_,nrow=rows,ncol=channels)
+    for(i in seq_len(rows))
+      out[i,]<-.etr_source_distance_atomic(z[[i]],label)
+  } else {
+    .etr_assert(is.matrix(z) && !is.factor(z) &&
+                  (is.numeric(z)||is.character(z)||is.logical(z)||
+                   is.complex(z)),
+                paste(label,"must be a numeric-compatible 2D matrix"))
+    out<-matrix(.etr_source_distance_atomic(z,label),
+                nrow=nrow(z),ncol=ncol(z))
+  }
+  .etr_assert(nrow(out)>=1L && ncol(out)>=1L && all(is.finite(out)),
+              paste(label,"must be finite complete point sequences"))
+  out
+}
+
+.etr_source_distance_weights <- function(weights, d) {
+  if(is.null(weights)) return(rep(1,d))
+  if(is.list(weights) && !is.object(weights) && is.null(dim(weights))) {
+    .etr_assert(all(vapply(weights,function(w)
+      is.atomic(w) && length(w)==1L && is.null(dim(w)) &&
+      !is.factor(w) &&
+      (is.numeric(w)||is.character(w)||is.logical(w)||is.complex(w)),
+      logical(1L))),"dimension_weights must be scalar numeric-like values")
+    weights<-vapply(weights,function(w)
+      .etr_source_distance_atomic(w,"dimension_weights"),
+      numeric(1L), USE.NAMES=FALSE)
+  } else {
+    .etr_assert(is.atomic(weights) && !is.factor(weights) &&
+                  (is.null(dim(weights)) || length(dim(weights))==1L),
+                "dimension_weights must be a 1D numeric-like vector")
+    weights<-.etr_source_distance_atomic(weights,"dimension_weights")
+  }
+  .etr_assert(length(weights)==d && all(is.finite(weights)) &&
+                all(weights>=0) && any(weights>0),
+              "dimension_weights must be finite, nonnegative, match channels and include a positive value")
+  unname(weights)
+}
+
 #' Discrete Fréchet distance for two ordered point sequences
 #'
 #' This is discrete, not continuous Fréchet distance; timestamps are not used.
 #' @param a Numeric points-by-channels matrix.
 #' @param b Numeric points-by-channels matrix.
 #' @param dimension_weights Optional non-negative channel weights.
+#' @param python_boundary_mode If TRUE, accept bounded NumPy dtype=float
+#'   source input conversions for regular nested 2D sequences and numeric,
+#'   logical, character or complex matrices and positive finite 1D weights.
+#'   The default strict native R scientific input domain is unchanged.
 #' @param return_coupling When TRUE, return a deterministic optimal 0-based
 #'   coupling path, local distances, geometry and source provenance, matching
 #'   the frozen Python 1.2 recursion. The default returns only distance.
 #' @export
 etr_frechet <- function(a, b, dimension_weights = NULL,
-                        return_coupling = FALSE) {
+                        return_coupling = FALSE,
+                        python_boundary_mode = FALSE) {
   .etr_assert(is.logical(return_coupling) && length(return_coupling)==1L &&
                 !is.na(return_coupling),
               "return_coupling must be boolean")
-  a <- .etr_points(a, "a"); b <- .etr_points(b, "b")
+  .etr_assert(is.logical(python_boundary_mode) &&
+                length(python_boundary_mode)==1L && !is.na(python_boundary_mode),
+              "python_boundary_mode must be a nonmissing logical scalar")
+  if(isTRUE(python_boundary_mode)) {
+    a<-.etr_source_distance_points(a,"a")
+    b<-.etr_source_distance_points(b,"b")
+  } else {
+    a <- .etr_points(a, "a"); b <- .etr_points(b, "b")
+  }
   .etr_assert(ncol(a) == ncol(b), "channel count mismatch")
-  dw <- .etr_dimweights(ncol(a), dimension_weights)
+  dw <- if(isTRUE(python_boundary_mode))
+    .etr_source_distance_weights(dimension_weights,ncol(a))
+    else .etr_dimweights(ncol(a),dimension_weights)
   # Do not break existing native scalar all-zero-weight results; a source
   # coupling requires the Python validator's at-least-one-positive rule.
-  if(isTRUE(return_coupling))
+  if(isTRUE(return_coupling) || isTRUE(python_boundary_mode))
     .etr_assert(any(dw>0),"dimension_weights must contain at least one positive value")
   m <- nrow(a); n <- nrow(b)
   .etr_assert(as.double(m) * as.double(n) <= 5e6,
@@ -208,7 +290,8 @@ etr_frechet <- function(a, b, dimension_weights = NULL,
 #' @export
 etr_dtw <- function(a, b, dimension_weights = NULL,
                     window_radius = NULL,step_pattern = "symmetric1",
-                    normalize = FALSE,return_path = FALSE) {
+                    normalize = FALSE,return_path = FALSE,
+                    python_boundary_mode = FALSE) {
   .etr_assert(is.character(step_pattern) && length(step_pattern)==1L &&
                 !is.na(step_pattern) && step_pattern %in% c("symmetric1","symmetric2"),
               "step_pattern must be 'symmetric1' or 'symmetric2'")
@@ -218,7 +301,15 @@ etr_dtw <- function(a, b, dimension_weights = NULL,
                 !is.na(return_path),"return_path must be boolean")
   .etr_assert(!isTRUE(normalize) || identical(step_pattern,"symmetric2"),
               "normalize=TRUE is available only for symmetric2")
-  a <- .etr_points(a, "a"); b <- .etr_points(b, "b")
+  .etr_assert(is.logical(python_boundary_mode) &&
+                length(python_boundary_mode)==1L && !is.na(python_boundary_mode),
+              "python_boundary_mode must be a nonmissing logical scalar")
+  if(isTRUE(python_boundary_mode)) {
+    a<-.etr_source_distance_points(a,"a")
+    b<-.etr_source_distance_points(b,"b")
+  } else {
+    a <- .etr_points(a, "a"); b <- .etr_points(b, "b")
+  }
   .etr_assert(ncol(a) == ncol(b), "channel count mismatch")
   m <- nrow(a); n <- nrow(b)
   if(!is.null(window_radius)) {
@@ -228,12 +319,14 @@ etr_dtw <- function(a, b, dimension_weights = NULL,
     .etr_assert(window_radius>=abs(m-n),
                 "window_radius is too small to connect sequence endpoints")
   }
-  dw <- .etr_dimweights(ncol(a), dimension_weights)
+  dw <- if(isTRUE(python_boundary_mode))
+    .etr_source_distance_weights(dimension_weights,ncol(a))
+    else .etr_dimweights(ncol(a),dimension_weights)
   is_default <- is.null(window_radius) && identical(step_pattern,"symmetric1") &&
     !normalize && !return_path
   # Preserve the pre-existing all-zero-weight scalar default. All source
   # extension calls require at least one positive weight, as Python does.
-  if(!is_default)
+  if(!is_default || isTRUE(python_boundary_mode))
     .etr_assert(any(dw>0),"dimension_weights must contain at least one positive value")
   .etr_assert((as.double(m) + 1) * (as.double(n) + 1) <= 5e6,
               "DTW input too long for dense dynamic programming")

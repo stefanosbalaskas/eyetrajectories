@@ -91,10 +91,12 @@ etr_l2_distance(a, b, time, dimension_weights = NULL,
 
 etr_pairwise_l2(x, dimension_weights = NULL)
 
-etr_frechet(a, b, dimension_weights = NULL, return_coupling = FALSE)
+etr_frechet(a, b, dimension_weights = NULL, return_coupling = FALSE,
+  python_boundary_mode = FALSE)
 
 etr_dtw(a, b, dimension_weights = NULL, window_radius = NULL,
-  step_pattern = "symmetric1", normalize = FALSE, return_path = FALSE)
+  step_pattern = "symmetric1", normalize = FALSE, return_path = FALSE,
+  python_boundary_mode = FALSE)
 
 etr_pairwise_dtw(x, dimension_weights = NULL)
 
@@ -171,7 +173,10 @@ explicit Python boundary mode, nonzero, infinite or NaN-valued complex
 scalars normalize to unit total. Empty/nonempty lists have container
 truthiness only in source-boundary mode. General Python object
 truthiness remains outside the qualified domain.}
-\item{python_boundary_mode}{Logical flag requesting a bounded native
+\item{python_boundary_mode}{For Fréchet and DTW, TRUE also enables
+rectangular nested 2D point sequences, numeric-string/Boolean/complex
+matrices and weighted NumPy float-domain conversions. Defaults remain
+strict scientific numeric matrices. Logical flag requesting a bounded native
 Python 1.2 source-input compatibility domain. For trapezoidal weighting
 it includes stated exceptional grids, complex ndarray-style time
 casting, and Python scalar/container truthiness. For functional L2
