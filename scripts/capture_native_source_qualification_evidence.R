@@ -69,6 +69,7 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-certification",
     "native-source-contract-gaps",
     "native-source-contract-alignment",
+    "native-fast-scientific-preflight",
     "native-sparse-score-distance-source",
     "native-scientific-visualization",
     "native-surrogate-numpy-histogram-source",
