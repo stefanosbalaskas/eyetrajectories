@@ -245,8 +245,9 @@ test_that("frozen Python 1.2 TrajectorySet nested source and metadata agree", {
 
 test_that("Python array complex casting is opt-in for TrajectorySet", {
   vals <- array(as.complex(c(1,2,3,4,5,6)),c(2L,3L,1L))
-  vals <- complex(real=Re(vals), imaginary=rep(100,length(vals))) |> 
-    array(dim=c(2L,3L,1L))
+  vals <- array(
+    complex(real=Re(vals), imaginary=rep(100,length(vals))),
+    dim=c(2L,3L,1L))
   expect_error(etr_trajectory_set(c(0,1,2),vals,c("a","b"),"x"),
     "numeric 3D array")
   native <- etr_trajectory_set(c(0+4i,1+4i,2+4i),vals,
