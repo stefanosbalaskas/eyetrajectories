@@ -34,7 +34,9 @@ etr_fit_phase_fpca(registration, representation = "displacement",
 \arguments{
 \item{values}{Three-dimensional numeric array of compositional probabilities.
 In explicit Python boundary mode, a complex atomic 3D ndarray-style input
-is cast to its real component as NumPy's dtype=float conversion does.}
+is cast to its real component as NumPy's dtype=float conversion does.
+Regular mixed-type Python-style nested scalar lists, including Boolean
+leaves, use elementwise rather than whole-container R coercion.}
 \item{reference_dimension}{Python-style zero-based reference component;
 -1 selects the last. In Python boundary mode a Boolean reference index is
 converted to 0 or 1, matching Python integer-index behavior.}

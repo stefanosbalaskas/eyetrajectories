@@ -26,7 +26,7 @@
 # Python np.asarray(..., dtype=float) accepts regular nested sequences.
 # Convert one useful class of those inputs without Python/reticulate.
 # Full Python coercion and nonfinite/epsilon semantics remain unqualified.
-.etr_simplex_nested_input <- function(values) {
+.etr_simplex_nested_input <- function(values, python_boundary_mode=FALSE) {
   if(!is.list(values) || is.data.frame(values) ||
      !is.null(dim(values))) return(values)
   n<-length(values)
@@ -43,11 +43,29 @@
       "simplex nested input must have rectangular time dimensions")
     for(t in seq_len(nt)) {
       cell<-values[[i]][[t]]
-      .etr_assert(is.atomic(cell) && is.null(dim(cell)) &&
-        !is.factor(cell) && length(cell)==k &&
-        (is.numeric(cell)||is.logical(cell)||is.character(cell)),
-        "simplex nested input must have equal scalar dimensions")
-      out[i,t,]<-suppressWarnings(as.numeric(cell))
+      if(isTRUE(python_boundary_mode) && is.list(cell) &&
+         !is.data.frame(cell) && is.null(dim(cell))) {
+        # Python np.asarray(..., dtype=float) converts each leaf of a
+        # rectangular list-of-lists-of-lists independently. R's unlist()
+        # would first promote TRUE to the string "TRUE" when another
+        # dimension is character, incorrectly producing NA on conversion.
+        # A Python list containing complex numbers cannot convert directly
+        # to dtype=float; only a complex NumPy ndarray is source-accepted.
+        .etr_assert(length(cell)==k && all(vapply(cell,function(z)
+          is.atomic(z) && is.null(dim(z)) && !is.factor(z) &&
+          length(z)==1L && !is.complex(z) &&
+          (is.numeric(z)||is.logical(z)||is.character(z)),
+          logical(1L))),
+          "nested simplex cells require rectangular numeric-like scalars")
+        out[i,t,] <- vapply(cell,function(z)
+          suppressWarnings(as.numeric(z)),numeric(1L),USE.NAMES=FALSE)
+      } else {
+        .etr_assert(is.atomic(cell) && is.null(dim(cell)) &&
+          !is.factor(cell) && length(cell)==k &&
+          (is.numeric(cell)||is.logical(cell)||is.character(cell)),
+          "simplex nested input must have equal scalar dimensions")
+        out[i,t,] <- suppressWarnings(as.numeric(cell))
+      }
     }
   }
   out
@@ -62,7 +80,9 @@
 #'   inspected scalar/array boundary. In this mode, Boolean reference
 #'   indices follow Python integer indexing semantics. FALSE preserves
 #'   the finite-only native scientific contract. No full-source
-#'   input/return or independent certification is implied.
+#'   input/return or independent certification is implied. In source mode,
+#'   regular 3D lists with mixed numeric, character and Boolean scalar
+#'   leaves follow NumPy elementwise dtype=float coercion.
 #' @return Three-dimensional array with the reference channel removed.
 #' @export
 etr_alr_transform <- function(values,reference_dimension=-1L,epsilon=1e-8,
@@ -83,7 +103,8 @@ etr_alr_transform <- function(values,reference_dimension=-1L,epsilon=1e-8,
     .etr_assert(is.numeric(epsilon) && length(epsilon)==1L &&
       is.finite(epsilon) && epsilon>0,"epsilon must be positive and finite")
   }
-  values<-.etr_simplex_nested_input(values)
+  values<-.etr_simplex_nested_input(values,
+    python_boundary_mode=python_boundary_mode)
   if(isTRUE(python_boundary_mode) && is.array(values) &&
      length(dim(values))==3L && is.complex(values)) {
     # np.asarray(complex ndarray, dtype=float) discards the imaginary
@@ -172,7 +193,8 @@ etr_inverse_alr <- function(transformed,reference_dimension,n_dimensions,
   # Source NumPy np.asarray() accepts regular 3D nested scalar sequences
   # for inverse logits as well as for forward ALR inputs. Preserve the exact
   # input geometry in native R (including zero/negative logits).
-  transformed<-.etr_simplex_nested_input(transformed)
+  transformed<-.etr_simplex_nested_input(transformed,
+    python_boundary_mode=python_boundary_mode)
   if(isTRUE(python_boundary_mode) && is.array(transformed) &&
      length(dim(transformed))==3L && is.complex(transformed)) {
     # Frozen Python np.asarray(..., dtype=float) casts a complex ndarray
