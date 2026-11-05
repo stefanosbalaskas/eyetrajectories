@@ -148,3 +148,89 @@ test_that("nested FPCR rejects malformed split and component domains explicitly"
   expect_s3_class(ok,"etr_nested_fpcr_cv")
   expect_equal(nrow(ok$outer_folds),3L)
 })
+
+
+test_that("Python 1.2 shuffled nested FPCR exact outer and inner KFold replay",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("frozen Python 1.2 shuffled nested CV oracle opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  reticulate::py_run_string("
+import numpy as np
+from sklearn.model_selection import KFold
+import eyetrajectoriespy as et
+_nt=np.linspace(0,1,5)
+_nz=np.linspace(-2,2,12)
+_nq=np.array([1,-1,2,-2,1.5,-1.5,1.2,-1.2,2.2,-2.2,.7,-.7])
+_na=np.array([.2+v*np.sin(np.pi*_nt)+w*np.cos(2*np.pi*_nt)
+ for v,w in zip(_nz,_nq)])[:,:,None]
+_ny=1+.5*_nz-.2*_nq+.03*np.array([0,1,-1,0,1,-1,0,1,-1,0,1,-1])
+_nx=et.TrajectorySet(time=_nt,values=_na,
+ curve_ids=tuple('curve'+str(i) for i in range(1,13)),
+ dimension_names=('x',),coordinate_system='normalized',
+ time_unit='normalized')
+_ncv=et.nested_cross_validate_fpca_regression(_nx,_ny,
+ candidate_components=(1,2),outer_splits=3,inner_splits=2,
+ selection_rule='minimum',shuffle=True,random_state=19)
+_ofolds=np.full(12,-1,dtype=np.int64)
+_ifolds=[]
+for of,(itr,ite) in enumerate(KFold(n_splits=3,shuffle=True,
+ random_state=19).split(np.arange(12))):
+ _ofolds[ite]=of
+ inner=np.full(len(itr),-1,dtype=np.int64)
+ for ix,(_,itst) in enumerate(KFold(n_splits=2,shuffle=True,
+  random_state=19+of+1).split(np.arange(len(itr)))):
+  inner[itst]=ix
+ _ifolds.append(inner)
+assert sorted(set(_ofolds))==[0,1,2]
+")
+  z<-.etr_nested_cv_fixture()
+  outer<-as.integer(reticulate::py_to_r(reticulate::py_eval(
+    "_ofolds",convert=FALSE)))
+  inner_matrix<-reticulate::py_to_r(reticulate::py_eval(
+    "np.stack(_ifolds,axis=0)",convert=FALSE))
+  inner<-lapply(seq_len(nrow(inner_matrix)),function(i)
+    as.integer(inner_matrix[i,]))
+  local<-etr_nested_cross_validate_fpca_regression(z$x,z$y,
+    candidate_components=c(1L,2L),outer_splits=3L,inner_splits=2L,
+    shuffle=TRUE,random_state=19L,selection_rule="minimum",
+    outer_fold_assignments=outer,inner_fold_assignments=inner)
+  expect_identical(local$provenance$random_engine,"none_fixed_folds")
+  expect_identical(local$provenance$outer_fold_source,
+    "explicit_zero_based_source_replay")
+  expect_identical(local$provenance$inner_fold_source,
+    "explicit_zero_based_source_replay")
+  for(field in c("outer_folds","inner_summaries","predictions")){
+    expected<-reticulate::py_to_r(reticulate::py_get_attr(
+      reticulate::py_eval("_ncv",convert=FALSE),field))
+    actual<-local[[field]]
+    expect_identical(names(actual),names(expected))
+    for(col in names(expected)){
+      if(is.numeric(actual[[col]]))
+        expect_equal(as.numeric(actual[[col]]),
+          as.numeric(expected[[col]]),tolerance=1e-7,
+          info=paste("shuffled nested FPCR source",field,col))
+      else expect_identical(as.character(actual[[col]]),
+        as.character(expected[[col]]))
+    }
+  }
+})
+
+test_that("nested source replay validates every inner and outer holdout",{
+  z<-.etr_nested_cv_fixture()
+  outer<-rep(0:2,each=4L)
+  inner<-rep(list(rep(0:1,each=4L)),3L)
+  ans<-etr_nested_cross_validate_fpca_regression(z$x,z$y,
+    candidate_components=1L,outer_splits=3L,inner_splits=2L,
+    outer_fold_assignments=outer,inner_fold_assignments=inner)
+  expect_identical(ans$provenance$outer_fold_source,
+    "explicit_zero_based_source_replay")
+  bad<-inner;bad[[2L]]<-rep(0L,8L)
+  expect_error(etr_nested_cross_validate_fpca_regression(z$x,z$y,
+    candidate_components=1L,outer_splits=3L,inner_splits=2L,
+    outer_fold_assignments=outer,inner_fold_assignments=bad),
+    "fold_assignments")
+  expect_error(etr_nested_cross_validate_fpca_regression(z$x,z$y,
+    candidate_components=1L,outer_splits=3L,inner_splits=2L,
+    outer_fold_assignments=outer,inner_fold_assignments=inner[1L:2L]),
+    "inner_fold_assignments")
+})

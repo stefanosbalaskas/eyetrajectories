@@ -40,7 +40,7 @@ etr_cross_validate_fpca_regression<-function(
     trajectories,outcome,candidate_components=c(1L,2L,3L,4L,5L),
     family="gaussian",loss=NULL,covariates=NULL,n_splits=5L,
     scaling="none",cv_unit="curve",group_column=NULL,
-    shuffle=FALSE,random_state=0L){
+    shuffle=FALSE,random_state=0L,fold_assignments=NULL){
   etr_validate(trajectories,require_complete=TRUE)
   .etr_fpcr_validate_family(family)
 
@@ -91,8 +91,11 @@ etr_cross_validate_fpca_regression<-function(
   ns<-as.integer(n_splits)
   # Group identity stays intact. Shuffled folds use isolated base-R RNG,
   # so a shared seed need not reproduce NumPy/Scikit-learn permutations.
-  split<-.etr_cv_fold_assignment(trajectories,ns,cv_unit,
-    group_column,shuffle,random_state)
+  split<-if(is.null(fold_assignments))
+    .etr_cv_fold_assignment(trajectories,ns,cv_unit,
+      group_column,shuffle,random_state)
+  else .etr_cv_explicit_fold_assignment(trajectories,ns,cv_unit,
+    group_column,fold_assignments)
   folds<-split$fold
   fold_rows<-vector("list",ns*length(components))
   assign_rows<-vector("list",ns)
@@ -173,9 +176,14 @@ etr_cross_validate_fpca_regression<-function(
       fit_regression_inside_fold=TRUE,
       group_leakage_prevented=identical(cv_unit,"group"),
       shuffle=if(identical(cv_unit,"curve"))shuffle else FALSE,
-      random_engine=if(identical(cv_unit,"curve")&&isTRUE(shuffle))
+      random_engine=if(!is.null(fold_assignments))"none_fixed_folds" else
+        if(identical(cv_unit,"curve")&&isTRUE(shuffle))
         "base_R_sample_not_NumPy" else "deterministic",
-      group_tie_policy="native_size_descending_label_tie_break",
+      fold_source=if(is.null(fold_assignments))"native_R" else
+        "explicit_zero_based_source_replay",
+      group_tie_policy=if(is.null(fold_assignments))
+        "native_size_descending_label_tie_break" else
+        "source_supplied_exact_groups",
       covariates=if(is.null(covariate_matrix))list() else
         as.list(colnames(covariate_matrix)),
       scientific_warning=paste(

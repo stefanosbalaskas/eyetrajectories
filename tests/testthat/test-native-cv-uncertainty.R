@@ -241,3 +241,71 @@ test_that("pinned Python 1.2 source CV oracle is opt-in",{
   expect_equal(etr_select_fpca_components_cv(native,"one_se"),
     as.integer(et_to_r(pselect)))
 })
+
+
+test_that("FPCA reconstruction accepts exact source KFold folds",{
+  t<-seq(0,1,length.out=5L);n<-12L
+  v<-array(0,c(n,5L,1L))
+  for(i in seq_len(n))v[i,,1L]<-
+    sin(pi*t)*(i/12)+cos(2*pi*t)*(i%%3)/7
+  x<-etr_trajectory_set(t,v,paste0("c",seq_len(n)),"signal",
+    coordinate_system="normalized",time_unit="normalized")
+  folds<-c(2L,0L,1L,1L,0L,2L,0L,1L,2L,1L,2L,0L)
+  a<-etr_cross_validate_fpca_reconstruction(x,
+    candidate_components=1L,n_splits=3L,fold_assignments=folds)
+  expect_identical(a$assignments$fold,
+    folds[match(a$assignments$curve_id,x$curve_ids)])
+  expect_identical(a$provenance$fold_source,
+    "explicit_zero_based_source_replay")
+  expect_equal(nrow(a$fold_errors),3L)
+  expect_error(etr_cross_validate_fpca_reconstruction(x,
+    candidate_components=1L,n_splits=3L,
+    fold_assignments=c(rep(0L,11L),2L)),"fold_assignments")
+})
+
+
+test_that("Python 1.2 shuffled reconstruction KFold numerics replay fixed source folds",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("frozen Python 1.2 reconstruction KFold oracle opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  t<-seq(0,1,length.out=5L)
+  v<-array(0,c(12L,5L,1L))
+  for(i in 1:12)v[i,,1L]<-sin(pi*t)*(i/12)+
+    cos(2*pi*t)*(i%%3)/7
+  x<-etr_trajectory_set(t,v,paste0("c",1:12),"signal",
+    coordinate_system="normalized",time_unit="normalized")
+  reticulate::py_run_string("
+import numpy as np
+import eyetrajectoriespy as et
+_rtime=np.linspace(0,1,5)
+_rvalues=np.array([np.sin(np.pi*_rtime)*(i/12)+
+ np.cos(2*np.pi*_rtime)*(i%3)/7 for i in range(1,13)])[:,:,None]
+_rx=et.TrajectorySet(time=_rtime,values=_rvalues,
+ curve_ids=tuple('c'+str(i) for i in range(1,13)),
+ dimension_names=('signal',),coordinate_system='normalized',
+ time_unit='normalized')
+_rcv=et.cross_validate_fpca_reconstruction(_rx,
+ candidate_components=(1,),n_splits=3,shuffle=True,random_state=19)
+_rf=np.full(12,-1,dtype=int)
+for r in _rcv.assignments.itertuples(index=False):
+ _rf[int(r.curve_id[1:])-1]=int(r.fold)
+")
+  fold<-as.integer(reticulate::py_to_r(reticulate::py_eval(
+    "_rf",convert=FALSE)))
+  actual<-etr_cross_validate_fpca_reconstruction(x,
+    candidate_components=1L,n_splits=3L,shuffle=TRUE,
+    random_state=19L,fold_assignments=fold)
+  for(field in c("fold_errors","assignments")){
+    expected<-reticulate::py_to_r(reticulate::py_get_attr(
+      reticulate::py_eval("_rcv",convert=FALSE),field))
+    expect_identical(names(actual[[field]]),names(expected))
+    for(col in names(expected)){
+      if(is.numeric(actual[[field]][[col]]))
+        expect_equal(as.numeric(actual[[field]][[col]]),
+          as.numeric(expected[[col]]),tolerance=1e-7,
+          info=paste("shuffled reconstruction source",field,col))
+      else expect_identical(as.character(actual[[field]][[col]]),
+        as.character(expected[[col]]))
+    }
+  }
+})

@@ -7,7 +7,8 @@ etr_nested_cross_validate_fpca_regression(trajectories, outcome,
   family = "gaussian", loss = NULL, covariates = NULL,
   outer_splits = 5L, inner_splits = 4L, selection_rule = "minimum",
   scaling = "none", cv_unit = "curve", group_column = NULL,
-  shuffle = FALSE, random_state = 0L)
+  shuffle = FALSE, random_state = 0L,
+  outer_fold_assignments = NULL, inner_fold_assignments = NULL)
 }
 \arguments{
 \item{trajectories}{Complete native common-grid trajectories.}
@@ -32,6 +33,8 @@ RNG; grouped folds are deterministic even if \code{shuffle=TRUE}.}
 \item{random_state}{Nonnegative integer R seed for shuffled curve
 folds; inner seeds use the source offsets outer_fold + 1. R and
 sklearn NumPy RandomState shuffle permutations are not identical.}
+\item{outer_fold_assignments}{Optional one zero-based fold ID per original trajectory; all outer folds must occur and grouped units cannot split.}
+\item{inner_fold_assignments}{Optional list of length outer_splits; for each outer fold, zero-based inner fold IDs align with its original-order training subset. Group leakage is rejected at both levels.}
 }
 \value{Outer fold and inner selection summaries, held-out predictions and provenance.}
 \description{Source-bounded nested Gaussian or binomial FPCA regression: train all

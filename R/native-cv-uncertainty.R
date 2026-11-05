@@ -89,6 +89,37 @@
   list(fold=group_folds[match(gr,labels)],groups=gr)
 }
 
+# Exact predeclared source folds. Fold labels are 0-based, as in scikit-learn.
+# The caller may replay NumPy-shuffled KFold or GroupKFold assignments, while
+# the estimator and leakage barrier stay fully native R. No Python runtime.
+.etr_cv_explicit_fold_assignment <- function(x,n_splits,cv_unit,
+    group_column,fold_assignments) {
+  n<-length(x$curve_ids)
+  .etr_assert(is.numeric(fold_assignments)&&
+    is.null(dim(fold_assignments))&&length(fold_assignments)==n&&
+    !anyNA(fold_assignments)&&all(is.finite(fold_assignments))&&
+    all(fold_assignments==floor(fold_assignments))&&
+    all(fold_assignments>=0L)&&all(fold_assignments<n_splits),
+    "fold_assignments must contain one zero-based integer fold per curve")
+  fold<-as.integer(fold_assignments)
+  .etr_assert(identical(sort(unique(fold)),seq.int(0L,n_splits-1L)),
+    "fold_assignments must populate every declared fold")
+  if(identical(cv_unit,"curve"))
+    return(list(fold=fold,groups=NULL))
+  .etr_assert(is.character(group_column)&&length(group_column)==1L&&
+    !is.na(group_column)&&group_column%in%names(x$metadata),
+    "group_column is required and must exist in metadata")
+  groups<-x$metadata[[group_column]]
+  .etr_assert(length(groups)==n&&!anyNA(groups),
+    "group_column must have one nonmissing group per curve")
+  groups<-as.character(groups)
+  per_group<-split(fold,groups)
+  .etr_assert(all(vapply(per_group,function(z)length(unique(z))==1L,
+    logical(1L))),
+    "fold_assignments split a group between training and held-out folds")
+  list(fold=fold,groups=groups)
+}
+
 .etr_cv_subset <- function(x,ids) {
   d<-dim(x$values)
   arr<-array(x$values[ids,,,drop=FALSE],
@@ -110,7 +141,8 @@
 #' @export
 etr_cross_validate_fpca_reconstruction <- function(trajectories,
     candidate_components=c(1L,2L,3L,4L,5L),n_splits=5L,scaling="none",
-    cv_unit="curve",group_column=NULL,shuffle=TRUE,random_state=0L) {
+    cv_unit="curve",group_column=NULL,shuffle=TRUE,random_state=0L,
+    fold_assignments=NULL) {
   etr_validate(trajectories,require_complete=TRUE)
   .etr_assert(is.numeric(candidate_components) &&
     length(candidate_components)>=1L &&
@@ -131,8 +163,11 @@ etr_cross_validate_fpca_reconstruction <- function(trajectories,
   .etr_assert(is.logical(shuffle) && length(shuffle)==1L && !is.na(shuffle),
     "shuffle must be one explicit logical flag")
   n_splits<-as.integer(n_splits)
-  split<-.etr_cv_fold_assignment(trajectories,n_splits,cv_unit,
-                                 group_column,shuffle,random_state)
+  split<-if(is.null(fold_assignments))
+    .etr_cv_fold_assignment(trajectories,n_splits,cv_unit,
+      group_column,shuffle,random_state)
+  else .etr_cv_explicit_fold_assignment(trajectories,n_splits,
+    cv_unit,group_column,fold_assignments)
   fold_errors<-vector("list",length(counts)*n_splits)
   assigns<-vector("list",n_splits)
   krow<-0L
@@ -187,7 +222,10 @@ etr_cross_validate_fpca_reconstruction <- function(trajectories,
       fit_inside_fold=TRUE,
       shuffle=if(cv_unit=="curve")shuffle else FALSE,
       group_leakage_prevented=cv_unit=="group",
-      random_engine=if(cv_unit=="curve" && shuffle)"base_R_sample"
+      fold_source=if(is.null(fold_assignments))"native_R" else
+        "explicit_zero_based_source_replay",
+      random_engine=if(!is.null(fold_assignments))"none_fixed_folds" else
+        if(cv_unit=="curve" && shuffle)"base_R_sample"
         else "deterministic",
       algorithmic_difference_from_python=if(cv_unit=="curve" && shuffle)
         "R sample() and NumPy KFold RNG do not share permutations"

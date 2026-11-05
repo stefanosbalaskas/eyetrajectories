@@ -6,7 +6,8 @@ etr_cross_validate_fpca_regression(trajectories, outcome,
   candidate_components = c(1L, 2L, 3L, 4L, 5L),
   family = "gaussian", loss = NULL, covariates = NULL,
   n_splits = 5L, scaling = "none", cv_unit = "curve",
-  group_column = NULL, shuffle = FALSE, random_state = 0L)
+  group_column = NULL, shuffle = FALSE, random_state = 0L,
+  fold_assignments = NULL)
 }
 \arguments{
 \item{trajectories}{Complete native common-grid trajectory set.}
@@ -30,6 +31,7 @@ shuffle; group CV is deterministic irrespective of this flag.}
 \item{random_state}{Nonnegative integer base-R seed for shuffled
 curve folds, ignored for unshuffled or grouped folds. Base-R random
 permutations cannot be equated with sklearn's NumPy RandomState.}
+\item{fold_assignments}{Optional complete zero-based integer fold IDs matching a source KFold/GroupKFold result. Grouped units must never straddle folds. This overrides native fold generation without altering fitting or predictions.}
 }
 \value{Retained fold-loss, assignment and out-of-fold prediction frames
 and source-shaped scientific provenance. Group assignments have

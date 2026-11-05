@@ -25,7 +25,8 @@ etr_nested_cross_validate_fpca_regression <- function(
   family="gaussian", loss=NULL, covariates=NULL,
   outer_splits=5L, inner_splits=4L, selection_rule="minimum",
   scaling="none", cv_unit="curve", group_column=NULL,
-  shuffle=FALSE, random_state=0L) {
+  shuffle=FALSE, random_state=0L,
+  outer_fold_assignments=NULL,inner_fold_assignments=NULL) {
   etr_validate(trajectories,require_complete=TRUE)
   .etr_fpcr_validate_family(family)
   resolved_loss<-.etr_fpcr_resolve_loss(family,loss)
@@ -71,8 +72,15 @@ etr_nested_cross_validate_fpca_regression <- function(
     "candidate_components must be positive integers")
   counts<-sort(unique(as.integer(candidate_components)))
   no<-as.integer(outer_splits);ni<-as.integer(inner_splits)
-  splits<-.etr_cv_fold_assignment(trajectories,no,cv_unit,
-    group_column,shuffle,random_state)
+  if(!is.null(inner_fold_assignments))
+    .etr_assert(is.list(inner_fold_assignments)&&
+      length(inner_fold_assignments)==no,
+      "inner_fold_assignments must be one fold vector per outer fold")
+  splits<-if(is.null(outer_fold_assignments))
+    .etr_cv_fold_assignment(trajectories,no,cv_unit,
+      group_column,shuffle,random_state)
+  else .etr_cv_explicit_fold_assignment(trajectories,no,cv_unit,
+    group_column,outer_fold_assignments)
   fold_ids<-splits$fold
   outer_rows<-vector("list",no);inner_rows<-vector("list",no)
   prediction_rows<-vector("list",n);cursor<-0L
@@ -89,7 +97,9 @@ etr_nested_cross_validate_fpca_regression <- function(
       scaling=scaling,cv_unit=cv_unit,group_column=group_column,
       shuffle=if(identical(cv_unit,"curve"))shuffle else FALSE,
       random_state=if(identical(cv_unit,"curve")&&shuffle)
-        as.integer(random_state)+as.integer(f)+1L else NULL)
+        as.integer(random_state)+as.integer(f)+1L else NULL,
+      fold_assignments=if(is.null(inner_fold_assignments))NULL else
+        inner_fold_assignments[[f+1L]])
     selected<-etr_select_fpca_regression_components(inner_cv,rule=selection_rule)
     summary<-etr_summarise_fpca_regression_cv(inner_cv)
     inner_rows[[f+1L]]<-data.frame(outer_fold=rep(as.integer(f),nrow(summary)),
@@ -139,7 +149,13 @@ etr_nested_cross_validate_fpca_regression <- function(
     provenance=list(method="nested_outcome_tuned_fpca_regression_cv",
       nested_selection=TRUE,outer_performance_unseen_by_inner_selection=TRUE,
       group_leakage_prevented=identical(cv_unit,"group"),
-      random_engine=if(identical(cv_unit,"curve")&&shuffle)
+      outer_fold_source=if(is.null(outer_fold_assignments))"native_R" else
+        "explicit_zero_based_source_replay",
+      inner_fold_source=if(is.null(inner_fold_assignments))"native_R" else
+        "explicit_zero_based_source_replay",
+      random_engine=if(!is.null(outer_fold_assignments)&&
+        !is.null(inner_fold_assignments))"none_fixed_folds" else
+        if(identical(cv_unit,"curve")&&shuffle)
         "base_R_sample_not_NumPy" else "deterministic",
       covariates=if(is.null(covariate_matrix))list() else
         as.list(colnames(covariate_matrix)),
