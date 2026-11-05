@@ -15,6 +15,9 @@
 #' @param alternative greater, less or two-sided.
 #' @param max_iterations,tolerance MIAAFT convergence controls.
 #' @param random_state Scoped R seed, not NumPy-equivalent.
+#' @param initial_permutations Optional complete zero-based initial permutation
+#'   array forwarded to the native MIAAFT surrogate generator. Enables fixed
+#'   draw replay of the entire surrogate test without NumPy RNG equivalence.
 #' @export
 etr_multivariate_surrogate_nonlinearity_test<-function(
     trajectories,curve,dimensions,reference_dimension,
@@ -23,7 +26,8 @@ etr_multivariate_surrogate_nonlinearity_test<-function(
     delay_units="samples",theiler_window_units="samples",
     max_horizon_units="samples",fit_units="samples",
     n_surrogates=199L,alternative="greater",
-    max_iterations=1000L,tolerance=1e-8,random_state=NULL){
+    max_iterations=1000L,tolerance=1e-8,random_state=NULL,
+    initial_permutations=NULL){
   .etr_assert(identical(statistic,"largest_lyapunov"),
     "statistic must be largest_lyapunov")
   .etr_assert(is.character(alternative)&&length(alternative)==1L&&
@@ -70,7 +74,8 @@ etr_multivariate_surrogate_nonlinearity_test<-function(
   surrogates<-etr_generate_multivariate_iaaft_surrogates(
     trajectories,curve,dimensions,reference_dimension,
     n_surrogates=n_surrogates,max_iterations=max_iterations,
-    tolerance=tolerance,random_state=random_state)
+    tolerance=tolerance,random_state=random_state,
+    initial_permutations=initial_permutations)
   stats<-vapply(seq_len(surrogates$n_surrogates),function(i){
     values<-matrix(surrogates$surrogates[i,,],
       nrow=nt,ncol=nd)
@@ -103,6 +108,7 @@ etr_multivariate_surrogate_nonlinearity_test<-function(
       p_value_correction=if(alternative=="two-sided")
         "two_sided_double_min_plus_one_tails" else "plus_one",
       failed_surrogate_policy="raise",
+      fixed_initialization_replay=!is.null(initial_permutations),
       source_python_equivalent_stochastic_draws=FALSE,
       interpretation_boundary=paste(
         "Rejection is evidence against the declared multivariate",

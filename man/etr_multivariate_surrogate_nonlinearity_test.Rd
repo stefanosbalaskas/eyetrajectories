@@ -9,7 +9,8 @@ etr_multivariate_surrogate_nonlinearity_test(trajectories, curve,
   theiler_window_units = "samples", max_horizon_units = "samples",
   fit_units = "samples", n_surrogates = 199L,
   alternative = "greater", max_iterations = 1000L,
-  tolerance = 1e-8, random_state = NULL)
+  tolerance = 1e-8, random_state = NULL,
+  initial_permutations = NULL)
 }
 \arguments{
 \item{trajectories}{Native complete regular common-grid trajectory set.}
@@ -24,6 +25,7 @@ etr_multivariate_surrogate_nonlinearity_test(trajectories, curve,
 \item{alternative}{greater, less or two-sided.}
 \item{max_iterations,tolerance}{MIAAFT convergence controls.}
 \item{random_state}{Optional scoped base-R random seed.}
+\item{initial_permutations}{Optional zero-based (n_surrogates, n_time, n_selected_dimensions) complete per-channel initialization permutations, forwarded unchanged to the MIAAFT generator. This permits deterministic surrogate-test replay without claiming Python PCG64 identity.}
 }
 \value{Native multivariate Lyapunov statistic, surrogate distribution,
 source-defined plus-one tail p-value and complete surrogate diagnostics.}
