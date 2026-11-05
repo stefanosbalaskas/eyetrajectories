@@ -44,7 +44,7 @@ basic recurrence analysis, and base graphics.}
 \usage{
 etr_trajectory_set(time, values, curve_ids = NULL, dimension_names = NULL,
     metadata = NULL, coordinate_system = "unknown", time_unit = "unknown",
-    provenance = list())
+    provenance = list(), python_boundary_mode = FALSE)
 
 etr_validate(x, require_complete = FALSE)
 
@@ -54,7 +54,7 @@ etr_from_long(data, curve_columns, time_column = "time", value_columns = c("x", 
 
 etr_as_long(x)
 
-etr_subset(x, curves)
+etr_subset(x, curves, python_boundary_mode = FALSE)
 
 etr_dimension(x, dimension)
 
@@ -143,12 +143,13 @@ time vector to its real part, matching NumPy's complex ndarray
 \item{provenance}{Optional JSON-like named native R list of source and preprocessing decisions. For \code{etr_from_long}, the source audit is added by default and user-supplied named keys are applied as shallow overrides.}
 \item{x}{Native trajectory set, or a fitted object as documented in the specific function.}
 \item{require_complete}{Whether to reject missing samples.}
+\item{python_boundary_mode}{If TRUE, enable bounded Python 1.2 TrajectorySet constructor/subset behavior for NaN observations, zero-curve arrays and zero-based/negative subset indices. Default FALSE preserves the native scientific contract. Does not reproduce all NumPy, pandas or dataclass semantics.}
 \item{data}{Long-format data frame with individual gaze samples.}
 \item{curve_columns}{Names of curve identifier columns.}
 \item{time_column}{Name of time variable.}
 \item{value_columns}{Names of measurement variables.}
 \item{metadata_columns}{Optional curve-constant metadata columns.}
-\item{curves}{Unique integer curve indices or string identifiers.}
+\item{curves}{Unique 1-based integer curve indices or string identifiers by default; opt-in source boundary mode uses 0-based/negative integer indices, including empty selections.}
 \item{dimension}{Channel index or channel name.}
 \item{new_time}{Target time grid (no extrapolation).}
 \item{max_gap}{Maximum allowed observed time interval for explicit interpolation.}
