@@ -154,3 +154,107 @@ w4_units_x=et.TrajectorySet(time=w4_units_t,values=w4_units_v,
   expect_false(any(etr_native_parity_catalog()$
     one_to_one_native_contract_complete))
 })
+
+
+# Verify frozen configuration accepts valid fractional physical-unit values.
+# Python 1.2 workflow source uses _resolve_samples on the observed grid.
+.etr_fractional_w4_fixture <- function() {
+  t <- seq(0, 0.25, length.out=21L)
+  z <- array(0, c(4L,21L,2L))
+  for(i in seq_len(4L)) {
+    z[i,,1L] <- sin(2*pi*t*3+i*.2)+i*t*.3
+    z[i,,2L] <- cos(2*pi*t*2+i*.13)-i*t*.21
+  }
+  etr_trajectory_set(t,z,sprintf("c%02d",seq_len(4L)),
+    c("x","y"),coordinate_system="normalized",time_unit="s")
+}
+
+.etr_fractional_w4_config <- function(metric="chebyshev",
+    delay=37.5,delay_units="ms",theiler_window=12.5,
+    theiler_window_units="ms") {
+  etr_frozen_recurrence_workflow_config(
+    curve=0L,dimensions=c("x","y"),embedding_dimension=2L,
+    delay=delay,delay_units=delay_units,radius=.65,
+    metric=metric,theiler_window=theiler_window,
+    theiler_window_units=theiler_window_units)
+}
+
+test_that("frozen W4 config resolves fractional physical-time lags without truncation", {
+  x <- .etr_fractional_w4_fixture()
+  for(metric in c("euclidean","cityblock","chebyshev")) {
+    physical <- etr_run_frozen_native_workflow(
+      x,.etr_fractional_w4_config(metric=metric))
+    seconds <- etr_run_frozen_native_workflow(x,
+      .etr_fractional_w4_config(metric=metric,delay=.0375,
+        delay_units="s",theiler_window=.0125,
+        theiler_window_units="s"))
+    samples <- etr_run_frozen_native_workflow(x,
+      .etr_fractional_w4_config(metric=metric,delay=3L,
+        delay_units="samples",theiler_window=1L,
+        theiler_window_units="samples"))
+    expect_identical(physical$embedding$delay_samples,3L)
+    expect_identical(physical$recurrence$theiler,1L)
+    expect_identical(physical$recurrence$metric,metric)
+    expect_identical(physical$embedding$values,seconds$embedding$values)
+    expect_identical(physical$recurrence$matrix,seconds$recurrence$matrix)
+    expect_identical(physical$recurrence$matrix,samples$recurrence$matrix)
+  }
+  expect_error(.etr_fractional_w4_config(delay=3.5,
+    delay_units="samples"),"delay")
+  expect_error(.etr_fractional_w4_config(theiler_window=.5,
+    theiler_window_units="samples"),"theiler_window")
+  expect_error(.etr_fractional_w4_config(delay=Inf),"delay")
+  expect_error(.etr_fractional_w4_config(theiler_window=-.5),
+    "theiler_window")
+  expect_error(etr_run_frozen_native_workflow(x,
+    .etr_fractional_w4_config(delay=37.6)),"integer multiple")
+})
+
+test_that("frozen Python 1.2 W4 fractional delay source geometry agrees", {
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Direct Python 1.2 W4 fractional-time source oracle is opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  x <- .etr_fractional_w4_fixture()
+  reticulate::py_run_string("
+import numpy as np, pandas as pd, eyetrajectoriespy as et
+w4_frac_t = np.linspace(0., .25, 21)
+w4_frac_v = np.zeros((4, 21, 2), dtype=float)
+for i in range(1, 5):
+    w4_frac_v[i-1,:,0] = np.sin(2*np.pi*w4_frac_t*3+i*.2)+i*w4_frac_t*.3
+    w4_frac_v[i-1,:,1] = np.cos(2*np.pi*w4_frac_t*2+i*.13)-i*w4_frac_t*.21
+w4_frac_x = et.TrajectorySet(time=w4_frac_t, values=w4_frac_v,
+    curve_ids=tuple('c%02d'%i for i in range(1,5)),
+    dimension_names=('x','y'), metadata=pd.DataFrame(index=range(4)),
+    coordinate_system='normalized', time_unit='s')
+")
+  py_cfg_constructor <- etpy_get_export(
+    "RecurrenceWorkflowConfig",.namespace="workflows")
+  py_workflow <- etpy_get_export(
+    "run_recurrence_workflow",.namespace="workflows")
+  py_x <- reticulate::py_eval("w4_frac_x",convert=FALSE)
+  for(metric in c("cityblock","euclidean","chebyshev")) {
+    native <- etr_run_frozen_native_workflow(
+      x,.etr_fractional_w4_config(metric=metric))
+    py_cfg <- reticulate::py_call(py_cfg_constructor,
+      curve=0L, dimensions=reticulate::r_to_py(list("x","y")),
+      embedding_dimension=2L, delay=37.5, delay_units="ms",
+      radius=.65, metric=metric, theiler_window=12.5,
+      theiler_window_units="ms")
+    source <- reticulate::py_call(py_workflow,
+      trajectories=py_x,config=py_cfg)
+    expect_identical(native$embedding$delay_samples,
+      as.integer(et_to_r(source$embedding$delay_samples)))
+    expect_identical(native$recurrence$theiler,
+      as.integer(et_to_r(source$recurrence$theiler_window_samples)))
+    expect_equal(unname(native$embedding$values),
+      unname(et_to_r(source$embedding$values)),
+      tolerance=1e-12,info=paste(metric,"embedded states"))
+    expect_equal(unname(native$recurrence$matrix),
+      unname(et_to_r(source$recurrence$matrix$toarray())),
+      tolerance=0,info=paste(metric,"recurrence matrix"))
+    expect_equal(native$metrics$recurrence_rate,
+      as.numeric(et_to_r(source$metrics$recurrence_rate)),
+      tolerance=1e-12)
+  }
+  expect_false(any(etr_native_parity_catalog()$one_to_one_native_contract_complete))
+})
