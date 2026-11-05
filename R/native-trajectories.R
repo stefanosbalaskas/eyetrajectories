@@ -273,7 +273,8 @@ etr_subset <- function(x, curves, python_boundary_mode = FALSE) {
                      x$curve_ids[curves], x$dimension_names,
                      x$metadata[curves, , drop = FALSE],
                      x$coordinate_system, x$time_unit,
-                     if (is.null(x$provenance)) list() else x$provenance)
+                     if (is.null(x$provenance)) list() else x$provenance,
+                     python_boundary_mode = isTRUE(attr(x, "python_boundary_mode")))
 }
 
 #' Retrieve one channel as curve-by-time matrix
