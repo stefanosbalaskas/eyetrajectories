@@ -14,11 +14,12 @@
 Ten native Python-independent nonlinear-dynamics algorithms and frames
 based on the published \pkg{eyetrajectoriespy} 1.2.0 contracts from
 \code{recurrence.py}, \code{recurrence_networks.py} and
-\code{joint_recurrence.py}. These functions are research-size dense-R
-implementations, not Python \code{scipy.sparse} object wrappers.
+\code{joint_recurrence.py}. These are research-size native R implementations, not Python
+\code{scipy.sparse} object wrappers. Recurrence-network results
+can now optionally use sparse native \pkg{Matrix} adjacency.
 }
 \usage{
-etr_recurrence_network(recurrence)
+etr_recurrence_network(recurrence, adjacency_storage = c("dense", "sparse"))
 etr_recurrence_network_node_frame(result)
 etr_recurrence_network_summary_frame(result)
 etr_joint_recurrence_matrix(recurrences, labels = NULL)
@@ -46,6 +47,10 @@ etr_windowed_rqa_trajectory_set(trajectories, metrics, window, step,
 \arguments{
 \item{recurrence}{Native \code{etr_recurrence}, auto for network
 analysis and cross for cross-RQA.}
+\item{adjacency_storage}{\code{"dense"} keeps the existing native
+logical adjacency matrix and its 2500-node cap; \code{"sparse"} returns
+a logical sparse \pkg{Matrix} matrix with a 10000-node cap. The Matrix
+package is optional and required only when sparse output is requested.}
 \item{result}{Native recurrence network or joint recurrence result.}
 \item{recurrences}{Two or more native auto-recurrence results on exactly
 the same time grid, temporal unit and Theiler-exclusion contract.}
@@ -99,7 +104,12 @@ graph threshold or community detection is performed.
 Joint recurrence requires strictly synchronized input and does not
 resample, shift, or harmonize component thresholds.
 
-Dense recurrence network analysis is limited to 2500 state nodes;
+Dense recurrence network output is limited to 2500 state nodes;
+opt-in sparse output supports up to 10000 native recurrence states,
+retaining source topology but not SciPy CSR class identity.
+Regardless of output storage, input recurrence matrices remain dense
+native R objects, and the independent scientific gap is still open.
+The separately defined native radius profiles remain limited to 2500 nodes;
 native radius profiles to 2500. These caps differ from Python's sparse
 implementations. Radius profiles accept convertible physical-time
 Theiler windows and TrajectorySet input. Windowed RQA supports fixed-radius or explicitly

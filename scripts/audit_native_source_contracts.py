@@ -14,7 +14,7 @@ from collections import Counter
 from pathlib import Path
 
 PINNED_PYTHON = "c1cd95ad718327550f7e55393ff38582872f7a94"
-DEFAULT_BASELINE = "fa210f9"  # User's qualified Batch 20 local HEAD.
+DEFAULT_BASELINE = "180f47d"  # User's qualified Batch 21 local HEAD.
 ALTERNATIVE_NAMES = (
     "fit_elastic_fpca", "fit_sparse_mfpca", "run_sparse_mfpca_workflow",
     "run_sparse_mfpca_async_workflow", "run_sparse_multilevel_workflow",
@@ -27,6 +27,25 @@ ALTERNATIVE_NAMES = (
     "fit_functional_mixed_effects_regression", "fit_multilevel_fpca",
     "run_functional_mixed_effects_workflow", "run_sparse_fpca_workflow",
 )
+
+
+# Bounded evidence registry; a named test proves NEITHER full scientific
+# equivalence nor independent approval. This field reports REVIEW TARGETS
+# and will remain pending until the named R/Python test is actually executed.
+BOUNDED_SOURCE_TESTS = {
+    "recurrence_network": (
+        "tests/testthat/test-native-recurrence-sparse-source.R",
+        "six-node triangle/isolates plus 2501-state sparse-only boundary",
+        "SciPy CSR Python dataclass versus optional R Matrix sparse/S3 result"),
+    "recurrence_network_node_frame": (
+        "tests/testthat/test-native-recurrence-sparse-source.R",
+        "source-aligned node frame from sparse recurrence adjacency",
+        "Python pandas DataFrame versus native R data.frame"),
+    "recurrence_network_summary_frame": (
+        "tests/testthat/test-native-recurrence-sparse-source.R",
+        "source-aligned global graph statistics from sparse adjacency",
+        "Python pandas DataFrame versus native R data.frame"),
+}
 
 
 def file_digest(path: Path) -> str:
@@ -117,6 +136,12 @@ def run(root: Path, out_dir: Path) -> dict:
             "ledger_gap_kind": item["gap_kind"],
             "ledger_source_witness": item["source_witness"],
             "next_full_contract_action": next_action(cat),
+            # A planned source oracle is not an executed scientific verdict.
+            "bounded_source_test": BOUNDED_SOURCE_TESTS.get(name,("","",""))[0],
+            "bounded_tested_domain": BOUNDED_SOURCE_TESTS.get(name,("","",""))[1],
+            "remaining_representation_difference": BOUNDED_SOURCE_TESTS.get(name,("","",""))[2],
+            "bounded_source_test_status": "AWAITING_LOCAL_R_AND_PYTHON_EXECUTION"
+                if name in BOUNDED_SOURCE_TESTS else "NO_NEW_BATCH_22_ORACLE",
             "review_state": "PENDING_INDEPENDENT_REPLAY",
         })
     if len(audit) != 204 or len({r["python_name"] for r in audit}) != 204:
@@ -174,6 +199,9 @@ def run(root: Path, out_dir: Path) -> dict:
         "named_R_definition_observed": sum(r["native_named_definition_found"]=="TRUE" for r in audit),
         "review_candidates": len(review),
         "independent_certifications_from_this_audit": 0,
+        "new_targeted_source_functions": len(BOUNDED_SOURCE_TESTS),
+        "new_targeted_recorded_gap_exports": sum(r["python_name"] in BOUNDED_SOURCE_TESTS for r in audit),
+        "new_targeted_test_source_executions_claimed": 0,
         "strict_contract_gap_flags_changed": 0,
         "provisional_categories": category_count,
         "limitations": [
@@ -181,6 +209,7 @@ def run(root: Path, out_dir: Path) -> dict:
             "Provisional classification uses names, recorded gap-kind and audited alternative-estimator registry",
             "Scientific vs representation categories can overlap; category is a triage, not a certification",
             "Full-domain statuses are deliberately FALSE pending source replays and independent sign-off",
+            "A bounded_source_test is an authored test reference, not proof of execution or certification",
         ],
         "source_ledger_sha256": file_digest(ledger),
         "nonfunction_ledger_sha256": file_digest(extra),

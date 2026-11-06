@@ -40,19 +40,32 @@
 
 #' Compute undirected recurrence-network topology in R
 #' @param recurrence Native auto etr_recurrence with symmetric off-diagonal matrix.
+#' @param adjacency_storage Either `dense` (default, backward compatible) or
+#'   `sparse` (an optional Matrix-package logical sparse column matrix).
+#'   Sparse output preserves network topology and source-style adjacency
+#'   without requiring a Python scipy CSR object. The input recurrence
+#'   remains an explicitly defined native R representation.
 #' @return etr_recurrence_network list with topology and source provenance.
 #'   Native adjacency remains a dense logical matrix (up to 2500 states),
-#'   while triangle counting uses forward-neighbor intersections and
+#'   by default; opt-in sparse output supports up to 10000 state nodes.
+#'   Triangle counting uses forward-neighbor intersections and
 #'   component enumeration uses queue-head breadth-first search.
 #' @export
-etr_recurrence_network <- function(recurrence){
+etr_recurrence_network <- function(recurrence,
+    adjacency_storage=c("dense","sparse")){
   .etr_recurrence_internal(recurrence,"auto")
+  adjacency_storage<-match.arg(adjacency_storage)
+  if(identical(adjacency_storage,"sparse"))
+    .etr_assert(requireNamespace("Matrix",quietly=TRUE),
+      "Matrix package is required for sparse recurrence adjacency")
   adj<-recurrence$matrix;n<-nrow(adj)
   # Match the dense recurrence builder's 2500-state domain without
   # requiring 750-node truncation. A CSR/Python dataclass contract is still
   # an open representation gap; all source topology calculations stay native.
-  .etr_assert(n<=2500L,
-    "native dense recurrence-network analysis limited to 2500 nodes")
+  max_nodes<-if(identical(adjacency_storage,"sparse"))10000L else 2500L
+  .etr_assert(n<=max_nodes,
+    paste0("native ",adjacency_storage,
+      " recurrence-network analysis limited to ",max_nodes," nodes"))
   degrees<-as.integer(rowSums(adj))
   triples<-as.double(degrees)*(as.double(degrees)-1)/2
   # Count each triangle exactly once using forward-neighbor intersections;
@@ -100,8 +113,13 @@ etr_recurrence_network <- function(recurrence){
   density<-e/(n*(n-1)/2)
   transitivity<-if(sum(triples)>0)
     as.numeric(3*n_triangles/sum(triples)) else NaN
+  # The core graph summaries above use the same adjacency regardless of
+  # storage. Convert only the returned adjacency, not the estimator.
+  # Matrix::Matrix preserves logical semantics and drops absent edges.
+  result_adjacency<-if(identical(adjacency_storage,"sparse"))
+    Matrix::Matrix(adj,sparse=TRUE) else adj
   structure(list(
-    adjacency=adj,degree=degrees,
+    adjacency=result_adjacency,degree=degrees,
     normalized_degree=as.numeric(degrees)/(n-1),
     local_clustering=as.numeric(clustering),
     component_labels=as.integer(labels),component_sizes=sizes,
@@ -140,7 +158,9 @@ etr_recurrence_network <- function(recurrence){
       transitivity_undefined_when_no_connected_triples=TRUE,
       triangle_count=if(n_triangles <= .Machine$integer.max)
         as.integer(n_triangles) else as.numeric(n_triangles),
-      dense_adjacency_materialized=TRUE,
+      dense_adjacency_materialized=identical(adjacency_storage,"dense"),
+      native_adjacency_storage=adjacency_storage,
+      scipy_csr_identity_claimed=FALSE,
       triangle_count_method="forward_neighbor_intersections",
       connected_components_method="queue_head_breadth_first_search",
       automatic_community_detection=FALSE,

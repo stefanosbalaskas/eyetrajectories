@@ -1,6 +1,6 @@
 {
-  "all_204_csv_sha256": "4adc265931c1f8c7bd79f21221574f94685b448cec4034d77fdb02782ac2935c",
-  "baseline_commit_prefix": "fa210f9",
+  "all_204_csv_sha256": "b4acc0c15967d9f15391029c195672ceb36e39be4e18b956a725198dd8c7b729",
+  "baseline_commit_prefix": "180f47d",
   "callable_recorded_gaps": 203,
   "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
   "independent_certifications_from_this_audit": 0,
@@ -9,10 +9,14 @@
     "File-based audit: no independent numerical execution across all 204 exports",
     "Provisional classification uses names, recorded gap-kind and audited alternative-estimator registry",
     "Scientific vs representation categories can overlap; category is a triage, not a certification",
-    "Full-domain statuses are deliberately FALSE pending source replays and independent sign-off"
+    "Full-domain statuses are deliberately FALSE pending source replays and independent sign-off",
+    "A bounded_source_test is an authored test reference, not proof of execution or certification"
   ],
   "mapped_python_functions_previous_qualification": 380,
   "named_R_definition_observed": 204,
+  "new_targeted_recorded_gap_exports": 1,
+  "new_targeted_source_functions": 3,
+  "new_targeted_test_source_executions_claimed": 0,
   "nonfunction_ledger_sha256": "60c7495e49a994f6b8acbe12027526e84d0d6b8393f4e6fa8dcbff68f74fe705",
   "nonfunction_recorded_gaps": 1,
   "provisional_categories": {
@@ -30,6 +34,6 @@
   "scientific_alternatives_with_recorded_source_gap": 16,
   "scientific_alternatives_without_recorded_source_gap": 3,
   "source_gap_export_count": 204,
-  "source_ledger_sha256": "06d0945d95f0f8e93ebd1fc3539b41070e3b1b96f282678498149fea09314311",
+  "source_ledger_sha256": "59358ffe812af3dd442e227a9619696c5d366c2237b5f11dd260f17f35b1ea20",
   "strict_contract_gap_flags_changed": 0
 }
