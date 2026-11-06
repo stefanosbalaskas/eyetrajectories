@@ -112,7 +112,13 @@ test_that("sparse recurrence inputs scale beyond the dense source domain", {
   expect_true(inherits(j$matrix,"sparseMatrix"))
   expect_equal(j$n_joint_recurrent_pairs,5L,tolerance=0)
   expect_equal(j$joint_recurrence_rate,5/(n*(n-1)/2),tolerance=1e-14)
-  expect_error(etr_joint_rqa_metrics(j),"2500")
+  # Batch 24 extends sparse line RQA beyond the old dense 2500-node cap.
+  # Do not preserve a regression assertion against the desired capability.
+  line<-etr_joint_rqa_metrics(j)
+  expect_identical(line$n_recurrence_points,5L)
+  expect_equal(line$determinism,4/5,tolerance=1e-14)
+  expect_equal(line$laminarity,4/10,tolerance=1e-14)
+  expect_true(isTRUE(line$provenance$native_sparse_rqa))
 })
 
 test_that("pinned Python 1.2 joint sparse CSR agrees with native Matrix", {
