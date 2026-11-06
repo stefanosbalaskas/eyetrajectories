@@ -10,6 +10,11 @@ def test_reaudit_package(root):
         out=Path(temp)/"audit"
         a=run(root,out)
         assert a["source_gap_export_count"] == 204
+        assert a["developer_verified_full_function_contracts"] in (0, 2)
+        assert a["developer_active_source_gap_count"] == 204 - a["developer_verified_full_function_contracts"]
+        assert a["developer_closure_cannot_imply_independent_approval"] is True
+        assert a["batch27_catalog_candidate_contracts"] == 5
+        assert a["batch27_full_domain_frames_eligible"] == 2
         assert a["callable_recorded_gaps"] == 203
         assert a["nonfunction_recorded_gaps"] == 1
         assert a["independent_certifications_from_this_audit"] == 0
@@ -27,13 +32,18 @@ def test_reaudit_package(root):
         assert a["batch24_full_two_mode_qualification_passed_at_3325897"] is True
         assert a["batch25_sparse_cross_rqa_R_execution_pending"] is False
         assert a["batch25_sparse_cross_rqa_targeted_tests_passed"] is True
-        assert a["batch25_sparse_cross_rqa_full_qualification_pending"] is True
-        assert a["batch26_sparse_constructor_R_execution_pending"] is True
+        assert a["batch25_sparse_cross_rqa_full_qualification_pending"] is False
+        assert a["batch25_full_two_mode_qualification_passed_at_c0e7b04"] is True
+        assert a["batch26_sparse_constructor_R_execution_pending"] is False
+        assert a["batch26_sparse_constructor_targeted_R_python_tests_passed"] is True
+        assert a["batch26_full_two_mode_qualification_pending"] is True
         with (out/"all_204_source_gaps.csv").open(newline="") as f:
             rows=list(csv.DictReader(f))
         assert len(rows)==204
         assert len({r['python_name'] for r in rows}) == 204
         assert all(r['recorded_source_gap']=="TRUE" for r in rows)
+        assert sum(r['developer_verified_full_function_contract']=="TRUE" for r in rows)==a["developer_verified_full_function_contracts"]
+        assert sum(r['developer_active_source_gap']=="TRUE" for r in rows)==a["developer_active_source_gap_count"]
         assert all(r['independent_scientific_certified']=="FALSE" for r in rows)
         targets = [r for r in rows if r['bounded_source_test']]
         assert {r['python_name'] for r in targets} == {'recurrence_network'}

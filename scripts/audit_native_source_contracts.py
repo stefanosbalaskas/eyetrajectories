@@ -12,9 +12,12 @@ from __future__ import annotations
 import argparse, csv, hashlib, json, re
 from collections import Counter
 from pathlib import Path
+from register_catalog_contract_evidence_batch27 import (
+    validate as validate_catalog_evidence, COLUMNS as CATALOG_COLUMNS, NAMES as CATALOG_NAMES,
+)
 
 PINNED_PYTHON = "c1cd95ad718327550f7e55393ff38582872f7a94"
-DEFAULT_BASELINE = "3325897"  # User-qualified Batch 24 final regression-fix commit.
+DEFAULT_BASELINE = "c0e7b04"  # User-qualified Batch 25 native sparse cross-RQA commit.
 ALTERNATIVE_NAMES = (
     "fit_elastic_fpca", "fit_sparse_mfpca", "run_sparse_mfpca_workflow",
     "run_sparse_mfpca_async_workflow", "run_sparse_multilevel_workflow",
@@ -107,6 +110,28 @@ def run(root: Path, out_dir: Path) -> dict:
         raise ValueError("Recorded callable status differs; do not infer approved contracts")
     if any(r.get("unresolved", "").upper() != "TRUE" for r in others):
         raise ValueError("Recorded nonfunction status differs; do not infer approved contracts")
+    # The 204 rows are the immutable HISTORICAL recorded-gap inventory.
+    # Developer-verified semantic closures are a separate evidence-gated
+    # overlay, and can never imply external approval or Python object identity.
+    verified = {}
+    catalog_registry = root / "inst/extdata/native_developer_verified_contracts.csv"
+    if catalog_registry.exists():
+        header, entries = csv_rows(catalog_registry)
+        if tuple(header) != CATALOG_COLUMNS:
+            raise ValueError("Developer verification overlay schema is invalid")
+        if entries:
+            if len(entries) != 2 or {x["python_name"] for x in entries} != set(CATALOG_NAMES):
+                raise ValueError("Only two full-domain catalog frame closures are eligible")
+            evidence_sha = validate_catalog_evidence(root)
+            for x in entries:
+                if x["evidence_sha256"] != evidence_sha or \
+                   x["evidence_file"] != "artifacts/native_full_contract_evidence/catalog_batch27_developer_evidence.json" or \
+                   x["independent_scientific_certified"] != "FALSE" or \
+                   x["verified_contract_level"] != "complete_noarg_native_data_frame" or \
+                   x["remaining_representation_difference"] != "Python pandas.DataFrame versus native R data.frame":
+                    raise ValueError("Invalid developer closure or false independent claim")
+                verified[x["python_name"]] = x
+
     source_files = sorted((root / "R").rglob("*.R"))
     sources = {p.relative_to(root).as_posix(): p.read_text(encoding="utf-8")
                for p in source_files}
@@ -124,7 +149,10 @@ def run(root: Path, out_dir: Path) -> dict:
             "python_name": name,
             "native_r_candidate": candidate,
             "python_export_kind": "function" if callable_kind else "nonfunction",
-            "recorded_source_gap": "TRUE",
+            "recorded_source_gap": "TRUE",  # immutable historical 204-export flag
+            "developer_verified_full_function_contract": "TRUE" if name in verified else "FALSE",
+            "developer_active_source_gap": "FALSE" if name in verified else "TRUE",
+            "developer_closure_evidence_sha256": verified.get(name, {}).get("evidence_sha256", ""),
             "native_named_definition_found": str(bool(locations)).upper(),
             "native_definition_files": ";".join(locations),
             "provisional_primary_blocker": cat,
@@ -192,7 +220,10 @@ def run(root: Path, out_dir: Path) -> dict:
         "frozen_python_commit": PINNED_PYTHON,
         "inventory_exports": 508,
         "mapped_python_functions_previous_qualification": 380,
-        "source_gap_export_count": 204,
+        "source_gap_export_count": 204,  # immutable historical recorded count
+        "developer_verified_full_function_contracts": len(verified),
+        "developer_active_source_gap_count": 204 - len(verified),
+        "developer_closure_cannot_imply_independent_approval": True,
         "callable_recorded_gaps": 203,
         "nonfunction_recorded_gaps": 1,
         "scientific_alternative_names_in_registry": len(ALTERNATIVE_NAMES),
@@ -213,11 +244,18 @@ def run(root: Path, out_dir: Path) -> dict:
         "batch24_full_two_mode_qualification_passed_at_3325897": True,
         "batch25_sparse_cross_rqa_R_execution_pending": False,
         "batch25_sparse_cross_rqa_targeted_tests_passed": True,
-        "batch25_sparse_cross_rqa_full_qualification_pending": True,
-        "batch26_sparse_constructor_R_execution_pending": True,
-        "strict_contract_gap_flags_changed": 0,
+        "batch25_sparse_cross_rqa_full_qualification_pending": False,
+        "batch25_full_two_mode_qualification_passed_at_c0e7b04": True,
+        "batch26_sparse_constructor_R_execution_pending": False,
+        "batch26_sparse_constructor_targeted_R_python_tests_passed": True,
+        "batch26_full_two_mode_qualification_pending": True,
+        "strict_contract_gap_flags_changed": 0,  # do not rewrite the frozen 203+1 inventory
+        "batch27_catalog_candidate_contracts": 5,
+        "batch27_full_domain_frames_eligible": 2,
         "provisional_categories": category_count,
         "limitations": [
+            "Historical 204-gap registry remains intact; evidence-gated developer semantic closures are tracked separately",
+            "Complete no-argument metadata frames are eligible for full developer verification after exhaustive Python 1.2 field replay; Pandas versus R data.frame representation remains explicit",
             "File-based audit: no independent numerical execution across all 204 exports",
             "Provisional classification uses names, recorded gap-kind and audited alternative-estimator registry",
             "Scientific vs representation categories can overlap; category is a triage, not a certification",
@@ -225,7 +263,8 @@ def run(root: Path, out_dir: Path) -> dict:
             "Batch 22's recurrence-network source test passed in the user-provided qualification log for 1e32391; that is developer-side, not external review",
             "Batch 23 sparse-input and sparse-joint numerical tests passed in user-provided log for 3b69eb4; this is developer evidence, not an independent certification",
             "Batch 24 large sparse RQA passed both full qualification modes at 3325897; this is developer evidence, not external independent certification",
-            "Batch 25 targeted sparse cross-RQA R and pinned Python 1.2 tests passed; full two-mode postcommit qualification remains pending",
+            "Batch 25 sparse cross-RQA passed both full two-mode suites at user-qualified commit c0e7b04",
+            "Batch 26 fixed-radius sparse construction targeted R/Python 1.2 tests passed after boolean CSR bridge correction; full two-mode qualification and commit remain pending",
         ],
         "source_ledger_sha256": file_digest(ledger),
         "nonfunction_ledger_sha256": file_digest(extra),

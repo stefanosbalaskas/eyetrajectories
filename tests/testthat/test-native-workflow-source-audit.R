@@ -199,3 +199,32 @@ test_that("pinned published Python 1.2 workflow step and decision frames match c
     as.character(r_sorted$value_json))
   expect_false(any(etr_native_parity_catalog()$one_to_one_native_contract_complete))
 })
+
+# Exact Python 1.2 repr() source semantics for common unusual identifiers.
+test_that("workflow source repr escapes both quote styles and ASCII controls",{
+  values<-c("plain","contains'quote",'contains"quote',
+    "both'\"quotes", "back\\slash", "line\nbreak", "tab\tfield",
+    "carriage\rreturn", "", "alpha-α")
+  for(x in values){
+    if(!nzchar(x))next # workflow identifiers cannot be empty.
+    z<-etr_workflow_audit_result(x)
+    rendered<-etr_workflow_reporting_text(z)
+    quoted<-eyetrajectories:::.etr_python_workflow_identifier_repr(x)
+    expect_true(startsWith(rendered,paste0("Workflow ",quoted," used schema 1")))
+  }
+})
+
+test_that("pinned Python repr source quote oracle is opt in",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("direct Python 1.2 repr oracle is opt in")
+  expect_identical(et_python_version(),"1.2.0")
+  py_repr<-reticulate::py_eval("repr",convert=FALSE)
+  values<-c("plain","contains'quote",'contains"quote',
+    "both'\"quotes", "back\\slash", "line\nbreak", "tab\tfield",
+    "carriage\rreturn", "alpha-α", "brace{thing}")
+  for(x in values){
+    py<-as.character(et_to_r(reticulate::py_call(py_repr,x)))
+    nr<-eyetrajectories:::.etr_python_workflow_identifier_repr(x)
+    expect_identical(nr,py,info=paste("source repr boundary",x))
+  }
+})
