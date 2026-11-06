@@ -16,7 +16,9 @@ based on the published \pkg{eyetrajectoriespy} 1.2.0 contracts from
 \code{recurrence.py}, \code{recurrence_networks.py} and
 \code{joint_recurrence.py}. These are research-size native R implementations, not Python
 \code{scipy.sparse} object wrappers. Recurrence-network results
-can now optionally use sparse native \pkg{Matrix} adjacency.
+can now optionally use sparse native \pkg{Matrix} adjacency and
+accept already sparse native recurrence matrices without materializing a
+dense square array.
 }
 \usage{
 etr_recurrence_network(recurrence, adjacency_storage = c("dense", "sparse"))
@@ -49,8 +51,9 @@ etr_windowed_rqa_trajectory_set(trajectories, metrics, window, step,
 analysis and cross for cross-RQA.}
 \item{adjacency_storage}{\code{"dense"} keeps the existing native
 logical adjacency matrix and its 2500-node cap; \code{"sparse"} returns
-a logical sparse \pkg{Matrix} matrix with a 10000-node cap. The Matrix
-package is optional and required only when sparse output is requested.}
+a logical sparse \pkg{Matrix} matrix with a 10000-node cap for dense
+source recurrence or 100000 nodes when the source is already sparse. The
+Matrix package is required only for sparse input or output.}
 \item{result}{Native recurrence network or joint recurrence result.}
 \item{recurrences}{Two or more native auto-recurrence results on exactly
 the same time grid, temporal unit and Theiler-exclusion contract.}

@@ -1,7 +1,8 @@
 # Stage 8: independent native R recurrence-network and joint-RQA functions.
 # Source contracts: eyetrajectoriespy v1.2.0 recurrence.py,
 # recurrence_networks.py, joint_recurrence.py and nonlinear_types.py.
-# No Python/reticulate runtime calls. Dense research-size guard applies.
+# No Python/reticulate runtime calls. Dense scientific RQA retains guards;
+# recurrence-network and joint-recurrence accept sparse native Matrix inputs.
 
 .etr_recurrence_internal <- function(x,kind="auto"){
   .etr_assert(inherits(x,"etr_recurrence") &&
@@ -38,6 +39,66 @@
   out
 }
 
+# Python 1.2 recurrence_networks.py and joint_recurrence.py accept CSR
+# recurrence source matrices. Validate a native Matrix sparse analogue without
+# allocating n-by-n dense arrays, and preserve the declared Theiler contract.
+.etr_recurrence_sparse_source <- function(x) {
+  .etr_assert(inherits(x,"etr_recurrence") &&
+    identical(x$kind,"auto") && inherits(x$matrix,"sparseMatrix"),
+    "auto recurrence requires a native sparse Matrix source")
+  .etr_assert(requireNamespace("Matrix",quietly=TRUE),
+    "Matrix package is required for sparse recurrence sources")
+  n<-nrow(x$matrix)
+  .etr_assert(n>=2L && n==ncol(x$matrix),
+    "sparse auto recurrence requires at least two square state nodes")
+  .etr_assert(is.numeric(x$time) && length(x$time)==n &&
+    all(is.finite(x$time)) && all(diff(x$time)>0),
+    "sparse auto recurrence time must be finite and strictly increasing")
+  .etr_assert(is.character(x$time_unit)&&length(x$time_unit)==1L&&
+    !is.na(x$time_unit)&&nzchar(x$time_unit),
+    "sparse auto recurrence requires a time_unit")
+  .etr_assert(is.numeric(x$theiler) && length(x$theiler)==1L&&
+    !is.na(x$theiler) && is.finite(x$theiler) && x$theiler>=0&&
+    x$theiler==as.integer(x$theiler),
+    "sparse recurrence Theiler window must be a nonnegative integer")
+  entries<-Matrix::summary(x$matrix)
+  .etr_assert(all(!is.na(entries$x)) &&
+    (is.logical(entries$x)||all(is.finite(entries$x))),
+    "sparse recurrence edges must be finite and non-missing")
+  adjacency<-Matrix::drop0(x$matrix!=0)
+  # A symmetricMatrix can store only one triangle. Expand to a *sparse*
+  # generalMatrix before enumerating graph neighbors and pairs. This also
+  # makes sparse-source checks independent of S3/S4 isSymmetric dispatch,
+  # which can differ across R/Matrix versions and namespace load paths.
+  adjacency<-methods::as(adjacency,"generalMatrix")
+  .etr_assert(inherits(adjacency,"sparseMatrix"),
+    "sparse recurrence conversion must preserve sparse storage")
+  nonzero<-Matrix::summary(adjacency)
+  # Exact structural symmetry for logical adjacency: (i,j) is present iff
+  # (j,i) is present. Sorted triplets use O(E) storage, never O(n^2).
+  forward_order<-order(nonzero$i,nonzero$j)
+  reverse_order<-order(nonzero$j,nonzero$i)
+  .etr_assert(identical(nonzero$i[forward_order],nonzero$j[reverse_order]) &&
+    identical(nonzero$j[forward_order],nonzero$i[reverse_order]),
+    "sparse auto recurrence requires symmetric adjacency")
+  .etr_assert(!any(nonzero$i == nonzero$j),
+    "sparse recurrence must exclude the main diagonal")
+  .etr_assert(!any(abs(nonzero$i-nonzero$j)<=x$theiler),
+    "sparse recurrence contains forbidden Theiler-window edges")
+  adjacency
+}
+
+# Materialize only an explicitly bounded binary recurrence matrix. Avoid
+# base::as.matrix() on optional Matrix S4 classes: under package namespace-only
+# loading, its S3 registration is not guaranteed across R/Matrix versions.
+# This conversion is only invoked after n <= 2500 has been verified.
+.etr_recurrence_sparse_dense_bounded <- function(adjacency) {
+  nz<-Matrix::summary(methods::as(adjacency,"generalMatrix"))
+  out<-matrix(FALSE,nrow(adjacency),ncol(adjacency))
+  if(nrow(nz))out[cbind(nz$i,nz$j)]<-TRUE
+  out
+}
+
 #' Compute undirected recurrence-network topology in R
 #' @param recurrence Native auto etr_recurrence with symmetric off-diagonal matrix.
 #' @param adjacency_storage Either `dense` (default, backward compatible) or
@@ -47,31 +108,46 @@
 #'   remains an explicitly defined native R representation.
 #' @return etr_recurrence_network list with topology and source provenance.
 #'   Native adjacency remains a dense logical matrix (up to 2500 states),
-#'   by default; opt-in sparse output supports up to 10000 state nodes.
+#'   by default. Sparse output supports 10000 dense-source states or
+#'   100000 already-sparse source states without a dense conversion.
 #'   Triangle counting uses forward-neighbor intersections and
 #'   component enumeration uses queue-head breadth-first search.
 #' @export
 etr_recurrence_network <- function(recurrence,
     adjacency_storage=c("dense","sparse")){
-  .etr_recurrence_internal(recurrence,"auto")
+  sparse_source<-inherits(recurrence$matrix,"sparseMatrix")
+  if(sparse_source) adj<-.etr_recurrence_sparse_source(recurrence)
+  else .etr_recurrence_internal(recurrence,"auto")
   adjacency_storage<-match.arg(adjacency_storage)
   if(identical(adjacency_storage,"sparse"))
     .etr_assert(requireNamespace("Matrix",quietly=TRUE),
       "Matrix package is required for sparse recurrence adjacency")
-  adj<-recurrence$matrix;n<-nrow(adj)
-  # Match the dense recurrence builder's 2500-state domain without
-  # requiring 750-node truncation. A CSR/Python dataclass contract is still
-  # an open representation gap; all source topology calculations stay native.
-  max_nodes<-if(identical(adjacency_storage,"sparse"))10000L else 2500L
+  if(!sparse_source)adj<-recurrence$matrix
+  n<-nrow(adj)
+  # Dense sources still have the original 2500-node guard; legacy dense
+  # sources requested in sparse-output mode retain their 10000-node guard.
+  # Already-sparse sources can contain many more states without an n^2 copy.
+  max_nodes<-if(identical(adjacency_storage,"dense"))2500L else
+    if(sparse_source)100000L else 10000L
   .etr_assert(n<=max_nodes,
     paste0("native ",adjacency_storage,
       " recurrence-network analysis limited to ",max_nodes," nodes"))
-  degrees<-as.integer(rowSums(adj))
+  if(sparse_source) {
+    nz<-Matrix::summary(adj)
+    neighbors<-replicate(n,integer(0),simplify=FALSE)
+    if(nrow(nz)) {
+      split_neighbors<-split(as.integer(nz$j),as.integer(nz$i))
+      neighbors[as.integer(names(split_neighbors))]<-
+        lapply(split_neighbors,sort.int)
+    }
+    degrees<-as.integer(vapply(neighbors,length,integer(1L)))
+  }else {
+    degrees<-as.integer(rowSums(adj))
+    neighbors<-lapply(seq_len(n),function(i)which(adj[i,]))
+  }
   triples<-as.double(degrees)*(as.double(degrees)-1)/2
-  # Count each triangle exactly once using forward-neighbor intersections;
-  # avoid allocating a degree-by-degree adjacency submatrix for every node.
-  # This is particularly useful on long, sparse recurrence sequences.
-  neighbors<-lapply(seq_len(n),function(i)which(adj[i,]))
+  # Count triangles through forward-neighbor intersections in O(n+E)
+  # storage rather than forming dense adjacency submatrices.
   forward<-lapply(seq_len(n),function(i)neighbors[[i]][neighbors[[i]]>i])
   triangles_by_node<-numeric(n)
   n_triangles<-0
@@ -92,8 +168,9 @@ etr_recurrence_network <- function(recurrence,
   labels<-rep(-1L,n);component<-0L
   # Queue-head BFS avoids repeatedly copying and shrinking a frontier,
   # preserving SciPy's ascending-root component enumeration.
+  queue<-integer(n)
   for(i in seq_len(n))if(labels[i]<0L){
-    queue<-integer(n);head<-1L;tail<-1L;queue[tail]<-i
+    head<-1L;tail<-1L;queue[tail]<-i
     labels[i]<-component
     while(head<=tail){
       cur<-queue[head];head<-head+1L
@@ -109,15 +186,20 @@ etr_recurrence_network <- function(recurrence,
     component<-component+1L
   }
   sizes<-as.integer(tabulate(labels+1L,nbins=component))
-  e<-as.integer(sum(degrees)/2L)
-  density<-e/(n*(n-1)/2)
+  edge_count<-as.double(sum(degrees))/2
+  e<-if(edge_count<=.Machine$integer.max)as.integer(edge_count)
+    else edge_count
+  density<-e/(as.double(n)*(n-1)/2)
   transitivity<-if(sum(triples)>0)
     as.numeric(3*n_triangles/sum(triples)) else NaN
   # The core graph summaries above use the same adjacency regardless of
   # storage. Convert only the returned adjacency, not the estimator.
   # Matrix::Matrix preserves logical semantics and drops absent edges.
-  result_adjacency<-if(identical(adjacency_storage,"sparse"))
-    Matrix::Matrix(adj,sparse=TRUE) else adj
+  result_adjacency<-if(identical(adjacency_storage,"sparse")) {
+    if(sparse_source)adj else Matrix::Matrix(adj,sparse=TRUE)
+  }else {
+    if(sparse_source).etr_recurrence_sparse_dense_bounded(adj) else adj
+  }
   structure(list(
     adjacency=result_adjacency,degree=degrees,
     normalized_degree=as.numeric(degrees)/(n-1),
@@ -159,6 +241,9 @@ etr_recurrence_network <- function(recurrence,
       triangle_count=if(n_triangles <= .Machine$integer.max)
         as.integer(n_triangles) else as.numeric(n_triangles),
       dense_adjacency_materialized=identical(adjacency_storage,"dense"),
+      native_source_matrix_storage=if(sparse_source)"sparse" else "dense",
+      sparse_input_preserved_without_dense_copy=isTRUE(sparse_source)&&
+        identical(adjacency_storage,"sparse"),
       native_adjacency_storage=adjacency_storage,
       scipy_csr_identity_claimed=FALSE,
       triangle_count_method="forward_neighbor_intersections",
@@ -219,7 +304,12 @@ etr_recurrence_network_summary_frame <- function(result){
 etr_joint_recurrence_matrix <- function(recurrences,labels=NULL){
   .etr_assert(is.list(recurrences) && length(recurrences)>=2L,
     "joint recurrence requires at least two recurrence components")
-  for(x in recurrences).etr_recurrence_internal(x,"auto")
+  source_sparse<-vapply(recurrences,function(x)
+    inherits(x$matrix,"sparseMatrix"),logical(1L))
+  for(i in seq_along(recurrences)) {
+    if(source_sparse[i]) .etr_recurrence_sparse_source(recurrences[[i]])
+    else .etr_recurrence_internal(recurrences[[i]],"auto")
+  }
   first<-recurrences[[1L]]
   .etr_assert(is.character(first$time_unit) &&
      length(first$time_unit)==1L && nzchar(first$time_unit),
@@ -239,23 +329,42 @@ etr_joint_recurrence_matrix <- function(recurrences,labels=NULL){
   .etr_assert(is.character(labels) && length(labels)==length(recurrences) &&
     all(nzchar(labels)) && !anyNA(labels) && !anyDuplicated(labels),
     "labels must be distinct nonempty strings, one per component")
-  eligible<-sum(upper.tri(first$matrix) &
-    abs(row(first$matrix)-col(first$matrix))>first$theiler)
+  # Closed-form count avoids generating n-by-n row/col masks for sparse
+  # sources, as in frozen Python _eligible_auto_pairs.
+  remaining<-as.double(n)-as.double(first$theiler)-1
+  eligible<-if(remaining>0)remaining*(remaining+1)/2 else 0
   .etr_assert(eligible>0L,
     "Theiler window leaves no eligible joint recurrence pairs")
-  m<-Reduce("&",lapply(recurrences,function(x)x$matrix))
-  pts<-sum(m[upper.tri(m)])
+  if(any(source_sparse)) {
+    .etr_assert(requireNamespace("Matrix",quietly=TRUE),
+      "Matrix package is required for sparse joint recurrence")
+    sources<-lapply(seq_along(recurrences),function(i){
+      a<-recurrences[[i]]$matrix
+      if(source_sparse[i]) .etr_recurrence_sparse_source(recurrences[[i]])
+      else Matrix::Matrix(a,sparse=TRUE)
+    })
+    m<-Reduce(function(a,b)Matrix::drop0(a & b),sources)
+    nz<-Matrix::summary(m)
+    pts<-as.double(sum(nz$i<nz$j))
+  }else {
+    m<-Reduce("&",lapply(recurrences,function(x)x$matrix))
+    pts<-sum(m[upper.tri(m)])
+  }
   structure(list(
     matrix=m,time=first$time,
     component_recurrences=recurrences,component_labels=labels,
     joint_recurrence_rate=pts/eligible,
-    n_joint_recurrent_pairs=as.integer(pts),
-    eligible_pair_count=as.integer(eligible),
+    n_joint_recurrent_pairs=if(pts<=.Machine$integer.max)
+      as.integer(pts) else as.double(pts),
+    eligible_pair_count=if(eligible<=.Machine$integer.max)
+      as.integer(eligible) else as.double(eligible),
     theiler_window_samples=as.integer(first$theiler),
     time_unit=first$time_unit,
     provenance=list(operation="joint_recurrence_matrix",
       definition="elementwise_logical_and_of_synchronized_auto_recurrence_matrices",
       component_labels=labels,component_count=length(recurrences),
+      matrix_storage=if(any(source_sparse))"sparse" else "dense",
+      sparse_source_components=sum(source_sparse),
       time_alignment="exact_grid_match_required",
       resampling=FALSE,lag_shift=FALSE,
       threshold_harmonization=FALSE,
@@ -291,7 +400,15 @@ etr_joint_rqa_metrics <- function(result,min_diagonal_length=2L,
                                   min_vertical_length=2L){
   .etr_assert(inherits(result,"etr_joint_recurrence"),
     "result must be a native joint recurrence")
-  rec<-structure(list(matrix=result$matrix,kind="auto",
+  # Native line-RQA code is a bounded dense estimator; materialize sparse
+  # joint matrices only when they fit the declared native RQA domain.
+  m<-result$matrix
+  if(inherits(m,"sparseMatrix")) {
+    .etr_assert(nrow(m)<=2500L,
+      "sparse joint RQA line statistics require at most 2500 nodes")
+    m<-.etr_recurrence_sparse_dense_bounded(m)
+  }
+  rec<-structure(list(matrix=m,kind="auto",
     recurrence_rate=result$joint_recurrence_rate,
     theiler=result$theiler_window_samples,
     time=result$time,time_unit=result$time_unit),class="etr_recurrence")

@@ -14,7 +14,7 @@ from collections import Counter
 from pathlib import Path
 
 PINNED_PYTHON = "c1cd95ad718327550f7e55393ff38582872f7a94"
-DEFAULT_BASELINE = "180f47d"  # User's qualified Batch 21 local HEAD.
+DEFAULT_BASELINE = "1e32391"  # User-qualified Batch 22 local HEAD; Batch 23 still pending.
 ALTERNATIVE_NAMES = (
     "fit_elastic_fpca", "fit_sparse_mfpca", "run_sparse_mfpca_workflow",
     "run_sparse_mfpca_async_workflow", "run_sparse_multilevel_workflow",
@@ -35,8 +35,8 @@ ALTERNATIVE_NAMES = (
 BOUNDED_SOURCE_TESTS = {
     "recurrence_network": (
         "tests/testthat/test-native-recurrence-sparse-source.R",
-        "six-node triangle/isolates plus 2501-state sparse-only boundary",
-        "SciPy CSR Python dataclass versus optional R Matrix sparse/S3 result"),
+        "six-node graph and 2501-state sparse-output boundary passed Batch 22; Batch 23 sparse-input tests pending",
+        "SciPy CSR Python dataclass versus native sparse Matrix/S3 result, including legacy R aliases"),
     "recurrence_network_node_frame": (
         "tests/testthat/test-native-recurrence-sparse-source.R",
         "source-aligned node frame from sparse recurrence adjacency",
@@ -140,8 +140,10 @@ def run(root: Path, out_dir: Path) -> dict:
             "bounded_source_test": BOUNDED_SOURCE_TESTS.get(name,("","",""))[0],
             "bounded_tested_domain": BOUNDED_SOURCE_TESTS.get(name,("","",""))[1],
             "remaining_representation_difference": BOUNDED_SOURCE_TESTS.get(name,("","",""))[2],
-            "bounded_source_test_status": "AWAITING_LOCAL_R_AND_PYTHON_EXECUTION"
-                if name in BOUNDED_SOURCE_TESTS else "NO_NEW_BATCH_22_ORACLE",
+            "bounded_source_test_status": "DEVELOPER_LOCAL_PASS_AT_1E32391_NOT_INDEPENDENT"
+                if name == "recurrence_network" else
+                "AWAITING_LOCAL_R_AND_PYTHON_EXECUTION"
+                if name in BOUNDED_SOURCE_TESTS else "NO_NEW_BATCH_23_ORACLE",
             "review_state": "PENDING_INDEPENDENT_REPLAY",
         })
     if len(audit) != 204 or len({r["python_name"] for r in audit}) != 204:
@@ -201,7 +203,9 @@ def run(root: Path, out_dir: Path) -> dict:
         "independent_certifications_from_this_audit": 0,
         "new_targeted_source_functions": len(BOUNDED_SOURCE_TESTS),
         "new_targeted_recorded_gap_exports": sum(r["python_name"] in BOUNDED_SOURCE_TESTS for r in audit),
-        "new_targeted_test_source_executions_claimed": 0,
+        "new_targeted_test_source_executions_claimed": 1,
+        "developer_bounded_replay_passes_from_batch22_log": 1,
+        "batch23_sparse_source_extension_awaiting_R_execution": True,
         "strict_contract_gap_flags_changed": 0,
         "provisional_categories": category_count,
         "limitations": [
@@ -209,7 +213,8 @@ def run(root: Path, out_dir: Path) -> dict:
             "Provisional classification uses names, recorded gap-kind and audited alternative-estimator registry",
             "Scientific vs representation categories can overlap; category is a triage, not a certification",
             "Full-domain statuses are deliberately FALSE pending source replays and independent sign-off",
-            "A bounded_source_test is an authored test reference, not proof of execution or certification",
+            "Batch 22's recurrence-network source test passed in the user-provided qualification log for 1e32391; that is developer-side, not external review",
+            "Batch 23 sparse-input and sparse-joint tests are authored but still require local execution",
         ],
         "source_ledger_sha256": file_digest(ledger),
         "nonfunction_ledger_sha256": file_digest(extra),
