@@ -213,7 +213,13 @@ cross-recurrence inputs; NULL for numeric matrices.}
 names for trajectory-set cross-recurrence; NULL for numeric matrices or
 already embedded state spaces.}
 \item{theiler}{Excluded sample lag for auto-recurrence.}
-\item{recurrence}{Native etr_recurrence object.}
+\item{recurrence}{Native etr_recurrence object. For
+\code{etr_rqa_metrics()}, sparse \pkg{Matrix} auto-recurrence is supported
+without dense allocation. Python 1.2-style line statistics require an
+approximately regular time grid and use upper-triangle diagonals and
+all-matrix vertical runs, including finite-border runs. Undefined sparse
+line statistics are represented by \code{NaN}; dense and cross defaults
+remain backward-compatible.}
 \item{min_diagonal_length}{Minimum counted diagonal line length.}
 \item{min_vertical_length}{Minimum counted vertical run length.}
 \item{max_curves}{Maximum plotted curves.}

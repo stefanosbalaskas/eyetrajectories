@@ -18,7 +18,9 @@ based on the published \pkg{eyetrajectoriespy} 1.2.0 contracts from
 \code{scipy.sparse} object wrappers. Recurrence-network results
 can now optionally use sparse native \pkg{Matrix} adjacency and
 accept already sparse native recurrence matrices without materializing a
-dense square array.
+dense square array. Native joint RQA on sparse sources now counts diagonal and
+vertical line runs directly from nonzero coordinates, including large sparse
+recurrence systems, without the former 2500-node dense-conversion guard.
 }
 \usage{
 etr_recurrence_network(recurrence, adjacency_storage = c("dense", "sparse"))

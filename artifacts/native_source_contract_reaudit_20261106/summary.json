@@ -1,7 +1,9 @@
 {
-  "all_204_csv_sha256": "1d367b03473cc5e39f1e70104fbf002bafa1a359da016b316defe7b8c4db3e4c",
-  "baseline_commit_prefix": "1e32391",
-  "batch23_sparse_source_extension_awaiting_R_execution": true,
+  "all_204_csv_sha256": "8b7b3cadca1416ea79ff6f87df51f4c73924f772b7740a3757a0e3a5c038745e",
+  "baseline_commit_prefix": "3b69eb4",
+  "batch23_sparse_source_execution_passed_at_3b69eb4": true,
+  "batch23_sparse_source_extension_awaiting_R_execution": false,
+  "batch24_sparse_rqa_line_extension_awaiting_R_execution": true,
   "callable_recorded_gaps": 203,
   "developer_bounded_replay_passes_from_batch22_log": 1,
   "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
@@ -13,7 +15,8 @@
     "Scientific vs representation categories can overlap; category is a triage, not a certification",
     "Full-domain statuses are deliberately FALSE pending source replays and independent sign-off",
     "Batch 22's recurrence-network source test passed in the user-provided qualification log for 1e32391; that is developer-side, not external review",
-    "Batch 23 sparse-input and sparse-joint tests are authored but still require local execution"
+    "Batch 23 sparse-input and sparse-joint numerical tests passed in user-provided log for 3b69eb4; this is developer evidence, not an independent certification",
+    "Batch 24 sparse line-RQA over >2500 nodes is authored but awaits user R and pinned Python replay"
   ],
   "mapped_python_functions_previous_qualification": 380,
   "named_R_definition_observed": 204,
@@ -37,6 +40,6 @@
   "scientific_alternatives_with_recorded_source_gap": 16,
   "scientific_alternatives_without_recorded_source_gap": 3,
   "source_gap_export_count": 204,
-  "source_ledger_sha256": "d2b255dbf3b06ef4da1f7e7dc20e6221f25496c9cc4909cdc881cd0e2f8434e6",
+  "source_ledger_sha256": "f0912e4eb4588925a674c01bc661f3ff0f3a7f7f76c11f9de71425fde7cd6d3c",
   "strict_contract_gap_flags_changed": 0
 }

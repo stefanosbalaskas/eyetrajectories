@@ -14,7 +14,7 @@ from collections import Counter
 from pathlib import Path
 
 PINNED_PYTHON = "c1cd95ad718327550f7e55393ff38582872f7a94"
-DEFAULT_BASELINE = "1e32391"  # User-qualified Batch 22 local HEAD; Batch 23 still pending.
+DEFAULT_BASELINE = "3b69eb4"  # User-qualified Batch 23 HEAD from supplied RStudio log.
 ALTERNATIVE_NAMES = (
     "fit_elastic_fpca", "fit_sparse_mfpca", "run_sparse_mfpca_workflow",
     "run_sparse_mfpca_async_workflow", "run_sparse_multilevel_workflow",
@@ -35,7 +35,7 @@ ALTERNATIVE_NAMES = (
 BOUNDED_SOURCE_TESTS = {
     "recurrence_network": (
         "tests/testthat/test-native-recurrence-sparse-source.R",
-        "six-node graph and 2501-state sparse-output boundary passed Batch 22; Batch 23 sparse-input tests pending",
+        "Batch 22 sparse-output and Batch 23 sparse-input tests passed; Batch 24 >2500-node sparse line RQA pending",
         "SciPy CSR Python dataclass versus native sparse Matrix/S3 result, including legacy R aliases"),
     "recurrence_network_node_frame": (
         "tests/testthat/test-native-recurrence-sparse-source.R",
@@ -140,7 +140,7 @@ def run(root: Path, out_dir: Path) -> dict:
             "bounded_source_test": BOUNDED_SOURCE_TESTS.get(name,("","",""))[0],
             "bounded_tested_domain": BOUNDED_SOURCE_TESTS.get(name,("","",""))[1],
             "remaining_representation_difference": BOUNDED_SOURCE_TESTS.get(name,("","",""))[2],
-            "bounded_source_test_status": "DEVELOPER_LOCAL_PASS_AT_1E32391_NOT_INDEPENDENT"
+            "bounded_source_test_status": "DEVELOPER_LOCAL_PASS_AT_3B69EB4_NOT_INDEPENDENT"
                 if name == "recurrence_network" else
                 "AWAITING_LOCAL_R_AND_PYTHON_EXECUTION"
                 if name in BOUNDED_SOURCE_TESTS else "NO_NEW_BATCH_23_ORACLE",
@@ -205,7 +205,9 @@ def run(root: Path, out_dir: Path) -> dict:
         "new_targeted_recorded_gap_exports": sum(r["python_name"] in BOUNDED_SOURCE_TESTS for r in audit),
         "new_targeted_test_source_executions_claimed": 1,
         "developer_bounded_replay_passes_from_batch22_log": 1,
-        "batch23_sparse_source_extension_awaiting_R_execution": True,
+        "batch23_sparse_source_extension_awaiting_R_execution": False,
+        "batch23_sparse_source_execution_passed_at_3b69eb4": True,
+        "batch24_sparse_rqa_line_extension_awaiting_R_execution": True,
         "strict_contract_gap_flags_changed": 0,
         "provisional_categories": category_count,
         "limitations": [
@@ -214,7 +216,8 @@ def run(root: Path, out_dir: Path) -> dict:
             "Scientific vs representation categories can overlap; category is a triage, not a certification",
             "Full-domain statuses are deliberately FALSE pending source replays and independent sign-off",
             "Batch 22's recurrence-network source test passed in the user-provided qualification log for 1e32391; that is developer-side, not external review",
-            "Batch 23 sparse-input and sparse-joint tests are authored but still require local execution",
+            "Batch 23 sparse-input and sparse-joint numerical tests passed in user-provided log for 3b69eb4; this is developer evidence, not an independent certification",
+            "Batch 24 sparse line-RQA over >2500 nodes is authored but awaits user R and pinned Python replay",
         ],
         "source_ledger_sha256": file_digest(ledger),
         "nonfunction_ledger_sha256": file_digest(extra),

@@ -19,7 +19,9 @@ def test_reaudit_package(root):
         assert a["new_targeted_recorded_gap_exports"] == 1
         assert a["new_targeted_test_source_executions_claimed"] == 1
         assert a["developer_bounded_replay_passes_from_batch22_log"] == 1
-        assert a["batch23_sparse_source_extension_awaiting_R_execution"] is True
+        assert a["batch23_sparse_source_extension_awaiting_R_execution"] is False
+        assert a["batch23_sparse_source_execution_passed_at_3b69eb4"] is True
+        assert a["batch24_sparse_rqa_line_extension_awaiting_R_execution"] is True
         with (out/"all_204_source_gaps.csv").open(newline="") as f:
             rows=list(csv.DictReader(f))
         assert len(rows)==204
@@ -29,7 +31,7 @@ def test_reaudit_package(root):
         targets = [r for r in rows if r['bounded_source_test']]
         assert {r['python_name'] for r in targets} == {'recurrence_network'}
         assert all(r['bounded_source_test_status'] ==
-            'DEVELOPER_LOCAL_PASS_AT_1E32391_NOT_INDEPENDENT' for r in targets)
+            'DEVELOPER_LOCAL_PASS_AT_3B69EB4_NOT_INDEPENDENT' for r in targets)
         assert any(r['python_name']=="TrajectorySet" and r['python_export_kind']=="nonfunction" for r in rows)
         assert sum(r['scientific_alternative_registry_member']=="TRUE" for r in rows)==a["scientific_alternatives_with_recorded_source_gap"]
         assert all(r['native_definition_files'] for r in rows if r['native_named_definition_found']=="TRUE")
@@ -42,7 +44,7 @@ def test_reaudit_package(root):
         assert first==(out/"all_204_source_gaps.csv").read_bytes()
         assert a==b
         assert classify('plot_fpca','backend',False).startswith('visualization')
-        print("BATCH23_SOURCE_GAP_AUDIT_TEST_PASS=204;INDEPENDENT_APPROVALS=0")
+        print("BATCH24_SOURCE_GAP_AUDIT_TEST_PASS=204;INDEPENDENT_APPROVALS=0")
 
 if __name__=='__main__':
     root=Path(sys.argv[1]).resolve() if len(sys.argv)>1 else Path(__file__).resolve().parents[1]

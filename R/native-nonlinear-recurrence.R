@@ -29,6 +29,12 @@
 .etr_recurrence_quantifiers_full <- function(rec,min_diagonal_length=2L,min_vertical_length=2L){
   out<-etr_rqa_metrics(rec,min_diagonal_length,min_vertical_length)
   m<-rec$matrix
+  if(inherits(m,"sparseMatrix")) {
+    # Sparse etr_rqa_metrics already computes exact source-style center mass.
+    out$min_diagonal_length<-as.integer(min_diagonal_length)
+    out$min_vertical_length<-as.integer(min_vertical_length)
+    return(out)
+  }
   if(identical(rec$kind,"auto")){
     idx<-which(m & upper.tri(m),arr.ind=TRUE)
     out$center_of_recurrence_mass <- if(nrow(idx))
@@ -42,6 +48,22 @@
 # Python 1.2 recurrence_networks.py and joint_recurrence.py accept CSR
 # recurrence source matrices. Validate a native Matrix sparse analogue without
 # allocating n-by-n dense arrays, and preserve the declared Theiler contract.
+# Matrix::summary can return an atomic zero-length object for a completely
+# empty sparse matrix on some Matrix versions. Normalize all COO reads in one
+# place so zero-edge networks and joint RQA retain the Python CSR semantics.
+# Matrix::nnzero is namespace-qualified; do not rely on S3 base dispatch.
+.etr_sparse_recurrence_entries <- function(matrix) {
+  .etr_assert(inherits(matrix,"sparseMatrix"),
+    "sparse entry enumeration requires a Matrix sparse matrix")
+  if (Matrix::nnzero(matrix) == 0L)
+    return(data.frame(i=integer(0L), j=integer(0L), x=numeric(0L)))
+  entries <- Matrix::summary(matrix)
+  .etr_assert(is.list(entries) &&
+    all(c("i","j","x") %in% names(entries)),
+    "sparse Matrix summary must expose i, j, x fields")
+  entries
+}
+
 .etr_recurrence_sparse_source <- function(x) {
   .etr_assert(inherits(x,"etr_recurrence") &&
     identical(x$kind,"auto") && inherits(x$matrix,"sparseMatrix"),
@@ -61,7 +83,7 @@
     !is.na(x$theiler) && is.finite(x$theiler) && x$theiler>=0&&
     x$theiler==as.integer(x$theiler),
     "sparse recurrence Theiler window must be a nonnegative integer")
-  entries<-Matrix::summary(x$matrix)
+  entries<-.etr_sparse_recurrence_entries(x$matrix)
   .etr_assert(all(!is.na(entries$x)) &&
     (is.logical(entries$x)||all(is.finite(entries$x))),
     "sparse recurrence edges must be finite and non-missing")
@@ -73,7 +95,7 @@
   adjacency<-methods::as(adjacency,"generalMatrix")
   .etr_assert(inherits(adjacency,"sparseMatrix"),
     "sparse recurrence conversion must preserve sparse storage")
-  nonzero<-Matrix::summary(adjacency)
+  nonzero<-.etr_sparse_recurrence_entries(adjacency)
   # Exact structural symmetry for logical adjacency: (i,j) is present iff
   # (j,i) is present. Sorted triplets use O(E) storage, never O(n^2).
   forward_order<-order(nonzero$i,nonzero$j)
@@ -93,10 +115,82 @@
 # loading, its S3 registration is not guaranteed across R/Matrix versions.
 # This conversion is only invoked after n <= 2500 has been verified.
 .etr_recurrence_sparse_dense_bounded <- function(adjacency) {
-  nz<-Matrix::summary(methods::as(adjacency,"generalMatrix"))
+  nz<-.etr_sparse_recurrence_entries(methods::as(adjacency,"generalMatrix"))
   out<-matrix(FALSE,nrow(adjacency),ncol(adjacency))
   if(nrow(nz))out[cbind(nz$i,nz$j)]<-TRUE
   out
+}
+
+# Sparse COO line-RQA engine matching frozen Python 1.2 recurrence.py.
+# Group by diagonal offset (j-i) or column (j) and find consecutive rows.
+# O(E log E) time, O(E) memory; never allocate an n-by-n logical matrix.
+.etr_sparse_rqa_run_lengths <- function(group, position) {
+  if (!length(group)) return(integer(0L))
+  ord <- order(group, position)
+  g <- as.integer(group[ord]); position <- as.integer(position[ord])
+  # Duplicate nonzeros are already coalesced by Matrix CSR/CSC canonicalization.
+  start <- c(TRUE, diff(g) != 0L | diff(position) != 1L)
+  indices <- which(start)
+  as.integer(diff(c(indices, length(g) + 1L)))
+}
+
+.etr_sparse_rqa_entropy <- function(lengths) {
+  if (!length(lengths)) return(NaN)
+  counts <- as.numeric(table(lengths))
+  probabilities <- counts / sum(counts)
+  -sum(probabilities * log(probabilities))
+}
+
+.etr_sparse_auto_rqa <- function(recurrence, min_diagonal_length,
+                                  min_vertical_length) {
+  .etr_assert(identical(recurrence$kind,"auto"),
+    "sparse line-RQA currently requires auto recurrence")
+  adj <- .etr_recurrence_sparse_source(recurrence)
+  dt <- diff(as.numeric(recurrence$time))
+  step <- stats::median(dt)
+  # Python embedding._regular_step uses np.allclose(rtol=1e-6,
+  # atol=max(1e-12, abs(step)*1e-9)). Irregular sampling needs regularization.
+  .etr_assert(all(abs(dt-step) <= (1e-6*abs(step) +
+      max(1e-12, abs(step)*1e-9))),
+    "line-based RQA requires an approximately regular time/index grid")
+  nz <- .etr_sparse_recurrence_entries(adj)
+  upper <- nz$i < nz$j
+  n_upper <- sum(upper)
+  n_all <- nrow(nz)
+  diag_all <- .etr_sparse_rqa_run_lengths(
+    nz$j[upper]-nz$i[upper],nz$i[upper])
+  vert_all <- .etr_sparse_rqa_run_lengths(nz$j,nz$i)
+  diagonal <- diag_all[diag_all>=min_diagonal_length]
+  vertical <- vert_all[vert_all>=min_vertical_length]
+  det <- if(n_upper) sum(diagonal)/n_upper else NaN
+  lam <- if(n_all) sum(vertical)/n_all else NaN
+  corm <- if(n_upper)
+    100 * sum(as.double(nz$j[upper])-nz$i[upper]) /
+      (max(nrow(adj)-1,1L)*n_upper) else NaN
+  .etr_assert(is.numeric(recurrence$recurrence_rate) &&
+    length(recurrence$recurrence_rate)==1L &&
+    is.finite(recurrence$recurrence_rate),
+    "sparse recurrence_rate must be a finite scalar")
+  list(recurrence_rate=as.numeric(recurrence$recurrence_rate),
+    determinism=det,
+    mean_diagonal_length=if(length(diagonal)) mean(diagonal) else NaN,
+    max_diagonal_length=if(length(diagonal)) as.integer(max(diagonal)) else 0L,
+    diagonal_entropy=.etr_sparse_rqa_entropy(diagonal),
+    laminarity=lam,
+    trapping_time=if(length(vertical)) mean(vertical) else NaN,
+    max_vertical_length=if(length(vertical)) as.integer(max(vertical)) else 0L,
+    center_of_recurrence_mass=corm,
+    n_recurrence_points=as.integer(n_upper),
+    n_diagonal_lines=as.integer(length(diagonal)),
+    n_vertical_lines=as.integer(length(vertical)),
+    min_diagonal_length=as.integer(min_diagonal_length),
+    min_vertical_length=as.integer(min_vertical_length),
+    provenance=list(operation="rqa_metrics",kind="auto",
+      sampling_contract="approximately_regular_grid",
+      sampling_step_a=as.numeric(step),
+      sparse_nnz=as.integer(n_all),dense_materialized=FALSE,
+      python_source="recurrence.py:rqa_metrics",
+      source_rqa_semantics="upper_diagonals_full_verticals"))
 }
 
 #' Compute undirected recurrence-network topology in R
@@ -133,7 +227,7 @@ etr_recurrence_network <- function(recurrence,
     paste0("native ",adjacency_storage,
       " recurrence-network analysis limited to ",max_nodes," nodes"))
   if(sparse_source) {
-    nz<-Matrix::summary(adj)
+    nz<-.etr_sparse_recurrence_entries(adj)
     neighbors<-replicate(n,integer(0),simplify=FALSE)
     if(nrow(nz)) {
       split_neighbors<-split(as.integer(nz$j),as.integer(nz$i))
@@ -344,7 +438,7 @@ etr_joint_recurrence_matrix <- function(recurrences,labels=NULL){
       else Matrix::Matrix(a,sparse=TRUE)
     })
     m<-Reduce(function(a,b)Matrix::drop0(a & b),sources)
-    nz<-Matrix::summary(m)
+    nz<-.etr_sparse_recurrence_entries(m)
     pts<-as.double(sum(nz$i<nz$j))
   }else {
     m<-Reduce("&",lapply(recurrences,function(x)x$matrix))
@@ -400,21 +494,17 @@ etr_joint_rqa_metrics <- function(result,min_diagonal_length=2L,
                                   min_vertical_length=2L){
   .etr_assert(inherits(result,"etr_joint_recurrence"),
     "result must be a native joint recurrence")
-  # Native line-RQA code is a bounded dense estimator; materialize sparse
-  # joint matrices only when they fit the declared native RQA domain.
-  m<-result$matrix
-  if(inherits(m,"sparseMatrix")) {
-    .etr_assert(nrow(m)<=2500L,
-      "sparse joint RQA line statistics require at most 2500 nodes")
-    m<-.etr_recurrence_sparse_dense_bounded(m)
-  }
-  rec<-structure(list(matrix=m,kind="auto",
+  # Sparse sources run a native coordinate-based line-RQA estimator without
+  # dense allocation; source Python CSR uses the same line definitions.
+  rec<-structure(list(matrix=result$matrix,kind="auto",
     recurrence_rate=result$joint_recurrence_rate,
     theiler=result$theiler_window_samples,
     time=result$time,time_unit=result$time_unit),class="etr_recurrence")
   out<-.etr_recurrence_quantifiers_full(rec,min_diagonal_length,min_vertical_length)
-  out$provenance<-list(operation="joint_rqa_metrics",
-    joint_recurrence_provenance=result$provenance)
+  out$provenance<-c(list(operation="joint_rqa_metrics",
+    joint_recurrence_provenance=result$provenance),
+    if(inherits(result$matrix,"sparseMatrix"))
+      list(native_sparse_rqa=TRUE,dense_materialized=FALSE) else list())
   out
 }
 
