@@ -477,10 +477,13 @@ etr_rqa_metrics <- function(recurrence, min_diagonal_length = 2L,
                 min_vertical_length >= 1L, "min_vertical_length must be positive integer")
   m <- recurrence$matrix
   if(inherits(m,"sparseMatrix")) {
-    .etr_assert(identical(recurrence$kind,"auto"),
-      "sparse RQA currently requires auto-recurrence matrices")
-    return(.etr_sparse_auto_rqa(recurrence,
-      as.integer(min_diagonal_length),as.integer(min_vertical_length)))
+    if(identical(recurrence$kind,"auto"))
+      return(.etr_sparse_auto_rqa(recurrence,
+        as.integer(min_diagonal_length),as.integer(min_vertical_length)))
+    if(identical(recurrence$kind,"cross"))
+      return(.etr_sparse_cross_rqa(recurrence,
+        as.integer(min_diagonal_length),as.integer(min_vertical_length)))
+    .etr_assert(FALSE,"unknown sparse recurrence kind")
   }
   .etr_assert(is.matrix(m) && is.logical(m) && !anyNA(m),
               "recurrence matrix must be complete logical matrix")

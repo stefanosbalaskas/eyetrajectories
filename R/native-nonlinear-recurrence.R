@@ -508,12 +508,94 @@ etr_joint_rqa_metrics <- function(result,min_diagonal_length=2L,
   out
 }
 
+
+# Frozen Python 1.2 recurrence.py: sparse CSR cross-RQA uses all matrix
+# diagonals and all vertical runs, with no upper triangle or Theiler removal.
+# The native Matrix analogue requires explicit physical time vectors for
+# source-aligned line statistics and does not materialize dense arrays.
+.etr_sparse_cross_rqa <- function(recurrence, min_diagonal_length,
+                                  min_vertical_length) {
+  .etr_assert(inherits(recurrence, "etr_recurrence") &&
+    identical(recurrence$kind, "cross") &&
+    inherits(recurrence$matrix, "sparseMatrix"),
+    "sparse cross-RQA requires a native cross recurrence Matrix source")
+  .etr_assert(requireNamespace("Matrix", quietly=TRUE),
+    "Matrix package is required for sparse cross RQA")
+  adjacency <- recurrence$matrix
+  nr <- nrow(adjacency); nc <- ncol(adjacency)
+  .etr_assert(nr>=2L && nc>=2L,
+    "sparse cross-RQA requires at least two states on both time axes")
+  check_step <- function(grid, n, axis) {
+    .etr_assert(is.numeric(grid) && length(grid)==n &&
+      all(is.finite(grid)) && all(diff(grid)>0),
+      paste0("cross-RQA requires a finite increasing ",axis," time grid"))
+    dt <- diff(as.numeric(grid)); step <- stats::median(dt)
+    .etr_assert(all(abs(dt-step) <=
+      (1e-6*abs(step) + max(1e-12,abs(step)*1e-9))),
+      paste0("cross-RQA line metrics require an approximately regular ",
+        axis," time grid"))
+    step
+  }
+  step_a <- check_step(recurrence$time_a,nr,"first")
+  step_b <- check_step(recurrence$time_b,nc,"second")
+  .etr_assert(abs(step_a-step_b) <=
+    (1e-6*abs(step_b)+max(1e-12,abs(step_a)*1e-9,abs(step_b)*1e-9)),
+    "cross-RQA diagonal/vertical line metrics require matching sampling steps")
+  .etr_assert(is.numeric(recurrence$recurrence_rate) &&
+    length(recurrence$recurrence_rate)==1L &&
+    is.finite(recurrence$recurrence_rate) &&
+    recurrence$recurrence_rate>=0 && recurrence$recurrence_rate<=1,
+    "sparse cross recurrence_rate must be a finite proportion")
+  # Matrix::summary can be atomic for zero-edge matrices. The shared
+  # extractor normalizes this case, preserving Python's empty-CSR behavior.
+  edges <- Matrix::drop0(adjacency != 0)
+  edges <- methods::as(edges,"generalMatrix")
+  nz <- .etr_sparse_recurrence_entries(edges)
+  .etr_assert(all(!is.na(nz$x)) &&
+    (is.logical(nz$x) || all(is.finite(nz$x))),
+    "sparse cross recurrence contains non-finite edges")
+  diagonal_all <- .etr_sparse_rqa_run_lengths(nz$j-nz$i,nz$i)
+  vertical_all <- .etr_sparse_rqa_run_lengths(nz$j,nz$i)
+  diagonal <- diagonal_all[diagonal_all>=min_diagonal_length]
+  vertical <- vertical_all[vertical_all>=min_vertical_length]
+  n_points <- nrow(nz)
+  list(recurrence_rate=as.numeric(recurrence$recurrence_rate),
+    determinism=if(n_points)sum(diagonal)/n_points else NaN,
+    mean_diagonal_length=if(length(diagonal))mean(diagonal) else NaN,
+    max_diagonal_length=if(length(diagonal))as.integer(max(diagonal)) else 0L,
+    diagonal_entropy=.etr_sparse_rqa_entropy(diagonal),
+    laminarity=if(n_points)sum(vertical)/n_points else NaN,
+    trapping_time=if(length(vertical))mean(vertical) else NaN,
+    max_vertical_length=if(length(vertical))as.integer(max(vertical)) else 0L,
+    center_of_recurrence_mass=NaN,
+    n_recurrence_points=as.integer(n_points),
+    n_diagonal_lines=as.integer(length(diagonal)),
+    n_vertical_lines=as.integer(length(vertical)),
+    min_diagonal_length=as.integer(min_diagonal_length),
+    min_vertical_length=as.integer(min_vertical_length),
+    provenance=list(operation="rqa_metrics",kind="cross",
+      sampling_contract="approximately_regular_grid",
+      sampling_step_a=as.numeric(step_a),sampling_step_b=as.numeric(step_b),
+      sparse_nnz=as.integer(n_points),dense_materialized=FALSE,
+      python_source="recurrence.py:rqa_metrics",
+      source_rqa_semantics="all_diagonals_all_verticals",
+      scipy_csr_identity_claimed=FALSE))
+}
+
 #' Cross recurrence quantification with a complete native RQA result
 #' @param recurrence A native cross recurrence result.
 #' @param min_diagonal_length,min_vertical_length Positive integer thresholds.
 #' @export
 etr_cross_rqa_metrics <- function(recurrence,min_diagonal_length=2L,
                                   min_vertical_length=2L){
+  if(inherits(recurrence$matrix,"sparseMatrix")) {
+    out<-.etr_recurrence_quantifiers_full(recurrence,
+      min_diagonal_length,min_vertical_length)
+    out$provenance<-c(list(operation="cross_rqa_metrics",kind="cross",
+      native_sparse_rqa=TRUE,dense_materialized=FALSE),
+      out$provenance)
+    return(out)
+  }
   .etr_recurrence_internal(recurrence,"cross")
   out<-.etr_recurrence_quantifiers_full(recurrence,min_diagonal_length,min_vertical_length)
   out$provenance<-list(operation="rqa_metrics",kind="cross")

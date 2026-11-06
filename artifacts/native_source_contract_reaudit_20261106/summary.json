@@ -1,9 +1,12 @@
 {
-  "all_204_csv_sha256": "8b7b3cadca1416ea79ff6f87df51f4c73924f772b7740a3757a0e3a5c038745e",
+  "all_204_csv_sha256": "959dc5a0f03a52d45421c2732534b05a8ec33b6b2e4d0feb576f8e9cb06fdcd5",
   "baseline_commit_prefix": "3b69eb4",
   "batch23_sparse_source_execution_passed_at_3b69eb4": true,
   "batch23_sparse_source_extension_awaiting_R_execution": false,
-  "batch24_sparse_rqa_line_extension_awaiting_R_execution": true,
+  "batch24_full_two_mode_qualification_pending": true,
+  "batch24_sparse_rqa_line_extension_awaiting_R_execution": false,
+  "batch24_targeted_R_python_replay_precommit_passed": true,
+  "batch25_sparse_cross_rqa_R_execution_pending": true,
   "callable_recorded_gaps": 203,
   "developer_bounded_replay_passes_from_batch22_log": 1,
   "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
@@ -16,7 +19,8 @@
     "Full-domain statuses are deliberately FALSE pending source replays and independent sign-off",
     "Batch 22's recurrence-network source test passed in the user-provided qualification log for 1e32391; that is developer-side, not external review",
     "Batch 23 sparse-input and sparse-joint numerical tests passed in user-provided log for 3b69eb4; this is developer evidence, not an independent certification",
-    "Batch 24 sparse line-RQA over >2500 nodes is authored but awaits user R and pinned Python replay"
+    "Batch 24 large sparse RQA passed targeted R and Python 1.2 tests in the user log, but full two-mode qualification after the whitespace correction has not been shown",
+    "Batch 25 sparse cross-RQA R and pinned Python tests are authored but not yet executed; Python-only geometry is not independent scientific certification"
   ],
   "mapped_python_functions_previous_qualification": 380,
   "named_R_definition_observed": 204,
@@ -40,6 +44,6 @@
   "scientific_alternatives_with_recorded_source_gap": 16,
   "scientific_alternatives_without_recorded_source_gap": 3,
   "source_gap_export_count": 204,
-  "source_ledger_sha256": "f0912e4eb4588925a674c01bc661f3ff0f3a7f7f76c11f9de71425fde7cd6d3c",
+  "source_ledger_sha256": "6d88392cc555ef316965930f2dc82a14a1d3a939f2ffd6fbce68f05b85ce491f",
   "strict_contract_gap_flags_changed": 0
 }

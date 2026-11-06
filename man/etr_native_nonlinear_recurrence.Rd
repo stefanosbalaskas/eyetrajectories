@@ -112,10 +112,13 @@ resample, shift, or harmonize component thresholds.
 Dense recurrence network output is limited to 2500 state nodes;
 opt-in sparse output supports up to 10000 native recurrence states,
 retaining source topology but not SciPy CSR class identity.
-Regardless of output storage, input recurrence matrices remain dense
-native R objects, and the independent scientific gap is still open.
-The separately defined native radius profiles remain limited to 2500 nodes;
-native radius profiles to 2500. These caps differ from Python's sparse
+Native sparse \pkg{Matrix} auto-recurrence inputs can be analyzed without
+dense allocation (with a separately bounded 100000-node sparse network
+path); joint recurrence can intersect synchronized dense/sparse sources.
+Native line-RQA uses sparse coordinates for large auto, joint and rectangular
+cross recurrence inputs. Python SciPy CSR and typed result identity and full
+source error domains remain unresolved. Native radius profiles retain their
+separate 2500-node limit. These caps differ from Python's sparse
 implementations. Radius profiles accept convertible physical-time
 Theiler windows and TrajectorySet input. Windowed RQA supports fixed-radius or explicitly
 requested target-density thresholds, all three source distance metrics,
@@ -129,6 +132,12 @@ and does NOT treat windows as independent sampling units for downstream
 inference. No scientific coverage or inferential calibration is implied.
 Optional Python reference tests use a pinned Python 1.2 package
 and are entirely separate from the native R algorithms.
+
+Native sparse cross-RQA accepts rectangular sparse \pkg{Matrix} recurrence
+inputs with explicitly declared first and second time grids. Cross-line
+statistics use all diagonals and vertical lines and require approximately
+regular and matching time-step sizes. Native sparse representations are not
+identical to Python SciPy CSR or typed dataclass results.
 }
 \examples{
 values <- array(0,c(2L,9L,1L))

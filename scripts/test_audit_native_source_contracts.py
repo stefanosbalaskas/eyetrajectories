@@ -21,7 +21,10 @@ def test_reaudit_package(root):
         assert a["developer_bounded_replay_passes_from_batch22_log"] == 1
         assert a["batch23_sparse_source_extension_awaiting_R_execution"] is False
         assert a["batch23_sparse_source_execution_passed_at_3b69eb4"] is True
-        assert a["batch24_sparse_rqa_line_extension_awaiting_R_execution"] is True
+        assert a["batch24_sparse_rqa_line_extension_awaiting_R_execution"] is False
+        assert a["batch24_targeted_R_python_replay_precommit_passed"] is True
+        assert a["batch24_full_two_mode_qualification_pending"] is True
+        assert a["batch25_sparse_cross_rqa_R_execution_pending"] is True
         with (out/"all_204_source_gaps.csv").open(newline="") as f:
             rows=list(csv.DictReader(f))
         assert len(rows)==204
