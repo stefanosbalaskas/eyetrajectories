@@ -7,9 +7,11 @@ etr_cross_validate_fpca_regression(trajectories, outcome,
   family = "gaussian", loss = NULL, covariates = NULL,
   n_splits = 5L, scaling = "none", cv_unit = "curve",
   group_column = NULL, shuffle = FALSE, random_state = 0L,
-  fold_assignments = NULL)
+  fold_assignments = NULL,
+  coerce_numeric_text_covariates = FALSE)
 }
 \arguments{
+\item{coerce_numeric_text_covariates}{Native-only opt-in for finite numeric-text covariate columns (including interdigit underscores). The frozen Python validator parses text but source statsmodels rejects object-typed columns, so FALSE preserves the default source-safe behavior.}
 \item{trajectories}{Complete native common-grid trajectory set.}
 \item{outcome}{Curve-aligned finite numeric, logical, or decimal numeric-looking character outcomes. Logical TRUE/FALSE becomes numeric 1/0; binomial responses must be 0/1. R factors are not converted to their integer codes.}
 \item{candidate_components}{Positive integer retained FPC counts.}
@@ -43,5 +45,5 @@ while isolated native-R shuffled curve folds allow reproducible
 sensitivity studies. Nonmonotone GroupKFold tie ordering and shuffled
 NumPy permutations remain implementation-specific. Binomial inference uses
 R stats::glm.fit; its IRLS and separation warnings can differ from statsmodels.
-Pandas nonnumeric-to-float covariate coercions remain outside this subset;
+Pandas nonnumeric-to-float source-fitting coercions remain outside the default; optional finite text conversion is a native-only extension;
 this is not independent full-domain source certification.}

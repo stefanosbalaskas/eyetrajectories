@@ -35,12 +35,17 @@
 #'   ignored for unshuffled/group modes. Does not reproduce NumPy draws.
 #' @return Source-shaped fold losses, test predictions, assignments and
 #'   provenance; never fits on held-out curves.
+#' @param coerce_numeric_text_covariates Native-only optional parsing of
+#'   finite text/underscore numeric covariate columns. Default FALSE, since
+#'   frozen Python 1.2 statsmodels rejects object-typed pandas covariates.
+#'   This opt-in feature is NOT strict Python input-domain equivalence.
 #' @export
 etr_cross_validate_fpca_regression<-function(
     trajectories,outcome,candidate_components=c(1L,2L,3L,4L,5L),
     family="gaussian",loss=NULL,covariates=NULL,n_splits=5L,
     scaling="none",cv_unit="curve",group_column=NULL,
-    shuffle=FALSE,random_state=0L,fold_assignments=NULL){
+    shuffle=FALSE,random_state=0L,fold_assignments=NULL,
+    coerce_numeric_text_covariates=FALSE){
   etr_validate(trajectories,require_complete=TRUE)
   .etr_fpcr_validate_family(family)
 
@@ -72,7 +77,8 @@ etr_cross_validate_fpca_regression<-function(
     "scaling must be none or dimension_sd")
   resolved_loss<-.etr_fpcr_resolve_loss(family,loss)
   n<-length(trajectories$curve_ids)
-  covariate_matrix<-.etr_fpcr_numeric_covariates(covariates,n)
+  covariate_matrix<-.etr_fpcr_numeric_covariates(covariates,n,
+    coerce_text=coerce_numeric_text_covariates)
   outcome<-.etr_fpcr_numeric_outcome(outcome,n,family,
     "outcome must contain one finite scalar per trajectory")
   .etr_assert(is.numeric(candidate_components)&&

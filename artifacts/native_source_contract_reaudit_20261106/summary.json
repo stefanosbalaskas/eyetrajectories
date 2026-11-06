@@ -1,0 +1,35 @@
+{
+  "all_204_csv_sha256": "4adc265931c1f8c7bd79f21221574f94685b448cec4034d77fdb02782ac2935c",
+  "baseline_commit_prefix": "fa210f9",
+  "callable_recorded_gaps": 203,
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "independent_certifications_from_this_audit": 0,
+  "inventory_exports": 508,
+  "limitations": [
+    "File-based audit: no independent numerical execution across all 204 exports",
+    "Provisional classification uses names, recorded gap-kind and audited alternative-estimator registry",
+    "Scientific vs representation categories can overlap; category is a triage, not a certification",
+    "Full-domain statuses are deliberately FALSE pending source replays and independent sign-off"
+  ],
+  "mapped_python_functions_previous_qualification": 380,
+  "named_R_definition_observed": 204,
+  "nonfunction_ledger_sha256": "60c7495e49a994f6b8acbe12027526e84d0d6b8393f4e6fa8dcbff68f74fe705",
+  "nonfunction_recorded_gaps": 1,
+  "provisional_categories": {
+    "constructor_class_and_domain": 1,
+    "mixed_input_domain_or_cross_language_representation": 28,
+    "narrative_reporting_format_and_possible_domain": 30,
+    "scientific_or_numeric_domain_and_result_schema": 28,
+    "scientifically_alternative_estimator_or_backend": 16,
+    "tabular_reporting_schema_and_possible_numerics": 30,
+    "visualization_backend_and_graphical_schema": 71
+  },
+  "review_candidates": 36,
+  "review_handoff_sha256": "4794d04c5bffcdbc1313d5e4a5a25a6f61e74466968ee590d725b3c4178403f3",
+  "scientific_alternative_names_in_registry": 19,
+  "scientific_alternatives_with_recorded_source_gap": 16,
+  "scientific_alternatives_without_recorded_source_gap": 3,
+  "source_gap_export_count": 204,
+  "source_ledger_sha256": "06d0945d95f0f8e93ebd1fc3539b41070e3b1b96f282678498149fea09314311",
+  "strict_contract_gap_flags_changed": 0
+}

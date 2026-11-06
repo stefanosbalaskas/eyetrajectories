@@ -8,9 +8,11 @@ etr_nested_cross_validate_fpca_regression(trajectories, outcome,
   outer_splits = 5L, inner_splits = 4L, selection_rule = "minimum",
   scaling = "none", cv_unit = "curve", group_column = NULL,
   shuffle = FALSE, random_state = 0L,
-  outer_fold_assignments = NULL, inner_fold_assignments = NULL)
+  outer_fold_assignments = NULL, inner_fold_assignments = NULL,
+  coerce_numeric_text_covariates = FALSE)
 }
 \arguments{
+\item{coerce_numeric_text_covariates}{Native-only opt-in for finite numeric-text covariate columns, including interdigit underscores. The frozen Python source statsmodels model rejects object-typed columns, so FALSE preserves the default source-safe behavior.}
 \item{trajectories}{Complete native common-grid trajectories.}
 \item{outcome}{Finite numeric, logical or decimal numeric-looking character response per curve. Logical TRUE/FALSE becomes 1/0; binomial responses must be 0/1. R factor integer codes are not accepted.}
 \item{candidate_components}{Positive integer retained FPC counts.}

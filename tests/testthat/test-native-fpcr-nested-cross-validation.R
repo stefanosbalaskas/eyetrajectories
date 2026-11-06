@@ -234,3 +234,23 @@ test_that("nested source replay validates every inner and outer holdout",{
     outer_fold_assignments=outer,inner_fold_assignments=inner[1L:2L]),
     "inner_fold_assignments")
 })
+
+
+test_that("nested Gaussian FPCR accepts finite source numeric-text covariates",{
+  z<-.etr_nested_cv_fixture()
+  values<-c("0.10","-0.70","1.2e0","0.05","-1.1",
+    "2.0","-.5","+1_0e-1","1.1","-0.2","0.6","-1.4")
+  src<-data.frame(offset=values)
+  numeric<-data.frame(offset=as.numeric(gsub("_","",values)))
+  native<-etr_nested_cross_validate_fpca_regression(z$x,z$y,
+    candidate_components=1L,outer_splits=3L,
+    inner_splits=2L,shuffle=FALSE,covariates=numeric)
+  from_text<-etr_nested_cross_validate_fpca_regression(z$x,z$y,
+    candidate_components=1L,outer_splits=3L,
+    inner_splits=2L,shuffle=FALSE,covariates=src,
+    coerce_numeric_text_covariates=TRUE)
+  for(field in c("outer_folds","inner_summaries","predictions"))
+    expect_equal(from_text[[field]],native[[field]],tolerance=0)
+  expect_true(from_text$provenance$nested_selection)
+  expect_true(from_text$provenance$outer_performance_unseen_by_inner_selection)
+})

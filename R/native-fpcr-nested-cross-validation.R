@@ -19,6 +19,9 @@
 #' @param group_column Required metadata column for group CV.
 #' @param shuffle Optional seeded native R curve-fold shuffle.
 #' @param random_state Seed for shuffled curve folds; group folds ignore it.
+#' @param coerce_numeric_text_covariates Native-only optional parsing of
+#'   finite text/underscore numeric covariate columns. Default FALSE: the
+#'   full Python 1.2 statsmodels model rejects object-typed pandas columns.
 #' @export
 etr_nested_cross_validate_fpca_regression <- function(
   trajectories, outcome, candidate_components=c(1L,2L,3L,4L,5L),
@@ -26,12 +29,13 @@ etr_nested_cross_validate_fpca_regression <- function(
   outer_splits=5L, inner_splits=4L, selection_rule="minimum",
   scaling="none", cv_unit="curve", group_column=NULL,
   shuffle=FALSE, random_state=0L,
-  outer_fold_assignments=NULL,inner_fold_assignments=NULL) {
+  outer_fold_assignments=NULL,inner_fold_assignments=NULL,
+  coerce_numeric_text_covariates=FALSE) {
   etr_validate(trajectories,require_complete=TRUE)
   .etr_fpcr_validate_family(family)
   resolved_loss<-.etr_fpcr_resolve_loss(family,loss)
   covariate_matrix<-.etr_fpcr_numeric_covariates(covariates,
-    length(trajectories$curve_ids))
+    length(trajectories$curve_ids),coerce_text=coerce_numeric_text_covariates)
   .etr_assert(is.character(cv_unit)&&length(cv_unit)==1L&&
     !is.na(cv_unit)&&cv_unit%in%c("curve","group"),
     "cv_unit must be curve or group")
