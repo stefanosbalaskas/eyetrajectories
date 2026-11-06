@@ -119,11 +119,13 @@ etr_reconstruct_fpca(fit, n_components = NULL, scores = NULL)
 
 etr_recurrence_matrix(x, curve = 1L, radius = NULL, theiler = 0L,
   metric = "euclidean", target_recurrence_rate = NULL,
-  dimensions = NULL, theiler_window_units = "samples")
+  dimensions = NULL, theiler_window_units = "samples",
+  sparse_output = FALSE)
 
 etr_cross_recurrence_matrix(a, b, radius = NULL, metric = "euclidean",
   target_recurrence_rate = NULL, curve_a = NULL, curve_b = NULL,
-  dimensions_a = NULL, dimensions_b = NULL)
+  dimensions_a = NULL, dimensions_b = NULL,
+  sparse_output = FALSE)
 
 etr_rqa_metrics(recurrence, min_diagonal_length = 2L, min_vertical_length = 2L)
 
@@ -147,6 +149,7 @@ time vector to its real part, matching NumPy's complex ndarray
 \item{time_unit}{Explicit temporal units, e.g. ms or s.}
 \item{provenance}{Optional JSON-like named native R list of source and preprocessing decisions. For \code{etr_from_long}, the source audit is added by default and user-supplied named keys are applied as shallow overrides.}
 \item{x}{Native trajectory set, or a fitted object as documented in the specific function.}
+\item{sparse_output}{Opt-in native sparse recurrence construction for one-dimensional finite fixed-radius states. FALSE (default) preserves the original dense R API; TRUE returns Matrix sparse adjacency with inclusive-radius pairs and, for auto recurrence, the declared Theiler exclusion. Multidimensional and target-rate sparse construction remain unsupported, and Matrix/S3 output differs from Python scipy CSR/dataclass identity.}
 \item{require_complete}{Whether to reject missing samples.}
 \item{python_boundary_mode}{If TRUE, enable bounded Python 1.2 TrajectorySet constructor/subset behavior for NaN observations, zero-curve arrays, regular nested numeric-like sequences, complex ndarray-to-real casting, ID-indexed metadata and zero-based/negative subset indices. Default FALSE preserves the native scientific contract. Does not reproduce all NumPy, pandas or dataclass semantics.}
 \item{data}{Long-format data frame with individual gaze samples.}

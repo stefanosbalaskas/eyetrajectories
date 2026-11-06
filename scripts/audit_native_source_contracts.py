@@ -14,7 +14,7 @@ from collections import Counter
 from pathlib import Path
 
 PINNED_PYTHON = "c1cd95ad718327550f7e55393ff38582872f7a94"
-DEFAULT_BASELINE = "3b69eb4"  # User-qualified Batch 23 HEAD from supplied RStudio log.
+DEFAULT_BASELINE = "3325897"  # User-qualified Batch 24 final regression-fix commit.
 ALTERNATIVE_NAMES = (
     "fit_elastic_fpca", "fit_sparse_mfpca", "run_sparse_mfpca_workflow",
     "run_sparse_mfpca_async_workflow", "run_sparse_multilevel_workflow",
@@ -35,7 +35,7 @@ ALTERNATIVE_NAMES = (
 BOUNDED_SOURCE_TESTS = {
     "recurrence_network": (
         "tests/testthat/test-native-recurrence-sparse-source.R",
-        "Batch 22 sparse-output and Batch 23 sparse-input tests passed; Batch 24 >2500-node sparse line RQA targeted tests passed; full qualification pending",
+        "Batches 23 and 24 developer qualification passed; Batch 25 sparse cross-RQA targeted tests passed; Batch 26 fixed-radius sparse construction oracle pending R execution",
         "SciPy CSR Python dataclass versus native sparse Matrix/S3 result, including legacy R aliases"),
     "recurrence_network_node_frame": (
         "tests/testthat/test-native-recurrence-sparse-source.R",
@@ -209,8 +209,12 @@ def run(root: Path, out_dir: Path) -> dict:
         "batch23_sparse_source_execution_passed_at_3b69eb4": True,
         "batch24_sparse_rqa_line_extension_awaiting_R_execution": False,
         "batch24_targeted_R_python_replay_precommit_passed": True,
-        "batch24_full_two_mode_qualification_pending": True,
-        "batch25_sparse_cross_rqa_R_execution_pending": True,
+        "batch24_full_two_mode_qualification_pending": False,
+        "batch24_full_two_mode_qualification_passed_at_3325897": True,
+        "batch25_sparse_cross_rqa_R_execution_pending": False,
+        "batch25_sparse_cross_rqa_targeted_tests_passed": True,
+        "batch25_sparse_cross_rqa_full_qualification_pending": True,
+        "batch26_sparse_constructor_R_execution_pending": True,
         "strict_contract_gap_flags_changed": 0,
         "provisional_categories": category_count,
         "limitations": [
@@ -220,8 +224,8 @@ def run(root: Path, out_dir: Path) -> dict:
             "Full-domain statuses are deliberately FALSE pending source replays and independent sign-off",
             "Batch 22's recurrence-network source test passed in the user-provided qualification log for 1e32391; that is developer-side, not external review",
             "Batch 23 sparse-input and sparse-joint numerical tests passed in user-provided log for 3b69eb4; this is developer evidence, not an independent certification",
-            "Batch 24 large sparse RQA passed targeted R and Python 1.2 tests in the user log, but full two-mode qualification after the whitespace correction has not been shown",
-            "Batch 25 sparse cross-RQA R and pinned Python tests are authored but not yet executed; Python-only geometry is not independent scientific certification",
+            "Batch 24 large sparse RQA passed both full qualification modes at 3325897; this is developer evidence, not external independent certification",
+            "Batch 25 targeted sparse cross-RQA R and pinned Python 1.2 tests passed; full two-mode postcommit qualification remains pending",
         ],
         "source_ledger_sha256": file_digest(ledger),
         "nonfunction_ledger_sha256": file_digest(extra),

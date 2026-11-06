@@ -13,5 +13,6 @@ assert all(r['independent_scientific_certified']=='FALSE' for r in all_rows)
 assert any(r['python_name']=='TrajectorySet' and r['python_export_kind']=='nonfunction' for r in all_rows)
 assert sum(bool(r['recorded_source_gap']=='TRUE') for r in all_rows)==204
 network=next(r for r in rows if r['python_name']=='recurrence_network')
-assert 'Batch 24 targeted R/Python tests PASS' in network['known_source_difference']
+assert 'Batch 26 also adds' in network['known_source_difference']
+assert 'Batch 24 user-qualified 3325897' in network['source_witness']
 print('BATCH25_204_GAP_REAUDIT_PASS: 203 callable + 1 nonfunction; 0 independent approvals; no source gap closed')
