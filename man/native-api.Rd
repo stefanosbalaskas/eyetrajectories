@@ -151,7 +151,6 @@ time vector to its real part, matching NumPy's complex ndarray
 \item{x}{Native trajectory set, or a fitted object as documented in the specific function.}
 \item{sparse_output}{Opt-in native sparse recurrence construction for one-dimensional finite fixed-radius states. FALSE (default) preserves the original dense R API; TRUE returns Matrix sparse adjacency with inclusive-radius pairs and, for auto recurrence, the declared Theiler exclusion. Multidimensional and target-rate sparse construction remain unsupported, and Matrix/S3 output differs from Python scipy CSR/dataclass identity.}
 \item{require_complete}{Whether to reject missing samples.}
-\item{python_boundary_mode}{If TRUE, enable bounded Python 1.2 TrajectorySet constructor/subset behavior for NaN observations, zero-curve arrays, regular nested numeric-like sequences, complex ndarray-to-real casting, ID-indexed metadata and zero-based/negative subset indices. Default FALSE preserves the native scientific contract. Does not reproduce all NumPy, pandas or dataclass semantics.}
 \item{data}{Long-format data frame with individual gaze samples.}
 \item{curve_columns}{Names of curve identifier columns.}
 \item{time_column}{Name of time variable.}
@@ -194,7 +193,9 @@ source mode also allows infinity and NaN-valued weights where Python
 propagates the same nonfinite arithmetic; input NaN trajectory
 coordinates remain rejected. FALSE uses native R finite validation.
 Neither value invokes Python, and full source-domain parity is not
-claimed.}
+claimed.
+
+If TRUE, enable bounded Python 1.2 TrajectorySet constructor/subset behavior for NaN observations, zero-curve arrays, regular nested numeric-like sequences, complex ndarray-to-real casting, ID-indexed metadata and zero-based/negative subset indices. Default FALSE preserves the native scientific contract. Does not reproduce all NumPy, pandas or dataclass semantics.}
 \item{metric}{Distance metric for recurrence and cross-recurrence: \code{euclidean} (L2), \code{cityblock} (L1), or \code{chebyshev} (L-infinity). The default is Euclidean.}
 \item{n_components}{Integer component count or, for fitting, a variance fraction strictly between 0 and 1.}
 \item{fit}{Native etr_fpca fit.}

@@ -33,5 +33,6 @@ Suggests:
     refund,
     jsonlite (>= 1.8.0),
     digest (>= 0.6.0),
-    zip (>= 2.3.0)
+    zip (>= 2.3.0),
+    withr
 Config/testthat/edition: 3
