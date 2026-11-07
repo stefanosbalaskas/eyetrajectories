@@ -1,0 +1,20 @@
+{
+  "protocol": "native_reporting_source_replay_batch28_v1",
+  "python_version": "1.2.0",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "functions_tested": ["workflow_steps_frame", "workflow_decisions_frame", "workflow_summary_frame", "workflow_reporting_text", "functional_simulation_scenario_frame", "functional_recovery_scenario_catalog_frame"],
+  "workflow_fixture_count": 5,
+  "scenario_replicate_regimes": [1, 3, 7],
+  "all_python_source_field_comparisons_passed": true,
+  "source_input_runtime_representation_identical": false,
+  "all_possible_python_input_and_error_domains_certified": false,
+  "developer_full_contract_closures_granted": 0,
+  "independent_certifications_granted": 0,
+  "local_sha256": {
+    "R/native-python-json-contracts.R": "bf0f9c8db40655eab24e0c0e3f5a9c1ff79952bb354fa92345c6bba783203788",
+    "R/native-workflow-source-audit.R": "da2d7d7589c75c01c3b38928f6d9f037bb14c306a0a6f0130a41979135899081",
+    "R/native-functional-scenario-design.R": "06f40fa4e28206c15fa3fa61ab25d9d1d65786d83237e3edbe8e32d6202d13ce",
+    "tests/testthat/test-native-python-json-reporting-batch28.R": "08944c3404d5289232c55667976a7fdace2e45a099ff58c6d62ee869351f3f7a",
+    "scripts/capture_reporting_contract_evidence_batch28.R": "57da9921e32ef4ce5ca2bb01466eae20d7a48b53f78edf7bb9a5914136ab7d7d"
+  }
+}

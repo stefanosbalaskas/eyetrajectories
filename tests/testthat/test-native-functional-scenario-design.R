@@ -36,7 +36,7 @@ test_that("native scenario design preserves ordered source columns and explicit 
   expect_true(is.na(tab$measurement_noise_covariance))
   expect_true(is.na(tab$missingness))
   expect_true(is.na(tab$phase_variation))
-  expect_identical(tab$measurement_noise_sd,"0")
+  expect_identical(tab$measurement_noise_sd,"0.0")
   expect_true(is.na(tab$measurement_noise_covariance))
   irr<-.etr_scenario_design_test_fixture(name="sparse",
     observation_design="irregular",samples_per_curve=c(2L,4L))

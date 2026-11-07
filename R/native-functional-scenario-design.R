@@ -163,8 +163,8 @@ etr_functional_simulation_scenario <- function(name,truth_grid,eigenvalues,
     x<-x[order(names(x),method="radix")]
   if(!requireNamespace("jsonlite",quietly=TRUE))
     stop("jsonlite required for simulation scenario source JSON",call.=FALSE)
-  as.character(jsonlite::toJSON(x,auto_unbox=(scalar||mapping),
-    null="null",digits=NA,pretty=FALSE))
+  .etr_python_json_encode(x,compact=FALSE,
+    force_array=(!scalar&&!mapping),empty_mapping=mapping)
 }
 
 #' Audit functional simulation scenario designs in a native R data frame

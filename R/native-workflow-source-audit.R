@@ -40,8 +40,8 @@
     if (!is.null(nm)) x <- x[order(nm,method="radix")]
     lapply(x,source_sorted)
   }
-  as.character(jsonlite::toJSON(source_sorted(value),auto_unbox=TRUE,
-    null="null",na="null",digits=NA,pretty=FALSE))
+  .etr_python_json_encode(source_sorted(value),compact=TRUE,
+    empty_mapping=empty_mapping)
 }
 
 .etr_workflow_validate_steps <- function(steps) {

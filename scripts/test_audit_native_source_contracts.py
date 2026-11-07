@@ -36,7 +36,11 @@ def test_reaudit_package(root):
         assert a["batch25_full_two_mode_qualification_passed_at_c0e7b04"] is True
         assert a["batch26_sparse_constructor_R_execution_pending"] is False
         assert a["batch26_sparse_constructor_targeted_R_python_tests_passed"] is True
-        assert a["batch26_full_two_mode_qualification_pending"] is True
+        assert a["batch26_full_two_mode_qualification_pending"] is False
+        assert a["batch26_full_two_mode_qualification_passed_at_3e894e8"] is True
+        assert a["batch27_catalog_direct_replay_and_two_closures_passed_at_6519e02"] is True
+        assert a["batch27_full_two_mode_qualification_passed_at_6519e02"] is True
+        assert a["batch28_six_reporting_source_contracts_awaiting_R_python_execution"] is True
         with (out/"all_204_source_gaps.csv").open(newline="") as f:
             rows=list(csv.DictReader(f))
         assert len(rows)==204

@@ -17,7 +17,7 @@ from register_catalog_contract_evidence_batch27 import (
 )
 
 PINNED_PYTHON = "c1cd95ad718327550f7e55393ff38582872f7a94"
-DEFAULT_BASELINE = "c0e7b04"  # User-qualified Batch 25 native sparse cross-RQA commit.
+DEFAULT_BASELINE = "6519e02"  # User-qualified Batch 27; two developer frame closures, zero independent approvals.
 ALTERNATIVE_NAMES = (
     "fit_elastic_fpca", "fit_sparse_mfpca", "run_sparse_mfpca_workflow",
     "run_sparse_mfpca_async_workflow", "run_sparse_multilevel_workflow",
@@ -248,7 +248,11 @@ def run(root: Path, out_dir: Path) -> dict:
         "batch25_full_two_mode_qualification_passed_at_c0e7b04": True,
         "batch26_sparse_constructor_R_execution_pending": False,
         "batch26_sparse_constructor_targeted_R_python_tests_passed": True,
-        "batch26_full_two_mode_qualification_pending": True,
+        "batch26_full_two_mode_qualification_pending": False,
+        "batch26_full_two_mode_qualification_passed_at_3e894e8": True,
+        "batch27_catalog_direct_replay_and_two_closures_passed_at_6519e02": True,
+        "batch27_full_two_mode_qualification_passed_at_6519e02": True,
+        "batch28_six_reporting_source_contracts_awaiting_R_python_execution": True,
         "strict_contract_gap_flags_changed": 0,  # do not rewrite the frozen 203+1 inventory
         "batch27_catalog_candidate_contracts": 5,
         "batch27_full_domain_frames_eligible": 2,
@@ -264,7 +268,9 @@ def run(root: Path, out_dir: Path) -> dict:
             "Batch 23 sparse-input and sparse-joint numerical tests passed in user-provided log for 3b69eb4; this is developer evidence, not an independent certification",
             "Batch 24 large sparse RQA passed both full qualification modes at 3325897; this is developer evidence, not external independent certification",
             "Batch 25 sparse cross-RQA passed both full two-mode suites at user-qualified commit c0e7b04",
-            "Batch 26 fixed-radius sparse construction targeted R/Python 1.2 tests passed after boolean CSR bridge correction; full two-mode qualification and commit remain pending",
+            "Batch 26 fixed-radius sparse construction passed both full qualification modes at user-qualified commit 3e894e8, including the Boolean CSR oracle fix",
+            "Batch 27 five catalog source oracles, two evidence-activated full semantic frame closures, and both qualification modes passed at user-qualified commit 6519e02; historical source inventory remains 204",
+            "Batch 28 native reporting JSON/Unicode and six direct-source output tests await live R/Python execution; the developer-active count remains 202 until new full-domain evidence",
         ],
         "source_ledger_sha256": file_digest(ledger),
         "nonfunction_ledger_sha256": file_digest(extra),
