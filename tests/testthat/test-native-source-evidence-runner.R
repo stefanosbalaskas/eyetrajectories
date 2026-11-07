@@ -27,7 +27,8 @@ test_that("all source-evidence required tests match the real capture filter",{
                  "native-pairwise-numpy-weights",
                  "native-trapezoid-complex-source",
                  "native-functional-l2-complex-source",
-                 "native-alr-numpy-complex-source")){
+                 "native-alr-numpy-complex-source",
+                 "native-windowed-rqa-python-pair-sequence")){
     filename<-paste0("test-",suite,".R")
     expect_true(filename%in%basename(required))
     expect_true(grepl(selector,filename))

@@ -13,6 +13,7 @@ required_scientific_tests<-file.path("tests","testthat",paste0(
     "native-recovery-source-evaluators",
     "native-functional-recovery-evidence",
     "native-functional-rqa-recovery",
+    "native-windowed-rqa-python-pair-sequence",
     "native-direct-source-recovery-evidence-attribution",
     "native-generalized-fosr-coefficient-bands",
     "native-mixed-coefficient-bands-source",
@@ -166,6 +167,7 @@ filter<-paste(c(
   "native-recovery-source-evaluators",
   "native-functional-recovery-evidence",
   "native-functional-rqa-recovery",
+  "native-windowed-rqa-python-pair-sequence",
   "native-direct-source-recovery-evidence-attribution",
   "native-fpca-external-score-reconstruction",
   "native-generalized-fosr-coefficient-bands",
@@ -391,6 +393,10 @@ results<-list(
   qualify_once(TRUE)
 )
 source_files<-unique(c(
+  "R/native-functional-rqa-recovery.R",
+  "man/etr_native_functional_rqa_recovery.Rd",
+  "docs/native-windowed-rqa-nested-pairs-source.md",
+  "tests/testthat/test-native-windowed-rqa-python-pair-sequence.R",
   "scripts/four_pilot_external_attestation.R",
   "tests/testthat/test-native-four-pilot-external-attestation.R",
   "scripts/capture_four_pilot_boundary_evidence.R",

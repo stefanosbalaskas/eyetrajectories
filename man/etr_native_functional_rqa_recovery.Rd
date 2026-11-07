@@ -41,8 +41,11 @@ etr_functional_recovery_reporting_text(assessment)
 analyst-declared scientific coordinate system and time units.}
 \item{metrics}{Unique windowed RQA statistic names.}
 \item{window_step_pairs}{Nonempty list or two-column numeric matrix
-of explicit (window, step) pairs. Sample-unit counts must be integers;
-physical-time widths may be fractional if exactly grid-convertible.}
+of explicit (window, step) pairs. Each pair may be a numeric vector
+or a two-element nested list of numeric scalars, matching Python 1.2
+tuple/list sequences without coercing Boolean flags to numbers.
+Sample-unit counts must be integers; physical-time widths may be
+fractional if exactly grid-convertible.}
 \item{window,step}{Positive explicit window and step widths in the
 declared sample or physical-time units.}
 \item{window_units,step_units,theiler_window_units}{Either sample units
