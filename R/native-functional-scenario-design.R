@@ -245,7 +245,15 @@ etr_functional_simulation_scenario_frame <- function(scenarios) {
 #' @return Ordered native scenario records for the full supported native
 #'   declaration field domain, including structured factor levels.
 #' @export
-etr_expand_functional_simulation_scenarios <- function(base,factors,
+etr_expand_functional_simulation_scenarios <- function(base, factors,
+    seed_policy=c("shared", "disjoint")) {
+  etr_expand_functional_simulation_scenarios_b29(
+    base=base, factors=factors, seed_policy=seed_policy)
+}
+
+
+# Original pre-Batch-30 implementation kept for rollback and comparison.
+.etr_b30_legacy_public_scenario_expansion <- function(base,factors,
     seed_policy=c("shared","disjoint")) {
   .etr_assert(inherits(base,"etr_functional_simulation_scenario"),
     "base must be a native functional simulation scenario")
