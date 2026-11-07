@@ -16,17 +16,61 @@
     if(is.nan(value))return("nan")
     if(is.na(value))return("None")
     if(is.infinite(value))return(if(value>0)"inf" else "-inf")
-    raw <- format(value,digits=15L,scientific=FALSE,trim=TRUE)
-    if(typeof(value)=="double" && is.finite(value) &&
-       !grepl("[.eE]",raw))raw<-paste0(raw,".0")
-    return(raw)
+    if(typeof(value)=="integer")return(as.character(value))
+    # Python float str/repr uses a shortest round-trippable decimal and
+    # exponential notation for decimal exponent <-4 or >=16. R's default
+    # format(...,digits=15) can collapse distinct binary64 values.
+    negative <- value<0 || (value==0 && (1/value)==-Inf)
+    x <- abs(value)
+    if(x==0)return(if(negative)"-0.0" else "0.0")
+    shortest <- NULL
+    for(n in seq_len(17L)) {
+      candidate <- sprintf(paste0("%.",n,"g"),x)
+      if(identical(suppressWarnings(as.numeric(candidate)),x)) {
+        shortest <- candidate
+        break
+      }
+    }
+    if(is.null(shortest))shortest <- sprintf("%.17g",x)
+    parts <- regmatches(shortest,regexec(
+      "^([0-9]+)(?:\\.([0-9]+))?(?:[eE]([+-]?[0-9]+))?$",
+      shortest,perl=TRUE))[[1L]]
+    if(!length(parts))stop("cannot format source float slug",call.=FALSE)
+    whole <- parts[[2L]]
+    fraction <- if(length(parts)>=3L)parts[[3L]] else ""
+    exponent <- if(length(parts)>=4L && nzchar(parts[[4L]]))
+      as.integer(parts[[4L]]) else 0L
+    digits <- paste0(whole,fraction)
+    first <- regexpr("[1-9]",digits)[[1L]]
+    if(first<1L)stop("nonzero float parsed as zero",call.=FALSE)
+    decimal_exponent <- nchar(whole)+exponent-first
+    significant <- sub("0+$","",substring(digits,first))
+    if(decimal_exponent < -4L || decimal_exponent >= 16L) {
+      mantissa <- if(nchar(significant)==1L)significant else paste0(
+        substr(significant,1L,1L),".",
+        substr(significant,2L,nchar(significant)))
+      magnitude <- abs(decimal_exponent)
+      exp_text <- paste0(if(decimal_exponent>=0L)"+" else "-",
+        if(magnitude<10L)"0" else "",as.character(magnitude))
+      rendered <- paste0(mantissa,"e",exp_text)
+    } else {
+      pos <- decimal_exponent+1L
+      if(pos<=0L) {
+        rendered <- paste0("0.",strrep("0",-pos),significant)
+      } else if(pos>=nchar(significant)) {
+        rendered <- paste0(significant,
+          strrep("0",pos-nchar(significant)),".0")
+      } else {
+        rendered <- paste0(substr(significant,1L,pos),".",
+          substr(significant,pos+1L,nchar(significant)))
+      }
+    }
+    return(paste0(if(negative)"-" else "",rendered))
   }
   as.character(value)
 }
-
 .etr_b29_scenario_factor_slug <- function(value) {
-  if(is.list(value) && !is.null(names(value)) &&
-     any(nzchar(names(value)))) {
+  if(is.list(value) && !is.null(names(value))) {
     raw <- .etr_b29_factor_py_scalar(
       if("kind" %in% names(value)) value[["kind"]] else "mapping")
   } else if(is.array(value) && length(dim(value))>0L) {
