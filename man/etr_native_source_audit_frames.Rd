@@ -39,6 +39,12 @@ including \code{functional_mixed_effects.py},
 row ordering, zero-based source/bootstrap indices, and missing selection
 components are retained. Python dataclass and pandas return types are
 not reproduced and remain an explicit unresolved source-contract gap.
+For the participant random-effect and nested-trial effect frames, callers
+may now also pass the corresponding native joint B-spline Gaussian mixed
+fit records directly. Their fitted random-effect functions are adapted
+without any statistical refit, preserving source-order rows and the prior
+named-list interface. The result is still an R data frame, not a Python
+pandas frame or a certified Python result-type contract.
 }
 \value{Native R data frame, one row per source-defined audit unit.
 The functions never invoke the Python runtime.}
