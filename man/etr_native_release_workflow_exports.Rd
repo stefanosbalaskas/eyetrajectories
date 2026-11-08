@@ -28,6 +28,17 @@ Check each workflow's explicit required inputs, domain restrictions,
 preprocessing policies, and actual fitted estimator. Workflow export and
 figure utilities are not substitutes for a complete numerical oracle.
 Native backend and source Python backend provenance are not interchangeable.
+For \code{etr_run_functional_mixed_effects_workflow}, the legacy explicitly
+declared method-of-moments estimator remains the default path.
+An opt-in \code{estimator="native_joint_bspline_gaussian"} path dispatches
+the already implemented native R/nlme participant-intercept,
+participant-slope, nested-trial, and nested-trial-plus-slope likelihood
+models. Only IID residuals are supported without a declared nested trial;
+IID, AR(1), and exponential residuals are available for nested trial
+models. Native \code{method="nlme::lme"} is required; Python's optimizer
+is not silently substituted, and the typed Python workflow/result
+contract is not certified. The coefficient table uses seven source-ordered
+pointwise Wald columns. See \code{docs/native-joint-bspline-source-workflow-wave.md}.
 }
 \section{Exported entry points}{
 \describe{
