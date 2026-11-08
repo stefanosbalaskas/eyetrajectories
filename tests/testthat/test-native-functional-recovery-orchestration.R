@@ -114,3 +114,140 @@ test_that("unreviewed Python 1.2 source symbols are inspectable: simulate_functi
   expect_false(any(etr_native_parity_catalog()$
     one_to_one_native_contract_complete))
 })
+
+
+# Batch 20: replay the complete declared simulation/recovery pipeline from
+# source-retained random score, noise, and irregular schedule realizations.
+# This never allows the estimator callback to inspect simulator truth.
+test_that("whole-scenario irregular replay preserves observations and assessment truth",{
+  scenario<-etr_functional_simulation_scenario(
+    name="irregular_replay",truth_grid=c(0,.25,.5,.75,1),
+    eigenvalues=1,n_participants=3L,trials_per_participant=1L,
+    observation_design="irregular",samples_per_curve=c(3L,5L),
+    measurement_noise_sd=.04,participant_eigenvalues=.2,
+    trial_eigenvalues=.1,replicates=2L,seed_start=123L)
+  mean_fn<-function(t)rep(.3,length(t))
+  modes<-list(function(t)rep(1,length(t)))
+  reference<-lapply(0:1,function(rep)etr_simulate_functional_scenario(
+    scenario,mean_fn,modes,replicate=rep))
+  replay<-lapply(reference,function(x)list(
+    curve_scores=x$truth$curve_scores,
+    participant_scores=x$truth$participant_scores,
+    trial_scores=x$truth$trial_scores,
+    measurement_noise=x$truth$measurement_noise))
+  schedules<-lapply(reference,function(x)x$truth$pre_missing_observation_times)
+  for(i in seq_along(reference)){
+    z<-etr_simulate_functional_scenario(scenario,mean_fn,modes,
+      replicate=i-1L,source_draws=replay[[i]],
+      observation_times=schedules[[i]])
+    expect_identical(z$observations$time,reference[[i]]$observations$time)
+    expect_equal(z$observations$values,reference[[i]]$observations$values,
+      tolerance=0)
+    expect_equal(z$truth$scores,reference[[i]]$truth$scores,tolerance=0)
+    expect_identical(z$truth$provenance$scenario_replicate,as.integer(i-1L))
+  }
+  calls<-0L
+  estimator<-function(observations,design){
+    calls<<-calls+1L
+    expect_identical(design$name,"irregular_replay")
+    expect_false("truth"%in%names(observations))
+    expect_equal(observations$values,reference[[calls]]$observations$values,
+      tolerance=0)
+    list(observed_mean=mean(unlist(observations$values)))
+  }
+  scorer<-function(fit,truth,design){
+    expect_equal(truth$scores,reference[[calls]]$truth$scores,tolerance=0)
+    c(observed_mean=fit$observed_mean,
+      truth_score_mean=mean(truth$scores))
+  }
+  result<-etr_run_functional_recovery_scenarios(
+    list(scenario),mean_fn,modes,estimator,scorer,
+    source_draws_by_replicate=replay,
+    observation_times_by_replicate=schedules)
+  expect_identical(calls,2L)
+  expect_equal(length(result$records),2L)
+  expect_true(result$provenance$fixed_source_draw_replay)
+  expect_true(result$provenance$fixed_irregular_schedule_replay)
+  expect_false(result$provenance$truth_available_to_estimator)
+  for(i in seq_along(result$records)){
+    expect_identical(result$records[[i]]$status,"ok")
+    expect_equal(result$records[[i]]$metrics[["truth_score_mean"]],
+      mean(reference[[i]]$truth$scores),tolerance=0)
+    expect_identical(result$records[[i]]$replicate,as.integer(i-1L))
+  }
+  expect_error(etr_run_functional_recovery_scenarios(
+    list(scenario),mean_fn,modes,estimator,scorer,
+    source_draws_by_replicate=list(replay[[1L]])),
+    "one NULL or source record")
+  expect_error(etr_run_functional_recovery_scenarios(
+    list(scenario),mean_fn,modes,estimator,scorer,
+    observation_times_by_replicate=list("not-a-schedule",NULL)),
+    "one NULL or source record")
+  expect_error(etr_simulate_functional_scenario(
+    etr_functional_simulation_scenario("dense",c(0,.5,1),1,2L),
+    mean_fn,modes,observation_times=list(c(0,1),c(0,1))),
+    "requires an irregular scenario")
+})
+
+test_that("frozen Python 1.2 irregular scenario can be fully replayed",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("frozen Python scenario irregular source replay is opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  np<-reticulate::import("numpy",convert=FALSE)
+  reticulate::py_run_string("
+import numpy as np
+def _etr_scenario_mean(t):
+    return np.full_like(t,.3,dtype=float)
+def _etr_scenario_mode(t):
+    return np.ones_like(t,dtype=float)
+")
+  py_scenario<-reticulate::py_call(
+    etpy_get_export("FunctionalSimulationScenario"),
+    name="irregular_replay",truth_grid=np$asarray(
+      reticulate::r_to_py(c(0,.25,.5,.75,1)),dtype="float64"),
+    eigenvalues=reticulate::py_eval("(1.,)",convert=FALSE),
+    n_participants=as.integer(3L),trials_per_participant=as.integer(1L),
+    observation_design="irregular",
+    samples_per_curve=reticulate::tuple(3L,5L),
+    measurement_noise_sd=.04,
+    participant_eigenvalues=reticulate::py_eval("(.2,)",convert=FALSE),
+    trial_eigenvalues=reticulate::py_eval("(.1,)",convert=FALSE),
+    replicates=as.integer(2L),seed_start=as.integer(123L))
+  source<-reticulate::py_call(
+    etpy_get_export("simulate_functional_scenario"),
+    scenario=py_scenario,
+    mean=reticulate::py_eval("_etr_scenario_mean",convert=FALSE),
+    eigenfunctions=reticulate::py_eval("(_etr_scenario_mode,)",convert=FALSE),
+    replicate=as.integer(0L))
+  truth<-source$truth
+  scenario<-etr_functional_simulation_scenario(
+    "irregular_replay",c(0,.25,.5,.75,1),1,3L,
+    observation_design="irregular",samples_per_curve=c(3L,5L),
+    measurement_noise_sd=.04,participant_eigenvalues=.2,
+    trial_eigenvalues=.1,replicates=2L,seed_start=123L)
+  samples<-list(curve_scores=et_to_r(truth$curve_scores),
+    participant_scores=et_to_r(truth$participant_scores),
+    trial_scores=et_to_r(truth$trial_scores),
+    measurement_noise=et_to_r(truth$measurement_noise))
+  source_times<-lapply(et_to_r(truth$pre_missing_observation_times),as.numeric)
+  native<-etr_simulate_functional_scenario(
+    scenario,function(t)rep(.3,length(t)),
+    list(function(t)rep(1,length(t))),
+    replicate=0L,source_draws=samples,observation_times=source_times)
+  py_values<-et_to_r(source$observations$values)
+  py_times<-et_to_r(source$observations$time)
+  expect_equal(native$truth$scores,et_to_r(truth$scores),
+    tolerance=1e-12,ignore_attr=TRUE)
+  expect_equal(native$truth$latent_on_truth_grid,
+    et_to_r(truth$latent_on_truth_grid),
+    tolerance=1e-12,ignore_attr=TRUE)
+  for(i in seq_along(py_times)){
+    expect_equal(native$observations$time[[i]],as.numeric(py_times[[i]]),
+      tolerance=0)
+    expect_equal(unname(native$observations$values[[i]]),
+      unname(py_values[[i]]),tolerance=1e-12)
+  }
+  expect_identical(native$truth$provenance$scenario_name,
+    as.character(reticulate::py_to_r(truth$provenance[["scenario_name"]])))
+  expect_false(any(etr_native_parity_catalog()$one_to_one_native_contract_complete))
+})

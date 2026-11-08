@@ -89,13 +89,18 @@ etr_tortuosity(x)
 etr_l2_distance(a, b, time, dimension_weights = NULL,
   python_boundary_mode = FALSE)
 
-etr_pairwise_l2(x, dimension_weights = NULL)
+etr_pairwise_l2(x, dimension_weights = NULL, python_boundary_mode = FALSE)
 
-etr_frechet(a, b, dimension_weights = NULL)
+etr_frechet(a, b, dimension_weights = NULL, return_coupling = FALSE,
+  python_boundary_mode = FALSE)
 
-etr_dtw(a, b, dimension_weights = NULL)
+etr_dtw(a, b, dimension_weights = NULL, window_radius = NULL,
+  step_pattern = "symmetric1", normalize = FALSE, return_path = FALSE,
+  python_boundary_mode = FALSE)
 
-etr_pairwise_dtw(x, dimension_weights = NULL)
+etr_pairwise_dtw(x, dimension_weights = NULL, dimensions = NULL,
+  window_radius = NULL, step_pattern = "symmetric1", normalize = FALSE,
+  python_boundary_mode = FALSE)
 
 etr_trapezoid_weights(time, normalize = FALSE,
   python_boundary_mode = FALSE)
@@ -114,11 +119,13 @@ etr_reconstruct_fpca(fit, n_components = NULL, scores = NULL)
 
 etr_recurrence_matrix(x, curve = 1L, radius = NULL, theiler = 0L,
   metric = "euclidean", target_recurrence_rate = NULL,
-  dimensions = NULL, theiler_window_units = "samples")
+  dimensions = NULL, theiler_window_units = "samples",
+  sparse_output = FALSE)
 
 etr_cross_recurrence_matrix(a, b, radius = NULL, metric = "euclidean",
   target_recurrence_rate = NULL, curve_a = NULL, curve_b = NULL,
-  dimensions_a = NULL, dimensions_b = NULL)
+  dimensions_a = NULL, dimensions_b = NULL,
+  sparse_output = FALSE)
 
 etr_rqa_metrics(recurrence, min_diagonal_length = 2L, min_vertical_length = 2L)
 
@@ -142,8 +149,8 @@ time vector to its real part, matching NumPy's complex ndarray
 \item{time_unit}{Explicit temporal units, e.g. ms or s.}
 \item{provenance}{Optional JSON-like named native R list of source and preprocessing decisions. For \code{etr_from_long}, the source audit is added by default and user-supplied named keys are applied as shallow overrides.}
 \item{x}{Native trajectory set, or a fitted object as documented in the specific function.}
+\item{sparse_output}{Opt-in native sparse recurrence construction for one-dimensional finite fixed-radius states. FALSE (default) preserves the original dense R API; TRUE returns Matrix sparse adjacency with inclusive-radius pairs and, for auto recurrence, the declared Theiler exclusion. Multidimensional and target-rate sparse construction remain unsupported, and Matrix/S3 output differs from Python scipy CSR/dataclass identity.}
 \item{require_complete}{Whether to reject missing samples.}
-\item{python_boundary_mode}{If TRUE, enable bounded Python 1.2 TrajectorySet constructor/subset behavior for NaN observations, zero-curve arrays and zero-based/negative subset indices. Default FALSE preserves the native scientific contract. Does not reproduce all NumPy, pandas or dataclass semantics.}
 \item{data}{Long-format data frame with individual gaze samples.}
 \item{curve_columns}{Names of curve identifier columns.}
 \item{time_column}{Name of time variable.}
@@ -159,14 +166,24 @@ time vector to its real part, matching NumPy's complex ndarray
 \item{a}{Numeric point-by-channel matrix.}
 \item{b}{Numeric point-by-channel matrix with matching channels.}
 \item{dimension_weights}{Finite, non-negative channel weights.}
-\item{normalize}{For trapezoidal weights, a scalar with Python 1.2
+\item{return_coupling}{If TRUE, return the 0-based deterministic discrete Fréchet coupling and local costs.}
+\item{window_radius}{Optional non-negative integer Sakoe-Chiba index-window radius for DTW.}
+\item{step_pattern}{DTW transition weighting: symmetric1 or symmetric2.}
+\item{return_path}{If TRUE, return 0-based DTW path, local and weighted costs, and provenance.}
+\item{normalize}{For DTW, TRUE normalizes only the symmetric2 step pattern by n_points_a + n_points_b. For trapezoidal weights, a scalar with Python 1.2
 truthiness semantics: FALSE, zero, empty string and zero complex keep
 original weights. Nonzero numeric scalars, nonempty strings and, in the
 explicit Python boundary mode, nonzero, infinite or NaN-valued complex
 scalars normalize to unit total. Empty/nonempty lists have container
 truthiness only in source-boundary mode. General Python object
 truthiness remains outside the qualified domain.}
-\item{python_boundary_mode}{Logical flag requesting a bounded native
+\item{python_boundary_mode}{For pairwise L2 and DTW, TRUE also
+propagates bounded frozen Python 1.2 numeric coercion and nonfinite
+L2 semantics; otherwise existing native defaults remain. For Fréchet
+and DTW, TRUE also enables
+rectangular nested 2D point sequences, numeric-string/Boolean/complex
+matrices and weighted NumPy float-domain conversions. Defaults remain
+strict scientific numeric matrices. Logical flag requesting a bounded native
 Python 1.2 source-input compatibility domain. For trapezoidal weighting
 it includes stated exceptional grids, complex ndarray-style time
 casting, and Python scalar/container truthiness. For functional L2
@@ -176,7 +193,9 @@ source mode also allows infinity and NaN-valued weights where Python
 propagates the same nonfinite arithmetic; input NaN trajectory
 coordinates remain rejected. FALSE uses native R finite validation.
 Neither value invokes Python, and full source-domain parity is not
-claimed.}
+claimed.
+
+If TRUE, enable bounded Python 1.2 TrajectorySet constructor/subset behavior for NaN observations, zero-curve arrays, regular nested numeric-like sequences, complex ndarray-to-real casting, ID-indexed metadata and zero-based/negative subset indices. Default FALSE preserves the native scientific contract. Does not reproduce all NumPy, pandas or dataclass semantics.}
 \item{metric}{Distance metric for recurrence and cross-recurrence: \code{euclidean} (L2), \code{cityblock} (L1), or \code{chebyshev} (L-infinity). The default is Euclidean.}
 \item{n_components}{Integer component count or, for fitting, a variance fraction strictly between 0 and 1.}
 \item{fit}{Native etr_fpca fit.}
@@ -188,7 +207,8 @@ Specify exactly one of radius or target_recurrence_rate.}
 and one, selecting the source-aligned target-density threshold policy.
 Distance ties may prevent an exact target rate.}
 \item{dimensions}{Optional ordered selected channel names for native
-recurrence sources; NULL retains the native all-channel default.}
+recurrence sources and pairwise DTW; NULL retains all channels.
+For pairwise DTW, the order controls dimension-weight alignment.}
 \item{theiler_window_units}{Theiler interval units: samples or compatible
 physical time on a sufficiently regular observed grid.}
 \item{curve_a,curve_b}{Required curve identifiers for trajectory-set
@@ -197,7 +217,14 @@ cross-recurrence inputs; NULL for numeric matrices.}
 names for trajectory-set cross-recurrence; NULL for numeric matrices or
 already embedded state spaces.}
 \item{theiler}{Excluded sample lag for auto-recurrence.}
-\item{recurrence}{Native etr_recurrence object.}
+\item{recurrence}{Native etr_recurrence object. For
+\code{etr_rqa_metrics()}, native sparse \pkg{Matrix} auto- and cross-
+recurrence are supported without dense allocation. Sparse auto-RQA uses
+upper-triangle diagonals and full-matrix vertical runs; sparse cross-RQA
+uses every diagonal and full-matrix vertical runs. Both include finite-border
+runs. Source-style line statistics require approximately regular time grids,
+and cross-RQA requires matching step sizes on the two declared axes.
+Undefined sparse statistics use \code{NaN}; dense defaults remain unchanged.}
 \item{min_diagonal_length}{Minimum counted diagonal line length.}
 \item{min_vertical_length}{Minimum counted vertical run length.}
 \item{max_curves}{Maximum plotted curves.}

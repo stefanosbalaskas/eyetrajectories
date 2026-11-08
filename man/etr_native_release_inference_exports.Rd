@@ -31,7 +31,7 @@ research-only with no external coverage validation.
 }
 \section{Exported entry points}{
 \describe{
-\item{\code{etr_bootstrap_fpca_component_envelopes}}{\emph{bootstrap fpca component envelopes} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
+\item{\code{etr_bootstrap_fpca_component_envelopes}}{\emph{bootstrap fpca component envelopes} -- descriptive matched-bootstrap FPC pointwise envelopes. Optional \code{bootstrap_unit_indices} provides zero-based fixed curve/participant unit draws for deterministic source replay, without claiming Python NumPy RNG or full-domain parity.}
 \item{\code{etr_bootstrap_fpca_regression_uncertainty}}{\emph{bootstrap fpca regression uncertainty} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
 \item{\code{etr_bootstrap_functional_mixed_effects_coefficients}}{\emph{bootstrap functional mixed effects coefficients} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
 \item{\code{etr_bootstrap_functional_mixed_effects_full_refit}}{\emph{bootstrap functional mixed effects full refit} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}

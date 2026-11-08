@@ -53,6 +53,30 @@
     time_unit=x$time_unit,provenance=provenance)
 }
 
+# Verify that an external zero-based source-row draw is the concatenation
+# of exactly one complete original participant group per independent group draw.
+# This preserves Python's _participant_bootstrap_indices sampling unit even
+# when participants have unequal numbers of trajectories or are drawn twice.
+.etr_fpcr_whole_participant_indices <- function(indices,participant){
+  labels<-unique(as.character(participant))
+  groups<-lapply(labels,function(label)
+    as.integer(which(as.character(participant)==label)-1L))
+  observed<-as.integer(indices)
+  pos<-1L
+  for(draw in seq_along(labels)){
+    matched<-FALSE
+    for(rows in groups){
+      last<-pos+length(rows)-1L
+      if(last<=length(observed)&&
+        identical(observed[pos:last],rows)){
+        pos<-last+1L;matched<-TRUE;break
+      }
+    }
+    if(!matched)return(FALSE)
+  }
+  identical(pos-1L,length(observed))
+}
+
 #' Native paired-bootstrap Gaussian FPCR slope and conditional-mean uncertainty
 #'
 #' @description Refits the FPCA basis and Gaussian scalar score regression on
@@ -69,9 +93,13 @@
 #' @param participant_column Required complete group metadata for participant.
 #' @param level Pointwise percentile central mass strictly between 0 and 1.
 #' @param random_state Nonnegative R seed; R and NumPy seeds are not equivalent.
-#' @param bootstrap_indices Optional list of zero-based *fixed curve*
-#'   resample index vectors from published Python for numerical source replay;
-#'   only valid with resample_unit="curve".
+#' @param bootstrap_indices Optional list of zero-based fixed source-curve
+#'   index vectors from the pinned Python bootstrap for numerical replay.
+#'   With `resample_unit="participant"`, each vector must concatenate exactly
+#'   one *whole original participant* per sampled participant unit, retaining
+#'   the observed order of that participant's curves. Repeated groups and
+#'   unequal original group sizes are allowed. Native random draws are
+#'   unchanged when this is NULL.
 #' @return Source-shaped Gaussian FPCR reference and bootstrap fields,
 #'   source-invariant estimands, explicit RNG and coverage provenance.
 #' @export
@@ -132,14 +160,22 @@ etr_bootstrap_fpca_regression_uncertainty <- function(
   }
   b<-as.integer(n_bootstrap);k<-as.integer(n_components)
   if(!is.null(bootstrap_indices)){
-    .etr_assert(identical(resample_unit,"curve")&&
-      is.list(bootstrap_indices)&&length(bootstrap_indices)==b,
-      "fixed bootstrap_indices require one curve-index vector per replicate")
-    for(index in bootstrap_indices)
-      .etr_assert(is.numeric(index)&&length(index)==n&&
-        all(is.finite(index))&&all(index==floor(index))&&
-        all(index>=0L & index<n),
+    .etr_assert(is.list(bootstrap_indices)&&length(bootstrap_indices)==b,
+      "fixed bootstrap_indices require one source-index vector per replicate")
+    for(index in bootstrap_indices){
+      .etr_assert(is.numeric(index)&&is.null(dim(index))&&
+        length(index)>0L&&all(is.finite(index))&&
+        all(index==floor(index))&&all(index>=0L & index<n),
         "fixed bootstrap_indices must use zero-based source curve indices")
+      if(resample_unit=="curve"){
+        .etr_assert(length(index)==n,
+          "curve bootstrap_indices must select n source curves")
+      }else{
+        .etr_assert(.etr_fpcr_whole_participant_indices(index,
+          trajectories$metadata[[participant_column]]),
+          "participant bootstrap_indices must select whole-participant groups")
+      }
+    }
   }
   reference<-.etr_fpcr_bootstrap_fit(
     trajectories,outcome,k,scaling,target)
@@ -193,7 +229,9 @@ etr_bootstrap_fpca_regression_uncertainty <- function(
     operator_scaled_fpcr_test=FALSE,
     random_state=random_state,
     random_engine=if(is.null(bootstrap_indices))
-      "base_R_not_NumPy" else "externally_fixed_source_curve_indices",
+      "base_R_not_NumPy" else if(resample_unit=="participant")
+      "externally_fixed_source_participant_indices" else
+      "externally_fixed_source_curve_indices",
     source_schema_equivalent=FALSE)
   structure(list(reference_fpca=reference$fpca,
     reference_regression=reference_regression,

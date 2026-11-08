@@ -40,15 +40,22 @@
   list(spectral=error,cross=cross)
 }
 .etr_multivariate_iaaft_once<-function(values,reference_index,
-    max_iterations,tolerance){
+    max_iterations,tolerance,initial_order=NULL){
   n<-nrow(values);d<-ncol(values)
   target<-apply(values,2L,sort)
   spectrum<-.etr_multivariate_fft_half(values)
   amplitude<-Mod(spectrum)
   offsets<-sweep(Arg(spectrum),1L,Arg(spectrum[,reference_index]),"-")
   pairs<-combn(seq_len(d),2L,simplify=FALSE)
-  surrogate<-sapply(seq_len(d),function(j)
-    sample(values[,j],n,replace=FALSE))
+  # Exact frozen NumPy source initial state can be replayed without
+  # invoking Python or attempting to equate base R and PCG64 seeds.
+  surrogate<-if(is.null(initial_order)) {
+    sapply(seq_len(d),function(j)sample(values[,j],n,replace=FALSE))
+  } else {
+    sapply(seq_len(d),function(j)
+      values[as.integer(initial_order[,j])+1L,j])
+  }
+  surrogate<-matrix(surrogate,nrow=n,ncol=d)
   previous<-Inf
   for(i in seq_len(max_iterations)){
     current<-.etr_multivariate_fft_half(surrogate)
@@ -86,12 +93,18 @@
 #' @param max_iterations Positive convergence budget.
 #' @param tolerance Positive spectral stopping-difference tolerance.
 #' @param random_state Optional R seed with caller RNG restored.
+#' @param initial_permutations Optional zero-based integer-valued array of
+#'   shape (n_surrogates, n_time, n_selected_dimensions), where every
+#'   surrogate-by-dimension column is a permutation of 0:(n_time-1).
+#'   Replays the frozen NumPy initialization without claiming PCG64 stream
+#'   identity and without consuming any R randomness. The declared channel
+#'   order must agree with \code{dimensions}.
 #' @return Source-shaped surrogate array and per-dimension/spectral diagnostics.
 #' @export
 etr_generate_multivariate_iaaft_surrogates<-function(
     trajectories,curve,dimensions,reference_dimension,
     n_surrogates=199L,max_iterations=1000L,tolerance=1e-8,
-    random_state=NULL){
+    random_state=NULL,initial_permutations=NULL){
   etr_validate(trajectories,require_complete=TRUE)
   steps<-diff(trajectories$time)
   .etr_assert(all(is.finite(steps))&&max(abs(steps-steps[[1L]]))<=
@@ -120,7 +133,25 @@ etr_generate_multivariate_iaaft_surrogates<-function(
     all(vapply(seq_len(d),function(j)stats::sd(values[,j])>0,
       logical(1L))),
     "multivariate IAAFT requires finite nonconstant selected channels")
-  if(!is.null(random_state)){
+  if(!is.null(initial_permutations)){
+    .etr_assert(is.array(initial_permutations)&&
+      length(dim(initial_permutations))==3L&&
+      is.numeric(initial_permutations)&&
+      identical(as.integer(dim(initial_permutations)),c(b,nt,d))&&
+      all(is.finite(initial_permutations))&&
+      all(initial_permutations==floor(initial_permutations))&&
+      all(initial_permutations>=0)&&all(initial_permutations<nt),
+      "initial_permutations must be a finite zero-based integer array of shape (n_surrogates,n_time,n_dimensions)")
+    # Enforce the permutation contract rather than silently accepting
+    # duplicate or omitted source observations within a channel.
+    valid<-all(vapply(seq_len(b),function(i)
+      all(vapply(seq_len(d),function(j)
+        identical(sort(as.integer(initial_permutations[i,,j])),
+          seq.int(0L,nt-1L)),logical(1L))),logical(1L)))
+    .etr_assert(valid,
+      "initial_permutations must be complete permutations in every surrogate and channel")
+  }
+  if(!is.null(random_state)&&is.null(initial_permutations)){
     restore<-.etr_simulation_rng(random_state)
     on.exit(restore(),add=TRUE)
   }
@@ -130,7 +161,9 @@ etr_generate_multivariate_iaaft_surrogates<-function(
   cross<-matrix(NA_real_,b,length(pairs))
   for(i in seq_len(b)){
     trial<-tryCatch(.etr_multivariate_iaaft_once(values,
-      match(reference_dimension,dimensions),it,tolerance),
+      match(reference_dimension,dimensions),it,tolerance,
+      initial_order=if(is.null(initial_permutations))NULL else
+        matrix(initial_permutations[i,,,drop=FALSE],nrow=nt,ncol=d)),
       error=function(e)stop(sprintf(
         "multivariate surrogate %d failed: %s",i-1L,
         conditionMessage(e)),call.=FALSE))
@@ -167,7 +200,13 @@ etr_generate_multivariate_iaaft_surrogates<-function(
       time_unit=trajectories$time_unit,
       dimension_scaling=FALSE,
       smoothing=FALSE,interpolation=FALSE,
-      random_engine="base_R_sample_not_NumPy_PCG64",
+      random_engine=if(is.null(initial_permutations))
+        "base_R_sample_not_NumPy_PCG64" else
+        "externally_supplied_zero_based_initial_permutations",
+      initialization_source=if(is.null(initial_permutations))
+        "native_R_per_channel_permutation" else
+        "fixed_numpy_compatible_permutation_replay",
+      fixed_initialization_replay=!is.null(initial_permutations),
       source_python_equivalent_stochastic_draws=FALSE,
       failed_surrogate_policy="raise",
       interpretation_boundary=paste(

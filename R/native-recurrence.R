@@ -21,7 +21,7 @@
 #'
 #' Main diagonal and all sample lags <= theiler are ineligible.
 #' Recurrence rate is computed over eligible unordered off-diagonal pairs.
-#' The matrix is dense and intended for modest single-trial samples.
+#' Default output is dense. Opt-in sparse output supports fixed-radius one-dimensional states.
 #' @param x Complete native trajectory collection.
 #' @param curve 1-based curve index or curve identifier.
 #' @param radius Fixed non-negative distance radius, or NULL when a
@@ -38,12 +38,16 @@
 #'   Already embedded source objects require dimensions=NULL.
 #' @param theiler_window_units Source Theiler interval unit, "samples" by default,
 #'   or a compatible physical unit resolved from the source time grid.
+#' @param sparse_output FALSE preserves the dense legacy output. TRUE uses an
+#'   exact sparse one-dimensional fixed-radius construction with no dense matrix.
+#'   Target-rate and multidimensional sparse construction are not implemented.
 #' @export
 etr_recurrence_matrix <- function(x, curve = 1L, radius = NULL, theiler = 0L,
                                   metric = "euclidean",
                                   target_recurrence_rate = NULL,
                                   dimensions = NULL,
-                                  theiler_window_units = "samples") {
+                                  theiler_window_units = "samples",
+                                  sparse_output = FALSE) {
   # Frozen Python recurrence_matrix also accepts DelayEmbeddingResult.
   # Reuse the verified native common-grid recurrence kernel while recording
   # explicit embedding-specific source provenance; no Python bridge.
@@ -85,7 +89,8 @@ etr_recurrence_matrix <- function(x, curve = 1L, radius = NULL, theiler = 0L,
     rec<-etr_recurrence_matrix(proxy,curve=1L,radius=radius,
       theiler=theiler,metric=metric,
       target_recurrence_rate=target_recurrence_rate,
-      theiler_window_units=theiler_window_units)
+      theiler_window_units=theiler_window_units,
+      sparse_output=sparse_output)
     rec$provenance$source_info<-list(
       source_kind="DelayEmbeddingResult",
       embedding_dimension=as.integer(x$embedding_dimension),
@@ -125,7 +130,8 @@ etr_recurrence_matrix <- function(x, curve = 1L, radius = NULL, theiler = 0L,
     rec<-etr_recurrence_matrix(proxy,curve=1L,radius=radius,
       theiler=theiler,metric=metric,
       target_recurrence_rate=target_recurrence_rate,
-      theiler_window_units=theiler_window_units)
+      theiler_window_units=theiler_window_units,
+      sparse_output=sparse_output)
     rec$provenance$source_info<-list(
       source_kind="TrajectorySet",
       dimensions=dimensions,state_names=dimensions,
@@ -157,21 +163,37 @@ etr_recurrence_matrix <- function(x, curve = 1L, radius = NULL, theiler = 0L,
     !is.na(metric) && metric %in% c("euclidean","cityblock","chebyshev"),
     "metric must be one of cityblock, euclidean, chebyshev")
   a <- .etr_curve(x, curve); n <- nrow(a)
-  .etr_assert(n <= 2500L, "dense recurrence exceeds 2500 samples; use a sparse backend")
+  .etr_assert(is.logical(sparse_output)&&length(sparse_output)==1L&&
+    !is.na(sparse_output),"sparse_output must be TRUE or FALSE")
   .etr_assert(theiler < n - 1L, "Theiler window leaves no eligible pairs")
   selected_policy <- if (is.null(radius)) "target_recurrence_rate" else "fixed"
-  if (is.null(radius))
-    radius <- .etr_windowed_rqa_source_target_radius(x,
-      target_recurrence_rate, metric, as.integer(theiler), curve=curve)
-  m <- .etr_distance_matrix(a, a, metric=metric) <= radius
-  eligible <- abs(row(m) - col(m)) > theiler
-  diag(eligible) <- FALSE
-  m <- m & eligible
-  upper <- upper.tri(m) & eligible
-  rate <- sum(m[upper]) / sum(upper)
+  if (sparse_output) {
+    .etr_assert(!is.null(radius),
+      "sparse_output currently requires a fixed radius")
+    .etr_assert(ncol(a)==1L,
+      "sparse_output currently requires a one-dimensional state space")
+    sparse <- .etr_source_sparse_fixed_radius_1d(a[,1L],radius=radius,
+      theiler=as.integer(theiler),auto=TRUE)
+    m <- sparse$matrix
+    eligible_pairs <- (as.double(n)-theiler-1)*(n-theiler)/2
+    rate <- sparse$pair_count/eligible_pairs
+  } else {
+    .etr_assert(n <= 2500L,
+      "dense recurrence exceeds 2500 samples; use sparse_output=TRUE for one-dimensional fixed-radius sources")
+    if (is.null(radius))
+      radius <- .etr_windowed_rqa_source_target_radius(x,
+        target_recurrence_rate, metric, as.integer(theiler), curve=curve)
+    m <- .etr_distance_matrix(a, a, metric=metric) <= radius
+    eligible <- abs(row(m) - col(m)) > theiler
+    diag(eligible) <- FALSE
+    m <- m & eligible
+    upper <- upper.tri(m) & eligible
+    eligible_pairs <- sum(upper)
+    rate <- sum(m[upper]) / eligible_pairs
+  }
   structure(list(matrix = m, kind = "auto", curve_ids = x$curve_ids[curve],
                  radius = radius, theiler = as.integer(theiler),
-                 eligible_pairs = sum(upper), recurrence_rate = rate,
+                 eligible_pairs = eligible_pairs, recurrence_rate = rate,
                  time = x$time, time_unit = x$time_unit,
                  metric = metric, state_dimension = ncol(a),
                  target_recurrence_rate = target_recurrence_rate,
@@ -219,8 +241,9 @@ etr_recurrence_matrix <- function(x, curve = 1L, radius = NULL, theiler = 0L,
 #' Native cross-recurrence matrix for two point sequences
 #'
 #' Timestamps and Theiler exclusions are not applied to cross-recurrence.
-#' Native matrix inputs and dense output are distinct from frozen Python
-#' TrajectorySet inputs and scipy sparse result-class contracts.
+#' Native matrix inputs and the default dense output differ from Python
+#' TrajectorySet inputs and scipy sparse result-class contracts. Opt-in
+#' one-dimensional fixed-radius sparse output avoids dense construction.
 #' @param a Complete points-by-channels numeric matrix.
 #' @param b Complete points-by-channels numeric matrix.
 #' @param radius Fixed non-negative distance radius; NULL with a target
@@ -238,12 +261,15 @@ etr_recurrence_matrix <- function(x, curve = 1L, radius = NULL, theiler = 0L,
 #'   embedding dimension and delay metadata; for an embedded input its
 #'   corresponding dimensions argument must be NULL. Two embedded inputs
 #'   must also have compatible embedding and delay specifications.
+#' @param sparse_output FALSE retains dense output; TRUE enables exact
+#'   one-dimensional fixed-radius sparse construction, not Python CSR objects.
 #' @export
 etr_cross_recurrence_matrix <- function(a, b, radius=NULL,
                                         metric = "euclidean",
                                         target_recurrence_rate=NULL,
                                         curve_a=NULL,curve_b=NULL,
-                                        dimensions_a=NULL,dimensions_b=NULL) {
+                                        dimensions_a=NULL,dimensions_b=NULL,
+                                        sparse_output=FALSE) {
   # Frozen Python source also accepts DelayEmbeddingResult. Native
   # etr_delay_embedding_set supplies the same state-space geometry, but the
   # R interface intentionally retains a dense matrix result instead of
@@ -310,7 +336,8 @@ etr_cross_recurrence_matrix <- function(a, b, radius=NULL,
       target_recurrence_rate=target_recurrence_rate,
       curve_a=curve_a,curve_b=curve_b,
       dimensions_a=resolved_dimensions_a,
-      dimensions_b=resolved_dimensions_b)
+      dimensions_b=resolved_dimensions_b,
+      sparse_output=sparse_output)
     embed_provenance<-function(x)list(
       source_kind="DelayEmbeddingResult",
       embedding_dimension=as.integer(x$embedding_dimension),
@@ -415,16 +442,35 @@ etr_cross_recurrence_matrix <- function(a, b, radius=NULL,
                   target_recurrence_rate < 1,
               "target_recurrence_rate must be strictly between 0 and 1")
   }
-  .etr_assert(as.double(nrow(a)) * as.double(nrow(b)) <= 5e6,
-              "dense cross-recurrence exceeds 5 million pairs")
-  if (is.null(radius))
-    radius <- .etr_cross_recurrence_source_target_radius(a,b,
-      target_recurrence_rate,metric)
-  m <- .etr_distance_matrix(a, b, metric=metric) <= radius
+  .etr_assert(is.logical(sparse_output)&&length(sparse_output)==1L&&
+    !is.na(sparse_output),"sparse_output must be TRUE or FALSE")
+  .etr_assert(is.character(metric)&&length(metric)==1L&&
+    !is.na(metric)&&metric%in%c("cityblock","euclidean","chebyshev"),
+    "metric must be one of cityblock, euclidean, chebyshev")
+  total_pairs <- as.double(nrow(a))*as.double(nrow(b))
+  if (sparse_output) {
+    .etr_assert(!is.null(radius),
+      "sparse_output currently requires a fixed radius")
+    .etr_assert(ncol(a)==1L,
+      "sparse_output currently requires one-dimensional state spaces")
+    sparse <- .etr_source_sparse_fixed_radius_1d(a[,1L],b[,1L],
+      radius=radius,auto=FALSE)
+    m <- sparse$matrix
+    rate <- sparse$pair_count/total_pairs
+  } else {
+    .etr_assert(total_pairs <= 5e6,
+      "dense cross-recurrence exceeds 5 million pairs; use sparse_output=TRUE for one-dimensional fixed-radius sources")
+    if (is.null(radius))
+      radius <- .etr_cross_recurrence_source_target_radius(a,b,
+        target_recurrence_rate,metric)
+    m <- .etr_distance_matrix(a,b,metric=metric) <= radius
+    rate <- mean(m)
+  }
+  eligible_pair_count<-if(sparse_output)total_pairs else length(m)
   structure(list(matrix = m, kind = "cross", curve_ids = source_curve_ids,
                  radius = radius,
-                 theiler = NA_integer_, eligible_pairs = length(m),
-                 recurrence_rate = mean(m), time = NULL,
+                 theiler = NA_integer_, eligible_pairs = eligible_pair_count,
+                 recurrence_rate = rate, time = NULL,
                  time_a=time_a,time_b=time_b,
                  state_dimension=as.integer(ncol(a)),time_unit=source_time_unit,
                  metric=metric,
@@ -476,6 +522,15 @@ etr_rqa_metrics <- function(recurrence, min_diagonal_length = 2L,
                 min_vertical_length == as.integer(min_vertical_length) &&
                 min_vertical_length >= 1L, "min_vertical_length must be positive integer")
   m <- recurrence$matrix
+  if(inherits(m,"sparseMatrix")) {
+    if(identical(recurrence$kind,"auto"))
+      return(.etr_sparse_auto_rqa(recurrence,
+        as.integer(min_diagonal_length),as.integer(min_vertical_length)))
+    if(identical(recurrence$kind,"cross"))
+      return(.etr_sparse_cross_rqa(recurrence,
+        as.integer(min_diagonal_length),as.integer(min_vertical_length)))
+    .etr_assert(FALSE,"unknown sparse recurrence kind")
+  }
   .etr_assert(is.matrix(m) && is.logical(m) && !anyNA(m),
               "recurrence matrix must be complete logical matrix")
   nr <- nrow(m); nc <- ncol(m)

@@ -291,12 +291,82 @@ etr_leave_one_group_out_fpca_influence <- function(trajectories,
     class="etr_fpca_influence")
 }
 
+.etr_fpca_stability_fixed_boot <- function(x,unit,participant_column,
+    draws) {
+  # Source-equivalent indexing is zero-based. Do not perform any random
+  # resampling here: the caller supplies the entire bootstrap unit draw.
+  n<-length(x$curve_ids)
+  if(unit=="curve") {
+    .etr_assert(is.numeric(draws)&&is.null(dim(draws))&&
+      length(draws)==n&&all(is.finite(draws))&&
+      all(draws==floor(draws))&&all(draws>=0L & draws<n),
+      "bootstrap_unit_indices require valid zero-based curve draws")
+    selected<-as.integer(draws)+1L
+    label<-sprintf("bootstrap_curve_%05d|%s",
+      seq_len(n)-1L,x$curve_ids[selected])
+    metadata<-x$metadata[selected,,drop=FALSE]
+    n_draws<-n
+  } else {
+    group<-as.character(x$metadata[[participant_column]])
+    unique_group<-unique(group)
+    ng<-length(unique_group)
+    .etr_assert(is.numeric(draws)&&is.null(dim(draws))&&
+      length(draws)==ng&&all(is.finite(draws))&&
+      all(draws==floor(draws))&&all(draws>=0L & draws<ng),
+      "bootstrap_unit_indices require valid zero-based participant draws")
+    picked<-unique_group[as.integer(draws)+1L]
+    selected<-integer();group_labels<-character()
+    for(j in seq_along(picked)) {
+      src<-which(group==picked[j])
+      selected<-c(selected,src)
+      group_labels<-c(group_labels,rep(sprintf("%s#bootstrap%04d",
+        picked[j],j-1L),length(src)))
+    }
+    label<-sprintf("bootstrap_%05d|%s",
+      seq_along(selected)-1L,x$curve_ids[selected])
+    metadata<-x$metadata[selected,,drop=FALSE]
+    metadata[[participant_column]]<-group_labels
+    n_draws<-ng
+  }
+  shape<-dim(x$values)
+  values<-array(x$values[selected,,,drop=FALSE],
+    c(length(selected),shape[2L],shape[3L]))
+  provenance<-x$provenance
+  provenance$bootstrap<-list(unit=unit,n_draws=n_draws,
+    fixed_source_unit_indices=TRUE)
+  etr_trajectory_set(x$time,values,label,x$dimension_names,
+    metadata=metadata,coordinate_system=x$coordinate_system,
+    time_unit=x$time_unit,provenance=provenance)
+}
+
+.etr_fpca_stability_check_fixed_draws <- function(x,unit,
+    participant_column,draws,b) {
+  if(is.null(draws))return(invisible(NULL))
+  .etr_assert(is.list(draws)&&length(draws)==b,
+    "bootstrap_unit_indices must be a list of n_bootstrap replicate draws")
+  for(indices in draws) {
+    if(unit=="curve")n<-length(x$curve_ids) else
+      n<-length(unique(as.character(x$metadata[[participant_column]])))
+    .etr_assert(is.numeric(indices)&&is.null(dim(indices))&&
+      length(indices)==n&&all(is.finite(indices))&&
+      all(indices==floor(indices))&&all(indices>=0L & indices<n),
+      "bootstrap_unit_indices must contain valid zero-based source unit indices")
+  }
+  invisible(NULL)
+}
+
 #' Descriptive nonparametric bootstrap of individually matched FPCs
 #' @inheritParams etr_bootstrap_fpca_subspace_stability
+#' @param bootstrap_unit_indices Optional list of zero-based unit-index
+#'   draws, one numeric vector per replicate. Curve mode indexes source
+#'   curves; participant mode indexes first-observed participant groups.
+#'   This native replay extension bypasses the R RNG but does not add a
+#'   parameter to the frozen Python public API.
 #' @export
 etr_bootstrap_fpca_stability <- function(trajectories,
     n_bootstrap=200L,n_components=3L,scaling="none",
-    resample_unit="curve",participant_column=NULL,random_state=0L) {
+    resample_unit="curve",participant_column=NULL,random_state=0L,
+    bootstrap_unit_indices=NULL) {
   etr_validate(trajectories,require_complete=TRUE)
   .etr_assert(is.numeric(n_bootstrap)&&length(n_bootstrap)==1L&&
     is.finite(n_bootstrap)&&n_bootstrap==as.integer(n_bootstrap)&&
@@ -307,13 +377,21 @@ etr_bootstrap_fpca_stability <- function(trajectories,
     "n_components must be below source curve count")
   .etr_fpca_stability_scope(trajectories,resample_unit,participant_column)
   k<-as.integer(n_components);b<-as.integer(n_bootstrap)
+  .etr_fpca_stability_check_fixed_draws(trajectories,resample_unit,
+    participant_column,bootstrap_unit_indices,b)
   ref<-.etr_fpca_stability_fit(trajectories,k,scaling)
-  restore<-.etr_simulation_rng(random_state);on.exit(restore(),add=TRUE)
+  if(is.null(bootstrap_unit_indices)) {
+    restore<-.etr_simulation_rng(random_state)
+    on.exit(restore(),add=TRUE)
+  }
   sim<-signed<-explained<-matrix(0,b,k)
   assignments<-matrix(0L,b,k)
   sizes<-integer(b)
   for(i in seq_len(b)){
-    sample<-.etr_fpca_stability_boot(trajectories,resample_unit,participant_column)
+    sample<-if(is.null(bootstrap_unit_indices))
+      .etr_fpca_stability_boot(trajectories,resample_unit,participant_column)
+      else .etr_fpca_stability_fixed_boot(trajectories,resample_unit,
+        participant_column,bootstrap_unit_indices[[i]])
     .etr_assert(length(sample$curve_ids)>k,
       "bootstrap replicate has insufficient fitted sample rank")
     cand<-.etr_fpca_stability_fit(sample,k,scaling)
@@ -332,7 +410,9 @@ etr_bootstrap_fpca_stability <- function(trajectories,
     provenance=list(method="nonparametric_bootstrap_component_matching",
       n_bootstrap=b,n_components=k,scaling=scaling,
       participant_column=participant_column,
-      random_engine="base_R_not_NumPy",
+      random_engine=if(is.null(bootstrap_unit_indices))
+        "base_R_not_NumPy" else "caller_supplied_fixed_unit_indices",
+      fixed_draw_replay=!is.null(bootstrap_unit_indices),
       scientific_warning="Component stability is descriptive, not probability of truth")),
     class="etr_fpca_stability")
 }

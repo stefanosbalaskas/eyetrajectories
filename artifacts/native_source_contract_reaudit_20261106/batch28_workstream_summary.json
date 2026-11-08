@@ -1,0 +1,19 @@
+{
+  "historical_recorded_source_gaps": 204,
+  "developer_verified_complete_contracts": 2,
+  "developer_active_source_gaps": 202,
+  "independent_certifications": 0,
+  "targeted_reporting_and_schema_functions": 6,
+  "separate_alternative_estimator_workstream": 16,
+  "separate_plotting_geometry_workstream": 71,
+  "not_a_full_contract_or_external_certification": true,
+  "by_blocker": {
+    "constructor_class_and_domain": 1,
+    "mixed_input_domain_or_cross_language_representation": 28,
+    "narrative_reporting_format_and_possible_domain": 30,
+    "scientific_or_numeric_domain_and_result_schema": 28,
+    "scientifically_alternative_estimator_or_backend": 16,
+    "tabular_reporting_schema_and_possible_numerics": 30,
+    "visualization_backend_and_graphical_schema": 71
+  }
+}

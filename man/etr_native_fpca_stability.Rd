@@ -19,7 +19,8 @@ etr_leave_one_group_out_fpca_influence(trajectories, group_column = NULL,
   n_components = 3L, scaling = "none")
 etr_bootstrap_fpca_stability(trajectories, n_bootstrap = 200L,
   n_components = 3L, scaling = "none", resample_unit = "curve",
-  participant_column = NULL, random_state = 0L)
+  participant_column = NULL, random_state = 0L,
+  bootstrap_unit_indices = NULL)
 etr_summarise_fpca_stability(result, similarity_threshold = 0.80,
   interval = c(0.025, 0.975))
 etr_diagnose_fpca_outliers(result, trajectories, n_components = NULL,
@@ -36,7 +37,12 @@ etr_diagnose_fpca_outliers(result, trajectories, n_components = NULL,
 \item{scaling}{Native FPCA scaling, none or dimension_sd.}
 \item{resample_unit}{Curve or participant-level independent resampling.}
 \item{participant_column}{Source trajectory participant identifier metadata field.}
-\item{random_state}{Scoped base-R seed; NumPy RNG streams are not identical.}
+\item{random_state}{Scoped base-R seed; NumPy RNG streams are not identical.
+Unused when fixed unit indices are supplied.}
+\item{bootstrap_unit_indices}{Optional list of zero-based source-unit-index
+vectors, one per replicate. Unit indices reference original curves or first-
+observed participant groups. This is a native R deterministic audit extension
+and does not exist in the frozen Python 1.2 public interface.}
 \item{result}{Native stability, influence or FPCA fit, depending on method.}
 \item{interval}{Two increasing quantile levels in [0,1].}
 \item{group_column}{Optional group metadata for entire-participant leave-out.}

@@ -4,7 +4,7 @@
 \usage{
 etr_generate_multivariate_iaaft_surrogates(trajectories, curve, dimensions,
   reference_dimension, n_surrogates = 199L, max_iterations = 1000L,
-  tolerance = 1e-8, random_state = NULL)
+  tolerance = 1e-8, random_state = NULL, initial_permutations = NULL)
 }
 \arguments{
 \item{trajectories}{Complete regular-grid native trajectory set.}
@@ -15,6 +15,7 @@ etr_generate_multivariate_iaaft_surrogates(trajectories, curve, dimensions,
 \item{max_iterations}{Maximum Fourier/rank remapping iterations.}
 \item{tolerance}{Positive absolute change tolerance for combined spectral error.}
 \item{random_state}{Optional base R RNG seed, with caller state restored.}
+\item{initial_permutations}{Optional integer-valued zero-based three-dimensional array of shape (n_surrogates, n_time, n_selected_dimensions), containing complete initial time-index permutations for every surrogate/channel. Replays frozen NumPy initialization deterministically without invoking Python or asserting PCG64 stream identity.}
 }
 \value{Native multivariate IAAFT source-shaped surrogate array, exact
 empirical marginals, spectral/cross-spectral residual errors,

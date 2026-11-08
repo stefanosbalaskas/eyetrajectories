@@ -176,3 +176,183 @@ test_that("pinned Python 1.2 TrajectorySet NaN and zero-based subset oracle",{
   expect_identical(dim(native_empty$values),c(0L,3L,1L))
   expect_false(any(etr_native_parity_catalog()$one_to_one_native_contract_complete))
 })
+
+
+test_that("Python mode accepts nested values, mixed scalar time and ID metadata index", {
+  nested <- list(
+    list(c("1", "2"), c("3", "4"), c("5", "6")),
+    list(c("7", "8"), c("9", "10"), c("11", "12"))
+  )
+  time <- list("0", TRUE, "2")
+  native <- etr_trajectory_set(time, nested,
+    curve_ids=c("a","b"), dimension_names=c("x","y"),
+    metadata=data.frame(group=c("A","B")),
+    python_boundary_mode=TRUE)
+  expect_identical(dim(native$values),c(2L,3L,2L))
+  expect_equal(native$time,c(0,1,2),tolerance=0)
+  expect_identical(rownames(native$metadata),c("a","b"))
+  expect_equal(native$values[1L,1L,],c(1,2),tolerance=0)
+  expect_identical(rownames(etr_subset(native,c("1","0"),
+    python_boundary_mode=TRUE)$metadata),c("b","a"))
+  expect_error(etr_subset(native,"1.0",python_boundary_mode=TRUE),
+    "integer literals")
+  expect_error(etr_trajectory_set(time,
+    list(list(c("1","2")),list(c("1","2"),c("3","4"))),
+    c("a","b"),c("x","y"),python_boundary_mode=TRUE),"rectangular")
+  expect_error(etr_trajectory_set(time,
+    list(list(c("oops","2"),c("3","4"),c("5","6")),
+      nested[[2L]]),c("a","b"),c("x","y"),
+    python_boundary_mode=TRUE),"nonnumeric string")
+  # The strict scientific constructor must not silently accept nested data.
+  expect_error(etr_trajectory_set(c(0,1,2),nested,c("a","b"),c("x","y")),
+    "numeric 3D array")
+})
+
+test_that("frozen Python 1.2 TrajectorySet nested source and metadata agree", {
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Frozen Python 1.2 array-like TrajectorySet oracle opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  nested <- list(
+    list(c("1", "2"), c("3", "4"), c("5", "6")),
+    list(c("7", "8"), c("9", "10"), c("11", "12"))
+  )
+  time <- list("0", TRUE, "2")
+  native <- etr_trajectory_set(time,nested,
+    c("a","b"),c("x","y"),python_boundary_mode=TRUE)
+  ctor <- etpy_get_export("TrajectorySet",.namespace="root")
+  py_x <- reticulate::py_call(ctor,
+    time=reticulate::r_to_py(time),
+    values=reticulate::r_to_py(nested),
+    curve_ids=reticulate::r_to_py(c("a","b")),
+    dimension_names=reticulate::r_to_py(c("x","y")))
+  expect_equal(unname(reticulate::py_to_r(py_x$values)),
+    unname(native$values),tolerance=0)
+  expect_equal(as.numeric(reticulate::py_to_r(py_x$time)),
+    native$time,tolerance=0)
+  expect_identical(
+    as.character(reticulate::py_to_r(py_x$metadata$index$tolist())),
+    rownames(native$metadata))
+  py_subset <- py_x$subset(reticulate::r_to_py(c("1","0")))
+  native_subset <- etr_subset(native,c("1","0"),
+    python_boundary_mode=TRUE)
+  expect_identical(as.character(reticulate::py_to_r(py_subset$curve_ids)),
+    native_subset$curve_ids)
+  expect_identical(
+    as.character(reticulate::py_to_r(py_subset$metadata$index$tolist())),
+    rownames(native_subset$metadata))
+  expect_false(any(etr_native_parity_catalog()$one_to_one_native_contract_complete))
+})
+
+test_that("Python array complex casting is opt-in for TrajectorySet", {
+  vals <- array(as.complex(c(1,2,3,4,5,6)),c(2L,3L,1L))
+  vals <- array(
+    complex(real=Re(vals), imaginary=rep(100,length(vals))),
+    dim=c(2L,3L,1L))
+  expect_error(etr_trajectory_set(c(0,1,2),vals,c("a","b"),"x"),
+    "numeric 3D array")
+  native <- etr_trajectory_set(c(0+4i,1+4i,2+4i),vals,
+    c("a","b"),"x",python_boundary_mode=TRUE)
+  expect_equal(native$values,Re(vals),tolerance=0)
+  expect_equal(native$time,c(0,1,2),tolerance=0)
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Frozen Python 1.2 complex ndarray oracle opt-in")
+  ctor <- etpy_get_export("TrajectorySet",.namespace="root")
+  np <- reticulate::import("numpy",convert=FALSE)
+  # reticulate maps a multi-element R vector to a Python list.
+  # The frozen constructor rejects list-of-complex but accepts a complex
+  # NumPy ndarray, discarding imaginary values with a ComplexWarning.
+  complex_time <- np$asarray(
+    reticulate::r_to_py(c(0+4i,1+4i,2+4i)),dtype="complex128")
+  complex_values <- np$asarray(
+    reticulate::r_to_py(vals),dtype="complex128")
+  py_x <- suppressWarnings(reticulate::py_call(ctor,
+    time=complex_time,
+    values=complex_values,
+    curve_ids=reticulate::r_to_py(c("a","b")),
+    dimension_names=reticulate::r_to_py("x")))
+  # The Python list case is genuinely unsupported in the frozen source.
+  expect_error(reticulate::py_call(ctor,
+    time=reticulate::r_to_py(c(0+4i,1+4i,2+4i)),
+    values=complex_values,
+    curve_ids=reticulate::r_to_py(c("a","b")),
+    dimension_names=reticulate::r_to_py("x")),
+    "float\\(\\) argument")
+  expect_equal(unname(reticulate::py_to_r(py_x$values)),
+    unname(native$values),tolerance=0)
+  expect_equal(as.numeric(reticulate::py_to_r(py_x$time)),
+    native$time,tolerance=0)
+})
+
+
+test_that("Python nested numeric-text NaN and infinities follow frozen dtype=float", {
+  values <- list(list(c("NaN","Inf"),c("-Inf","0"),c("1.5","2")),
+                 list(c("3","4"),c("5","6"),c("7","8")))
+  native <- etr_trajectory_set(c(0,1,2),values,c("a","b"),c("x","y"),
+    python_boundary_mode=TRUE)
+  expect_true(is.nan(native$values[1L,1L,1L]))
+  expect_true(is.infinite(native$values[1L,1L,2L]))
+  expect_true(is.infinite(native$values[1L,2L,1L]))
+  expect_equal(native$values[1L,3L,],c(1.5,2),tolerance=0)
+  expect_error(etr_trajectory_set(c(0,1,2),
+    list(list(c("oops","1"),c("1","2"),c("3","4")),values[[2L]]),
+    c("a","b"),c("x","y"),python_boundary_mode=TRUE),"nonnumeric string")
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Frozen 1.2 nested numeric-text oracle is opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  ctor <- etpy_get_export("TrajectorySet",.namespace="root")
+  py_x <- reticulate::py_call(ctor,
+    time=reticulate::r_to_py(c(0,1,2)),
+    values=reticulate::r_to_py(values),
+    curve_ids=reticulate::r_to_py(c("a","b")),
+    dimension_names=reticulate::r_to_py(c("x","y")))
+  source <- reticulate::py_to_r(py_x$values)
+  expect_identical(dim(source),dim(native$values))
+  expect_identical(is.nan(source),is.nan(native$values))
+  expect_identical(is.infinite(source),is.infinite(native$values))
+  expect_equal(source[1L,3L,],native$values[1L,3L,],tolerance=0)
+  expect_false(any(etr_native_parity_catalog()$one_to_one_native_contract_complete))
+})
+
+
+# local batch #02: pandas empty metadata canonicalization
+
+test_that("TrajectorySet Python mode reconstructs genuinely empty metadata", {
+  x<-array(1:6,c(2L,3L,1L))
+  for (md in list(data.frame(),
+                  data.frame(group=character()),
+                  data.frame(row.names=1:2))) {
+    native<-etr_trajectory_set(c(0,1,2),x,c("a","b"),"x",
+      metadata=md,python_boundary_mode=TRUE)
+    expect_identical(dim(native$metadata),c(2L,0L))
+    expect_identical(rownames(native$metadata),c("a","b"))
+  }
+  expect_error(etr_trajectory_set(c(0,1,2),x,c("a","b"),"x",
+    metadata=data.frame()),"one row per curve")
+  expect_error(etr_trajectory_set(c(0,1,2),x,c("a","b"),"x",
+    metadata=data.frame(group="A"),python_boundary_mode=TRUE),
+    "one row per curve")
+})
+
+test_that("pinned Python 1.2 TrajectorySet empty pandas frame oracle", {
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Published Python 1.2 empty metadata oracle is opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  x<-array(1:6,c(2L,3L,1L))
+  ctor<-etpy_get_export("TrajectorySet",.namespace="root")
+  pd<-reticulate::import("pandas",convert=FALSE)
+  py_empty<-pd$DataFrame()
+  py_x<-reticulate::py_call(ctor,
+    time=reticulate::r_to_py(c(0,1,2)),
+    values=reticulate::r_to_py(x),
+    curve_ids=reticulate::r_to_py(c("a","b")),
+    dimension_names=reticulate::r_to_py("x"),
+    metadata=py_empty)
+  native<-etr_trajectory_set(c(0,1,2),x,c("a","b"),"x",
+    metadata=data.frame(),python_boundary_mode=TRUE)
+  expect_identical(
+    as.character(reticulate::py_to_r(py_x$metadata$index$tolist())),
+    rownames(native$metadata))
+  expect_identical(dim(native$metadata),c(2L,0L))
+  expect_true(reticulate::py_to_r(py_x$metadata$empty))
+  expect_false(any(etr_native_parity_catalog()$one_to_one_native_contract_complete))
+})

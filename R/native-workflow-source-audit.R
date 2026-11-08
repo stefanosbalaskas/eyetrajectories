@@ -40,8 +40,8 @@
     if (!is.null(nm)) x <- x[order(nm,method="radix")]
     lapply(x,source_sorted)
   }
-  as.character(jsonlite::toJSON(source_sorted(value),auto_unbox=TRUE,
-    null="null",na="null",digits=NA,pretty=FALSE))
+  .etr_python_json_encode(source_sorted(value),compact=TRUE,
+    empty_mapping=empty_mapping)
 }
 
 .etr_workflow_validate_steps <- function(steps) {
@@ -211,6 +211,29 @@ etr_workflow_summary_frame <- function(result) {
     stringsAsFactors=FALSE)
 }
 
+# Python 1.2 f"{workflow_contract!r}" quotes and escapes source identifiers.
+# Avoid Python/reticulate at native runtime. The deliberately bounded source
+# domain is printable Unicode and ASCII/C1 control codes. Other nonprintable
+# Unicode categories remain subject to independent semantic review.
+.etr_python_workflow_identifier_repr <- function(x) {
+  .etr_assert(is.character(x)&&length(x)==1L&&!is.na(x),
+    "workflow identifier must be one string")
+  quote <- if(grepl("'",x,fixed=TRUE)&&!grepl('"',x,fixed=TRUE)) '"' else "'"
+  points <- utf8ToInt(enc2utf8(x))
+  chars <- vapply(points,function(p){
+    if(p==92L) return("\\\\")
+    if(p==utf8ToInt(quote)) return(paste0("\\",quote))
+    if(p==10L) return("\\n")
+    if(p==13L) return("\\r")
+    if(p==9L) return("\\t")
+    if(p<32L||p==127L||(p>=128L&&p<=159L))
+      return(sprintf("\\x%02x",p))
+    if(p %in% c(0x2028L,0x2029L))return(sprintf("\\u%04x",p))
+    intToUtf8(p)
+  },character(1L),USE.NAMES=FALSE)
+  paste0(quote,paste(chars,collapse=""),quote)
+}
+
 #' Compact native workflow provenance reporting text
 #' @param result Native workflow audit record.
 #' @return Descriptive text without automated scientific approval.
@@ -218,10 +241,7 @@ etr_workflow_summary_frame <- function(result) {
 etr_workflow_reporting_text <- function(result) {
   .etr_workflow_check_result(result)
   z <- etr_workflow_summary_frame(result)
-  # In the common identifier domain this matches Python's repr(str).
-  # Quoting/escape behavior for unusual strings remains a known source gap.
-  quoted <- paste0("'",gsub("'", "\\'",result$workflow_contract,
-    fixed=TRUE),"'")
+  quoted <- .etr_python_workflow_identifier_repr(result$workflow_contract)
   paste0("Workflow ",quoted," used schema ",
     z$workflow_schema_version," and retained ",z$step_count,
     " ordered steps (",z$completed_steps," completed, ",z$failed_steps,

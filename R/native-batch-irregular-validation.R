@@ -19,18 +19,49 @@ etr_validate_common_grid <- function(x) {
 #' Validate functional probability simplex values
 #' @param values Numeric three-dimensional array (curves, time, dimensions).
 #' @param atol Absolute NumPy-style sum and negative-mass tolerance (default 1e-7).
+#' @param python_boundary_mode When TRUE, accept numeric-string, Boolean,
+#'   complex ndarray and regular mixed scalar 3D list inputs according to the
+#'   bounded NumPy dtype=float constructor. Also accept empty curve or time
+#'   axes. The default remains strict native R numeric validation.
 #' @return Invisibly NULL, or a scientifically descriptive error.
 #' @export
-etr_validate_simplex <- function(values,atol=1e-7) {
+etr_validate_simplex <- function(values,atol=1e-7,
+    python_boundary_mode=FALSE) {
+  .etr_assert(is.logical(python_boundary_mode) &&
+    length(python_boundary_mode)==1L && !is.na(python_boundary_mode),
+    "python_boundary_mode must be a nonmissing logical scalar")
+  if(isTRUE(python_boundary_mode) && is.logical(atol) &&
+      length(atol)==1L && !is.na(atol)) atol <- as.numeric(atol)
   .etr_assert(is.numeric(atol) && length(atol)==1L && is.finite(atol) &&
     atol>=0,"atol must be finite and nonnegative")
+  if(isTRUE(python_boundary_mode)) {
+    # Public Python validation.py first calls np.asarray(values,dtype=float).
+    # The opt-in native path implements bounded ndarray/list coercion without
+    # creating a Python dependency in scientific package execution.
+    values <- .etr_simplex_nested_input(values,
+      python_boundary_mode=TRUE)
+    if(is.array(values) && length(dim(values))==3L &&
+       (is.character(values)||is.logical(values)||is.complex(values))) {
+      shape <- dim(values)
+      if(is.complex(values))values <- Re(values)
+      values <- array(suppressWarnings(as.numeric(values)),dim=shape)
+    }
+  }
   .etr_assert(is.array(values) && is.numeric(values) &&
     length(dim(values))==3L,
     "simplex values must have shape (n_curves, n_time, n_dimensions)")
+  # NumPy validates any correctly shaped empty array vacuously. In source
+  # mode, avoid base R's apply() reduction on a zero curve/time margin.
+  if(isTRUE(python_boundary_mode) &&
+      (dim(values)[1L]==0L || dim(values)[2L]==0L))
+    return(invisible(NULL))
   .etr_assert(!anyNA(values),"simplex values cannot contain missing values")
   .etr_assert(all(is.finite(values)),
     "simplex values must contain only finite values")
   .etr_assert(!any(values < -atol),"simplex values must be non-negative")
+  if(isTRUE(python_boundary_mode) && dim(values)[3L]==0L)
+    .etr_assert(FALSE,
+      "simplex values must sum to one across dimensions at every time point")
   totals <- apply(values,c(1L,2L),sum)
   # np.allclose(totals,1,atol=atol) uses rtol=1e-5 by default.
   .etr_assert(all(abs(totals-1)<=atol+1e-5),

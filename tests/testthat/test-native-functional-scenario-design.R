@@ -36,7 +36,7 @@ test_that("native scenario design preserves ordered source columns and explicit 
   expect_true(is.na(tab$measurement_noise_covariance))
   expect_true(is.na(tab$missingness))
   expect_true(is.na(tab$phase_variation))
-  expect_identical(tab$measurement_noise_sd,"0")
+  expect_identical(tab$measurement_noise_sd,"0.0")
   expect_true(is.na(tab$measurement_noise_covariance))
   irr<-.etr_scenario_design_test_fixture(name="sparse",
     observation_design="irregular",samples_per_curve=c(2L,4L))
@@ -180,4 +180,99 @@ test_that("published Python 1.2 scenario design and seed expansion source witnes
   }
   expect_false(any(etr_native_parity_catalog()$
     one_to_one_native_contract_complete))
+})
+
+
+# Batch 19: frozen source factors include full dataclass domains, not only
+# native scalar-only subsets.  An expanded design is validated independently.
+test_that("source simulation factor matrix handles composite scientific designs",{
+  base<-etr_functional_simulation_scenario("irregular",seq(0,1,length.out=9L),
+    c(2,1),3L,observation_design="irregular",samples_per_curve=c(3L,5L),
+    replicates=2L,seed_start=31L,measurement_noise_sd=0)
+  factors<-list(samples_per_curve=list(c(3L,5L),c(5L,7L)),
+    irregular_time_design=c("uniform","center_clustered"),
+    score_distribution=c("normal","student_t"))
+  scenarios<-etr_expand_functional_simulation_scenarios(base,factors,
+    seed_policy="disjoint")
+  expect_length(scenarios,8L)
+  expect_identical(vapply(scenarios,function(x)x$seed_start,integer(1L)),
+    seq.int(31L,by=2L,length.out=8L))
+  expect_identical(scenarios[[1L]]$name,
+    "irregular__samples_per_curve=3-5__irregular_time_design=uniform__score_distribution=normal")
+  expect_identical(scenarios[[2L]]$name,
+    "irregular__samples_per_curve=3-5__irregular_time_design=uniform__score_distribution=student_t")
+  expect_identical(scenarios[[3L]]$name,
+    "irregular__samples_per_curve=3-5__irregular_time_design=center_clustered__score_distribution=normal")
+  expect_identical(scenarios[[5L]]$samples_per_curve,c(5L,7L))
+  expect_identical(scenarios[[4L]]$score_distribution,"student_t")
+  expect_identical(vapply(etr_expand_functional_simulation_scenarios(
+      base,factors,seed_policy="shared"),function(x)x$seed_start,
+      integer(1L)),rep(31L,8L))
+  # Distinct covariance structures, hierarchical variances, missingness and
+  # multi-dimensional noise SDs must survive factor expansion without loss.
+  covariance<-matrix(c(.09,.01,.01,.04),2L,2L)
+  multivariate<-etr_functional_simulation_scenario("multi",
+    seq(0,1,length.out=9L),c(2,1),5L,
+    dimension_names=c("x","y"),measurement_noise_sd=0)
+  mixed<-etr_expand_functional_simulation_scenarios(multivariate,list(
+    measurement_noise_covariance=list(covariance,NULL),
+    participant_eigenvalues=list(c(.3,.1),NULL),
+    missingness=list(list(kind="dropout",p=.1),NULL)),"disjoint")
+  expect_length(mixed,8L)
+  expect_equal(mixed[[1L]]$measurement_noise_covariance,covariance)
+  expect_null(mixed[[5L]]$measurement_noise_covariance)
+  expect_null(mixed[[3L]]$participant_eigenvalues)
+  expect_null(mixed[[2L]]$missingness)
+  expect_match(mixed[[1L]]$name,"measurement_noise_covariance=array4")
+  expect_match(mixed[[1L]]$name,"missingness=dropout")
+  expect_match(mixed[[2L]]$name,"missingness=None")
+  expect_error(etr_expand_functional_simulation_scenarios(base,
+    list(seed_start=c(1L,2L))),"unsupported")
+  expect_error(etr_expand_functional_simulation_scenarios(base,
+    list(name=c("bad","worse"))),"unsupported")
+  expect_error(etr_expand_functional_simulation_scenarios(base,
+    list(samples_per_curve=list(c(1L,4L)))),"samples_per_curve")
+})
+
+test_that("Python 1.2 composite simulation-factor product matches native R",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Frozen Python 1.2 simulation design factor source is opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  py_base<-reticulate::py_call(etpy_get_export("FunctionalSimulationScenario"),
+    name="irregular",truth_grid=reticulate::r_to_py(as.list(seq(0,1,length.out=9L))),
+    eigenvalues=reticulate::r_to_py(list(2.0,1.0)),
+    n_participants=as.integer(3L),observation_design="irregular",
+    samples_per_curve=reticulate::tuple(3L,5L),replicates=as.integer(2L),
+    seed_start=as.integer(31L),measurement_noise_sd=0)
+  py_levels<-reticulate::dict(
+    samples_per_curve=reticulate::r_to_py(list(
+      reticulate::tuple(3L,5L),reticulate::tuple(5L,7L))),
+    irregular_time_design=reticulate::r_to_py(list("uniform","center_clustered")),
+    score_distribution=reticulate::r_to_py(list("normal","student_t")))
+  source<-reticulate::py_call(
+    etpy_get_export("expand_functional_simulation_scenarios"),
+    base=py_base,factors=py_levels,seed_policy="disjoint")
+  native_base<-etr_functional_simulation_scenario("irregular",
+    seq(0,1,length.out=9L),c(2,1),3L,
+    observation_design="irregular",samples_per_curve=c(3L,5L),
+    replicates=2L,seed_start=31L,measurement_noise_sd=0)
+  native<-etr_expand_functional_simulation_scenarios(native_base,
+    list(samples_per_curve=list(c(3L,5L),c(5L,7L)),
+      irregular_time_design=c("uniform","center_clustered"),
+      score_distribution=c("normal","student_t")),seed_policy="disjoint")
+  expect_identical(length(native),length(source))
+  for(i in seq_along(native)){
+    src<-source[[i-1L]]
+    expect_identical(native[[i]]$name,
+      as.character(reticulate::py_to_r(src$name)),info=paste("name",i))
+    expect_identical(native[[i]]$seed_start,
+      as.integer(reticulate::py_to_r(src$seed_start)),info=paste("seed",i))
+    expect_equal(native[[i]]$samples_per_curve,
+      as.integer(et_to_r(src$samples_per_curve)),info=paste("samples",i))
+    expect_identical(native[[i]]$irregular_time_design,
+      as.character(reticulate::py_to_r(src$irregular_time_design)))
+    expect_identical(native[[i]]$score_distribution,
+      as.character(reticulate::py_to_r(src$score_distribution)))
+  }
+  expect_false(any(etr_native_parity_catalog()$one_to_one_native_contract_complete))
 })

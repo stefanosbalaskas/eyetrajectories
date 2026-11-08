@@ -14,11 +14,16 @@
 Ten native Python-independent nonlinear-dynamics algorithms and frames
 based on the published \pkg{eyetrajectoriespy} 1.2.0 contracts from
 \code{recurrence.py}, \code{recurrence_networks.py} and
-\code{joint_recurrence.py}. These functions are research-size dense-R
-implementations, not Python \code{scipy.sparse} object wrappers.
+\code{joint_recurrence.py}. These are research-size native R implementations, not Python
+\code{scipy.sparse} object wrappers. Recurrence-network results
+can now optionally use sparse native \pkg{Matrix} adjacency and
+accept already sparse native recurrence matrices without materializing a
+dense square array. Native joint RQA on sparse sources now counts diagonal and
+vertical line runs directly from nonzero coordinates, including large sparse
+recurrence systems, without the former 2500-node dense-conversion guard.
 }
 \usage{
-etr_recurrence_network(recurrence)
+etr_recurrence_network(recurrence, adjacency_storage = c("dense", "sparse"))
 etr_recurrence_network_node_frame(result)
 etr_recurrence_network_summary_frame(result)
 etr_joint_recurrence_matrix(recurrences, labels = NULL)
@@ -46,6 +51,11 @@ etr_windowed_rqa_trajectory_set(trajectories, metrics, window, step,
 \arguments{
 \item{recurrence}{Native \code{etr_recurrence}, auto for network
 analysis and cross for cross-RQA.}
+\item{adjacency_storage}{\code{"dense"} keeps the existing native
+logical adjacency matrix and its 2500-node cap; \code{"sparse"} returns
+a logical sparse \pkg{Matrix} matrix with a 10000-node cap for dense
+source recurrence or 100000 nodes when the source is already sparse. The
+Matrix package is required only for sparse input or output.}
 \item{result}{Native recurrence network or joint recurrence result.}
 \item{recurrences}{Two or more native auto-recurrence results on exactly
 the same time grid, temporal unit and Theiler-exclusion contract.}
@@ -99,8 +109,16 @@ graph threshold or community detection is performed.
 Joint recurrence requires strictly synchronized input and does not
 resample, shift, or harmonize component thresholds.
 
-Dense recurrence network analysis is limited to 2500 state nodes;
-native radius profiles to 2500. These caps differ from Python's sparse
+Dense recurrence network output is limited to 2500 state nodes;
+opt-in sparse output supports up to 10000 native recurrence states,
+retaining source topology but not SciPy CSR class identity.
+Native sparse \pkg{Matrix} auto-recurrence inputs can be analyzed without
+dense allocation (with a separately bounded 100000-node sparse network
+path); joint recurrence can intersect synchronized dense/sparse sources.
+Native line-RQA uses sparse coordinates for large auto, joint and rectangular
+cross recurrence inputs. Python SciPy CSR and typed result identity and full
+source error domains remain unresolved. Native radius profiles retain their
+separate 2500-node limit. These caps differ from Python's sparse
 implementations. Radius profiles accept convertible physical-time
 Theiler windows and TrajectorySet input. Windowed RQA supports fixed-radius or explicitly
 requested target-density thresholds, all three source distance metrics,
@@ -114,6 +132,12 @@ and does NOT treat windows as independent sampling units for downstream
 inference. No scientific coverage or inferential calibration is implied.
 Optional Python reference tests use a pinned Python 1.2 package
 and are entirely separate from the native R algorithms.
+
+Native sparse cross-RQA accepts rectangular sparse \pkg{Matrix} recurrence
+inputs with explicitly declared first and second time grids. Cross-line
+statistics use all diagonals and vertical lines and require approximately
+regular and matching time-step sizes. Native sparse representations are not
+identical to Python SciPy CSR or typed dataclass results.
 }
 \examples{
 values <- array(0,c(2L,9L,1L))

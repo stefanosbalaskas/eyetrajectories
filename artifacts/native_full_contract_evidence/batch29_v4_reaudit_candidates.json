@@ -1,0 +1,40 @@
+{
+  "historical_ledger_rows": 204,
+  "historical_ledger_sha256": "e115476ee32d89e2b682c0abb6dde59eb649939a8f87e622a68d803e7a327c60",
+  "native_scenario_source_sha256": "06f40fa4e28206c15fa3fa61ab25d9d1d65786d83237e3edbe8e32d6202d13ce",
+  "additive_reference_sha256": "115a435dafe69f24edddf3c0ec4da17f5ab59d841d2667eba9d43031815ed1e8",
+  "existing_public_api_replaced": false,
+  "frozen_python_reference_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "candidate_rows": [
+    {
+      "targets": [
+        "expand_functional_simulation_scenarios"
+      ],
+      "row_identifiers": {
+        "python_name": "expand_functional_simulation_scenarios",
+        "python_export_kind": "function",
+        "native_named_definition_found": "TRUE"
+      },
+      "status": "reinspect_after_RStudio_source_replay",
+      "source_gap_closed": false,
+      "independent_approval": false
+    },
+    {
+      "targets": [
+        "functional_simulation_scenario_frame"
+      ],
+      "row_identifiers": {
+        "python_name": "functional_simulation_scenario_frame",
+        "python_export_kind": "function",
+        "native_named_definition_found": "TRUE"
+      },
+      "status": "reinspect_after_RStudio_source_replay",
+      "source_gap_closed": false,
+      "independent_approval": false
+    }
+  ],
+  "candidate_row_count": 2,
+  "new_developer_approved_closures": 0,
+  "new_independent_approvals": 0,
+  "review_note": "This reference does NOT replace the existing public R function. Do not alter 202 active semantic gaps or 204 historical rows based on this script."
+}

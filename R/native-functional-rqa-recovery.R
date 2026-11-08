@@ -139,9 +139,23 @@ etr_functional_recovery_reporting_text <- function(assessment) {
     "window_units and step_units must be nonempty strings")
   for(i in seq_along(pairs)){
     v<-pairs[[i]]
+    # Frozen Python 1.2 accepts any two-item Sequence whose elements are
+    # Python/NumPy numeric scalars, including (5, 2.0), but rejects bool.
+    # A source-like R list(list(5L,2.0),...) must not be rejected merely
+    # because it is not an atomic numeric vector. Do not unlist() mixed
+    # values: its coercion can turn Boolean TRUE into text unexpectedly.
+    if(is.list(v) && !is.data.frame(v) && is.null(dim(v))){
+      .etr_assert(length(v)==2L && all(vapply(v,function(z)
+        is.numeric(z)&&!is.logical(z)&&!is.factor(z)&&
+          length(z)==1L&&is.null(dim(z))&&is.finite(z)&&z>0,
+        logical(1L))),
+        "window and step must be positive finite numeric values")
+      v<-vapply(v,as.numeric,numeric(1L),USE.NAMES=FALSE)
+    }
     .etr_assert(is.numeric(v)&&!is.logical(v)&&length(v)==2L&&
       all(is.finite(v))&&all(v>0),
       "window and step must be positive finite numeric values")
+    pairs[[i]]<-as.numeric(v)
     # Python's validator allows physical-time fractional widths. Its
     # sample-unit _resolve_samples rejects nonintegral sample counts.
     if(identical(window_units,"samples")||identical(step_units,"samples"))
@@ -310,6 +324,9 @@ etr_windowed_rqa_sensitivity <- function(trajectories,metrics,
 #' @param radius Fixed positive radius or NULL when using a target rate.
 #' @param target_recurrence_rate Optional source-aligned target density in (0, 1).
 #' @param confidence_level,n_multiplier,random_state Multiplier band specification.
+#' @param gaussian_multiplier_draws Optional fixed source-aligned matrix of
+#'   Gaussian multiplier draws, one row per replicate and one column per
+#'   independent curve or participant. Allows exact finite-sample replay.
 #' @param ... Native fixed-radius windowed-RQA parameters.
 #' @export
 etr_windowed_rqa_functional_mean_band <- function(trajectories,
@@ -318,7 +335,8 @@ etr_windowed_rqa_functional_mean_band <- function(trajectories,
     radius=NULL,target_recurrence_rate=NULL,metric="euclidean",
     theiler_window=0L,theiler_window_units="samples",dimensions=NULL,
     min_diagonal_length=2L,min_vertical_length=2L,
-    confidence_level=.95,n_multiplier=2000L,random_state=0L){
+    confidence_level=.95,n_multiplier=2000L,random_state=0L,
+    gaussian_multiplier_draws=NULL){
   .etr_assert(identical(unit,"curve")||identical(unit,"participant"),
     "unit must be 'curve' or 'participant'")
   functional<-etr_windowed_rqa_trajectory_set(
@@ -333,7 +351,8 @@ etr_windowed_rqa_functional_mean_band <- function(trajectories,
   band<-etr_multiplier_functional_mean_band(
     functional$trajectories,confidence_level=confidence_level,
     n_multiplier=n_multiplier,unit=unit,
-    participant_column=participant_column,random_state=random_state)
+    participant_column=participant_column,random_state=random_state,
+    gaussian_multiplier_draws=gaussian_multiplier_draws)
   structure(list(functional_rqa=functional,band=band,unit=unit,
     participant_column=participant_column,
     provenance=list(operation="windowed_rqa_functional_mean_band",

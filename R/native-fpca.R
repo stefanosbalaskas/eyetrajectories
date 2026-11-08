@@ -65,6 +65,10 @@ etr_trapezoid_weights <- function(time, normalize = FALSE,
   # Python bool([])=FALSE and bool([anything])=TRUE. A list argument
   # is accepted ONLY in explicit Python boundary mode: ordinary native R
   # uses a scalar normalization flag, avoiding accidental list coercion.
+  # In frozen Python 1.2, normalize=None uses ordinary false
+  # truthiness. R NULL is the explicit native counterpart only in
+  # python_boundary_mode; the strict native flag contract is unchanged.
+  if(isTRUE(python_boundary_mode) && is.null(normalize)) return(w)
   list_flag <- is.list(normalize) && !is.data.frame(normalize) &&
     is.null(dim(normalize))
   if(list_flag) {

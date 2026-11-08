@@ -40,13 +40,17 @@
 #' @param participant_column Metadata column when resampling participants.
 #' @param level Central pointwise quantile mass, strictly between zero and one.
 #' @param random_state Base R seed, restored after completion.
+#' @param bootstrap_unit_indices Optional list of zero-based whole-unit
+#'   resampling index vectors, with one vector per bootstrap replicate.
+#'   Curve mode indexes original curves; participant mode indexes groups
+#'   in their first-observed order. Bypasses base R RNG for source replay.
 #' @return Reference FPCA, pointwise descriptive lower, median and upper
 #'   surfaces, matched component similarity and scientific provenance.
 #' @export
 etr_bootstrap_fpca_component_envelopes <- function(
     trajectories,n_bootstrap=200L,n_components=3L,scaling="none",
     resample_unit="curve",participant_column=NULL,level=.95,
-    random_state=0L) {
+    random_state=0L,bootstrap_unit_indices=NULL) {
   etr_validate(trajectories,require_complete=TRUE)
   .etr_assert(is.numeric(n_bootstrap)&&length(n_bootstrap)==1L&&
     !is.na(n_bootstrap)&&is.finite(n_bootstrap)&&
@@ -66,14 +70,21 @@ etr_bootstrap_fpca_component_envelopes <- function(
   b<-as.integer(n_bootstrap)
   nt<-length(trajectories$time)
   nd<-length(trajectories$dimension_names)
+  .etr_fpca_stability_check_fixed_draws(trajectories,resample_unit,
+    participant_column,bootstrap_unit_indices,b)
   reference<-.etr_fpca_stability_fit(trajectories,k,scaling)
-  restore<-.etr_simulation_rng(random_state)
-  on.exit(restore(),add=TRUE)
+  if(is.null(bootstrap_unit_indices)) {
+    restore<-.etr_simulation_rng(random_state)
+    on.exit(restore(),add=TRUE)
+  }
   samples<-array(NA_real_,c(b,k,nt,nd))
   similarity<-matrix(NA_real_,b,k)
   for(i in seq_len(b)) {
-    sample<-.etr_fpca_stability_boot(trajectories,resample_unit,
-      participant_column)
+    sample<-if(is.null(bootstrap_unit_indices))
+      .etr_fpca_stability_boot(trajectories,resample_unit,
+        participant_column)
+      else .etr_fpca_stability_fixed_boot(trajectories,resample_unit,
+        participant_column,bootstrap_unit_indices[[i]])
     .etr_assert(length(sample$curve_ids)>k,
       paste("bootstrap replicate",i-1L,
         "has insufficient sample rank"))
@@ -101,7 +112,9 @@ etr_bootstrap_fpca_component_envelopes <- function(
       n_bootstrap=b,n_components=k,scaling=scaling,
       participant_column=participant_column,
       coverage_claim="descriptive_pointwise_only",
-      random_engine="base_R_not_NumPy_PCG64",
+      random_engine=if(is.null(bootstrap_unit_indices))
+        "base_R_not_NumPy_PCG64" else "caller_supplied_fixed_unit_indices",
+      fixed_draw_replay=!is.null(bootstrap_unit_indices),
       source_python_equivalent_stochastic_draws=FALSE,
       scientific_warning=paste(
         "Envelopes describe matched bootstrap component shape variation;",

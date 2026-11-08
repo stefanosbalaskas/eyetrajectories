@@ -163,8 +163,8 @@ etr_functional_simulation_scenario <- function(name,truth_grid,eigenvalues,
     x<-x[order(names(x),method="radix")]
   if(!requireNamespace("jsonlite",quietly=TRUE))
     stop("jsonlite required for simulation scenario source JSON",call.=FALSE)
-  as.character(jsonlite::toJSON(x,auto_unbox=(scalar||mapping),
-    null="null",digits=NA,pretty=FALSE))
+  .etr_python_json_encode(x,compact=FALSE,
+    force_array=(!scalar&&!mapping),empty_mapping=mapping)
 }
 
 #' Audit functional simulation scenario designs in a native R data frame
@@ -213,13 +213,47 @@ etr_functional_simulation_scenario_frame <- function(scenarios) {
   ans<-do.call(rbind,rows);rownames(ans)<-NULL;ans
 }
 
+# Serialize source factor names (not values) without Python dependencies.
+# Frozen Python 1.2: simulate.py::_scenario_factor_slug().
+.etr_scenario_factor_string <- function(x){
+  if(is.null(x))return("None")
+  if(is.logical(x)&&length(x)==1L)return(if(isTRUE(x))"True" else "False")
+  as.character(x)
+}
+
+.etr_scenario_factor_slug <- function(value){
+  if(is.list(value)&&!is.null(names(value))&&
+      any(nzchar(names(value)))){
+    raw<-if(!is.null(value$kind))
+      .etr_scenario_factor_string(value$kind) else "mapping"
+  }else if(is.array(value)&&length(dim(value))>=2L){
+    raw<-paste0("array",length(value))
+  }else if((is.list(value)||is.atomic(value))&&length(value)>1L){
+    raw<-if(length(value)>4L)paste0("seq",length(value)) else
+      paste(vapply(as.list(value),.etr_scenario_factor_string,
+        character(1L)),collapse="-")
+  }else raw<-.etr_scenario_factor_string(value)
+  raw<-gsub("[^A-Za-z0-9_.+-]+","-",raw)
+  raw<-gsub("^-+|-+$","",raw)
+  if(nzchar(raw))raw else "value"
+}
+
 #' Expand an explicitly declared simulation design without fitting or RNG
 #' @param base Native scenario declaration.
 #' @param factors Named lists or vectors of scalar factor levels.
 #' @param seed_policy shared seeds or disjoint replication blocks.
-#' @return Ordered native scenario records. Restricted scalar-factor subset.
+#' @return Ordered native scenario records for the full supported native
+#'   declaration field domain, including structured factor levels.
 #' @export
-etr_expand_functional_simulation_scenarios <- function(base,factors,
+etr_expand_functional_simulation_scenarios <- function(base, factors,
+    seed_policy=c("shared", "disjoint")) {
+  etr_expand_functional_simulation_scenarios_b29(
+    base=base, factors=factors, seed_policy=seed_policy)
+}
+
+
+# Original pre-Batch-30 implementation kept for rollback and comparison.
+.etr_b30_legacy_public_scenario_expansion <- function(base,factors,
     seed_policy=c("shared","disjoint")) {
   .etr_assert(inherits(base,"etr_functional_simulation_scenario"),
     "base must be a native functional simulation scenario")
@@ -228,21 +262,21 @@ etr_expand_functional_simulation_scenarios <- function(base,factors,
     !is.null(names(factors))&&!anyNA(names(factors))&&
     all(nzchar(names(factors)))&&!anyDuplicated(names(factors)),
     "factors must be a named nonempty list")
-  allowed<-c("n_participants","trials_per_participant","replicates",
-    "observation_design","score_distribution","score_df",
-    "measurement_noise_sd","orthonormal_tolerance")
+  # Source uses dataclass_fields minus 'name', with seed_start reserved to
+  # the pairing policy.  No hard-coded scalar-only or eight-name allowlist.
+  allowed<-setdiff(intersect(names(unclass(base)),
+    names(formals(etr_functional_simulation_scenario))),
+    c("name","seed_start"))
   .etr_assert(all(names(factors)%in%allowed),
     "unknown or currently unsupported scenario factor")
   levels<-lapply(factors,function(x){
     .etr_assert((is.atomic(x)&&!is.object(x))||is.list(x),
-      "factor must be an explicit level sequence")
+      "factor must be an explicit non-string sequence of levels")
     .etr_assert(length(x)>0L,"factor must contain at least one level")
     if(!is.list(x))x<-as.list(x)
-    .etr_assert(all(vapply(x,function(v)
-      (is.numeric(v)||is.character(v))&&length(v)==1L&&!is.na(v),
-      logical(1L))),"factor levels must be scalar finite numeric or strings")
     x
   })
+  # Python itertools.product(*levels): rightmost factor changes fastest.
   grid<-do.call(expand.grid,c(rev(lapply(levels,seq_along)),
     list(KEEP.OUT.ATTRS=FALSE,stringsAsFactors=FALSE)))
   grid<-grid[,ncol(grid):1L,drop=FALSE]
@@ -253,13 +287,16 @@ etr_expand_functional_simulation_scenarios <- function(base,factors,
     for(j in seq_along(levels)){
       value<-levels[[j]][[grid[i,j]]]
       nm<-names(levels)[[j]]
-      src[[nm]]<-value
-      suffix[[j]]<-paste0(nm,"=",gsub("[^A-Za-z0-9_.+-]+","-",
-        as.character(value)))
+      # Use single-bracket assignment: [[<- NULL deletes the field, whereas
+      # dataclasses.replace() passes an explicit None to the constructor.
+      src[nm]<-list(value)
+      suffix[[j]]<-paste0(nm,"=",.etr_scenario_factor_slug(value))
     }
     src$name<-paste0(base$name,"__",paste(suffix,collapse="__"))
     src$seed_start<-if(seed_policy=="shared")base$seed_start else
       as.double(base$seed_start)+(i-1L)*base$replicates
+    # Revalidate the entire scientific design on every combination; reject
+    # invalid factor interactions rather than silently repairing inputs.
     results[[i]]<-do.call(etr_functional_simulation_scenario,src)
   }
   results

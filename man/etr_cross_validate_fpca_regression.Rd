@@ -6,9 +6,12 @@ etr_cross_validate_fpca_regression(trajectories, outcome,
   candidate_components = c(1L, 2L, 3L, 4L, 5L),
   family = "gaussian", loss = NULL, covariates = NULL,
   n_splits = 5L, scaling = "none", cv_unit = "curve",
-  group_column = NULL, shuffle = FALSE, random_state = 0L)
+  group_column = NULL, shuffle = FALSE, random_state = 0L,
+  fold_assignments = NULL,
+  coerce_numeric_text_covariates = FALSE)
 }
 \arguments{
+\item{coerce_numeric_text_covariates}{Native-only opt-in for finite numeric-text covariate columns (including interdigit underscores). The frozen Python validator parses text but source statsmodels rejects object-typed columns, so FALSE preserves the default source-safe behavior.}
 \item{trajectories}{Complete native common-grid trajectory set.}
 \item{outcome}{Curve-aligned finite numeric, logical, or decimal numeric-looking character outcomes. Logical TRUE/FALSE becomes numeric 1/0; binomial responses must be 0/1. R factors are not converted to their integer codes.}
 \item{candidate_components}{Positive integer retained FPC counts.}
@@ -30,6 +33,7 @@ shuffle; group CV is deterministic irrespective of this flag.}
 \item{random_state}{Nonnegative integer base-R seed for shuffled
 curve folds, ignored for unshuffled or grouped folds. Base-R random
 permutations cannot be equated with sklearn's NumPy RandomState.}
+\item{fold_assignments}{Optional complete zero-based integer fold IDs matching a source KFold/GroupKFold result. Grouped units must never straddle folds. This overrides native fold generation without altering fitting or predictions.}
 }
 \value{Retained fold-loss, assignment and out-of-fold prediction frames
 and source-shaped scientific provenance. Group assignments have
@@ -41,5 +45,5 @@ while isolated native-R shuffled curve folds allow reproducible
 sensitivity studies. Nonmonotone GroupKFold tie ordering and shuffled
 NumPy permutations remain implementation-specific. Binomial inference uses
 R stats::glm.fit; its IRLS and separation warnings can differ from statsmodels.
-Pandas nonnumeric-to-float covariate coercions remain outside this subset;
+Pandas nonnumeric-to-float source-fitting coercions remain outside the default; optional finite text conversion is a native-only extension;
 this is not independent full-domain source certification.}

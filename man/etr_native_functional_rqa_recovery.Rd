@@ -29,7 +29,8 @@ etr_windowed_rqa_functional_mean_band(trajectories, metrics,
   theiler_window = 0L, theiler_window_units = "samples",
   dimensions = NULL, min_diagonal_length = 2L,
   min_vertical_length = 2L, confidence_level = 0.95,
-  n_multiplier = 2000L, random_state = 0L)
+  n_multiplier = 2000L, random_state = 0L,
+  gaussian_multiplier_draws = NULL)
 etr_functional_recovery_metric_catalog()
 etr_functional_recovery_metric_catalog_frame()
 etr_functional_recovery_value_key(value)
@@ -41,8 +42,12 @@ etr_functional_recovery_reporting_text(assessment)
 analyst-declared scientific coordinate system and time units.}
 \item{metrics}{Unique windowed RQA statistic names.}
 \item{window_step_pairs}{Nonempty list or two-column numeric matrix
-of explicit (window, step) pairs. Sample-unit counts must be integers;
-physical-time widths may be fractional if exactly grid-convertible.}
+of explicit (window, step) pairs. Each list entry can be an atomic numeric
+vector or a two-element list of numeric scalars (for example
+\code{list(5L, 2.0)}), as accepted by the pinned Python source.
+Boolean, text, nonfinite and malformed scalar entries remain invalid.
+Sample-unit counts must be integral; physical-time widths may be
+fractional if exactly grid-convertible.}
 \item{window,step}{Positive explicit window and step widths in the
 declared sample or physical-time units.}
 \item{window_units,step_units,theiler_window_units}{Either sample units
@@ -68,6 +73,11 @@ windowed RQA metrics. The mean-band wrapper requires complete values.}
 by participant when \code{unit="participant"}.}
 \item{confidence_level,n_multiplier,random_state}{Gaussian multiplier
 simultaneous mean-band calibration settings. R/NumPy RNGs differ.}
+\item{gaussian_multiplier_draws}{Optional finite source-aligned numeric
+matrix with one row per Gaussian multiplier replicate and one column per
+independent curve or participant. This explicit native extension enables
+same-draw numerical replay with frozen Python 1.2, without claiming RNG-stream
+or typed-result-class equivalence.}
 \item{value}{Native semantic recovery value with \code{metric},
 \code{source} and zero-based \code{component} fields.}
 \item{assessment}{Native assessment list with a nonempty \code{values}

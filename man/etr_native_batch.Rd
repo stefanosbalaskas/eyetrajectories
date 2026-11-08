@@ -19,7 +19,8 @@ an explicit R native irregular-trajectory representation.
 }
 \usage{
 etr_validate_common_grid(x)
-etr_validate_simplex(values, atol = 1e-7)
+etr_validate_simplex(values, atol = 1e-7,
+  python_boundary_mode = FALSE)
 etr_validate_no_long_missing_runs(x, max_missing_fraction)
 etr_irregular_trajectory_set(time, values, curve_ids, dimension_names,
   metadata = NULL, coordinate_system = "unknown",
@@ -45,6 +46,12 @@ for irregular operations, an \code{etr_irregular_trajectory_set}.}
 a list of curve-specific sample-by-channel matrices for construction.}
 \item{atol}{Finite nonnegative absolute sum and negativity tolerance.
 NumPy-style sum comparison additionally applies relative tolerance 1e-5.}
+\item{python_boundary_mode}{An explicit opt-in to bounded frozen Python
+1.2 coercion for validation: numeric-string or Boolean 3D arrays,
+complex NumPy-ndarray-style arrays (real component only), regular 3D
+nested scalar lists, and vacuous zero-curve/time validation. The
+native default keeps strict numeric-array checks; neither mode
+claims complete NumPy object/exception parity.}
 \item{max_missing_fraction}{Maximum permitted fraction of time points
 with at least one missing functional channel per curve, in [0,1).}
 \item{time}{List of finite increasing curve-specific time vectors, each

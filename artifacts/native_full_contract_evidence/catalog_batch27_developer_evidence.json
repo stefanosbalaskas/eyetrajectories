@@ -1,0 +1,33 @@
+{
+  "protocol": "developer_catalog_contract_closure_v1",
+  "python_version": "1.2.0",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "function_results": [
+    {
+      "python_name": "mathematical_contract_frame",
+      "rows": 88,
+      "validated_columns": ["contract_key", "title", "function", "latex", "site_anchor", "scope"],
+      "complete_zero_argument_domain": true,
+      "full_field_equality": true,
+      "excess_argument_rejected_by_both": true
+    },
+    {
+      "python_name": "functional_recovery_metric_catalog_frame",
+      "rows": 27,
+      "validated_columns": ["metric", "quantity", "direction", "units", "scope", "description"],
+      "complete_zero_argument_domain": true,
+      "full_field_equality": true,
+      "excess_argument_rejected_by_both": true
+    }
+  ],
+  "additional_semantic_comparisons": ["list_mathematical_contracts", "get_mathematical_contract", "functional_recovery_metric_catalog"],
+  "python_vs_R_runtime_class_equivalence_claimed": false,
+  "independent_certification_granted": false,
+  "local_files_sha256": {
+    "R/native-math-contracts-diagnostics.R": "c70d4985659551779a8c4674dc023f992d3d92bcdb88a0eda05c0052ec3289f5",
+    "R/native-functional-rqa-recovery.R": "905c00a2ba9b4fee25d788aea114b89695d75abf05c6ebbcdb2bfdd5babb7a75",
+    "inst/extdata/native_mathematical_contract_frame_py120.csv": "9555500a42aa2f2acedd1290ac39ac9dc695160bb7b02850dad56a514e1bb5ce",
+    "inst/extdata/native_recovery_metric_catalog_py120.csv": "f47a935e20315e37b1ecb508abe88ef8ad2a61e2880d287ddf72fe95dfd8eb20",
+    "scripts/capture_catalog_contract_evidence_batch27.R": "018f758af967851a86af4ebf32adf98a9209d1a44e9c14e12de2d875cf958215"
+  }
+}

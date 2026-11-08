@@ -129,3 +129,58 @@ test_that("frozen Python 1.2 scalar boundary oracles agree for all four pilots",
     python_boundary_mode=TRUE),
     unname(et_to_r(python_bool_default)),tolerance=1e-12)
 })
+
+
+# local batch #02: ALR reference integer and Python None normalization
+
+test_that("frozen Python ALR index distinguishes integer from integral double", {
+  x<-array(1/3,c(2L,3L,3L))
+  ref<-etr_alr_transform(x,reference_dimension=1L,
+    python_boundary_mode=TRUE)
+  expect_identical(dim(ref),c(2L,3L,2L))
+  expect_equal(ref,array(0,c(2L,3L,2L)),tolerance=1e-14)
+  expect_error(etr_alr_transform(x,reference_dimension=1,
+    python_boundary_mode=TRUE),"Python integer/Boolean")
+  expect_error(etr_alr_transform(x,reference_dimension=-1,
+    python_boundary_mode=TRUE),"Python integer/Boolean")
+  # Preserve the pre-existing native R behavior for integral doubles.
+  expect_equal(etr_alr_transform(x,reference_dimension=1),
+    etr_alr_transform(x,reference_dimension=1L),tolerance=0)
+  expect_equal(etr_alr_transform(x,reference_dimension=TRUE,
+    python_boundary_mode=TRUE),ref,tolerance=0)
+})
+
+test_that("frozen Python trapezoid normalization accepts None only in source mode", {
+  grid<-c(0,1,3)
+  weights<-c(.5,1.5,1)
+  expect_error(etr_trapezoid_weights(grid,normalize=NULL),"normalize")
+  expect_equal(etr_trapezoid_weights(grid,normalize=NULL,
+    python_boundary_mode=TRUE),weights,tolerance=0)
+  expect_equal(etr_trapezoid_weights(grid,normalize=list(),
+    python_boundary_mode=TRUE),weights,tolerance=0)
+  expect_equal(etr_trapezoid_weights(grid,normalize=list(FALSE),
+    python_boundary_mode=TRUE),weights/sum(weights),tolerance=1e-14)
+})
+
+test_that("pinned Python 1.2 ALR and quadrature exceptional source oracles", {
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Published Python 1.2 ALR and quadrature oracles are opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  x<-array(1/3,c(2L,3L,3L))
+  py_alr<-etpy_get_export("alr_transform")
+  expect_error(reticulate::py_call(py_alr,
+    values=reticulate::r_to_py(x),reference_dimension=as.numeric(1)),
+    "only integers")
+  py_good<-reticulate::py_call(py_alr,
+    values=reticulate::r_to_py(x),reference_dimension=as.integer(1L))
+  expect_equal(unname(et_to_r(py_good)),
+    unname(etr_alr_transform(x,reference_dimension=1L,
+      python_boundary_mode=TRUE)),tolerance=1e-14)
+  py_w<-reticulate::py_call(
+    etpy_get_export("functional_trapezoid_weights"),
+    time=reticulate::r_to_py(c(0,1,3)),
+    normalize=reticulate::py_eval("None",convert=FALSE))
+  expect_equal(as.numeric(et_to_r(py_w)),
+    etr_trapezoid_weights(c(0,1,3),normalize=NULL,
+      python_boundary_mode=TRUE),tolerance=1e-14)
+})

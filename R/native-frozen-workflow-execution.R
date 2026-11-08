@@ -95,18 +95,26 @@ etr_frozen_recurrence_workflow_config <- function(curve,dimensions,
     !anyNA(dimensions)&&all(nzchar(dimensions))&&
     !anyDuplicated(dimensions),
     "dimensions must be nonempty distinct channel names")
-  for(nm in c("embedding_dimension","delay","min_diagonal_length",
+  for(nm in c("embedding_dimension","min_diagonal_length",
     "min_vertical_length")){
     v<-get(nm)
     .etr_assert(is.numeric(v)&&length(v)==1L&&is.finite(v)&&
       v>=1&&v==floor(v),paste0(nm," must be positive integer"))
   }
+  # The frozen source resolves physical-time quantities to integral
+  # sample offsets only after observing the trajectory's time grid.
+  # Reject fractional *sample* lags here; never truncate physical units.
+  .etr_assert(is.numeric(delay)&&length(delay)==1L&&
+    is.finite(delay)&&delay>0&&
+    (!identical(delay_units,"samples")||delay==floor(delay)),
+    "delay must be positive finite and integer when units='samples'")
   .etr_assert(is.numeric(radius)&&length(radius)==1L&&
     is.finite(radius)&&radius>0,"radius must be finite positive")
   .etr_assert(is.numeric(theiler_window)&&length(theiler_window)==1L&&
     is.finite(theiler_window)&&theiler_window>=0&&
-    theiler_window==floor(theiler_window),
-    "theiler_window must be nonnegative integer")
+    (!identical(theiler_window_units,"samples")||
+      theiler_window==floor(theiler_window)),
+    "theiler_window must be nonnegative finite and integer when units='samples'")
   for(nm in c("delay_units","metric","theiler_window_units")){
     v<-get(nm)
     .etr_assert(is.character(v)&&length(v)==1L&&

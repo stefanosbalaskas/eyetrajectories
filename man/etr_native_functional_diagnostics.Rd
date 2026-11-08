@@ -11,7 +11,7 @@
 \alias{etr_phase_summary}
 \alias{etr_phase_trajectory_set}
 \alias{etr_fit_phase_fpca}
-\title{Stage 9 native R functional transformations and scientific diagnostics}
+\title{Native R functional transformations and scientific diagnostics}
 \description{Twelve Python-free implementations of selected eyetrajectoriespy 1.2.0 functional transformations, distance summaries and phase diagnostics. Native R implementations have been authored; comprehensive one-to-one Python contract equivalence has not been established.}
 \usage{
 etr_alr_transform(values, reference_dimension = -1L, epsilon = 1e-8,
@@ -34,21 +34,33 @@ etr_fit_phase_fpca(registration, representation = "displacement",
 \arguments{
 \item{values}{Three-dimensional numeric array of compositional probabilities.
 In explicit Python boundary mode, a complex atomic 3D ndarray-style input
-is cast to its real component as NumPy's dtype=float conversion does.}
+is cast to its real component as NumPy's dtype=float conversion does.
+Regular mixed-type Python-style nested scalar lists, including Boolean
+leaves, use elementwise rather than whole-container R coercion.}
 \item{reference_dimension}{Python-style zero-based reference component;
 -1 selects the last. In Python boundary mode a Boolean reference index is
 converted to 0 or 1, matching Python integer-index behavior.}
 \item{epsilon}{Strictly positive clipping floor for ALR, declared before analysis.}
 \item{python_boundary_mode}{Logical, opt-in Python 1.2 boundary validation
 where implemented; the default FALSE retains the native R input domain.
-For ALR and inverse ALR, accepts complex ndarray-style 3D input after
+For ALR and inverse ALR, preserves 3D output shape when the
+curve or time axis is empty, matching frozen Python 1.2 source semantics.
+It also accepts complex ndarray-style 3D input after
 discarding imaginary coordinates and Boolean reference indices. In
 inverse ALR it requires an integer storage-type dimension count as
 NumPy does when constructing an output shape; nonfinite source
-exponentiation is propagated rather than rejected. For score-distance
-matrices, sparse Matrix inputs use native sparse row norms and Gram
-products, with a dense output of no more than five million cells.
-This flag does not invoke Python or certify full-domain equivalence.}
+exponentiation is propagated rather than rejected. For score-distance matrices, sparse Matrix inputs use native sparse
+row norms and Gram products, with a dense output of no more than five
+million cells. In explicit Python boundary mode, minimal duck-typed
+FPCA score objects may declare more components than their score matrix
+actually contains: a requested integer slice uses the available columns,
+matching NumPy; a fractional declared count requires an explicit integer
+slice count. In score-distance source mode, dense and sparse matrices use
+scikit-learn-style squared norms and Gram products and can return Inf or NaN
+from numerical overflow, or lose tiny distances through cancellation. Strict
+native R mode retains the more stable \code{stats::dist} computation.
+Strict default native FPCA-object validation is preserved. This flag does
+not invoke Python or certify full-domain equivalence.}
 \item{transformed}{Finite three-dimensional ALR values in the
 strict default mode. In Python boundary mode, complex ndarray values
 are cast to real and NaN/Inf logarithms use source arithmetic.}
