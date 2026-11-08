@@ -236,6 +236,7 @@ etr_fit_joint_bspline_functional_random_slope <- function(
     random_effect_covariance = re_covariance,
     intercept_slope_covariance = re_covariance[
       seq_len(nr), nr + seq_len(nr), drop = FALSE],
+    residual_correlation_matrix = diag(1, n_time),
     residual_variance = sigma2, fitted_functions = fitted_values,
     residual_functions = residuals, observed_functions = Y,
     fixed_long_design = X, random_long_design = R, scalar_design = scalar,

@@ -22,5 +22,6 @@ etr_fit_joint_bspline_functional_random_slope(
 \item{reml}{Logical. TRUE performs REML; FALSE performs ML.}
 \item{maxiter}{Maximum nlme optimizer iterations.}
 }
-\value{S3 \code{etr_joint_bspline_mixed_slope} inheriting from \code{etr_joint_bspline_mixed}, with fixed coefficient functions, SE, participant random intercept and slope functions, joint random covariance, residual variance, fitted values, observed values and an nlme fit.}
+\value{S3 \code{etr_joint_bspline_mixed_slope} inheriting from \code{etr_joint_bspline_mixed}, with fixed coefficient functions, SE, participant random intercept and slope functions, joint random covariance, residual variance, an IID \code{residual_correlation_matrix} equal to the time-grid
+identity matrix, fitted values, observed values and an nlme fit.}
 \details{This is an explicitly bounded native R implementation of the participant-only, one-slope, independent-residual scientific model. It does not claim full equivalence with the Python 1.2 statsmodels optimizer, error domain, typed results, nested random trial effects, or structured residual correlation. The participant count must exceed the number of free unstructured random-effect covariance parameters.}

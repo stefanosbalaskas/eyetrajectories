@@ -26,6 +26,7 @@ etr_fit_joint_bspline_functional_mixed_effects(
 \value{S3 \code{etr_joint_bspline_mixed} list containing functional coefficients,
 pointwise standard errors, random-effect coefficient covariance, participant
 random functions, variance components, fitted and residual trajectories,
+a \code{residual_correlation_matrix} equal to the time-grid identity matrix,
 and an \code{nlme::lme} fitted model.}
 \details{This estimator implements the basic participant random-intercept,
 independent Gaussian error model with an unstructured B-spline random effect

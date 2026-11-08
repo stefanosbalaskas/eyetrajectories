@@ -216,6 +216,7 @@ etr_fit_joint_bspline_functional_mixed_effects <- function(
     random_effect_coefficients = random_coefficients,
     random_effect_functions = random_functions,
     random_effect_covariance = re_covariance,
+    residual_correlation_matrix = diag(1, n_time),
     residual_variance = sigma2, fitted_functions = fitted_values,
     residual_functions = residuals,
     observed_functions = Y, fixed_long_design = X,
