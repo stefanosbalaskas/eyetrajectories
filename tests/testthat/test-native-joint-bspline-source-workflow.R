@@ -148,6 +148,7 @@ test_that("native likelihood workflow executes actual IID nlme fit", {
   result <- etr_run_functional_mixed_effects_workflow(
     a$trajectories,a$design,
     .etr_joint_source_cfg(
+      dimension="gaze_x",
       fixed_basis_size=2L,random_basis_size=2L,
       spline_degree=1L,reml=TRUE,maxiter=500L))
   expect_s3_class(result,"etr_functional_mixed_effects_workflow")
