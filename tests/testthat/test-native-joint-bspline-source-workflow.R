@@ -115,21 +115,60 @@ test_that("source-shaped pointwise coefficient frame keeps Python row ordering",
     stats::qnorm(.975)*tab$standard_error,tolerance=1e-12)
 })
 
-test_that("optional native likelihood workflow fits IID, retaining honest provenance", {
+# Deterministic, previously exercised Batch 35 likelihood fixture.
+# Eight participants meet the native random-basis identifiability guard.
+.etr_joint_workflow_live_fixture <- function() {
+  time <- seq(0,1,length.out=7L)
+  nc <- 24L
+  ids <- sprintf("c%02d",seq_len(nc))
+  groups <- rep(sprintf("P%02d",seq_len(8L)),each=3L)
+  stim <- rep(c(-1,0,1),8L)
+  values <- array(0,c(nc,7L,1L))
+  for(g in seq_len(8L))for(j in seq_len(3L)){
+    i <- (g-1L)*3L+j
+    values[i,,1L] <- .7+.2*time+stim[i]*(.5-.15*time)+
+      .6*sin(1.1*g)+.3*cos(2*g)*time+
+      .07*sin(.7*(g*3+j)*(time+.3))+
+      .035*cos((g+j)*time)
+  }
+  trajectories <- etr_trajectory_set(time,values,ids,
+    "gaze_x",metadata=data.frame(participant_id=groups),
+    coordinate_system="degrees",time_unit="s")
+  design <- data.frame(curve_id=rev(ids),
+    stimulus=rev(stim),stringsAsFactors=FALSE)
+  list(trajectories=trajectories,design=design)
+}
+
+test_that("native likelihood workflow executes actual IID nlme fit", {
   if(!identical(Sys.getenv("ET_RUN_NATIVE_JOINT_WORKFLOW_INTEGRATION"),
       "true"))
-    skip("opt-in integration requires nlme and a suitable mixed-model dataset")
-  if(!requireNamespace("nlme",quietly=TRUE))
-    skip("optional nlme package unavailable")
-  a <- .etr_joint_source_workflow_fixture()
+    skip("opt-in integration requires nlme and the deterministic Batch35 fit")
+  skip_if_not_installed("nlme")
+  a <- .etr_joint_workflow_live_fixture()
   result <- etr_run_functional_mixed_effects_workflow(
-    a$trajectories,a$design,.etr_joint_source_cfg(
-      fixed_basis_size=4L,random_basis_size=4L))
+    a$trajectories,a$design,
+    .etr_joint_source_cfg(
+      fixed_basis_size=2L,random_basis_size=2L,
+      spline_degree=1L,reml=TRUE,maxiter=500L))
   expect_s3_class(result,"etr_functional_mixed_effects_workflow")
   expect_s3_class(result$fit,"etr_joint_bspline_mixed")
+  expect_identical(result$fit$backend,"nlme::lme")
+  expect_identical(result$fit$n_participants,8L)
+  expect_identical(result$fit$n_curves,24L)
+  expect_identical(result$workflow_contract,
+    "functional_mixed_effects:native_joint_bspline_gaussian")
+  expect_true(result$provenance$likelihood_optimized)
+  expect_true(result$provenance$REML)
   expect_false(result$provenance$source_python_equivalent)
   expect_false(result$provenance$full_source_contract_certified)
   expect_identical(result$steps[[1L]][["function"]],
     "etr_fit_joint_bspline_functional_mixed_effects")
   expect_true(is.data.frame(result$tables$coefficients))
+  expect_identical(nrow(result$tables$coefficients),14L)
+  expect_identical(names(result$tables$coefficients),
+    c("coefficient","time","dimension","estimate",
+      "standard_error","lower_95_wald","upper_95_wald"))
+  expect_lt(max(abs(result$fit$fitted_functions+
+    result$fit$residual_functions-result$fit$observed_functions)),1e-8)
+  expect_gt(result$fit$residual_variance,0)
 })
