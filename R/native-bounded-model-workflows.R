@@ -12,6 +12,11 @@
 #' @export
 etr_run_functional_mixed_effects_workflow<-function(
     trajectories,design,config){
+  # Opt-in source-family likelihood workflow. Preserve the legacy moments
+  # contract and its strict parameter validation without silent migration.
+  if(is.list(config) && !is.data.frame(config) &&
+      identical(config$estimator,"native_joint_bspline_gaussian"))
+    return(.etr_source_joint_bspline_workflow(trajectories,design,config))
   etr_validate(trajectories,require_complete=TRUE)
   cfg<-.etr_source_workflow_config(config,
     list(predictors=NULL,participant_column=NULL,dimension=NULL,
