@@ -149,6 +149,7 @@ etr_fit_joint_bspline_functional_nested_slope <- function(
     "nested-slope residual variance must be positive finite")
   Gp <- .etr_nested_trial_covariance(fit,".etr_pid",nd,sigma2)
   Gt <- .etr_nested_trial_covariance(fit,".etr_trial",ntr,sigma2)
+  source_diagnostics <- .etr_nested_source_joint_diagnostics(Gp,Gt,sigma2)
   if (identical(residual_correlation,"iid")) {
     parameter <- NA_real_;parameter_name <- NA_character_
     parameter_unit <- NA_character_;C <- diag(nt)
@@ -233,6 +234,14 @@ etr_fit_joint_bspline_functional_nested_slope <- function(
     participant_random_slope_effect_functions=gps,
     trial_random_effect_coefficients=gtcoef,
     trial_random_effect_functions=gtf,
+    random_effect_covariance_eigenvalues=source_diagnostics$participant$eigenvalues,
+    random_effect_covariance_condition_number=source_diagnostics$participant$condition_number,
+    random_effect_boundary_fit=source_diagnostics$participant$boundary,
+    random_effect_singular=source_diagnostics$participant$singular,
+    trial_random_effect_covariance_eigenvalues=source_diagnostics$trial$eigenvalues,
+    trial_random_effect_covariance_condition_number=source_diagnostics$trial$condition_number,
+    trial_random_effect_boundary_fit=source_diagnostics$trial$boundary,
+    trial_random_effect_singular=source_diagnostics$trial$singular,
     random_effect_covariance=Gp,
     intercept_slope_covariance=Gp[seq_len(nr),nr+seq_len(nr),drop=FALSE],
     trial_random_effect_covariance=Gt,residual_variance=sigma2,

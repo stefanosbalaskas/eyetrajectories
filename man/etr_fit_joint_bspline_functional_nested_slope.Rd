@@ -32,7 +32,9 @@ participant random intercept/slope B-spline coefficient covariance, separate
 unstructured trial random coefficient covariance, and optional per-trial AR(1)
 or physical-time exponential residual correlation.
 }
-\value{
+\value{The returned object also includes source-aligned covariance eigenvalues,
+condition numbers, near-boundary and singularity flags for both random levels.
+
 An \code{etr_joint_bspline_mixed_nested_slope} object inheriting
 \code{etr_joint_bspline_mixed} with coefficient functions and pointwise
 standard errors, participant and trial coefficient covariances, BLUP functions,

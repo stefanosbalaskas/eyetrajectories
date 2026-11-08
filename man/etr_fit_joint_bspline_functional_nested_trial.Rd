@@ -31,7 +31,9 @@ covariances, optionally with serial correlation confined to each trial.
 Requires \pkg{nlme}. Each participant-trial pair must identify exactly one curve.
 This is a bounded scientific analogue, not full Python 1.2 source-contract parity.
 }
-\value{An \code{etr_joint_bspline_mixed_nested_trial} S3 object inheriting
+\value{The returned object also includes source-aligned covariance eigenvalues,
+condition numbers, near-boundary and singularity flags for both random levels.
+An \code{etr_joint_bspline_mixed_nested_trial} S3 object inheriting
 \code{etr_joint_bspline_mixed}. Includes fitted and residual trajectories,
 fixed coefficient functions and standard errors, random-function BLUPs,
 participant and trial coefficient covariances, residual covariance parameters,

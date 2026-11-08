@@ -13,13 +13,14 @@
     "trial_column must identify a distinct metadata field")
   pid <- as.character(trajectories$metadata[[participant_column]])
   tid <- as.character(trajectories$metadata[[trial_column]])
+  .etr_assert(!anyNA(tid), "trial_column contains missing values")
   .etr_assert(length(tid) == length(trajectories$curve_ids) &&
       !anyNA(pid) && !anyNA(tid) && all(nzchar(pid)) && all(nzchar(tid)),
     "participant and trial identifiers must be complete and nonempty")
   # Python 0.48/0.49 requires one source curve per (participant, trial).
   composite <- paste(nchar(pid), pid, nchar(tid), tid, sep = ":")
   .etr_assert(!anyDuplicated(composite),
-    "trial identifiers must be unique within each participant (one curve per trial)")
+    "trial identifiers must be unique within each participant; duplicated participant/trial pairs violate one-curve-per-trial contract")
   groups <- unique(pid)
   .etr_assert(all(tabulate(match(pid,groups)) >= 2L),
     "each participant must contain at least two independent trials")
@@ -161,6 +162,7 @@ etr_fit_joint_bspline_functional_nested_trial <- function(
     "nested model residual variance is not positive finite")
   Gp <- .etr_nested_trial_covariance(fitted,".etr_pid",nr,sigma2)
   Gt <- .etr_nested_trial_covariance(fitted,".etr_trial",ntr,sigma2)
+  source_diagnostics <- .etr_nested_source_joint_diagnostics(Gp,Gt,sigma2)
   if (identical(residual_correlation,"iid")) {
     parameter <- NA_real_;parameter_name <- NA_character_
     parameter_unit <- NA_character_;C <- diag(nt)
@@ -240,6 +242,14 @@ etr_fit_joint_bspline_functional_nested_trial <- function(
     trial_random_effect_coefficients=gtcoef,
     participant_random_effect_functions=gpfun,
     trial_random_effect_functions=gtf,
+    random_effect_covariance_eigenvalues=source_diagnostics$participant$eigenvalues,
+    random_effect_covariance_condition_number=source_diagnostics$participant$condition_number,
+    random_effect_boundary_fit=source_diagnostics$participant$boundary,
+    random_effect_singular=source_diagnostics$participant$singular,
+    trial_random_effect_covariance_eigenvalues=source_diagnostics$trial$eigenvalues,
+    trial_random_effect_covariance_condition_number=source_diagnostics$trial$condition_number,
+    trial_random_effect_boundary_fit=source_diagnostics$trial$boundary,
+    trial_random_effect_singular=source_diagnostics$trial$singular,
     random_effect_covariance=Gp,
     trial_random_effect_covariance=Gt,
     residual_variance=sigma2,
