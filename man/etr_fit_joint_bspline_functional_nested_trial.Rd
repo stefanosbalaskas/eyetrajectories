@@ -31,7 +31,15 @@ covariances, optionally with serial correlation confined to each trial.
 Requires \pkg{nlme}. Each participant-trial pair must identify exactly one curve.
 This is a bounded scientific analogue, not full Python 1.2 source-contract parity.
 }
-\value{The returned object also includes source-aligned covariance eigenvalues,
+\value{Also includes Python-shaped coefficient, participant/trial covariance,
+residual-correlation, conditional residual-whitening, and nested trial ID
+fields; the original native names remain available. The source optimizer
+bounds are diagnostic only and are not enforced by the native optimizer.
+The result also includes residual-correlation eigenvalues,
+condition number, source optimizer-bound diagnostics, grid regularity and
+interval, conditional whitened residual functions, and source-style trial ID
+aliases. These are diagnostic/representation additions, not revised fits.
+The returned object also includes source-aligned covariance eigenvalues,
 condition numbers, near-boundary and singularity flags for both random levels.
 An \code{etr_joint_bspline_mixed_nested_trial} S3 object inheriting
 \code{etr_joint_bspline_mixed}. Includes fitted and residual trajectories,

@@ -32,7 +32,15 @@ participant random intercept/slope B-spline coefficient covariance, separate
 unstructured trial random coefficient covariance, and optional per-trial AR(1)
 or physical-time exponential residual correlation.
 }
-\value{The returned object also includes source-aligned covariance eigenvalues,
+\value{Also includes Python-shaped coefficient, participant/trial covariance,
+residual-correlation, conditional residual-whitening, and nested trial ID
+fields; the original native names remain available. The source optimizer
+bounds are diagnostic only and are not enforced by the native optimizer.
+The result also includes residual-correlation eigenvalues,
+condition number, source optimizer-bound diagnostics, grid regularity and
+interval, conditional whitened residual functions, and source-style trial ID
+aliases. These are diagnostic/representation additions, not revised fits.
+The returned object also includes source-aligned covariance eigenvalues,
 condition numbers, near-boundary and singularity flags for both random levels.
 
 An \code{etr_joint_bspline_mixed_nested_slope} object inheriting

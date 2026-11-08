@@ -213,6 +213,9 @@ etr_fit_joint_bspline_functional_nested_slope <- function(
   resid <- base$observed_functions-predicted
   .etr_assert(all(is.finite(predicted)) && all(is.finite(se)) &&
       all(se>=0),"nested-slope predictions or standard errors are invalid")
+  residual_source <- .etr_nested_source_residual_contract(
+    base$time,residual_correlation,parameter,C,resid,sigma2,
+    trajectories$time_unit)
   structure(list(
     method=if(reml) "joint_nested_slope_bspline_REML" else
       "joint_nested_slope_bspline_ML",
@@ -221,12 +224,41 @@ etr_fit_joint_bspline_functional_nested_slope <- function(
     source_python_full_parity=FALSE,dimension=dimension,time=base$time,
     curve_ids=base$curve_ids,participant_ids=trial$participant_ids,
     curve_participant_ids=trial$participant,
-    source_trial_ids=trial$trial,composite_trial_ids=trial$composite,
+    source_trial_ids=trial$trial,curve_trial_ids=trial$trial,
+    trial_ids=paste0(trial$participant,"::",trial$trial),composite_trial_ids=trial$composite,
     predictor_names=base$predictor_names,
     random_slope_predictor=random_slope_predictor,
     random_slope_values=base$random_slope_values,
     fixed_basis=base$fixed_basis,random_basis=base$random_basis,
+    trial_column=trial_column,trial_random_effect="functional_intercept",
+    trial_random_basis_size=ntr,
+    trial_random_effect_covariance_parameter_count=as.integer(ntr*(ntr+1L)/2L),
+    trial_random_effect_complexity_warning=FALSE,
+    random_effect_dimension=ncol(gpcoef),
+    random_effect_covariance_parameter_count=
+      as.integer(ncol(gpcoef)*(ncol(gpcoef)+1L)/2L),
+    random_effect_complexity_warning=
+      length(trial$participant_ids)<=ncol(gpcoef)*(ncol(gpcoef)+1L)/2L,
+    fixed_basis_size=ncol(base$fixed_basis),
+    random_basis_size=nr,
+    coefficient_names=base$predictor_names,
+    dimension_name=dimension,source_curve_ids=base$curve_ids,
+    time_unit=trajectories$time_unit,
+    scalar_design_matrix=base$scalar_design,
+    log_likelihood=as.numeric(stats::logLik(fit)),
     trial_random_basis=trial_basis,fixed_basis_coefficients=beta,
+    coefficient_functions=functions,
+    coefficient_standard_errors=se,
+    random_effect_coefficients=gpcoef,
+    random_intercept_coefficients=gpcoef[,seq_len(nr),drop=FALSE],
+    random_slope_coefficients=gpcoef[,nr+seq_len(nr),drop=FALSE],
+    random_effect_functions=gpi,
+    random_intercept_functions=gpi,
+    random_slope_functions=gps,
+    random_intercept_covariance=Gp[seq_len(nr),seq_len(nr),drop=FALSE],
+    random_slope_covariance=Gp[nr+seq_len(nr),nr+seq_len(nr),drop=FALSE],
+    random_intercept_slope_covariance=
+      Gp[seq_len(nr),nr+seq_len(nr),drop=FALSE],
     fixed_coefficient_functions=functions,fixed_standard_errors=se,
     fixed_parameter_covariance=vc,
     participant_random_effect_coefficients=gpcoef,
@@ -250,6 +282,26 @@ etr_fit_joint_bspline_functional_nested_slope <- function(
     residual_correlation_parameter_name=parameter_name,
     residual_correlation_parameter_units=parameter_unit,
     residual_correlation_matrix=C,
+    residual_correlation_eigenvalues=
+      residual_source$residual_correlation_eigenvalues,
+    residual_correlation_condition_number=
+      residual_source$residual_correlation_condition_number,
+    residual_correlation_boundary_fit=
+      residual_source$residual_correlation_boundary_fit,
+    residual_correlation_independence_limit_fit=
+      residual_source$residual_correlation_independence_limit_fit,
+    residual_correlation_optimizer_bounds=
+      residual_source$residual_correlation_optimizer_bounds,
+    residual_correlation_grid_regular=
+      residual_source$residual_correlation_grid_regular,
+    residual_correlation_grid_interval=
+      residual_source$residual_correlation_grid_interval,
+    residual_correlation_parameter_unit=
+      residual_source$residual_correlation_parameter_unit,
+    residual_correlation_outside_python_optimizer_bounds=
+      residual_source$residual_correlation_outside_python_optimizer_bounds,
+    whitened_residual_functions=
+      residual_source$whitened_residual_functions,
     fitted_functions=predicted,residual_functions=resid,
     observed_functions=base$observed_functions,
     fixed_long_design=X,random_long_design=Zp,
