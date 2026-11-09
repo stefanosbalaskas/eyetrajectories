@@ -51,15 +51,27 @@ def _etr_sparse_make_irregular(times, values, ids):
       python_error=substr(python_error,1L,300L),
       independently_certified=FALSE,stringsAsFactors=FALSE)
   }
+  # Array shape is a source contract. reticulate may represent
+  # NumPy one-dimensional ndarrays as either dimensioned or plain R
+  # vectors. Inspect Python ndarray.shape itself, and represent a native
+  # R plain vector as a 1D array of its length. Never flatten matrices.
+  native_shape<-function(x)
+    as.integer(if(is.null(dim(x)))length(x) else dim(x))
+  source_shape<-function(x)
+    as.integer(unlist(et_to_r(reticulate::py_get_attr(x,"shape"))))
   for(field in c("mean","covariance","eigenvalues",
       "eigenfunctions","scores","quadrature_weights",
       "mean_support_counts","covariance_support_counts")){
     a<-native[[field]]
-    b<-et_to_r(reticulate::py_get_attr(py,field))
-    if(!identical(dim(a),dim(b))||length(a)!=length(b)){
+    pyfield<-reticulate::py_get_attr(py,field)
+    b<-et_to_r(pyfield)
+    rshape<-native_shape(a)
+    pshape<-source_shape(pyfield)
+    if(!identical(rshape,pshape)||length(a)!=length(b)){
       add("fixed_noise",paste0("fitted_",field),"DIVERGENT_SCHEMA",detail=paste0(
-          "R dimensions=",paste(dim(a),collapse="x"),
-          " Python dimensions=",paste(dim(b),collapse="x")))
+          "native R logical shape=",paste(rshape,collapse="x"),
+          " Python ndarray.shape=",paste(pshape,collapse="x"),
+          "; converted R shape=",paste(dim(b),collapse="x")))
     }else{
       av<-as.numeric(a);bv<-as.numeric(b)
       error<-max(abs(av-bv))
@@ -120,6 +132,13 @@ def _etr_sparse_make_irregular(times, values, ids):
   dir.create(dirname(dest),recursive=TRUE,showWarnings=FALSE)
   utils::write.csv(result,dest,row.names=FALSE,na="")
   mismatch<-sum(grepl("^DIVERGENT",result$outcome))
+  if(mismatch>0L){
+    cat("SPARSE_FPCA_DIFFERENTIAL_DETAILS:\n")
+    columns<-c("source_fixture","field","outcome",
+      "max_abs_error","note","native_error","python_error")
+    print(result[grepl("^DIVERGENT",result$outcome),
+      columns,drop=FALSE],row.names=FALSE,right=FALSE)
+  }
   cat("SPARSE_FPCA_SOURCE_CASES=",nrow(result),
     ";DIFFERENCES=",mismatch,
     ";UNIQUE_FUNCTIONS=1\n",sep="")

@@ -47,11 +47,14 @@ def _etr_spnm_diff_input(times, values, ids):
       python_error=substr(python_exception,1L,300L),
       independently_certified=FALSE,stringsAsFactors=FALSE)
   }
-  match_numeric<-function(fixture,field,a,b){
-    if(!identical(dim(a),dim(b))||length(a)!=length(b)){
+  match_numeric<-function(fixture,field,a,b,pyshape){
+    rshape<-as.integer(if(is.null(dim(a)))length(a)else dim(a))
+    source_shape<-as.integer(unlist(pyshape))
+    if(!identical(rshape,source_shape)||length(a)!=length(b)){
       record(fixture,field,"DIVERGENT_SCHEMA",
-        note=paste0("R dim ",paste(dim(a),collapse="x"),
-          " Python dim ",paste(dim(b),collapse="x")))
+        note=paste0("native logical shape ",paste(rshape,collapse="x"),
+          " Python ndarray.shape ",paste(source_shape,collapse="x"),
+          "; reticulate converted dim ",paste(dim(b),collapse="x")))
       return(invisible(NULL))
     }
     a<-as.numeric(a);b<-as.numeric(b)
@@ -73,14 +76,16 @@ def _etr_spnm_diff_input(times, values, ids):
       "covariance_cxx","covariance_cxy","covariance_cyx","covariance_cyy",
       "quadrature_weights","measurement_error_covariance",
       "mean_support_counts")){
+    pyfield<-reticulate::py_get_attr(pyfit,field)
     match_numeric("diagonal_noise",field,native[[field]],
-      get(pyfit,field))
+      et_to_r(pyfield),et_to_r(reticulate::py_get_attr(pyfield,"shape")))
   }
   support<-reticulate::py_get_attr(pyfit,"covariance_support_counts")
   for(key in c("cxx","cxy","cyy")){
+    item<-reticulate::py_get_item(support,key)
     match_numeric("diagonal_noise",paste0("support_",key),
-      native$covariance_support_counts[[key]],
-      et_to_r(reticulate::py_get_item(support,key)))
+      native$covariance_support_counts[[key]],et_to_r(item),
+      et_to_r(reticulate::py_get_attr(item,"shape")))
   }
   errors<-list(
     negative_diagonal_noise=list(measurement_error_variance=c(.08,-.1)),
@@ -116,6 +121,13 @@ def _etr_spnm_diff_input(times, values, ids):
   file<-file.path(folder,"sparse_mfpca_source_cases_UNSIGNED.csv")
   utils::write.csv(output,file,row.names=FALSE,na="")
   disagreements<-sum(grepl("^DIVERGENT",output$outcome))
+  if(disagreements>0L){
+    cat("SPARSE_MFPCA_DIFFERENTIAL_DETAILS:\n")
+    cols<-c("source_fixture","field","outcome",
+      "max_abs_error","note","native_error","python_error")
+    print(output[grepl("^DIVERGENT",output$outcome),
+      cols,drop=FALSE],row.names=FALSE,right=FALSE)
+  }
   cat("SPARSE_MFPCA_SOURCE_CASES=",nrow(output),
       ";DIFFERENCES=",disagreements,";FUNCTIONS=1\n",sep="")
   cat("SPARSE_MFPCA_SOURCE_REPORT=",file,"\n",sep="")
