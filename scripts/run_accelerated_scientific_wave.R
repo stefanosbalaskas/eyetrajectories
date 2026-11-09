@@ -58,6 +58,7 @@
     runpy("scripts/build_accelerated_scientific_wave.py")
     runpy("tests/test_source_gap_inventory.py")
     runpy("tests/test_build_accelerated_scientific_wave.py")
+    runpy("tests/test_summarize_scientific_source_evidence.py")
     testthat::test_local(".",filter=paste(c(
       "native-zeroarg-metadata-source-semantic-closure",
       "native-independent-source-review-packet",
@@ -91,6 +92,7 @@
         encoding="UTF-8",local=TRUE)
       cat("ACCELERATED_WAVE_GEE_BOOTSTRAP_SOURCE_DIFF_RECORDED=TRUE\n")
     }
+    runpy("scripts/summarize_scientific_source_evidence.py")
     cat("ACCELERATED_WAVE_BOUNDED_PYTHON_DIFF_RECORDED=TRUE\n")
   }
 
