@@ -23,6 +23,69 @@
     random_basis_size=2L,spline_degree=1L,reml=TRUE)
 }
 
+test_that("joint nested trial and serial covariance contribute to full GLS information",{
+  tt<-c(0,.4,1);nt<-length(tt)
+  scalar<-cbind(Intercept=1,x=rep(c(0,1),3L))
+  y<-outer(seq_len(6L),seq_len(nt),function(i,t)
+    .6+.15*((i+1L)%%2L)+.04*sin(i+t*.8))
+  X<-cbind(rep(1,6L*nt),rep(scalar[,2L],each=nt))
+  Z<-matrix(1,6L*nt,1L)
+  C<-outer(seq_len(nt),seq_len(nt),
+    function(i,j).4^abs(i-j))
+  G<-matrix(.08,1L,1L)
+  H<-matrix(.02,1L,1L)
+  info<-array(NA_real_,c(3L,2L,2L))
+  scores<-matrix(NA_real_,3L,2L)
+  for(g in seq_len(3L)){
+    ix<-((g-1L)*2L*nt)+seq_len(2L*nt)
+    V<-.08*matrix(1,2L*nt,2L*nt)+
+      kronecker(diag(2L),.035*C+.02*matrix(1,nt,nt))
+    info[g,,]<-crossprod(X[ix,,drop=FALSE],
+      solve(V,X[ix,,drop=FALSE]))
+    scores[g,]<-as.numeric(crossprod(X[ix,,drop=FALSE],
+      solve(V,as.numeric(t(y[(g-1L)*2L+seq_len(2L),,drop=FALSE])))))
+  }
+  reference_beta<-as.numeric(solve(
+    apply(info,c(2L,3L),sum),colSums(scores)))
+  fit<-structure(list(
+    fitted_model=structure(list(),class="lme"),
+    fixed_long_design=X,random_long_design=Z,
+    random_effect_covariance=G,
+    residual_correlation_matrix=C,
+    residual_variance=.035,
+    trial_random_effect="functional_intercept",
+    trial_random_basis=matrix(1,nt,1L),
+    trial_random_effect_covariance=H,
+    observed_functions=y,
+    fixed_basis=matrix(1,nt,1L),
+    fixed_basis_coefficients=matrix(reference_beta,2L,1L),
+    participant_ids=c("p1","p2","p3"),
+    curve_participant_ids=rep(c("p1","p2","p3"),each=2L),
+    n_participants=3L,n_curves=6L,time=tt,
+    provenance=list()),class="etr_joint_bspline_mixed")
+  extracted<-.etr_joint_bootstrap_gls_contributions(fit)
+  expect_equal(unname(extracted$information),unname(info),
+    tolerance=1e-11)
+  expect_equal(unname(extracted$scores),unname(scores),
+    tolerance=1e-11)
+  expect_lt(extracted$max_reference_gls_difference,1e-11)
+  fixed<-matrix(rep(0:2,length.out=300L),nrow=100L,ncol=3L)
+  bootstrap<-etr_bootstrap_functional_mixed_effects_coefficients(
+    fit,n_bootstrap=100L,random_state=4L,
+    sampled_participant_indices=fixed)
+  expect_identical(bootstrap$covariance_conditioning,
+    "reference_participant_and_trial_random_effect_covariances_and_residual_covariance_fixed")
+  for(b in seq_len(3L)){
+    ix<-fixed[b,]+1L
+    expected<-solve(apply(info[ix,,,drop=FALSE],c(2L,3L),sum),
+      colSums(scores[ix,,drop=FALSE]))
+    expect_equal(as.numeric(bootstrap$bootstrap_fixed_basis_coefficients[b,,1L]),
+      as.numeric(expected),tolerance=1e-10)
+  }
+  expect_identical(dim(bootstrap$bootstrap_coefficient_functions),
+    c(100L,2L,3L))
+})
+
 test_that("joint fixed-covariance mixed bootstrap solves true full-time GLS",{
   skip_if_not_installed("nlme")
   fit<-.etr_joint_fixed_boot_fixture()
