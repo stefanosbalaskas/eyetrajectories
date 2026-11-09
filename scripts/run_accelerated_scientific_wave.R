@@ -61,7 +61,12 @@
       "native-508-certification-batches",
       "native-all-function-mapping-complete",
       "native-nonfunction-source-gaps",
-      "native-source-contract-gaps"
+      "native-source-contract-gaps",
+      # Actual scientific estimators, not only mapping and metadata tests.
+      "native-wild-bootstrap-projection",
+      "native-wild-bootstrap-truncation-scan",
+      "native-multivariate-iaaft-generator",
+      "native-multivariate-surrogate-nonlinearity"
     ),collapse="|"),reporter="summary",
       stop_on_failure=TRUE,stop_on_warning=TRUE)
     cat("ACCELERATED_WAVE_TARGETED_R_PASS=TRUE\n")

@@ -115,11 +115,12 @@ etr_wild_bootstrap_fpca_projection<-function(
     "targets must match training time channel units geometry and be complete finite")
   B<-as.integer(n_bootstrap)
   if(is.null(multiplier_draws)){
-    .etr_assert(is.numeric(random_state)&&length(random_state)==1L&&
+    .etr_assert(is.null(random_state)||
+      (is.numeric(random_state)&&length(random_state)==1L&&
       is.finite(random_state)&&random_state==floor(random_state)&&
-      random_state>=0&&random_state<=.Machine$integer.max,
-      "random_state must be a native nonnegative integer")
-    mult<-.etr_seed_scope(as.integer(random_state),function(){
+      random_state>=0&&random_state<=.Machine$integer.max),
+      "random_state must be NULL or a native nonnegative integer")
+    draw_mult<-function(){
       if(multiplier=="normal"){
         matrix(stats::rnorm(B*n),nrow=B,ncol=n,byrow=TRUE)
       }else{
@@ -130,7 +131,11 @@ etr_wild_bootstrap_fpca_projection<-function(
         u<-matrix(stats::runif(B*n),B,n,byrow=TRUE)
         ifelse(u<pneg,negative,positive)
       }
-    })
+    }
+    # NULL mirrors Python's accepted unseeded domain. Native R uses its
+    # current RNG stream, not NumPy PCG64; seeded calls restore R RNG.
+    mult<-if(is.null(random_state))draw_mult() else
+      .etr_seed_scope(as.integer(random_state),draw_mult)
     mult<-matrix(mult,nrow=B,ncol=n)
   }else{
     mult<-multiplier_draws
