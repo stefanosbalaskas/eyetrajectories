@@ -1,7 +1,11 @@
-# Native restricted two-level functional mixed-moments participant bootstraps.
-# Published Python 1.2 uses spline GLS/MixedLM/REML, not this estimator.
-# Both routes preserve the independent participant and fixed covariance
-# versus full variance-component re-estimation distinction.
+# Two scientific routes coexist in this public API:
+# - Historical restricted mixed moments inputs retain the timewise moments
+#   participant bootstrap (scientifically different from Python MixedLM).
+# - Joint spline likelihood inputs now dispatch to full within-participant
+#   GLS conditional resampling or native nlme iid likelihood full refitting.
+# The joint full-refit implementation is limited to iid participant random
+# intercepts. Python 1.2 optimizer and all typed input/error domains are
+# NOT independently certified. Unsupported covariance families fail closed.
 
 .etr_native_mixed_boot_indices<-function(reference,n_bootstrap,
     random_state,sampled_participant_indices){
