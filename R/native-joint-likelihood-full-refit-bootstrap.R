@@ -11,6 +11,12 @@
 .etr_joint_likelihood_full_refit_bootstrap<-function(
     result,n_bootstrap=1000L,random_state=0L,
     sampled_participant_indices=NULL){
+  if(inherits(result,"etr_joint_bspline_mixed_correlated")||
+      inherits(result,"etr_joint_bspline_mixed_slope")||
+      inherits(result,"etr_joint_bspline_mixed_nested_trial")||
+      inherits(result,"etr_joint_bspline_mixed_nested_slope"))
+    return(.etr_joint_structured_full_refit_bootstrap(
+      result,n_bootstrap,random_state,sampled_participant_indices))
   .etr_assert(inherits(result,"etr_joint_bspline_mixed")&&
     inherits(result$fitted_model,"lme"),
     "full-refit bootstrap requires a converged joint spline likelihood model")
