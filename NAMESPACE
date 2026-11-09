@@ -923,3 +923,6 @@ export(etr_fit_sparse_mfpca_native)
 
 export(etr_sparse_mfpca_score_uncertainty_native)
 export(etr_sparse_mfpca_score_uncertainty_frame_native)
+
+export(etr_sparse_fpca_partial_trajectory_prediction_native)
+export(etr_sparse_fpca_partial_prediction_frame_native)
