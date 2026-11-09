@@ -1,5 +1,5 @@
-# Source-aligned descriptive comparison for restricted native mixed-moments
-# fits. Frozen Python 1.2.0 compare_functional_mixed_effects_residual_diagnostics
+# Source-aligned descriptive residual comparison of restricted native
+# moments fits and real native R/nlme Gaussian joint likelihood fits. Frozen Python 1.2.0 compare_functional_mixed_effects_residual_diagnostics
 # in functional_mixed_effects_diagnostics.py, commit:
 # c1cd95ad718327550f7e55393ff38582872f7a94.
 # Native moment-based fits are NOT Python MixedLM estimates.
@@ -16,8 +16,8 @@
 etr_compare_functional_mixed_effects_residual_diagnostics <- function(
     reference,comparison,max_lag,reference_label="reference",
     comparison_label="comparison",residual_scale="raw") {
-  .etr_mixed_moments_fit(reference)
-  .etr_mixed_moments_fit(comparison)
+  reference <- .etr_mixed_source_residual_view(reference)
+  comparison <- .etr_mixed_source_residual_view(comparison)
   .etr_assert(is.character(reference$dimension_name)&&
     length(reference$dimension_name)==1L &&
     identical(reference$dimension_name,comparison$dimension_name),
