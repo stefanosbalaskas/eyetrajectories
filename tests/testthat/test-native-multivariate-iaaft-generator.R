@@ -263,7 +263,7 @@ if _counter[0]!=2:
   # If a later sample differs, first distinguish Fourier basis divergence
   # from the iterative rank-remapping step, without hiding either outcome.
   source_fft<-reticulate::py_eval(
-    "np.fft.rfft(_fixed_public.source_values,axis=0)",convert=TRUE)
+    "np.fft.rfft(_etr_fixed_public.source_values,axis=0)",convert=TRUE)
   native_fft<-.etr_multivariate_fft_half(native$source_values)
   expect_equal(unname(native_fft),unname(source_fft),
     tolerance=1e-10,ignore_attr=TRUE,
