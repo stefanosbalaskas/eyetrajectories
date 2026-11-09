@@ -41,6 +41,65 @@
 #' @export
 etr_run_sparse_multilevel_workflow<-function(trajectories,config,
     observation_process=NULL){
+  if(is.list(config)&&!is.data.frame(config)&&
+      identical(config$backend,"native_covariance")){
+    cfg<-.etr_source_workflow_config(config,list(
+      backend=NULL,dimension=NULL,participant_column=NULL,
+      participant_components=NULL,trial_components=NULL,
+      evaluation_grid=NULL,mean_bandwidth=NULL,
+      total_covariance_bandwidth=NULL,
+      between_covariance_bandwidth=NULL,
+      noise_bandwidth=NULL,noise_support=NULL,
+      analysis_support_action="error",weighting="observation",
+      mean_smoother="local_linear",covariance_smoother="local_linear",
+      kernel="epanechnikov",
+      noise_variance_method="diagonal_difference",
+      measurement_error_variance=NULL,psd_action="error",
+      psd_tolerance=1e-8,positive_eigen_tolerance=1e-10,
+      score_ridge=0,score_condition_limit=1e12,
+      min_participant_score_samples=2L,
+      score_failure_action="error",mean_min_local_points=3L,
+      total_covariance_min_local_pairs=6L,
+      between_covariance_min_local_pairs=6L,
+      noise_min_local_points=3L,preprocessing=list()),
+      required=c("backend","dimension","participant_column",
+        "participant_components","trial_components","evaluation_grid",
+        "mean_bandwidth","total_covariance_bandwidth",
+        "between_covariance_bandwidth","noise_variance_method"))
+    .etr_assert(is.null(observation_process),
+      "source native multilevel observation diagnostics require separately verified data")
+    .etr_assert(is.list(cfg$preprocessing)&&
+      !length(cfg$preprocessing),
+      "source native sparse multilevel cannot interpolate raw samples")
+    fit<-do.call(etr_fit_sparse_multilevel_fpca_native,
+      c(list(trajectories=trajectories),
+        cfg[setdiff(names(cfg),c("backend","preprocessing"))]))
+    params<-cfg[setdiff(names(cfg),"preprocessing")]
+    return(structure(list(workflow_schema_version=1L,
+      workflow_contract="sparse_multilevel:v1",
+      config=cfg,fit=fit,observation_diagnostics=NULL,
+      steps=list(.etr_source_workflow_step(
+        "fit_sparse_multilevel_fpca_native",params)),
+      decisions=lapply(params,.etr_source_workflow_decision),
+      provenance=list(
+        input_layout="native_irregular",
+        interpolation_explicit=FALSE,
+        raw_sparse_trajectory_interpolation_performed=FALSE,
+        sparse_covariance_PACE_applied=TRUE,
+        hierarchical_covariance_BLUP_applied=TRUE,
+        full_observation_covariance_used=TRUE,
+        preprocessing_executed=FALSE,
+        source_full_domain_certified=FALSE,
+        independent_full_contract_certified=FALSE),
+      reports=list(fit=paste(
+        "Native sparse multilevel FPCA with joint hierarchical BLUP.",
+        "No source full-domain parity or external certification asserted.")),
+      tables=list(
+        participant_scores=fit$participant_scores,
+        trial_scores=fit$trial_scores,
+        score_diagnostics=fit$score_diagnostics)),
+      class="etr_native_sparse_multilevel_workflow"))
+  }
   cfg<-.etr_source_workflow_config(config,list(
     backend=NULL,dimension=NULL,participant_column=NULL,
     evaluation_grid=NULL,n_between=2L,n_within=2L,
