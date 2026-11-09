@@ -158,3 +158,29 @@ def _etr_spn_build_irregular(times, values, ids):
       as.character(pyframe[[field]]))
   }
 })
+
+test_that("source-model sparse workflow uses actual custom native PACE",{
+  x<-.etr_spn_source_fixture()
+  config<-list(
+    backend="native_covariance",dimension="signal",
+    n_components=1L,evaluation_grid=seq(.08,.92,length.out=9L),
+    mean_bandwidth=.50,covariance_bandwidth=.85,
+    noise_variance_method="fixed",
+    measurement_error_variance=.07,
+    analysis_support_action="restrict",psd_action="project",
+    score_ridge=.002)
+  w<-etr_run_sparse_fpca_workflow(x,config)
+  expect_s3_class(w,"etr_sparse_fpca_workflow")
+  expect_s3_class(w$fit,"etr_sparse_fpca_native")
+  expect_identical(w$workflow_contract,
+    "sparse_fpca:native_local_linear_fixed_noise")
+  expect_false(w$provenance$fdapace_backend_used)
+  expect_false(w$provenance$full_source_contract_certified)
+  expect_identical(nrow(w$tables$scores),24L)
+  expect_equal(w$fit$scores,.etr_spn_fit_from_fixture(x)$scores,
+    tolerance=1e-10,ignore_attr=TRUE)
+  config$backend<-"unsupported"
+  expect_error(etr_run_sparse_fpca_workflow(x,config),
+    "unsupported fields|fdapace backend")
+})
+

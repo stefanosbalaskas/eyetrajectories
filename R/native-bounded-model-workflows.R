@@ -67,6 +67,64 @@ etr_run_functional_mixed_effects_workflow<-function(
     class="etr_functional_mixed_effects_workflow")
 }
 
+# Native source-model workflow lane. Legacy fdapace remains separate.
+.etr_run_sparse_fpca_source_native_workflow<-function(
+    trajectories,config,observation_process=NULL){
+  cfg<-.etr_source_workflow_config(config,list(
+    backend="native_covariance",dimension=NULL,
+    n_components=NULL,evaluation_grid=NULL,
+    mean_bandwidth=NULL,covariance_bandwidth=NULL,
+    measurement_error_variance=NULL,noise_variance_method="fixed",
+    analysis_support_action="error",psd_action="error",
+    psd_tolerance=1e-8,positive_eigen_tolerance=1e-10,
+    score_ridge=0,score_condition_limit=1e12,
+    min_score_samples=2L,score_failure_action="error",
+    mean_min_local_points=3L,covariance_min_local_pairs=6L,
+    preprocessing=list()),required=c(
+      "backend","dimension","n_components","evaluation_grid",
+      "mean_bandwidth","covariance_bandwidth",
+      "measurement_error_variance"))
+  .etr_assert(identical(cfg$backend,"native_covariance"),
+    "sparse source workflow requires explicit native_covariance backend")
+  .etr_assert(is.null(observation_process),
+    "observation_process is not yet supported in native sparse PACE")
+  .etr_assert(inherits(trajectories,"etr_irregular_trajectory_set"),
+    "source-model sparse FPCA requires native irregular trajectories")
+  params<-cfg[setdiff(names(cfg),"preprocessing")]
+  fit<-do.call(etr_fit_sparse_fpca_native,c(
+    list(trajectories=trajectories),params[
+      setdiff(names(params),"backend")]))
+  structure(list(
+    workflow_schema_version=1L,
+    workflow_contract="sparse_fpca:native_local_linear_fixed_noise",
+    config=cfg,fit=fit,
+    steps=list(.etr_source_workflow_step(
+      "fit_sparse_fpca_native_full_covariance_PACE",params)),
+    decisions=lapply(params,.etr_source_workflow_decision),
+    provenance=list(
+      input_layout="native_irregular",
+      source_python_family="fit_sparse_fpca",
+      source_numerical_law="local_linear_epanechnikov_PACE",
+      raw_interpolation_performed=FALSE,
+      preprocessing_executed=FALSE,
+      noise_variance_method="fixed",
+      automatic_bandwidth_selection_performed=FALSE,
+      fdapace_backend_used=FALSE,
+      source_python_complete_domain_verified=FALSE,
+      full_source_contract_certified=FALSE),
+    reports=list(fit=paste0(
+      "Native source-model local-linear PACE fitted to ",
+      length(fit$curve_ids)," curves with declared noise variance ",
+      format(fit$noise_variance,digits=5L),"; unverified full Python domain.")),
+    tables=list(scores=data.frame(curve_id=fit$curve_ids,
+      fit$scores,check.names=FALSE),
+      score_diagnostics=fit$score_diagnostics,
+      covariance_eigenvalues=data.frame(
+        component=seq_along(fit$eigenvalues),
+        eigenvalue=fit$eigenvalues))),
+    class="etr_sparse_fpca_workflow")
+}
+
 #' Explicit fdapace-backed native sparse FPCA workflow (not source PACE)
 #'
 #' @description This is a deliberately separate native R approximation.
@@ -81,6 +139,10 @@ etr_run_functional_mixed_effects_workflow<-function(
 #' @export
 etr_run_sparse_fpca_workflow<-function(
     trajectories,config,observation_process=NULL){
+  if(is.list(config)&&!is.data.frame(config)&&
+      identical(config$backend,"native_covariance"))
+    return(.etr_run_sparse_fpca_source_native_workflow(
+      trajectories,config,observation_process))
   cfg<-.etr_source_workflow_config(config,
     list(dimension=NULL,backend=NULL,max_components=3L,fve=.95,
       options=list(),preprocessing=list()),
