@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
-"""Author-side source-gap counts from the one historical frozen-gap registry.
+"""Author-side source-gap counts from frozen Python 1.2 witness ledgers.
 
-This is *not* a parity verifier or an independent certification authority.
-Only the two zero-argument metadata semantic closures are permitted in this
-revision. Any other closed historical witness requires a reviewed explicit
-policy change, not a self-elected CSV flag.
+The two historical zero-argument closures are preserved. Further source
+closures can be recognized in coherent batches ONLY with a separately
+authored, source-pinned, cryptographically verified full-domain review
+record. Unsigned finite differential cases never close a function.
+A developer-reviewed gap closure is NOT independent certification.
 """
 from __future__ import annotations
 import csv
 from dataclasses import dataclass
-from pathlib import Path
+import hashlib
+import json
+from pathlib import Path, PurePosixPath
 
 CLOSED_SEMANTIC_SCOPE = frozenset({
     "functional_recovery_metric_catalog_frame",
@@ -26,6 +29,16 @@ NONFUNCTION_FIELDS = (
     "source_witness", "required_resolution", "unresolved",
 )
 FROZEN_PYTHON = "c1cd95ad718327550f7e55393ff38582872f7a94"
+REVIEWED_CLOSURES = "reviewed_source_contract_closures_v1.csv"
+REVIEWED_FIELDS = (
+    "python_name", "frozen_python_commit", "review_record_path",
+    "review_record_sha256", "author_full_contract_decision",
+    "independently_certified",
+)
+REQUIRED_REVIEW_KINDS = frozenset({
+    "source_signature", "accepted_input_domain", "numerical_outputs",
+    "exception_semantics", "returned_schema", "scientific_estimand",
+})
 
 
 class SourceGapInventoryError(ValueError):
@@ -64,6 +77,96 @@ def _read(path: Path, required: tuple[str, ...]) -> list[dict[str, str]]:
     return rows
 
 
+
+def _source_file(root: Path, name: str, *, expected_prefix: str) -> Path:
+    """Reject path traversal, symlinks, and missing or out-of-repo proof."""
+    parsed = PurePosixPath(name)
+    if (not name or parsed.is_absolute() or
+            ".." in parsed.parts or "." in parsed.parts or
+            not name.startswith(expected_prefix) or "\\" in name):
+        raise SourceGapInventoryError(
+            f"Unsafe or out-of-scope source-review evidence path: {name!r}")
+    target = root.joinpath(*parsed.parts)
+    if (not target.is_file() or target.is_symlink() or
+            not target.resolve().is_relative_to(root.resolve())):
+        raise SourceGapInventoryError(
+            f"Missing/symlinked source-review evidence: {name!r}")
+    return target
+
+
+def _validate_reviewed_closures(
+        root: Path, historical: list[dict[str, str]],
+        resolved: set[str]) -> set[str]:
+    """Require separate full-domain author review; never infer approval."""
+    catalog = _read(root / "inst" / "extdata" / REVIEWED_CLOSURES,
+                    REVIEWED_FIELDS)
+    seen: set[str] = set()
+    historical_names = {row["python_name"] for row in historical}
+    for row in catalog:
+        name = row["python_name"]
+        if (not name or name in seen or name not in historical_names or
+                name in CLOSED_SEMANTIC_SCOPE):
+            raise SourceGapInventoryError(
+                f"Duplicate/unknown/legacy reviewed closure: {name!r}")
+        seen.add(name)
+        if name not in resolved:
+            raise SourceGapInventoryError(
+                f"Review receipt exists but source gap remains open: {name}")
+        if row["frozen_python_commit"] != FROZEN_PYTHON:
+            raise SourceGapInventoryError(
+                f"Stale Python source pin in reviewed closure: {name}")
+        if (row["author_full_contract_decision"] !=
+                "AUTHOR_FULL_CONTRACT_REVIEWED" or
+                row["independently_certified"] != "FALSE"):
+            raise SourceGapInventoryError(
+                f"Unapproved or forged independent closure: {name}")
+        review = _source_file(root, row["review_record_path"],
+                              expected_prefix="docs/source_contract_reviews/")
+        digest = hashlib.sha256(review.read_bytes()).hexdigest()
+        if row["review_record_sha256"] != digest:
+            raise SourceGapInventoryError(
+                f"Wrong digest for full source-contract review: {name}")
+        try:
+            data = json.loads(review.read_text(encoding="utf-8"))
+        except (ValueError, UnicodeError) as error:
+            raise SourceGapInventoryError(
+                f"Malformed full source-contract review: {name}") from error
+        if (not isinstance(data, dict) or
+                data.get("audit_version") != "source-contract-v1" or
+                data.get("python_name") != name or
+                data.get("frozen_python_commit") != FROZEN_PYTHON or
+                data.get("scope") != "FULL_SOURCE_CONTRACT" or
+                data.get("author_decision") != "FULL_CONTRACT_REVIEWED" or
+                data.get("independently_certified") is not False or
+                not isinstance(data.get("reviewer_statement"), str) or
+                len(data["reviewer_statement"].strip()) < 40):
+            raise SourceGapInventoryError(
+                f"Unsubstantiated full source-contract decision: {name}")
+        evidence = data.get("case_evidence")
+        if not isinstance(evidence, list) or len(evidence) < 6:
+            raise SourceGapInventoryError(
+                f"Incomplete full-domain evidence groups: {name}")
+        kinds = set()
+        for case in evidence:
+            if not isinstance(case, dict):
+                raise SourceGapInventoryError(
+                    f"Malformed review case evidence: {name}")
+            kind = case.get("kind", "")
+            if kind not in REQUIRED_REVIEW_KINDS:
+                raise SourceGapInventoryError(
+                    f"Invalid full-contract evidence type: {name}/{kind}")
+            file = _source_file(
+                root, case.get("path", ""), expected_prefix="tests/")
+            if hashlib.sha256(file.read_bytes()).hexdigest() != case.get("sha256"):
+                raise SourceGapInventoryError(
+                    f"Wrong source test evidence digest: {name}/{kind}")
+            kinds.add(kind)
+        if kinds != REQUIRED_REVIEW_KINDS:
+            raise SourceGapInventoryError(
+                f"Missing full-domain evidence dimensions: {name}")
+    return seen
+
+
 def read_inventory(root: Path | str | None = None) -> SourceGapCounts:
     root = (Path(root) if root is not None else Path(__file__).resolve().parent.parent)
     directory = root / "inst" / "extdata"
@@ -86,10 +189,14 @@ def read_inventory(root: Path | str | None = None) -> SourceGapCounts:
         raise SourceGapInventoryError("Missing historical source witness")
     resolved = tuple(sorted(row["python_name"] for row in funcs
                             if row["unresolved_source_gap"] == "FALSE"))
-    if not set(resolved) <= CLOSED_SEMANTIC_SCOPE:
-        raise SourceGapInventoryError("Unreviewed/forged gap closure")
+    nonlegacy = set(resolved) - CLOSED_SEMANTIC_SCOPE
+    reviewed = _validate_reviewed_closures(root, funcs, set(resolved))
+    if reviewed != nonlegacy:
+        raise SourceGapInventoryError(
+            "Unreviewed/forged gap closure: missing exact full-domain review receipt")
     for row in funcs:
-        if row["python_name"] not in resolved:
+        if (row["python_name"] not in CLOSED_SEMANTIC_SCOPE or
+                row["python_name"] not in resolved):
             continue
         if ("Resolved as complete deterministic cross-language TABLE SEMANTICS"
                 not in row["review_resolution"] or
