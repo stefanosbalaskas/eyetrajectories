@@ -53,7 +53,10 @@ test_that("paired sparse joint covariance is estimated without marginal fdapace"
     tolerance=1e-12)
   expect_true(any(abs(fit$covariance_cxy)>1e-8))
   expect_true(all(fit$covariance_support_counts$cxy>=6L))
-  expect_identical(fit$covariance_pair_counts$xy,24L*8L*7L)
+  retained<-vapply(tr$time,function(t)
+    sum(t>=.08&t<=.92),integer(1L))
+  expect_identical(fit$covariance_pair_counts$xy,
+    sum(retained*(retained-1L)))
   expect_equal(sum(fit$quadrature_weights),.84,tolerance=1e-12)
   expect_false(fit$provenance$sparse_mfpca$
     rank_k_covariance_used_for_scoring)
