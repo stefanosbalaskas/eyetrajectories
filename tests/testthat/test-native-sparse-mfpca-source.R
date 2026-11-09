@@ -120,3 +120,49 @@ def _etr_spnm_input(times,values,ids):
       info=paste("joint support counts",field))
   }
 })
+
+
+test_that("fixed 2x2 correlated measurement noise preserves source joint PACE numerical law",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Python source fixed_matrix covariance differential opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  tr<-.etr_spnm_fixture()
+  p<-.etr_spnm_args()
+  noise<-matrix(c(.08,.02,.02,.10),2L)
+  p$measurement_error<-"fixed_matrix"
+  p$measurement_error_variance<-NULL
+  p$measurement_error_covariance<-noise
+  rfit<-do.call(etr_fit_sparse_mfpca_native,
+    c(list(trajectories=tr),p))
+  reticulate::py_run_string("
+import numpy as np
+import eyetrajectoriespy as _etr_spnm_noise_et
+def _etr_spnm_noise_input(times,values,ids):
+    return _etr_spnm_noise_et.IrregularTrajectorySet(
+      time=tuple(np.asarray(t,dtype=float) for t in times),
+      values=tuple(np.asarray(x,dtype=float) for x in values),
+      curve_ids=tuple(str(x) for x in ids),dimension_names=('x','y'),
+      coordinate_system='degrees',time_unit='s')
+")
+  pytr<-reticulate::py_call(
+    reticulate::py_eval("_etr_spnm_noise_input",convert=FALSE),
+    times=reticulate::r_to_py(tr$time),
+    values=reticulate::r_to_py(tr$values),
+    ids=reticulate::r_to_py(tr$curve_ids))
+  q<-p
+  q$dimensions<-reticulate::tuple("x","y")
+  q$evaluation_grid<-reticulate::r_to_py(q$evaluation_grid)
+  q$measurement_error_covariance<-reticulate::r_to_py(noise)
+  pyfit<-do.call(reticulate::py_call,
+    c(list(etpy_get_export("fit_sparse_mfpca"),
+      trajectories=pytr),q))
+  get<-function(field)et_to_r(reticulate::py_get_attr(pyfit,field))
+  for(field in c("measurement_error_covariance","scores",
+      "eigenvalues","covariance_cxy","covariance_cxx")){
+    expect_equal(unname(rfit[[field]]),unname(get(field)),
+      tolerance=3e-6,ignore_attr=TRUE,
+      info=paste("fixed correlated noise",field))
+  }
+  expect_identical(rfit$provenance$sparse_mfpca$
+    measurement_error_mode,"fixed_matrix")
+})

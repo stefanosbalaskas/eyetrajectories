@@ -7,7 +7,7 @@
   for(i in seq_len(n)){
     j<-seq(0,1,length.out=8L)
     ti<-.03+.94*j+.004*((i-1L)%%4L)*sin(pi*j)
-    x<-.5+.18*ti+
+    x<-(-.5)+.18*ti+
       .35*sin(.31*i)*sin(pi*ti)+
       .22*cos(.43*i)*cos(2*pi*ti)+
       .035*cos(3*pi*ti+.7*i)

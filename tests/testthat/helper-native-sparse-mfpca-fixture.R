@@ -8,9 +8,9 @@
     t<-.03+.94*seq(0,1,length.out=8L)+
       .004*((i-1L)%%4L)*sin(pi*seq(0,1,length.out=8L))
     a<-sin(i*.31);b<-cos(i*.43);c<-sin(i*.83)
-    x<-.5+.18*t+.38*a*sin(pi*t)+
+    x<-(-.5)+.18*t+.38*a*sin(pi*t)+
       .24*b*cos(2*pi*t)+.08*c*sin(3*pi*t)
-    y<-.12+.26*t+.28*b*sin(2*pi*t)+
+    y<-(-.12)+.26*t+.28*b*sin(2*pi*t)+
       .19*a*cos(pi*t)+.11*c*cos(3*pi*t)+
       .06*sin(.27*i+4*pi*t)
     times[[i]]<-t
