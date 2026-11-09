@@ -75,6 +75,7 @@ etr_run_functional_mixed_effects_workflow<-function(
     n_components=NULL,evaluation_grid=NULL,
     mean_bandwidth=NULL,covariance_bandwidth=NULL,
     measurement_error_variance=NULL,noise_variance_method="fixed",
+    noise_bandwidth=NULL,noise_support=NULL,noise_min_local_points=3L,
     analysis_support_action="error",psd_action="error",
     psd_tolerance=1e-8,positive_eigen_tolerance=1e-10,
     score_ridge=0,score_condition_limit=1e12,
@@ -83,7 +84,7 @@ etr_run_functional_mixed_effects_workflow<-function(
     preprocessing=list()),required=c(
       "backend","dimension","n_components","evaluation_grid",
       "mean_bandwidth","covariance_bandwidth",
-      "measurement_error_variance"))
+      "noise_variance_method"))
   .etr_assert(identical(cfg$backend,"native_covariance"),
     "sparse source workflow requires explicit native_covariance backend")
   .etr_assert(is.null(observation_process),

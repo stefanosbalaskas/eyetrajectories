@@ -8,8 +8,10 @@ Implements a Python-free source-structured native sparse FPCA/PACE model on
 irregular observations, using local-linear Epanechnikov population smoothing,
 an off-diagonal covariance surface, quadrature-weighted covariance PSD handling,
 positive-eigenfunction decomposition and full-covariance conditional PACE scoring.
-The initial version requires explicitly fixed measurement-error variance and
-does not include diagonal-difference noise estimation. The uncertainty method
+The fitted noise variance may be explicitly fixed or estimated through the
+rotated local-quadratic diagonal-difference PACE estimator on declared
+noise support. Both branches require sufficient local support and preserve
+fail-closed invalid-noise behavior. The uncertainty method
 conditions on fitted population covariance and excludes population estimation
 uncertainty. Neither implementation is independently certified against every
 Python 1.2 source input and error domain.
@@ -18,7 +20,9 @@ Python 1.2 source input and error domain.
 etr_fit_sparse_fpca_native(
   trajectories, dimension, n_components, evaluation_grid,
   mean_bandwidth, covariance_bandwidth,
+  noise_bandwidth = NULL, noise_support = NULL,
   noise_variance_method = "fixed", measurement_error_variance = NULL,
+  noise_min_local_points = 3L,
   analysis_support_action = "error", psd_action = "error",
   psd_tolerance = 1e-8, positive_eigen_tolerance = 1e-10,
   score_ridge = 0, score_condition_limit = 1e12,
@@ -37,8 +41,11 @@ etr_sparse_fpca_score_uncertainty_frame_native(result)
 \item{evaluation_grid}{Finite strictly increasing population-evaluation grid.}
 \item{mean_bandwidth}{Positive Epanechnikov local-linear mean bandwidth.}
 \item{covariance_bandwidth}{Positive Epanechnikov local-planar covariance bandwidth.}
-\item{noise_variance_method}{Exactly \code{"fixed"}; automatic noise variance estimation is unsupported.}
-\item{measurement_error_variance}{Finite nonnegative fixed measurement noise.}
+\item{noise_variance_method}{\code{"fixed"} or \code{"diagonal_difference"}.}
+\item{measurement_error_variance}{Finite nonnegative fixed noise, or NULL for diagonal-difference estimation.}
+\item{noise_bandwidth}{Positive smoothing bandwidth for squared residuals in diagonal-difference mode.}
+\item{noise_support}{Two finite endpoints for noise estimation within the population grid.}
+\item{noise_min_local_points}{Minimum local squared-residual support.}
 \item{analysis_support_action}{\code{"error"} or \code{"restrict"} outside observations.}
 \item{psd_action}{\code{"error"} or \code{"project"} for the covariance operator.}
 \item{psd_tolerance}{Nonnegative weighted PSD eigenvalue tolerance.}

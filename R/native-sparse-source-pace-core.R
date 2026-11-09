@@ -92,6 +92,60 @@
   list(values=(C+t(C))/2,support_counts=support)
 }
 
+.etr_spn_rotated_diagonal<-function(pairs,grid,h,min_pairs=6L){
+  .etr_assert(is.numeric(h)&&length(h)==1L&&is.finite(h)&&h>0,
+    "covariance_bandwidth must be finite positive")
+  along<-(pairs$s+pairs$t)/sqrt(2)
+  perp<-(pairs$t-pairs$s)/sqrt(2)
+  fitted<-numeric(length(grid));support<-integer(length(grid))
+  for(i in seq_along(grid)){
+    delta<-along-sqrt(2)*grid[i]
+    w<-.etr_spn_kernel(delta/h)*.etr_spn_kernel(perp/h)
+    support[i]<-sum(w>0)
+    if(support[i]<min_pairs)
+      .etr_spn_fail("insufficient_noise_diagonal_local_support",
+        "rotated covariance-diagonal has too few offdiagonal pairs")
+    fitted[i]<-.etr_spn_local_fit(
+      cbind(1,delta,perp^2),pairs$products,w,3L,
+      "insufficient_noise_diagonal_local_support")
+  }
+  list(values=fitted,support_counts=support,
+    rotation="45_degrees_linear_along_diagonal_quadratic_perpendicular")
+}
+
+.etr_spn_noise_diagonal_difference<-function(times,residuals,grid,
+    latent_diagonal,noise_bandwidth,noise_support,min_local_points=3L){
+  .etr_assert(is.numeric(noise_bandwidth)&&
+    length(noise_bandwidth)==1L&&is.finite(noise_bandwidth)&&
+    noise_bandwidth>0,
+    "noise_bandwidth must be finite positive")
+  .etr_assert(is.numeric(noise_support)&&
+    length(noise_support)==2L&&all(is.finite(noise_support))&&
+    noise_support[1L]<noise_support[2L]&&
+    noise_support[1L]>=grid[1L]&&
+    noise_support[2L]<=tail(grid,1L),
+    "noise_support must be finite interval inside evaluation grid")
+  t_pool<-unlist(times,use.names=FALSE)
+  squared<-unlist(lapply(residuals,function(z)z^2),use.names=FALSE)
+  raw<-.etr_spn_mean(t_pool,squared,grid,noise_bandwidth,
+    min_local_points)$values
+  delta<-raw-latent_diagonal
+  mask<-grid>=noise_support[1L]&grid<=noise_support[2L]
+  if(sum(mask)<2L)
+    .etr_spn_fail("insufficient_noise_support",
+      "fewer than two evaluation points on noise support")
+  w<-.etr_spn_weights(grid[mask])
+  variance<-sum(w*delta[mask])/sum(w)
+  if(!is.finite(variance)||variance<=0)
+    .etr_spn_fail("noise_variance_invalid",
+      "diagonal-difference noise estimate must be positive")
+  list(variance=variance,
+    raw_diagonal=raw,
+    latent_diagonal=latent_diagonal,
+    diagonal_difference=delta,support_mask=mask,
+    status_code="ok")
+}
+
 .etr_spn_weights<-function(grid){
   n<-length(grid);w<-numeric(n)
   w[1L]<-(grid[2L]-grid[1L])/2

@@ -10,8 +10,9 @@
 #' covariance estimation, weighted PSD operator repair, eigenfunction
 #' normalization, and full-fitted-covariance PACE scoring on the original
 #' sparse observation times. No raw-data interpolation or dense imputation.
-#' Only fixed measurement-error variance is implemented in this initial
-#' source-model scope; diagonal-difference noise estimation is rejected.
+#' Supports both explicit fixed measurement-error variance and the source
+#' diagonal-difference estimator with a 45-degree rotated local-quadratic
+#' latent covariance diagonal and declared noise support.
 #' @param trajectories Native irregular trajectory set.
 #' @param dimension One observed finite response dimension.
 #' @param n_components Number of positive fitted covariance components.
@@ -32,7 +33,9 @@
 etr_fit_sparse_fpca_native<-function(
     trajectories,dimension,n_components,evaluation_grid,
     mean_bandwidth,covariance_bandwidth,
+    noise_bandwidth=NULL,noise_support=NULL,
     noise_variance_method="fixed",measurement_error_variance=NULL,
+    noise_min_local_points=3L,
     analysis_support_action="error",psd_action="error",
     psd_tolerance=1e-8,positive_eigen_tolerance=1e-10,
     score_ridge=0,score_condition_limit=1e12,
@@ -49,13 +52,28 @@ etr_fit_sparse_fpca_native<-function(
     n_components==floor(n_components)&&n_components>=1L,
     "n_components must be positive integer")
   k<-as.integer(n_components)
-  .etr_assert(identical(noise_variance_method,"fixed"),
-    "native source subset requires noise_variance_method='fixed'; diagonal_difference is not yet implemented")
-  .etr_assert(is.numeric(measurement_error_variance)&&
-    length(measurement_error_variance)==1L&&
-    is.finite(measurement_error_variance)&&
-    measurement_error_variance>=0,
-    "measurement_error_variance must be finite and nonnegative")
+  .etr_assert(noise_variance_method%in%
+    c("fixed","diagonal_difference"),
+    "noise_variance_method must be fixed or diagonal_difference")
+  if(identical(noise_variance_method,"fixed")){
+    .etr_assert(is.numeric(measurement_error_variance)&&
+      length(measurement_error_variance)==1L&&
+      is.finite(measurement_error_variance)&&
+      measurement_error_variance>=0,
+      "measurement_error_variance must be finite and nonnegative")
+    .etr_assert(is.null(noise_support),
+      "noise_support must be NULL for fixed measurement error")
+  }else{
+    .etr_assert(is.null(measurement_error_variance),
+      "measurement_error_variance must be NULL for diagonal_difference")
+    .etr_assert(is.numeric(noise_min_local_points)&&
+      length(noise_min_local_points)==1L&&
+      noise_min_local_points>=2L&&
+      noise_min_local_points==floor(noise_min_local_points),
+      "noise_min_local_points must be integer >=2")
+    .etr_assert(!is.null(noise_support),
+      "noise_support is required for diagonal_difference")
+  }
   .etr_assert(analysis_support_action%in%c("error","restrict"),
     "analysis_support_action must be error or restrict")
   .etr_assert(score_failure_action%in%c("error","retain_nan"),
@@ -118,13 +136,22 @@ etr_fit_sparse_fpca_native<-function(
   pairs<-.etr_spn_pairs(times,residuals)
   covariance<-.etr_spn_surface(
     pairs,grid,covariance_bandwidth,covariance_min_local_pairs)
+  noise<-if(identical(noise_variance_method,"diagonal_difference")){
+    rotated<-.etr_spn_rotated_diagonal(
+      pairs,grid,covariance_bandwidth,covariance_min_local_pairs)
+    .etr_spn_noise_diagonal_difference(
+      times,residuals,grid,rotated$values,noise_bandwidth,
+      noise_support,noise_min_local_points)
+  }else NULL
+  noise_variance<-if(is.null(noise))
+    measurement_error_variance else noise$variance
   psd<-.etr_spn_psd(covariance$values,grid,psd_action,psd_tolerance)
   eig<-.etr_spn_eigensystem(psd$covariance,grid,k,
     positive_eigen_tolerance)
   score<-.etr_spn_score_system(
     trajectories$curve_ids,times,values,grid,mean$values,
     psd$covariance,eig$eigenvalues,eig$eigenfunctions,
-    measurement_error_variance,score_ridge,score_condition_limit,
+    noise_variance,score_ridge,score_condition_limit,
     as.integer(min_score_samples),score_failure_action)
   support<-list(
     analysis_support=range(grid),
@@ -141,10 +168,14 @@ etr_fit_sparse_fpca_native<-function(
     mean_smoother="local_linear",covariance_smoother="local_linear",
     kernel="epanechnikov",mean_bandwidth=mean_bandwidth,
     covariance_bandwidth=covariance_bandwidth,
-    noise_bandwidth=NULL,noise_variance_method="fixed",
-    noise_variance=measurement_error_variance,
-    noise_latent_diagonal_method=NULL,
-    noise_latent_diagonal_bandwidth=NULL,noise_support=NULL,
+    noise_bandwidth=noise_bandwidth,
+    noise_variance_method=noise_variance_method,
+    noise_variance=noise_variance,
+    noise_latent_diagonal_method=if(is.null(noise))NULL else
+      "rotated_local_quadratic_offdiagonal",
+    noise_latent_diagonal_bandwidth=if(is.null(noise))NULL else
+      covariance_bandwidth,
+    noise_support=if(is.null(noise))NULL else as.numeric(noise_support),
     evaluation_grid=as.numeric(grid)),support,list(
     psd_action=psd_action,psd_tolerance=psd_tolerance,
     positive_eigen_tolerance=positive_eigen_tolerance,
@@ -156,13 +187,15 @@ etr_fit_sparse_fpca_native<-function(
     score_failure_action=score_failure_action,
     mean_min_local_points=as.integer(mean_min_local_points),
     covariance_min_local_pairs=as.integer(covariance_min_local_pairs),
+    noise_min_local_points=as.integer(noise_min_local_points),
     sample_counts=as.integer(lengths(times)),
     raw_sparse_trajectory_interpolation_performed=FALSE,
     population_function_evaluation_at_native_times=TRUE,
     cross_channel_covariance_modeled=FALSE,
     automatic_bandwidth_selection_performed=FALSE,
     covariance_psd=psd$audit,
-    measurement_error_variance_supplied=measurement_error_variance))
+    measurement_error_variance_supplied=if(is.null(noise))
+      measurement_error_variance else NULL))
   provenance<-trajectories$provenance
   provenance$sparse_fpca<-info
   structure(list(
@@ -178,13 +211,15 @@ etr_fit_sparse_fpca_native<-function(
     tolerance=positive_eigen_tolerance,normalize=FALSE,
     evaluation_grid=grid,mean=mean$values,
     covariance=psd$covariance,eigenfunctions=eig$eigenfunctions,
-    noise_variance=measurement_error_variance,
+    noise_variance=noise_variance,
     quadrature_weights=eig$quadrature_weights,
     score_diagnostics=score$diagnostics,
     covariance_diagnostics=psd$audit,
     mean_support_counts=mean$support_counts,
     covariance_support_counts=covariance$support_counts,
-    noise_raw_diagonal=NULL,noise_diagonal_difference=NULL,
+    noise_raw_diagonal=if(is.null(noise))NULL else noise$raw_diagonal,
+    noise_diagonal_difference=if(is.null(noise))NULL else
+      noise$diagonal_difference,
     provenance=provenance,
     source_python_full_contract_equivalent=FALSE,
     independent_full_source_certified=FALSE),
