@@ -170,6 +170,9 @@
       cat("ACCELERATED_WAVE_SPARSE_ASYNC_SOURCE_DIFF_ATTEMPTED=TRUE\n")
     }
     runpy("scripts/summarize_scientific_source_evidence.py")
+    # Refresh the algorithmic work queue *after* recorded frozen-source
+    # comparisons, not only from the pre-differential snapshot.
+    runpy("scripts/build_accelerated_scientific_wave.py")
     runpy("scripts/build_independent_scientific_review_packet.py")
     cat("ACCELERATED_WAVE_BOUNDED_PYTHON_DIFF_RECORDED=TRUE\n")
     if(length(sparse_runner_errors)>0L)

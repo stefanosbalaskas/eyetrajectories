@@ -23,6 +23,23 @@ class SourceGapInventoryTests(unittest.TestCase):
                      "native_nonfunction_source_gaps_v1.csv",
                      "reviewed_source_contract_closures_v1.csv"):
             shutil.copy2(self.base / "inst" / "extdata" / name, folder / name)
+        # Unit fixtures deliberately begin from the immutable two legacy
+        # closures. Real subsequently reviewed receipts are validated at
+        # the checked-out repository root in test_ledger_uses_active_count.
+        witness = folder / "native_source_contract_gaps_stage22.csv"
+        with witness.open(newline="", encoding="utf-8") as stream:
+            reader = csv.DictReader(stream)
+            fields, rows = reader.fieldnames, list(reader)
+        for row in rows:
+            if row["python_name"] not in ledger.CLOSED_SEMANTIC_SCOPE:
+                row["unresolved_source_gap"] = "TRUE"
+        with witness.open("w", newline="", encoding="utf-8") as stream:
+            writer = csv.DictWriter(stream, fieldnames=fields)
+            writer.writeheader()
+            writer.writerows(rows)
+        receipt = folder / "reviewed_source_contract_closures_v1.csv"
+        receipt.write_text(",".join(ledger.REVIEWED_FIELDS) + "\n",
+                           encoding="utf-8")
 
     def tearDown(self):
         self.tmp.cleanup()
@@ -42,7 +59,7 @@ class SourceGapInventoryTests(unittest.TestCase):
             wr.writerows(rows)
 
     def test_ledger_uses_active_not_historical_count(self):
-        result = ledger.read_inventory(self.root)
+        result = ledger.read_inventory(self.base)
         self.assertEqual(result.historical_callable, 203)
         self.assertEqual(result.active_callable + len(result.resolved_semantic),
                          result.historical_callable)

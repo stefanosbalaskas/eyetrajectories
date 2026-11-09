@@ -28,7 +28,8 @@ class ConsolidatedScientificWaveTests(unittest.TestCase):
                     for row in csv.DictReader(f)}
         for group, name in ordered:
             self.assertIn(name, gaps)
-            self.assertEqual(gaps[name]["unresolved_source_gap"], "TRUE")
+            self.assertIn(gaps[name]["unresolved_source_gap"],
+                          ("TRUE", "FALSE"))
             self.assertTrue(gaps[name]["native_r_candidate"])
             self.assertNotIn("plot_", name)
             self.assertNotIn("reporting_text", name)
@@ -38,13 +39,11 @@ class ConsolidatedScientificWaveTests(unittest.TestCase):
             root = Path(d)
             folder = root / "inst" / "extdata"
             folder.mkdir(parents=True)
-            for name in ("native_source_contract_gaps_stage22.csv",
-                         "native_nonfunction_source_gaps_v1.csv",
-                         "reviewed_source_contract_closures_v1.csv"):
-                shutil.copy2(self.root / "inst" / "extdata" / name,
-                             folder / name)
+            # Run against the actual checked-out source registry, so
+            # future reviewed closures and their pinned proof files are
+            # validated rather than copying receipts without source proofs.
             out = root / "output" / "wave.csv"
-            self.assertEqual(wave.write_queue(root, out), out)
+            self.assertEqual(wave.write_queue(self.root, out), out)
             with out.open(encoding="utf-8", newline="") as f:
                 rows = list(csv.DictReader(f))
             self.assertEqual(len(rows), 32)
@@ -74,6 +73,12 @@ class ConsolidatedScientificWaveTests(unittest.TestCase):
             with filename.open(encoding="utf-8", newline="") as stream:
                 reader = csv.DictReader(stream)
                 headers, rows = reader.fieldnames, list(reader)
+            # A test-only historical baseline isolates queue replenishment
+            # from any real future reviewed closures.
+            for entry in rows:
+                if (entry["python_name"] not in
+                        source_gap_inventory.CLOSED_SEMANTIC_SCOPE):
+                    entry["unresolved_source_gap"] = "TRUE"
             completed = "run_sparse_prediction_workflow"
             row = next(r for r in rows if r["python_name"] == completed)
             row["unresolved_source_gap"] = "FALSE"

@@ -8,6 +8,7 @@ it appears in this queue.
 """
 from __future__ import annotations
 import csv
+import subprocess
 from pathlib import Path
 import source_gap_inventory as ledger
 
@@ -91,6 +92,27 @@ def targets() -> list[tuple[str, str]]:
     return out
 
 
+def observed_source_evidence(root: Path) -> dict[str, dict]:
+    """Read exact-head developer oracle outcomes if already recorded.
+
+    A finite source comparison is never a full-domain approval. The frozen
+    Python head and author R commit must match the exact report manifest.
+    """
+    result = subprocess.run(
+        ["git", "-C", str(root), "rev-parse", "HEAD"],
+        capture_output=True, text=True, check=False)
+    if result.returncode != 0:
+        return {}
+    head = result.stdout.strip()
+    reports = root / "artifacts" / "native_batch_numeric_diff" / head[:12]
+    if not reports.is_dir():
+        return {}
+    import summarize_scientific_source_evidence as evidence
+    actual = evidence.summarize(root, head, write=False)
+    return {row["python_name"]: row
+            for row in actual["function_evidence"]}
+
+
 def write_queue(root: Path | str = ".",
                 output: Path | str | None = None) -> Path:
     base = Path(root).resolve(strict=True)
@@ -99,6 +121,7 @@ def write_queue(root: Path | str = ".",
     with path.open(encoding="utf-8-sig", newline="") as file:
         source = list(csv.DictReader(file))
     indexed = {r["python_name"]: r for r in source}
+    oracle = observed_source_evidence(base)
     active = {
         name: row for name, row in indexed.items()
         if row["unresolved_source_gap"] == "TRUE"
@@ -120,6 +143,15 @@ def write_queue(root: Path | str = ".",
     out = []
     for rank, (group, name) in enumerate(chosen[:COUNT], 1):
         record = active[name]
+        observed = oracle.get(name, {})
+        passes = int(observed.get("matched_case_passes", 0))
+        disagreements = int(observed.get("source_disagreements", 0))
+        if disagreements:
+            status = "REPAIR_RECORDED_PYTHON_NUMERICAL_DIVERGENCE"
+        elif passes:
+            status = "FINITE_SOURCE_CASES_PASS_NEEDS_FULL_CONTRACT_REVIEW"
+        else:
+            status = "PENDING_SOURCE_FIXTURE"
         out.append(dict(
             priority=rank,
             scientific_family=group,
@@ -127,7 +159,9 @@ def write_queue(root: Path | str = ".",
             native_r_candidate=record["native_r_candidate"],
             recorded_gap_kind=record["gap_kind"],
             source_witness=record["source_witness"],
-            full_domain_case_status="PENDING_SOURCE_FIXTURE",
+            full_domain_case_status=status,
+            matched_finite_source_cases=passes,
+            divergent_source_cases=disagreements,
             numerical_algorithm_certified="FALSE",
             python_source_commit=FROZEN,
             independent_reviewer_approved="FALSE"))
