@@ -102,6 +102,8 @@ def _validate_reviewed_closures(
                     REVIEWED_FIELDS)
     seen: set[str] = set()
     historical_names = {row["python_name"] for row in historical}
+    source_witnesses = {row["python_name"]: row["native_r_candidate"]
+                        for row in historical}
     for row in catalog:
         name = row["python_name"]
         if (not name or name in seen or name not in historical_names or
@@ -142,6 +144,26 @@ def _validate_reviewed_closures(
                 len(data["reviewer_statement"].strip()) < 40):
             raise SourceGapInventoryError(
                 f"Unsubstantiated full source-contract decision: {name}")
+        implementation = data.get("native_files")
+        if not isinstance(implementation, list) or not implementation:
+            raise SourceGapInventoryError(
+                f"No native source implementation pinned by review: {name}")
+        declared_candidate = source_witnesses[name]
+        candidate_witnessed = False
+        for native in implementation:
+            if not isinstance(native, dict):
+                raise SourceGapInventoryError(
+                    f"Malformed pinned native source: {name}")
+            file = _source_file(root, native.get("path", ""),
+                                expected_prefix="R/")
+            if hashlib.sha256(file.read_bytes()).hexdigest() != native.get("sha256"):
+                raise SourceGapInventoryError(
+                    f"Native implementation changed after full-contract review: {name}")
+            if declared_candidate in file.read_text(encoding="utf-8"):
+                candidate_witnessed = True
+        if not candidate_witnessed:
+            raise SourceGapInventoryError(
+                f"Reviewed native candidate not found in pinned R source: {name}")
         evidence = data.get("case_evidence")
         if not isinstance(evidence, list) or len(evidence) < 6:
             raise SourceGapInventoryError(

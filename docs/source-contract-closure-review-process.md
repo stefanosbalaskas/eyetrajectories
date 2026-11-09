@@ -14,7 +14,9 @@ The JSON record must specify `audit_version=source-contract-v1`,
 `python_name`, `frozen_python_commit`, `scope=FULL_SOURCE_CONTRACT`,
 `author_decision=FULL_CONTRACT_REVIEWED`,
 `independently_certified=false`, a reviewer statement (at least 40
-characters), and `case_evidence` containing existing tests with exact
+characters), a nonempty `native_files` array of checked-in `R/` source paths and exact
+SHA-256 content digests (one must actually contain the declared native
+candidate), and `case_evidence` containing existing tests with exact
 relative paths and SHA-256 digests for all six kinds:
 
 1. `source_signature`
@@ -26,7 +28,7 @@ relative paths and SHA-256 digests for all six kinds:
 
 The manifest row must pin the frozen source SHA, JSON digest, author decision
 `AUTHOR_FULL_CONTRACT_REVIEWED`, and
-`independently_certified=FALSE`. A changed source test or missing review
+`independently_certified=FALSE`. A changed native algorithm file, source test or missing review
 file will cause a **hard failure**, not a count reduction. A bare CSV flag
 or automatically generated finite-domain evidence **cannot** close a gap.
 

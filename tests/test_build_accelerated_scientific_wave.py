@@ -103,6 +103,12 @@ class ConsolidatedScientificWaveTests(unittest.TestCase):
                 writer = csv.DictWriter(stream, fieldnames=headers)
                 writer.writeheader()
                 writer.writerows(rows)
+            rcode = root / "R" / "native-reviewed.R"
+            rcode.parent.mkdir(parents=True)
+            rcode.write_text(
+                "etr_run_sparse_prediction_workflow <- function(...) NULL\n",
+                encoding="utf-8")
+            rsha = hashlib.sha256(rcode.read_bytes()).hexdigest()
             proof = root / "tests" / "proof.R"
             proof.parent.mkdir(parents=True)
             proof.write_text("stopifnot(TRUE)\n", encoding="utf-8")
@@ -116,6 +122,8 @@ class ConsolidatedScientificWaveTests(unittest.TestCase):
                 scope="FULL_SOURCE_CONTRACT",
                 author_decision="FULL_CONTRACT_REVIEWED",
                 independently_certified=False,
+                native_files=[dict(path="R/native-reviewed.R",
+                                   sha256=rsha)],
                 reviewer_statement="TEST FIXTURE ONLY: this is not a scientific sign off.",
                 case_evidence=[dict(kind=k, path="tests/proof.R",
                                     sha256=proof_sha)

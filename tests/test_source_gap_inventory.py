@@ -96,6 +96,13 @@ class SourceGapInventoryTests(unittest.TestCase):
 
     def _add_reviewed_full_contract_fixture(self, name):
         """Synthetic *test-only* complete review demonstrates dynamic count."""
+        code = self.root / "R" / "reviewed-native-implementation.R"
+        code.parent.mkdir(parents=True, exist_ok=True)
+        candidate = ("etr_trajectory_set" if name == "TrajectorySet"
+                     else "etr_alr_transform")
+        code.write_text(candidate + " <- function(x) x\n",
+                        encoding="utf-8")
+        native_sha = hashlib.sha256(code.read_bytes()).hexdigest()
         proofdir = self.root / "tests"
         proofdir.mkdir(parents=True, exist_ok=True)
         proof = proofdir / "frozen-source-domain-replay.R"
@@ -111,6 +118,10 @@ class SourceGapInventoryTests(unittest.TestCase):
             "scope": "FULL_SOURCE_CONTRACT",
             "author_decision": "FULL_CONTRACT_REVIEWED",
             "independently_certified": False,
+            "native_files": [{
+                "path": "R/reviewed-native-implementation.R",
+                "sha256": native_sha,
+            }],
             "reviewer_statement": (
                 "TEST FIXTURE ONLY: this does not attest or close any "
                 "real mathematical source contract or grant certification."),
@@ -188,6 +199,16 @@ class SourceGapInventoryTests(unittest.TestCase):
                           encoding="utf-8")
         with self.assertRaisesRegex(
                 ledger.SourceGapInventoryError, "Wrong digest"):
+            ledger.read_inventory(self.root)
+
+    def test_changed_native_algorithm_invalidates_reviewed_closure(self):
+        self._add_reviewed_full_contract_fixture("alr_transform")
+        code = self.root / "R" / "reviewed-native-implementation.R"
+        code.write_text(code.read_text(encoding="utf-8") +
+                        "# changed implementation\n", encoding="utf-8")
+        with self.assertRaisesRegex(
+                ledger.SourceGapInventoryError,
+                "Native implementation changed"):
             ledger.read_inventory(self.root)
 
     def test_missing_source_test_breaks_review_receipt(self):
