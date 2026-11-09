@@ -109,7 +109,7 @@
     identical(dim(X),c(nc,np))&&all(is.finite(X))&&
     is.matrix(result$random_effect_covariance)&&
     identical(dim(result$random_effect_covariance),c(q,q))&&
-    q==if(slope)2L*nr else nr,
+    q==(if(slope)2L*nr else nr),
     "structured reference design/covariance dimensions are inconsistent")
   .etr_assert(N>=max(4L,nr+1L)&&
     !is.null(result$dimension_name)&&

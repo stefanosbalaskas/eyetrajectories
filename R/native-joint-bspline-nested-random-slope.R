@@ -222,6 +222,7 @@ etr_fit_joint_bspline_functional_nested_slope <- function(
     estimator=paste0("nlme_nested_participant_slope_trial_bspline_",
       residual_correlation),backend="nlme::lme",
     source_python_full_parity=FALSE,dimension=dimension,time=base$time,
+    coordinate_system=trajectories$coordinate_system,
     curve_ids=base$curve_ids,participant_ids=trial$participant_ids,
     curve_participant_ids=trial$participant,
     source_trial_ids=trial$trial,curve_trial_ids=trial$trial,
@@ -307,7 +308,8 @@ etr_fit_joint_bspline_functional_nested_slope <- function(
     fixed_long_design=X,random_long_design=Zp,
     trial_random_long_design=Zt,scalar_design=base$scalar_design,
     n_participants=base$n_participants,n_curves=nc,n_time=nt,
-    spline_degree=base$spline_degree,reml=reml,fitted_model=fit,
+    spline_degree=base$spline_degree,reml=reml,
+    maxiter=as.integer(maxiter),fitted_model=fit,
     provenance=list(scientific_scope=
       "joint_participant_intercept_slope_nested_trial_bspline",
       one_curve_per_trial=TRUE,trial_dependence_preserved=TRUE,

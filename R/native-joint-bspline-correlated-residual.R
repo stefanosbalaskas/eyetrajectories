@@ -191,6 +191,7 @@ etr_fit_joint_bspline_functional_correlated <- function(
     source_python_full_parity=FALSE,
     dimension=dimension,dimension_name=dimension,
     time=time,time_unit=trajectories$time_unit,
+    coordinate_system=trajectories$coordinate_system,
     curve_ids=ids,source_curve_ids=ids,
     fixed_basis_size=ncol(base$fixed_basis),
     random_basis_size=ncol(base$random_basis),
@@ -218,6 +219,7 @@ etr_fit_joint_bspline_functional_correlated <- function(
     scalar_design=base$scalar_design,
     n_participants=np,n_curves=nc,n_time=nt,
     spline_degree=base$spline_degree,reml=reml,
+    maxiter=as.integer(maxiter),
     fitted_model=fit,provenance=list(
       scientific_scope="participant_Bspline_intercept_serial_curve_residual",
       serial_residual_independent_across_source_curves=TRUE,

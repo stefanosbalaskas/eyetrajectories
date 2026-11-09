@@ -224,6 +224,7 @@ etr_fit_joint_bspline_functional_random_slope <- function(
     backend = "nlme::lme", source_python_full_parity = FALSE,
     dimension = dimension, dimension_name = dimension,
     time = time, time_unit = trajectories$time_unit,
+    coordinate_system = trajectories$coordinate_system,
     curve_ids = ids, source_curve_ids = ids,
     participant_ids = participants, curve_participant_ids = participant,
     predictor_names = scalar_names, random_slope_predictor = random_slope_predictor,
@@ -244,6 +245,7 @@ etr_fit_joint_bspline_functional_random_slope <- function(
     fixed_long_design = X, random_long_design = R, scalar_design = scalar,
     n_participants = n_groups, n_curves = n_curves,
     n_time = n_time, spline_degree = degree, reml = reml,
+    maxiter = as.integer(maxiter),
     fitted_model = fit,
     provenance = list(
       scientific_scope = "iid_one_random_slope_unstructured_joint_bspline",
