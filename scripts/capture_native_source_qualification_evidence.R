@@ -791,7 +791,10 @@ historical_gap_registry<-utils::read.csv(
 historical_gap_count<-nrow(historical_gap_registry)
 source_gap_count<-sum(historical_gap_registry$unresolved_source_gap)
 stopifnot(historical_gap_count==203L,
-  source_gap_count==201L,
+  all(historical_gap_registry$unresolved_source_gap[
+    !historical_gap_registry$python_name%in%c(
+      "functional_recovery_metric_catalog_frame",
+      "mathematical_contract_frame")]),
   identical(sort(historical_gap_registry$python_name[
     !historical_gap_registry$unresolved_source_gap]),
     sort(c("functional_recovery_metric_catalog_frame",
