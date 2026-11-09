@@ -98,7 +98,7 @@ test_that("joint full-refit rejects source-invalid draws and unsupported domains
   class(slope)<-c("etr_joint_bspline_mixed_slope",
     "etr_joint_bspline_mixed")
   expect_error(bootstrap(slope,n_bootstrap=20L),
-    "only iid participant")
+    "structured reference design/covariance dimensions are inconsistent")
   serial<-fit
   serial$residual_correlation<-"ar1"
   expect_error(bootstrap(serial,n_bootstrap=20L),
