@@ -126,7 +126,7 @@
 }
 .etr_joint_sensitivity_diagnostics<-function(fit,label,max_lag){
   rr<-fit$residual_functions
-  C<-fit[["residual_correlation",exact=TRUE]]_matrix
+  C<-fit[["residual_correlation_matrix",exact=TRUE]]
   nt<-ncol(rr)
   .etr_assert(is.matrix(C)&&identical(dim(C),c(nt,nt))&&
     all(is.finite(C)),"residual correlation matrix is invalid")
