@@ -78,7 +78,8 @@
       "native-generalized-fosr-coefficient-bands",
       "native-generalized-fosr-contrast-source",
       "native-joint-likelihood-covariance-sensitivity",
-      "native-joint-fixed-covariance-bootstrap"
+      "native-joint-fixed-covariance-bootstrap",
+      "native-joint-structured-full-refit"
     ),collapse="|"),reporter="summary",
       stop_on_failure=TRUE,stop_on_warning=TRUE)
     cat("ACCELERATED_WAVE_TARGETED_R_PASS=TRUE\n")

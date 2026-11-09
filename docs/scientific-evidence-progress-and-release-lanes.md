@@ -38,10 +38,14 @@ the *frozen* Python commit `c1cd95ad718327550f7e55393ff38582872f7a94`,
 while automatically recording the native Git commit and case-level results.
 
 The new conditional **joint GLS bootstrap** is source-compared on selected
-matched source-index cases. The new **joint likelihood full-refit** performs
-actual ML/REML refits only for participant-intercept iid models and has its own
-targeted deterministic R tests; unsupported alternative covariance structures
-are rejected rather than substituted. Neither is an independent certificate.
+matched source-index cases. The **joint likelihood full-refit** performs actual Gaussian ML/REML
+participant-case refits for the established iid random-intercept model, which
+has passed local RStudio tests. An additional author-side implementation now
+routes serial residual, random-slope, nested-trial and nested-slope structures
+to their own likelihood estimators, retaining all estimated covariance fields.
+The four expanded models have separate slow-gated optimizer tests
+(`ET_RUN_SCIENTIFIC_SLOW=true`); they are not claimed to have passed until
+the new source wave runs. Neither implementation is an independent certificate.
 
 ## Release separation
 
