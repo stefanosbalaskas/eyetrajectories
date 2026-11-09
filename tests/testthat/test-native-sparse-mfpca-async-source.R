@@ -27,11 +27,16 @@ test_that("asynchronous joint FPCA respects missing coordinate native times",{
   expect_false(fit$independent_full_source_certified)
   expect_gt(fit$support_diagnostics$cross_candidate_pair_count,
     fit$support_diagnostics$cross_retained_pair_count)
+  # Only truly retained simultaneous coordinate pairs are excluded:
+  # raw simultaneous events outside the population support are not counted.
+  expected_sim<-sum(vapply(seq_along(data$time),function(i){
+    t<-data$time[[i]];v<-data$values[[i]]
+    sum(t>=.10&t<=.86&is.finite(v[,1L])&
+      is.finite(v[,2L]))
+  },integer(1L)))
   expect_identical(
     fit$support_diagnostics$cross_same_time_pair_count_excluded,
-    as.integer(sum(fit$support_diagnostics$
-      simultaneous_sample_counts[
-        fit$support_diagnostics$analysis_x_sample_counts>0L])))
+    as.integer(expected_sim))
   config<-c(list(backend="native_covariance"),args)
   workflow<-etr_run_sparse_mfpca_async_workflow(data,config)
   expect_s3_class(workflow,"etr_native_sparse_mfpca_workflow")

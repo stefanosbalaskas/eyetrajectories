@@ -312,8 +312,14 @@ etr_run_sparse_mfpca_async_workflow<-function(trajectories,config,
       reports=list(fit=paste(
         "Native direct asynchronous sparse MFPCA joint PACE",
         "using directional latent covariance and exact scalar times.")),
-      tables=list(scores=data.frame(
-        curve_id=fit$curve_ids,fit$scores,check.names=FALSE)))
+      tables=list(scores={
+        frame<-data.frame(
+          curve_id=as.character(fit$curve_ids),
+          fit$metadata,check.names=FALSE)
+        for(j in seq_len(fit$n_components))
+          frame[[paste0("ASMFPC",j)]]<-fit$scores[,j]
+        frame
+      }))
     return(structure(evidence,
       class="etr_native_sparse_mfpca_workflow"))
   }
