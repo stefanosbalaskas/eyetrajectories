@@ -26,8 +26,12 @@
 }
 
 test_that("native joint source whitening matches independent triangular solve", {
-  for(serial in c(FALSE,TRUE)) {
+  for(serial in c(FALSE,TRUE))for(slope in c(FALSE,TRUE)) {
     fit <- .etr_joint_source_residual_test_fit(serial)
+    if(slope)class(fit)<-c(
+      if(serial)"etr_joint_bspline_mixed_nested_slope"
+      else "etr_joint_bspline_mixed_slope",
+      "etr_joint_bspline_mixed")
     raw <- fit$residual_functions
     V <- fit$residual_variance*fit$residual_correlation_matrix
     expected <- base::t(forwardsolve(base::t(chol(V)),base::t(raw)))
@@ -173,4 +177,12 @@ test_that("real native Gaussian fit supplies time metadata and residual diagnost
   pairs <- etr_functional_mixed_effects_residual_pair_frame(
     diagnostics,1L,curve_id=fit$curve_ids[1L])
   expect_identical(nrow(pairs),6L)
+  matched <- etr_compare_functional_mixed_effects_residual_diagnostics(
+    fit,fit,max_lag=2L,reference_label="joint_reml",
+    comparison_label="joint_reml")
+  expect_identical(nrow(matched),3L)
+  expect_equal(matched$delta_autocovariance,
+    rep(0,3L),tolerance=1e-12)
+  expect_equal(matched$delta_semivariance,
+    rep(0,3L),tolerance=1e-12)
 })
