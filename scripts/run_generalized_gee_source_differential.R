@@ -113,6 +113,55 @@ _wave_gee_profiles=pd.DataFrame({
   for(key in c("poisson","grouped","exposure")){
     spec<-if(key=="grouped")"binomial" else "poisson"
     f<-.etr_native_gee_fixture(spec,grouped=key=="grouped")
+    # A paired numerical test is meaningful only if both interpreters
+    # received identical arrays, curve IDs, predictors, denominators and
+    # exposure. Explicitly distinguish broken fixtures from estimator gaps.
+    fixture<-tryCatch({
+      pytr<-pyitem(key,"trajectories")
+      pyval<-reticulate::py_to_r(reticulate::py_get_attr(pytr,"values"))
+      pyt<-as.numeric(reticulate::py_to_r(
+        reticulate::py_get_attr(pytr,"time")))
+      pyids<-as.character(unlist(reticulate::py_to_r(
+        reticulate::py_get_attr(pytr,"curve_ids"))))
+      .etr_assert(identical(dim(pyval),dim(f$x$values))&&
+        all(abs(pyval-f$x$values)<1e-12),
+        "response value arrays differ")
+      .etr_assert(identical(length(pyt),length(f$x$time))&&
+        all(abs(pyt-f$x$time)<1e-12),
+        "common time grids differ")
+      .etr_assert(identical(pyids,as.character(f$x$curve_ids)),
+        "curve IDs or order differ")
+      pyd<-reticulate::py_to_r(pyitem(key,"design"))
+      align<-match(as.character(f$design$curve_id),
+        as.character(pyd$curve_id))
+      .etr_assert(!anyNA(align)&&
+        all(abs(as.numeric(pyd$treatment[align])-
+          f$design$treatment)<1e-12),
+        "predictor values or curve alignment differ")
+      if(key=="grouped"){
+        den<-reticulate::py_to_r(pyitem(key,"den"))
+        .etr_assert(identical(dim(den),dim(f$den))&&
+          all(abs(den-f$den)<1e-12),
+          "grouped-binomial denominators differ")
+      }
+      if(key=="exposure"){
+        expy<-reticulate::py_to_r(pyitem(key,"exposure"))
+        .etr_assert(length(expy)==36L&&
+          all(abs(as.numeric(expy)-2.5)<1e-12),
+          "Poisson exposures differ")
+      }
+      list(ok=TRUE,error="")
+    },error=function(e)list(ok=FALSE,error=conditionMessage(e)))
+    if(!fixture$ok){
+      add("fit_generalized_function_on_scalar_regression",key,
+        "<input_fixture>","INVALID_FIXTURE",
+        detail=fixture$error)
+      next
+    }
+    add("fit_generalized_function_on_scalar_regression",key,
+      "<input_fixture>","SOURCE_INPUT_MATCH",
+      max_abs=0,
+      detail="source and native values, times, curve IDs, predictors and optional arrays checked")
     args<-list(trajectories=f$x,design=f$design,predictors="treatment",
       participant_column="participant_id",dimension="outcome",
       family=spec,basis_size=4L,spline_degree=3L)
@@ -238,7 +287,7 @@ _wave_gee_profiles=pd.DataFrame({
     "c1cd95ad718327550f7e55393ff38582872f7a94"
   report$r_git_head<-head[[1L]]
   utils::write.csv(report,output,row.names=FALSE,na="")
-  divergences<-sum(grepl("^DIVERGENT",report$outcome))
+  divergences<-sum(grepl("^(DIVERGENT|INVALID_FIXTURE)",report$outcome))
   cat("GENERALIZED_GEE_SOURCE_CASES=",nrow(report),
     ";DIFFERENCES=",divergences,
     ";FUNCTIONS=",length(unique(report$python_name)),"\n",sep="")
