@@ -128,6 +128,25 @@ class ScientificSourceEvidenceTests(unittest.TestCase):
         self.assertEqual(report["passing_bounded_comparison_cases"], 2)
 
 
+    def test_sparse_async_public_workflow_evidence_is_not_independent_approval(self):
+        row = dict(
+            python_name="run_sparse_mfpca_async_workflow",
+            source_fixture="async_correlated_noise",
+            field="covariance_cxy",outcome="PASS_NUMERIC",
+            r_git_head=HEAD,
+            frozen_python_commit=inventory.FROZEN_PYTHON)
+        write_csv(self.reports /
+                  evidence.OPTIONAL_REPORTS["sparse_mfpca_async_native"],
+                  [row])
+        result = evidence.summarize(self.root, HEAD, write=False)
+        self.assertEqual(result["total_observed_comparison_cases"], 4)
+        observed = next(
+            item for item in result["function_evidence"]
+            if item["python_name"] == "run_sparse_mfpca_async_workflow")
+        self.assertTrue(observed["source_gap_still_open"])
+        self.assertTrue(observed["developer_finite_domain_oracle_evidence"])
+        self.assertFalse(observed["independent_full_contract_certified"])
+
     def test_sparse_multilevel_workflow_remains_unsigned_with_observed_source_cases(self):
         row = dict(
             python_name="run_sparse_multilevel_workflow",

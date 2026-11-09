@@ -39,6 +39,7 @@ OPTIONAL_REPORTS = {
     "sparse_mfpca_native": "sparse_mfpca_source_cases_UNSIGNED.csv",
     "sparse_prediction_native": "sparse_prediction_source_cases_UNSIGNED.csv",
     "sparse_multilevel_native": "sparse_multilevel_source_cases_UNSIGNED.csv",
+    "sparse_mfpca_async_native": "sparse_mfpca_async_source_cases_UNSIGNED.csv",
 }
 PASS = frozenset({
     "PASS_NUMERIC", "PASS_BOTH_REJECT", "PASS_SCHEMA",
