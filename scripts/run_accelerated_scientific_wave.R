@@ -57,12 +57,26 @@
       if(status!=0L)stop("Python source-wave program failed: ",path,
         call.=FALSE)
     }
+    # Structural inventory and queue preparation remain strict. Ordinary
+    # Python unit failures are accumulated so one fixture failure does not
+    # waste the rest of the native/Python differential evidence run.
+    python_test_failures<-character()
+    runpy_test<-function(path){
+      tryCatch(runpy(path),error=function(e){
+        python_test_failures<<-c(python_test_failures,path)
+        cat("ACCELERATED_WAVE_PYTHON_TEST_FAILURE=",
+          path,";MESSAGE=",conditionMessage(e),"\n",sep="")
+      })
+      invisible(NULL)
+    }
     runpy("scripts/source_gap_inventory.py")
     runpy("scripts/build_accelerated_scientific_wave.py")
-    runpy("tests/test_source_gap_inventory.py")
-    runpy("tests/test_build_accelerated_scientific_wave.py")
-    runpy("tests/test_summarize_scientific_source_evidence.py")
-    runpy("tests/test_build_independent_scientific_review_packet.py")
+    runpy_test("tests/test_source_gap_inventory.py")
+    runpy_test("tests/test_build_accelerated_scientific_wave.py")
+    runpy_test("tests/test_summarize_scientific_source_evidence.py")
+    runpy_test("tests/test_build_independent_scientific_review_packet.py")
+    cat("ACCELERATED_WAVE_PYTHON_UNIT_TEST_FAILURES=",
+      length(python_test_failures),"\n",sep="")
     targeted_failure<-NULL
     tryCatch(testthat::test_local(".",filter=paste(c(
       "native-zeroarg-metadata-source-semantic-closure",
@@ -183,6 +197,12 @@
       stop(sprintf(
         "Sparse source differential remains divergent: %d recorded cases across sparse families; see unsigned reports",
         sparse_disagreements),call.=FALSE)
+    # All Python unit test failures remain release-blocking, but the full
+    # source differential suite has now had its chance to produce evidence.
+    if(length(python_test_failures)>0L)
+      stop(paste("Python source-wave tests failed:",
+        paste(python_test_failures,collapse=" | "),
+        "; review full logs and unsigned source reports"),call.=FALSE)
     # The native test gate stays strict even though we now collect the
     # numerical differential evidence in the same user RStudio run.
     if(!is.null(targeted_failure))
