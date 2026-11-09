@@ -88,10 +88,19 @@ _etr_spmlw_cfg=_etr_spmlw_config(
     "total_covariance_support_counts",
     "between_covariance_support_counts")){
     source_field<-reticulate::py_get_attr(pyfit,field)
-    expected_shape<-as.integer(unlist(et_to_r(
-      reticulate::py_get_attr(source_field,"shape"))))
-    native_shape<-as.integer(if(is.null(dim(native$fit[[field]])))
-      length(native$fit[[field]]) else dim(native$fit[[field]]))
+    # Python scalar (noise_variance) has no ndarray.shape. A native
+    # numeric scalar corresponds to that public source scalar, whereas
+    # NumPy one-dimensional arrays map to native plain numeric vectors.
+    expected_shape<-if(reticulate::py_has_attr(source_field,"shape")){
+      as.integer(unlist(et_to_r(
+        reticulate::py_get_attr(source_field,"shape"))))
+    }else integer(0)
+    native_shape<-if(is.null(dim(native$fit[[field]]))){
+      if(length(native$fit[[field]])==1L&&
+          !reticulate::py_has_attr(source_field,"shape"))
+        integer(0)
+      else as.integer(length(native$fit[[field]]))
+    }else as.integer(dim(native$fit[[field]]))
     if(!identical(expected_shape,native_shape)){
       record(field,"DIVERGENT_SCHEMA",note=paste(
         "native",paste(native_shape,collapse="x"),
