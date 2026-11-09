@@ -62,6 +62,7 @@
     runpy("tests/test_source_gap_inventory.py")
     runpy("tests/test_build_accelerated_scientific_wave.py")
     runpy("tests/test_summarize_scientific_source_evidence.py")
+    runpy("tests/test_build_independent_scientific_review_packet.py")
     targeted_failure<-NULL
     tryCatch(testthat::test_local(".",filter=paste(c(
       "native-zeroarg-metadata-source-semantic-closure",
@@ -169,6 +170,7 @@
       cat("ACCELERATED_WAVE_SPARSE_ASYNC_SOURCE_DIFF_ATTEMPTED=TRUE\n")
     }
     runpy("scripts/summarize_scientific_source_evidence.py")
+    runpy("scripts/build_independent_scientific_review_packet.py")
     cat("ACCELERATED_WAVE_BOUNDED_PYTHON_DIFF_RECORDED=TRUE\n")
     if(length(sparse_runner_errors)>0L)
       stop(paste("Sparse source runner execution failure:",
