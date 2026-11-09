@@ -82,3 +82,53 @@ test_that("joint sensitivity validates source comparability and rejects mixed es
   expect_true(is.na(z$model_summary$aic[2L]))
   expect_identical(nrow(z$coefficient_frame),2L*length(fit$time))
 })
+
+test_that("joint serial fit retains source-comparable time and likelihood fields",{
+  skip_if_not_installed("nlme")
+  # A separate slow scientific qualification fixture; ordinary fast waves
+  # avoid repeatedly optimizing both covariance structures.
+  if(!identical(Sys.getenv("ET_RUN_SCIENTIFIC_SLOW"),"true"))
+    skip("set ET_RUN_SCIENTIFIC_SLOW=true for joint iid-vs-AR1 numerical model comparison")
+  set.seed(72019L)
+  tt<-seq(0,1,length.out=8L)
+  ng<-18L;nc<-ng*3L
+  ids<-sprintf("curve%03d",seq_len(nc))
+  pid<-rep(sprintf("P%02d",seq_len(ng)),each=3L)
+  x<-rep(c(-1,0,1),ng)
+  y<-array(0,c(nc,length(tt),1L))
+  for(g in seq_len(ng))for(j in seq_len(3L)){
+    i<-(g-1L)*3L+j
+    eta<-.6+.2*tt+x[i]*(.4-.1*tt)+
+      .22*sin(g*.53)+.16*cos(g*.71)*tt
+    e<-numeric(length(tt))
+    for(k in seq_along(tt))
+      e[k]<-if(k==1L)rnorm(1L,sd=.07) else
+        .45*e[k-1L]+rnorm(1L,sd=.055)
+    y[i,,1L]<-eta+e
+  }
+  trajectories<-etr_trajectory_set(tt,y,curve_ids=ids,
+    dimension_names="signal",metadata=data.frame(pid=pid),
+    coordinate_system="degrees",time_unit="seconds")
+  design<-data.frame(curve_id=rev(ids),condition=rev(x))
+  iid<-etr_fit_joint_bspline_functional_mixed_effects(
+    trajectories,design,"condition","pid","signal",
+    fixed_basis_size=2L,random_basis_size=2L,
+    spline_degree=1L,reml=TRUE)
+  ar1<-etr_fit_joint_bspline_functional_correlated(
+    trajectories,design,"condition","pid","signal",
+    residual_correlation="ar1",fixed_basis_size=2L,
+    random_basis_size=2L,spline_degree=1L,reml=TRUE)
+  expect_identical(ar1$time_unit,"seconds")
+  expect_identical(ar1$dimension_name,"signal")
+  expect_identical(ar1$source_curve_ids,ids)
+  expect_equal(ar1$log_likelihood,
+    as.numeric(stats::logLik(ar1$fitted_model)),tolerance=1e-12)
+  z<-etr_functional_mixed_effects_covariance_sensitivity(
+    list(iid=iid,serial=ar1),reference="iid",max_lag=2L)
+  expect_true(z$information_criterion_available)
+  expect_identical(z$model_summary$residual_correlation,c("iid","ar1"))
+  expect_equal(z$model_summary$n_covariance_parameters,c(4L,5L))
+  expect_true(all(is.finite(z$model_summary$aic)))
+  expect_equal(nrow(z$coefficient_frame),4L*length(tt))
+  expect_equal(nrow(z$residual_diagnostics),2L*2L*3L)
+})
