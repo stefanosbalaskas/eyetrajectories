@@ -54,6 +54,7 @@
     runpy("scripts/source_gap_inventory.py")
     runpy("scripts/build_accelerated_scientific_wave.py")
     runpy("tests/test_source_gap_inventory.py")
+    runpy("tests/test_build_accelerated_scientific_wave.py")
     testthat::test_local(".",filter=paste(c(
       "native-zeroarg-metadata-source-semantic-closure",
       "native-independent-source-review-packet",
