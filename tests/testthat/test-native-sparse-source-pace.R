@@ -1,0 +1,160 @@
+# Native sparse-FPCA source-model numerical family; this is not fdapace.
+# Frozen Python source: c1cd95ad718327550f7e55393ff38582872f7a94.
+.etr_spn_source_fixture<-function(){
+  n<-24L
+  ids<-sprintf("spn_%03d",seq_len(n))
+  time<-vector("list",n);values<-vector("list",n)
+  for(i in seq_len(n)){
+    j<-seq(0,1,length.out=8L)
+    ti<-.03+.94*j+.004*((i-1L)%%4L)*sin(pi*j)
+    x<-.5+.18*ti+
+      .35*sin(.31*i)*sin(pi*ti)+
+      .22*cos(.43*i)*cos(2*pi*ti)+
+      .035*cos(3*pi*ti+.7*i)
+    time[[i]]<-ti
+    values[[i]]<-matrix(x,ncol=1L)
+  }
+  etr_irregular_trajectory_set(
+    time,values,ids,"signal",
+    metadata=data.frame(batch=rep(1:6,each=4L)),
+    coordinate_system="degrees",time_unit="s")
+}
+
+.etr_spn_fit_from_fixture<-function(x){
+  etr_fit_sparse_fpca_native(
+    x,"signal",n_components=1L,
+    evaluation_grid=seq(.08,.92,length.out=9L),
+    mean_bandwidth=.50,covariance_bandwidth=.85,
+    noise_variance_method="fixed",measurement_error_variance=.07,
+    analysis_support_action="restrict",psd_action="project",
+    score_ridge=.002,score_condition_limit=1e12,
+    mean_min_local_points=3L,covariance_min_local_pairs=6L)
+}
+
+test_that("native sparse PACE fits a local covariance and conditions on full operator",{
+  x<-.etr_spn_source_fixture()
+  f<-.etr_spn_fit_from_fixture(x)
+  expect_s3_class(f,"etr_sparse_fpca_native")
+  expect_identical(f$fit_method,"native_covariance")
+  expect_identical(f$score_method,"PACE")
+  expect_identical(dim(f$scores),c(24L,1L))
+  expect_identical(dim(f$covariance),c(9L,9L))
+  expect_identical(dim(f$eigenfunctions),c(1L,9L))
+  expect_equal(f$covariance,t(f$covariance),tolerance=1e-10)
+  expect_true(all(is.finite(f$scores)))
+  expect_true(all(is.finite(f$eigenvalues)))
+  expect_true(all(f$eigenvalues>0))
+  expect_true(all(is.finite(f$mean)))
+  expect_true(all(f$mean_support_counts>=3L))
+  expect_true(all(f$covariance_support_counts>=6L))
+  expect_equal(sum(f$quadrature_weights),.92-.08,tolerance=1e-12)
+  expect_equal(sum(f$eigenfunctions[1L,]^2*f$quadrature_weights),
+    1,tolerance=1e-8)
+  expect_false(f$provenance$sparse_fpca$
+    raw_sparse_trajectory_interpolation_performed)
+  expect_false(f$independent_full_source_certified)
+  u<-etr_sparse_fpca_score_uncertainty_native(f,x)
+  expect_identical(dim(u$covariance),c(24L,1L,1L))
+  expect_identical(dim(u$standard_errors),c(24L,1L))
+  expect_true(all(is.finite(u$standard_errors)))
+  expect_true(all(u$standard_errors>=0))
+  expect_true(all(u$covariance>= -1e-9))
+  frame<-etr_sparse_fpca_score_uncertainty_frame_native(u)
+  expect_equal(nrow(frame),24L)
+  expect_identical(names(frame),c("curve_id","component",
+    "conditional_variance","conditional_standard_error",
+    "status_code","condition_number","method"))
+  expect_identical(frame$curve_id,x$curve_ids)
+  expect_identical(frame$component,rep(1L,24L))
+})
+
+test_that("source sparse FPCA guards unsupported estimators and source support",{
+  x<-.etr_spn_source_fixture()
+  f<-.etr_spn_fit_from_fixture(x)
+  expect_error(etr_fit_sparse_fpca_native(
+    x,"signal",1L,seq(.08,.92,length.out=9L),
+    .5,.85,noise_variance_method="diagonal_difference"),
+    "diagonal_difference")
+  expect_error(etr_fit_sparse_fpca_native(
+    x,"signal",1L,seq(.08,.92,length.out=9L),
+    .5,.85,noise_variance_method="fixed",
+    measurement_error_variance=-1),
+    "measurement_error_variance")
+  expect_error(etr_fit_sparse_fpca_native(
+    x,"signal",1L,seq(.08,.92,length.out=9L),
+    .5,.85,noise_variance_method="fixed",
+    measurement_error_variance=.07,
+    analysis_support_action="error"),
+    "observations_outside_analysis_support")
+  other<-x;other$curve_ids<-rev(other$curve_ids)
+  expect_error(etr_sparse_fpca_score_uncertainty_native(f,other),
+    "curve IDs")
+  expect_error(etr_sparse_fpca_score_uncertainty_native(f,x,
+    condition_limit=1),"condition_limit")
+})
+
+test_that("native sparse source PACE and score uncertainty match pinned Python arrays",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("frozen Python 1.2 direct sparse numerical oracle opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  x<-.etr_spn_source_fixture()
+  nr<-.etr_spn_fit_from_fixture(x)
+  reticulate::py_run_string("
+import numpy as np
+import eyetrajectoriespy as _etr_spn_et
+def _etr_spn_build_irregular(times, values, ids):
+    return _etr_spn_et.IrregularTrajectorySet(
+        time=tuple(np.asarray(t,dtype=float) for t in times),
+        values=tuple(np.asarray(v,dtype=float) for v in values),
+        curve_ids=tuple(str(i) for i in ids),
+        dimension_names=('signal',),
+        coordinate_system='degrees',time_unit='s')
+")
+  py<-reticulate::py_call(
+    reticulate::py_eval("_etr_spn_build_irregular",convert=FALSE),
+    times=reticulate::r_to_py(x$time),
+    values=reticulate::r_to_py(x$values),
+    ids=reticulate::r_to_py(x$curve_ids))
+  pyfit<-reticulate::py_call(
+    etpy_get_export("fit_sparse_fpca"),
+    trajectories=py,
+    dimension="signal",n_components=1L,
+    evaluation_grid=reticulate::r_to_py(seq(.08,.92,length.out=9L)),
+    mean_bandwidth=.50,covariance_bandwidth=.85,
+    noise_variance_method="fixed",measurement_error_variance=.07,
+    analysis_support_action="restrict",psd_action="project",
+    score_ridge=.002,score_condition_limit=1e12,
+    mean_min_local_points=3L,covariance_min_local_pairs=6L)
+  get<-function(object,name)
+    et_to_r(reticulate::py_get_attr(object,name))
+  for(field in c("mean","covariance","eigenvalues",
+      "eigenfunctions","scores","quadrature_weights",
+      "mean_support_counts","covariance_support_counts")){
+    expect_equal(unname(nr[[field]]),unname(get(pyfit,field)),
+      tolerance=2e-6,ignore_attr=TRUE,
+      info=paste("frozen sparse FPCA",field))
+  }
+  nrposterior<-etr_sparse_fpca_score_uncertainty_native(nr,x)
+  pyposterior<-reticulate::py_call(
+    etpy_get_export("sparse_fpca_score_uncertainty"),
+    fit=pyfit,trajectories=py)
+  for(field in c("covariance","standard_errors")){
+    expect_equal(unname(nrposterior[[field]]),
+      unname(get(pyposterior,field)),tolerance=2e-6,
+      ignore_attr=TRUE,info=paste("source sparse posterior",field))
+  }
+  source_frame<-reticulate::py_call(
+    etpy_get_export("sparse_fpca_score_uncertainty_frame"),
+    result=pyposterior)
+  native_frame<-etr_sparse_fpca_score_uncertainty_frame_native(nrposterior)
+  pyframe<-et_to_r(source_frame)
+  for(field in names(native_frame)){
+    if(is.numeric(native_frame[[field]])){
+      expect_equal(native_frame[[field]],pyframe[[field]],
+        tolerance=2e-6,ignore_attr=TRUE,
+        info=paste("source sparse uncertainty frame",field))
+    }else expect_identical(
+      as.character(native_frame[[field]]),
+      as.character(pyframe[[field]]))
+  }
+})
