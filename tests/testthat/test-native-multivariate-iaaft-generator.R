@@ -6,11 +6,23 @@
   for(i in seq_len(2L)){
     a[i,,1L]<-sin(2*pi*3*j/32+i*.16)+.19*cos(2*pi*6*j/32)
     a[i,,2L]<-cos(2*pi*3*j/32-i*.21)+.17*sin(2*pi*7*j/32)
-    a[i,,3L]<-.5*sin(2*pi*3*j/32+i*.4)+.28*cos(2*pi*4*j/32)
+    a[i,,3L]<-(-0.5)*sin(2*pi*3*j/32+i*.4)+.28*cos(2*pi*4*j/32)
   }
   etr_trajectory_set(time,a,c("a","b"),c("x","y","z"),
     coordinate_system="pixels",time_unit="s")
 }
+test_that("source-matched MIAAFT fixture has the declared negative third channel",{
+  x<-.etr_miaaft_fixture()
+  j<-seq_len(32L)-1L
+  target<-(-0.5)*sin(2*pi*3*j/32+0.4)+
+    0.28*cos(2*pi*4*j/32)
+  expect_equal(as.numeric(x$values[1L,,3L]),
+    target,tolerance=0)
+  expect_equal(x$values[1L,1L,3L],
+    0.28-0.5*sin(0.4),tolerance=1e-13)
+  expect_lt(x$values[1L,1L,3L],0.28)
+})
+
 test_that("native MIAAFT retains exact channel ranks and measured cross-spectrum",{
   x<-.etr_miaaft_fixture()
   set.seed(83);old<-.Random.seed
@@ -140,7 +152,7 @@ test_that("frozen Python public MIAAFT agrees with native R under identical init
   B<-2L;nt<-length(x$time);d<-3L
   fixed<-array(0L,c(B,nt,d))
   for(i in seq_len(B))for(j in seq_len(d))
-    fixed[i,,j]<-(seq_len(nt)-1L+3L*i+7L*j)%%nt
+    fixed[i,,j]<-(7L*(seq_len(nt)-1L)+3L*i+5L*j)%%nt
   native<-etr_generate_multivariate_iaaft_surrogates(
     x,curve="a",dimensions=c("z","x","y"),
     reference_dimension="x",n_surrogates=B,
@@ -157,7 +169,7 @@ etr_miaaft_fixed_permutations=np.empty((2,32,3),dtype=np.int64)
 for _i in range(2):
  for _j in range(3):
   etr_miaaft_fixed_permutations[_i,:,_j]=(
-    np.arange(32,dtype=np.int64)+3*(_i+1)+7*(_j+1))%32
+    7*np.arange(32,dtype=np.int64)+3*(_i+1)+5*(_j+1))%32
 import eyetrajectoriespy as _etr_miaaft_public
 import eyetrajectoriespy.multivariate_surrogates as _etr_miaaft_module
 _j=np.arange(32)
@@ -205,7 +217,12 @@ if _counter[0]!=2:
     "etr_miaaft_fixed_permutations",convert=TRUE)),
     unname(fixed),tolerance=0)
   src<-reticulate::py_eval("_etr_fixed_public",convert=FALSE)
-  for(field in c("source_values","surrogates",
+  expect_equal(
+    unname(native$source_values),
+    unname(et_to_r(reticulate::py_get_attr(src,"source_values"))),
+    tolerance=1e-12,ignore_attr=TRUE,
+    info="Input fixture equality must precede numerical inference")
+  for(field in c("surrogates",
       "spectral_errors","cross_spectral_errors")){
     observed<-unname(native[[field]])
     published<-unname(et_to_r(reticulate::py_get_attr(src,field)))

@@ -4,7 +4,7 @@
   a<-array(0,c(1L,96L,3L))
   a[1L,,1L]<-sin(2*pi*5*j/96)+.19*cos(2*pi*13*j/96)
   a[1L,,2L]<-cos(2*pi*5*j/96+.3)+.13*sin(2*pi*11*j/96)
-  a[1L,,3L]<-.5*sin(2*pi*4*j/96+.4)+.28*cos(2*pi*9*j/96)
+  a[1L,,3L]<-(-0.5)*sin(2*pi*4*j/96+.4)+.28*cos(2*pi*9*j/96)
   etr_trajectory_set(t,a,"example",c("x","y","z"),
     coordinate_system="pixels",time_unit="s")
 }
@@ -16,6 +16,12 @@
     n_surrogates=3L,max_iterations=100L,tolerance=.7,
     alternative=alternative,random_state=17L)
 }
+test_that("multivariate LLE source fixture preserves third-channel sign",{
+  x<-.etr_multivariate_lle_fixture()
+  expect_equal(x$values[1L,1L,3L],
+    0.28-0.5*sin(0.4),tolerance=1e-13)
+})
+
 test_that("multivariate LLE surrogate test uses exact plus-one tails",{
   x<-.etr_multivariate_lle_fixture()
   set.seed(83);prior<-.Random.seed
