@@ -159,7 +159,7 @@
           links<-links+1L
         }
       }
-      spectrum<-eigen(M,symmetric=TRUE,only.values=TRUE)$values
+      spectrum<-base::eigen(M,symmetric=TRUE,only.values=TRUE)$values
       min_eig<-min(spectrum);max_eig<-max(spectrum)
       cond<-if(min_eig<=0)Inf else max_eig/min_eig
       if(min_eig<=0)status<-
