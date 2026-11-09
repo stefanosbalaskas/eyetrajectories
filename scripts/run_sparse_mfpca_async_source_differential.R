@@ -20,6 +20,9 @@ from eyetrajectoriespy.workflows._sparse_async import (
     SparseMFPCAAsyncWorkflowConfig as _etr_spna_cfg,
     run_sparse_mfpca_async_workflow as _etr_spna_run,
 )
+import importlib
+_etr_spna_source_fit=importlib.import_module(
+    'eyetrajectoriespy.sparse_multivariate_async').fit_sparse_mfpca_async
 def _etr_spna_input(times, values, ids, batch):
     if isinstance(ids,(str,bytes)) or isinstance(batch,(str,bytes)):
         raise TypeError('curve IDs and metadata must be collections')
@@ -158,6 +161,76 @@ _etr_spna_config=_etr_spna_cfg(
       }else record(paste0("scores_table_",key),
         if(identical(as.character(a),as.character(b)))
           "PASS_NUMERIC"else"DIVERGENT_SCHEMA")
+    }
+  }
+  # Additional frozen Python 1.2 accepted/error-domain source tests.
+  # These compare behavior, not Python exception subclasses, and do not
+  # imply full accepted-domain certification.
+  pyfit<-reticulate::py_eval("_etr_spna_source_fit",convert=FALSE)
+  source_args<-args
+  source_args$dimensions<-reticulate::tuple("x","y")
+  source_args$evaluation_grid<-
+    reticulate::r_to_py(args$evaluation_grid)
+  source_args$measurement_error_covariance<-
+    reticulate::r_to_py(args$measurement_error_covariance)
+  safe<-function(fn)tryCatch(
+    list(ok=TRUE,message="",result=fn()),
+    error=function(e)list(ok=FALSE,message=conditionMessage(e),
+      result=NULL))
+  bad_cases<-list(
+    zero_components=list(n_components=0L),
+    negative_ridge=list(score_ridge=-.001),
+    negative_same_time_tolerance=list(same_time_tolerance=-.1),
+    unsupported_noise_mode=list(measurement_error="estimated"),
+    non_psd_noise_matrix=list(
+      measurement_error_covariance=matrix(c(.09,.3,.3,.08),2L)),
+    reject_outside_support=list(analysis_support_action="error"))
+  for(key in names(bad_cases)){
+    changed<-bad_cases[[key]]
+    rr<-modifyList(args,changed)
+    pp<-modifyList(source_args,changed)
+    if("measurement_error_covariance"%in%names(changed))
+      pp$measurement_error_covariance<-
+        reticulate::r_to_py(changed$measurement_error_covariance)
+    left<-safe(function()do.call(etr_fit_sparse_mfpca_async_native,
+      c(list(trajectories=tr),rr)))
+    right<-safe(function()do.call(reticulate::py_call,
+      c(list(pyfit,trajectories=ptr),pp)))
+    status<-if(!left$ok&&!right$ok)"PASS_BOTH_REJECT"
+      else"DIVERGENT_ACCEPTANCE"
+    record(paste0("invalid_",key),status,
+      note=paste0("native: ",substr(left$message,1L,100L),
+        " | Python: ",substr(right$message,1L,100L)))
+  }
+  # A distinct valid diagonal-noise estimand must match the source's
+  # diagonal-mode law; it is not subsumed by full-matrix source cases.
+  r_diag<-args
+  r_diag$measurement_error<-"diagonal"
+  r_diag$measurement_error_covariance<-NULL
+  r_diag$measurement_error_variance<-c(.09,.08)
+  p_diag<-source_args
+  p_diag$measurement_error<-"diagonal"
+  p_diag$measurement_error_covariance<-NULL
+  p_diag$measurement_error_variance<-reticulate::tuple(.09,.08)
+  dr<-safe(function()do.call(etr_fit_sparse_mfpca_async_native,
+    c(list(trajectories=tr),r_diag)))
+  dp<-safe(function()do.call(reticulate::py_call,
+    c(list(pyfit,trajectories=ptr),p_diag)))
+  if(!dr$ok||!dp$ok){
+    record("diagonal_mode_acceptance","DIVERGENT_ACCEPTANCE",
+      note=paste("native:",dr$message,"Python:",dp$message))
+  }else for(field in c("scores","eigenvalues","mean",
+      "covariance_cxy","measurement_error_covariance")){
+    a<-dr$result[[field]]
+    b<-et_to_r(reticulate::py_get_attr(dp$result,field))
+    if(!identical(shape(a),shape(b))||length(a)!=length(b))
+      record(paste0("diagonal_",field),"DIVERGENT_SCHEMA")
+    else{
+      delta<-max(abs(as.numeric(a)-as.numeric(b)))
+      record(paste0("diagonal_",field),
+        if(is.finite(delta)&&
+          delta<=3e-6*(1+max(abs(as.numeric(b)))))
+          "PASS_NUMERIC" else "DIVERGENT_NUMERIC",delta)
     }
   }
   output<-do.call(rbind,rows)
