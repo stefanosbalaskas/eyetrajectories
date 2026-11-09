@@ -46,7 +46,15 @@ class ConsolidatedScientificWaveTests(unittest.TestCase):
             self.assertEqual(wave.write_queue(self.root, out), out)
             with out.open(encoding="utf-8", newline="") as f:
                 rows = list(csv.DictReader(f))
-            self.assertEqual(len(rows), 32)
+            self.assertLessEqual(len(rows), 32)
+            with (self.root / "inst" / "extdata" /
+                  "native_source_contract_gaps_stage22.csv").open(
+                      encoding="utf-8", newline="") as stream:
+                live = {r["python_name"]: r["unresolved_source_gap"]
+                        for r in csv.DictReader(stream)}
+            self.assertTrue(all(
+                live[r["frozen_python_function"]] == "TRUE"
+                for r in rows))
             # A source report may already exist for this *same* HEAD on
             # repeated user runs. Bounded passes change the work-phase
             # status, never the certification flags.

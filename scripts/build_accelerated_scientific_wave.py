@@ -53,6 +53,13 @@ WAVE_TARGETS = {
 }
 COUNT = 32
 FROZEN = ledger.FROZEN_PYTHON
+QUEUE_FIELDS = (
+    "priority", "scientific_family", "frozen_python_function",
+    "native_r_candidate", "recorded_gap_kind", "source_witness",
+    "full_domain_case_status", "matched_finite_source_cases",
+    "divergent_source_cases", "numerical_algorithm_certified",
+    "python_source_commit", "independent_reviewer_approved",
+)
 
 
 def is_algorithmic_gap(name: str) -> bool:
@@ -170,7 +177,7 @@ def write_queue(root: Path | str = ".",
             "32_algorithm_contracts_UNSIGNED.csv")
     dest.parent.mkdir(parents=True, exist_ok=True)
     with dest.open("w", encoding="utf-8", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=list(out[0]))
+        w = csv.DictWriter(f, fieldnames=QUEUE_FIELDS)
         w.writeheader()
         w.writerows(out)
     print(f"ACCELERATED_SCIENTIFIC_WAVE_TARGETS={len(out)}")
