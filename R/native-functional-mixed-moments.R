@@ -334,6 +334,11 @@ etr_functional_mixed_effects_residual_pair_frame <- function(result,
 #' @export
 etr_functional_mixed_effects_variance_decomposition <- function(fit,
     model_label=NULL){
+  # Direct native B-spline likelihood fit: map its already estimated
+  # random-covariance blocks onto the frozen Python numerical component
+  # formula. No refit, no synthetic variance or optimizer substitution.
+  if(inherits(fit,"etr_joint_bspline_mixed"))
+    fit <- .etr_joint_source_variance_record(fit)
   if(!inherits(fit,"etr_functional_mixed_moments")){
     # Source-shaped frozen Python 1.2.0 FunctionalMixedEffectsResult.
     # Do not coerce a restricted moment fit into a REML/GLS model.
@@ -425,6 +430,10 @@ etr_functional_mixed_effects_variance_decomposition <- function(fit,
 #' @inheritParams etr_functional_mixed_effects_whitened_residuals
 #' @export
 etr_functional_mixed_effects_coefficient_frame <- function(result,band=NULL){
+  # Preserve the original restricted moments path. Native likelihood
+  # models use the source-ordered coefficient frame without a refit.
+  if(inherits(result,"etr_joint_bspline_mixed"))
+    return(.etr_joint_source_coefficient_frame(result,band))
   .etr_mixed_moments_fit(result)
   .etr_assert(is.null(band),
     "simultaneous mixed-model bootstrap bands are not yet qualified")
