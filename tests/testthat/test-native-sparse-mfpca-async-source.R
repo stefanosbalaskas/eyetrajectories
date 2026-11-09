@@ -142,3 +142,73 @@ def _etr_async_input(times,values,ids,batch):
       info=paste("source async support",field))
   }
 })
+
+
+test_that("joint asynchronous PACE reduces exactly to paired-time source PACE",{
+  tr<-.etr_spnm_fixture()
+  paired<-.etr_spnm_args()
+  fit_paired<-do.call(etr_fit_sparse_mfpca_native,
+    c(list(trajectories=tr),paired))
+  opts<-list(
+    dimensions=paired$dimensions,n_components=paired$n_components,
+    evaluation_grid=paired$evaluation_grid,
+    mean_bandwidth=paired$mean_bandwidth,
+    covariance_bandwidth=paired$covariance_bandwidth,
+    measurement_error="diagonal",
+    measurement_error_variance=paired$measurement_error_variance,
+    analysis_support_action=paired$analysis_support_action,
+    same_time_tolerance=0,
+    psd_action=paired$psd_action,
+    psd_tolerance=paired$psd_tolerance,
+    positive_eigen_tolerance=paired$positive_eigen_tolerance,
+    score_ridge=paired$score_ridge,
+    score_condition_limit=paired$score_condition_limit,
+    min_score_observations=paired$min_score_time_points,
+    score_failure_action=paired$score_failure_action,
+    mean_min_local_points=paired$mean_min_local_points,
+    covariance_min_local_pairs=paired$covariance_min_local_pairs)
+  async<-do.call(etr_fit_sparse_mfpca_async_native,
+    c(list(trajectories=tr),opts))
+  for(field in c("mean","scores","eigenvalues","eigenfunctions",
+      "smoothed_cxx","smoothed_cxy","smoothed_cyx","smoothed_cyy",
+      "covariance_cxx","covariance_cxy","covariance_cyx",
+      "covariance_cyy","quadrature_weights",
+      "measurement_error_covariance")){
+    expect_equal(unname(async[[field]]),
+      unname(fit_paired[[field]]),tolerance=1e-8,
+      ignore_attr=TRUE,
+      info=paste("paired native-time reduction",field))
+  }
+  expect_true(all(async$score_diagnostics$
+    n_scalar_observations==
+      2L*async$score_diagnostics$n_x_observations))
+  expect_true(all(async$score_diagnostics$
+    n_x_observations==async$score_diagnostics$n_y_observations))
+  expect_true(all(async$score_diagnostics$
+    n_simultaneous_pairs==async$score_diagnostics$n_x_observations))
+  expect_true(all(async$score_diagnostics$
+    measurement_error_cross_links==
+      async$score_diagnostics$n_simultaneous_pairs))
+  expect_identical(
+    async$provenance$sparse_mfpca_async$paired_reduction_order,
+    "time_major_interleaved_xy")
+})
+
+test_that("asynchronous tolerance excludes near-coincident pairs without raw synchronization",{
+  tx<-list(c(.1,.2,.3),c(.1,.2,.3),c(.1,.2,.3))
+  ty<-list(c(.10001,.20001,.30001),
+    c(.10001,.20001,.30001),c(.10001,.20001,.30001))
+  r<-list(c(1,2,3),c(1,2,3),c(1,2,3))
+  low<-.etr_spna_cross_pairs(tx,r,ty,r,tolerance=0)
+  high<-.etr_spna_cross_pairs(tx,r,ty,r,tolerance=.001)
+  expect_identical(high$audit$cross_candidate_pair_count,27L)
+  expect_identical(high$audit$cross_same_time_pair_count_excluded,9L)
+  expect_identical(high$audit$cross_retained_pair_count,18L)
+  expect_identical(low$audit$cross_retained_pair_count,27L)
+  expect_true(all(is.finite(high$xy$products)))
+  layout<-.etr_spna_scalar_layout(tx[[1L]],r[[1L]],
+    ty[[1L]],r[[1L]],.001)
+  expect_identical(layout$simultaneous,3L)
+  expect_identical(layout$time,sort(c(tx[[1L]],ty[[1L]])))
+  expect_identical(layout$channel,c(1L,2L,1L,2L,1L,2L))
+})
