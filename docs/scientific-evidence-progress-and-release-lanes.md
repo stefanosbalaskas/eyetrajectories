@@ -93,3 +93,22 @@ To include these numerical source comparisons in a single wave, use
 differential option. The dynamic case summary includes the optional sparse
 report only when it is actually generated. Its presence never closes a
 historical gap or grants independent review.
+
+## Full native sparse future prediction workflow
+
+The mapped `etr_run_sparse_prediction_workflow()` now has an explicit
+`backend="native_sparse_partial_conformal"` route. It composes the direct
+native PACE covariance estimator, full-covariance history-conditioned latent
+future prediction, per-calibration-curve maximum standardized residuals,
+participant-group maximum pooling when declared, finite-sample conformal
+order statistic, and a finite-grid simultaneous band for future observed
+measurements. The prior mean-curve split conformal alternative remains
+available as a distinct scientific estimand.
+
+Both source and native require observed future calibration responses at exact
+target timestamps. No raw interpolation, continuous-time confidence claim,
+latent-function coverage claim, automatic role splitting, or external parity
+certificate is introduced. Source `run_sparse_prediction_workflow` has a
+direct exact-role Python 1.2 comparison under the existing
+`ET_RUN_SPARSE_SOURCE_DIFF=true` switch. Its unsigned observed numerical
+cases enter the evidence census without lowering the open gap count.
