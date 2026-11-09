@@ -1,8 +1,7 @@
-# Source: pinned Python 1.2 covariance sensitivity numerical definitions.
-# Actual native nlme joint Gaussian likelihood; no Python parity certification.
-
-test_that("joint mixed sensitivity uses actual REML likelihood and source IC counts",{
-  skip_if_not_installed("nlme")
+# Reuse a previously convergent deterministic 8-participant Gaussian
+# fixture in all sensitivity tests. A six-participant, nearly noiseless
+# moments fixture is numerically singular for the full spline REML model.
+.etr_joint_sensitivity_stable_fixture<-function(){
   time<-seq(0,1,length.out=7L)
   ids<-sprintf("curve%02d",seq_len(24L))
   pid<-rep(sprintf("P%02d",seq_len(8L)),each=3L)
@@ -18,8 +17,17 @@ test_that("joint mixed sensitivity uses actual REML likelihood and source IC cou
     dimension_names="signal",metadata=data.frame(pid=pid),
     coordinate_system="degrees",time_unit="s")
   design<-data.frame(curve_id=rev(ids),x=rev(x))
+  list(tr=trajectories,design=design)
+}
+
+# Source: pinned Python 1.2 covariance sensitivity numerical definitions.
+# Actual native nlme joint Gaussian likelihood; no Python parity certification.
+
+test_that("joint mixed sensitivity uses actual REML likelihood and source IC counts",{
+  skip_if_not_installed("nlme")
+  f<-.etr_joint_sensitivity_stable_fixture()
   fit<-etr_fit_joint_bspline_functional_mixed_effects(
-    trajectories,design,"x","pid","signal",
+    f$tr,f$design,"x","pid","signal",
     fixed_basis_size=2L,random_basis_size=2L,
     spline_degree=1L,reml=TRUE)
   z<-etr_functional_mixed_effects_covariance_sensitivity(
@@ -52,9 +60,9 @@ test_that("joint mixed sensitivity uses actual REML likelihood and source IC cou
 
 test_that("joint sensitivity validates source comparability and rejects mixed estimators",{
   skip_if_not_installed("nlme")
-  f<-.etr_mixed_sensitivity_fixture()
+  f<-.etr_joint_sensitivity_stable_fixture()
   fit<-etr_fit_joint_bspline_functional_mixed_effects(
-    f$tr,f$design,"x","participant_id","y",
+    f$tr,f$design,"x","pid","signal",
     fixed_basis_size=2L,random_basis_size=2L,
     spline_degree=1L,reml=TRUE)
   run<-function(other)etr_functional_mixed_effects_covariance_sensitivity(
@@ -68,7 +76,7 @@ test_that("joint sensitivity validates source comparability and rejects mixed es
   altered<-fit;altered$fixed_basis[1L,1L]<-.5
   expect_error(run(altered),"identical fixed_basis")
   moment<-etr_fit_functional_mixed_effects_regression(
-    f$tr,f$design,"x","participant_id","y")
+    f$tr,f$design,"x","pid","signal")
   expect_error(run(moment),"cannot combine moments and joint")
   z<-etr_functional_mixed_effects_covariance_sensitivity(
     list(reference=fit),"reference",2L,

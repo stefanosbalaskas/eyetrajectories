@@ -18,8 +18,8 @@
   list(name=label,
     random_slope_predictor=fit$random_slope_predictor,
     trial_random_effect=fit$trial_random_effect,
-    residual_correlation=if(is.null(fit$residual_correlation))
-      "iid" else fit$residual_correlation)
+    residual_correlation=if(is.null(fit[["residual_correlation",exact=TRUE]]))
+      "iid" else fit[["residual_correlation",exact=TRUE]])
 }
 .etr_joint_sensitivity_norm<-function(fit,label,reference){
   .etr_assert(inherits(fit,"etr_joint_bspline_mixed")&&
@@ -81,8 +81,8 @@
       all(is.finite(H)),"trial random-effect covariance must be finite square")
     ncov<-ncov+nrow(H)*(nrow(H)+1L)/2L
   }
-  serial<-!is.null(fit$residual_correlation)&&
-    !identical(fit$residual_correlation,"iid")
+  serial<-!is.null(fit[["residual_correlation",exact=TRUE]])&&
+    !identical(fit[["residual_correlation",exact=TRUE]],"iid")
   if(serial)ncov<-ncov+1L
   ll<-as.numeric(stats::logLik(fit$fitted_model))
   .etr_assert(length(ll)==1L&&is.finite(ll),
@@ -126,7 +126,7 @@
 }
 .etr_joint_sensitivity_diagnostics<-function(fit,label,max_lag){
   rr<-fit$residual_functions
-  C<-fit$residual_correlation_matrix
+  C<-fit[["residual_correlation",exact=TRUE]]_matrix
   nt<-ncol(rr)
   .etr_assert(is.matrix(C)&&identical(dim(C),c(nt,nt))&&
     all(is.finite(C)),"residual correlation matrix is invalid")
@@ -217,10 +217,10 @@
     .etr_assert(is.list(spec)&&
       identical(spec$random_slope_predictor,fit$random_slope_predictor)&&
       identical(spec$trial_random_effect,fit$trial_random_effect)&&
-      identical(if(is.null(spec$residual_correlation))"iid"else
-        spec$residual_correlation,
-        if(is.null(fit$residual_correlation))"iid"else
-          fit$residual_correlation),
+      identical(if(is.null(spec[["residual_correlation",exact=TRUE]]))"iid"else
+        spec[["residual_correlation",exact=TRUE]],
+        if(is.null(fit[["residual_correlation",exact=TRUE]]))"iid"else
+          fit[["residual_correlation",exact=TRUE]]),
       paste("joint fitted model does not match its covariance specification:",label))
   }
   ref_ic<-.etr_joint_sensitivity_ic(ref)
@@ -231,8 +231,8 @@
       records[[length(records)+1L]]<-data.frame(
         model=label,status="failed",is_reference=FALSE,converged=FALSE,
         failure_reason=failures[[label]],reml=ref$reml,
-        residual_correlation=if(is.null(specifications[[label]]$residual_correlation))
-          "iid" else specifications[[label]]$residual_correlation,
+        residual_correlation=if(is.null(specifications[[label]][["residual_correlation",exact=TRUE]]))
+          "iid" else specifications[[label]][["residual_correlation",exact=TRUE]],
         log_likelihood=NA_real_,n_fixed_parameters=NA_integer_,
         n_covariance_parameters=NA_integer_,n_parameters=NA_integer_,
         information_criterion_parameter_count=NA_integer_,
@@ -252,8 +252,8 @@
       records[[length(records)+1L]]<-data.frame(
         model=label,status="success",is_reference=label==reference,
         converged=TRUE,failure_reason=NA_character_,reml=fit$reml,
-        residual_correlation=if(is.null(fit$residual_correlation))
-          "iid" else fit$residual_correlation,
+        residual_correlation=if(is.null(fit[["residual_correlation",exact=TRUE]]))
+          "iid" else fit[["residual_correlation",exact=TRUE]],
         log_likelihood=ic$log_likelihood,
         n_fixed_parameters=ic$n_fixed,
         n_covariance_parameters=ic$n_covariance,

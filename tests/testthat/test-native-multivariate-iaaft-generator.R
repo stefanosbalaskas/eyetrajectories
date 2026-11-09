@@ -146,10 +146,18 @@ test_that("frozen Python public MIAAFT agrees with native R under identical init
     reference_dimension="x",n_surrogates=B,
     max_iterations=120L,tolerance=.5,
     initial_permutations=fixed)
-  reticulate::py$etr_miaaft_fixed_permutations<-
-    reticulate::r_to_py(fixed)
+  # Avoid namespace-qualified assignment to reticulate::py inside
+  # testthat: R's replacement assignment looks for an unattached
+  # 'reticulate' object before the Python code can run.
+  # Construct the exact zero-based permutations in Python itself and
+  # assert that their array layout matches the native R fixture.
   reticulate::py_run_string("
 import numpy as np
+etr_miaaft_fixed_permutations=np.empty((2,32,3),dtype=np.int64)
+for _i in range(2):
+ for _j in range(3):
+  etr_miaaft_fixed_permutations[_i,:,_j]=(
+    np.arange(32,dtype=np.int64)+3*(_i+1)+7*(_j+1))%32
 import eyetrajectoriespy as _etr_miaaft_public
 import eyetrajectoriespy.multivariate_surrogates as _etr_miaaft_module
 _j=np.arange(32)
@@ -193,6 +201,9 @@ finally:
 if _counter[0]!=2:
     raise AssertionError('Frozen public generator did not replay two draws')
 ")
+  expect_equal(unname(reticulate::py_eval(
+    "etr_miaaft_fixed_permutations",convert=TRUE)),
+    unname(fixed),tolerance=0)
   src<-reticulate::py_eval("_etr_fixed_public",convert=FALSE)
   for(field in c("source_values","surrogates",
       "spectral_errors","cross_spectral_errors")){
