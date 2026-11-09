@@ -54,6 +54,35 @@ COUNT = 32
 FROZEN = ledger.FROZEN_PYTHON
 
 
+def is_algorithmic_gap(name: str) -> bool:
+    if name.startswith("plot_") or name.endswith((
+            "_frame", "_reporting_text", "_summary_frame")):
+        return False
+    if name.startswith(("to_", "export_", "save_")):
+        return False
+    return name.startswith((
+        "fit_", "run_", "bootstrap_", "cross_validate_",
+        "nested_cross_validate_", "wild_bootstrap_", "scan_",
+        "generate_", "evaluate_", "simulate_", "select_",
+        "detect_", "functional_mixed_effects_", "recurrence_",
+        "multivariate_", "windowed_rqa_", "fpca_regression_",
+        "generalized_function_", "score_distance_"))
+
+
+def infer_scientific_family(name: str) -> str:
+    if "sparse" in name or "skfda" in name or "fdapy" in name:
+        return "sparse_fpca_and_bridge"
+    if "mixed" in name or "covariance" in name:
+        return "functional_mixed_likelihood_and_inference"
+    if "generalized" in name:
+        return "generalized_functional_regression"
+    if "bootstrap" in name or "fpca" in name:
+        return "fpcr_prediction_and_resampling"
+    if "recurrence" in name or "rqa" in name:
+        return "recurrence_and_nonlinear"
+    return "other_scientific_algorithms"
+
+
 def targets() -> list[tuple[str, str]]:
     out = [(group, name) for group, names in WAVE_TARGETS.items()
            for name in names]
@@ -70,13 +99,27 @@ def write_queue(root: Path | str = ".",
     with path.open(encoding="utf-8-sig", newline="") as file:
         source = list(csv.DictReader(file))
     indexed = {r["python_name"]: r for r in source}
+    active = {
+        name: row for name, row in indexed.items()
+        if row["unresolved_source_gap"] == "TRUE"
+    }
+    # A reviewed source contract must be replaced in the next implementation
+    # wave, not cause an "unexpected resolved gap" halt. First preserve the
+    # coherent 32 baseline families; then backfill other algorithmic gaps.
+    chosen = [(group, name) for group, name in targets()
+              if name in active]
+    present = {name for _, name in chosen}
+    if len(chosen) < COUNT:
+        for name in sorted(active):
+            if name in present or not is_algorithmic_gap(name):
+                continue
+            chosen.append((infer_scientific_family(name), name))
+            present.add(name)
+            if len(chosen) >= COUNT:
+                break
     out = []
-    for rank, (group, name) in enumerate(targets(), 1):
-        if name not in indexed:
-            raise RuntimeError(f"Target not in frozen source ledger: {name}")
-        record = indexed[name]
-        if record["unresolved_source_gap"] != "TRUE":
-            raise RuntimeError(f"Unexpected resolved algorithmic gap: {name}")
+    for rank, (group, name) in enumerate(chosen[:COUNT], 1):
+        record = active[name]
         out.append(dict(
             priority=rank,
             scientific_family=group,
@@ -96,7 +139,7 @@ def write_queue(root: Path | str = ".",
         w = csv.DictWriter(f, fieldnames=list(out[0]))
         w.writeheader()
         w.writerows(out)
-    print("ACCELERATED_SCIENTIFIC_WAVE_TARGETS=32")
+    print(f"ACCELERATED_SCIENTIFIC_WAVE_TARGETS={len(out)}")
     print("ACCELERATED_SCIENTIFIC_WAVE_OPEN_FUNCTIONS="
           f"{stats.active_callable}")
     print(f"ACCELERATED_SCIENTIFIC_WAVE_QUEUE={dest}")

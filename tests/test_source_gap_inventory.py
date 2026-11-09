@@ -1,5 +1,7 @@
 """Regression guards for the single frozen Python 1.2 source-gap counter."""
 import csv
+import hashlib
+import json
 from pathlib import Path
 import shutil
 import sys
@@ -18,7 +20,8 @@ class SourceGapInventoryTests(unittest.TestCase):
         folder = self.root / "inst" / "extdata"
         folder.mkdir(parents=True)
         for name in ("native_source_contract_gaps_stage22.csv",
-                     "native_nonfunction_source_gaps_v1.csv"):
+                     "native_nonfunction_source_gaps_v1.csv",
+                     "reviewed_source_contract_closures_v1.csv"):
             shutil.copy2(self.base / "inst" / "extdata" / name, folder / name)
 
     def tearDown(self):
@@ -59,6 +62,97 @@ class SourceGapInventoryTests(unittest.TestCase):
                           {"source_witness": "No direct frozen Python replay"})
         with self.assertRaisesRegex(ledger.SourceGapInventoryError,
                                     "semantic closure evidence"):
+            ledger.read_inventory(self.root)
+
+    def _add_reviewed_full_contract_fixture(self, name):
+        """Synthetic *test-only* complete review demonstrates dynamic count."""
+        proofdir = self.root / "tests"
+        proofdir.mkdir(parents=True, exist_ok=True)
+        proof = proofdir / "frozen-source-domain-replay.R"
+        proof.write_text("stopifnot(TRUE)\n", encoding="utf-8")
+        proof_sha = hashlib.sha256(proof.read_bytes()).hexdigest()
+        recorddir = self.root / "docs" / "source_contract_reviews"
+        recorddir.mkdir(parents=True, exist_ok=True)
+        record = recorddir / (name + ".json")
+        record.write_text(json.dumps({
+            "audit_version": "source-contract-v1",
+            "python_name": name,
+            "frozen_python_commit": ledger.FROZEN_PYTHON,
+            "scope": "FULL_SOURCE_CONTRACT",
+            "author_decision": "FULL_CONTRACT_REVIEWED",
+            "independently_certified": False,
+            "reviewer_statement": (
+                "TEST FIXTURE ONLY: this does not attest or close any "
+                "real mathematical source contract or grant certification."),
+            "case_evidence": [
+                {"kind": kind,
+                 "path": "tests/frozen-source-domain-replay.R",
+                 "sha256": proof_sha}
+                for kind in sorted(ledger.REQUIRED_REVIEW_KINDS)
+            ],
+        }, indent=2), encoding="utf-8")
+        receipt = self.root / "inst" / "extdata" / (
+            "reviewed_source_contract_closures_v1.csv")
+        with receipt.open("w", newline="", encoding="utf-8") as file:
+            writer = csv.DictWriter(file,
+                                    fieldnames=ledger.REVIEWED_FIELDS)
+            writer.writeheader()
+            writer.writerow({
+                "python_name": name,
+                "frozen_python_commit": ledger.FROZEN_PYTHON,
+                "review_record_path":
+                    f"docs/source_contract_reviews/{name}.json",
+                "review_record_sha256":
+                    hashlib.sha256(record.read_bytes()).hexdigest(),
+                "author_full_contract_decision":
+                    "AUTHOR_FULL_CONTRACT_REVIEWED",
+                "independently_certified": "FALSE",
+            })
+        self._replace_row(name, {"unresolved_source_gap": "FALSE"})
+        return proof, record, receipt
+
+    def test_test_only_full_contract_receipt_allows_nonlegacy_gap_count_to_change(self):
+        self._add_reviewed_full_contract_fixture("alr_transform")
+        result = ledger.read_inventory(self.root)
+        self.assertEqual(result.active_callable, 200)
+        self.assertEqual(result.open_total, 201)
+        self.assertIn("alr_transform", result.resolved_semantic)
+        # No independent sign-off was produced by developer review.
+
+    def test_review_record_digest_tampering_blocks_closure(self):
+        _, record, _ = self._add_reviewed_full_contract_fixture(
+            "alr_transform")
+        record.write_text(record.read_text(encoding="utf-8") + "\n",
+                          encoding="utf-8")
+        with self.assertRaisesRegex(
+                ledger.SourceGapInventoryError, "Wrong digest"):
+            ledger.read_inventory(self.root)
+
+    def test_missing_source_test_breaks_review_receipt(self):
+        proof, _, _ = self._add_reviewed_full_contract_fixture(
+            "alr_transform")
+        proof.unlink()
+        with self.assertRaisesRegex(
+                ledger.SourceGapInventoryError, "Missing/symlinked"):
+            ledger.read_inventory(self.root)
+
+    def test_author_receipt_cannot_claim_independent_certification(self):
+        _, _, receipt = self._add_reviewed_full_contract_fixture(
+            "alr_transform")
+        text = receipt.read_text(encoding="utf-8")
+        receipt.write_text(text.replace(
+            "AUTHOR_FULL_CONTRACT_REVIEWED,FALSE",
+            "AUTHOR_FULL_CONTRACT_REVIEWED,TRUE"), encoding="utf-8")
+        with self.assertRaisesRegex(
+                ledger.SourceGapInventoryError, "forged independent"):
+            ledger.read_inventory(self.root)
+
+    def test_receipt_cannot_exist_for_still_open_source_gap(self):
+        self._add_reviewed_full_contract_fixture("alr_transform")
+        self._replace_row("alr_transform",
+                          {"unresolved_source_gap": "TRUE"})
+        with self.assertRaisesRegex(
+                ledger.SourceGapInventoryError, "remains open"):
             ledger.read_inventory(self.root)
 
     def test_nonboolean_flag_must_fail(self):
