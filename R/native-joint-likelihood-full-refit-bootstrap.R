@@ -108,17 +108,23 @@
     if(length(predictor_names))for(j in seq_along(predictor_names))
       design[[predictor_names[[j]]]]<-
         result$scalar_design[rows,j+1L]
+    backend_messages<-character()
     fit<-tryCatch(
-      etr_fit_joint_bspline_functional_mixed_effects(
-        trajectories=dat,design=design,
-        predictors=predictor_names,
-        participant_column=".etr_bootstrap_pid",
-        dimension=as.character(result$dimension_name),
-        fixed_basis_size=nf,random_basis_size=nr,
-        spline_degree=result$spline_degree,
-        reml=result$reml,
-        maxiter=if(is.null(result$maxiter))500L else
-          result$maxiter),
+      withCallingHandlers(
+        etr_fit_joint_bspline_functional_mixed_effects(
+          trajectories=dat,design=design,
+          predictors=predictor_names,
+          participant_column=".etr_bootstrap_pid",
+          dimension=as.character(result$dimension_name),
+          fixed_basis_size=nf,random_basis_size=nr,
+          spline_degree=result$spline_degree,
+          reml=result$reml,
+          maxiter=if(is.null(result$maxiter))500L else
+            result$maxiter),
+        warning=function(w){
+          backend_messages<<-c(backend_messages,conditionMessage(w))
+          invokeRestart("muffleWarning")
+        }),
       error=function(e)stop(sprintf(
         "full-refit participant bootstrap replicate %d failed; no replicate was silently discarded or redrawn: %s",
         b,conditionMessage(e)),call.=FALSE))
@@ -136,7 +142,7 @@
       1e-10*max(1,max(abs(eigenvalues)))
     variance[b]<-fit$residual_variance
     loglik[b]<-as.numeric(stats::logLik(fit$fitted_model))
-    warnings[[b]]<-character()
+    warnings[[b]]<-unique(backend_messages)
   }
   mean<-matrix(apply(coeff,c(2L,3L),mean),nrow=p,ncol=nt)
   se<-matrix(apply(coeff,c(2L,3L),stats::sd),nrow=p,ncol=nt)
