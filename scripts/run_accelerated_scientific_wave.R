@@ -98,16 +98,63 @@
         encoding="UTF-8",local=TRUE)
       cat("ACCELERATED_WAVE_GEE_BOOTSTRAP_SOURCE_DIFF_RECORDED=TRUE\n")
     }
+    sparse_disagreements<-0L
+    sparse_runner_errors<-character()
     if(identical(Sys.getenv("ET_RUN_SPARSE_SOURCE_DIFF"),"true")){
-      source("scripts/run_sparse_fpca_source_differential.R",
-        encoding="UTF-8",local=TRUE)
-      source("scripts/run_sparse_mfpca_source_differential.R",
-        encoding="UTF-8",local=TRUE)
-      cat("ACCELERATED_WAVE_SPARSE_FPCA_SOURCE_DIFF_RECORDED=TRUE\n")
-      cat("ACCELERATED_WAVE_SPARSE_MFPCA_SOURCE_DIFF_RECORDED=TRUE\n")
+      # Run both expensive sparse scientific source families in the same
+      # local wave even if the first finds numerical differences. This
+      # preserves strict fail-on-divergence at the final consolidated gate
+      # without wasting another RStudio round trip. Never change the
+      # saved strict environment setting permanently.
+      sparse_runner<-function(path,tag){
+        previous<-Sys.getenv("ET_SOURCE_DIFF_FAIL_ON_DIVERGENCE",
+          unset=NA_character_)
+        on.exit({
+          if(is.na(previous))
+            Sys.unsetenv("ET_SOURCE_DIFF_FAIL_ON_DIVERGENCE")
+          else Sys.setenv(
+            ET_SOURCE_DIFF_FAIL_ON_DIVERGENCE=previous)
+        },add=TRUE)
+        Sys.setenv(ET_SOURCE_DIFF_FAIL_ON_DIVERGENCE="false")
+        report<-tryCatch(
+          source(path,encoding="UTF-8",local=TRUE)$value,
+          error=function(e){
+            sparse_runner_errors<<-c(sparse_runner_errors,paste0(
+              tag,": ",conditionMessage(e)))
+            cat("ACCELERATED_WAVE_SPARSE_RUNNER_ERROR=",tag,
+              ";MESSAGE=",conditionMessage(e),"\n",sep="")
+            NULL
+          })
+        if(is.null(report))return(invisible(NULL))
+        stopifnot(is.data.frame(report),
+          "outcome"%in%names(report))
+        differences<-grepl(
+          "^(DIVERGENT|SOURCE_EXCEPTION|INVALID_FIXTURE)",
+          report$outcome)
+        sparse_disagreements<<-sparse_disagreements+
+          sum(differences)
+        cat("ACCELERATED_WAVE_SPARSE_",tag,"_CASES=",
+          nrow(report),";DIFFERENCES=",sum(differences),
+          "\n",sep="")
+        invisible(report)
+      }
+      sparse_runner("scripts/run_sparse_fpca_source_differential.R",
+        "FPCA")
+      sparse_runner("scripts/run_sparse_mfpca_source_differential.R",
+        "MFPCA")
+      cat("ACCELERATED_WAVE_SPARSE_FPCA_SOURCE_DIFF_ATTEMPTED=TRUE\n")
+      cat("ACCELERATED_WAVE_SPARSE_MFPCA_SOURCE_DIFF_ATTEMPTED=TRUE\n")
     }
     runpy("scripts/summarize_scientific_source_evidence.py")
     cat("ACCELERATED_WAVE_BOUNDED_PYTHON_DIFF_RECORDED=TRUE\n")
+    if(length(sparse_runner_errors)>0L)
+      stop(paste("Sparse source runner execution failure:",
+        paste(sparse_runner_errors,collapse=" | ")),call.=FALSE)
+    if(sparse_disagreements>0L&&identical(
+      Sys.getenv("ET_SOURCE_DIFF_FAIL_ON_DIVERGENCE"),"true"))
+      stop(sprintf(
+        "Sparse source differential remains divergent: %d recorded cases across both families; see unsigned reports",
+        sparse_disagreements),call.=FALSE)
   }
 
   if(mode == "full") {
