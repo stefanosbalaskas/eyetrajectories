@@ -203,7 +203,8 @@ def _etr_diag_source(a,b,prod,grid,times,residuals):
     reticulate::r_to_py(pairs$s),reticulate::r_to_py(pairs$t),
     reticulate::r_to_py(pairs$products),reticulate::r_to_py(grid),
     reticulate::r_to_py(times),reticulate::r_to_py(residuals))
-  rotated<-p[[1L]];noise<-p[[2L]]
+  rotated<-reticulate::py_get_item(p,0L)
+  noise<-reticulate::py_get_item(p,1L)
   get<-function(o,k)et_to_r(reticulate::py_get_attr(o,k))
   expect_equal(native_diag$values,get(rotated,"values"),
     tolerance=1e-7,ignore_attr=TRUE)
