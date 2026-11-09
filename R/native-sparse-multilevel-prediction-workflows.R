@@ -105,6 +105,78 @@ etr_run_sparse_multilevel_workflow<-function(trajectories,config,
 #' @export
 etr_run_sparse_prediction_workflow<-function(proper_training,calibration,
     target,config){
+  if(is.list(config)&&!is.data.frame(config)&&
+      identical(config$backend,"native_sparse_partial_conformal")){
+    cfg<-.etr_source_workflow_config(config,list(
+      backend=NULL,training=NULL,history_cutoff=NULL,
+      prediction_grid=NULL,alpha=.05,group_column=NULL,
+      min_history_observations=2L,
+      condition_limit=NULL,history_ridge=NULL,
+      preprocessing=list()),required=c(
+        "backend","training","history_cutoff","prediction_grid","alpha"))
+    .etr_assert(is.list(cfg$training)&&
+      identical(cfg$training$backend,"native_covariance"),
+      "native sparse partial conformal workflow requires native PACE training config")
+    .etr_assert(is.list(cfg$preprocessing)&&
+      !length(cfg$preprocessing),
+      "source sparse prediction does not perform hidden preprocessing")
+    .etr_assert(all(vapply(list(proper_training,calibration,target),
+      inherits,logical(1L),"etr_irregular_trajectory_set")),
+      "source sparse prediction requires three native irregular role collections")
+    .etr_assert(length(target$curve_ids)==1L,
+      "source sparse prediction target must contain exactly one curve")
+    # Source role assignment is always explicit; no random splitting.
+    training<-etr_run_sparse_fpca_workflow(
+      proper_training,cfg$training)
+    cal<-etr_calibrate_sparse_fpca_partial_conformal_native(
+      training$fit,calibration,
+      history_cutoff=cfg$history_cutoff,
+      prediction_grid=cfg$prediction_grid,
+      alpha=cfg$alpha,group_column=cfg$group_column,
+      min_history_observations=cfg$min_history_observations,
+      condition_limit=cfg$condition_limit,
+      history_ridge=cfg$history_ridge)
+    band<-etr_sparse_fpca_conformal_prediction_band_native(
+      cal,target)
+    frame<-etr_sparse_fpca_conformal_band_frame_native(band)
+    params<-cfg[setdiff(names(cfg),"preprocessing")]
+    source_decisions<-lapply(params,.etr_source_workflow_decision)
+    return(structure(list(
+      workflow_schema_version=1L,
+      workflow_contract="sparse_prediction:v1",
+      config=cfg,training_workflow=training,
+      calibration=cal,band=band,
+      steps=list(
+        .etr_source_workflow_step("proper_training.fit_sparse_fpca",
+          cfg$training),
+        .etr_source_workflow_step(
+          "conformal_calibration",params),
+        .etr_source_workflow_step(
+          "target_prediction",
+          list(target_curve_ids=target$curve_ids))),
+      decisions=source_decisions,
+      provenance=list(
+        raw_interpolation_performed=FALSE,
+        random_role_split_performed=FALSE,
+        proper_training_role_explicit=TRUE,
+        calibration_role_explicit=TRUE,
+        target_role_explicit=TRUE,
+        coverage_scope=
+          "future_observed_measurements_on_declared_finite_grid",
+        automatic_model_selection_performed=FALSE,
+        python_complete_source_schema_certified=FALSE,
+        independent_full_contract_certified=FALSE),
+      reports=list(
+        training_fit=training$reports$fit,
+        prediction_band=paste(
+          "Native split conformal future observed-measurement band",
+          "on declared finite grid; exchangeability required.")),
+      tables=list(
+        training_scores=training$tables$scores,
+        calibration_curve_scores=cal$curve_scores,
+        prediction_band=frame)),
+      class="etr_native_sparse_prediction_workflow"))
+  }
   cfg<-.etr_source_workflow_config(config,list(
     backend=NULL,dimension=NULL,evaluation_grid=NULL,alpha=.1,
     preprocessing=list()),
