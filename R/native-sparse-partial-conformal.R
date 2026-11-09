@@ -125,7 +125,7 @@ etr_calibrate_sparse_fpca_partial_conformal_native<-function(
       "alpha below finite-sample calibration resolution")
   critical<-sort(scores)[rank]
   prov<-list(
-    method="split_conformal_sparse_partial_future_calibration",
+    method="participant_aware_split_conformal_max_standardized_future_residual",
     prediction_target=
       "future_observed_measurements_on_declared_finite_grid",
     nonconformity="maximum_standardized_absolute_future_residual",
@@ -156,6 +156,7 @@ etr_calibrate_sparse_fpca_partial_conformal_native<-function(
     min_history_observations=as.integer(min_history_observations),
     condition_limit=condition_limit,history_ridge=history_ridge,
     n_calibration_units=m,
+    method="participant_aware_split_conformal_max_standardized_future_residual",
     provenance=prov,independent_full_source_certified=FALSE),
     class="etr_sparse_fpca_partial_conformal_calibration_native")
 }
@@ -197,7 +198,7 @@ etr_sparse_fpca_conformal_prediction_band_native<-function(
     history_ridge=calibration$history_ridge)
   scale<-prediction$observed_predictive_standard_errors
   cutoff<-calibration$critical_value
-  prov<-list(method="split_conformal_sparse_future_prediction_band",
+  prov<-list(method="finite_grid_simultaneous_split_conformal_prediction_band",
     prediction_target="future_observed_measurements_on_declared_finite_grid",
     simultaneous_scope="declared_finite_future_grid",
     continuous_domain_coverage_claimed=FALSE,
@@ -211,8 +212,9 @@ etr_sparse_fpca_conformal_prediction_band_native<-function(
     lower=prediction$conditional_mean-cutoff*scale,
     upper=prediction$conditional_mean+cutoff*scale,
     critical_value=cutoff,alpha=calibration$alpha,
-    target_calibration_unit=target_unit,provenance=prov,
-    independent_full_source_certified=FALSE),
+    target_calibration_unit=target_unit,
+    method="finite_grid_simultaneous_split_conformal_prediction_band",
+    provenance=prov,independent_full_source_certified=FALSE),
     class="etr_sparse_fpca_conformal_prediction_band_native")
 }
 
