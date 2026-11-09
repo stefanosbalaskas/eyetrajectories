@@ -144,11 +144,38 @@ ref=et.generate_multivariate_iaaft_surrogates(
     expect_equal(sort(reference[b,,d]),sort(source[,d]),tolerance=0)
 })
 
+# This broadband fixture is reserved for strict cross-language draw parity.
+# The original exact-frequency harmonic fixture remains separately covered:
+# its almost-zero Fourier bins have backend-dependent phases and do not
+# support bitwise reproducibility between independently implemented FFTs.
+.etr_miaaft_broadband_fixture<-function(){
+  time<-seq(0,1,length.out=32L)
+  j<-seq_len(32L)-1L
+  a<-array(0,c(1L,32L,3L))
+  a[1L,,1L]<-sin(2*pi*(3.13*j/32+.11*(j/32)^2)+.16)+
+    .19*cos(2*pi*6.37*j/32+.11)+.015*j+.007*((j+1L)%%5L)
+  a[1L,,2L]<-cos(2*pi*(2.69*j/32+.09*(j/32)^2)-.21)+
+    .17*sin(2*pi*7.23*j/32)+.011*j+.006*((j+3L)%%9L)
+  a[1L,,3L]<-(-.5)*sin(2*pi*(3.27*j/32+.12*(j/32)^2)+.4)+
+    .28*cos(2*pi*4.41*j/32+.05)+.022*j+.009*((j*j)%%7L)
+  etr_trajectory_set(time,a,"a",c("x","y","z"),
+    coordinate_system="pixels",time_unit="s")
+}
+
+test_that("fixed-draw oracle has broadband nonzero spectra in every channel",{
+  x<-.etr_miaaft_broadband_fixture()
+  input<-x$values[1L,,c(3L,1L,2L)]
+  spectrum<-.etr_multivariate_fft_half(input)
+  expect_gt(min(Mod(spectrum)),1e-3)
+  expect_equal(dim(spectrum),c(17L,3L))
+  expect_true(all(is.finite(Re(spectrum))))
+})
+
 test_that("frozen Python public MIAAFT agrees with native R under identical initial ranks",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("frozen Python 1.2 fixed-permutation numerical differential opt-in")
   expect_identical(et_python_version(),"1.2.0")
-  x<-.etr_miaaft_fixture()
+  x<-.etr_miaaft_broadband_fixture()
   B<-2L;nt<-length(x$time);d<-3L
   fixed<-array(0L,c(B,nt,d))
   for(i in seq_len(B))for(j in seq_len(d))
@@ -172,12 +199,21 @@ for _i in range(2):
     7*np.arange(32,dtype=np.int64)+3*(_i+1)+5*(_j+1))%32
 import eyetrajectoriespy as _etr_miaaft_public
 import eyetrajectoriespy.multivariate_surrogates as _etr_miaaft_module
-_j=np.arange(32)
+_j=np.arange(32,dtype=np.int64)
+_jf=_j.astype(np.float64)
 _src=np.stack([
- np.sin(2*np.pi*3*_j/32+.16)+.19*np.cos(2*np.pi*6*_j/32),
- np.cos(2*np.pi*3*_j/32-.21)+.17*np.sin(2*np.pi*7*_j/32),
- -.5*np.sin(2*np.pi*3*_j/32+.4)+.28*np.cos(2*np.pi*4*_j/32)
+ np.sin(2*np.pi*(3.13*_jf/32+.11*(_jf/32)**2)+.16)
+   +.19*np.cos(2*np.pi*6.37*_jf/32+.11)
+   +.015*_jf+.007*((_j+1)%5),
+ np.cos(2*np.pi*(2.69*_jf/32+.09*(_jf/32)**2)-.21)
+   +.17*np.sin(2*np.pi*7.23*_jf/32)
+   +.011*_jf+.006*((_j+3)%9),
+ -.5*np.sin(2*np.pi*(3.27*_jf/32+.12*(_jf/32)**2)+.4)
+   +.28*np.cos(2*np.pi*4.41*_jf/32+.05)
+   +.022*_jf+.009*((_j*_j)%7)
 ],axis=-1)
+if np.min(np.abs(np.fft.rfft(_src,axis=0)))<=1e-3:
+    raise AssertionError('Source differential fixture is spectrally ill-conditioned')
 _tr=_etr_miaaft_public.TrajectorySet(
  time=np.linspace(0,1,32),values=_src[None,:,:],
  curve_ids=('a',),dimension_names=('x','y','z'),
@@ -222,6 +258,8 @@ if _counter[0]!=2:
     unname(et_to_r(reticulate::py_get_attr(src,"source_values"))),
     tolerance=1e-12,ignore_attr=TRUE,
     info="Input fixture equality must precede numerical inference")
+  expect_gt(as.numeric(reticulate::py_eval(
+    "np.min(np.abs(np.fft.rfft(_src,axis=0)))",convert=TRUE)),1e-3)
   for(field in c("surrogates",
       "spectral_errors","cross_spectral_errors")){
     observed<-unname(native[[field]])
