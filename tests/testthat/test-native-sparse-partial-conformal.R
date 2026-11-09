@@ -1,3 +1,27 @@
+
+test_that("reticulate preserves one-curve IDs and metadata as Python sequences",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("reticulate Python sequence regression is opt-in")
+  reticulate::py_run_string("
+def _etr_source_roles_lengths(time,values,ids,batch):
+    assert not isinstance(ids,(str,bytes)), 'ids must be a sequence'
+    assert not isinstance(batch,(str,bytes)), 'batch must be a sequence'
+    return (len(time),len(values),len(ids),len(batch),
+      str(ids[0]),str(batch[0]))
+")
+  target<-.etr_spnp_partial_target_safe()
+  fn<-reticulate::py_eval("_etr_source_roles_lengths",convert=FALSE)
+  result<-reticulate::py_call(fn,
+    time=reticulate::r_to_py(target$time),
+    values=reticulate::r_to_py(target$values),
+    ids=reticulate::r_to_py(as.list(as.character(target$curve_ids))),
+    batch=reticulate::r_to_py(
+      as.list(as.character(target$metadata$batch))))
+  actual<-unlist(reticulate::py_to_r(result),use.names=FALSE)
+  expect_identical(as.character(actual),
+    c("1","1","1","1","target_conformal","target_unique"))
+})
+
 test_that("native split conformal uses exact finite-grid futures and group maxima",{
   training<-.etr_spn_source_fixture()
   fit<-.etr_spn_fit_from_fixture(training)
@@ -119,6 +143,10 @@ import eyetrajectoriespy as _etr_spnpc
 import importlib
 _etr_spnpc_module=importlib.import_module('eyetrajectoriespy.sparse_partial_conformal')
 def _etr_spnpc_irregular(time,values,ids,batch):
+    if isinstance(ids,(str,bytes)) or isinstance(batch,(str,bytes)):
+        raise TypeError('one-curve ids and batch must be sequences, not strings')
+    if not (len(time)==len(values)==len(ids)==len(batch)):
+        raise AssertionError('source-fixture curve-role lengths do not match')
     return _etr_spnpc.IrregularTrajectorySet(
       time=tuple(np.asarray(t,dtype=float) for t in time),
       values=tuple(np.asarray(v,dtype=float) for v in values),

@@ -102,6 +102,10 @@ import eyetrajectoriespy as _etr_spnp
 import importlib
 _etr_spnp_future=importlib.import_module('eyetrajectoriespy.sparse_partial_prediction')
 def _etr_spnp_input(times,values,ids):
+    if isinstance(ids,(str,bytes)):
+        raise TypeError('source-fixture curve ids must be a sequence')
+    if not (len(times)==len(values)==len(ids)):
+        raise AssertionError('source-fixture curve role lengths do not match')
     return _etr_spnp.IrregularTrajectorySet(
       time=tuple(np.asarray(t,dtype=float) for t in times),
       values=tuple(np.asarray(v,dtype=float) for v in values),

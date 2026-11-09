@@ -38,6 +38,10 @@ from eyetrajectoriespy.workflows._sparse_prediction import (
     run_sparse_prediction_workflow as _etr_sparse_workflow_run,
 )
 def _etr_sparse_workflow_irregular(time, values, ids, batch):
+    if isinstance(ids,(str,bytes)) or isinstance(batch,(str,bytes)):
+        raise TypeError('source workflow identifiers must be sequences')
+    if not (len(time)==len(values)==len(ids)==len(batch)):
+        raise AssertionError('source workflow role lengths do not match')
     return _etr_sparse_workflow_data(
       time=tuple(np.asarray(t,dtype=float) for t in time),
       values=tuple(np.asarray(v,dtype=float) for v in values),
