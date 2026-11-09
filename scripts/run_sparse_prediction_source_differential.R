@@ -63,8 +63,8 @@ _etr_sparse_workflow_config=_etr_sparse_workflow_predconfig(
   pydata<-function(x)reticulate::py_call(build,
     time=reticulate::r_to_py(x$time),
     values=reticulate::r_to_py(x$values),
-    ids=reticulate::r_to_py(x$curve_ids),
-    batch=reticulate::r_to_py(as.character(x$metadata$batch)))
+    ids=reticulate::r_to_py(as.list(as.character(x$curve_ids))),
+    batch=reticulate::r_to_py(as.list(as.character(x$metadata$batch))))
   sourceproper<-pydata(proper);sourcecal<-pydata(calibration)
   sourcetarget<-pydata(target)
   pyfunction<-reticulate::py_eval(

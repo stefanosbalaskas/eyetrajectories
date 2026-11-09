@@ -131,8 +131,8 @@ def _etr_spnpc_irregular(time,values,ids,batch):
   make<-function(z)reticulate::py_call(mk,
     time=reticulate::r_to_py(z$time),
     values=reticulate::r_to_py(z$values),
-    ids=reticulate::r_to_py(z$curve_ids),
-    batch=reticulate::r_to_py(as.character(z$metadata$batch)))
+    ids=reticulate::r_to_py(as.list(as.character(z$curve_ids))),
+    batch=reticulate::r_to_py(as.list(as.character(z$metadata$batch))))
   pytrain<-make(proper);pycal<-make(cal);pytarget<-make(target)
   pyfit<-reticulate::py_call(etpy_get_export("fit_sparse_fpca"),
     trajectories=pytrain,dimension="signal",n_components=1L,

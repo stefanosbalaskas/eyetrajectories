@@ -113,11 +113,11 @@ def _etr_spnp_input(times,values,ids):
   pytrain<-reticulate::py_call(make,
     times=reticulate::r_to_py(training$time),
     values=reticulate::r_to_py(training$values),
-    ids=reticulate::r_to_py(training$curve_ids))
+    ids=reticulate::r_to_py(as.list(as.character(training$curve_ids))))
   pytarget<-reticulate::py_call(make,
     times=reticulate::r_to_py(target$time),
     values=reticulate::r_to_py(target$values),
-    ids=reticulate::r_to_py(target$curve_ids))
+    ids=reticulate::r_to_py(as.list(as.character(target$curve_ids))))
   pyfit<-reticulate::py_call(
     etpy_get_export("fit_sparse_fpca"),
     trajectories=pytrain,dimension="signal",n_components=1L,
