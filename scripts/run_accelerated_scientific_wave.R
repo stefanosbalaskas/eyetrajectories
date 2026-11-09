@@ -4,7 +4,8 @@
 #                                  + ONE clean Git-snapshot CRAN-style check
 #    ET_SCIENTIFIC_WAVE_MODE=cran: clean Git-snapshot CRAN check only
 #    ET_RUN_SPARSE_SOURCE_DIFF=true: additionally compare fitted source
-#       sparse FPCA/PACE covariance, eigenfunctions and scores with Python 1.2
+#       univariate sparse FPCA/PACE and direct joint sparse MFPCA
+#       covariance, eigenfunctions and scores with frozen Python 1.2
 #    ET_RUN_BOOTSTRAP_SOURCE_DIFF=true: additionally run 100 whole-participant
 #       source/native GEE refits per Poisson, grouped binomial and exposure
 #       family; write unsigned scientific comparison evidence separately.
@@ -100,7 +101,10 @@
     if(identical(Sys.getenv("ET_RUN_SPARSE_SOURCE_DIFF"),"true")){
       source("scripts/run_sparse_fpca_source_differential.R",
         encoding="UTF-8",local=TRUE)
+      source("scripts/run_sparse_mfpca_source_differential.R",
+        encoding="UTF-8",local=TRUE)
       cat("ACCELERATED_WAVE_SPARSE_FPCA_SOURCE_DIFF_RECORDED=TRUE\n")
+      cat("ACCELERATED_WAVE_SPARSE_MFPCA_SOURCE_DIFF_RECORDED=TRUE\n")
     }
     runpy("scripts/summarize_scientific_source_evidence.py")
     cat("ACCELERATED_WAVE_BOUNDED_PYTHON_DIFF_RECORDED=TRUE\n")
