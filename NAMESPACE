@@ -930,3 +930,5 @@ export(etr_sparse_fpca_partial_prediction_frame_native)
 export(etr_calibrate_sparse_fpca_partial_conformal_native)
 export(etr_sparse_fpca_conformal_prediction_band_native)
 export(etr_sparse_fpca_conformal_band_frame_native)
+
+export(etr_fit_sparse_multilevel_fpca_native)
