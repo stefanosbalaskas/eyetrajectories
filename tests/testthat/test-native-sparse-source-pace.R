@@ -1,3 +1,26 @@
+
+test_that("source logical shape audit distinguishes vector versus matrix without dropping dimensions",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Python ndarray.shape verification is opt-in")
+  reticulate::py_run_string("
+import numpy as np
+_etr_shape_1d=np.arange(9,dtype=float)
+_etr_shape_2d=np.arange(9,dtype=float).reshape(1,9)
+")
+  shape<-function(name)as.integer(unlist(et_to_r(
+    reticulate::py_get_attr(
+      reticulate::py_eval(name,convert=FALSE),"shape"))))
+  native_shape<-function(x)
+    as.integer(if(is.null(dim(x)))length(x)else dim(x))
+  expect_identical(native_shape(seq_len(9)),shape("_etr_shape_1d"))
+  expect_identical(native_shape(matrix(seq_len(9),1L,9L)),
+    shape("_etr_shape_2d"))
+  expect_false(identical(
+    native_shape(matrix(seq_len(9),1L,9L)),shape("_etr_shape_1d")))
+  expect_false(identical(
+    native_shape(seq_len(9)),shape("_etr_shape_2d")))
+})
+
 test_that("native sparse PACE fits a local covariance and conditions on full operator",{
   x<-.etr_spn_source_fixture()
   f<-.etr_spn_fit_from_fixture(x)
