@@ -85,7 +85,8 @@
       "native-joint-structured-full-refit",
       "native-sparse-source-pace",
       "native-sparse-mfpca-source",
-      "native-sparse-mfpca-score-uncertainty"
+      "native-sparse-mfpca-score-uncertainty",
+      "native-sparse-partial-trajectory-prediction"
     ),collapse="|"),reporter="summary",
       stop_on_failure=TRUE,stop_on_warning=TRUE)
     cat("ACCELERATED_WAVE_TARGETED_R_PASS=TRUE\n")
