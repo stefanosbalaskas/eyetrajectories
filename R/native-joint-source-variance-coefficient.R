@@ -7,14 +7,14 @@
 .etr_joint_source_variance_record <- function(fit) {
   .etr_assert(inherits(fit,"etr_joint_bspline_mixed"),
     "variance record requires a native joint B-spline mixed fit")
-  t <- fit$time
+  grid <- fit$time
   B <- fit$random_basis
   G <- fit$random_effect_covariance
-  .etr_assert(is.numeric(t) && is.null(dim(t)) &&
-    length(t)>=2L && all(is.finite(t)) && all(diff(t)>0),
+  .etr_assert(is.numeric(grid) && is.null(dim(grid)) &&
+    length(grid)>=2L && all(is.finite(grid)) && all(diff(grid)>0),
     "joint fit time must be a finite strictly increasing vector")
   .etr_assert(is.matrix(B) && is.numeric(B) &&
-    nrow(B)==length(t) && ncol(B)>=1L && all(is.finite(B)),
+    nrow(B)==length(grid) && ncol(B)>=1L && all(is.finite(B)),
     "joint fit random basis is not a finite time-by-basis matrix")
   k <- ncol(B)
   slope <- inherits(fit,"etr_joint_bspline_mixed_slope") ||
@@ -32,7 +32,7 @@
     inherits(fit,"etr_joint_bspline_mixed_nested_slope"))
     "functional_intercept" else NULL
   intercept <- G[seq_len(k),seq_len(k),drop=FALSE]
-  out <- list(time=t,random_basis=B,
+  out <- list(time=grid,random_basis=B,
     random_intercept_covariance=intercept,
     random_slope_covariance=NULL,
     random_intercept_slope_covariance=NULL,
@@ -50,7 +50,7 @@
     C <- fit$trial_random_effect_covariance
     Bt <- fit$trial_random_basis
     .etr_assert(is.matrix(Bt) && is.numeric(Bt) &&
-      nrow(Bt)==length(t) && ncol(Bt)>=1L &&
+      nrow(Bt)==length(grid) && ncol(Bt)>=1L &&
       all(is.finite(Bt)),
       "nested trial basis must be a finite time-by-basis matrix")
     .etr_assert(is.matrix(C) && is.numeric(C) &&
