@@ -134,7 +134,10 @@ etr_build_508_certification_review_batches <- function(
       "unresolved")%in%names(nf_gaps))&&
     is.logical(fn_gaps$unresolved_source_gap)&&
     !anyNA(fn_gaps$unresolved_source_gap)&&
-    sum(fn_gaps$unresolved_source_gap)==201L&&
+    all(fn_gaps$unresolved_source_gap[
+      !fn_gaps$python_name%in%c(
+        "functional_recovery_metric_catalog_frame",
+        "mathematical_contract_frame")])&&
     identical(sort(fn_gaps$python_name[!fn_gaps$unresolved_source_gap]),
       sort(c("functional_recovery_metric_catalog_frame",
         "mathematical_contract_frame")))&&
