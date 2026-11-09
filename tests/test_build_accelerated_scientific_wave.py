@@ -47,8 +47,17 @@ class ConsolidatedScientificWaveTests(unittest.TestCase):
             with out.open(encoding="utf-8", newline="") as f:
                 rows = list(csv.DictReader(f))
             self.assertEqual(len(rows), 32)
-            self.assertTrue(all(r["full_domain_case_status"] ==
-                                "PENDING_SOURCE_FIXTURE" for r in rows))
+            # A source report may already exist for this *same* HEAD on
+            # repeated user runs. Bounded passes change the work-phase
+            # status, never the certification flags.
+            self.assertTrue(all(
+                r["full_domain_case_status"] in {
+                    "PENDING_SOURCE_FIXTURE",
+                    "FINITE_SOURCE_CASES_PASS_NEEDS_FULL_CONTRACT_REVIEW",
+                    "REPAIR_RECORDED_PYTHON_NUMERICAL_DIVERGENCE",
+                } for r in rows))
+            self.assertTrue(all(int(r["matched_finite_source_cases"]) >= 0
+                                for r in rows))
             self.assertTrue(all(r["numerical_algorithm_certified"] ==
                                 "FALSE" for r in rows))
             self.assertTrue(all(r["independent_reviewer_approved"] ==
