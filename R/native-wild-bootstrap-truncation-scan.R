@@ -73,22 +73,51 @@ etr_scan_wild_bootstrap_fpca_truncations<-function(
       identical(dim(mult),c(B,n))&&all(is.finite(mult)),
       "multiplier_draws must be finite B-by-n fixed source draws")
   }
-  # Execute one strictly guarded source numerical fit at max h to
-  # validate data and establish the precise component geometry.
-  maximum_fit<-etr_wild_bootstrap_fpca_projection(
-    trajectories=trajectories,outcome=outcome,targets=targets,
-    n_bootstrap=B,residual_components=residual_components,
-    inference_components=as.integer(tail(candidate_components,1L)),
-    scaling=scaling,multiplier=multiplier,
-    confidence_level=confidence_level,
-    independent_unit_column=independent_unit_column,
-    random_state=random_state,multiplier_draws=mult)
-  fit<-maximum_fit$reference_fpca
-  scores<-fit$scores
+  # The old scan first ran a complete h=max bootstrap merely to obtain
+  # reference_fpca, then repeated every bootstrap replicate during the scan.
+  # Fit the shared FPCA basis directly; this avoids a redundant B-replicate
+  # wild bootstrap without changing the fixed-basis source estimand.
+  etr_validate(trajectories,require_complete=TRUE)
+  .etr_assert(all(is.finite(trajectories$values)),
+    "training trajectories must be complete finite")
+  .etr_assert(is.numeric(outcome)&&is.null(dim(outcome))&&
+    length(outcome)==n&&all(is.finite(outcome)),
+    "outcome must contain finite scalar per training curve")
+  .etr_assert(is.character(scaling)&&length(scaling)==1L&&
+    !is.na(scaling)&&scaling%in%c("none","dimension_sd"),
+    "scaling must be none or dimension_sd")
+  .etr_assert(is.numeric(confidence_level)&&length(confidence_level)==1L&&
+    is.finite(confidence_level)&&confidence_level>0&&
+    confidence_level<1,
+    "confidence_level must lie in (0,1)")
+  .etr_assert(is.null(independent_unit_column)||
+    (is.character(independent_unit_column)&&
+      length(independent_unit_column)==1L&&!is.na(independent_unit_column)&&
+      independent_unit_column%in%names(trajectories$metadata)),
+    "independent_unit_column must identify existing metadata")
+  if(!is.null(independent_unit_column)){
+    ids<-as.character(trajectories$metadata[[independent_unit_column]])
+    .etr_assert(!anyNA(ids)&&!anyDuplicated(ids),
+      "wild bootstrap requires independent curve rows; repeated unit IDs unsupported")
+  }
+  target_source<-if(is.null(targets))"training" else "external"
   if(is.null(targets))targets<-trajectories
+  etr_validate(targets,require_complete=TRUE)
+  .etr_assert(identical(targets$time,trajectories$time)&&
+    identical(targets$dimension_names,trajectories$dimension_names)&&
+    identical(targets$time_unit,trajectories$time_unit)&&
+    identical(targets$coordinate_system,trajectories$coordinate_system)&&
+    all(is.finite(targets$values)),
+    "targets must match training time channel units geometry and be complete finite")
+  fit<-etr_fit_fpca(trajectories,
+    n_components=as.integer(tail(candidate_components,1L)),scaling=scaling)
+  scores<-fit$scores
   target_scores<-etr_transform_fpca(fit,targets)
+  .etr_assert(all(is.finite(scores))&&all(is.finite(target_scores)),
+    "FPCA score geometry must be finite")
   k<-as.integer(residual_components)
-  fk<-.etr_wild_fpcr_fixed_fit(scores,outcome,k)
+  fit_k<-.etr_wild_fpcr_prepared_fit(scores,k)
+  fk<-fit_k(outcome)
   nk<-length(candidate_components);nq<-length(targets$curve_ids)
   pseudo_truth<-as.vector(
     target_scores[,seq_len(k),drop=FALSE]%*%fk$beta[-1L])
@@ -96,8 +125,7 @@ etr_scan_wild_bootstrap_fpca_truncations<-function(
   residual_k<-matrix(0,B,n)
   for(i in seq_len(B)){
     pseudo_y[i,]<-fk$fitted+fk$residual*mult[i,]
-    residual_k[i,]<-.etr_wild_fpcr_fixed_fit(
-      scores,pseudo_y[i,],k)$residual
+    residual_k[i,]<-fit_k(pseudo_y[i,])$residual
   }
   projections<-matrix(0,nk,nq)
   ses<-matrix(0,nk,nq)
@@ -110,13 +138,14 @@ etr_scan_wild_bootstrap_fpca_truncations<-function(
     h<-as.integer(candidate_components[j])
     score_h<-scores[,seq_len(h),drop=FALSE]
     target_h<-target_scores[,seq_len(h),drop=FALSE]
-    f_h<-.etr_wild_fpcr_fixed_fit(scores,outcome,h)
+    fit_h<-.etr_wild_fpcr_prepared_fit(scores,h)
+    f_h<-fit_h(outcome)
     ref<-as.vector(target_h%*%f_h$beta[-1L])
     se<-.etr_wild_fpcr_hetero_se(score_h,fk$residual,target_h)
     projections[j,]<-ref;ses[j,]<-se
     tolerance<-100*.Machine$double.eps*max(1,abs(ref))
     for(i in seq_len(B)){
-      fs<-.etr_wild_fpcr_fixed_fit(scores,pseudo_y[i,],h)
+      fs<-fit_h(pseudo_y[i,])
       ps<-as.vector(target_h%*%fs$beta[-1L])
       ss<-.etr_wild_fpcr_hetero_se(score_h,residual_k[i,],target_h)
       delta<-ps-pseudo_truth
@@ -160,7 +189,7 @@ etr_scan_wild_bootstrap_fpca_truncations<-function(
     centers=(lower+upper)/2,widths=upper-lower,
     studentized_roots=roots,confidence_level=confidence_level,
     scaling=scaling,multiplier=multiplier,
-    target_source=maximum_fit$target_source,
+    target_source=target_source,
     independent_unit_column=independent_unit_column,
     random_state=random_state,provenance=provenance),
     class="etr_fpca_wild_bootstrap_truncation_scan")
