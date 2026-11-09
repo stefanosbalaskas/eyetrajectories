@@ -131,3 +131,78 @@ ref=et.generate_multivariate_iaaft_surrogates(
   for(b in seq_len(dim(reference)[1L]))for(d in seq_len(dim(reference)[3L]))
     expect_equal(sort(reference[b,,d]),sort(source[,d]),tolerance=0)
 })
+
+test_that("frozen Python public MIAAFT agrees with native R under identical initial ranks",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("frozen Python 1.2 fixed-permutation numerical differential opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  x<-.etr_miaaft_fixture()
+  B<-2L;nt<-length(x$time);d<-3L
+  fixed<-array(0L,c(B,nt,d))
+  for(i in seq_len(B))for(j in seq_len(d))
+    fixed[i,,j]<-(seq_len(nt)-1L+3L*i+7L*j)%%nt
+  native<-etr_generate_multivariate_iaaft_surrogates(
+    x,curve="a",dimensions=c("z","x","y"),
+    reference_dimension="x",n_surrogates=B,
+    max_iterations=120L,tolerance=.5,
+    initial_permutations=fixed)
+  reticulate::py$etr_miaaft_fixed_permutations<-
+    reticulate::r_to_py(fixed)
+  reticulate::py_run_string("
+import numpy as np
+import eyetrajectoriespy as _etr_miaaft_public
+import eyetrajectoriespy.multivariate_surrogates as _etr_miaaft_module
+_j=np.arange(32)
+_src=np.stack([
+ np.sin(2*np.pi*3*_j/32+.16)+.19*np.cos(2*np.pi*6*_j/32),
+ np.cos(2*np.pi*3*_j/32-.21)+.17*np.sin(2*np.pi*7*_j/32),
+ -.5*np.sin(2*np.pi*3*_j/32+.4)+.28*np.cos(2*np.pi*4*_j/32)
+],axis=-1)
+_tr=_etr_miaaft_public.TrajectorySet(
+ time=np.linspace(0,1,32),values=_src[None,:,:],
+ curve_ids=('a',),dimension_names=('x','y','z'),
+ coordinate_system='pixels',time_unit='s')
+_before=_etr_miaaft_module._multivariate_iaaft_one
+_counter=[0]
+def _etr_fixed_multivariate_oracle(values,*,reference_index,
+                                  rng,max_iterations,tolerance):
+    replicate=_counter[0]
+    _counter[0]+=1
+    if replicate>=etr_miaaft_fixed_permutations.shape[0]:
+        raise AssertionError('Unexpected surrogate count')
+    class Replay:
+        def __init__(self): self.channel=0
+        def permutation(self,channel_values):
+            j=self.channel
+            self.channel+=1
+            if j>=etr_miaaft_fixed_permutations.shape[2]:
+                raise AssertionError('Unexpected channel count')
+            source_indices=etr_miaaft_fixed_permutations[replicate,:,j]
+            return np.asarray(channel_values)[source_indices]
+    return _before(values,reference_index=reference_index,
+                   rng=Replay(),max_iterations=max_iterations,
+                   tolerance=tolerance)
+try:
+    _etr_miaaft_module._multivariate_iaaft_one=_etr_fixed_multivariate_oracle
+    _etr_fixed_public=_etr_miaaft_public.generate_multivariate_iaaft_surrogates(
+      _tr,curve='a',dimensions=('z','x','y'),
+      reference_dimension='x',n_surrogates=2,
+      max_iterations=120,tolerance=.5,random_state=19)
+finally:
+    _etr_miaaft_module._multivariate_iaaft_one=_before
+if _counter[0]!=2:
+    raise AssertionError('Frozen public generator did not replay two draws')
+")
+  src<-reticulate::py_eval("_etr_fixed_public",convert=FALSE)
+  for(field in c("source_values","surrogates",
+      "spectral_errors","cross_spectral_errors")){
+    observed<-unname(native[[field]])
+    published<-unname(et_to_r(reticulate::py_get_attr(src,field)))
+    expect_equal(observed,published,tolerance=1e-7,
+      ignore_attr=TRUE,info=paste("fixed multivariate IAAFT source",field))
+  }
+  expect_equal(as.integer(native$convergence_iterations),
+    as.integer(et_to_r(reticulate::py_get_attr(src,
+      "convergence_iterations"))),tolerance=0)
+  expect_false(native$provenance$source_python_equivalent_stochastic_draws)
+})
