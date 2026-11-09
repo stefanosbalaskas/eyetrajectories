@@ -66,7 +66,13 @@
       "native-wild-bootstrap-projection",
       "native-wild-bootstrap-truncation-scan",
       "native-multivariate-iaaft-generator",
-      "native-multivariate-surrogate-nonlinearity"
+      "native-multivariate-surrogate-nonlinearity",
+      "native-generalized-gee-fit",
+      "native-generalized-gee-bootstrap",
+      "native-generalized-fosr-prediction",
+      "native-generalized-fosr-bootstrap-source",
+      "native-generalized-fosr-coefficient-bands",
+      "native-generalized-fosr-contrast-source"
     ),collapse="|"),reporter="summary",
       stop_on_failure=TRUE,stop_on_warning=TRUE)
     cat("ACCELERATED_WAVE_TARGETED_R_PASS=TRUE\n")
