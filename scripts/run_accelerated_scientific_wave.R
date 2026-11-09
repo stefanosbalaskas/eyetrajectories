@@ -3,6 +3,9 @@
 #    ET_SCIENTIFIC_WAVE_MODE=full: fast + full frozen source qualification
 #                                  + ONE clean Git-snapshot CRAN-style check
 #    ET_SCIENTIFIC_WAVE_MODE=cran: clean Git-snapshot CRAN check only
+#    ET_RUN_BOOTSTRAP_SOURCE_DIFF=true: additionally run 100 whole-participant
+#       source/native GEE refits per Poisson, grouped binomial and exposure
+#       family; write unsigned scientific comparison evidence separately.
 # Never increments the 508 certification ledger, publishes to CRAN, or
 # claims full Python source equivalence from bounded numerical probes.
 #
@@ -83,6 +86,11 @@
     source("scripts/run_generalized_gee_source_differential.R",
       encoding="UTF-8",local=TRUE)
     cat("ACCELERATED_WAVE_GENERALIZED_GEE_DIFF_RECORDED=TRUE\n")
+    if(identical(Sys.getenv("ET_RUN_BOOTSTRAP_SOURCE_DIFF"),"true")){
+      source("scripts/run_generalized_gee_bootstrap_source_differential.R",
+        encoding="UTF-8",local=TRUE)
+      cat("ACCELERATED_WAVE_GEE_BOOTSTRAP_SOURCE_DIFF_RECORDED=TRUE\n")
+    }
     cat("ACCELERATED_WAVE_BOUNDED_PYTHON_DIFF_RECORDED=TRUE\n")
   }
 
