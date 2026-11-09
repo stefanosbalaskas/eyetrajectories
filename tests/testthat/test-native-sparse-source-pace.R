@@ -102,6 +102,8 @@ test_that("native sparse source PACE and score uncertainty match pinned Python a
   reticulate::py_run_string("
 import numpy as np
 import eyetrajectoriespy as _etr_spn_et
+import importlib
+_etr_spn_module=importlib.import_module('eyetrajectoriespy.sparse_score_uncertainty')
 def _etr_spn_build_irregular(times, values, ids):
     return _etr_spn_et.IrregularTrajectorySet(
         time=tuple(np.asarray(t,dtype=float) for t in times),
@@ -136,7 +138,9 @@ def _etr_spn_build_irregular(times, values, ids):
   }
   nrposterior<-etr_sparse_fpca_score_uncertainty_native(nr,x)
   pyposterior<-reticulate::py_call(
-    etpy_get_export("sparse_fpca_score_uncertainty"),
+    reticulate::py_get_attr(
+      reticulate::py_eval("_etr_spn_module",convert=FALSE),
+      "sparse_fpca_score_uncertainty"),
     fit=pyfit,trajectories=py)
   for(field in c("covariance","standard_errors")){
     expect_equal(unname(nrposterior[[field]]),
@@ -144,7 +148,9 @@ def _etr_spn_build_irregular(times, values, ids):
       ignore_attr=TRUE,info=paste("source sparse posterior",field))
   }
   source_frame<-reticulate::py_call(
-    etpy_get_export("sparse_fpca_score_uncertainty_frame"),
+    reticulate::py_get_attr(
+      reticulate::py_eval("_etr_spn_module",convert=FALSE),
+      "sparse_fpca_score_uncertainty_frame"),
     result=pyposterior)
   native_frame<-etr_sparse_fpca_score_uncertainty_frame_native(nrposterior)
   pyframe<-et_to_r(source_frame)
