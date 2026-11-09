@@ -32,6 +32,11 @@ REPORTS = {
     "generalized_functional_gee": "generalized_functional_gee_source_cases_UNSIGNED.csv",
     "generalized_gee_bootstrap": "generalized_gee_bootstrap_source_cases_UNSIGNED.csv",
 }
+# Research families are opt-in until their live R/Python source cases have
+# passed. Their absence must not invalidate the existing verified reports.
+OPTIONAL_REPORTS = {
+    "sparse_fpca_native": "sparse_fpca_source_cases_UNSIGNED.csv",
+}
 PASS = frozenset({
     "PASS_NUMERIC", "PASS_BOTH_REJECT", "PASS_SCHEMA",
     "PASS_BOTH_NULL", "SOURCE_INPUT_MATCH",
@@ -79,12 +84,31 @@ def git_head(root: Path) -> str:
 
 
 def read_gaps(root: Path) -> dict[str, bool]:
-    path = root / "inst" / "extdata" / "native_source_contract_gaps_stage22.csv"
+    """Map every public frozen callable, not only the 203 historical gaps."""
+    directory = root / "inst" / "extdata"
+    catalog = read_rows(directory / "python_api_2026-10-25.csv")
+    keys = [(row.get("namespace"), row.get("python_name"))
+            for row in catalog]
+    names = [row.get("python_name", "") for row in catalog]
+    functions = [row for row in catalog if row.get("kind") == "function"]
+    require(len(catalog) == 508 and len(functions) == 380 and
+            len(keys) == len(set(keys)) and
+            len(names) == len(set(names)) and
+            all(bool(key) for key in names),
+            "Frozen Python 508-public-export inventory is incomplete")
+    statuses = {row["python_name"]: False for row in functions}
+    path = directory / "native_source_contract_gaps_stage22.csv"
     rows = read_rows(path)
-    require(all(row.get("unresolved_source_gap") in {"TRUE", "FALSE"}
+    require(len(rows) == 203 and
+            all(row.get("unresolved_source_gap") in {"TRUE", "FALSE"}
                 for row in rows), "Malformed authoritative callable gap flags")
-    return {row["python_name"]:
-            row["unresolved_source_gap"] == "TRUE" for row in rows}
+    require(len({row["python_name"] for row in rows}) == 203 and
+            all(row["python_name"] in statuses for row in rows),
+            "Historical source-gap records not in frozen callable catalog")
+    statuses.update({row["python_name"]:
+                     row["unresolved_source_gap"] == "TRUE"
+                     for row in rows})
+    return statuses
 
 
 def summarize(root: Path, head: str, *, require_all: bool = False,
@@ -100,10 +124,10 @@ def summarize(root: Path, head: str, *, require_all: bool = False,
     records = []
     digests = {}
     found = []
-    for family, filename in REPORTS.items():
+    for family, filename in {**REPORTS, **OPTIONAL_REPORTS}.items():
         path = report_dir / filename
         if not path.exists():
-            if require_all:
+            if require_all and family in REPORTS:
                 raise EvidenceAuditError(f"Expected source report missing: {path}")
             continue
         require(not path.is_symlink(), f"Symlinked evidence report: {path}")

@@ -29,7 +29,8 @@ class ScientificSourceEvidenceTests(unittest.TestCase):
         directory.mkdir(parents=True)
         real = Path(__file__).resolve().parents[1]
         for name in ("native_source_contract_gaps_stage22.csv",
-                     "native_nonfunction_source_gaps_v1.csv"):
+                     "native_nonfunction_source_gaps_v1.csv",
+                     "python_api_2026-10-25.csv"):
             shutil.copyfile(real / "inst" / "extdata" / name,
                             directory / name)
         self.reports = (
@@ -125,6 +126,27 @@ class ScientificSourceEvidenceTests(unittest.TestCase):
         report = evidence.summarize(self.root, HEAD, write=False)
         self.assertEqual(report["inconclusive_both_acceptance_cases"], 1)
         self.assertEqual(report["passing_bounded_comparison_cases"], 2)
+
+
+    def test_frozen_public_no_gap_source_cases_are_counted_without_gap_promotion(self):
+        row = dict(
+            python_name="fit_sparse_fpca",
+            source_fixture="fixed_noise", field="covariance",
+            outcome="PASS_NUMERIC", r_git_head=HEAD,
+            frozen_python_commit=inventory.FROZEN_PYTHON)
+        write_csv(self.reports /
+                  evidence.OPTIONAL_REPORTS["sparse_fpca_native"], [row])
+        result = evidence.summarize(self.root, HEAD, require_all=True,
+                                    write=False)
+        self.assertEqual(result["total_observed_comparison_cases"], 4)
+        self.assertEqual(
+            result["unique_python_functions_with_actual_source_cases"], 4)
+        sparse = next(item for item in result["function_evidence"]
+                      if item["python_name"] == "fit_sparse_fpca")
+        self.assertFalse(sparse["source_gap_still_open"])
+        self.assertTrue(sparse["developer_finite_domain_oracle_evidence"])
+        self.assertFalse(sparse["developer_full_contract_approved"])
+        self.assertEqual(result["independent_certifications_inferred"], 0)
 
     def test_unknown_function_rejected(self):
         self.gee["python_name"] = "not_in_frozen_508_inventory"
