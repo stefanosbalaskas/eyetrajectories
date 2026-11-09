@@ -86,7 +86,8 @@
       "native-sparse-source-pace",
       "native-sparse-mfpca-source",
       "native-sparse-mfpca-score-uncertainty",
-      "native-sparse-partial-trajectory-prediction"
+      "native-sparse-partial-trajectory-prediction",
+      "native-sparse-partial-conformal"
     ),collapse="|"),reporter="summary",
       stop_on_failure=TRUE,stop_on_warning=TRUE)
     cat("ACCELERATED_WAVE_TARGETED_R_PASS=TRUE\n")
