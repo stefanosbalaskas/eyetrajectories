@@ -62,7 +62,8 @@
     runpy("tests/test_source_gap_inventory.py")
     runpy("tests/test_build_accelerated_scientific_wave.py")
     runpy("tests/test_summarize_scientific_source_evidence.py")
-    testthat::test_local(".",filter=paste(c(
+    targeted_failure<-NULL
+    tryCatch(testthat::test_local(".",filter=paste(c(
       "native-zeroarg-metadata-source-semantic-closure",
       "native-independent-source-review-packet",
       "native-508-certification-batches",
@@ -90,8 +91,16 @@
       "native-sparse-partial-conformal",
       "native-sparse-multilevel-source"
     ),collapse="|"),reporter="summary",
-      stop_on_failure=TRUE,stop_on_warning=TRUE)
-    cat("ACCELERATED_WAVE_TARGETED_R_PASS=TRUE\n")
+      stop_on_failure=TRUE,stop_on_warning=TRUE),
+    error=function(e){
+      targeted_failure<<-conditionMessage(e)
+      cat("ACCELERATED_WAVE_TARGETED_R_FAILURE_RECORDED=",
+        targeted_failure,"\n",sep="")
+      NULL
+    })
+    if(is.null(targeted_failure))
+      cat("ACCELERATED_WAVE_TARGETED_R_PASS=TRUE\n")
+    else cat("ACCELERATED_WAVE_TARGETED_R_PASS=FALSE\n")
     source("scripts/run_batched_numeric_source_differential.R",
       encoding="UTF-8",local=TRUE)
     source("scripts/run_generalized_gee_source_differential.R",
@@ -163,8 +172,14 @@
     if(sparse_disagreements>0L&&identical(
       Sys.getenv("ET_SOURCE_DIFF_FAIL_ON_DIVERGENCE"),"true"))
       stop(sprintf(
-        "Sparse source differential remains divergent: %d recorded cases across both families; see unsigned reports",
+        "Sparse source differential remains divergent: %d recorded cases across sparse families; see unsigned reports",
         sparse_disagreements),call.=FALSE)
+    # The native test gate stays strict even though we now collect the
+    # numerical differential evidence in the same user RStudio run.
+    if(!is.null(targeted_failure))
+      stop(paste(
+        "Targeted scientific R tests failed; source comparisons were attempted and evidence recorded:",
+        targeted_failure),call.=FALSE)
   }
 
   if(mode == "full") {
