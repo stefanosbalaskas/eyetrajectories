@@ -851,7 +851,7 @@ stopifnot(nrow(triage)==508L,
   all(!triage$independent_source_contract_approved),
   all(!gap_review$resolved),
   !anyDuplicated(gap_review$python_name))
-# The 203 function source gaps and the one native class source gap must
+# The 201 function source gaps and the one native class source gap must
 # remain separately reviewable; no signed reviewer decisions are inferred.
 class_gap_file<-file.path(packet_root,
   "native_nonfunction_source_gap_resolution_queue.csv")
