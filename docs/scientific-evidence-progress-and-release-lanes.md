@@ -71,3 +71,25 @@ source("scripts/run_accelerated_scientific_wave.R", encoding="UTF-8")
 Then inspect the reported `SCIENTIFIC_SOURCE_EVIDENCE_` counts and
 `developer_source_functions_UNSIGNED.csv`: they distinguish successful
 bounded-source cases from actual gap closure and external certification.
+
+
+## Native sparse PACE scientific family
+
+A new Python-free native sparse FPCA algorithm now uses local-linear
+Epanechnikov smoothing, off-diagonal within-curve covariance pairs,
+quadrature-weighted PSD projection, a positive eigenspectrum rule, and PACE
+scores conditioned on the full fitted covariance (not a truncated rank-k
+approximation). Rotated 45-degree local-quadratic diagonal-difference noise
+estimation is implemented alongside fixed known noise variance; all methods
+remain research-only pending their direct frozen Python numerical replay.
+`etr_sparse_fpca_score_uncertainty_native()` computes a conditional Gaussian
+posterior given those retained population objects. The previously available
+fdapace alternative has not been removed. The sparse workflow now accepts
+explicit `backend="native_covariance"`, retains no-imputation provenance,
+and labels the full Python workflow schema as unverified.
+
+To include these numerical source comparisons in a single wave, use
+`ET_RUN_SPARSE_SOURCE_DIFF=true` alongside the existing bootstrap
+differential option. The dynamic case summary includes the optional sparse
+report only when it is actually generated. Its presence never closes a
+historical gap or grants independent review.
