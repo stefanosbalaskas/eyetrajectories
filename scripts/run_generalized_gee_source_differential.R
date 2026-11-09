@@ -56,14 +56,24 @@ _wave_gee_profiles=pd.DataFrame({
     error=function(e)list(ok=FALSE,value=NULL,
       error=conditionMessage(e)))
   compare<-function(name,fixture,field,native,python,tol=5e-4){
-    if(is.null(native)||reticulate::py_is_null_xptr(python)){
+    # Python None is a live Python singleton, NOT a NULL external pointer.
+    # Convert once and compare actual optional-value semantics, not pointer
+    # validity. Fail visibly on an unconvertible source field.
+    conversion<-tryCatch(list(ok=TRUE,value=et_to_r(python)),
+      error=function(e)list(ok=FALSE,value=NULL))
+    if(!conversion$ok){
+      add(name,fixture,field,"DIVERGENT_SCHEMA",
+        detail="failed to convert frozen Python field")
+      return(invisible(NULL))
+    }
+    b<-conversion$value
+    if(is.null(native)||is.null(b)){
       add(name,fixture,field,
-        if(is.null(native)&&reticulate::py_is_null_xptr(python))
+        if(is.null(native)&&is.null(b))
           "PASS_BOTH_NULL" else "DIVERGENT_SCHEMA",
         detail="source/native optional field presence")
       return(invisible(NULL))
     }
-    b<-tryCatch(et_to_r(python),error=function(e)NULL)
     if(!(is.numeric(native)||is.logical(native))||
        !(is.numeric(b)||is.logical(b))){
       add(name,fixture,field,"DIVERGENT_SCHEMA",
