@@ -24,6 +24,7 @@ class IndependentReviewPacketTests(unittest.TestCase):
         target.mkdir(parents=True)
         for name in ("native_source_contract_gaps_stage22.csv",
                      "native_nonfunction_source_gaps_v1.csv",
+                     "reviewed_source_contract_closures_v1.csv",
                      "python_api_2026-10-25.csv"):
             shutil.copyfile(original / name, target / name)
         self.reports = self.root / "artifacts" / "native_batch_numeric_diff" / (
