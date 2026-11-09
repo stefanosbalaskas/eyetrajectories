@@ -48,7 +48,9 @@ class Full508Tests(unittest.TestCase):
                     "native_r_candidate":f"etr_export_{i:03d}",
                     "recorded_r_git_head":head,
                     "frozen_python_commit":m.baseline.FROZEN_PYTHON,
-                    "review_lane":"RECORDED_SOURCE_DIFFERENCE" if i<202 else "FUNCTION_NO_RECORDED_GAP",
+                    "review_lane":("RECORDED_SOURCE_DIFFERENCE" if (i<201 or i==380)
+                                   else "FUNCTION_NO_RECORDED_GAP" if i<380
+                                   else "NONFUNCTION_NO_RECORDED_GAP"),
                     "source_gap_open":"TRUE" if i<201 or i==380 else "FALSE",
                     "backend_or_estimand_distinct":"FALSE",
                     "native_implementation_started":"TRUE",
