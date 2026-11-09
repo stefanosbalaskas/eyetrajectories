@@ -108,10 +108,10 @@ def source_queue(packet: Path, head: str) -> list[dict[str, str]]:
           sum(r["kind"] != "function" for r in queue) == 128,
           "Expected 380 frozen callable + 128 nonfunction exports")
     check(sum(r["source_gap_open"] == "TRUE" and r["kind"] == "function"
-              for r in queue) == 203 and
+              for r in queue) == 201 and
           sum(r["source_gap_open"] == "TRUE" and r["kind"] != "function"
               for r in queue) == 1,
-          "Recorded 203 callable and 1 nonfunction differences changed")
+          "Recorded 201 callable and 1 nonfunction differences changed")
     for row in queue:
         check(row["recorded_r_git_head"] == head and
               row["frozen_python_commit"] == baseline.FROZEN_PYTHON and
@@ -158,7 +158,7 @@ def build(packet_dir: str | Path, head: str):
             "r_git_head":head, "frozen_python_commit":baseline.FROZEN_PYTHON,
             "source_queue_sha256":baseline.sha256(packet / baseline.FILES[0]),
             "export_count":508, "function_count":380, "nonfunction_count":128,
-            "documented_callable_gaps":203, "documented_nonfunction_gaps":1,
+            "documented_callable_gaps":201, "documented_nonfunction_gaps":1,
             "wave_count":15, "review_criterion_count":508*len(baseline.CRITERIA),
             "signatures":"NONE", "independent_certifications":0,
             "registry_modified":False, "files_sha256":checksums,
@@ -191,7 +191,7 @@ def verify(packet_dir: str | Path, head: str):
           meta["source_queue_sha256"] == baseline.sha256(packet / baseline.FILES[0]) and
           meta["export_count"] == 508 and meta["function_count"] == 380 and
           meta["nonfunction_count"] == 128 and
-          meta["documented_callable_gaps"] == 203 and
+          meta["documented_callable_gaps"] == 201 and
           meta["documented_nonfunction_gaps"] == 1 and
           meta["wave_count"] == 15 and
           meta["review_criterion_count"] == 508*len(baseline.CRITERIA) and
