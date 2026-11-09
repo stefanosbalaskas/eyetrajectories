@@ -78,6 +78,9 @@
     cat("ACCELERATED_WAVE_TARGETED_R_PASS=TRUE\n")
     source("scripts/run_batched_numeric_source_differential.R",
       encoding="UTF-8",local=TRUE)
+    source("scripts/run_generalized_gee_source_differential.R",
+      encoding="UTF-8",local=TRUE)
+    cat("ACCELERATED_WAVE_GENERALIZED_GEE_DIFF_RECORDED=TRUE\n")
     cat("ACCELERATED_WAVE_BOUNDED_PYTHON_DIFF_RECORDED=TRUE\n")
   }
 
