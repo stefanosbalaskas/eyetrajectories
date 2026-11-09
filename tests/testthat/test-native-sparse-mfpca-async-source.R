@@ -159,8 +159,14 @@ test_that("joint asynchronous PACE reduces exactly to paired-time source PACE",{
     analysis_support_action=paired$analysis_support_action,
     same_time_tolerance=0,
     psd_action=paired$psd_action,
-    psd_tolerance=paired$psd_tolerance,
-    positive_eigen_tolerance=paired$positive_eigen_tolerance,
+    # The paired source fixture omits these defaults; explicitly retain
+    # the same numerical tolerances when constructing the async fit.
+    # Passing NULL would override R function defaults through do.call().
+    psd_tolerance=if(is.null(paired$psd_tolerance))1e-8
+      else paired$psd_tolerance,
+    positive_eigen_tolerance=if(is.null(
+      paired$positive_eigen_tolerance))1e-10
+      else paired$positive_eigen_tolerance,
     score_ridge=paired$score_ridge,
     score_condition_limit=paired$score_condition_limit,
     min_score_observations=paired$min_score_time_points,
