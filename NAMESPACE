@@ -914,3 +914,7 @@ export(etr_fit_joint_bspline_functional_correlated)
 export(etr_fit_joint_bspline_functional_nested_trial)
 export(etr_fit_joint_bspline_functional_nested_slope)
 export(etr_nested_source_trial_effect_frame)
+
+export(etr_fit_sparse_fpca_native)
+export(etr_sparse_fpca_score_uncertainty_native)
+export(etr_sparse_fpca_score_uncertainty_frame_native)
