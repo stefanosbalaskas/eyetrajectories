@@ -261,6 +261,62 @@ etr_run_sparse_mfpca_workflow<-function(trajectories,config,
 #' @export
 etr_run_sparse_mfpca_async_workflow<-function(trajectories,config,
     observation_process=NULL){
+  if(is.list(config)&&!is.data.frame(config)&&
+      identical(config$backend,"native_covariance")){
+    cfg<-.etr_source_workflow_config(config,list(
+      backend=NULL,dimensions=c("x","y"),
+      n_components=NULL,evaluation_grid=NULL,
+      mean_bandwidth=NULL,covariance_bandwidth=NULL,
+      measurement_error=NULL,
+      measurement_error_variance=NULL,
+      measurement_error_covariance=NULL,
+      analysis_support_action="error",same_time_tolerance=0,
+      psd_action="error",psd_tolerance=1e-8,
+      positive_eigen_tolerance=1e-10,
+      score_ridge=0,score_condition_limit=1e12,
+      min_score_observations=2L,
+      score_failure_action="error",
+      mean_min_local_points=3L,
+      covariance_min_local_pairs=6L,preprocessing=list()),
+      required=c("backend","dimensions","n_components",
+        "evaluation_grid","mean_bandwidth",
+        "covariance_bandwidth","measurement_error"))
+    .etr_assert(inherits(trajectories,
+      "etr_irregular_trajectory_set"),
+      "native asynchronous covariance requires exact union timestamp irregular trajectories")
+    .etr_assert(is.null(observation_process),
+      "source async observation diagnostics not yet independently verified")
+    .etr_assert(is.list(cfg$preprocessing)&&
+      !length(cfg$preprocessing),
+      "native async source model refuses raw preprocessing")
+    params<-cfg[setdiff(names(cfg),c("backend","preprocessing"))]
+    fit<-do.call(etr_fit_sparse_mfpca_async_native,
+      c(list(trajectories=trajectories),params))
+    evidence<-list(
+      workflow_schema_version=1L,
+      workflow_contract="sparse_mfpca_async:v1",
+      config=cfg,fit=fit,observation_diagnostics=NULL,
+      steps=list(.etr_source_workflow_step(
+        "fit_sparse_mfpca_async_native",params)),
+      decisions=lapply(cfg[setdiff(names(cfg),"preprocessing")],
+        .etr_source_workflow_decision),
+      provenance=list(raw_interpolation_performed=FALSE,
+        native_observation_grids_retained=TRUE,
+        coordinate_specific_missingness_supported=TRUE,
+        directional_cross_channel_covariance_fitted=TRUE,
+        simultaneous_cross_noise_modeled=TRUE,
+        bandwidth_mode="fixed",
+        bandwidth_selector_available=FALSE,
+        automatic_model_selection_performed=FALSE,
+        independent_full_contract_certified=FALSE),
+      reports=list(fit=paste(
+        "Native direct asynchronous sparse MFPCA joint PACE",
+        "using directional latent covariance and exact scalar times.")),
+      tables=list(scores=data.frame(
+        curve_id=fit$curve_ids,fit$scores,check.names=FALSE)))
+    return(structure(evidence,
+      class="etr_native_sparse_mfpca_workflow"))
+  }
   cfg<-.etr_source_workflow_config(config,list(
     dimensions=c("x","y"),backend=NULL,n_components=2L,
     max_marginal_components=3L,fve=.95,options=list(),
