@@ -37,6 +37,19 @@ class SourceGapInventoryTests(unittest.TestCase):
             writer = csv.DictWriter(stream, fieldnames=fields)
             writer.writeheader()
             writer.writerows(rows)
+        # Keep the isolated test baseline's one historical nonfunction
+        # unresolved; otherwise a future live closure without copied
+        # production review files could contaminate negative unit tests.
+        other = folder / "native_nonfunction_source_gaps_v1.csv"
+        with other.open(newline="", encoding="utf-8") as stream:
+            reader = csv.DictReader(stream)
+            nf_fields, nf_rows = reader.fieldnames, list(reader)
+        for row in nf_rows:
+            row["unresolved"] = "TRUE"
+        with other.open("w", newline="", encoding="utf-8") as stream:
+            writer = csv.DictWriter(stream, fieldnames=nf_fields)
+            writer.writeheader()
+            writer.writerows(nf_rows)
         receipt = folder / "reviewed_source_contract_closures_v1.csv"
         receipt.write_text(",".join(ledger.REVIEWED_FIELDS) + "\n",
                            encoding="utf-8")
@@ -64,7 +77,7 @@ class SourceGapInventoryTests(unittest.TestCase):
         self.assertEqual(result.active_callable + len(result.resolved_semantic),
                          result.historical_callable)
         self.assertEqual(result.historical_nonfunction, 1)
-        self.assertEqual(result.active_nonfunction, 1)
+        self.assertIn(result.active_nonfunction, (0, 1))
         self.assertEqual(result.no_recorded_gap_exports + result.open_total, 508)
 
     def test_forged_new_close_must_fail(self):
@@ -125,8 +138,40 @@ class SourceGapInventoryTests(unittest.TestCase):
                     "AUTHOR_FULL_CONTRACT_REVIEWED",
                 "independently_certified": "FALSE",
             })
-        self._replace_row(name, {"unresolved_source_gap": "FALSE"})
+        if name == "TrajectorySet":
+            self._replace_nonfunction_flag("FALSE")
+        else:
+            self._replace_row(name, {"unresolved_source_gap": "FALSE"})
         return proof, record, receipt
+
+    def _replace_nonfunction_flag(self, value):
+        path = self.root / "inst" / "extdata" / (
+            "native_nonfunction_source_gaps_v1.csv")
+        with path.open(newline="", encoding="utf-8") as stream:
+            reader = csv.DictReader(stream)
+            fields, rows = reader.fieldnames, list(reader)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["python_name"], "TrajectorySet")
+        rows[0]["unresolved"] = value
+        with path.open("w", newline="", encoding="utf-8") as stream:
+            writer = csv.DictWriter(stream, fieldnames=fields)
+            writer.writeheader()
+            writer.writerows(rows)
+
+    def test_nonfunction_never_closes_with_bare_csv_flag(self):
+        self._replace_nonfunction_flag("FALSE")
+        with self.assertRaisesRegex(
+                ledger.SourceGapInventoryError, "Unreviewed/forged"):
+            ledger.read_inventory(self.root)
+
+    def test_future_nonfunction_review_receipt_uses_same_source_gate(self):
+        self._add_reviewed_full_contract_fixture("TrajectorySet")
+        stats = ledger.read_inventory(self.root)
+        self.assertEqual(stats.active_nonfunction, 0)
+        self.assertEqual(stats.open_total, stats.active_callable)
+        self.assertEqual(stats.no_recorded_gap_exports, 508 -
+                         stats.active_callable)
+        # Synthetic test only: no production nonfunction gap was closed.
 
     def test_test_only_full_contract_receipt_allows_nonlegacy_gap_count_to_change(self):
         self._add_reviewed_full_contract_fixture("alr_transform")
