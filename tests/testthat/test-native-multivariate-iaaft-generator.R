@@ -260,6 +260,14 @@ if _counter[0]!=2:
     info="Input fixture equality must precede numerical inference")
   expect_gt(as.numeric(reticulate::py_eval(
     "np.min(np.abs(np.fft.rfft(_src,axis=0)))",convert=TRUE)),1e-3)
+  # If a later sample differs, first distinguish Fourier basis divergence
+  # from the iterative rank-remapping step, without hiding either outcome.
+  source_fft<-reticulate::py_eval(
+    "np.fft.rfft(_fixed_public.source_values,axis=0)",convert=TRUE)
+  native_fft<-.etr_multivariate_fft_half(native$source_values)
+  expect_equal(unname(native_fft),unname(source_fft),
+    tolerance=1e-10,ignore_attr=TRUE,
+    info="paired FFT coefficients must agree before IAAFT remapping")
   for(field in c("surrogates",
       "spectral_errors","cross_spectral_errors")){
     observed<-unname(native[[field]])
