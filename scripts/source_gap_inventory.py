@@ -189,9 +189,21 @@ def read_inventory(root: Path | str | None = None) -> SourceGapCounts:
         raise SourceGapInventoryError("Missing historical source witness")
     resolved = tuple(sorted(row["python_name"] for row in funcs
                             if row["unresolved_source_gap"] == "FALSE"))
-    nonlegacy = set(resolved) - CLOSED_SEMANTIC_SCOPE
-    reviewed = _validate_reviewed_closures(root, funcs, set(resolved))
-    if reviewed != nonlegacy:
+    if (other[0]["python_name"] != "TrajectorySet" or
+            other[0]["namespace"] != "root" or
+            other[0]["unresolved"] not in ("TRUE", "FALSE") or
+            other[0]["frozen_python_commit"] != FROZEN_PYTHON):
+        raise SourceGapInventoryError(
+            "Frozen nonfunction source witness identity/flag changed")
+    resolved_other = {
+        row["python_name"] for row in other
+        if row["unresolved"] == "FALSE"
+    }
+    reviewable = set(resolved) | resolved_other
+    required = (set(resolved) - CLOSED_SEMANTIC_SCOPE) | resolved_other
+    reviewed = _validate_reviewed_closures(
+        root, funcs + other, reviewable)
+    if reviewed != required:
         raise SourceGapInventoryError(
             "Unreviewed/forged gap closure: missing exact full-domain review receipt")
     for row in funcs:
@@ -205,12 +217,6 @@ def read_inventory(root: Path | str | None = None) -> SourceGapCounts:
             FROZEN_PYTHON not in row["source_witness"]):
             raise SourceGapInventoryError(
                 "Missing frozen-source semantic closure evidence")
-    if (other[0]["python_name"] != "TrajectorySet" or
-        other[0]["namespace"] != "root" or
-        other[0]["unresolved"] != "TRUE" or
-        other[0]["frozen_python_commit"] != FROZEN_PYTHON):
-        raise SourceGapInventoryError(
-            "Frozen nonfunction source gap must remain open")
     return SourceGapCounts(
         historical_callable=len(funcs),
         active_callable=sum(r["unresolved_source_gap"] == "TRUE" for r in funcs),

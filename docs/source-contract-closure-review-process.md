@@ -4,7 +4,7 @@ The historical 203 callable gap witnesses and the frozen Python 1.2 reference
 remain unchanged. Counts are dynamically computed from the current CSV flags.
 The legacy two zero-argument semantic closures are preserved.
 
-A **new callable gap** can be marked `unresolved_source_gap=FALSE` only after
+A **new callable or nonfunction gap** can be marked `unresolved_source_gap=FALSE` only after
 a human author has reviewed the **complete** source contract, not merely a
 finite numeric differential fixture. Add a corresponding row to
 `inst/extdata/reviewed_source_contract_closures_v1.csv` and a SHA-256-pinned
@@ -33,6 +33,13 @@ or automatically generated finite-domain evidence **cannot** close a gap.
 These are **developer-reviewed source contract closures**. Independent
 scientific certification requires a separate actual external review and is
 never granted by this mechanism.
+
+The historical single nonfunction witness `TrajectorySet` may eventually
+change its `unresolved` flag from `TRUE` to `FALSE` under exactly the
+same verified review-record mechanism. It is not automatically accepted and
+its current gap remains open. This removes a previous code-level veto on
+ever reaching 508/508 while preserving the frozen Python object identity,
+root namespace and source SHA.
 
 The accelerated 32-function implementation queue is replenished from currently
 open scientific contracts when previous targets are reviewed as complete; it
