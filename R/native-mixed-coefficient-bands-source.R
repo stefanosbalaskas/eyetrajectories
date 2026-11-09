@@ -27,13 +27,17 @@ etr_functional_mixed_effects_simultaneous_bands <- function(
     bootstrap$bootstrap_type%in%c("conditional_covariance","full_refit"),
     "bootstrap_type must explicitly declare conditional_covariance or full_refit")
   fit<-bootstrap$reference
-  .etr_scientific_frame_fields(fit,c("coefficient_names","time",
-    "coefficient_functions"),"functional mixed-effects fit")
-  names<-.etr_scientific_frame_ids(fit$coefficient_names,"coefficient_names")
+  .etr_assert(is.list(fit)&&!is.null(fit$time),
+    "functional mixed-effects fit must retain observed time")
+  coefficient_names<-if(is.null(fit$coefficient_names))
+    fit$predictor_names else fit$coefficient_names
+  coefficient_functions<-if(is.null(fit$coefficient_functions))
+    fit$fixed_coefficient_functions else fit$coefficient_functions
+  names<-.etr_scientific_frame_ids(coefficient_names,"coefficient_names")
   time<-.etr_scientific_frame_time(fit$time)
   nc<-length(names);nt<-length(time)
   estimate<-.etr_gfosr_predict_numeric_matrix(
-    fit$coefficient_functions,nc,nt,"coefficient_functions")
+    coefficient_functions,nc,nt,"coefficient_functions")
   mean<-.etr_gfosr_predict_numeric_matrix(
     bootstrap$bootstrap_mean,nc,nt,"bootstrap_mean")
   se<-.etr_gfosr_predict_numeric_matrix(
