@@ -136,14 +136,14 @@
       "fewer than two evaluation points on noise support")
   w<-.etr_spn_weights(grid[mask])
   variance<-sum(w*delta[mask])/sum(w)
-  if(!is.finite(variance)||variance<=0)
-    .etr_spn_fail("noise_variance_invalid",
-      "diagonal-difference noise estimate must be positive")
+  # Frozen primitive retains an invalid estimate and status; the public
+  # fit rejects it only after collecting source measurement diagnostics.
   list(variance=variance,
     raw_diagonal=raw,
     latent_diagonal=latent_diagonal,
     diagonal_difference=delta,support_mask=mask,
-    status_code="ok")
+    status_code=if(is.finite(variance)&&variance>0)
+      "ok" else "noise_variance_invalid")
 }
 
 .etr_spn_weights<-function(grid){

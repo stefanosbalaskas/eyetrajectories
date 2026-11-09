@@ -143,6 +143,9 @@ etr_fit_sparse_fpca_native<-function(
       times,residuals,grid,rotated$values,noise_bandwidth,
       noise_support,noise_min_local_points)
   }else NULL
+  if(!is.null(noise)&&noise$status_code!="ok")
+    .etr_spn_fail("noise_variance_invalid",
+      "diagonal-difference measurement noise estimate is nonpositive")
   noise_variance<-if(is.null(noise))
     measurement_error_variance else noise$variance
   psd<-.etr_spn_psd(covariance$values,grid,psd_action,psd_tolerance)

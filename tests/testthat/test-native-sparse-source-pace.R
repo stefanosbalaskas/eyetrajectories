@@ -157,3 +157,62 @@ test_that("source-model sparse workflow uses actual custom native PACE",{
     "unsupported fields|fdapace backend")
 })
 
+
+
+test_that("rotated covariance diagonal and noise estimate match frozen numerical primitives",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("frozen sparse covariance primitive differential is opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  x<-.etr_spn_source_fixture()
+  grid<-seq(.08,.92,length.out=9L)
+  times<-lapply(x$time,function(t)t[t>=grid[1L]&t<=tail(grid,1L)])
+  # Use explicit source-curve index to avoid any object-equality inference.
+  values<-lapply(seq_along(x$curve_ids),function(i){
+    m<-x$time[[i]]>=grid[1L]&x$time[[i]]<=tail(grid,1L)
+    as.numeric(x$values[[i]][m,1L])
+  })
+  pt<-unlist(times,use.names=FALSE)
+  py<-unlist(values,use.names=FALSE)
+  residuals<-Map(function(t,v)
+    v-.etr_spn_mean(pt,py,t,.5)$values,times,values)
+  pairs<-.etr_spn_pairs(times,residuals)
+  native_diag<-.etr_spn_rotated_diagonal(pairs,grid,.85,6L)
+  native_noise<-.etr_spn_noise_diagonal_difference(
+    times,residuals,grid,native_diag$values,.7,c(.2,.8),3L)
+  reticulate::py_run_string("
+import numpy as np
+from eyetrajectoriespy import _sparse_native as _etr_pace_src
+def _etr_diag_source(a,b,prod,grid,times,residuals):
+    pairs=_etr_pace_src.RawCovariancePairs(
+      s=np.asarray(a,dtype=float),
+      t=np.asarray(b,dtype=float),
+      products=np.asarray(prod,dtype=float),
+      curve_index=np.zeros(len(prod),dtype=int),mirrored=True)
+    g=np.asarray(grid,dtype=float)
+    rotated=_etr_pace_src.rotated_local_quadratic_covariance_diagonal(
+      pairs,g,bandwidth=.85,min_local_pairs=6)
+    noise=_etr_pace_src.estimate_noise_variance_diagonal_difference(
+      tuple(np.asarray(t,dtype=float) for t in times),
+      tuple(np.asarray(r,dtype=float) for r in residuals),
+      g,np.eye(g.size),latent_diagonal=rotated.values,
+      bandwidth=.7,noise_support=(.2,.8),min_local_points=3)
+    return rotated,noise
+")
+  p<-reticulate::py_call(
+    reticulate::py_eval("_etr_diag_source",convert=FALSE),
+    reticulate::r_to_py(pairs$s),reticulate::r_to_py(pairs$t),
+    reticulate::r_to_py(pairs$products),reticulate::r_to_py(grid),
+    reticulate::r_to_py(times),reticulate::r_to_py(residuals))
+  rotated<-p[[1L]];noise<-p[[2L]]
+  get<-function(o,k)et_to_r(reticulate::py_get_attr(o,k))
+  expect_equal(native_diag$values,get(rotated,"values"),
+    tolerance=1e-7,ignore_attr=TRUE)
+  expect_equal(native_diag$support_counts,get(rotated,"support_counts"),
+    ignore_attr=TRUE)
+  for(field in c("raw_diagonal","latent_diagonal",
+      "diagonal_difference","variance")){
+    expect_equal(native_noise[[field]],get(noise,field),
+      tolerance=1e-7,ignore_attr=TRUE,info=field)
+  }
+  expect_identical(native_noise$status_code,get(noise,"status_code"))
+})
