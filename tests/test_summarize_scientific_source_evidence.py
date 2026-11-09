@@ -128,6 +128,25 @@ class ScientificSourceEvidenceTests(unittest.TestCase):
         self.assertEqual(report["passing_bounded_comparison_cases"], 2)
 
 
+    def test_sparse_multilevel_workflow_remains_unsigned_with_observed_source_cases(self):
+        row = dict(
+            python_name="run_sparse_multilevel_workflow",
+            source_fixture="fixed_noise_6participants_24trials",
+            field="between_covariance",outcome="PASS_NUMERIC",
+            r_git_head=HEAD,
+            frozen_python_commit=inventory.FROZEN_PYTHON)
+        write_csv(self.reports /
+                  evidence.OPTIONAL_REPORTS["sparse_multilevel_native"],
+                  [row])
+        report = evidence.summarize(self.root, HEAD, write=False)
+        self.assertEqual(report["total_observed_comparison_cases"], 4)
+        observed = next(
+            item for item in report["function_evidence"]
+            if item["python_name"] == "run_sparse_multilevel_workflow")
+        self.assertTrue(observed["source_gap_still_open"])
+        self.assertTrue(observed["developer_finite_domain_oracle_evidence"])
+        self.assertFalse(observed["independent_full_contract_certified"])
+
     def test_sparse_prediction_workflow_source_cases_respect_open_gap(self):
         row = dict(
             python_name="run_sparse_prediction_workflow",

@@ -87,7 +87,8 @@
       "native-sparse-mfpca-source",
       "native-sparse-mfpca-score-uncertainty",
       "native-sparse-partial-trajectory-prediction",
-      "native-sparse-partial-conformal"
+      "native-sparse-partial-conformal",
+      "native-sparse-multilevel-source"
     ),collapse="|"),reporter="summary",
       stop_on_failure=TRUE,stop_on_warning=TRUE)
     cat("ACCELERATED_WAVE_TARGETED_R_PASS=TRUE\n")
@@ -147,9 +148,12 @@
         "MFPCA")
       sparse_runner("scripts/run_sparse_prediction_source_differential.R",
         "PREDICTION")
+      sparse_runner("scripts/run_sparse_multilevel_source_differential.R",
+        "MULTILEVEL")
       cat("ACCELERATED_WAVE_SPARSE_FPCA_SOURCE_DIFF_ATTEMPTED=TRUE\n")
       cat("ACCELERATED_WAVE_SPARSE_MFPCA_SOURCE_DIFF_ATTEMPTED=TRUE\n")
       cat("ACCELERATED_WAVE_SPARSE_PREDICTION_SOURCE_DIFF_ATTEMPTED=TRUE\n")
+      cat("ACCELERATED_WAVE_SPARSE_MULTILEVEL_SOURCE_DIFF_ATTEMPTED=TRUE\n")
     }
     runpy("scripts/summarize_scientific_source_evidence.py")
     cat("ACCELERATED_WAVE_BOUNDED_PYTHON_DIFF_RECORDED=TRUE\n")
