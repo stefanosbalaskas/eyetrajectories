@@ -28,7 +28,7 @@ test_that("sparse participant/trial joint BLUP preserves covariance hierarchy",{
   expect_identical(fit$support_diagnostics$n_participants,6L)
   expect_identical(fit$support_diagnostics$n_repeated_participants,6L)
   expect_identical(fit$support_diagnostics$between_covariance_pair_count,
-    6L*choose(4L,2L)*(7L*7L)*2L)
+    as.integer(6L*choose(4L,2L)*(7L*7L)*2L))
   expect_false(fit$provenance$sparse_multilevel_fpca$
     rank_k_covariance_used_for_scoring)
   expect_false(fit$provenance$sparse_multilevel_fpca$
@@ -64,7 +64,7 @@ test_that("sparse hierarchy requires multiple distinct repeated participants",{
     c(list(trajectories=tr),invalid)),"fixed noise")
 })
 
-test_that("native sparse multilevel BLUP numerical arrays agree with frozen public Python 1.2",{
+test_that("native sparse multilevel BLUP numerical arrays agree with frozen Python 1.2 source module",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("source-pinned sparse multilevel differential opt-in")
   expect_identical(et_python_version(),"1.2.0")
@@ -75,6 +75,8 @@ test_that("native sparse multilevel BLUP numerical arrays agree with frozen publ
 import numpy as np
 import pandas as pd
 import eyetrajectoriespy as _etr_spml_et
+import importlib
+_etr_spml_source=importlib.import_module('eyetrajectoriespy.sparse_multilevel')
 def _etr_spml_input(times, values, ids, participants):
     if isinstance(ids,(str,bytes)) or isinstance(participants,(str,bytes)):
         raise TypeError('ids/participants must be sequences')
@@ -97,9 +99,11 @@ def _etr_spml_input(times, values, ids, participants):
       as.list(as.character(data$metadata$participant))))
   pyargs<-args
   pyargs$evaluation_grid<-reticulate::r_to_py(args$evaluation_grid)
+  source_fun<-reticulate::py_get_attr(
+    reticulate::py_eval("_etr_spml_source",convert=FALSE),
+    "fit_sparse_multilevel_fpca")
   source<-do.call(reticulate::py_call,
-    c(list(etpy_get_export("fit_sparse_multilevel_fpca"),
-      trajectories=pytr),pyargs))
+    c(list(source_fun,trajectories=pytr),pyargs))
   get<-function(field)et_to_r(reticulate::py_get_attr(source,field))
   for(field in c("grand_mean","smoothed_total_covariance",
     "smoothed_between_covariance","smoothed_within_covariance",
