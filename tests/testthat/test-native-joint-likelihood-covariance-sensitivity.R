@@ -75,8 +75,9 @@ test_that("joint sensitivity validates source comparability and rejects mixed es
   expect_error(run(altered),"identical reml")
   altered<-fit;altered$fixed_basis[1L,1L]<-.5
   expect_error(run(altered),"identical fixed_basis")
-  moment<-etr_fit_functional_mixed_effects_regression(
-    f$tr,f$design,"x","pid","signal")
+  # Only the S3 estimator distinction is under test here; avoid an
+  # unnecessary second scientific fit for a rejected input type.
+  moment<-structure(list(),class="etr_functional_mixed_moments")
   expect_error(run(moment),"cannot combine moments and joint")
   z<-etr_functional_mixed_effects_covariance_sensitivity(
     list(reference=fit),"reference",2L,
@@ -139,4 +140,81 @@ test_that("joint serial fit retains source-comparable time and likelihood fields
   expect_true(all(is.finite(z$model_summary$aic)))
   expect_equal(nrow(z$coefficient_frame),4L*length(tt))
   expect_equal(nrow(z$residual_diagnostics),2L*2L*3L)
+})
+
+test_that("joint residual dependence uses frozen within-curve centred lag law",{
+  # Hand-computable source oracle with one constant residual trial:
+  # Python retains it in pair counts, but excludes its undefined ACF.
+  r<-rbind(c(1,2,3,4,5),c(2,3,4,3,2),rep(3,5))
+  x<-list(time=c(0,.2,.5,1,1.8),
+    time_unit="s",residual_functions=r,
+    residual_correlation_matrix=diag(5L),residual_variance=1.5)
+  frame<-.etr_joint_sensitivity_diagnostics(x,"source",max_lag=2L)
+  raw<-frame[frame$residual_scale=="raw",,drop=FALSE]
+  white<-frame[frame$residual_scale=="whitened",,drop=FALSE]
+  expect_identical(raw$n_pairs,c(15L,12L,9L))
+  expect_identical(raw$n_trials_total,c(3L,3L,3L))
+  expect_identical(raw$n_trials_acf_defined,c(2L,2L,2L))
+  expect_equal(raw$autocorrelation[1L],1,tolerance=1e-12)
+  # For lag 1: first centred trial covariance=1, variance=2, ACF=.5;
+  # second covariance=.04, variance=.56, ACF=1/14.
+  expect_equal(raw$autocorrelation[2L],(.5+1/14)/2,
+    tolerance=1e-12)
+  expect_equal(raw$autocovariance[2L],(1+.04+0)/3,
+    tolerance=1e-12)
+  expect_equal(raw$trial_autocorrelation_min[2L],1/14,
+    tolerance=1e-12)
+  expect_equal(raw$trial_autocorrelation_max[2L],.5,
+    tolerance=1e-12)
+  expect_equal(raw$lag_time_mean[2L],
+    mean(diff(x$time)),tolerance=1e-12)
+  expect_equal(raw$lag_time_min[2L],min(diff(x$time)),
+    tolerance=1e-12)
+  expect_equal(raw$lag_time_max[2L],max(diff(x$time)),
+    tolerance=1e-12)
+  # Covariances scale under whitening but ACF (ratio) does not.
+  expect_equal(white$autocorrelation,raw$autocorrelation,
+    tolerance=1e-12)
+  expect_equal(white$autocovariance,
+    raw$autocovariance/1.5,tolerance=1e-12)
+  expect_equal(white$residual_rms_global[1L],
+    sqrt(mean(r^2)/1.5),tolerance=1e-12)
+  expect_true(all(raw$semivariance>=0))
+})
+test_that("frozen numpy source within-curve autocorrelation agrees with native implementation",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("opt-in frozen Python mixed residual numerical source oracle")
+  x<-list(time=c(0,.2,.5,1,1.8),
+    time_unit="s",
+    residual_functions=rbind(c(1,2,3,4,5),c(2,3,4,3,2),rep(3,5)),
+    residual_correlation_matrix=diag(5L),residual_variance=1.5)
+  native<-.etr_joint_sensitivity_diagnostics(x,"numpy",max_lag=2L)
+  reticulate::py_run_string("
+import numpy as np
+_r=np.array([[1.,2.,3.,4.,5.],[2.,3.,4.,3.,2.],[3.,3.,3.,3.,3.]])
+_out=[]
+for _scale,_values in (('raw',_r),('whitened',_r/np.sqrt(1.5))):
+  for _lag in range(3):
+    _cov=[];_acf=[];_semi=[]
+    for _row in _values:
+      _center=_row-_row.mean()
+      _v=np.mean(_center*_center)
+      _c=float(np.mean(_center[:5-_lag]*_center[_lag:]))
+      _cov.append(_c)
+      _acf.append(_c/_v if _v>0 else np.nan)
+      _semi.append(.5*np.mean((_row[_lag:]-_row[:5-_lag])**2))
+    _acf=np.asarray(_acf,dtype=float)
+    _out.append((_scale,_lag,
+       float(np.mean(_cov)),float(np.nanmean(_acf)),
+       float(np.mean(_semi)),int(np.isfinite(_acf).sum())))
+_numpy_mixed_diagnostic_oracle=_out
+")
+  source<-reticulate::py_eval("_numpy_mixed_diagnostic_oracle",
+    convert=TRUE)
+  expected<-do.call(rbind,lapply(source,function(row)
+    c(as.numeric(row[[3L]]),as.numeric(row[[4L]]),
+      as.numeric(row[[5L]]),as.numeric(row[[6L]]))))
+  observed<-as.matrix(native[,c("autocovariance",
+    "autocorrelation","semivariance","n_trials_acf_defined")])
+  expect_equal(unname(observed),unname(expected),tolerance=1e-12)
 })

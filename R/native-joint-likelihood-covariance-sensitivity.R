@@ -124,14 +124,26 @@
   put("residual_variance",rep(fit$residual_variance,length(tt)))
   do.call(rbind,records)
 }
+# Exact frozen Python 1.2 lag law:
+# within-source-curve centering, division by the lag-zero variance,
+# pair-count-weighted finite trial means, and retained zero-variance curves.
+# The previous pooled Pearson correlation estimated a different quantity.
 .etr_joint_sensitivity_diagnostics<-function(fit,label,max_lag){
   rr<-fit$residual_functions
   C<-fit[["residual_correlation_matrix",exact=TRUE]]
   nt<-ncol(rr)
+  .etr_assert(is.matrix(rr)&&is.numeric(rr)&&all(is.finite(rr))&&
+    nrow(rr)>=1L&&nt>=2L,
+    "conditional residual functions must be complete finite curves")
   .etr_assert(is.matrix(C)&&identical(dim(C),c(nt,nt))&&
-    all(is.finite(C)),"residual correlation matrix is invalid")
-  # Match the frozen source's within-curve Cholesky whitening;
-  # diagonal iid is a special case of this same operation.
+    all(is.finite(C)),
+    "residual correlation matrix is invalid")
+  .etr_assert(is.numeric(fit$residual_variance)&&
+    length(fit$residual_variance)==1L&&
+    is.finite(fit$residual_variance)&&fit$residual_variance>0,
+    "whitening residual variance must be finite positive")
+  .etr_assert(max_lag>=1L&&max_lag<nt,
+    "residual lag diagnostics require max_lag inside grid")
   if(!is.null(fit$whitened_residual_functions)){
     white<-fit$whitened_residual_functions
   }else{
@@ -141,31 +153,57 @@
   }
   .etr_assert(identical(dim(white),dim(rr))&&all(is.finite(white)),
     "joint whitened residuals must be finite per curve and time")
+  # numpy _weighted_finite_mean filters undefined ACF values but retains
+  # their trials in n_trials_total and overall pair counts.
+  finite_mean<-function(x,weights){
+    keep<-is.finite(x)&is.finite(weights)&weights>0
+    if(!any(keep))return(NaN)
+    sum(x[keep]*weights[keep])/sum(weights[keep])
+  }
   one<-function(res,scale){
-    rms<-sqrt(mean(res^2))
+    ncurve<-nrow(res);rms<-sqrt(mean(res^2))
     do.call(rbind,lapply(0:as.integer(max_lag),function(lag){
-      if(lag==0L){
-        r<-1
-        n_pairs<-length(res)
-        physical<-0
-      }else{
-        left<-as.vector(res[,seq_len(nt-lag),drop=FALSE])
-        right<-as.vector(res[,seq.int(lag+1L,nt),drop=FALSE])
-        r<-if(stats::sd(left)>.Machine$double.eps&&
-              stats::sd(right)>.Machine$double.eps)
-          stats::cor(left,right) else NA_real_
-        n_pairs<-length(left)
-        physical<-mean(fit$time[seq.int(lag+1L,nt)]-
-          fit$time[seq_len(nt-lag)])
+      offsets<-seq_len(nt-lag)
+      physical<-as.numeric(fit$time[offsets+lag]-fit$time[offsets])
+      pairs<-rep(as.integer(nt-lag),ncurve)
+      covariance<-numeric(ncurve)
+      acf<-numeric(ncurve)
+      semivariance<-numeric(ncurve)
+      for(i in seq_len(ncurve)){
+        values<-as.numeric(res[i,])
+        centered<-values-mean(values)
+        variance<-mean(centered^2)
+        covariance[i]<-mean(centered[offsets]*
+          centered[offsets+lag])
+        acf[i]<-if(variance==0)NaN else covariance[i]/variance
+        semivariance[i]<-.5*mean(
+          (values[offsets+lag]-values[offsets])^2)
       }
-      data.frame(model=label,residual_scale=scale,
-        lag_index=as.integer(lag),lag_physical=physical,
-        time_unit=if(is.null(fit$time_unit))"unknown" else fit$time_unit,
-        autocorrelation=as.numeric(r),n_pairs=as.integer(n_pairs),
-        residual_rms_global=rms,stringsAsFactors=FALSE)
+      defined<-is.finite(acf)
+      data.frame(
+        model=label,residual_scale=scale,
+        lag_index=as.integer(lag),
+        lag_time_mean=mean(physical),
+        lag_time_min=min(physical),
+        lag_time_max=max(physical),
+        n_pairs=as.integer(sum(pairs)),
+        n_trials_total=as.integer(ncurve),
+        n_trials_acf_defined=as.integer(sum(defined)),
+        autocovariance=finite_mean(covariance,pairs),
+        autocorrelation=finite_mean(acf,pairs),
+        semivariance=finite_mean(semivariance,pairs),
+        trial_autocorrelation_min=
+          if(any(defined))min(acf[defined])else NaN,
+        trial_autocorrelation_max=
+          if(any(defined))max(acf[defined])else NaN,
+        residual_rms_global=rms,
+        stringsAsFactors=FALSE)
     }))
   }
-  rbind(one(rr,"raw"),one(white,"whitened"))
+  rownames(rr)<-NULL
+  records<-rbind(one(rr,"raw"),one(white,"whitened"))
+  rownames(records)<-NULL
+  records
 }
 .etr_joint_likelihood_covariance_sensitivity<-function(
     fits,reference,max_lag,specifications,failures,bands){
@@ -332,6 +370,8 @@
       scientific_scope="predeclared_joint_likelihood_covariance_sensitivity",
       no_automatic_covariance_selection=TRUE,
       REML_and_ML_must_not_be_compared=TRUE,
+      within_curve_residual_centering=TRUE,
+      pair_count_weighted_source_residual_autocorrelation=TRUE,
       entire_python_domain_and_optimizer_parity_certified=FALSE)),
     class=c("etr_joint_likelihood_covariance_sensitivity",
       "etr_functional_mixed_effects_covariance_sensitivity"))
