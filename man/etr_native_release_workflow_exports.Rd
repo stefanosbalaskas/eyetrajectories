@@ -47,6 +47,8 @@ to request conditional PACE score uncertainty. The list may specify
 \code{"retain_nan"}). The workflow returns the conditional result and a
 per-curve, per-component table. The \code{scores} table retains input
 metadata and uses \code{SFPC} or \code{SMFPC} component prefixes.
+Input metadata columns that collide with score-table names receive unique
+suffixes in the table.
 }
 \section{Exported entry points}{
 \describe{

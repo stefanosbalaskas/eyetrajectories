@@ -221,7 +221,8 @@ etr_run_sparse_mfpca_workflow<-function(trajectories,config,
     steps<-list(.etr_source_workflow_step(
       "fit_sparse_mfpca_native_joint_PACE",params))
     reports<-list(fit=etr_sparse_mfpca_reporting_text(fit))
-    tables<-list(scores=etr_sparse_mfpca_score_frame(fit),
+    tables<-list(scores=.etr_scientific_frame_metadata(fit,"SMFPC",
+        preserve_workflow_metadata=TRUE),
       score_diagnostics=fit$score_diagnostics,
       eigenvalues=data.frame(component=seq_len(fit$n_components),
         eigenvalue=fit$eigenvalues))
@@ -321,7 +322,8 @@ etr_run_sparse_mfpca_async_workflow<-function(trajectories,config,
       reports=list(fit=paste(
         "Native direct asynchronous sparse MFPCA joint PACE",
         "using directional latent covariance and exact scalar times.")),
-      tables=list(scores=.etr_scientific_frame_metadata(fit,"ASMFPC")))
+      tables=list(scores=.etr_scientific_frame_metadata(fit,"ASMFPC",
+        preserve_workflow_metadata=TRUE)))
     return(structure(evidence,
       class="etr_native_sparse_mfpca_workflow"))
   }

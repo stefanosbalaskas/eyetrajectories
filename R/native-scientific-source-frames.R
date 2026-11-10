@@ -58,14 +58,15 @@
     group_count,"critical_values")
   invisible(TRUE)
 }
-.etr_scientific_frame_metadata <- function(result, prefix) {
+.etr_scientific_frame_metadata <- function(result, prefix,
+    preserve_workflow_metadata=FALSE) {
   .etr_scientific_frame_fields(result,c("curve_ids","metadata",
     "scores","n_components"))
   ids<-.etr_scientific_frame_ids(result$curve_ids,"curve_ids")
   n<-length(ids)
-  .etr_assert(is.data.frame(result$metadata) &&
-    nrow(result$metadata)==n &&
-    !anyDuplicated(names(result$metadata)),
+  metadata<-result$metadata
+  .etr_assert(is.data.frame(metadata) && nrow(metadata)==n &&
+    (preserve_workflow_metadata||!anyDuplicated(names(metadata))),
     "metadata must be a data frame with one row per curve")
   .etr_assert(is.numeric(result$n_components) &&
     length(result$n_components)==1L &&
@@ -79,11 +80,17 @@
     identical(dim(scores),c(n,k))&&!any(is.infinite(scores)),
     "scores must be a numeric matrix with one row per curve and no infinities")
   output_names<-paste0(prefix,seq_len(k))
-  .etr_assert(!any(c("curve_id",output_names) %in% names(result$metadata)),
+  reserved<-c("curve_id",output_names)
+  if(preserve_workflow_metadata){
+    # The native workflow already accepts metadata with arbitrary column
+    # names. Retain colliding fields under a unique name in the score table.
+    labels<-names(metadata)
+    labels[is.na(labels)|!nzchar(labels)]<-"metadata"
+    names(metadata)<-utils::tail(make.unique(c(reserved,labels)),ncol(metadata))
+  }else .etr_assert(!any(reserved %in% names(metadata)),
     "metadata must not overwrite curve_id or component score columns")
   output<-data.frame(curve_id=ids,stringsAsFactors=FALSE)
-  for(name in names(result$metadata))
-    output[[name]]<-result$metadata[[name]]
+  for(name in names(metadata))output[[name]]<-metadata[[name]]
   for(j in seq_len(k))output[[output_names[j]]]<-scores[,j]
   rownames(output)<-NULL
   output

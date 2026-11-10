@@ -187,6 +187,14 @@ test_that("source-model sparse workflow uses actual custom native PACE",{
   config$score_uncertainty<-list(unknown=TRUE)
   expect_error(etr_run_sparse_fpca_workflow(x,config),"score_uncertainty")
   config$score_uncertainty<-NULL
+  x$dimension_names<-config$dimension<-"pupil (mm)"
+  x$metadata$curve_id<-paste0("study-",seq_along(x$curve_ids))
+  x$metadata$SFPC1<-seq_along(x$curve_ids)
+  w<-etr_run_sparse_fpca_workflow(x,config)
+  expect_identical(w$tables$scores$curve_id,x$curve_ids)
+  expect_identical(w$tables$scores$curve_id.1,x$metadata$curve_id)
+  expect_identical(w$tables$scores$SFPC1.1,x$metadata$SFPC1)
+  expect_match(w$reports$fit,"'pupil (mm)'",fixed=TRUE)
   config$backend<-"unsupported"
   expect_error(etr_run_sparse_fpca_workflow(x,config),
     "unsupported fields|fdapace backend")

@@ -129,7 +129,8 @@ etr_run_functional_mixed_effects_workflow<-function(
   steps<-list(.etr_source_workflow_step(
     "fit_sparse_fpca_native_full_covariance_PACE",params))
   reports<-list(fit=etr_sparse_fpca_reporting_text(fit))
-  tables<-list(scores=etr_sparse_fpca_score_frame(fit),
+  tables<-list(scores=.etr_scientific_frame_metadata(fit,"SFPC",
+      preserve_workflow_metadata=TRUE),
     score_diagnostics=fit$score_diagnostics,
     covariance_eigenvalues=data.frame(
       component=seq_along(fit$eigenvalues),eigenvalue=fit$eigenvalues))

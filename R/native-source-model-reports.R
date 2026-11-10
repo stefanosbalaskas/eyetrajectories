@@ -175,6 +175,14 @@ etr_functional_mixed_effects_residual_reporting_text <- function(result) {
     fields[3L],", ",fields[4L],"]]")
 }
 
+.etr_sparse_dimension_repr <- function(x) {
+  vapply(x,function(value){
+    quote<-if(grepl("'",value,fixed=TRUE)&&!grepl('"',value,fixed=TRUE))
+      '"' else "'"
+    encodeString(value,quote=quote)
+  },character(1L),USE.NAMES=FALSE)
+}
+
 #' Reporting for explicitly audited native sparse multivariate PACE
 #' @param result Native sparse MFPCA record with quadrature score,
 #'   measurement error, covariance PSD and bandwidth audit fields.
@@ -186,8 +194,9 @@ etr_sparse_mfpca_reporting_text <- function(result,digits=3L) {
   .etr_scientific_frame_fields(result,c("dimensions","curve_ids",
     "n_components","score_diagnostics","covariance_diagnostics",
     "measurement_error_covariance","provenance"))
-  dimensions<-.etr_source_text_names(result$dimensions,"dimensions")
+  dimensions<-.etr_scientific_frame_ids(result$dimensions,"dimensions")
   .etr_assert(length(dimensions)==2L,"exactly two planar dimension labels are required")
+  dimensions<-.etr_sparse_dimension_repr(dimensions)
   ids<-.etr_scientific_frame_ids(result$curve_ids,"curve_ids")
   k<-.etr_source_text_int(result$n_components,"n_components",min=1L)
   diagnostics<-result$score_diagnostics
@@ -224,8 +233,8 @@ etr_sparse_mfpca_reporting_text <- function(result,digits=3L) {
     "correction_frobenius_norm",min=0)
   error_text<-.etr_sparse_mfpca_numpy_2x2(
     result$measurement_error_covariance,d)
-  paste0("Native sparse multivariate FPCA was fitted jointly to dimensions '",
-    dimensions[1L],"' and '",dimensions[2L],"' for ",length(ids),
+  paste0("Native sparse multivariate FPCA was fitted jointly to dimensions ",
+    dimensions[1L]," and ",dimensions[2L]," for ",length(ids),
     " curve(s), retaining ",k," joint component(s). The vector mean ",
     "and direct Cxx/Cxy/Cyy latent covariance surfaces used declared ",
     "local-linear bandwidths ",mean_band," and ",cov_band,
@@ -272,7 +281,9 @@ etr_sparse_fpca_reporting_text <- function(result,digits=3L) {
   d<-.etr_manuscript_digits(digits)
   .etr_scientific_frame_fields(result,c("dimension","n_components",
     "eigenvalues","provenance"),"sparse_fpca")
-  dimension<-.etr_source_text_word(result$dimension,"dimension")
+  dimension<-.etr_scientific_frame_ids(result$dimension,"dimension")
+  .etr_assert(length(dimension)==1L,"dimension must be a single name")
+  dimension<-.etr_sparse_dimension_repr(dimension)
   k<-.etr_source_text_int(result$n_components,"n_components",min=1L)
   eigen<-.etr_source_text_vector(result$eigenvalues,"eigenvalues")
   .etr_assert(length(eigen)==k&&all(eigen>=0),
@@ -363,8 +374,8 @@ etr_sparse_fpca_reporting_text <- function(result,digits=3L) {
       }
     }
     return(paste0(
-      "Sparse univariate FPCA was fitted natively to the '",dimension,
-      "' trajectory dimension using explicit local-linear pooled mean ",
+      "Sparse univariate FPCA was fitted natively to the ",dimension,
+      " trajectory dimension using explicit local-linear pooled mean ",
       "and covariance smoothing (",k," components; per-curve sample-count ",
       "range=",sample_range,"; retained eigenvalues=",eigentext,"). ",
       "Raw sparse trajectories were not interpolated to a common grid. ",
@@ -394,8 +405,8 @@ etr_sparse_fpca_reporting_text <- function(result,digits=3L) {
   custom_text<-if(custom)
     " Custom mean/covariance smoothing parameters were supplied." else ""
   paste0(
-    "Sparse univariate FPCA was fitted to the '",dimension,
-    "' trajectory dimension using FDApy's covariance-operator estimator, ",
+    "Sparse univariate FPCA was fitted to the ",dimension,
+    " trajectory dimension using FDApy's covariance-operator estimator, ",
     "with ",fit_text," fitting smoothness and PACE conditional-expectation ",
     "scores (",k," components; per-curve sample-count range=",
     sample_range,"; retained eigenvalues=",eigentext,
