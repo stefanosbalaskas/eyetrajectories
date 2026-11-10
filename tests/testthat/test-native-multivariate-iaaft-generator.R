@@ -64,6 +64,94 @@ test_that("native MIAAFT rejects declared domain violations",{
   irregular<-x;irregular$time[[16L]]<-irregular$time[[16L]]+.003
   expect_error(f(irregular,"a",c("x","y"),"x"),"regular")
 })
+
+test_that("MIAAFT phase replay validates shape, resolution and iteration coverage",{
+  x<-.etr_multivariate_lle_fixture()
+  run<-function(replay=NULL)etr_generate_multivariate_iaaft_surrogates(
+    x,"example",c("x","y","z"),"y",n_surrogates=1L,
+    max_iterations=100L,tolerance=.7,random_state=17L,phase_replay=replay)
+  default<-run()
+  no_target<-matrix(NA_real_,49L,3L)
+  no_reference<-matrix(NA_real_,1L,49L)
+  expect_identical(run(list(target=no_target,reference=list(no_reference))),
+    default)
+  expect_error(run(list(rank=no_target)),"named list")
+  expect_error(run(list(target=no_target,target=no_target)),"named list")
+  expect_error(run(list(target=no_target[-1L,])),"target must be")
+  expect_error(run(list(reference=list(no_reference,NULL))),"one entry")
+  expect_error(run(list(reference=list(matrix(NA_real_,101L,49L)))),
+    "within max_iterations")
+  for(value in c(NaN,Inf,pi+.1)){
+    target<-no_target
+    target[5L,2L]<-value
+    expect_error(run(list(target=target)),"radians or NA")
+  }
+  # DC, a strong reference harmonic, and the even-length Nyquist bin.
+  for(bin in c(1L,6L,49L)){
+    target<-no_target
+    target[bin,2L]<-0
+    expect_error(run(list(target=target)),"replace unresolved phases")
+  }
+  target<-no_target
+  target[5L,2L]<-0
+  expect_identical(run(list(target=target))$provenance$target_phases_replayed,1L)
+  reference<-no_reference
+  reference[1L,6L]<-0
+  expect_error(run(list(reference=list(reference))),
+    "reference iteration 1 can only replace unresolved phases")
+  reference<-matrix(NA_real_,default$convergence_iterations[[1L]]+1L,49L)
+  reference[nrow(reference),5L]<-0
+  expect_error(run(list(reference=list(reference))),"phases after convergence")
+})
+
+test_that("MIAAFT preserves sample order within exact inverse-FFT ties",{
+  adjusted<-cbind(c(2,1,1,3),c(0,0,1,0))
+  sorted_target<-cbind(c(10,20,30,40),c(-3,-2,-2,8))
+  native<-.etr_multivariate_rank_match_columns(adjusted,sorted_target)
+  expect_identical(native,cbind(c(30,10,20,40),c(-3,-2,8,-2)))
+  if(identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true")){
+    source<-reticulate::import("eyetrajectoriespy.multivariate_surrogates",
+      convert=FALSE)$`_rank_match_columns`
+    expect_identical(native,et_to_r(source(adjusted,sorted_target)))
+  }
+})
+
+test_that("frozen MIAAFT agrees on broadband tied marginals and rejects degenerate fits",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("published Python 1.2 MIAAFT tie and error oracle opt-in")
+  i<-0:30
+  values<-array(c((i*i+3L*i)%%11L,(i*i*i+2L*i)%%13L),c(1L,31L,2L))
+  time<-as.numeric(i)
+  native<-function(values,max_iterations=100L)
+    etr_generate_multivariate_iaaft_surrogates(
+      etr_trajectory_set(time,values,"tied",c("x","y")),0L,
+      c("x","y"),"y",n_surrogates=2L,max_iterations=max_iterations,
+      tolerance=.5,random_state=18L)
+  source<-function(values,max_iterations=100L){
+    x<-reticulate::py_call(etpy_get_export("TrajectorySet"),
+      time=time,values=values,curve_ids=reticulate::tuple("tied"),
+      dimension_names=reticulate::tuple("x","y"))
+    reticulate::py_call(etpy_get_export("generate_multivariate_iaaft_surrogates"),
+      trajectories=x,curve=0L,dimensions=reticulate::tuple("x","y"),
+      reference_dimension="y",n_surrogates=2L,max_iterations=max_iterations,
+      tolerance=.5,random_state=18L)
+  }
+  r<-native(values)
+  py<-source(values)
+  for(field in c("surrogates","spectral_errors","cross_spectral_errors")){
+    expect_equal(r[[field]],et_to_r(reticulate::py_get_attr(py,field)),
+      tolerance=1e-10,info=field)
+  }
+  expect_identical(r$convergence_iterations,as.integer(et_to_r(
+    reticulate::py_get_attr(py,"convergence_iterations"))))
+  expect_error(native(values,max_iterations=1L),"did not converge")
+  expect_error(source(values,max_iterations=1L),"surrogate 0 failed",
+    class="python.builtin.RuntimeError")
+  values[1L,,2L]<-3L
+  expect_error(native(values),"nonconstant")
+  expect_error(source(values),"non-constant")
+})
+
 test_that("pinned Python 1.2 verifies native MIAAFT spectra and exact marginals",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("published Python 1.2 multivariate IAAFT numerical oracle opt-in")
