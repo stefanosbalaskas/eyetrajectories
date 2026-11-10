@@ -72,6 +72,9 @@
   for(field in names(frame))
     expect_equal(frame[[field]],source_frame[[field]],tolerance=1e-12,
       info=paste(label,"truth frame",field))
+  expect_identical(etr_functional_simulation_reporting_text(native),
+    et_to_r(reticulate::py_call(
+      etpy_get_export("functional_simulation_reporting_text"),source)),info=label)
   expect_identical(native$truth$provenance$native_random_engine,"numpy_pcg64")
 }
 
