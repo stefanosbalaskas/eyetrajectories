@@ -137,22 +137,56 @@
   list(values=v,support_counts=support)
 }
 
-.etr_spn_pairs<-function(times,residuals){
+.etr_spn_pairs<-function(times,residuals,include_mirror=TRUE){
+  # Keep the exact source order: curve, left index, right index, then
+  # its mirrored counterpart immediately after each forward pair.
+  # upper.tri() in base R uses column-major order, unlike the frozen
+  # Python loops in _sparse_native.raw_offdiagonal_covariance_pairs().
+  if(length(times)!=length(residuals))
+    stop("curve_times and curve_residuals must have equal length",
+      call.=FALSE)
+  if(!is.logical(include_mirror)||length(include_mirror)!=1L||
+      is.na(include_mirror))
+    stop("include_mirror must be scalar logical",call.=FALSE)
   pieces<-lapply(seq_along(times),function(i){
     t<-times[[i]];r<-residuals[[i]]
-    if(length(t)<2L)return(NULL)
-    ix<-which(upper.tri(matrix(FALSE,length(t),length(t))),
-      arr.ind=TRUE)
-    a<-ix[,1L];b<-ix[,2L];v<-r[a]*r[b]
-    list(s=c(t[a],t[b]),t=c(t[b],t[a]),
-      products=c(v,v))
+    if(!is.numeric(t)||!is.numeric(r)||!is.null(dim(t))||
+        !is.null(dim(r))||length(t)!=length(r))
+      stop("each curve time/residual pair must be one-dimensional and aligned",
+        call.=FALSE)
+    if(!all(is.finite(t))||!all(is.finite(r)))
+      stop("curve times and residuals must be finite",call.=FALSE)
+    n<-length(t)
+    count<-if(n<2L)0L else as.integer(n*(n-1)/2L)*
+      if(include_mirror)2L else 1L
+    s<-numeric(count);u<-numeric(count)
+    products<-numeric(count);ix<-integer(count)
+    pos<-0L
+    if(n>=2L)for(left in seq_len(n-1L))
+      for(right in seq.int(left+1L,n)){
+        product<-as.numeric(r[left]*r[right])
+        pos<-pos+1L
+        s[pos]<-t[left];u[pos]<-t[right]
+        products[pos]<-product;ix[pos]<-i-1L
+        if(include_mirror){
+          pos<-pos+1L
+          s[pos]<-t[right];u[pos]<-t[left]
+          products[pos]<-product;ix[pos]<-i-1L
+        }
+      }
+    list(s=s,t=u,products=products,curve_index=ix)
   })
-  out<-lapply(c("s","t","products"),function(field)
-    unlist(lapply(pieces,function(z)z[[field]]),use.names=FALSE))
-  names(out)<-c("s","t","products")
+  collect<-function(key,mode)
+    unlist(lapply(pieces,function(z)z[[key]]),use.names=FALSE)
+  out<-list(s=as.numeric(collect("s","numeric")),
+    t=as.numeric(collect("t","numeric")),
+    products=as.numeric(collect("products","numeric")),
+    curve_index=as.integer(collect("curve_index","integer")),
+    mirrored=include_mirror)
   if(length(out$products)<3L)
     .etr_spn_fail("insufficient_within_curve_covariance_pairs",
-      "fewer than three offdiagonal pairs")
+      "fewer than three offdiagonal pairs",
+      list(n_pairs=as.integer(length(out$products))))
   out
 }
 
