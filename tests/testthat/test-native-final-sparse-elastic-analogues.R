@@ -110,10 +110,10 @@ test_that("native sparse split conformal baseline is disjoint and target-blind",
 test_that("paired and asynchronous native MFPCA require declared R backend",{
   f<-.etr_final_sparse_fixture()
   expect_error(etr_fit_sparse_mfpca(f$proper),
-    "explicitly select fdapace_joint_score_pca")
+    "explicitly choose native_covariance or fdapace_joint_score_pca")
   expect_error(etr_run_sparse_mfpca_workflow(f$proper,list(
     dimensions=c("x","y"),backend="source_custom",
-    n_components=2L)),"explicitly select")
+    n_components=2L)),"explicitly choose native_covariance or fdapace_joint_score_pca")
   ch<-list(x=etr_to_fdapy_irregular(f$proper,"x"),
     y=etr_to_fdapy_irregular(f$proper,"y"))
   bad<-ch

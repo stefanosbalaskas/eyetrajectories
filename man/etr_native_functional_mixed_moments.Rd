@@ -26,7 +26,11 @@ etr_functional_mixed_effects_coefficient_frame(result, band = NULL)
 \item{participant_column}{Metadata field supplying complete participant identities; requires at least 3 participants with at least 2 curves each.}
 \item{dimension}{One explicit response dimension name.}
 \item{covariance_ridge}{Positive covariance regularization proportion in (0,1).}
-\item{result}{Restricted two-level moments fit or its residual diagnostic object as appropriate.}
+\item{result}{Restricted two-level moments fit or its residual diagnostic
+object as appropriate. Native joint B-spline Gaussian likelihood fits are
+also accepted by whitening, lag diagnostics, residual pair, and coefficient
+frame functions. The joint models retain observed time units, source curve
+IDs, and their fitted conditional covariance without model refitting.}
 \item{max_lag}{Explicit positive index lag strictly less than the number of time points.}
 \item{residual_scale}{Raw or within-trial covariance-whitened conditional residuals.}
 \item{level}{Trial, participant or overall audit-frame aggregation.}
@@ -36,4 +40,9 @@ etr_functional_mixed_effects_coefficient_frame(result, band = NULL)
 \item{band}{Not supported; only NULL is accepted. No simultaneous mixed-model bands are qualified.}
 }
 \value{A restricted two-level functional model object, whitened residual matrix, diagnostic result, physical-lag residual pair data frame, variance decomposition, or coefficient table.}
-\details{Critical restriction: this model is NOT the spline-based statsmodels MixedLM, Gaussian profiled GLS or REML backend in eyetrajectoriespy 1.2.0. Fixed coefficient functions are independently estimated pointwise with participant-cluster sandwich standard errors. Participant random functions use PSD-projected two-level covariance method-of-moments shrinkage with a declared ridge. Participant covariance and interval calibration are not certified. Random slopes, nested trial effects, residual AR1/exponential correlation likelihood optimization, and simultaneous bands are not provided. The public name mapping is partial source-contract support, never one-to-one equivalence.}
+\details{Critical restriction: this model is NOT the spline-based statsmodels MixedLM, Gaussian profiled GLS or REML backend in eyetrajectoriespy 1.2.0. Fixed coefficient functions are independently estimated pointwise with participant-cluster sandwich standard errors. Participant random functions use PSD-projected two-level covariance method-of-moments shrinkage with a declared ridge. Participant covariance and interval calibration are not certified. Random slopes, nested trial effects, residual AR1/exponential correlation likelihood optimization, and simultaneous bands are not provided. The source-ordered coefficient-frame adapter accepts fitted native joint
+B-spline likelihood objects without a refit. The new likelihood-residual adapter computes physical-lag audit
+frames from conditional residual functions and covariance-based whitening;
+it does not change the restricted moment model's estimator or numerical
+formulas. This distinction is retained in the residual diagnostic provenance.
+The public name mapping is partial source-contract support, never one-to-one equivalence.}

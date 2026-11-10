@@ -29,14 +29,16 @@ jobs:
           use-public-rspm: true
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          dependencies: "hard"
+          dependencies: '"hard"'
           extra-packages: |
             any::pkgload
             any::testthat
       - name: Native plots, certificate census, and Python-bridge isolation
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-visual-diagnostics|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))'
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-visual-diagnostics|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))
+          RSCRIPT
   pinned-python-boundaries:
     name: source boundary characterization / Python 1.2
     runs-on: ubuntu-latest
@@ -54,7 +56,7 @@ jobs:
           use-public-rspm: true
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          dependencies: "hard"
+          dependencies: '"hard"'
           extra-packages: |
             any::pkgload
             any::testthat

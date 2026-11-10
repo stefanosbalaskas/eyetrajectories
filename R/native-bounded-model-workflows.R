@@ -12,6 +12,11 @@
 #' @export
 etr_run_functional_mixed_effects_workflow<-function(
     trajectories,design,config){
+  # Opt-in source-family likelihood workflow. Preserve the legacy moments
+  # contract and its strict parameter validation without silent migration.
+  if(is.list(config) && !is.data.frame(config) &&
+      identical(config$estimator,"native_joint_bspline_gaussian"))
+    return(.etr_source_joint_bspline_workflow(trajectories,design,config))
   etr_validate(trajectories,require_complete=TRUE)
   cfg<-.etr_source_workflow_config(config,
     list(predictors=NULL,participant_column=NULL,dimension=NULL,
@@ -62,6 +67,104 @@ etr_run_functional_mixed_effects_workflow<-function(
     class="etr_functional_mixed_effects_workflow")
 }
 
+# Native source-model workflow lane. Legacy fdapace remains separate.
+.etr_sparse_workflow_uncertainty <- function(request, fit, trajectories) {
+  if(is.null(request))return(NULL)
+  parameters<-list(condition_limit=NULL,failure_action="error")
+  .etr_assert(is.list(request)&&!is.data.frame(request)&&
+    length(names(request))==length(request)&&
+    !anyDuplicated(names(request))&&all(names(request)%in%names(parameters)),
+    "score_uncertainty must be a named list with condition_limit and/or failure_action")
+  parameters[names(request)]<-request
+  if(inherits(fit,"etr_sparse_mfpca_source")){
+    calculate<-etr_sparse_mfpca_score_uncertainty_native
+    as_frame<-etr_sparse_mfpca_score_uncertainty_frame_native
+    source_function<-"sparse_mfpca_score_uncertainty"
+  }else{
+    calculate<-etr_sparse_fpca_score_uncertainty_native
+    as_frame<-etr_sparse_fpca_score_uncertainty_frame_native
+    source_function<-"sparse_fpca_score_uncertainty"
+  }
+  result<-do.call(calculate,c(list(fit=fit,trajectories=trajectories),parameters))
+  step<-.etr_source_workflow_step(source_function,parameters)
+  step$name<-"score_uncertainty"
+  list(result=result,step=step,frame=as_frame(result),report=paste0(
+    "Conditional PACE score uncertainty uses the full fitted covariance ",
+    "evaluated at native observation times and excludes uncertainty in ",
+    "the estimated population fit. ",
+    sum(result$diagnostics$status_code=="ok")," of ",
+    length(result$curve_ids)," curve-level systems passed."))
+}
+
+.etr_run_sparse_fpca_source_native_workflow<-function(
+    trajectories,config,observation_process=NULL){
+  cfg<-.etr_source_workflow_config(config,list(
+    backend="native_covariance",dimension=NULL,
+    n_components=NULL,evaluation_grid=NULL,
+    mean_bandwidth=NULL,covariance_bandwidth=NULL,
+    measurement_error_variance=NULL,noise_variance_method="fixed",
+    noise_bandwidth=NULL,noise_support=NULL,noise_min_local_points=3L,
+    analysis_support_action="error",psd_action="error",
+    psd_tolerance=1e-8,positive_eigen_tolerance=1e-10,
+    score_ridge=0,score_condition_limit=1e12,
+    min_score_samples=2L,score_failure_action="error",
+    mean_min_local_points=3L,covariance_min_local_pairs=6L,
+    score_uncertainty=NULL,bandwidth_selection=NULL,observation_diagnostics=NULL,
+    preprocessing=list()),required=c(
+      "backend","dimension","n_components","evaluation_grid",
+      "noise_variance_method"))
+  .etr_assert(identical(cfg$backend,"native_covariance"),
+    "sparse source workflow requires explicit native_covariance backend")
+  observation_options<-.etr_sparse_observation_options(
+    observation_process,cfg$observation_diagnostics)
+  .etr_assert(inherits(trajectories,"etr_irregular_trajectory_set"),
+    "source-model sparse FPCA requires native irregular trajectories")
+  selection<-.etr_sparse_bandwidth_selection(trajectories,cfg,paired=FALSE)
+  params<-cfg[setdiff(names(cfg),c("preprocessing","score_uncertainty",
+    "bandwidth_selection","observation_diagnostics"))]
+  params<-.etr_sparse_bandwidth_refit(params,selection)
+  fit<-do.call(etr_fit_sparse_fpca_native,c(
+    list(trajectories=trajectories),params[
+      setdiff(names(params),"backend")]))
+  uncertainty<-.etr_sparse_workflow_uncertainty(
+    cfg$score_uncertainty,fit,trajectories)
+  steps<-list(.etr_source_workflow_step(
+    "fit_sparse_fpca_native_full_covariance_PACE",params))
+  reports<-list(fit=etr_sparse_fpca_reporting_text(fit))
+  tables<-list(scores=.etr_scientific_frame_metadata(fit,"SFPC",
+      preserve_workflow_metadata=TRUE),
+    score_diagnostics=fit$score_diagnostics,
+    covariance_eigenvalues=data.frame(
+      component=seq_along(fit$eigenvalues),eigenvalue=fit$eigenvalues))
+  if(!is.null(uncertainty)){
+    steps[[2L]]<-uncertainty$step
+    reports$score_uncertainty<-uncertainty$report
+    tables$score_uncertainty<-uncertainty$frame
+  }
+  workflow<-structure(list(
+    workflow_schema_version=1L,
+    workflow_contract="sparse_fpca:native_local_linear_fixed_noise",
+    config=cfg,fit=fit,score_uncertainty=uncertainty$result,
+    steps=steps,
+    decisions=c(lapply(params,.etr_source_workflow_decision),list(
+      score_uncertainty_requested=.etr_source_workflow_decision(!is.null(uncertainty)))),
+    provenance=list(
+      input_layout="native_irregular",
+      source_python_family="fit_sparse_fpca",
+      source_numerical_law="local_linear_epanechnikov_PACE",
+      raw_interpolation_performed=FALSE,
+      preprocessing_executed=FALSE,
+      noise_variance_method=cfg$noise_variance_method,
+      automatic_bandwidth_selection_performed=FALSE,
+      fdapace_backend_used=FALSE,
+      source_python_complete_domain_verified=FALSE,
+      full_source_contract_certified=FALSE),
+    reports=reports,tables=tables),
+    class="etr_sparse_fpca_workflow")
+  workflow<-.etr_sparse_bandwidth_workflow(workflow,selection,paired=FALSE)
+  .etr_sparse_observation_workflow(workflow,observation_process,observation_options)
+}
+
 #' Explicit fdapace-backed native sparse FPCA workflow (not source PACE)
 #'
 #' @description This is a deliberately separate native R approximation.
@@ -69,13 +172,21 @@ etr_run_functional_mixed_effects_workflow<-function(
 #'   fdapace has a DIFFERENT smoothing and covariance estimator. Neither
 #'   matching numerical estimates nor coverage calibration is asserted.
 #' @param trajectories Native etr_irregular_trajectory_set or etr_sparse_curves.
-#' @param config Named list containing dimension, backend="fdapace",
-#'   max_components, fve, fdapace options, empty preprocessing.
-#' @param observation_process Must be NULL; no silent observation diagnostics.
+#' @param config Named list declaring an explicit backend and empty preprocessing.
+#'   The fdapace backend accepts max_components, fve and fdapace options.
+#'   The native_covariance backend accepts fixed PACE bandwidths or a
+#'   bandwidth_selection list of candidate grids and cross-validation options.
+#'   It also supports optional conditional score uncertainty.
+#' @param observation_process Candidate-sample denominator for explicit
+#'   observation diagnostics with the native_covariance backend.
 #' @return Native workflow with fdapace fit and source-difference provenance.
 #' @export
 etr_run_sparse_fpca_workflow<-function(
     trajectories,config,observation_process=NULL){
+  if(is.list(config)&&!is.data.frame(config)&&
+      identical(config$backend,"native_covariance"))
+    return(.etr_run_sparse_fpca_source_native_workflow(
+      trajectories,config,observation_process))
   cfg<-.etr_source_workflow_config(config,
     list(dimension=NULL,backend=NULL,max_components=3L,fve=.95,
       options=list(),preprocessing=list()),

@@ -81,7 +81,18 @@
 #'   etr_sparse_curves channels with identical curve IDs.
 #' @param dimensions Two distinct channels.
 #' @param n_components Number of retained joint score components.
-#' @param backend Must be explicit fdapace_joint_score_pca.
+#' @param backend Explicit "native_covariance" source-model or
+#'   "fdapace_joint_score_pca" distinct legacy scientific alternative.
+#' @param evaluation_grid,mean_bandwidth,covariance_bandwidth Declared
+#'   native joint population grid and Epanechnikov smoothing bandwidths.
+#' @param measurement_error,measurement_error_variance
+#'   "diagonal" measurement-error mode with two supplied variances.
+#' @param measurement_error_covariance Optional "fixed_matrix" 2x2 noise.
+#' @param analysis_support_action,psd_action Explicit source error controls.
+#' @param psd_tolerance,positive_eigen_tolerance Eigenvalue thresholds.
+#' @param score_ridge,score_condition_limit PACE conditioning controls.
+#' @param min_score_time_points,score_failure_action PACE failure policy.
+#' @param mean_min_local_points,covariance_min_local_pairs Smoothing support.
 #' @param max_marginal_components Maximum native PACE components per channel.
 #' @param fve Variance fraction used by each marginal fdapace fit.
 #' @param options Native fdapace model options.
@@ -92,9 +103,40 @@
 #' @export
 etr_fit_sparse_mfpca<-function(trajectories,dimensions=c("x","y"),
     n_components=2L,backend=NULL,max_marginal_components=3L,
-    fve=.95,options=list(),observation_process=NULL){
+    fve=.95,options=list(),observation_process=NULL,
+    evaluation_grid=NULL,mean_bandwidth=NULL,covariance_bandwidth=NULL,
+    measurement_error="diagonal",measurement_error_variance=NULL,
+    measurement_error_covariance=NULL,analysis_support_action="error",
+    psd_action="error",psd_tolerance=1e-8,
+    positive_eigen_tolerance=1e-10,score_ridge=0,
+    score_condition_limit=1e12,min_score_time_points=2L,
+    score_failure_action="error",mean_min_local_points=3L,
+    covariance_min_local_pairs=6L){
+  if(identical(backend,"native_covariance")){
+    .etr_assert(is.null(observation_process),
+      "joint source model does not yet support observation_process")
+    .etr_assert(inherits(trajectories,"etr_irregular_trajectory_set"),
+      "joint source model requires jointly observed native irregular curves")
+    return(etr_fit_sparse_mfpca_native(
+      trajectories=trajectories,dimensions=dimensions,
+      n_components=n_components,evaluation_grid=evaluation_grid,
+      mean_bandwidth=mean_bandwidth,
+      covariance_bandwidth=covariance_bandwidth,
+      measurement_error=measurement_error,
+      measurement_error_variance=measurement_error_variance,
+      measurement_error_covariance=measurement_error_covariance,
+      analysis_support_action=analysis_support_action,
+      psd_action=psd_action,psd_tolerance=psd_tolerance,
+      positive_eigen_tolerance=positive_eigen_tolerance,
+      score_ridge=score_ridge,
+      score_condition_limit=score_condition_limit,
+      min_score_time_points=min_score_time_points,
+      score_failure_action=score_failure_action,
+      mean_min_local_points=mean_min_local_points,
+      covariance_min_local_pairs=covariance_min_local_pairs))
+  }
   .etr_assert(identical(backend,"fdapace_joint_score_pca"),
-    "explicitly select fdapace_joint_score_pca; Python joint PACE not implemented")
+    "explicitly choose native_covariance or fdapace_joint_score_pca")
   .etr_assert(is.null(observation_process),
     "native joint score fit cannot model observation_process")
   channels<-.etr_native_sparse_channels(trajectories,dimensions)
@@ -144,11 +186,75 @@ etr_fit_sparse_mfpca<-function(trajectories,dimensions=c("x","y"),
 #' Run native paired sparse two-channel joint-score workflow
 #' @param trajectories Native two-channel irregular trajectories.
 #' @param config Explicit dimensions, backend, component counts and empty
-#'   preprocessing. No implicit bandwidth optimization.
-#' @param observation_process Must be NULL.
+#'   preprocessing. The native_covariance backend accepts fixed PACE
+#'   bandwidths or declared candidate grids in bandwidth_selection. It also
+#'   supports optional conditional score uncertainty.
+#' @param observation_process Candidate-sample denominator for explicit
+#'   observation diagnostics with the native_covariance backend.
 #' @export
 etr_run_sparse_mfpca_workflow<-function(trajectories,config,
     observation_process=NULL){
+  source_mode<-is.list(config)&&!is.data.frame(config)&&
+    identical(config$backend,"native_covariance")
+  if(source_mode){
+    cfg<-.etr_source_workflow_config(config,list(
+      dimensions=c("x","y"),backend=NULL,n_components=2L,
+      evaluation_grid=NULL,mean_bandwidth=NULL,
+      covariance_bandwidth=NULL,measurement_error="diagonal",
+      measurement_error_variance=NULL,
+      measurement_error_covariance=NULL,
+      analysis_support_action="error",psd_action="error",
+      psd_tolerance=1e-8,positive_eigen_tolerance=1e-10,
+      score_ridge=0,score_condition_limit=1e12,
+      min_score_time_points=2L,score_failure_action="error",
+      mean_min_local_points=3L,covariance_min_local_pairs=6L,
+      score_uncertainty=NULL,bandwidth_selection=NULL,observation_diagnostics=NULL,
+      preprocessing=list()),required=c("dimensions","backend",
+      "n_components","evaluation_grid","measurement_error"))
+    .etr_assert(inherits(trajectories,"etr_irregular_trajectory_set"),
+      "joint source workflow requires paired irregular trajectories")
+    observation_options<-.etr_sparse_observation_options(
+      observation_process,cfg$observation_diagnostics)
+    selection<-.etr_sparse_bandwidth_selection(trajectories,cfg,paired=TRUE)
+    params<-cfg[setdiff(names(cfg),c("preprocessing","score_uncertainty",
+      "bandwidth_selection","observation_diagnostics"))]
+    params<-.etr_sparse_bandwidth_refit(params,selection)
+    fit<-do.call(etr_fit_sparse_mfpca,c(list(trajectories=trajectories),params))
+    uncertainty<-.etr_sparse_workflow_uncertainty(
+      cfg$score_uncertainty,fit,trajectories)
+    steps<-list(.etr_source_workflow_step(
+      "fit_sparse_mfpca_native_joint_PACE",params))
+    reports<-list(fit=etr_sparse_mfpca_reporting_text(fit))
+    tables<-list(scores=.etr_scientific_frame_metadata(fit,"SMFPC",
+        preserve_workflow_metadata=TRUE),
+      score_diagnostics=fit$score_diagnostics,
+      eigenvalues=data.frame(component=seq_len(fit$n_components),
+        eigenvalue=fit$eigenvalues))
+    if(!is.null(uncertainty)){
+      steps[[2L]]<-uncertainty$step
+      reports$score_uncertainty<-uncertainty$report
+      tables$score_uncertainty<-uncertainty$frame
+    }
+    workflow<-structure(list(
+      workflow_schema_version=1L,
+      workflow_contract="sparse_mfpca:native_direct_block_covariance_PACE",
+      config=cfg,fit=fit,score_uncertainty=uncertainty$result,
+      steps=steps,
+      decisions=c(lapply(params,.etr_source_workflow_decision),list(
+        score_uncertainty_requested=.etr_source_workflow_decision(!is.null(uncertainty)))),
+      provenance=list(
+        input_layout="paired_irregular_native",
+        preprocessing_executed=FALSE,
+        original_observations_interpolated_to_common_grid=FALSE,
+        source_custom_joint_covariance_fitted=TRUE,
+        cross_channel_covariance_modeled=TRUE,
+        source_full_domain_certified=FALSE,
+        independent_full_contract_certified=FALSE),
+      reports=reports,tables=tables),
+      class="etr_native_sparse_mfpca_workflow")
+    workflow<-.etr_sparse_bandwidth_workflow(workflow,selection,paired=TRUE)
+    return(.etr_sparse_observation_workflow(workflow,observation_process,observation_options))
+  }
   cfg<-.etr_source_workflow_config(config,list(
     dimensions=c("x","y"),backend=NULL,n_components=2L,
     max_marginal_components=3L,fve=.95,options=list(),
@@ -167,10 +273,67 @@ etr_run_sparse_mfpca_workflow<-function(trajectories,config,
 #' @param trajectories Named list of distinct-channel etr_sparse_curves,
 #'   each with its own original observation times and shared curve IDs.
 #' @param config Explicit backend and component controls with empty plan.
-#' @param observation_process Must be NULL.
+#' @param observation_process Candidate-sample denominator for explicit
+#'   observation diagnostics with the native_covariance backend.
 #' @export
 etr_run_sparse_mfpca_async_workflow<-function(trajectories,config,
     observation_process=NULL){
+  if(is.list(config)&&!is.data.frame(config)&&
+      identical(config$backend,"native_covariance")){
+    cfg<-.etr_source_workflow_config(config,list(
+      backend=NULL,dimensions=c("x","y"),
+      n_components=NULL,evaluation_grid=NULL,
+      mean_bandwidth=NULL,covariance_bandwidth=NULL,
+      measurement_error=NULL,
+      measurement_error_variance=NULL,
+      measurement_error_covariance=NULL,
+      analysis_support_action="error",same_time_tolerance=0,
+      psd_action="error",psd_tolerance=1e-8,
+      positive_eigen_tolerance=1e-10,
+      score_ridge=0,score_condition_limit=1e12,
+      min_score_observations=2L,
+      score_failure_action="error",
+      mean_min_local_points=3L,
+      covariance_min_local_pairs=6L,observation_diagnostics=NULL,preprocessing=list()),
+      required=c("backend","dimensions","n_components",
+        "evaluation_grid","mean_bandwidth",
+        "covariance_bandwidth","measurement_error"))
+    .etr_assert(inherits(trajectories,
+      "etr_irregular_trajectory_set"),
+      "native asynchronous covariance requires exact union timestamp irregular trajectories")
+    observation_options<-.etr_sparse_observation_options(
+      observation_process,cfg$observation_diagnostics)
+    .etr_assert(is.list(cfg$preprocessing)&&
+      !length(cfg$preprocessing),
+      "native async source model refuses raw preprocessing")
+    params<-cfg[setdiff(names(cfg),c("backend","preprocessing","observation_diagnostics"))]
+    fit<-do.call(etr_fit_sparse_mfpca_async_native,
+      c(list(trajectories=trajectories),params))
+    evidence<-list(
+      workflow_schema_version=1L,
+      workflow_contract="sparse_mfpca_async:v1",
+      config=cfg,fit=fit,
+      steps=list(.etr_source_workflow_step(
+        "fit_sparse_mfpca_async_native",params)),
+      decisions=lapply(cfg[c("backend",names(params))],
+        .etr_source_workflow_decision),
+      provenance=list(raw_interpolation_performed=FALSE,
+        native_observation_grids_retained=TRUE,
+        coordinate_specific_missingness_supported=TRUE,
+        directional_cross_channel_covariance_fitted=TRUE,
+        simultaneous_cross_noise_modeled=TRUE,
+        bandwidth_mode="fixed",
+        bandwidth_selector_available=FALSE,
+        automatic_model_selection_performed=FALSE,
+        independent_full_contract_certified=FALSE),
+      reports=list(fit=paste(
+        "Native direct asynchronous sparse MFPCA joint PACE",
+        "using directional latent covariance and exact scalar times.")),
+      tables=list(scores=.etr_scientific_frame_metadata(fit,"ASMFPC",
+        preserve_workflow_metadata=TRUE)))
+    workflow<-structure(evidence,class="etr_native_sparse_mfpca_workflow")
+    return(.etr_sparse_observation_workflow(workflow,observation_process,observation_options))
+  }
   cfg<-.etr_source_workflow_config(config,list(
     dimensions=c("x","y"),backend=NULL,n_components=2L,
     max_marginal_components=3L,fve=.95,options=list(),

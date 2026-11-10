@@ -430,7 +430,8 @@ etr_prepare_independent_source_review<-function(
   utils::write.csv(review_triage,file.path(output_dir,
     "all_508_contract_review_priority.csv"),
     row.names=FALSE,na="")
-  # The 203 function gaps retain their historical queue unchanged.
+  # All 203 historical callable witnesses remain reviewable, but only
+  # 201 are currently OPEN after two deterministic semantic table closures.
   # The first independently recorded CLASS source gap is separately
   # handed to reviewers, never misreported as a callable source fixture.
   nonfun_review<-data.frame(namespace=nonfun_gap$namespace,
@@ -488,8 +489,9 @@ etr_prepare_independent_source_review<-function(
     "Gap resolution queue must preserve every unapproved source difference")
   utils::write.csv(gap_resolution,file.path(output_dir,
     "known_source_gap_resolution_queue.csv"),row.names=FALSE,na="")
-  # Scientifically meaningful triage, preserving ALL 203 recorded source
-  # differences. These lanes prioritize review, not algorithm equivalence.
+  # Scientifically meaningful triage preserves ALL 203 historical
+  # records while counting only the 201 still-open source differences.
+  # These lanes prioritize review, not algorithm equivalence.
   source_gap_lane<-ifelse(
     gap_resolution$alternative_backend_or_estimand,
     "01_different_estimator_or_backend",
@@ -504,7 +506,9 @@ etr_prepare_independent_source_review<-function(
           "04_output_class_graphics_or_reporting",
           "05_unclassified_independent_source_review"))))
   gap_resolution$scientific_resolution_lane<-source_gap_lane
-  gap_resolution$source_review_status<-"OPEN_NOT_INDEPENDENTLY_VERIFIED"
+  gap_resolution$source_review_status<-ifelse(gap_resolution$gap_open,
+    "OPEN_NOT_INDEPENDENTLY_VERIFIED",
+    "SEMANTIC_TABLE_DIFFERENCE_RESOLVED_AUTHOR_ORACLE_ONLY")
   gap_resolution$approved_boundary_policy<-FALSE
   .checked(nrow(gap_resolution)==nrow(gaps)&&
     !any(gap_resolution$approved_boundary_policy)&&
@@ -513,8 +517,10 @@ etr_prepare_independent_source_review<-function(
   utils::write.csv(gap_resolution,file.path(output_dir,
     "known_source_gap_resolution_queue.csv"),
     row.names=FALSE,na="")
+  # Closed semantic rows stay in known_source_gap_resolution_queue.csv,
+  # but must NEVER inflate the open-source-gap totals in lane summaries.
   gap_lane_counts<-as.data.frame(table(
-    gap_resolution$scientific_resolution_lane),
+    gap_resolution$scientific_resolution_lane[gap_resolution$gap_open]),
     stringsAsFactors=FALSE)
   names(gap_lane_counts)<-c("scientific_resolution_lane","open_source_gaps")
   utils::write.csv(gap_lane_counts,file.path(output_dir,

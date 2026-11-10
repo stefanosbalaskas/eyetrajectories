@@ -164,3 +164,48 @@ def _source_public_scan_replay(fn):
   expect_equal(unname(x$studentized_roots),
     unname(oracle$roots),tolerance=1e-4)
 })
+
+test_that("unseeded wild scan shares ambient-R multiplier draws across h", {
+  f<-.etr_wild_projection_fixture()
+  withr::local_seed(23873L)
+  a<-etr_scan_wild_bootstrap_fpca_truncations(
+    f$x,f$y,candidate_components=c(2L,3L),
+    residual_components=2L,n_bootstrap=20L,random_state=NULL)
+  set.seed(23873L)
+  b<-etr_scan_wild_bootstrap_fpca_truncations(
+    f$x,f$y,candidate_components=c(2L,3L),
+    residual_components=2L,n_bootstrap=20L,random_state=NULL)
+  expect_null(a$random_state)
+  expect_equal(a$studentized_roots,b$studentized_roots,tolerance=0)
+  expect_true(all(is.finite(a$widths)))
+})
+
+test_that("wild truncation scan validates target geometry without a duplicate bootstrap", {
+  f<-.etr_wild_projection_fixture()
+  # This scan must share the original FPCA basis and exact fixed draws.
+  a<-etr_scan_wild_bootstrap_fpca_truncations(
+    f$x,f$y,candidate_components=c(2L,3L),
+    residual_components=2L,n_bootstrap=20L,multiplier_draws=f$draws)
+  ref<-etr_wild_bootstrap_fpca_projection(
+    f$x,f$y,n_bootstrap=20L,residual_components=2L,
+    inference_components=3L,multiplier_draws=f$draws)
+  expect_equal(a$reference_fpca$scores,ref$reference_fpca$scores)
+  expect_equal(a$reference_projections[2L,],
+    ref$reference_projection,tolerance=1e-9)
+  expect_equal(a$critical_values[2L,],
+    ref$critical_values,tolerance=1e-9)
+  expect_equal(a$studentized_roots[2L,,],
+    ref$studentized_roots,tolerance=1e-9)
+  expect_identical(a$target_source,"training")
+  expect_error(etr_scan_wild_bootstrap_fpca_truncations(
+    f$x,f$y[-1L],candidate_components=c(2L,3L),
+    residual_components=2L,n_bootstrap=20L,multiplier_draws=f$draws),
+    "outcome")
+  clustered<-f$x
+  clustered$metadata$participant<-rep(seq_len(12L),each=2L)
+  expect_error(etr_scan_wild_bootstrap_fpca_truncations(
+    clustered,f$y,candidate_components=c(2L,3L),
+    residual_components=2L,n_bootstrap=20L,
+    independent_unit_column="participant",multiplier_draws=f$draws),
+    "repeated unit IDs")
+})

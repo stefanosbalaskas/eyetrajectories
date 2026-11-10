@@ -1083,7 +1083,7 @@ etr_native_parity_catalog <- function(require_complete=FALSE) {
     all(other$source_git_sha==api$source_git_sha[other_idx]),
     "non-function source-contract review inventory must match 128 frozen exports")
   # Independently recorded nonfunction schema/method differences are
-  # distinct from the 203 callable-function source-gap records. Even an
+  # distinct from the 201 callable-function source-gap records. Even an
   # otherwise signed class cannot be FULL certified while these are open.
   other_gap_path <- system.file("extdata",
     "native_nonfunction_source_gaps_v1.csv",

@@ -1,0 +1,40 @@
+# Source-matched deterministic 6 participant × 4 trials, irregular native times.
+# The participant and trial latent bases are deliberately nondegenerate.
+.etr_spml_fixture<-function(){
+  n_group<-6L;n_trial<-4L;n<-n_group*n_trial
+  time<-vector("list",n);values<-vector("list",n)
+  participant<-rep(sprintf("participant_%02d",seq_len(n_group)),
+    each=n_trial)
+  ids<-sprintf("trial_%03d",seq_len(n))
+  for(i in seq_len(n)){
+    g<-(i-1L)%/%n_trial+1L
+    trial<-(i-1L)%%n_trial+1L
+    j<-seq_len(9L)-1L
+    t<-.03+.94*j/8+.003*(g%%3L)*sin(pi*j/8)
+    gp1<-sin(.71*g);gp2<-cos(1.11*g)
+    q1<-sin(1.2*trial+.29*g);q2<-cos(1.7*trial-.15*g)
+    y<-.3+.22*t+
+      .9*gp1*sin(pi*t)+.6*gp2*cos(2*pi*t)+
+      .5*q1*sin(3*pi*t)+.35*q2*cos(4*pi*t)+
+      .02*sin(19*t+.23*i)
+    time[[i]]<-t;values[[i]]<-matrix(y,ncol=1L)
+  }
+  etr_irregular_trajectory_set(time,values,ids,"signal",
+    metadata=data.frame(participant=participant),
+    coordinate_system="degrees",time_unit="s")
+}
+.etr_spml_options<-function(){
+  list(dimension="signal",participant_column="participant",
+    participant_components=1L,trial_components=1L,
+    evaluation_grid=seq(.08,.92,length.out=9L),
+    mean_bandwidth=.75,total_covariance_bandwidth=.85,
+    between_covariance_bandwidth=.85,
+    noise_variance_method="fixed",
+    measurement_error_variance=.05,
+    analysis_support_action="restrict",
+    weighting="observation",psd_action="project",
+    score_ridge=.01,score_condition_limit=1e12,
+    mean_min_local_points=3L,
+    total_covariance_min_local_pairs=6L,
+    between_covariance_min_local_pairs=6L)
+}

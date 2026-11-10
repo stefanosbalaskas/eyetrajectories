@@ -150,3 +150,22 @@ def _source_public_wild_replay(fn):
   expect_equal(unname(fit$critical_values),
     as.numeric(oracle$critical),tolerance=1e-4)
 })
+
+test_that("source optional NULL random_state draws from caller's R RNG", {
+  f<-.etr_wild_projection_fixture()
+  withr::local_seed(90431L)
+  a<-etr_wild_bootstrap_fpca_projection(
+    f$x,f$y,n_bootstrap=20L,residual_components=2L,
+    inference_components=3L,random_state=NULL)
+  set.seed(90431L)
+  b<-etr_wild_bootstrap_fpca_projection(
+    f$x,f$y,n_bootstrap=20L,residual_components=2L,
+    inference_components=3L,random_state=NULL)
+  expect_null(a$random_state)
+  expect_equal(a$studentized_roots,b$studentized_roots,tolerance=0)
+  expect_true(all(is.finite(a$critical_values)))
+  expect_error(etr_wild_bootstrap_fpca_projection(
+    f$x,f$y,n_bootstrap=20L,residual_components=2L,
+    inference_components=3L,random_state=-1),
+    "random_state")
+})

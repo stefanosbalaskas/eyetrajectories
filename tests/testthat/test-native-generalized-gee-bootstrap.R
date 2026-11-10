@@ -95,3 +95,40 @@ test_that("unreviewed Python 1.2 source symbols are inspectable: bootstrap_gener
   expect_false(any(etr_native_parity_catalog()$
     one_to_one_native_contract_complete))
 })
+
+test_that("fixed-basis participant refit preserves native Poisson, exposure and grouped binomial coefficients",{
+  for(spec in list(
+      list(family="poisson",grouped=FALSE,exposed=FALSE),
+      list(family="poisson",grouped=FALSE,exposed=TRUE),
+      list(family="binomial",grouped=TRUE,exposed=FALSE))){
+    f<-.etr_native_gee_fixture(spec$family,grouped=spec$grouped)
+    exp<-if(spec$exposed)rep(2.5,36L) else NULL
+    fit<-etr_fit_generalized_function_on_scalar_regression(
+      f$x,f$design,"treatment",participant_column="participant_id",
+      dimension="outcome",family=spec$family,
+      binomial_denominator=f$den,exposure=exp,
+      basis_size=4L,spline_degree=3L)
+    direct<-.etr_gfosr_bootstrap_fixed_basis_refit(
+      fit,seq_len(36L),fit$curve_participant_ids)
+    expect_equal(unname(direct),unname(fit$coefficient_functions),
+      tolerance=1e-8,info=paste(spec$family,spec$grouped,spec$exposed))
+  }
+})
+
+test_that("whole-participant bootstrap accepts unseeded source input domain",{
+  f<-.etr_native_gee_fixture()
+  fit<-etr_fit_generalized_function_on_scalar_regression(
+    f$x,f$design,"treatment",participant_column="participant_id",
+    dimension="outcome",family="poisson",basis_size=4L,spline_degree=3L)
+  withr::local_seed(5831L)
+  a<-etr_bootstrap_generalized_function_on_scalar_coefficients(
+    fit,n_bootstrap=100L,random_state=NULL)
+  set.seed(5831L)
+  b<-etr_bootstrap_generalized_function_on_scalar_coefficients(
+    fit,n_bootstrap=100L,random_state=NULL)
+  expect_null(a$random_state)
+  expect_equal(a$sampled_participant_indices,
+    b$sampled_participant_indices,tolerance=0)
+  expect_equal(a$bootstrap_coefficient_functions,
+    b$bootstrap_coefficient_functions,tolerance=0)
+})

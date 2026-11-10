@@ -60,7 +60,7 @@ jobs:
           use-public-rspm: true
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          dependencies: "hard"
+          dependencies: '"hard"'
           extra-packages: |
             any::pkgload
             any::testthat
@@ -72,7 +72,9 @@ jobs:
       - name: Run native audits without initializing Python
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-certification-evidence-paths|native-wild-source-inference|native-fpcr-inference-plots|native-certification-readiness|native-predictive-visual-audits|native-mixed-random-effects-plots|native-source-audit-frames|native-functional-simulation-plots|native-functional-simulation-truth-audit|native-functional-recovery-stress-design|native-functional-recovery-design|native-functional-scenario-design|native-workflow-configuration|native-private-helper-names|native-workflow-source-audit|full-native-r-parity-ledger|native-functional-recovery-evidence|native-functional-inference-visuals|native-",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-certification-evidence-paths|native-wild-source-inference|native-fpcr-inference-plots|native-certification-readiness|native-predictive-visual-audits|native-mixed-random-effects-plots|native-source-audit-frames|native-functional-simulation-plots|native-functional-simulation-truth-audit|native-functional-recovery-stress-design|native-functional-recovery-design|native-functional-scenario-design|native-workflow-configuration|native-private-helper-names|native-workflow-source-audit|full-native-r-parity-ledger|native-functional-recovery-evidence|native-functional-inference-visuals|native-",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))
+          RSCRIPT
   python-source:
     name: Published Python 1.2 typed workflow oracle
     runs-on: ubuntu-latest
@@ -90,7 +92,7 @@ jobs:
           use-public-rspm: true
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          dependencies: "hard"
+          dependencies: '"hard"'
           extra-packages: |
             any::pkgload
             any::testthat

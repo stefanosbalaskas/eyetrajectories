@@ -785,9 +785,20 @@ triage<-utils::read.csv(triage_path,stringsAsFactors=FALSE,
   check.names=FALSE)
 gap_review<-utils::read.csv(gaps_path,stringsAsFactors=FALSE,
   check.names=FALSE)
-source_gap_count<-nrow(utils::read.csv(
+historical_gap_registry<-utils::read.csv(
   file.path("inst","extdata","native_source_contract_gaps_stage22.csv"),
-  stringsAsFactors=FALSE))
+  stringsAsFactors=FALSE,check.names=FALSE)
+historical_gap_count<-nrow(historical_gap_registry)
+source_gap_count<-sum(historical_gap_registry$unresolved_source_gap)
+stopifnot(historical_gap_count==203L,
+  all(historical_gap_registry$unresolved_source_gap[
+    !historical_gap_registry$python_name%in%c(
+      "functional_recovery_metric_catalog_frame",
+      "mathematical_contract_frame")]),
+  identical(sort(historical_gap_registry$python_name[
+    !historical_gap_registry$unresolved_source_gap]),
+    sort(c("functional_recovery_metric_catalog_frame",
+      "mathematical_contract_frame"))))
 fixture_attribution_path<-file.path(packet_root,
   "selected_111_fixture_static_attribution.csv")
 stopifnot(file.exists(fixture_attribution_path))
@@ -847,11 +858,15 @@ stopifnot(
   all(!pilot_review$scientific_scope_approved))
 stopifnot(nrow(triage)==508L,
   sum(triage$selected_oracle_candidate)==nrow(queue),
-  nrow(gap_review)==source_gap_count,
+  nrow(gap_review)==historical_gap_count,
+  identical(sum(gap_review$gap_open),source_gap_count),
+  identical(sort(gap_review$python_name[!gap_review$gap_open]),
+    sort(c("functional_recovery_metric_catalog_frame",
+      "mathematical_contract_frame"))),
   all(!triage$independent_source_contract_approved),
   all(!gap_review$resolved),
   !anyDuplicated(gap_review$python_name))
-# The 203 function source gaps and the one native class source gap must
+# The 201 function source gaps and the one native class source gap must
 # remain separately reviewable; no signed reviewer decisions are inferred.
 class_gap_file<-file.path(packet_root,
   "native_nonfunction_source_gap_resolution_queue.csv")

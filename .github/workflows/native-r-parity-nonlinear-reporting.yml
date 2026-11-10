@@ -31,14 +31,16 @@ jobs:
           use-public-rspm: true
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          dependencies: "hard"
+          dependencies: '"hard"'
           extra-packages: |
             any::pkgload
             any::testthat
       - name: Nonlinear reporting native reporting and frozen inventory regressions
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="(?:native-nonlinear-reporting)|(?:native-fpca-extensions)|(?:native-functional-diagnostics)|native-(?:parity-ledger|distances-parity-ledger|trajectory-parity-ledger|portable-parity-ledger|irregular-parity-ledger|recurrence-parity-ledger)|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))'
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="(?:native-nonlinear-reporting)|(?:native-fpca-extensions)|(?:native-functional-diagnostics)|native-(?:parity-ledger|distances-parity-ledger|trajectory-parity-ledger|portable-parity-ledger|irregular-parity-ledger|recurrence-parity-ledger)|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))
+          RSCRIPT
 
   python-v1-2-reporting:
     name: Nonlinear reporting independent Python 1.2 source report oracle
@@ -59,7 +61,7 @@ jobs:
           use-public-rspm: true
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          dependencies: "hard"
+          dependencies: '"hard"'
           extra-packages: |
             any::pkgload
             any::testthat

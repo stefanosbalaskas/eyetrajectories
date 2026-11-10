@@ -32,11 +32,11 @@ class ReconciliationTests(unittest.TestCase):
                 "native_r_candidate": "etr_export_" + str(i).zfill(3),
                 "recorded_r_git_head": HEAD,
                 "frozen_python_commit": progress.baseline.FROZEN_PYTHON,
-                "source_gap_open": "TRUE" if i < 203 or i == 380 else "FALSE",
+                "source_gap_open": "TRUE" if i < 201 or i == 380 else "FALSE",
                 # 16 overlaps with known gaps, 3 are no-gap but
                 # backend-distinct: 19 distinct overall.
                 "backend_or_estimand_distinct": "TRUE"
-                if i < 16 or 203 <= i < 206 else "FALSE",
+                if i < 16 or 201 <= i < 204 else "FALSE",
                 "currently_authoritatively_certified": "FALSE",
                 "native_implementation_started": "TRUE",
                 "native_nonfunction_representation":
@@ -75,12 +75,12 @@ class ReconciliationTests(unittest.TestCase):
         z = progress.reconcile(self.root, HEAD)
         self.assertEqual(z["export_count"], 508)
         self.assertEqual(z["callable_count"], 380)
-        self.assertEqual(z["historical_documented_source_gaps"], 204)
-        self.assertEqual(z["no_recorded_gap_exports_total"], 304)
-        self.assertEqual(z["no_recorded_gap_callable_exports_total"], 177)
+        self.assertEqual(z["historical_documented_source_gaps"], 202)
+        self.assertEqual(z["no_recorded_gap_exports_total"], 306)
+        self.assertEqual(z["no_recorded_gap_callable_exports_total"], 179)
         self.assertEqual(z["no_recorded_gap_nonfunction_exports_total"], 127)
-        self.assertEqual(z["no_recorded_gap_fastlane_exports_total"], 301)
-        self.assertEqual(z["no_recorded_gap_fastlane_callable_exports"], 174)
+        self.assertEqual(z["no_recorded_gap_fastlane_exports_total"], 303)
+        self.assertEqual(z["no_recorded_gap_fastlane_callable_exports"], 176)
         self.assertEqual(z["no_recorded_gap_fastlane_nonfunction_exports"], 127)
         self.assertEqual(z["no_recorded_gap_backend_distinct_exclusions"], 3)
         self.assertEqual(z["no_recorded_gap_backend_distinct_callable_exclusions"], 3)
@@ -88,7 +88,7 @@ class ReconciliationTests(unittest.TestCase):
         self.assertEqual(
             [row["python_name"] for row in
              z["no_recorded_gap_backend_distinct_export_keys"]],
-            ["export_203", "export_204", "export_205"])
+            ["export_201", "export_202", "export_203"])
         self.assertEqual(z["developer_evidence_ready_for_review"], 0)
         self.assertEqual(z["independently_certified"], 0)
         output = Path(z["output_dir"])

@@ -4,16 +4,26 @@
 # Optional fixed multiplier matrix replays frozen-source draws. R RNG
 # does NOT reproduce NumPy PCG64 without supplied multipliers.
 
-.etr_wild_fpcr_fixed_fit<-function(scores,y,k){
-  n<-nrow(scores)
+.etr_wild_fpcr_prepared_fit<-function(scores,k){
+  # Factorize the identical, fixed FPCA design once for every bootstrap.
+  # Reusing the pivoted QR changes neither the model nor the least-squares
+  # coefficient estimates; it avoids thousands of redundant factorizations.
   design<-cbind(1,scores[,seq_len(k),drop=FALSE])
-  .etr_assert(qr(design)$rank==k+1L,
+  decomp<-qr(design)
+  .etr_assert(decomp$rank==k+1L,
     "FPCR score regression is rank deficient")
-  beta<-as.numeric(qr.coef(qr(design),y))
-  fit<-as.vector(design%*%beta)
-  .etr_assert(all(is.finite(beta))&&all(is.finite(fit)),
-    "FPCR score regression produced nonfinite values")
-  list(beta=beta,fitted=fit,residual=y-fit)
+  function(y){
+    .etr_assert(is.numeric(y)&&length(y)==nrow(design)&&
+      all(is.finite(y)),"FPCR response must be finite per score row")
+    beta<-as.numeric(qr.coef(decomp,y))
+    fit<-as.vector(design%*%beta)
+    .etr_assert(all(is.finite(beta))&&all(is.finite(fit)),
+      "FPCR score regression produced nonfinite values")
+    list(beta=beta,fitted=fit,residual=y-fit)
+  }
+}
+.etr_wild_fpcr_fixed_fit<-function(scores,y,k){
+  .etr_wild_fpcr_prepared_fit(scores,k)(y)
 }
 
 .etr_wild_fpcr_hetero_se<-function(scores,residual,targets){
@@ -115,11 +125,12 @@ etr_wild_bootstrap_fpca_projection<-function(
     "targets must match training time channel units geometry and be complete finite")
   B<-as.integer(n_bootstrap)
   if(is.null(multiplier_draws)){
-    .etr_assert(is.numeric(random_state)&&length(random_state)==1L&&
+    .etr_assert(is.null(random_state)||
+      (is.numeric(random_state)&&length(random_state)==1L&&
       is.finite(random_state)&&random_state==floor(random_state)&&
-      random_state>=0&&random_state<=.Machine$integer.max,
-      "random_state must be a native nonnegative integer")
-    mult<-.etr_seed_scope(as.integer(random_state),function(){
+      random_state>=0&&random_state<=.Machine$integer.max),
+      "random_state must be NULL or a native nonnegative integer")
+    draw_mult<-function(){
       if(multiplier=="normal"){
         matrix(stats::rnorm(B*n),nrow=B,ncol=n,byrow=TRUE)
       }else{
@@ -130,7 +141,11 @@ etr_wild_bootstrap_fpca_projection<-function(
         u<-matrix(stats::runif(B*n),B,n,byrow=TRUE)
         ifelse(u<pneg,negative,positive)
       }
-    })
+    }
+    # NULL mirrors Python's accepted unseeded domain. Native R uses its
+    # current RNG stream, not NumPy PCG64; seeded calls restore R RNG.
+    mult<-if(is.null(random_state))draw_mult() else
+      .etr_seed_scope(as.integer(random_state),draw_mult)
     mult<-matrix(mult,nrow=B,ncol=n)
   }else{
     mult<-multiplier_draws
@@ -143,8 +158,10 @@ etr_wild_bootstrap_fpca_projection<-function(
   target_scores<-etr_transform_fpca(fit,targets)[,seq_len(h),drop=FALSE]
   .etr_assert(all(is.finite(scores))&&all(is.finite(target_scores)),
     "FPCA score geometry must be finite")
-  fk<-.etr_wild_fpcr_fixed_fit(scores,outcome,k)
-  fh<-.etr_wild_fpcr_fixed_fit(scores,outcome,h)
+  fit_k<-.etr_wild_fpcr_prepared_fit(scores,k)
+  fit_h<-.etr_wild_fpcr_prepared_fit(scores,h)
+  fk<-fit_k(outcome)
+  fh<-fit_h(outcome)
   tk<-target_scores[,seq_len(k),drop=FALSE]
   pseudo_truth<-as.vector(tk%*%fk$beta[-1L])
   reference<-as.vector(target_scores%*%fh$beta[-1L])
@@ -156,8 +173,8 @@ etr_wild_bootstrap_fpca_projection<-function(
   tolerance<-100*.Machine$double.eps*max(1,abs(reference))
   for(i in seq_len(B)){
     pseudo_y<-fk$fitted+fk$residual*mult[i,]
-    hs<-.etr_wild_fpcr_fixed_fit(scores,pseudo_y,h)
-    ks<-.etr_wild_fpcr_fixed_fit(scores,pseudo_y,k)
+    hs<-fit_h(pseudo_y)
+    ks<-fit_k(pseudo_y)
     ps<-as.vector(target_scores%*%hs$beta[-1L])
     ss<-.etr_wild_fpcr_hetero_se(scores,ks$residual,target_scores)
     root<-ps-pseudo_truth

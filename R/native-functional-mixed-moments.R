@@ -165,7 +165,7 @@ etr_fit_functional_mixed_effects_regression <- function(trajectories,
 #' @param result Native restricted mixed-moments fit.
 #' @export
 etr_functional_mixed_effects_whitened_residuals <- function(result){
-  .etr_mixed_moments_fit(result)
+  result <- .etr_mixed_source_residual_view(result)
   nt<-length(result$time)
   V<-result$residual_variance*result$residual_correlation_matrix
   .etr_assert(is.matrix(V)&&identical(dim(V),c(nt,nt))&&
@@ -209,7 +209,8 @@ etr_functional_mixed_effects_whitened_residuals <- function(result){
 #' @export
 etr_functional_mixed_effects_residual_diagnostics <- function(result,
     max_lag,residual_scale="raw"){
-  .etr_mixed_moments_fit(result)
+  result <- .etr_mixed_source_residual_view(result)
+  joint_native <- inherits(result,"etr_joint_source_residual_view")
   lag<-.etr_nonlinear_integer(max_lag,1L,"max_lag")
   nt<-length(result$time)
   .etr_assert(lag<nt,"max_lag must be smaller than n_time")
@@ -250,12 +251,16 @@ etr_functional_mixed_effects_residual_diagnostics <- function(result,
     participant_diagnostics=participant,overall_diagnostics=overall,
     max_lag=lag,residual_scale=residual_scale,
     provenance=list(operation="functional_mixed_effects_residual_diagnostics",
-      residual_type="conditional_moment_model_residual",
+      residual_type=if(joint_native)
+        "conditional_native_joint_likelihood_residual" else
+        "conditional_moment_model_residual",
       within_trial_centering=TRUE,
       participant_summary="pair_count_weighted",
       overall_summary="pair_count_weighted",
       automatic_lag_selection=FALSE,
-      residual_model="restricted_moment_based_not_python_MixedLM")),
+      residual_model=if(joint_native)
+        "native_joint_nlme_likelihood_not_python_optimizer" else
+        "restricted_moment_based_not_python_MixedLM")),
     class="etr_functional_mixed_residual_diagnostics")
 }
 
@@ -300,7 +305,7 @@ etr_functional_mixed_effects_residual_pair_frame <- function(result,
     "requires a native residual diagnostic result")
   h<-.etr_nonlinear_integer(lag_index,0L,"lag_index")
   .etr_assert(h<=result$max_lag,"lag_index exceeds max_lag")
-  fit<-result$reference;.etr_mixed_moments_fit(fit)
+  fit <- .etr_mixed_source_residual_view(result$reference)
   resid<-if(result$residual_scale=="raw")fit$residual_functions else
     etr_functional_mixed_effects_whitened_residuals(fit)
   nt<-length(fit$time)
@@ -334,6 +339,11 @@ etr_functional_mixed_effects_residual_pair_frame <- function(result,
 #' @export
 etr_functional_mixed_effects_variance_decomposition <- function(fit,
     model_label=NULL){
+  # Direct native B-spline likelihood fit: map its already estimated
+  # random-covariance blocks onto the frozen Python numerical component
+  # formula. No refit, no synthetic variance or optimizer substitution.
+  if(inherits(fit,"etr_joint_bspline_mixed"))
+    fit <- .etr_joint_source_variance_record(fit)
   if(!inherits(fit,"etr_functional_mixed_moments")){
     # Source-shaped frozen Python 1.2.0 FunctionalMixedEffectsResult.
     # Do not coerce a restricted moment fit into a REML/GLS model.
@@ -425,6 +435,10 @@ etr_functional_mixed_effects_variance_decomposition <- function(fit,
 #' @inheritParams etr_functional_mixed_effects_whitened_residuals
 #' @export
 etr_functional_mixed_effects_coefficient_frame <- function(result,band=NULL){
+  # Preserve the original restricted moments path. Native likelihood
+  # models use the source-ordered coefficient frame without a refit.
+  if(inherits(result,"etr_joint_bspline_mixed"))
+    return(.etr_joint_source_coefficient_frame(result,band))
   .etr_mixed_moments_fit(result)
   .etr_assert(is.null(band),
     "simultaneous mixed-model bootstrap bands are not yet qualified")

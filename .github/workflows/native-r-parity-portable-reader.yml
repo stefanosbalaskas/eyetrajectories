@@ -32,7 +32,7 @@ jobs:
           use-public-rspm: true
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          dependencies: "hard"
+          dependencies: '"hard"'
           extra-packages: |
             any::pkgload
             any::testthat
@@ -41,7 +41,9 @@ jobs:
       - name: No-Python NumPy header/parser validation
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); old <- reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="(?:native-portable-parity-ledger|native-python-portable-reader)",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(reticulate::py_available(initialize=FALSE),old))'
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE); old <- reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="(?:native-portable-parity-ledger|native-python-portable-reader)",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(reticulate::py_available(initialize=FALSE),old))
+          RSCRIPT
 
   python-generated-portable-fixtures:
     name: real Python 1.2 JSON/NPZ exports / Linux
@@ -62,7 +64,7 @@ jobs:
           use-public-rspm: true
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          dependencies: "hard"
+          dependencies: '"hard"'
           extra-packages: |
             any::pkgload
             any::testthat

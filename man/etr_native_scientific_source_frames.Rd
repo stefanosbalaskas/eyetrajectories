@@ -21,7 +21,8 @@ etr_sparse_mfpca_score_frame(result)
 }
 \arguments{
 \item{result}{An explicitly declared native R scientific record, with matching
-observation dimensions, finite arrays, and required model metadata. Band
+observation dimensions, finite arrays, and required model metadata. Sparse
+score frames preserve missing scores for retained failed fits. Band
 records must supply a nested \code{prediction} or \code{reference}.}
 }
 \value{

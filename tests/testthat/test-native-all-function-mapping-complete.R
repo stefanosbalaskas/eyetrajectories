@@ -43,6 +43,14 @@ test_that("all newly mapped scientific alternatives remain explicitly uncertifie
   gap<-utils::read.csv(gap_path,stringsAsFactors=FALSE,
     check.names=FALSE)
   expect_true(all(recent%in%gap$python_name))
-  expect_true(all(gap$unresolved_source_gap))
+  # Preserve all historical witnesses, including exactly two developer-
+  # closed zero-argument semantic tables; none of the recent numerical
+  # alternatives may silently inherit that narrow resolution.
+  expect_identical(nrow(gap),203L)
+  expect_identical(sum(gap$unresolved_source_gap),201L)
+  expect_identical(sort(gap$python_name[!gap$unresolved_source_gap]),
+    sort(c("functional_recovery_metric_catalog_frame",
+      "mathematical_contract_frame")))
+  expect_true(all(gap$unresolved_source_gap[match(recent,gap$python_name)]))
   expect_identical(length(unique(gap$python_name)),nrow(gap))
 })

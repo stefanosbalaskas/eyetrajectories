@@ -114,7 +114,7 @@ etr_build_508_certification_review_batches <- function(
   ck(!anyNA(priority),"Unclassified export in certification queue")
   # Carry ORIGINAL Python/R source-difference descriptions, executable
   # source witnesses and required resolutions into all independent-review
-  # handoff rows. All 204 known gaps must have a nonblank evidence path.
+  # handoff rows. All 204 historical gap records retain source witnesses (202 remain open).
   fn_path<-file.path(root,"inst","extdata",
     "native_source_contract_gaps_stage22.csv")
   nf_path<-file.path(root,"inst","extdata",
@@ -132,15 +132,29 @@ etr_build_508_certification_review_batches <- function(
     all(c("namespace","python_name","gap_kind",
       "known_source_difference","source_witness","required_resolution",
       "unresolved")%in%names(nf_gaps))&&
-    all(fn_gaps$unresolved_source_gap)&&all(nf_gaps$unresolved)&&
+    is.logical(fn_gaps$unresolved_source_gap)&&
+    !anyNA(fn_gaps$unresolved_source_gap)&&
+    all(fn_gaps$unresolved_source_gap[
+      !fn_gaps$python_name%in%c(
+        "functional_recovery_metric_catalog_frame",
+        "mathematical_contract_frame")])&&
+    identical(sort(fn_gaps$python_name[!fn_gaps$unresolved_source_gap]),
+      sort(c("functional_recovery_metric_catalog_frame",
+        "mathematical_contract_frame")))&&
+    all(nf_gaps$unresolved)&&
     !anyDuplicated(fn_gaps$python_name),
-    "The 203 callable + 1 nonfunction source-gap witnesses are incomplete")
+    "The 203 historical callable witnesses (201 open) + 1 nonfunction witness are incomplete")
   fn_idx<-match(scope$python_name,fn_gaps$python_name)
   nf_idx<-match(paste(scope$namespace,scope$python_name,sep="::"),
     paste(nf_gaps$namespace,nf_gaps$python_name,sep="::"))
+  # Keep original witness text for closed semantic metadata rows, while
+  # requiring the active source-gap flags to match the authoritative
+  # catalog exactly. Historical presence does not imply active deficit.
   fn_match<-fn&!is.na(fn_idx)
+  fn_open<-rep(FALSE,nrow(scope))
+  fn_open[fn_match]<-fn_gaps$unresolved_source_gap[fn_idx[fn_match]]
   nf_match<-!fn&!is.na(nf_idx)
-  ck(identical(fn_match,as.logical(fn&gap))&&
+  ck(identical(fn_open,as.logical(fn&gap))&&
     identical(nf_match,as.logical(!fn&gap)),
     "Known source gaps and evidence witness mapping do not agree")
   witness_kind<-difference_text<-witness_source<-witness_resolution<-

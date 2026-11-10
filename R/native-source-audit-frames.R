@@ -34,12 +34,34 @@
   as.numeric(x)
 }
 
+# Convert the already fitted native R/nlme result to the six source
+# participant-BLUP frame fields, with no statistical refit or input mutation.
+.etr_joint_fit_random_effect_record <- function(fit) {
+  .etr_assert(inherits(fit,"etr_joint_bspline_mixed"),
+    "fit must be a native joint B-spline mixed model")
+  dimension <- if(!is.null(fit$dimension_name)) fit$dimension_name
+    else fit$dimension
+  intercept <- if(!is.null(fit$random_intercept_functions))
+    fit$random_intercept_functions else fit$random_effect_functions
+  slope <- if(!is.null(fit$random_slope_functions))
+    fit$random_slope_functions else fit$random_slope_effect_functions
+  list(participant_ids=fit$participant_ids,
+    time=fit$time,dimension_name=dimension,
+    random_intercept_functions=intercept,
+    random_slope_functions=slope,
+    random_slope_predictor=fit$random_slope_predictor)
+}
+
 #' Source-ordered participant-level random functional effect frame
 #' @param result Explicit native record of a realized functional mixed fit.
 #' @param effect Either "intercept" or "slope".
 #' @return One row per participant and time, in source order.
 #' @export
 etr_functional_random_effect_frame <- function(result,effect="intercept") {
+  # Accept a real fitted native joint Gaussian model directly; retain the
+  # pre-existing strict source-shaped list adapter unchanged otherwise.
+  if(inherits(result,"etr_joint_bspline_mixed"))
+    result <- .etr_joint_fit_random_effect_record(result)
   .etr_frame_record(result,c("participant_ids","time","dimension_name",
     "random_intercept_functions"),"result")
   .etr_assert(is.character(effect)&&length(effect)==1L&&
@@ -80,6 +102,12 @@ etr_functional_random_effect_frame <- function(result,effect="intercept") {
 #' @return One row per source curve and time; curve_index is zero-based.
 #' @export
 etr_functional_trial_random_effect_frame <- function(result) {
+  if(inherits(result,"etr_joint_bspline_mixed_nested_trial") ||
+     inherits(result,"etr_joint_bspline_mixed_nested_slope")) {
+    .etr_assert(identical(result$trial_random_effect,"functional_intercept"),
+      "result does not contain a trial functional random intercept")
+    return(etr_nested_source_trial_effect_frame(result))
+  }
   fields<-c("source_curve_ids","curve_participant_ids",
     "curve_trial_ids","trial_ids","time","trial_random_effect",
     "trial_random_effect_functions")

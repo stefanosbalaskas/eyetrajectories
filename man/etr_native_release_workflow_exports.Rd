@@ -28,6 +28,55 @@ Check each workflow's explicit required inputs, domain restrictions,
 preprocessing policies, and actual fitted estimator. Workflow export and
 figure utilities are not substitutes for a complete numerical oracle.
 Native backend and source Python backend provenance are not interchangeable.
+For \code{etr_run_functional_mixed_effects_workflow}, the legacy explicitly
+declared method-of-moments estimator remains the default path.
+An opt-in \code{estimator="native_joint_bspline_gaussian"} path dispatches
+the already implemented native R/nlme participant-intercept,
+participant-slope, nested-trial, and nested-trial-plus-slope likelihood
+models. Only IID residuals are supported without a declared nested trial;
+IID, AR(1), and exponential residuals are available for nested trial
+models. Native \code{method="nlme::lme"} is required; Python's optimizer
+is not silently substituted, and the typed Python workflow/result
+contract is not certified. The coefficient table uses seven source-ordered
+pointwise Wald columns. See \code{docs/native-joint-bspline-source-workflow-wave.md}.
+
+The \code{native_covariance} configurations of \code{etr_run_sparse_fpca_workflow}
+and \code{etr_run_sparse_mfpca_workflow} accept \code{score_uncertainty=list()}
+to request conditional PACE score uncertainty. The list may specify
+\code{condition_limit} and \code{failure_action} (\code{"error"} or
+\code{"retain_nan"}). The workflow returns the conditional result and a
+per-curve, per-component table. The \code{scores} table retains input
+metadata and uses \code{SFPC} or \code{SMFPC} component prefixes.
+Input metadata columns that collide with score-table names receive unique
+suffixes in the table.
+
+To select bandwidths, supply
+\code{bandwidth_selection=list(mean_bandwidths=c(0.5, 0.7),
+covariance_bandwidths=c(0.8, 1), n_splits=5L)} in place of the two fixed
+bandwidth arguments. The workflow refits each candidate within each training
+fold, ranks eligible candidates by mean held-out Gaussian predictive loss,
+then refits the selected model. The selection result contains assignments,
+curve losses, fold outcomes and candidate summaries.
+Use \code{resampling_unit="group"} with \code{group_column} to keep entire
+groups in one fold. Supply zero-based \code{fold_assignments} in input-curve
+order to replay an external split. Seeded curve shuffles use the legacy
+NumPy permutation law. Native grouped tie ordering may differ from NumPy.
+By default every fold must be valid. \code{min_valid_folds} changes this
+threshold. \code{failure_action="retain"} records failed folds, while
+\code{"error"} stops at the first failure. If no candidate is eligible, the
+\code{etr_sparse_bandwidth_selection_error} condition contains the audit in
+\code{bandwidth_selection}. Sparse prediction selects bandwidths using its
+proper-training curves.
+
+The native covariance backends of sparse FPCA, paired and asynchronous
+sparse MFPCA, and sparse multilevel FPCA accept descriptive observation
+diagnostics. Pass a denominator constructed with
+\code{\link{etr_observation_process_data}} as \code{observation_process} and
+an explicit \code{config$observation_diagnostics} list. A list with no
+elements requests the default settings. The fitted model and the candidate
+diagnostics are separate result fields. Workflow tables include global,
+time, and association summaries, and the diagnostic record contains the
+remaining audit tables.
 }
 \section{Exported entry points}{
 \describe{

@@ -15,6 +15,7 @@ import hashlib
 from pathlib import Path
 import re
 import sys
+import source_gap_inventory
 
 FROZEN_PYTHON = "c1cd95ad718327550f7e55393ff38582872f7a94"
 MANIFEST = "certification_first_batch_sha256_manifest.csv"
@@ -137,7 +138,7 @@ def verify(packet_dir: str | Path, expected_r_head: str | None = None) -> dict[s
           sum(r["kind"] != "function" for r in full) == 128,
           "Incorrect frozen 380-function/128-nonfunction inventory")
     check(sum(r["source_gap_open"] == "TRUE" and r["kind"] == "function"
-              for r in full) == 203 and
+              for r in full) == source_gap_inventory.read_inventory().active_callable and
           sum(r["source_gap_open"] == "TRUE" and r["kind"] != "function"
               for r in full) == 1 and
           sum(r["native_nonfunction_source_gap_open"] == "TRUE"
@@ -377,7 +378,7 @@ def verify(packet_dir: str | Path, expected_r_head: str | None = None) -> dict[s
         "export_count": 508,
         "function_count": 380,
         "nonfunction_count": 128,
-        "open_source_gap_exports": 203,
+        "open_source_gap_exports": source_gap_inventory.read_inventory().open_total,
         "first_review_batch": 36,
         "descriptive_source_interface_inventory_verified": attached,
         "independent_case_replays": 0,

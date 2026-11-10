@@ -33,7 +33,7 @@ jobs:
           use-public-rspm: true
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          dependencies: "hard"
+          dependencies: '"hard"'
           extra-packages: |
             any::pkgload
             any::testthat
@@ -44,7 +44,9 @@ jobs:
       - name: Full native stage 2/3/4 backward-compatibility check
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); testthat::test_local(".",filter="native-planar-geometry-parity|native-preprocessing-distances|native-distance-contracts",reporter="summary",stop_on_failure=TRUE)'
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE); testthat::test_local(".",filter="native-planar-geometry-parity|native-preprocessing-distances|native-distance-contracts",reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
 
   python-reference-oracle:
     name: provenance semantics / Python 1.2 (Linux)
@@ -66,7 +68,7 @@ jobs:
           use-public-rspm: true
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          dependencies: "hard"
+          dependencies: '"hard"'
           extra-packages: |
             any::pkgload
             any::testthat

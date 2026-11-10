@@ -16,6 +16,17 @@
 #' @export
 etr_functional_mixed_effects_covariance_sensitivity<-function(
     fits,reference,max_lag,specifications=NULL,failures=list(),bands=NULL){
+  # The older moments path and the full joint-likelihood path use different
+  # estimators. Never silently compare their incompatible likelihoods.
+  if(is.list(fits)&&length(fits)>0L&&
+     any(vapply(fits,function(x)
+       inherits(x,"etr_joint_bspline_mixed"),logical(1L)))){
+    .etr_assert(all(vapply(fits,function(x)
+      inherits(x,"etr_joint_bspline_mixed"),logical(1L))),
+      "mixed covariance sensitivity cannot combine moments and joint likelihood fits")
+    return(.etr_joint_likelihood_covariance_sensitivity(
+      fits,reference,max_lag,specifications,failures,bands))
+  }
   .etr_assert(is.list(fits)&&length(fits)>=1L&&
     !is.null(names(fits))&&!anyDuplicated(names(fits))&&
     all(nzchar(names(fits)))&&
