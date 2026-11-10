@@ -44,23 +44,61 @@ etr_list_mathematical_contracts <- function() {
 }
 
 #' Find one frozen mathematical source contract by key or public API name
+#' @param ... Supply the lookup name positionally when `name` is omitted.
 #' @param name Exact source contract key or public API function name.
+#' @param python_boundary_mode Use exact Python-style name binding and
+#'   the shaped-array behavior of the frozen NumPy registry facade.
 #' @return Native semantic mathematical metadata structure.
 #'   Invalid name types and unknown strings signal
 #'   `etr_mathematical_contract_type_error` and
 #'   `etr_mathematical_contract_key_error`, respectively.
 #' @export
-etr_get_mathematical_contract <- function(name) {
-  if(!is.character(name)||length(name)!=1L||is.na(name))
-    stop(errorCondition("name must be a single string",
+etr_get_mathematical_contract <- function(..., name, python_boundary_mode=FALSE) {
+  .etr_assert(is.logical(python_boundary_mode)&&length(python_boundary_mode)==1L&&
+    !is.na(python_boundary_mode),"python_boundary_mode must be TRUE or FALSE")
+  type_error<-function(message)
+    stop(errorCondition(message,
       class=c("etr_mathematical_contract_type_error","simpleError")))
+  if(python_boundary_mode) {
+    supplied<-match.call(expand.dots=FALSE)[["..."]]
+    if(missing(name)) {
+      if(length(supplied)!=1L||any(nzchar(names(supplied)))||
+          identical(supplied[[1L]],quote(expr=)))
+        type_error("supply one positional argument or the exact argument name")
+      name<-..1
+    } else if(length(supplied)){
+      type_error("supply one positional argument or the exact argument name")
+    }
+    # The frozen wrapper tests equality against the sparse joint contract
+    # before requiring a string. NumPy uses the array truth-value rules here.
+    if(is.array(name)){
+      if(length(name)!=1L){
+        size<-if(length(name))"an array with more than one element" else "an empty array"
+        stop(errorCondition(paste("The truth value of",size,"is ambiguous"),
+          class=c("etr_mathematical_contract_value_error","simpleError")))
+      }
+      name<-name[[1L]]
+      if(!is.character(name)||length(name)!=1L||!name%in%
+          c("sparse-mfpca-joint-pace","fit_sparse_mfpca"))
+        type_error("name must be a single string")
+    }
+  } else if(missing(name)){
+    # Retain ordinary R name matching for existing native calls.
+    name<-(function(name) name)(...)
+  } else if(...length()){
+    stop("unused argument in mathematical contract lookup",call.=FALSE)
+  }
+  if(!is.character(name)||length(name)!=1L||is.na(name))
+    type_error("name must be a single string")
   contracts<-etr_list_mathematical_contracts()
   if(name%in%names(contracts))return(contracts[[name]])
   found<-which(vapply(contracts,function(x)name%in%x$public_api,
     logical(1L)))
-  if(length(found)!=1L)
-    stop(errorCondition(paste("No mathematical contract is registered for",name),
+  if(length(found)!=1L){
+    display<-if(python_boundary_mode) .etr_python_workflow_identifier_repr(name) else name
+    stop(errorCondition(paste("No mathematical contract is registered for",display),
       class=c("etr_mathematical_contract_key_error","simpleError"),name=name))
+  }
   contracts[[found]]
 }
 

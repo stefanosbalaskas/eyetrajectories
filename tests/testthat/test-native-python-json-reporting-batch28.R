@@ -49,6 +49,94 @@ test_that("workflow native frames preserve source ordered fields and typed JSON"
     value=Inf,source="analyst"))),"nonfinite")
 })
 
+test_that("workflow JSON retains tensor axes and validates mutated audit records",{
+  skip_if_not_installed("jsonlite")
+  tensor<-array(seq_len(12L),c(2L,2L,3L))
+  empty<-array(numeric(),c(2L,0L,3L))
+  encode<-eyetrajectories:::.etr_python_json_encode
+  expect_identical(encode(tensor),
+    "[[[1,5,9],[3,7,11]],[[2,6,10],[4,8,12]]]")
+  expect_identical(encode(array(1L,1L)),"[1]")
+  expect_identical(encode(empty),"[[],[]]")
+  expect_identical(encode("\u007f"),"\"\\u007f\"")
+  config<-etr_workflow_config(list(tensor=tensor,empty=empty))
+  projected<-etr_workflow_config_to_dict(config)
+  expect_identical(projected$empty,list(list(),list()))
+  expect_identical(projected$tensor[[2L]][[1L]],list(2L,6L,10L))
+  expect_error(etr_workflow_config(list(array=array("string",1L))),
+    "numeric or logical array")
+  invalid_step<-list(name="fit",`function`="fit_fpca",status="completed",
+    parameters=list(1L),elapsed_seconds=0)
+  expect_error(etr_workflow_steps_frame(list(invalid_step)),
+    "step.parameters.*unique nonempty")
+  result<-etr_workflow_audit_result("tensor",config=config)
+  result$config$tensor[1L,1L,1L]<-Inf
+  expect_error(etr_workflow_summary_frame(result),"config.*nonfinite")
+  result$config<-config
+  result$provenance$broken<-list(bad=NA_real_)
+  expect_error(etr_workflow_reporting_text(result),"provenance.*missing")
+})
+
+test_that("pinned workflow config and frames retain NumPy ndarray shape",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Published Python 1.2 direct source oracle is opt in")
+  skip_if_not_installed("jsonlite")
+  expect_identical(et_python_version(),"1.2.0")
+  wf<-reticulate::import("eyetrajectoriespy.workflows._core",convert=FALSE)
+  np<-reticulate::import("numpy",convert=FALSE)
+  json<-reticulate::import("json",convert=FALSE)
+  reticulate::py_run_string(paste(c(
+    "from dataclasses import dataclass",
+    "from eyetrajectoriespy.workflows._core import WorkflowStepRecord, WorkflowDecisionRecord",
+    "@dataclass",
+    "class TensorWorkflowConfig:",
+    "    values: dict",
+    "@dataclass",
+    "class TensorWorkflowResult:",
+    "    workflow_schema_version: int",
+    "    workflow_contract: str",
+    "    config: TensorWorkflowConfig",
+    "    steps: tuple",
+    "    decisions: dict",
+    "    provenance: dict",
+    "def tensor_workflow_fixture(values):",
+    "    step = WorkflowStepRecord('fit', 'fit_fpca', 'completed', values, 0.)",
+    "    decision = WorkflowDecisionRecord(values, 'analyst')",
+    "    return TensorWorkflowResult(1, 'tensor', TensorWorkflowConfig(values), (step,), {'array':decision}, {})",
+    "def tensor_workflow_invalid(result, target):",
+    "    mapping = result.config.values if target == 'config' else result.provenance",
+    "    mapping['bad'] = float('inf')",
+    "    return result"
+  ),collapse="\n"),convert=FALSE)
+  values<-list(tensor=array(seq_len(12L),c(2L,2L,3L)),singleton=array(1L,1L),
+    empty=array(numeric(),c(2L,0L,3L)),mask=array(c(TRUE,FALSE),c(2L,1L,1L)),
+    control="\u007f")
+  py_values<-reticulate::dict(tensor=np$array(values$tensor,dtype="int64"),
+    singleton=np$array(list(1L),dtype="int64"),
+    empty=np$empty(reticulate::tuple(2L,0L,3L),dtype="float64"),
+    mask=np$array(values$mask,dtype="bool"),control=values$control)
+  py<-reticulate::py$tensor_workflow_fixture(py_values)
+  call<-reticulate::py_call
+  native<-etr_workflow_config(list(values=values))
+  canonical<-eyetrajectories:::.etr_python_json_encode(
+    etr_workflow_config_to_dict(native))
+  expect_identical(canonical,et_to_r(call(json$dumps,
+    call(wf$workflow_config_to_dict,py$config),sort_keys=TRUE,
+    separators=reticulate::tuple(",",":"))))
+  steps<-list(list(name="fit",`function`="fit_fpca",status="completed",
+    parameters=values,elapsed_seconds=0))
+  decisions<-list(array=list(value=values,source="analyst"))
+  step<-et_to_r(call(wf$workflow_steps_frame,py$steps))
+  decision<-et_to_r(call(wf$workflow_decisions_frame,py$decisions))
+  expect_identical(etr_workflow_steps_frame(steps)$parameters_json,step$parameters_json)
+  expect_identical(etr_workflow_decisions_frame(decisions)$value_json,decision$value_json)
+  expect_error(call(wf$workflow_summary_frame,
+    reticulate::py$tensor_workflow_invalid(py,"config")),"config.values.bad.*non-finite")
+  source<-reticulate::py$tensor_workflow_fixture(reticulate::dict())
+  expect_error(call(wf$workflow_reporting_text,
+    reticulate::py$tensor_workflow_invalid(source,"provenance")),"provenance.bad.*non-finite")
+})
+
 test_that("pinned Python 1.2 six source APIs agree in entire reported fields",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("Published Python 1.2 direct source oracle is opt in")

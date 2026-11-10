@@ -92,7 +92,8 @@ test_that("catalog records preserve all pinned fields and isolated copies",{
   lookup<-etpy_get_export("get_mathematical_contract")
   for(record in contracts)
     for(key in c(record$key,record$public_api))
-      equal_record(etr_get_mathematical_contract(key),call(lookup,key))
+      equal_record(etr_get_mathematical_contract(key,python_boundary_mode=TRUE),
+        call(lookup,key))
   for(name in c("","__unknown_key__","FPCA"," fpca","ανύπαρκτο"))
     expect_error(call(lookup,name),"KeyError")
   for(name in list(NULL,TRUE,1L,list("fpca","quadrature")))
@@ -108,6 +109,24 @@ test_that("catalog author review exposes native representation and lookup bounda
     "quadrature")
   expect_identical(etr_get_mathematical_contract(matrix("quadrature"))$key,
     "quadrature")
+  strict<-function(...)etr_get_mathematical_contract(...,python_boundary_mode=TRUE)
+  expect_identical(strict(name="quadrature")$key,"quadrature")
+  expect_identical(strict(matrix("fit_sparse_mfpca"))$key,"sparse-mfpca-joint-pace")
+  expect_identical(strict(array("sparse-mfpca-joint-pace",c(1L,1L,1L)))$key,
+    "sparse-mfpca-joint-pace")
+  for(args in list(list(),list(na="quadrature"),list(unknown="quadrature"),
+      list("quadrature","fpca"),list(name="quadrature","fpca"),
+      list(matrix("quadrature")),list(array(1L,1L)))){
+    expect_error(do.call(strict,args),class="etr_mathematical_contract_type_error")
+  }
+  expect_error(strict(na="quadrature"),class="etr_mathematical_contract_type_error")
+  expect_error(strict(,name="quadrature"),class="etr_mathematical_contract_type_error")
+  expect_error(strict(,),class="etr_mathematical_contract_type_error")
+  for(input in list(matrix(c("fpca","quadrature")),array(character(),0L)))
+    expect_error(strict(input),class="etr_mathematical_contract_value_error")
+  error<-expect_error(strict("two'quotes\u007f"),class="etr_mathematical_contract_key_error")
+  expect_identical(conditionMessage(error),
+    "No mathematical contract is registered for \"two'quotes\\x7f\"")
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("Pinned direct-source catalog boundaries are opt in")
   expect_identical(et_python_version(),"1.2.0")
@@ -119,8 +138,12 @@ test_that("catalog author review exposes native representation and lookup bounda
   expect_error(call(lookup,np$array(matrix("quadrature"),dtype="str")),"TypeError")
   expect_error(call(lookup,np$array(as.list(c("fpca","quadrature")),dtype="str")),
     "truth value of an array")
+  expect_error(call(lookup,np$empty(0L,dtype="str")),
+    "truth value of an empty array")
   source_joint<-call(lookup,np$array(matrix("fit_sparse_mfpca"),dtype="str"))
   expect_identical(et_to_r(source_joint$key),"sparse-mfpca-joint-pace")
+  source_joint_key<-call(lookup,np$array(matrix("sparse-mfpca-joint-pace"),dtype="str"))
+  expect_identical(et_to_r(source_joint_key$key),"sparse-mfpca-joint-pace")
   math<-call(etpy_get_export("list_mathematical_contracts"))
   recovery<-call(etpy_get_export("functional_recovery_metric_catalog"))
   expect_error(reticulate::py_set_attr(item(math,0L),"title","edited"),

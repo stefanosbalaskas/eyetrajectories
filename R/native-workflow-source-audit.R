@@ -9,6 +9,8 @@
     if (is.null(x)) return(invisible(TRUE))
     if (is.data.frame(x) || is.factor(x) || is.complex(x))
       stop(p, " is not a supported workflow JSON value", call.=FALSE)
+    if (is.array(x) && !is.numeric(x) && !is.logical(x))
+      stop(p, " must be a numeric or logical array", call.=FALSE)
     if (is.atomic(x)) {
       if (!is.numeric(x) && !is.character(x) && !is.logical(x))
         stop(p, " has unsupported atomic type", call.=FALSE)
@@ -63,8 +65,7 @@
       (is.null(step$warnings) ||
         (is.character(step$warnings) && !anyNA(step$warnings))),
       "each step requires a name, function, status, parameters, time and warnings")
-    .etr_workflow_json(step$parameters,"step.parameters",empty_mapping=TRUE,
-      validate_only=TRUE)
+    .etr_workflow_named_fields(step$parameters,"step.parameters")
   }
   invisible(TRUE)
 }
@@ -183,6 +184,11 @@ etr_workflow_audit_result <- function(workflow_contract,steps=list(),
     nzchar(result$workflow_contract),"workflow_contract must be nonempty")
   .etr_workflow_validate_steps(result$steps)
   .etr_workflow_validate_decisions(result$decisions)
+  .etr_assert(is.list(result$config)&&is.list(result$provenance),
+    "result config and provenance must be native JSON-compatible lists")
+  .etr_workflow_json(result$config,"config",empty_mapping=TRUE,validate_only=TRUE)
+  .etr_workflow_json(result$provenance,"provenance",empty_mapping=TRUE,
+    validate_only=TRUE)
   invisible(TRUE)
 }
 
@@ -240,7 +246,6 @@ etr_workflow_summary_frame <- function(result) {
 #' @return Descriptive text without automated scientific approval.
 #' @export
 etr_workflow_reporting_text <- function(result) {
-  .etr_workflow_check_result(result)
   z <- etr_workflow_summary_frame(result)
   quoted <- .etr_python_workflow_identifier_repr(result$workflow_contract)
   paste0("Workflow ",quoted," used schema ",
