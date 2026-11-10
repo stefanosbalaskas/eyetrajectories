@@ -1,6 +1,6 @@
 # Matched-bootstrap descriptive FPC envelopes.
 # Source: eyetrajectoriespy v1.2.0 stability.py, pinned c1cd95ad.
-# Base-R generator is not bitwise equivalent to NumPy PCG64.
+# Seeded curve and participant draws use native NumPy-compatible PCG64.
 
 .etr_fpca_envelope_quantiles <- function(samples,level) {
   d<-dim(samples)
@@ -39,7 +39,8 @@
 #' @param resample_unit Resample individual curves or whole participants.
 #' @param participant_column Metadata column when resampling participants.
 #' @param level Central pointwise quantile mass, strictly between zero and one.
-#' @param random_state Base R seed, restored after completion.
+#' @param random_state Integer seed for NumPy-compatible PCG64 draws or
+#'   NULL for unseeded native R draws.
 #' @param bootstrap_unit_indices Optional list of zero-based whole-unit
 #'   resampling index vectors, with one vector per bootstrap replicate.
 #'   Curve mode indexes original curves; participant mode indexes groups
@@ -73,16 +74,14 @@ etr_bootstrap_fpca_component_envelopes <- function(
   .etr_fpca_stability_check_fixed_draws(trajectories,resample_unit,
     participant_column,bootstrap_unit_indices,b)
   reference<-.etr_fpca_stability_fit(trajectories,k,scaling)
-  if(is.null(bootstrap_unit_indices)) {
-    restore<-.etr_simulation_rng(random_state)
-    on.exit(restore(),add=TRUE)
-  }
+  rng<-if(is.null(bootstrap_unit_indices)&&!is.null(random_state))
+    .etr_numpy_pcg64(random_state) else NULL
   samples<-array(NA_real_,c(b,k,nt,nd))
   similarity<-matrix(NA_real_,b,k)
   for(i in seq_len(b)) {
     sample<-if(is.null(bootstrap_unit_indices))
       .etr_fpca_stability_boot(trajectories,resample_unit,
-        participant_column)
+        participant_column,rng)
       else .etr_fpca_stability_fixed_boot(trajectories,resample_unit,
         participant_column,bootstrap_unit_indices[[i]])
     .etr_assert(length(sample$curve_ids)>k,
@@ -113,7 +112,8 @@ etr_bootstrap_fpca_component_envelopes <- function(
       participant_column=participant_column,
       coverage_claim="descriptive_pointwise_only",
       random_engine=if(is.null(bootstrap_unit_indices))
-        "base_R_not_NumPy_PCG64" else "caller_supplied_fixed_unit_indices",
+        (if(is.null(rng))"base_R_unseeded"else"numpy_pcg64") else
+        "caller_supplied_fixed_unit_indices",
       fixed_draw_replay=!is.null(bootstrap_unit_indices),
       source_python_equivalent_stochastic_draws=FALSE,
       scientific_warning=paste(

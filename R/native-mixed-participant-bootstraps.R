@@ -49,7 +49,8 @@
 #'   Python spline-coefficient MixedLM GLS covariance is NOT reproduced.
 #' @param result Converged restricted native mixed-moments fit.
 #' @param n_bootstrap Number of participant case replicates >=100.
-#' @param random_state Base-R seed; different from Python PCG64.
+#' @param random_state Integer seed. Joint likelihood fits use
+#'   NumPy-compatible PCG64 draws. Native moments fits use base R draws.
 #' @param sampled_participant_indices Optional zero-based B-by-participant
 #'   retained Python index matrix.
 #' @return Native fixed-covariance participant-case coefficient bootstrap.
@@ -130,7 +131,8 @@ etr_bootstrap_functional_mixed_effects_coefficients<-function(
 #'   not a Python Gaussian spline MixedLM/REML full-refit bootstrap.
 #' @param result Converged restricted native mixed-moments fit.
 #' @param n_bootstrap Number of full re-estimations >=100.
-#' @param random_state Native R seed.
+#' @param random_state Integer seed. Joint likelihood fits use
+#'   NumPy-compatible PCG64 draws. Native moments fits use base R draws.
 #' @param sampled_participant_indices Optional zero-based B-by-participant
 #'   fixed source draw index matrix.
 #' @return Native full-refit participant bootstrap with covariance audit.

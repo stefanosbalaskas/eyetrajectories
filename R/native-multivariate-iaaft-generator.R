@@ -47,8 +47,7 @@
   amplitude<-Mod(spectrum)
   offsets<-sweep(Arg(spectrum),1L,Arg(spectrum[,reference_index]),"-")
   pairs<-combn(seq_len(d),2L,simplify=FALSE)
-  # Exact frozen NumPy source initial state can be replayed without
-  # invoking Python or attempting to equate base R and PCG64 seeds.
+  # Caller-supplied and integer-seeded orders share the same FFT path.
   surrogate<-if(is.null(initial_order)) {
     sapply(seq_len(d),function(j)sample(values[,j],n,replace=FALSE))
   } else {
@@ -92,12 +91,12 @@
 #' @param n_surrogates Positive number of independent replicates.
 #' @param max_iterations Positive convergence budget.
 #' @param tolerance Positive spectral stopping-difference tolerance.
-#' @param random_state Optional R seed with caller RNG restored.
+#' @param random_state Integer seed for NumPy-compatible PCG64 permutations
+#'   or NULL for unseeded native R draws.
 #' @param initial_permutations Optional zero-based integer-valued array of
 #'   shape (n_surrogates, n_time, n_selected_dimensions), where every
 #'   surrogate-by-dimension column is a permutation of 0:(n_time-1).
-#'   Replays the frozen NumPy initialization without claiming PCG64 stream
-#'   identity and without consuming any R randomness. The declared channel
+#'   Uses the supplied initialization directly. The declared channel
 #'   order must agree with \code{dimensions}.
 #' @return Source-shaped surrogate array and per-dimension/spectral diagnostics.
 #' @export
@@ -151,19 +150,21 @@ etr_generate_multivariate_iaaft_surrogates<-function(
     .etr_assert(valid,
       "initial_permutations must be complete permutations in every surrogate and channel")
   }
-  if(!is.null(random_state)&&is.null(initial_permutations)){
-    restore<-.etr_simulation_rng(random_state)
-    on.exit(restore(),add=TRUE)
-  }
+  rng<-if(!is.null(random_state)&&is.null(initial_permutations))
+    .etr_numpy_pcg64(random_state) else NULL
   surrogates<-array(NA_real_,c(b,nt,d))
   iterations<-integer(b);errors<-matrix(NA_real_,b,d)
   pairs<-combn(seq_len(d),2L,simplify=FALSE)
   cross<-matrix(NA_real_,b,length(pairs))
   for(i in seq_len(b)){
+    initial_order<-if(!is.null(initial_permutations)){
+      matrix(initial_permutations[i,,,drop=FALSE],nrow=nt,ncol=d)
+    }else if(!is.null(rng)){
+      vapply(seq_len(d),function(j)rng$permutation(nt)-1L,integer(nt))
+    }else NULL
     trial<-tryCatch(.etr_multivariate_iaaft_once(values,
       match(reference_dimension,dimensions),it,tolerance,
-      initial_order=if(is.null(initial_permutations))NULL else
-        matrix(initial_permutations[i,,,drop=FALSE],nrow=nt,ncol=d)),
+      initial_order=initial_order),
       error=function(e)stop(sprintf(
         "multivariate surrogate %d failed: %s",i-1L,
         conditionMessage(e)),call.=FALSE))
@@ -201,12 +202,13 @@ etr_generate_multivariate_iaaft_surrogates<-function(
       dimension_scaling=FALSE,
       smoothing=FALSE,interpolation=FALSE,
       random_engine=if(is.null(initial_permutations))
-        "base_R_sample_not_NumPy_PCG64" else
+        (if(is.null(rng))"base_R_unseeded"else"numpy_pcg64") else
         "externally_supplied_zero_based_initial_permutations",
       initialization_source=if(is.null(initial_permutations))
-        "native_R_per_channel_permutation" else
+        (if(is.null(rng))"native_R_per_channel_permutation"else"numpy_pcg64_permutation") else
         "fixed_numpy_compatible_permutation_replay",
       fixed_initialization_replay=!is.null(initial_permutations),
+      seeded_initialization_matches_numpy=!is.null(rng),
       source_python_equivalent_stochastic_draws=FALSE,
       failed_surrogate_policy="raise",
       interpretation_boundary=paste(

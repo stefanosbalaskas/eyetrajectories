@@ -61,10 +61,9 @@
   .etr_assert(all(lengths(original_participants)>0L),
     "every source participant must contribute a curve bundle")
   if(is.null(sampled_participant_indices)){
-    make_indices<-function()
-      matrix(sample.int(N,B*N,replace=TRUE)-1L,nrow=B,ncol=N)
-    sampled<-if(is.null(random_state))make_indices()else
-      .etr_seed_scope(as.integer(random_state),make_indices)
+    sampled<-if(is.null(random_state))
+      matrix(sample.int(N,B*N,replace=TRUE)-1L,nrow=B,ncol=N) else
+      .etr_numpy_seeded_case_indices(random_state,B,N)
   }else{
     sampled<-sampled_participant_indices
     .etr_assert(is.matrix(sampled)&&is.numeric(sampled)&&
@@ -161,6 +160,9 @@
     n_bootstrap=B,
     random_state=if(is.null(random_state))NULL else
       as.integer(random_state),
+    native_rng=if(!is.null(sampled_participant_indices))
+      "caller_supplied_fixed_indices" else if(is.null(random_state))
+      "base_R_unseeded" else "numpy_pcg64",
     participant_groups_duplicated_as_independent_draws=TRUE,
     whole_trial_bundles_resampled=TRUE,
     fixed_basis_refit=FALSE,
