@@ -36,6 +36,33 @@ test_that("grouped counts use the source integer tolerance",{
   expect_error(fit(f$den+2e-12),"integer")
 })
 
+test_that("source mode separates GLM initialization from GEE score control",{
+  fit<-function(key)do.call(etr_fit_generalized_function_on_scalar_regression,
+    .etr_native_gee_boundary_case(key))
+  p<-fit("one_update")
+  expect_identical(p$maxiter,1L)
+  expect_identical(p$provenance$gee_score_iterations,1L)
+  expect_gt(p$provenance$glm_initialization_iterations,1L)
+  expect_lt(p$provenance$gee_score_norm,p$ctol)
+  a<-.etr_native_gee_boundary_case("one_update")
+  a$python_boundary_mode<-FALSE
+  expect_error(do.call(etr_fit_generalized_function_on_scalar_regression,a),
+    "did not converge")
+  expect_error(fit("score_too_large"),"GEE did not converge")
+  expect_error(fit("subthreshold_rank"),"scalar design matrix rank deficient")
+  expect_error(fit("rank_deficient"),"scalar design matrix rank deficient")
+  expect_error(fit("zero_counts"),"first guess on the deviance")
+  s<-fit("nearly_rank_deficient")
+  expect_identical(s$expanded_design_rank,8L)
+  expect_equal(s$mean_functions,s$rate_functions*s$exposure,tolerance=1e-12)
+  expect_true(all(is.finite(s$parameter_covariance)))
+  expect_identical(fit("numeric_curve_id")$coefficient_names,
+    c("Intercept","curve_id"))
+  z<-fit("separated")
+  expect_true(length(z$backend_warnings)>0L)
+  expect_true(all(grepl("Perfect separation",z$backend_warnings,fixed=TRUE)))
+})
+
 test_that("native Poisson GEE fits real expanded spline and participant sandwich",{
   f<-.etr_native_gee_fixture()
   model<-etr_fit_generalized_function_on_scalar_regression(

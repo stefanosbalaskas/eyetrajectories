@@ -1,7 +1,8 @@
 # Source pin: eyetrajectoriespy 1.2.0 generalized_function_on_scalar.py
 # and functional_mixed_effects.py at c1cd95ad718327550f7e55393ff38582872f7a94.
 # Explicit working independence GEE with participant-cluster robust sandwich.
-# Base-R glm.fit solves the canonical score equation; Python uses statsmodels.
+# The legacy solver is glm.fit. Source boundary mode uses native GLM
+# initialization followed by the Statsmodels working-independence score rule.
 # Full accepted domains/backend-warning schema not independently certified.
 
 .etr_native_generalized_response_array<-function(values,n,nt,name,
@@ -23,7 +24,7 @@
   values
 }
 
-.etr_native_generalized_basis<-function(time,n_basis,degree){
+.etr_native_generalized_basis<-function(time,n_basis,degree,source_mode){
   .etr_assert(is.numeric(n_basis)&&length(n_basis)==1L&&
     is.finite(n_basis)&&n_basis==floor(n_basis)&&n_basis>=1,
     "basis_size must be a positive integer")
@@ -41,7 +42,8 @@
     outer.ok=TRUE)
   basis[nrow(basis),]<-0
   basis[nrow(basis),ncol(basis)]<-1
-  .etr_assert(ncol(basis)==n_basis&&qr(basis)$rank==n_basis,
+  .etr_assert(ncol(basis)==n_basis&&
+    .etr_gfosr_design_rank(basis,source_mode)==n_basis,
     "generalized function-on-scalar basis rank deficient")
   list(basis=unname(basis),knots=knots)
 }
@@ -61,10 +63,11 @@
 #' @param basis_size,spline_degree Fixed clamped B-spline specification.
 #' @param working_correlation Exactly "independence"; no implicit selection.
 #' @param covariance_type Exactly "robust" participant-cluster sandwich.
-#' @param maxiter,ctol GLM iteration and convergence tolerance.
+#' @param maxiter,ctol Iteration limit and convergence tolerance. In source
+#'   boundary mode these control the GEE score updates after GLM initialization.
 #' @param python_boundary_mode Require curve IDs in trajectory order, or
 #'   a data frame with default row names when curve_id is omitted. Apply
-#'   pandas-style text conversion to scalar identifiers.
+#'   pandas-style text conversion and the source GEE rank and score rules.
 #' @return Native GEE model record and audited source scientific quantities.
 #' @export
 etr_fit_generalized_function_on_scalar_regression<-function(
@@ -81,7 +84,8 @@ etr_fit_generalized_function_on_scalar_regression<-function(
     identical(covariance_type,"robust"),
     "only independence working correlation and robust covariance supported")
   .etr_assert(is.numeric(maxiter)&&length(maxiter)==1L&&
-    is.finite(maxiter)&&maxiter==floor(maxiter)&&maxiter>=1L,
+    is.finite(maxiter)&&maxiter==floor(maxiter)&&maxiter>=1L&&
+    maxiter<=.Machine$integer.max,
     "maxiter must be positive integer")
   .etr_assert(is.numeric(ctol)&&length(ctol)==1L&&
     is.finite(ctol)&&ctol>0,
@@ -117,11 +121,12 @@ etr_fit_generalized_function_on_scalar_regression<-function(
     aligned<-seq_len(n)
     design_alignment<-"explicit_row_order"
   }
+  reserved<-if(python_boundary_mode)"Intercept"else c("curve_id","Intercept")
   .etr_assert(is.character(predictors)&&length(predictors)>=1L&&
     !anyNA(predictors)&&all(nzchar(predictors))&&
     !anyDuplicated(predictors)&&
     all(predictors%in%names(design))&&
-    !any(predictors%in%c("curve_id","Intercept")),
+    !any(predictors%in%reserved),
     "predictors must be unique declared design columns without reserved names")
   columns<-lapply(predictors,function(name){
     column<-design[[name]]
@@ -133,7 +138,7 @@ etr_fit_generalized_function_on_scalar_regression<-function(
   .etr_assert(is.numeric(X)&&all(is.finite(X)),
     "predictors must be complete finite numeric")
   colnames(X)<-c("Intercept",predictors)
-  .etr_assert(qr(X)$rank==ncol(X),
+  .etr_assert(.etr_gfosr_design_rank(X,python_boundary_mode)==ncol(X),
     "scalar design matrix rank deficient")
   nt<-length(trajectories$time)
   y<-matrix(trajectories$values[,,match(dimension,
@@ -151,7 +156,7 @@ etr_fit_generalized_function_on_scalar_regression<-function(
     "participant identifiers must be complete")
   participants<-unique(groups);np<-length(participants)
   basis_data<-.etr_native_generalized_basis(trajectories$time,
-    basis_size,spline_degree)
+    basis_size,spline_degree,python_boundary_mode)
   basis<-basis_data$basis;K<-ncol(basis);p<-ncol(X)
   .etr_assert(np>p*K,
     "participant count must exceed expanded coefficient parameter count")
@@ -196,44 +201,53 @@ etr_fit_generalized_function_on_scalar_regression<-function(
     cols<-seq.int((j-1L)*K+1L,length.out=K)
     expanded[rows,cols]<-X[i,j]*basis
   }
-  .etr_assert(qr(expanded)$rank==ncol(expanded),
+  expanded_rank<-.etr_gfosr_design_rank(expanded,python_boundary_mode)
+  .etr_assert(expanded_rank==ncol(expanded),
     "expanded GEE spline design rank deficient")
   outcome<-as.vector(t(observed))
   offset<-if(is.null(exp))rep(0,nrows)else
     as.vector(t(log(exp)))
-  backend_warnings<-character()
-  glm<-withCallingHandlers(stats::glm.fit(x=expanded,y=outcome,
-    weights=w,offset=offset,family=family_object,
-    control=stats::glm.control(epsilon=ctol,maxit=as.integer(maxiter))),
-    warning=function(warning){
-      backend_warnings<<-c(backend_warnings,conditionMessage(warning))
-      invokeRestart("muffleWarning")
-    })
-  .etr_assert(isTRUE(glm$converged)&&!anyNA(glm$coefficients)&&
-    all(is.finite(glm$coefficients)),
-    "independence GEE did not converge or yielded nonfinite coefficients")
-  beta<-as.numeric(glm$coefficients)
-  eta<-as.vector(expanded%*%beta)+offset
-  mu<-as.numeric(family_object$linkinv(eta))
-  .etr_assert(all(is.finite(mu)),
-    "fitted generalized marginal means must be finite")
-  variance_weights<-if(family=="binomial")
-    w*mu*(1-mu) else mu
-  bread<-crossprod(expanded,expanded*variance_weights)
-  .etr_assert(qr(bread)$rank==ncol(expanded),
-    "GEE robust information matrix is rank deficient")
-  inverse<-solve(bread)
-  residual_score<-if(family=="binomial")
-    w*(outcome-mu) else outcome-mu
   cluster<-rep(match(groups,participants),each=nt)
-  meat<-matrix(0,p*K,p*K)
-  for(g in seq_len(np)){
-    ix<-which(cluster==g)
-    score<-crossprod(expanded[ix,,drop=FALSE],residual_score[ix])
-    meat<-meat+tcrossprod(score)
+  if(python_boundary_mode){
+    fit<-.etr_gfosr_source_gee_fit(expanded,outcome,w,offset,
+      rep(groups,each=nt),family,maxiter,ctol)
+    beta<-fit$beta
+    covariance<-fit$covariance
+    backend_warnings<-fit$warnings
+  }else{
+    backend_warnings<-character()
+    glm<-withCallingHandlers(stats::glm.fit(x=expanded,y=outcome,
+      weights=w,offset=offset,family=family_object,
+      control=stats::glm.control(epsilon=ctol,maxit=as.integer(maxiter))),
+      warning=function(warning){
+        backend_warnings<<-c(backend_warnings,conditionMessage(warning))
+        invokeRestart("muffleWarning")
+      })
+    .etr_assert(isTRUE(glm$converged)&&!anyNA(glm$coefficients)&&
+      all(is.finite(glm$coefficients)),
+      "independence GEE did not converge or yielded nonfinite coefficients")
+    beta<-as.numeric(glm$coefficients)
+    eta<-as.vector(expanded%*%beta)+offset
+    mu<-as.numeric(family_object$linkinv(eta))
+    .etr_assert(all(is.finite(mu)),
+      "fitted generalized marginal means must be finite")
+    variance_weights<-if(family=="binomial")
+      w*mu*(1-mu) else mu
+    bread<-crossprod(expanded,expanded*variance_weights)
+    .etr_assert(qr(bread)$rank==ncol(expanded),
+      "GEE robust information matrix is rank deficient")
+    inverse<-solve(bread)
+    residual_score<-if(family=="binomial")
+      w*(outcome-mu) else outcome-mu
+    meat<-matrix(0,p*K,p*K)
+    for(g in seq_len(np)){
+      ix<-which(cluster==g)
+      score<-crossprod(expanded[ix,,drop=FALSE],residual_score[ix])
+      meat<-meat+tcrossprod(score)
+    }
+    covariance<-inverse%*%meat%*%inverse
+    covariance<-(covariance+t(covariance))/2
   }
-  covariance<-inverse%*%meat%*%inverse
-  covariance<-(covariance+t(covariance))/2
   bcoef<-matrix(beta,nrow=p,ncol=K,byrow=TRUE)
   coef_fun<-bcoef%*%t(basis)
   se<-matrix(0,p,nt)
@@ -244,12 +258,17 @@ etr_fit_generalized_function_on_scalar_regression<-function(
   }
   rate_eta<-X%*%coef_fun
   count_eta<-rate_eta+matrix(offset,nrow=n,byrow=TRUE)
-  fitted_mean<-.etr_gfosr_predict_inverse_link(count_eta,family)
+  fitted_mean<-if(python_boundary_mode)
+    .etr_gfosr_source_gee_mean(count_eta,family=="binomial") else
+    .etr_gfosr_predict_inverse_link(count_eta,family)
+  .etr_assert(all(is.finite(fitted_mean)),
+    "GEE fitted marginal means are non-finite")
   fitted_rate<-if(is.null(exp))NULL else
     .etr_gfosr_predict_inverse_link(rate_eta,"poisson")
   prov<-list(operation="fit_generalized_function_on_scalar_regression",
     method="marginal_function_on_scalar_gee",
-    native_solver="base_R_glm_fit_cluster_robust_sandwich",
+    native_solver=if(python_boundary_mode)"native_irls_gee_score_sandwich" else
+      "base_R_glm_fit_cluster_robust_sandwich",
     source_solver="statsmodels_GEE",
     family=family,link=if(family=="binomial")"logit"else"log",
     working_correlation="independence",covariance="participant_robust",
@@ -261,6 +280,11 @@ etr_fit_generalized_function_on_scalar_regression<-function(
     binomial_denominator_fixed=!is.null(den),
     poisson_exposure_fixed=!is.null(exp),
     full_source_contract_certified=FALSE)
+  if(python_boundary_mode){
+    prov$glm_initialization_iterations<-fit$glm_iterations
+    prov$gee_score_iterations<-fit$gee_iterations
+    prov$gee_score_norm<-fit$score_norm
+  }
   structure(list(
     coefficient_functions=coef_fun,
     coefficient_standard_errors=se,
@@ -271,7 +295,7 @@ etr_fit_generalized_function_on_scalar_regression<-function(
     linear_predictor_count=if(family=="poisson")count_eta else NULL,
     mean_functions=fitted_mean,observed_functions=y,
     scalar_design_matrix=X,
-    expanded_design_rank=qr(expanded)$rank,
+    expanded_design_rank=expanded_rank,
     coefficient_names=colnames(X),predictor_names=predictors,
     participant_column=participant_column,participant_ids=participants,
     curve_participant_ids=groups,

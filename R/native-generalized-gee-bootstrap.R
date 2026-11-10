@@ -17,7 +17,9 @@
   rows<-rep(seq_len(nt),times=n)
   expanded<-do.call(cbind,lapply(seq_len(p),function(j)
     basis[rows,,drop=FALSE]*rep(X[,j],each=nt)))
-  .etr_assert(qr(expanded)$rank==p*K,
+  source_mode<-identical(result$provenance$native_solver,
+    "native_irls_gee_score_sandwich")
+  .etr_assert(.etr_gfosr_design_rank(expanded,source_mode)==p*K,
     "resampled generalized GEE spline design is rank deficient")
   den<-if(is.null(result$binomial_denominators))NULL else
     result$binomial_denominators[indices,,drop=FALSE]
@@ -47,6 +49,11 @@
   offset<-if(is.null(exposure))rep(0,n*nt) else
     as.vector(t(log(exposure)))
   response<-as.vector(t(observed))
+  if(source_mode){
+    fit<-.etr_gfosr_source_gee_fit(expanded,response,w,offset,
+      rep(groups,each=nt),result$family,result$maxiter,result$ctol)
+    return(matrix(fit$beta,nrow=p,ncol=K,byrow=TRUE)%*%t(basis))
+  }
   fit<-suppressWarnings(stats::glm.fit(x=expanded,y=response,
     weights=w,offset=offset,family=family_object,
     control=stats::glm.control(epsilon=result$ctol,
