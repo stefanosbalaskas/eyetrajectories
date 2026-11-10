@@ -9,7 +9,8 @@ etr_nested_cross_validate_fpca_regression(trajectories, outcome,
   scaling = "none", cv_unit = "curve", group_column = NULL,
   shuffle = FALSE, random_state = 0L,
   outer_fold_assignments = NULL, inner_fold_assignments = NULL,
-  coerce_numeric_text_covariates = FALSE, random_engine = "base_R", group_tie_order = "native")
+  coerce_numeric_text_covariates = FALSE, random_engine = "base_R",
+  group_tie_order = "native")
 }
 \arguments{
 \item{coerce_numeric_text_covariates}{Native-only opt-in for finite numeric-text covariate columns, including interdigit underscores. The frozen Python source statsmodels model rejects object-typed columns, so FALSE preserves the default source-safe behavior.}
