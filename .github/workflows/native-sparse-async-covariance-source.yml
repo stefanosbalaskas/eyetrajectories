@@ -4,6 +4,7 @@ on:
     paths:
       - "R/native-sparse-mfpca-async-core.R"
       - "tests/testthat/test-native-sparse-async-covariance-source.R"
+      - "tests/testthat/test-native-sparse-async-raw-pairs-source.R"
       - "tests/testthat/test-native-sparse-mfpca-async-source.R"
       - ".github/workflows/native-sparse-async-covariance-source.yml"
   workflow_dispatch:
@@ -36,7 +37,7 @@ jobs:
           Rscript - <<'RSCRIPT'
           pkgload::load_all(".",quiet=TRUE)
           start <- reticulate::py_available(initialize=FALSE)
-          testthat::test_local(".", filter="native-sparse-(async-covariance-source|mfpca-async-source)",
+          testthat::test_local(".", filter="native-sparse-(async-(covariance|raw-pairs)-source|mfpca-async-source)",
             reporter="summary", stop_on_failure=TRUE, stop_on_warning=TRUE)
           stopifnot(identical(start,reticulate::py_available(initialize=FALSE)))
           RSCRIPT
@@ -71,6 +72,6 @@ jobs:
           Rscript - <<'RSCRIPT'
           pkgload::load_all(".",quiet=TRUE)
           stopifnot(identical(et_python_version(),"1.2.0"))
-          testthat::test_local(".", filter="native-sparse-(async-covariance-source|mfpca-async-source)",
+          testthat::test_local(".", filter="native-sparse-(async-(covariance|raw-pairs)-source|mfpca-async-source)",
             reporter="summary", stop_on_failure=TRUE, stop_on_warning=TRUE)
           RSCRIPT
