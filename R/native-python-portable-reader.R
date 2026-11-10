@@ -5,7 +5,7 @@
 # Explicit subset: manifest v1, NumPy .npy v1/v2/v3, little endian
 # f4/f8, signed i1/i2/i4/i8, unsigned u1/u2/u4/u8 (safe integers),
 # bool b1, UTF-32 Unicode U, and primitive JSON-only object arrays.
-# Pickled objects and unsupported descriptors FAIL CLOSED. This is NOT a Python portable-result writer.
+# Pickled objects and unsupported descriptors fail closed.
 
 .etr_portable_require <- function(package) {
   if (!requireNamespace(package,quietly=TRUE))
@@ -51,7 +51,7 @@
                 "invalid NumPy .npy array shape")
     as.numeric(parts)
   } else numeric(0)
-  .etr_assert(all(is.finite(shape)) && all(shape>=0) &&
+  .etr_assert(all(is.finite(shape)) && all(shape>=0 & shape<=.Machine$integer.max) &&
                 length(shape)<=6L,
               "unsupported NumPy .npy array dimensions")
   list(descr=descr,fortran=identical(flag,"True"),shape=shape)
@@ -68,10 +68,12 @@
   low <- as.numeric(crossprod(powers,bytes[1:4,,drop=FALSE]))
   high <- as.numeric(crossprod(powers,bytes[5:8,,drop=FALSE]))
   if(signed) high <- ifelse(high>=2^31,high-2^32,high)
-  value <- low+high*2^32
-  .etr_assert(all(is.finite(value)) && all(abs(value)<=2^53),
+  # Check integer limbs before conversion, which would otherwise round
+  # positive 2^53 + 1 to an apparently in-range double.
+  limit <- 2^21
+  .etr_assert(all(high>= -limit & (high<limit | (high==limit & low==0))),
               "NumPy int64 exceeds exact base-R double integer range")
-  value
+  low+high*2^32
 }
 
 .etr_npy_decode_utf32 <- function(blob,n,width) {
@@ -89,7 +91,10 @@
   matrix_code <- matrix(ints,nrow=width,ncol=n)
   vapply(seq_len(n),function(i) {
     cps <- matrix_code[,i]
-    cps <- cps[cps!=0L]
+    content <- which(cps!=0L)
+    if(!length(content)) return("")
+    cps <- cps[seq_len(content[[length(content)]])]
+    .etr_assert(!any(cps==0L),"embedded NUL in NumPy Unicode array")
     .etr_assert(all(cps>0L & cps<=1114111L &
               !(cps>=55296L & cps<=57343L)),
               "invalid Unicode code point in NumPy array")
@@ -313,9 +318,9 @@ etr_read_python_portable_result <- function(
   .etr_assert(is.character(directory) && length(directory)==1L &&
               !is.na(directory) && dir.exists(directory),
               "directory must be an existing Python portable-result folder")
-  max_limits <- c(max_array_bytes,max_total_bytes)
-  .etr_assert(is.numeric(max_limits) && all(is.finite(max_limits)) &&
-              all(max_limits>=1024) && all(max_limits<=1024^3),
+  safe_limit <- function(x) is.numeric(x) && length(x)==1L &&
+    is.finite(x) && x>=1024 && x<=1024^3
+  .etr_assert(safe_limit(max_array_bytes) && safe_limit(max_total_bytes),
               "max_array_bytes/max_total_bytes must be finite safe byte limits")
   manifest_path <- file.path(directory,"manifest.json")
   .etr_assert(file.exists(manifest_path),
@@ -336,12 +341,16 @@ etr_read_python_portable_result <- function(
                             serialize=FALSE)
   .etr_assert(identical(tolower(observed),tolower(expected)),
               "Python portable-result arrays.npz SHA-256 checksum mismatch")
-  listing <- utils::unzip(archive,list=TRUE)
-  .etr_assert(is.data.frame(listing) && nrow(listing)>0L,
-              "empty Python NPZ archive")
+  # NumPy writes a standard ZIP end record for array-free results. The
+  # base R ZIP lister cannot open this valid 22-byte archive.
+  empty_archive <- file.size(archive)==22L && identical(
+    readBin(archive,what="raw",n=22L),as.raw(c(80L,75L,5L,6L,rep(0L,18L))))
+  listing <- if(empty_archive) data.frame(Name=character(),Length=numeric()) else
+    utils::unzip(archive,list=TRUE)
+  .etr_assert(is.data.frame(listing),"could not list Python NPZ archive")
   names_in_zip <- listing$Name
   .etr_assert(!anyDuplicated(names_in_zip) &&
-    all(grepl("^array_[0-9]{5}[.]npy$",names_in_zip)) &&
+    all(grepl("^array_[0-9]{5,}[.]npy$",names_in_zip)) &&
     all(is.finite(listing$Length)) &&
     all(listing$Length>=0) &&
     sum(as.double(listing$Length))<=max_total_bytes,
@@ -361,6 +370,6 @@ etr_read_python_portable_result <- function(
     environment=manifest$environment,
     arrays_sha256=observed,
     manifest=manifest,
-    archive_keys=names(arrays)
+    archive_keys=sub("[.]npy$","",names_in_zip)
   ),class="etr_python_portable_snapshot")
 }

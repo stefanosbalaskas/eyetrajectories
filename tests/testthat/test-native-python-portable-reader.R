@@ -40,6 +40,10 @@ test_that("native 64-bit NumPy integer parser preserves safe exact values", {
   expect_error(fn(as.raw(1:3)),"truncated")
   expect_error(fn(as.raw(c(255,255,255,255,255,255,255,127))),
                "exact")
+  expect_error(fn(as.raw(c(1,0,0,0,0,0,32,0))),"exact")
+  expect_error(fn(as.raw(c(1,0,0,0,0,0,32,0)),signed=FALSE),"exact")
+  expect_equal(fn(as.raw(c(0,0,0,0,0,0,224,255))),-2^53)
+  expect_error(fn(as.raw(c(255,255,255,255,255,255,223,255))),"exact")
 })
 
 test_that("typed JSON portable decoding rejects unsafe markers", {
@@ -73,6 +77,10 @@ test_that("portable reader rejects invalid paths and manifest formats", {
   d <- tempfile("native_python_portable_")
   dir.create(d)
   on.exit(unlink(d,recursive=TRUE),add=TRUE)
+  expect_error(etr_read_python_portable_result(d,max_array_bytes=c(1024,2048)),
+    "byte limits")
+  expect_error(etr_read_python_portable_result(d,max_total_bytes=numeric()),
+    "byte limits")
   expect_error(etr_read_python_portable_result(d),"manifest")
   jsonlite::write_json(list(format="bad",schema_version=1L),
                        file.path(d,"manifest.json"),auto_unbox=TRUE)
@@ -83,6 +91,58 @@ test_that("portable reader rejects invalid paths and manifest formats", {
     arrays_sha256=paste(rep("0",64),collapse="")),
     file.path(d,"manifest.json"),auto_unbox=TRUE)
   expect_error(etr_read_python_portable_result(d),"archive path")
+})
+
+test_that("portable reader accepts array-free manifests without bypassing checks", {
+  skip_if_not_installed("jsonlite")
+  skip_if_not_installed("digest")
+  folder <- tempfile("native_empty_npz_")
+  dir.create(folder)
+  on.exit(unlink(folder,recursive=TRUE),add=TRUE)
+  archive <- file.path(folder,"arrays.npz")
+  writeBin(as.raw(c(80L,75L,5L,6L,rep(0L,18L))),archive)
+  manifest <- list(schema_version=1L,
+    format="eyetrajectoriespy-portable-scientific-result",
+    arrays_file="arrays.npz",arrays_sha256=digest::digest(archive,
+      algo="sha256",file=TRUE,serialize=FALSE),payload=list(value=42L))
+  path <- file.path(folder,"manifest.json")
+  jsonlite::write_json(manifest,path,auto_unbox=TRUE)
+  got <- etr_read_python_portable_result(folder)
+  expect_identical(got$archive_keys,character())
+  expect_identical(got$payload,list(value=42L))
+  manifest$payload <- list('__portable_type__'="ndarray",
+    key="array_00000",shape=list(1L))
+  jsonlite::write_json(manifest,path,auto_unbox=TRUE)
+  expect_error(etr_read_python_portable_result(folder),"missing NumPy")
+  writeBin(as.raw(c(80L,75L,5L,6L,rep(0L,17L),1L)),archive)
+  expect_error(etr_read_python_portable_result(folder),"checksum mismatch")
+})
+
+test_that("frozen Python array-free dataclass snapshots are readable", {
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("frozen Python array-free portable oracle is opt-in")
+  skip_if_not_installed("jsonlite")
+  skip_if_not_installed("digest")
+  expect_identical(et_python_version(),"1.2.0")
+  py <- reticulate::py_run_string(paste(c(
+    "from dataclasses import dataclass",
+    "from eyetrajectoriespy import export_portable_result",
+    "@dataclass(frozen=True)",
+    "class PortableAudit:",
+    "    label: str = 'sample'",
+    "    units: tuple = ('s', 'pixels')",
+    "def export_array_free(directory, export=export_portable_result, record=PortableAudit):",
+    "    export(record(), directory, include_environment=False)"
+  ),collapse="\n"),local=TRUE,convert=FALSE)
+  folder <- tempfile("python_empty_npz_")
+  on.exit(unlink(folder,recursive=TRUE),add=TRUE)
+  py$export_array_free(folder)
+  got <- etr_read_python_portable_result(folder)
+  expect_match(got$result_type,"[.]PortableAudit$")
+  expect_identical(got$archive_keys,character())
+  expect_identical(got$payload$label,"sample")
+  expect_identical(got$payload$units,structure(list("s","pixels"),
+    class="etr_python_tuple"))
 })
 
 test_that("Python 1.2 exports are readable and verified without Python", {
@@ -180,4 +240,7 @@ test_that("UTF-32 NumPy decoding is warning free and fail closed", {
   expect_error(decode(encode(-1L),1L,1L),"code point")
   expect_error(decode(encode(55296L),1L,1L),"code point")
   expect_error(decode(encode(1114112L),1L,1L),"code point")
+  expect_identical(decode(encode(c(65L,0L,0L)),1L,3L),"A")
+  expect_identical(decode(encode(rep(0L,3L)),1L,3L),"")
+  expect_error(decode(encode(c(65L,0L,66L)),1L,3L),"embedded NUL")
 })
