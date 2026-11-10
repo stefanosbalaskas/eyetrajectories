@@ -9,6 +9,7 @@ import unittest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import summarize_scientific_source_evidence as evidence
 import source_gap_inventory as inventory
+from support_source_inventory_fixture import install_historical_source_inventory
 
 HEAD = "a" * 40
 
@@ -26,14 +27,9 @@ class ScientificSourceEvidenceTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name)
         directory = self.root / "inst" / "extdata"
-        directory.mkdir(parents=True)
         real = Path(__file__).resolve().parents[1]
-        for name in ("native_source_contract_gaps_stage22.csv",
-                     "native_nonfunction_source_gaps_v1.csv",
-                     "reviewed_source_contract_closures_v1.csv",
-                     "python_api_2026-10-25.csv"):
-            shutil.copyfile(real / "inst" / "extdata" / name,
-                            directory / name)
+        install_historical_source_inventory(real / "inst" / "extdata",
+                                            directory)
         self.reports = (
             self.root / "artifacts" / "native_batch_numeric_diff" /
             HEAD[:12])

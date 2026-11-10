@@ -10,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import source_gap_inventory as inventory
 import summarize_scientific_source_evidence as evidence
 import build_independent_scientific_review_packet as packet
+from support_source_inventory_fixture import install_historical_source_inventory
 
 
 HEAD = "a" * 40
@@ -21,12 +22,7 @@ class IndependentReviewPacketTests(unittest.TestCase):
         self.root = Path(self.temporary.name)
         original = Path(__file__).resolve().parents[1] / "inst" / "extdata"
         target = self.root / "inst" / "extdata"
-        target.mkdir(parents=True)
-        for name in ("native_source_contract_gaps_stage22.csv",
-                     "native_nonfunction_source_gaps_v1.csv",
-                     "reviewed_source_contract_closures_v1.csv",
-                     "python_api_2026-10-25.csv"):
-            shutil.copyfile(original / name, target / name)
+        install_historical_source_inventory(original, target)
         self.reports = self.root / "artifacts" / "native_batch_numeric_diff" / (
             HEAD[:12])
         self.reports.mkdir(parents=True)
