@@ -178,6 +178,16 @@
   out
 }
 
+.etr_spnm_cov_eval <- function(grid,blocks,time){
+  xx<-.etr_spnm_interp(grid,blocks$cxx,time)
+  xy<-.etr_spnm_interp(grid,blocks$cxy,time)
+  yy<-.etr_spnm_interp(grid,blocks$cyy,time)
+  channel_major<-rbind(cbind(xx,xy),cbind(t(xy),yy))
+  indices<-seq_along(time)
+  time_major<-as.vector(rbind(indices,length(time)+indices))
+  channel_major[time_major,time_major,drop=FALSE]
+}
+
 .etr_spnm_score<-function(ids,times,values,grid,mu,blocks,
     eig,measurement_noise,ridge=0,limit=1e12,
     min_time=2L,failure="error"){
@@ -192,13 +202,7 @@
     if(nt<min_time){
       status<-"curve_too_sparse_for_joint_score_system"
     }else{
-      xx<-.etr_spnm_interp(grid,blocks$cxx,t)
-      xy<-.etr_spnm_interp(grid,blocks$cxy,t)
-      yy<-.etr_spnm_interp(grid,blocks$cyy,t)
-      C<-rbind(cbind(xx,xy),cbind(t(xy),yy))
-      # Native time-major interleaved x1,y1,x2,y2...
-      ix<-as.vector(rbind(seq_len(nt),nt+seq_len(nt)))
-      C<-C[ix,ix,drop=FALSE]
+      C<-.etr_spnm_cov_eval(grid,blocks,t)
       noise<-kronecker(diag(nt),E)
       Sigma<-C+noise+diag(ridge,2L*nt)
       Sigma<-(Sigma+t(Sigma))/2

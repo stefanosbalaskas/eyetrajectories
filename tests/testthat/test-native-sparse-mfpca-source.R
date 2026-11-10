@@ -49,6 +49,25 @@ test_that("paired sparse joint covariance is estimated without marginal fdapace"
   expect_true(wf$decisions$score_uncertainty_requested$value)
 })
 
+test_that("paired bandwidth selection holds out groups and uses full predictive covariance",{
+  x<-.etr_spnm_fixture()
+  cfg<-c(list(backend="native_covariance"),.etr_spnm_args())
+  cfg$mean_bandwidth<-cfg$covariance_bandwidth<-NULL
+  cfg$bandwidth_selection<-list(mean_bandwidths=c(.55,.65),covariance_bandwidths=.85,
+    n_splits=3L,resampling_unit="group",group_column="block")
+  w<-etr_run_sparse_mfpca_workflow(x,cfg)
+  a<-w$bandwidth_selection
+  expect_true(all(lengths(lapply(split(a$assignments$fold,a$assignments$group),unique))==1L))
+  expect_true(all(is.finite(a$curve_losses$planar_gaussian_nll_per_scalar_observation)))
+  expect_equal(a$curve_losses$n_planar_observations_evaluated,
+    2*a$curve_losses$n_time_points_evaluated)
+  expect_false(a$provenance$score_ridge_included_in_validation_covariance)
+  expect_identical(w$provenance$bandwidth_mode,"audited_selector")
+  expect_equal(w$fit$provenance$sparse_mfpca$covariance_bandwidth,.85)
+  cfg$bandwidth_selection$fold_assignments<-rep(0:2,length.out=length(x$curve_ids))
+  expect_error(etr_run_sparse_mfpca_workflow(x,cfg),"split a group")
+})
+
 test_that("joint sparse covariance fails closed on unsupported sample/error mode",{
   tr<-.etr_spnm_fixture()
   args<-.etr_spnm_args()

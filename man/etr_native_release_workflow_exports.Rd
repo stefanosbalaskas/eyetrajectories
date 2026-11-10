@@ -49,6 +49,24 @@ per-curve, per-component table. The \code{scores} table retains input
 metadata and uses \code{SFPC} or \code{SMFPC} component prefixes.
 Input metadata columns that collide with score-table names receive unique
 suffixes in the table.
+
+To select bandwidths, supply
+\code{bandwidth_selection=list(mean_bandwidths=c(0.5, 0.7),
+covariance_bandwidths=c(0.8, 1), n_splits=5L)} in place of the two fixed
+bandwidth arguments. The workflow refits each candidate within each training
+fold, ranks eligible candidates by mean held-out Gaussian predictive loss,
+then refits the selected model. The selection result contains assignments,
+curve losses, fold outcomes and candidate summaries.
+Use \code{resampling_unit="group"} with \code{group_column} to keep entire
+groups in one fold. Supply zero-based \code{fold_assignments} in input-curve
+order to replay an external split. Seeded curve shuffles use the legacy
+NumPy permutation law. Native grouped tie ordering may differ from NumPy.
+By default every fold must be valid. \code{min_valid_folds} changes this
+threshold. \code{failure_action="retain"} records failed folds, while
+\code{"error"} stops at the first failure. If no candidate is eligible, the
+\code{etr_sparse_bandwidth_selection_error} condition contains the audit in
+\code{bandwidth_selection}. Sparse prediction selects bandwidths using its
+proper-training curves.
 }
 \section{Exported entry points}{
 \describe{

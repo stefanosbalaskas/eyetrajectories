@@ -186,8 +186,9 @@ etr_fit_sparse_mfpca<-function(trajectories,dimensions=c("x","y"),
 #' Run native paired sparse two-channel joint-score workflow
 #' @param trajectories Native two-channel irregular trajectories.
 #' @param config Explicit dimensions, backend, component counts and empty
-#'   preprocessing. The native_covariance backend also accepts a
-#'   score_uncertainty list with optional condition_limit and failure_action.
+#'   preprocessing. The native_covariance backend accepts fixed PACE
+#'   bandwidths or declared candidate grids in bandwidth_selection. It also
+#'   supports optional conditional score uncertainty.
 #' @param observation_process Must be NULL.
 #' @export
 etr_run_sparse_mfpca_workflow<-function(trajectories,config,
@@ -206,13 +207,16 @@ etr_run_sparse_mfpca_workflow<-function(trajectories,config,
       score_ridge=0,score_condition_limit=1e12,
       min_score_time_points=2L,score_failure_action="error",
       mean_min_local_points=3L,covariance_min_local_pairs=6L,
-      score_uncertainty=NULL,
+      score_uncertainty=NULL,bandwidth_selection=NULL,
       preprocessing=list()),required=c("dimensions","backend",
-      "n_components","evaluation_grid","mean_bandwidth",
-      "covariance_bandwidth","measurement_error"))
+      "n_components","evaluation_grid","measurement_error"))
     .etr_assert(inherits(trajectories,"etr_irregular_trajectory_set"),
       "joint source workflow requires paired irregular trajectories")
-    params<-cfg[setdiff(names(cfg),c("preprocessing","score_uncertainty"))]
+    .etr_assert(is.null(observation_process),
+      "joint source workflow does not yet support observation_process")
+    selection<-.etr_sparse_bandwidth_selection(trajectories,cfg,paired=TRUE)
+    params<-cfg[setdiff(names(cfg),c("preprocessing","score_uncertainty","bandwidth_selection"))]
+    params<-.etr_sparse_bandwidth_refit(params,selection)
     fit<-do.call(etr_fit_sparse_mfpca,c(list(
       trajectories=trajectories,observation_process=observation_process),
       params))
@@ -231,7 +235,7 @@ etr_run_sparse_mfpca_workflow<-function(trajectories,config,
       reports$score_uncertainty<-uncertainty$report
       tables$score_uncertainty<-uncertainty$frame
     }
-    return(structure(list(
+    workflow<-structure(list(
       workflow_schema_version=1L,
       workflow_contract="sparse_mfpca:native_direct_block_covariance_PACE",
       config=cfg,fit=fit,score_uncertainty=uncertainty$result,
@@ -247,7 +251,8 @@ etr_run_sparse_mfpca_workflow<-function(trajectories,config,
         source_full_domain_certified=FALSE,
         independent_full_contract_certified=FALSE),
       reports=reports,tables=tables),
-      class="etr_native_sparse_mfpca_workflow"))
+      class="etr_native_sparse_mfpca_workflow")
+    return(.etr_sparse_bandwidth_workflow(workflow,selection,paired=TRUE))
   }
   cfg<-.etr_source_workflow_config(config,list(
     dimensions=c("x","y"),backend=NULL,n_components=2L,

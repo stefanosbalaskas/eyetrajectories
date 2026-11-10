@@ -200,6 +200,51 @@ _etr_bad_pred_cfg=_etr_sparse_workflow_predconfig(
       note="both-reject, exact exception semantics not yet certified",
       r_error=left$message,python_error=right$message)
   }
+  selected_cfg<-config
+  selected_cfg$training$mean_bandwidth<-selected_cfg$training$covariance_bandwidth<-NULL
+  selected_cfg$training$bandwidth_selection<-list(mean_bandwidths=c(.5,.6),
+    covariance_bandwidths=.85,n_splits=3L,shuffle=FALSE)
+  selected_native<-etr_run_sparse_prediction_workflow(
+    proper,calibration,target,selected_cfg)
+  reticulate::py_run_string("
+from dataclasses import replace
+from eyetrajectoriespy.workflows import SparseFPCABandwidthSelectionConfig
+_etr_selected_training=replace(_etr_sparse_workflow_training,
+    mean_bandwidth=None,covariance_bandwidth=None,
+    bandwidth_selection=SparseFPCABandwidthSelectionConfig(
+        mean_bandwidths=(.5,.6),covariance_bandwidths=(.85,),n_splits=3,shuffle=False))
+_etr_selected_prediction=replace(_etr_sparse_workflow_config,training=_etr_selected_training)
+")
+  selected_source<-reticulate::py_call(pyfunction,proper_training=sourceproper,
+    calibration=sourcecal,target=sourcetarget,
+    config=reticulate::py_eval("_etr_selected_prediction",convert=FALSE))
+  audit<-selected_native$training_workflow$bandwidth_selection
+  source_audit<-reticulate::py_get_attr(reticulate::py_get_attr(
+    selected_source,"training_workflow"),"bandwidth_selection")
+  source_choice<-read(source_audit,"selected_bandwidths")
+  add("selected_proper_training","candidate_id",if(identical(
+    audit$selected_bandwidths$candidate_id,source_choice$candidate_id))
+    "PASS_SCHEMA"else"DIVERGENT_SCHEMA")
+  source_assignments<-read(source_audit,"assignments")
+  add("selected_proper_training","fold_assignments",if(
+    identical(audit$assignments$curve_id,as.character(source_assignments$curve_id))&&
+    identical(audit$assignments$fold,as.integer(source_assignments$fold)))
+    "PASS_SCHEMA"else"DIVERGENT_SCHEMA")
+  source_selected_band<-et_to_r(reticulate::py_get_item(
+    reticulate::py_get_attr(selected_source,"tables"),"prediction_band"))
+  for(field in c("conditional_mean","observed_predictive_standard_error",
+      "lower","upper","critical_value")){
+    a<-selected_native$tables$prediction_band[[field]]
+    b<-source_selected_band[[field]]
+    if(!is.numeric(a)||!is.numeric(b)||length(a)!=length(b)){
+      add("selected_proper_training",field,"DIVERGENT_SCHEMA")
+    }else{
+      delta<-max(abs(a-b))
+      add("selected_proper_training",field,
+        if(is.finite(delta)&&delta<=3e-6*(1+max(abs(b))))
+          "PASS_NUMERIC"else"DIVERGENT_NUMERIC",delta)
+    }
+  }
   output<-do.call(rbind,rows)
   sha<-system2("git",c("rev-parse","HEAD"),stdout=TRUE)
   stopifnot(length(sha)==1L,nchar(sha)==40L)

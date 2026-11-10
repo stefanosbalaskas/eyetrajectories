@@ -1,6 +1,13 @@
 # Frozen Python 1.2 source oracles and deterministic R witnesses for
 # stabilized-volatility FPCR selection and projection, simultaneous,
 # fixed-family and Monte Carlo inference reporting.
+.etr_wild_oracle_vector <- function(value){
+  # Reticulate may retain a one-dimensional ndarray as a dimmed R vector.
+  # Preserve dimensions of matrices and higher-dimensional arrays.
+  if(length(dim(value))==1L)dim(value)<-NULL
+  value
+}
+
 .etr_wild_source_test_fixtures <- function(){
   widths<-cbind(c(5,4,3.95,3.9,3.85),c(5,7,5,7,5))
   centers<-cbind(c(1,1.5,1.53,1.55,1.58),0:4)
@@ -220,7 +227,8 @@ _frames=[
     "selected_components","selected_centers","selected_widths",
     "selected_lower","selected_upper")){
     expected<-reticulate::py_to_r(reticulate::py_get_attr(selection,nm))
-    expect_equal(native[[nm]],expected,tolerance=1e-12,info=nm)
+    expect_equal(native[[nm]],.etr_wild_oracle_vector(expected),
+      tolerance=1e-12,info=nm)
   }
   source_provenance<-reticulate::py_to_r(
     reticulate::py_get_attr(selection,"provenance"))
@@ -294,6 +302,8 @@ for k in range(72):
   expect_length(cases,72L)
   for(i in seq_along(cases)){
     v<-cases[[i]];scan<-v$scan
+    scan$target_curve_ids<-as.character(unlist(scan$target_curve_ids))
+    scan$candidate_components<-as.integer(unlist(scan$candidate_components))
     got<-etr_select_fpca_wild_bootstrap_truncation(
       scan,width_threshold=v$width_threshold,
       center_threshold=v$center_threshold,
@@ -306,7 +316,7 @@ for k in range(72):
       c("selected_lower","lower"),
       c("selected_upper","upper"),
       c("stable_both","stable_both"))){
-      expect_equal(got[[pair[[1L]]]],v[[pair[[2L]]]],
+      expect_equal(got[[pair[[1L]]]],.etr_wild_oracle_vector(v[[pair[[2L]]]]),
         tolerance=1e-11,info=paste("case",i,pair[[1L]]))
     }
     expect_true(all(got$selected_candidate_indices>=-1L))

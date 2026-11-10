@@ -3,6 +3,92 @@
 # alternative to the existing marginal fdapace score-PCA backend.
 # Source estimand: direct offdiagonal cross-covariance and joint-PACE scores.
 
+.etr_spnm_population <- function(trajectories,dimensions,grid,
+    mean_bandwidth,covariance_bandwidth,analysis_support_action,
+    psd_action,psd_tolerance,mean_min_local_points,covariance_min_local_pairs){
+  orig<-trajectories$time
+  left<-min(vapply(orig,function(t)t[1L],numeric(1L)))
+  right<-max(vapply(orig,function(t)tail(t,1L),numeric(1L)))
+  tol<-1e-12*max(1,abs(left),abs(right))
+  if(grid[1L]<left-tol||tail(grid,1L)>right+tol)
+    .etr_spn_fail("evaluation_grid_outside_pooled_support",
+      "joint sparse grid extends beyond observed pooled times")
+  idx<-match(dimensions,trajectories$dimension_names)
+  for(i in seq_along(trajectories$curve_ids)){
+    v<-trajectories$values[[i]][,idx,drop=FALSE]
+    both<-is.finite(v[,1L])&is.finite(v[,2L])
+    if(any(xor(is.finite(v[,1L]),is.finite(v[,2L]))))
+      .etr_spn_fail("coordinate_specific_missingness_unsupported",
+        "jointly observed channels must have matching finite samples")
+    if(any(!both))
+      .etr_spn_fail("nonfinite_sparse_planar_observation",
+        "joint observations must be finite")
+  }
+  .etr_assert(analysis_support_action%in%c("error","restrict"),
+    "analysis_support_action must be error or restrict")
+  masks<-lapply(orig,function(t)t>=grid[1L]&t<=tail(grid,1L))
+  out_counts<-as.integer(vapply(masks,function(z)sum(!z),integer(1L)))
+  if(analysis_support_action=="error"&&any(out_counts>0L))
+    .etr_spn_fail("observations_outside_analysis_support",
+      "raw joint observations lie outside population grid")
+  times<-if(analysis_support_action=="restrict")
+    Map(function(t,m)t[m],orig,masks)else orig
+  observed<-lapply(seq_along(orig),function(i){
+    v<-trajectories$values[[i]][,idx,drop=FALSE]
+    if(analysis_support_action=="restrict")
+      v[masks[[i]],,drop=FALSE]else v
+  })
+  if(sum(lengths(times))<3L)
+    .etr_spn_fail("insufficient_joint_support",
+      "fewer than three retained planar observations")
+  t_pool<-unlist(times,use.names=FALSE)
+  x_pool<-unlist(lapply(observed,function(z)z[,1L]),use.names=FALSE)
+  y_pool<-unlist(lapply(observed,function(z)z[,2L]),use.names=FALSE)
+  mx<-.etr_spn_mean(t_pool,x_pool,grid,mean_bandwidth,
+    mean_min_local_points)
+  my<-.etr_spn_mean(t_pool,y_pool,grid,mean_bandwidth,
+    mean_min_local_points)
+  residual_x<-vector("list",length(times))
+  residual_y<-vector("list",length(times))
+  for(i in seq_along(times)){
+    ti<-times[[i]]
+    if(!length(ti)){
+      residual_x[[i]]<-numeric()
+      residual_y[[i]]<-numeric()
+    }else{
+      residual_x[[i]]<-observed[[i]][,1L]-
+        .etr_spn_mean(t_pool,x_pool,ti,mean_bandwidth,
+          mean_min_local_points)$values
+      residual_y[[i]]<-observed[[i]][,2L]-
+        .etr_spn_mean(t_pool,y_pool,ti,mean_bandwidth,
+          mean_min_local_points)$values
+    }
+  }
+  pairs<-.etr_spnm_pairs(times,residual_x,residual_y)
+  xx<-.etr_spnm_surface(pairs$xx,grid,covariance_bandwidth,
+    covariance_min_local_pairs)
+  xy<-.etr_spnm_surface(pairs$xy,grid,covariance_bandwidth,
+    covariance_min_local_pairs,cross=TRUE)
+  yy<-.etr_spnm_surface(pairs$yy,grid,covariance_bandwidth,
+    covariance_min_local_pairs)
+  joint<-.etr_spnm_operator(
+    list(xx=xx$values,xy=xy$values,yy=yy$values),
+    grid,psd_action,psd_tolerance)
+  support<-list(
+    analysis_support=range(grid),
+    analysis_support_action=analysis_support_action,
+    original_sample_counts=as.integer(lengths(orig)),
+    analysis_sample_counts=as.integer(lengths(times)),
+    outside_observation_count=sum(out_counts),
+    outside_counts_by_curve=out_counts)
+  list(times=times,observed=observed,mean=cbind(mx$values,my$values),
+    operator=joint,support=support,
+    mean_support_counts=cbind(mx$support_counts,my$support_counts),
+    covariance_support_counts=list(cxx=xx$support_counts,
+      cxy=xy$support_counts,cyy=yy$support_counts),
+    covariance_pair_counts=as.list(pairs$counts))
+}
+
 #' Fit a native direct sparse multivariate FPCA joint PACE model
 #'
 #' @description Two jointly observed irregular dimensions, direct
@@ -89,89 +175,16 @@ etr_fit_sparse_mfpca_native<-function(
   resolved<-.etr_spnm_error(measurement_error,
     measurement_error_variance,measurement_error_covariance)
   grid<-.etr_spn_grid(evaluation_grid)
-  orig<-trajectories$time
-  left<-min(vapply(orig,function(t)t[1L],numeric(1L)))
-  right<-max(vapply(orig,function(t)tail(t,1L),numeric(1L)))
-  tol<-1e-12*max(1,abs(left),abs(right))
-  if(grid[1L]<left-tol||tail(grid,1L)>right+tol)
-    .etr_spn_fail("evaluation_grid_outside_pooled_support",
-      "joint sparse grid extends beyond observed pooled times")
-  idx<-match(dimensions,trajectories$dimension_names)
-  for(i in seq_along(trajectories$curve_ids)){
-    v<-trajectories$values[[i]][,idx,drop=FALSE]
-    both<-is.finite(v[,1L])&is.finite(v[,2L])
-    if(any(xor(is.finite(v[,1L]),is.finite(v[,2L]))))
-      .etr_spn_fail("coordinate_specific_missingness_unsupported",
-        "jointly observed channels must have matching finite samples")
-    if(any(!both))
-      .etr_spn_fail("nonfinite_sparse_planar_observation",
-        "joint observations must be finite")
-  }
-  .etr_assert(analysis_support_action%in%c("error","restrict"),
-    "analysis_support_action must be error or restrict")
-  masks<-lapply(orig,function(t)t>=grid[1L]&t<=tail(grid,1L))
-  out_counts<-as.integer(vapply(masks,function(z)sum(!z),integer(1L)))
-  if(analysis_support_action=="error"&&any(out_counts>0L))
-    .etr_spn_fail("observations_outside_analysis_support",
-      "raw joint observations lie outside population grid")
-  times<-if(analysis_support_action=="restrict")
-    Map(function(t,m)t[m],orig,masks)else orig
-  observed<-lapply(seq_along(orig),function(i){
-    v<-trajectories$values[[i]][,idx,drop=FALSE]
-    if(analysis_support_action=="restrict")
-      v[masks[[i]],,drop=FALSE]else v
-  })
-  if(sum(lengths(times))<3L)
-    .etr_spn_fail("insufficient_joint_support",
-      "fewer than three retained planar observations")
-  t_pool<-unlist(times,use.names=FALSE)
-  x_pool<-unlist(lapply(observed,function(z)z[,1L]),use.names=FALSE)
-  y_pool<-unlist(lapply(observed,function(z)z[,2L]),use.names=FALSE)
-  mx<-.etr_spn_mean(t_pool,x_pool,grid,mean_bandwidth,
-    mean_min_local_points)
-  my<-.etr_spn_mean(t_pool,y_pool,grid,mean_bandwidth,
-    mean_min_local_points)
-  residual_x<-vector("list",length(times))
-  residual_y<-vector("list",length(times))
-  for(i in seq_along(times)){
-    ti<-times[[i]]
-    if(!length(ti)){
-      residual_x[[i]]<-numeric()
-      residual_y[[i]]<-numeric()
-    }else{
-      residual_x[[i]]<-observed[[i]][,1L]-
-        .etr_spn_mean(t_pool,x_pool,ti,mean_bandwidth,
-          mean_min_local_points)$values
-      residual_y[[i]]<-observed[[i]][,2L]-
-        .etr_spn_mean(t_pool,y_pool,ti,mean_bandwidth,
-          mean_min_local_points)$values
-    }
-  }
-  pairs<-.etr_spnm_pairs(times,residual_x,residual_y)
-  xx<-.etr_spnm_surface(pairs$xx,grid,covariance_bandwidth,
-    covariance_min_local_pairs)
-  xy<-.etr_spnm_surface(pairs$xy,grid,covariance_bandwidth,
-    covariance_min_local_pairs,cross=TRUE)
-  yy<-.etr_spnm_surface(pairs$yy,grid,covariance_bandwidth,
-    covariance_min_local_pairs)
-  joint<-.etr_spnm_operator(
-    list(xx=xx$values,xy=xy$values,yy=yy$values),
-    grid,psd_action,psd_tolerance)
-  eig<-.etr_spnm_eigen(joint$matrix,grid,k,
-    positive_eigen_tolerance)
-  mean<-cbind(mx$values,my$values)
-  scored<-.etr_spnm_score(trajectories$curve_ids,times,
-    observed,grid,mean,joint$covariance,
+  population<-.etr_spnm_population(trajectories,dimensions,grid,
+    mean_bandwidth,covariance_bandwidth,analysis_support_action,
+    psd_action,psd_tolerance,mean_min_local_points,covariance_min_local_pairs)
+  joint<-population$operator
+  eig<-.etr_spnm_eigen(joint$matrix,grid,k,positive_eigen_tolerance)
+  scored<-.etr_spnm_score(trajectories$curve_ids,population$times,
+    population$observed,grid,population$mean,joint$covariance,
     eig,resolved$covariance,score_ridge,
     score_condition_limit,as.integer(min_score_time_points),
     score_failure_action)
-  support<-list(
-    analysis_support=range(grid),
-    analysis_support_action=analysis_support_action,
-    original_sample_counts=as.integer(lengths(orig)),
-    analysis_sample_counts=as.integer(lengths(times)),
-    outside_observation_count=sum(out_counts),
-    outside_counts_by_curve=out_counts)
   prov<-c(list(
     backend="native",fit_method="direct_sparse_block_covariance",
     score_method="joint_PACE",dimensions=dimensions,
@@ -179,7 +192,7 @@ etr_fit_sparse_mfpca_native<-function(
     component_rank_rule="positive_fitted_joint_operator_spectrum",
     mean_bandwidth=mean_bandwidth,
     covariance_bandwidth=covariance_bandwidth),
-    support,list(
+    population$support,list(
     same_time_covariance_products_excluded=TRUE,
     cross_covariance_same_time_products_excluded=TRUE,
     measurement_error_independent_across_time_assumed=TRUE,
@@ -214,7 +227,7 @@ etr_fit_sparse_mfpca_native<-function(
     scores=scored$scores,joint_scores=scored$scores,
     eigenvalues=eig$eigenvalues,
     eigenfunctions=eig$eigenfunctions,
-    mean=mean,evaluation_grid=grid,
+    mean=population$mean,evaluation_grid=grid,
     dimensions=dimensions,curve_ids=trajectories$curve_ids,
     metadata=trajectories$metadata,
     coordinate_system=trajectories$coordinate_system,
@@ -230,11 +243,9 @@ etr_fit_sparse_mfpca_native<-function(
     covariance_cyy=joint$covariance$cyy,
     measurement_error_covariance=resolved$covariance,
     score_diagnostics=scored$diagnostics,
-    mean_support_counts=cbind(mx$support_counts,my$support_counts),
-    covariance_support_counts=list(
-      cxx=xx$support_counts,cxy=xy$support_counts,
-      cyy=yy$support_counts),
-    covariance_pair_counts=as.list(pairs$counts),
+    mean_support_counts=population$mean_support_counts,
+    covariance_support_counts=population$covariance_support_counts,
+    covariance_pair_counts=population$covariance_pair_counts,
     covariance_diagnostics=joint$audit,
     fit_method="direct_sparse_block_covariance",
     score_method="joint_PACE",provenance=provenance,

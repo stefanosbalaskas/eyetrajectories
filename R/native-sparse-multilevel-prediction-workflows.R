@@ -200,19 +200,24 @@ etr_run_sparse_prediction_workflow<-function(proper_training,calibration,
     frame<-etr_sparse_fpca_conformal_band_frame_native(band)
     params<-cfg[setdiff(names(cfg),"preprocessing")]
     source_decisions<-lapply(params,.etr_source_workflow_decision)
+    training_steps<-list(.etr_source_workflow_step(
+      "proper_training.fit_sparse_fpca",cfg$training))
+    if(!is.null(training$bandwidth_selection))
+      training_steps<-lapply(training$steps,function(step){
+        step$name<-paste0("proper_training.",step$name)
+        step
+      })
     return(structure(list(
       workflow_schema_version=1L,
       workflow_contract="sparse_prediction:v1",
       config=cfg,training_workflow=training,
       calibration=cal,band=band,
-      steps=list(
-        .etr_source_workflow_step("proper_training.fit_sparse_fpca",
-          cfg$training),
+      steps=c(training_steps,list(
         .etr_source_workflow_step(
           "conformal_calibration",params),
         .etr_source_workflow_step(
           "target_prediction",
-          list(target_curve_ids=target$curve_ids))),
+          list(target_curve_ids=target$curve_ids)))),
       decisions=source_decisions,
       provenance=list(
         raw_interpolation_performed=FALSE,

@@ -202,6 +202,42 @@ test_that("source-model sparse workflow uses actual custom native PACE",{
 
 
 
+test_that("sparse FPCA bandwidth selection retains failed candidates and audits the refit",{
+  x<-.etr_spn_source_fixture()
+  cfg<-list(backend="native_covariance",dimension="signal",n_components=1L,
+    evaluation_grid=seq(.08,.92,length.out=9L),noise_variance_method="fixed",
+    measurement_error_variance=.07,analysis_support_action="restrict",psd_action="project",
+    bandwidth_selection=list(mean_bandwidths=c(.5,.002,.5),
+      covariance_bandwidths=.85,n_splits=3L,random_state=41L))
+  w<-etr_run_sparse_fpca_workflow(x,cfg)
+  a<-w$bandwidth_selection
+  expect_identical(a$candidate_summary$mean_bandwidth,c(.002,.5))
+  expect_identical(a$candidate_summary$n_failed_folds,c(3L,0L))
+  expect_identical(a$selected_bandwidths$candidate_id,"candidate_0001")
+  expect_identical(w$decisions$mean_bandwidth$source,"audited_selector")
+  expect_equal(w$fit$provenance$sparse_fpca$mean_bandwidth,.5)
+  expect_identical(w$steps[[1L]]$name,"bandwidth_selection")
+  expect_identical(a$provenance$fold_policy,"numpy_randomstate_kfold")
+  expect_false(a$provenance$validation_observations_used_for_population_fitting)
+  bad<-cfg;bad$mean_bandwidth<-.5
+  expect_error(etr_run_sparse_fpca_workflow(x,bad),"exactly one bandwidth mode")
+  bad<-cfg;bad$bandwidth_selection$mean_bandwidths<-.002
+  condition<-expect_error(etr_run_sparse_fpca_workflow(x,bad),
+    class="etr_sparse_bandwidth_selection_error")
+  expect_identical(condition$bandwidth_selection$status_code,"no_eligible_candidate")
+  expect_true(all(condition$bandwidth_selection$fold_results$status_code=="fit_failure"))
+  bad$bandwidth_selection$failure_action<-"error"
+  expect_error(etr_run_sparse_fpca_workflow(x,bad),"insufficient_mean_local_support")
+  bad<-cfg
+  bad$bandwidth_selection$mean_bandwidths<-.5
+  bad$bandwidth_selection$predictive_condition_limit<-1.000001
+  condition<-expect_error(etr_run_sparse_fpca_workflow(x,bad),
+    class="etr_sparse_bandwidth_selection_error")
+  expect_true(all(condition$bandwidth_selection$fold_results$status_code=="validation_failure"))
+  expect_true(all(condition$bandwidth_selection$curve_losses$failure_code==
+    "predictive_covariance_ill_conditioned"))
+})
+
 test_that("rotated covariance diagonal and noise estimate match frozen numerical primitives",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("frozen sparse covariance primitive differential is opt-in")

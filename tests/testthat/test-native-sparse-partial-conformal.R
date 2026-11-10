@@ -121,6 +121,14 @@ test_that("mapped sparse prediction workflow uses full native source PACE split 
   expect_identical(nrow(w$tables$calibration_curve_scores),12L)
   expect_false(w$provenance$raw_interpolation_performed)
   expect_false(w$provenance$independent_full_contract_certified)
+  cfg$training$mean_bandwidth<-cfg$training$covariance_bandwidth<-NULL
+  cfg$training$bandwidth_selection<-list(mean_bandwidths=c(.5,.6),
+    covariance_bandwidths=.85,n_splits=3L,shuffle=FALSE)
+  selected<-etr_run_sparse_prediction_workflow(proper,cal,target,cfg)
+  assignments<-selected$training_workflow$bandwidth_selection$assignments
+  expect_setequal(assignments$curve_id,proper$curve_ids)
+  expect_identical(selected$steps[[1L]]$name,"proper_training.bandwidth_selection")
+  expect_identical(nrow(selected$tables$prediction_band),3L)
 })
 
 test_that("frozen Python 1.2 sparse future conformal critical values and bands match",{
