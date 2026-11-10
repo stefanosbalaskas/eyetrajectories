@@ -45,6 +45,10 @@ latex, site_anchor and scope), retaining source equation text and
 documentation order. Plots return original numeric geometry invisibly.
 }
 \details{
+Invalid name types and unregistered strings signal
+\code{etr_mathematical_contract_type_error} and
+\code{etr_mathematical_contract_key_error}, respectively.
+
 The metadata source is an immutable snapshot of public published
 eyetrajectoriespy version 1.2.0. Direct Python 1.2 contract tests check
 all 88 table rows and all fields of the 41 registry objects. Native R
