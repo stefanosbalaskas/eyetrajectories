@@ -41,7 +41,8 @@ etr_sparse_fpca_conformal_band_frame_native(result)
 }
 \value{
 The calibration function returns per-curve scores, per-unit maximum scores,
-the exact finite-sample rank and its critical value. The band function
+the corresponding curve and unit counts, the exact finite-sample rank and
+its critical value. The band function
 returns upper/lower target observed-measurement bands. The frame method
 provides one row per declared future time.
 }

@@ -6,6 +6,7 @@
     requireNamespace("reticulate",quietly=TRUE))
   pkgload::load_all(".",quiet=TRUE)
   stopifnot(identical(et_python_version(),"1.2.0"))
+  source("scripts/sparse_workflow_source_records.R",local=TRUE)
   source("tests/testthat/helper-native-sparse-mfpca-async-fixture.R",
     encoding="UTF-8",local=TRUE)
   tr<-.etr_spna_fixture()
@@ -127,6 +128,9 @@ _etr_spna_config=_etr_spna_cfg(
   }
   support<-et_to_r(reticulate::py_get_attr(
     pyfit,"support_diagnostics"))
+  record("n_curves",if(identical(native$fit$n_curves,
+    et_to_r(reticulate::py_get_attr(pyfit,"n_curves"))))
+      "PASS_SCHEMA"else"DIVERGENT_SCHEMA")
   for(field in c("cross_candidate_pair_count",
     "cross_same_time_pair_count_excluded",
     "cross_retained_pair_count",
@@ -136,6 +140,12 @@ _etr_spna_config=_etr_spna_cfg(
     record(paste0("source_support_",field),
       if(identical(as.character(a),as.character(b)))
         "PASS_NUMERIC"else"DIVERGENT_SCHEMA")
+  }
+  for(field in c("score_diagnostics","covariance_diagnostics","support_diagnostics",
+      "fit_method","score_method","provenance")){
+    actual<-et_to_r(reticulate::py_get_attr(pyfit,field))
+    record(field,if(.etr_sparse_source_record_equal(native$fit[[field]],actual))
+      "PASS_SCHEMA"else"DIVERGENT_SCHEMA")
   }
   if(identical(as.character(native$workflow_contract),
     as.character(et_to_r(reticulate::py_get_attr(
@@ -233,6 +243,24 @@ _etr_spna_config=_etr_spna_cfg(
           "PASS_NUMERIC" else "DIVERGENT_NUMERIC",delta)
     }
   }
+  changed<-list(mean_min_local_points=2L)
+  dr<-do.call(etr_fit_sparse_mfpca_async_native,
+    c(list(trajectories=tr),modifyList(r_diag,changed)))
+  dp<-do.call(reticulate::py_call,
+    c(list(pyfit,trajectories=ptr),modifyList(p_diag,changed)))
+  for(field in c("scores","mean","mean_support_counts","score_diagnostics")){
+    actual<-et_to_r(reticulate::py_get_attr(dp,field))
+    record(field,if(.etr_sparse_source_record_equal(dr[[field]],actual))
+      "PASS_NUMERIC"else"DIVERGENT_NUMERIC",fixture="async_two_local_mean_points")
+  }
+  changed<-list(min_score_observations=99L)
+  .etr_sparse_source_error_contract(
+    function()do.call(etr_fit_sparse_mfpca_async_native,
+      c(list(trajectories=tr),modifyList(args,changed))),
+    function()do.call(reticulate::py_call,
+      c(list(pyfit,trajectories=ptr),modifyList(source_args,changed))),
+    function(field,ok)record(field,if(ok)"PASS_SCHEMA"else"DIVERGENT_SCHEMA",
+      fixture="async_failed_score"))
   output<-do.call(rbind,rows)
   head<-system2("git",c("rev-parse","HEAD"),stdout=TRUE)
   stopifnot(length(head)==1L,nchar(head[[1L]])==40L)

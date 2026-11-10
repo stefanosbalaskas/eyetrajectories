@@ -7,6 +7,7 @@
     requireNamespace("reticulate",quietly=TRUE))
   pkgload::load_all(".",quiet=TRUE)
   stopifnot(identical(et_python_version(),"1.2.0"))
+  source("scripts/sparse_workflow_source_records.R",local=TRUE)
   source("tests/testthat/helper-native-sparse-multilevel-source-fixture.R",
     encoding="UTF-8",local=TRUE)
   tr<-.etr_spml_fixture();args<-.etr_spml_options()
@@ -15,6 +16,7 @@
   reticulate::py_run_string("
 import numpy as np
 import pandas as pd
+from dataclasses import replace
 import eyetrajectoriespy as _etr_spmlw_et
 from eyetrajectoriespy.workflows._sparse_multilevel import (
   SparseMultilevelWorkflowConfig as _etr_spmlw_config,
@@ -44,23 +46,24 @@ _etr_spmlw_cfg=_etr_spmlw_config(
   between_covariance_min_local_pairs=6)
 ")
   mk<-reticulate::py_eval("_etr_spmlw_input",convert=FALSE)
-  data<-reticulate::py_call(mk,
-    times=reticulate::r_to_py(tr$time),
-    values=reticulate::r_to_py(tr$values),
-    ids=reticulate::r_to_py(as.list(as.character(tr$curve_ids))),
+  source_data<-function(x)reticulate::py_call(mk,
+    times=reticulate::r_to_py(x$time),
+    values=reticulate::r_to_py(x$values),
+    ids=reticulate::r_to_py(as.list(as.character(x$curve_ids))),
     participants=reticulate::r_to_py(
-      as.list(as.character(tr$metadata$participant))))
+      as.list(as.character(x$metadata$participant))))
   run<-reticulate::py_eval("_etr_spmlw_run",convert=FALSE)
   cfg<-reticulate::py_eval("_etr_spmlw_cfg",convert=FALSE)
-  py<-reticulate::py_call(run,trajectories=data,config=cfg)
+  py<-reticulate::py_call(run,trajectories=source_data(tr),config=cfg)
   read<-function(x,k)et_to_r(reticulate::py_get_attr(x,k))
   pyfit<-reticulate::py_get_attr(py,"fit")
   evidence<-list()
-  record<-function(field,status,delta=NA_real_,note=""){
+  record<-function(field,status,delta=NA_real_,note="",
+      fixture="fixed_noise_6participants_24trials"){
     evidence[[length(evidence)+1L]]<<-data.frame(
       python_name="run_sparse_multilevel_workflow",
       scientific_family="native_sparse_hierarchical_covariance_BLUP",
-      source_fixture="fixed_noise_6participants_24trials",
+      source_fixture=fixture,
       field=field,outcome=status,max_abs_error=as.numeric(delta),
       note=note,independently_certified=FALSE,stringsAsFactors=FALSE)
   }
@@ -136,6 +139,73 @@ _etr_spmlw_cfg=_etr_spmlw_config(
     if(identical(as.character(native$workflow_contract),
       as.character(read(py,"workflow_contract"))))
       "PASS_NUMERIC"else"DIVERGENT_SCHEMA")
+  compare_fit_fields<-function(fixture,native,source,fields){
+    native$provenance$sparse_multilevel_fpca$score_covariance_with_ridge_source<-NULL
+    for(field in fields)
+      record(field,if(.etr_sparse_source_record_equal(native[[field]],read(source,field)))
+        "PASS_SCHEMA"else"DIVERGENT_SCHEMA",fixture=fixture)
+  }
+  compare_fit_fields("fixed_noise_6participants_24trials",native$fit,pyfit,
+    c("support_diagnostics","covariance_diagnostics","provenance"))
+
+  changed<-tr
+  for(i in 1:2){
+    changed$time[[i]]<-changed$time[[i]][3:4]
+    changed$values[[i]]<-changed$values[[i]][3:4,,drop=FALSE]
+  }
+  changed$values<-.etr_seed_scope(224L,function()
+    lapply(changed$values,function(v)v+stats::rnorm(length(v),sd=.2)))
+  args$measurement_error_variance<-NULL
+  settings<-list(participant_components=2L,trial_components=2L,
+    min_participant_score_samples=25L,score_failure_action="retain_nan",
+    noise_variance_method="diagonal_difference",noise_bandwidth=.45,
+    noise_support=c(.20,.80))
+  r_args<-modifyList(args,settings)
+  p_args<-settings
+  p_args["measurement_error_variance"]<-list(NULL)
+  p_args$noise_support<-reticulate::tuple(.20,.80)
+  replace<-reticulate::py_eval("replace",convert=FALSE)
+  p_cfg<-do.call(reticulate::py_call,c(list(replace,cfg),p_args))
+  p_data<-source_data(changed)
+  fit_native<-function(settings)etr_run_sparse_multilevel_workflow(
+    changed,c(list(backend="native_covariance"),settings))
+  fit_source<-function(settings)reticulate::py_call(
+    run,trajectories=p_data,config=settings)
+  retained<-fit_native(r_args)$fit
+  source_retained<-reticulate::py_get_attr(fit_source(p_cfg),"fit")
+  fixture<-"estimated_noise_two_components_with_failed_participant"
+  compare_fit_fields(fixture,retained,source_retained,
+    c("noise_variance","noise_raw_diagonal","noise_diagonal_difference",
+      "participant_eigenvalues","trial_eigenvalues","participant_scores",
+      "trial_scores","score_diagnostics","support_diagnostics","provenance"))
+  expected_status<-c("participant_too_sparse_for_multilevel_score_system",
+    rep("ok",5L))
+  record("retained_participant_and_trial_mask",
+    if(identical(retained$score_diagnostics$status_code,expected_status)&&
+      all(is.nan(as.matrix(retained$participant_scores[1L,-1L])))&&
+      all(is.nan(as.matrix(retained$trial_scores[1:4,-c(1L,2L)]))))
+        "PASS_SCHEMA"else"DIVERGENT_SCHEMA",fixture=fixture)
+  .etr_sparse_source_error_contract(
+    function()fit_native(modifyList(r_args,list(score_failure_action="error"))),
+    function()fit_source(reticulate::py_call(replace,p_cfg,score_failure_action="error")),
+    function(field,ok)record(field,if(ok)"PASS_SCHEMA"else"DIVERGENT_SCHEMA",
+      fixture="failed_participant_error"))
+
+  epoch<-1e6
+  large_clock<-tr
+  large_clock$time<-lapply(tr$time,function(time)epoch+time)
+  clock_args<-.etr_spml_options()
+  clock_args$evaluation_grid<-epoch+seq(.03-1e-7,.92,length.out=9L)
+  clock_config<-reticulate::py_call(replace,cfg,
+    evaluation_grid=reticulate::r_to_py(clock_args$evaluation_grid))
+  native_clock<-etr_run_sparse_multilevel_workflow(
+    large_clock,c(list(backend="native_covariance"),clock_args))
+  source_clock<-reticulate::py_call(run,trajectories=source_data(large_clock),
+    config=clock_config)
+  compare_fit_fields("pooled_support_at_large_clock",native_clock$fit,
+    reticulate::py_get_attr(source_clock,"fit"),
+    c("evaluation_grid","grand_mean","participant_scores","trial_scores",
+      "support_diagnostics"))
   out<-do.call(rbind,evidence)
   sha<-system2("git",c("rev-parse","HEAD"),stdout=TRUE)
   stopifnot(length(sha)==1L,nchar(sha[[1L]])==40L)

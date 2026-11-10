@@ -26,8 +26,18 @@
     }
   }
   correction <- covariance[["relative_operator_correction_frobenius_norm", exact = TRUE]]
-  if (!is.null(correction) && is.numeric(correction) &&
-    length(correction) == 1L && is.finite(correction)) {
+  if (!is.null(correction)) {
+    .etr_assert(length(correction) == 1L &&
+      (is.numeric(correction) || is.logical(correction) || is.character(correction)),
+      "relative_operator_correction_frobenius_norm must be numeric")
+    if (is.character(correction)) {
+      parsed <- suppressWarnings(as.numeric(correction))
+      .etr_assert(is.na(correction) || !is.na(parsed) || is.nan(parsed),
+        "relative_operator_correction_frobenius_norm must be numeric")
+      correction <- parsed
+    }
+  }
+  if (!is.null(correction) && is.finite(correction)) {
     values <- c(values, list(
       value("psd_repair_applied", as.numeric(identical(covariance$applied_action, "project"))),
       value("psd_relative_operator_correction", correction)))

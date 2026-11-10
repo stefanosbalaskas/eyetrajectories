@@ -125,30 +125,20 @@ etr_fit_sparse_multilevel_fpca_native<-function(
     "min_participant_score_samples must be positive integer")
   grid<-.etr_spn_grid(evaluation_grid)
   raw_times<-trajectories$time
-  first<-min(vapply(raw_times,function(z)z[1L],numeric(1L)))
-  last<-max(vapply(raw_times,function(z)tail(z,1L),numeric(1L)))
-  .etr_assert(grid[1L]>=first-1e-12&&
-    tail(grid,1L)<=last+1e-12,
-    "evaluation_grid_outside_pooled_support")
+  .etr_spn_check_grid_support(raw_times,grid)
   dimix<-match(dimension,trajectories$dimension_names)
   raw_values<-lapply(trajectories$values,function(v)
     as.numeric(v[,dimix]))
   .etr_assert(all(vapply(raw_values,function(v)
     all(is.finite(v)),logical(1L))),
     "nonfinite_sparse_observation")
-  keep<-lapply(raw_times,function(t)t>=grid[1L]&
-    t<=tail(grid,1L))
-  if(analysis_support_action=="error"&&
-      any(vapply(keep,function(z)any(!z),logical(1L))))
-    .etr_spn_fail("observations_outside_analysis_support",
-      "multilevel native observations exceed fitted analysis support")
-  times<-if(analysis_support_action=="restrict")
-    Map(function(t,k)t[k],raw_times,keep)else raw_times
-  values<-if(analysis_support_action=="restrict")
-    Map(function(v,k)v[k],raw_values,keep)else raw_values
+  analysis<-.etr_spn_analysis_support(raw_times,raw_values,grid,analysis_support_action)
+  times<-analysis$times
+  values<-analysis$values
   if(any(lengths(times)==0L))
     .etr_spn_fail("curve_without_analysis_support",
-      "every trial must retain native observations within population support")
+      "every trial must retain native observations within population support",
+      list(curve_ids=trajectories$curve_ids[lengths(times)==0L]))
   pooled_time<-unlist(times,use.names=FALSE)
   pooled_value<-unlist(values,use.names=FALSE)
   fitted_mean<-.etr_spn_mean(pooled_time,pooled_value,grid,
@@ -209,13 +199,7 @@ etr_fit_sparse_multilevel_fpca_native<-function(
     post_psd_total_difference_frobenius_norm=sqrt(sum((
       between_psd$covariance+within_psd$covariance-
       total$values)^2)))
-  support<-list(
-    analysis_support=range(grid),
-    analysis_support_action=analysis_support_action,
-    original_sample_counts=as.integer(lengths(raw_times)),
-    analysis_sample_counts=as.integer(lengths(times)),
-    outside_observation_count=sum(vapply(keep,function(z)
-      sum(!z),integer(1L))),
+  support<-c(analysis$diagnostics,list(
     n_participants=length(ids),
     n_repeated_participants=sum(counts>=2L),
     raw_trial_counts_by_participant=as.list(counts),
@@ -227,7 +211,7 @@ etr_fit_sparse_multilevel_fpca_native<-function(
     between_covariance_pair_count=length(cross$pairs$products),
     between_pair_counts_by_participant=as.list(
       cross$participant_pair_counts),
-    single_trial_participants=ids[counts==1L])
+    single_trial_participants=ids[counts==1L]))
   names(support$analysis_sample_counts_by_participant)<-ids
   source<-list(backend="native",
     method="sparse_two_level_covariance_BLUP",
@@ -239,6 +223,8 @@ etr_fit_sparse_multilevel_fpca_native<-function(
     n_trials=length(trajectories$curve_ids),
     exchangeable_trials_assumed=TRUE,
     trial_fixed_effects_estimated=FALSE,
+    fixed_effect_requirement=
+      "condition_or_visit effects must be absent, stratified, or removed upstream",
     weighting=weighting,
     weighting_interpretation=
       "pooled native observations for mean smoothing; pooled raw covariance pairs for covariance smoothing",
@@ -254,10 +240,12 @@ etr_fit_sparse_multilevel_fpca_native<-function(
       "smoothed_total_minus_smoothed_between",
     measurement_error_method=noise_variance_method,
     noise_variance=noise_var,
+    noise_bandwidth=noise_bandwidth,noise_support=noise_support,
     psd_action=psd_action,psd_tolerance=psd_tolerance,
     positive_eigen_tolerance=positive_eigen_tolerance,
     score_method="joint_hierarchical_Gaussian_BLUP",
-    score_covariance_source=scores$covariance_source,
+    score_covariance_source="full_fitted_between_plus_within_plus_noise",
+    score_covariance_with_ridge_source=scores$covariance_source,
     rank_k_covariance_used_for_scoring=FALSE,
     score_ridge=score_ridge,
     score_condition_limit=score_condition_limit,
@@ -270,6 +258,8 @@ etr_fit_sparse_multilevel_fpca_native<-function(
     population_estimation_uncertainty_propagated=FALSE,
     analysis_support_action=analysis_support_action,
     covariance_psd=covariance_audit)
+  if(!is.null(measurement_error_variance))
+    source$measurement_error_variance_supplied<-measurement_error_variance
   provenance<-trajectories$provenance
   provenance$sparse_multilevel_fpca<-source
   structure(list(

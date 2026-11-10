@@ -197,7 +197,7 @@ etr_sparse_mfpca_score_uncertainty_native<-function(fit,trajectories,
   audit<-do.call(rbind,diag_rows)
   if(failure_action=="error"&&any(audit$status_code!="ok")){
     ii<-which(audit$status_code!="ok")[1L]
-    .etr_spn_fail(audit$status_code[ii],
+    .etr_spn_score_fail(audit,ii,
       paste("conditional joint PACE uncertainty failed for curve",
         fit$curve_ids[ii]))
   }

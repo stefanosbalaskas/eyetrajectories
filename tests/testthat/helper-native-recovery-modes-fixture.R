@@ -1,5 +1,6 @@
 .etr_recovery_modes_fixture <- function(kind, mode = "distinct", grid_size = 7L) {
-  grid <- seq(0, 1, length.out = grid_size)^1.3
+  grid <- seq(0, 1, length.out = grid_size)
+  if (mode != "equal_cost") grid <- grid^1.3
   w <- etr_trapezoid_weights(grid)
   nd <- if (kind == "sparse_fpca") 1L else 2L
   dimensions <- c("x", "y")[seq_len(nd)]
@@ -19,12 +20,13 @@
   truth <- list(truth_grid = grid, dimension_names = dimensions, mean = mean,
     eigenfunctions = modes, eigenvalues = eigenvalues, scores = scores,
     latent_on_truth_grid = latent, measurement_noise_covariance = diag(.04, nd))
-  keep <- switch(mode, tied = 1:2, near_tied = 1:2, limited_pairs = 1:2,
+  keep <- switch(mode, equal_cost = 1:2, tied = 1:2, near_tied = 1:2, limited_pairs = 1:2,
     split_tie = c(1L, 3L), unretained_tie = 3L, c(3L, 1L))
   fitted <- modes[keep, , , drop = FALSE]
   fitted_scores <- scores[, keep, drop = FALSE]
-  if (mode %in% c("tied", "near_tied", "limited_pairs")) {
-    rotation <- matrix(c(.8, .6, -.6, .8), 2L)
+  if (mode %in% c("equal_cost", "tied", "near_tied", "limited_pairs")) {
+    rotation <- if (mode == "equal_cost") matrix(c(1, 1, 1, -1), 2L) / sqrt(2) else
+      matrix(c(.8, .6, -.6, .8), 2L)
     fitted <- array(crossprod(rotation, matrix(fitted, nrow = 2L)), dim(fitted))
     fitted_scores <- fitted_scores %*% rotation
   } else {

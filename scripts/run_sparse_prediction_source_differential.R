@@ -127,6 +127,26 @@ _etr_sparse_workflow_config=_etr_sparse_workflow_predconfig(
       note="exact workflow prediction identifiers")
   }
   source_cal<-read(py,"calibration")
+  compare_result_fields<-function(fixture,left,right,fields){
+    for(field in fields)
+      add(fixture,field,if(field%in%names(left)&&
+        .etr_sparse_source_record_equal(left[[field]],read(right,field)))
+          "PASS_SCHEMA"else"DIVERGENT_SCHEMA")
+  }
+  compare_result_fields("calibration_record",native$calibration,source_cal,
+    c("calibration_curve_ids","calibration_unit_ids","group_column",
+      "history_cutoff","prediction_grid","min_history_observations",
+      "condition_limit","history_ridge","n_calibration_curves",
+      "n_calibration_units","method","provenance"))
+  source_band_record<-read(py,"band")
+  compare_result_fields("band_record",native$band,source_band_record,
+    c("target_calibration_unit","method","provenance"))
+  compare_result_fields("conditional_prediction_record",native$band$prediction,
+    read(source_band_record,"prediction"),c("curve_id","dimension",
+      "history_cutoff","history_times","history_values","prediction_grid",
+      "conditional_mean","latent_covariance","latent_standard_errors",
+      "observed_predictive_covariance","observed_predictive_standard_errors",
+      "n_history","n_prediction","diagnostics","provenance"))
   for(field in c("critical_value","alpha")){
     a<-native$calibration[[field]]
     b<-read(source_cal,field)
@@ -164,10 +184,10 @@ _etr_sparse_workflow_config=_etr_sparse_workflow_predconfig(
     if(identical(as.character(native$workflow_contract),
       as.character(read(py,"workflow_contract"))))
       "PASS_NUMERIC"else"DIVERGENT_SCHEMA")
-  # The exact source invalid-domain classification is checked separately:
-  # error-type equality remains unresolved and is not silently certified.
+  # Match the structured scientific code and details, separately from
+  # the exact error message and language-specific exception representation.
   safe<-function(f)tryCatch(list(ok=TRUE,message="",value=f()),
-    error=function(e)list(ok=FALSE,message=conditionMessage(e)))
+    error=function(e)list(ok=FALSE,message=conditionMessage(e),value=e))
   invalid<-list(
     calibration_missing_future_grid=list(
       mutate=function(x) {
@@ -207,7 +227,20 @@ _etr_bad_pred_cfg=_etr_sparse_workflow_predconfig(
         else"DIVERGENT_ACCEPTANCE",
       note="both-reject, exact exception semantics not yet certified",
       r_error=left$message,python_error=right$message)
+    .etr_sparse_source_error_contract(function()left$value,
+      function()right$value,function(field,ok)add(nm,field,
+        if(ok)"PASS_SCHEMA"else"DIVERGENT_SCHEMA"))
   }
+  mixed_groups<-calibration
+  mixed_groups$metadata$batch<-rep(c("z","\u00e9","A","a"),each=3L)
+  mixed_native<-etr_run_sparse_prediction_workflow(
+    proper,mixed_groups,target,config)
+  mixed_source<-reticulate::py_call(pyfunction,
+    proper_training=sourceproper,calibration=pydata(mixed_groups),
+    target=sourcetarget,config=pycfg)
+  compare_result_fields("mixed_case_unicode_groups",mixed_native$calibration,
+    read(mixed_source,"calibration"),c("calibration_unit_ids","unit_scores",
+      "curve_scores","critical_value","provenance"))
   selected_cfg<-config
   selected_cfg$training$mean_bandwidth<-selected_cfg$training$covariance_bandwidth<-NULL
   selected_cfg$training$bandwidth_selection<-list(mean_bandwidths=c(.5,.6),

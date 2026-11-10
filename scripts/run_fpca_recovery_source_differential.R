@@ -74,32 +74,44 @@ def _etr_recovery_audit_object(cls, **fields):
   cases <- list(
     dense = list(name = "evaluate_fpca_recovery", class = "FPCAResult",
       native = etr_evaluate_fpca_recovery,
-      fixtures = c("distinct", "partial_scores", "large_grid", "grid_mismatch")),
+      fixtures = c("distinct", "partial_scores", "large_grid", "grid_mismatch",
+        "equal_cost", "constant")),
     sparse_fpca = list(name = "evaluate_sparse_fpca_recovery", class = "SparseFPCAResult",
       native = etr_evaluate_sparse_fpca_recovery,
-      fixtures = c("distinct", "partial_scores", "failed", "grid_mismatch")),
+      fixtures = c("distinct", "partial_scores", "failed", "grid_mismatch",
+        "diagnostic_numeric_text", "diagnostic_invalid_text")),
     sparse_mfpca = list(name = "evaluate_sparse_mfpca_recovery", class = "SparseMFPCAResult",
       native = etr_evaluate_sparse_mfpca_recovery,
       fixtures = c("distinct", "tied", "near_tied", "limited_pairs", "constant",
-        "unretained_tie", "split_tie", "grid_mismatch")))
+        "unretained_tie", "split_tie", "grid_mismatch", "diagnostic_numeric_text",
+        "diagnostic_invalid_text")))
   for (kind in names(cases)) {
     spec <- cases[[kind]]
     for (fixture in spec$fixtures) {
       z <- .etr_recovery_modes_fixture(kind, fixture,
-        grid_size = if (fixture == "large_grid") 1001L else 7L)
+        grid_size = switch(fixture, large_grid = 1001L, equal_cost = 9L, 7L))
       if (fixture == "grid_mismatch") {
         key <- if (kind == "dense") "time" else "evaluation_grid"
         z$fit[[key]][2L] <- z$fit[[key]][2L] * 1.01
+      }
+      if (fixture %in% c("diagnostic_numeric_text", "diagnostic_invalid_text")) {
+        z$fit$covariance_diagnostics <- list(applied_action = "project",
+          relative_operator_correction_frobenius_norm =
+            if (fixture == "diagnostic_numeric_text") " 0.125 " else "unknown")
       }
       native <- safe(spec$native(z$fit, z$truth))
       source <- safe(py_call(export(spec$name),
         record_object(export(spec$class), z$fit),
         record_object(sim$FunctionalSimulationTruth, z$truth)))
       expected_error <- switch(fixture, split_tie = "split a tied truth eigenspace",
-        grid_mismatch = "exact", NULL)
+        grid_mismatch = "exact",
+        constant = if (kind == "dense") "finite" else NULL,
+        diagnostic_invalid_text = c("must be numeric", "could not convert"), NULL)
       if (!is.null(expected_error)) {
-        match_error <- function(e) !is.null(e) && grepl(expected_error, e, fixed = TRUE)
-        outcome <- if (match_error(native$error) && match_error(source$error))
+        patterns <- rep_len(expected_error, 2L)
+        match_error <- function(e, pattern) !is.null(e) && grepl(pattern, e, fixed = TRUE)
+        outcome <- if (match_error(native$error, patterns[1L]) &&
+            match_error(source$error, patterns[2L]))
           "PASS_BOTH_REJECT" else "DIVERGENT_ACCEPTANCE"
         record(spec$name, fixture, "<call>", outcome)
         next

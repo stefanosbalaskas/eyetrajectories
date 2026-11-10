@@ -1,6 +1,7 @@
 # Compare source fields while allowing the additional native audit fields.
 .etr_sparse_source_record_value <- function(x) {
   if (is.null(x)) return(NULL)
+  if (length(dim(x)) == 1L) return(as.vector(x))
   if (is.matrix(x))
     return(lapply(seq_len(nrow(x)), function(i) x[i, ]))
   if (!is.list(x)) return(if (length(x)) x else list())
@@ -9,6 +10,32 @@
   if (length(x) && all(vapply(x, scalar, logical(1L))))
     return(unlist(x, use.names = FALSE))
   lapply(x, .etr_sparse_source_record_value)
+}
+
+.etr_sparse_source_record_equal <- function(native, source, tolerance=3e-6) {
+  isTRUE(all.equal(.etr_sparse_source_record_value(native),
+    .etr_sparse_source_record_value(source), tolerance=tolerance,
+    check.attributes=FALSE))
+}
+
+.etr_sparse_source_error_contract <- function(native_call, source_call, record) {
+  native<-tryCatch(native_call(),error=identity)
+  source<-tryCatch(source_call(),error=identity)
+  if(!inherits(native,"etr_sparse_native_error")||
+      !inherits(source,"python.builtin.BaseException")||
+      !reticulate::py_has_attr(source,"code")||
+      !reticulate::py_has_attr(source,"details")){
+    record("error.condition",FALSE)
+    return(invisible(FALSE))
+  }
+  record("error.code",identical(native$code,
+    et_to_r(reticulate::py_get_attr(source,"code"))))
+  details<-et_to_r(reticulate::py_get_attr(source,"details"))
+  record("error.detail_fields",setequal(names(native$details),names(details)))
+  for(key in names(details))
+    record(paste0("error.details.",key),
+      .etr_sparse_source_record_equal(native$details[[key]],details[[key]]))
+  invisible(TRUE)
 }
 
 .etr_compare_sparse_workflow_records <- function(native, source, record) {

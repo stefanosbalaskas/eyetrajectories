@@ -240,7 +240,7 @@
   audit<-do.call(rbind,diag_rows)
   if(failure=="error"&&any(audit$status_code!="ok")){
     j<-which(audit$status_code!="ok")[1L]
-    .etr_spn_fail(audit$status_code[j],
+    .etr_spn_score_fail(audit,j,
       paste0("joint PACE score system failed for curve ",ids[j]))
   }
   list(scores=scores,diagnostics=audit,

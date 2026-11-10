@@ -7,6 +7,7 @@
             requireNamespace("reticulate",quietly=TRUE))
   pkgload::load_all(".",quiet=TRUE)
   stopifnot(identical(et_python_version(),"1.2.0"))
+  source("scripts/sparse_workflow_source_records.R",local=TRUE)
   source("tests/testthat/helper-native-sparse-mfpca-fixture.R",
     local=TRUE,encoding="UTF-8")
   tr<-.etr_spnm_fixture()
@@ -109,6 +110,28 @@ def _etr_spnm_diff_input(times, values, ids):
       note="both rejected; exception-class parity not yet established",
       native_exception=left$error,python_exception=right$error)
   }
+  record("diagonal_noise","n_curves",
+    if(identical(native$n_curves,get(pyfit,"n_curves")))
+      "PASS_SCHEMA"else"DIVERGENT_SCHEMA")
+  for(field in c("score_diagnostics","covariance_diagnostics","covariance_pair_counts",
+      "fit_method","score_method")){
+    record("diagonal_noise",field,
+      if(.etr_sparse_source_record_equal(native[[field]],get(pyfit,field)))
+        "PASS_SCHEMA"else"DIVERGENT_SCHEMA")
+  }
+  provenance<-native$provenance
+  provenance$sparse_mfpca$outside_counts_by_curve<-NULL
+  record("diagonal_noise","provenance",
+    if(.etr_sparse_source_record_equal(provenance,get(pyfit,"provenance")))
+      "PASS_SCHEMA"else"DIVERGENT_SCHEMA",
+    note="R also retains per-curve outside-support counts")
+  changed<-list(min_score_time_points=9L)
+  .etr_sparse_source_error_contract(
+    function()native_call(modifyList(args,changed)),
+    function()do.call(reticulate::py_call,c(list(public,trajectories=pytr),
+      modifyList(pyargs,changed))),
+    function(field,ok)record("paired_failed_score",field,
+      if(ok)"PASS_SCHEMA"else"DIVERGENT_SCHEMA"))
   output<-do.call(rbind,cases)
   sha<-system2("git",c("rev-parse","HEAD"),stdout=TRUE)
   stopifnot(length(sha)==1L,nchar(sha[[1L]])==40L)

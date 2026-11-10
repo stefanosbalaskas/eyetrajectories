@@ -4,14 +4,65 @@
 # off-diagonal covariance, weighted operator PSD, full-covariance PACE.
 # No fdapace, reticulate, or R/Python full-contract certification.
 
-.etr_spn_fail<-function(code,message)
-  stop(paste0(code,": ",message),call.=FALSE)
+.etr_spn_fail<-function(code,message,details=list()){
+  stop(structure(list(message=paste0(code,": ",message),call=NULL,
+    code=code,details=details),
+    class=c("etr_sparse_native_error","simpleError","error","condition")))
+}
+
+.etr_spn_score_fail<-function(audit,index,message,include_curve_audit=TRUE){
+  details<-as.list(audit[index,,drop=FALSE])
+  if(include_curve_audit)
+    details$all_curve_diagnostics<-lapply(seq_len(nrow(audit)),
+      function(i)as.list(audit[i,,drop=FALSE]))
+  .etr_spn_fail(audit$status_code[index],message,details)
+}
 
 .etr_spn_grid<-function(x){
   .etr_assert(is.numeric(x)&&is.null(dim(x))&&length(x)>=3L&&
     all(is.finite(x))&&all(diff(x)>0),
     "evaluation_grid must be finite strictly increasing with >=3 points")
   x
+}
+
+.etr_spn_check_grid_support<-function(times,grid){
+  start<-min(vapply(times,function(t)t[1L],numeric(1L)))
+  end<-max(vapply(times,function(t)tail(t,1L),numeric(1L)))
+  tolerance<-1e-12*max(1,abs(start),abs(end))
+  if(grid[1L]<start-tolerance||tail(grid,1L)>end+tolerance)
+    .etr_spn_fail("evaluation_grid_outside_pooled_support",
+      "evaluation_grid must lie within pooled observation support",
+      list(pooled_start=start,pooled_end=end,
+        grid_start=grid[1L],grid_end=tail(grid,1L)))
+}
+
+.etr_spn_analysis_support<-function(times,values,grid,action){
+  support<-range(grid)
+  keep<-lapply(times,function(t)t>=support[1L]&t<=support[2L])
+  counts<-vapply(keep,sum,integer(1L))
+  outside<-lengths(times)-counts
+  diagnostics<-list(analysis_support=support,analysis_support_action=action,
+    outside_observation_count=sum(outside),
+    curves_with_outside_observations=sum(outside>0L),
+    curves_without_in_support_observations=sum(counts==0L),
+    outside_counts_by_curve=as.integer(outside),
+    original_sample_counts=as.integer(lengths(times)),
+    analysis_sample_counts=as.integer(counts))
+  if(action=="error"&&any(outside>0L))
+    .etr_spn_fail("observations_outside_analysis_support",
+      "raw sparse observations outside fitted population grid",
+      diagnostics[c("analysis_support","outside_observation_count",
+        "curves_with_outside_observations","outside_counts_by_curve")])
+  if(sum(counts)<3L)
+    .etr_spn_fail("insufficient_pooled_support",
+      "fewer than three in-support observations",
+      list(analysis_support=support,in_support_observation_count=sum(counts),
+        in_support_counts_by_curve=as.integer(counts)))
+  if(action=="restrict"){
+    times<-Map(function(t,m)t[m],times,keep)
+    values<-Map(function(y,m)y[m],values,keep)
+  }
+  list(times=times,values=values,diagnostics=diagnostics)
 }
 
 .etr_spn_kernel<-function(u){
@@ -290,7 +341,7 @@
   diagnostic<-do.call(rbind,diagnostics)
   if(failure_action=="error"&&any(diagnostic$status_code!="ok")){
     i<-which(diagnostic$status_code!="ok")[1L]
-    .etr_spn_fail(diagnostic$status_code[i],
+    .etr_spn_score_fail(diagnostic,i,
       paste("PACE system failed for curve",ids[i]))
   }
   list(scores=scores,covariance=posterior_cov,

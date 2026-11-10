@@ -24,11 +24,14 @@
     ix<-which(tt==grid[j])
     if(length(ix)!=1L)
       .etr_spn_fail("calibration_future_grid_observation_missing",
-        "each declared target timestamp must have exactly one raw calibration observation")
+        "each declared target timestamp must have exactly one raw calibration observation",
+        list(curve_id=x$curve_ids[1L],time=grid[j],match_count=length(ix),
+          raw_interpolation_performed=FALSE))
     v<-observed[ix]
     if(!is.finite(v))
       .etr_spn_fail("calibration_future_grid_observation_nonfinite",
-        "calibration response on declared future grid must be finite")
+        "calibration response on declared future grid must be finite",
+        list(curve_id=x$curve_ids[1L],time=grid[j]))
     result[j]<-v
   }
   result
@@ -73,7 +76,8 @@
 #' @param alpha Error probability; finite-sample quantile must exist.
 #' @param group_column Optional exchangeability grouping column.
 #' @param min_history_observations,condition_limit,history_ridge Source controls.
-#' @return Calibration curve/unit scores and exact finite-sample critical value.
+#' @return Calibration curve and unit scores and counts, with the exact
+#'   finite-sample critical value.
 #' @export
 etr_calibrate_sparse_fpca_partial_conformal_native<-function(
     fit,calibration,history_cutoff,prediction_grid,
@@ -99,11 +103,13 @@ etr_calibrate_sparse_fpca_partial_conformal_native<-function(
     scale<-prediction$observed_predictive_standard_errors
     if(any(!is.finite(scale))||any(scale<=0))
       .etr_spn_fail("invalid_conformal_predictive_scale",
-        "conditional observed prediction standard errors must be positive")
+        "conditional observed prediction standard errors must be positive",
+        list(curve_id=calibration$curve_ids[i]))
     score<-max(abs(truth-prediction$conditional_mean)/scale)
     if(!is.finite(score))
       .etr_spn_fail("nonfinite_conformal_score",
-        "calibration nonconformity score was not finite")
+        "calibration nonconformity score was not finite",
+        list(curve_id=calibration$curve_ids[i]))
     rows[[i]]<-data.frame(
       curve_id=as.character(calibration$curve_ids[i]),
       calibration_unit=as.character(partition$units[i]),
@@ -115,14 +121,16 @@ etr_calibrate_sparse_fpca_partial_conformal_native<-function(
   curve_scores<-do.call(rbind,rows)
   groups<-split(curve_scores$nonconformity_score,
     curve_scores$calibration_unit)
-  sorted_ids<-sort(names(groups))
+  sorted_ids<-sort(names(groups),method="radix")
   scores<-as.numeric(vapply(sorted_ids,function(id)
     max(groups[[id]]),numeric(1L)))
   m<-length(scores)
   rank<-as.integer(ceiling((m+1L)*(1-alpha)))
   if(rank>m)
     .etr_spn_fail("insufficient_calibration_units_for_alpha",
-      "alpha below finite-sample calibration resolution")
+      "alpha below finite-sample calibration resolution",
+      list(alpha=alpha,n_calibration_units=m,required_order_statistic=rank,
+        minimum_supported_alpha=1/(m+1L)))
   critical<-sort(scores)[rank]
   prov<-list(
     method="participant_aware_split_conformal_max_standardized_future_residual",
@@ -155,7 +163,7 @@ etr_calibrate_sparse_fpca_partial_conformal_native<-function(
     group_column=group_column,
     min_history_observations=as.integer(min_history_observations),
     condition_limit=condition_limit,history_ridge=history_ridge,
-    n_calibration_units=m,
+    n_calibration_curves=n,n_calibration_units=m,
     method="participant_aware_split_conformal_max_standardized_future_residual",
     provenance=prov,independent_full_source_certified=FALSE),
     class="etr_sparse_fpca_partial_conformal_calibration_native")

@@ -44,6 +44,7 @@ test_that("native split conformal uses exact finite-grid futures and group maxim
     fit,calibration,history_cutoff=.5,
     prediction_grid=future,alpha=.30,group_column="batch")
   expect_identical(grouped$n_calibration_units,4L)
+  expect_identical(grouped$n_calibration_curves,12L)
   expect_identical(grouped$calibration_unit_ids,
     paste0("cal_g",seq_len(4L)))
   want<-vapply(seq_len(4L),function(i)
@@ -79,6 +80,11 @@ test_that("native grouped conformal rejects role leakage and nonexistent future 
     alpha=.2),"calibration_future_grid_observation_missing")
   expect_error(conformal(fit,calibration,.50,c(.60,.72,.84),
     alpha=.01),"insufficient_calibration_units_for_alpha")
+  failure<-tryCatch(conformal(fit,calibration,.50,c(.60,.72,.84),
+    alpha=.01),error=identity)
+  expect_s3_class(failure,"etr_sparse_native_error")
+  expect_identical(failure$details$required_order_statistic,13L)
+  expect_equal(failure$details$minimum_supported_alpha,1/13)
   overlap<-calibration
   overlap$curve_ids[1L]<-fit$curve_ids[1L]
   expect_error(conformal(fit,overlap,.50,c(.60,.72,.84),
