@@ -101,6 +101,9 @@
   # duplicate labels and original factor/integer/logical column types.
   output<-data.frame(output,metadata,check.names=FALSE,
     stringsAsFactors=FALSE)
+  # Nested data.frame arguments may normalize duplicate names even under
+  # check.names=FALSE. Restore the exact pandas metadata column index.
+  names(output)<-c("curve_id",names(metadata))
   for(j in seq_len(k)){
     existing<-which(names(output)==output_names[[j]])
     if(length(existing)){
