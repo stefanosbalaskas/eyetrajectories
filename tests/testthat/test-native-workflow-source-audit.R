@@ -212,6 +212,9 @@ test_that("workflow source repr escapes both quote styles and ASCII controls",{
     quoted<-eyetrajectories:::.etr_python_workflow_identifier_repr(x)
     expect_true(startsWith(rendered,paste0("Workflow ",quoted," used schema 1")))
   }
+  unicode <- "name\u00a0\u200b\ue000\U0001fffe \U0001f642"
+  expect_identical(eyetrajectories:::.etr_python_workflow_identifier_repr(unicode),
+    "'name\\xa0\\u200b\\ue000\\U0001fffe \U0001f642'")
 })
 
 test_that("pinned Python repr source quote oracle is opt in",{
@@ -221,7 +224,9 @@ test_that("pinned Python repr source quote oracle is opt in",{
   py_repr<-reticulate::py_eval("repr",convert=FALSE)
   values<-c("plain","contains'quote",'contains"quote',
     "both'\"quotes", "back\\slash", "line\nbreak", "tab\tfield",
-    "carriage\rreturn", "alpha-α", "brace{thing}")
+    "carriage\rreturn", "alpha-α", "brace{thing}", "combining-a\u0301",
+    "spaces \u00a0\u2028\u2029", "format-\u200b\u00ad",
+    "private-\ue000", "noncharacter-\U0001fffe", "emoji-\U0001f642")
   for(x in values){
     py<-as.character(et_to_r(reticulate::py_call(py_repr,x)))
     nr<-eyetrajectories:::.etr_python_workflow_identifier_repr(x)

@@ -78,7 +78,8 @@ test_that("pinned Python 1.2 six source APIs agree in entire reported fields",{
     "def batch28_join_scenarios(a,b):",
     "    return a+b"
   ),collapse="\n"),convert=FALSE)
-  for(identifier in c("plain","two'quotes","a\\backslash","α","newline\ninside")){
+  for(identifier in c("plain","two'quotes","a\\backslash","α","newline\ninside",
+    "unicode\u00a0\u200b\ue000\U0001fffe")){
     source<-reticulate::py$batch28_result(identifier)
     native<-etr_workflow_audit_result(identifier,
       steps=list(list(name="fit",`function`="fit_fpca",status="completed",

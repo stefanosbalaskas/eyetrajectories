@@ -38,7 +38,7 @@ certificate flag as separate fields.
 | Group | Observed evidence | Remaining decision or implementation |
 | --- | --- | --- |
 | Catalog records and lookup | The source tests compare every ordered field and alias. The no-argument record catalogs have finite complete payloads. | Review the two record representations separately. Resolve the shaped input and call/error differences before claiming full lookup closure. See the [unsigned decisions](native-catalog-author-decisions-unsigned.md). |
-| Workflow and scenario reporting | The Batch 28 source gate passes `workflow_steps_frame`, `workflow_decisions_frame`, `workflow_summary_frame`, `workflow_reporting_text`, `functional_simulation_scenario_frame` and `functional_recovery_scenario_catalog_frame`. It covers five identifiers and three replicate regimes. | Agree on dataclass-to-record and DataFrame-to-data.frame semantics. Extend validation to rejected records, default and extreme replicate inputs, exact Unicode identifier representation and JSON coercion. `workflow_config_to_dict` still needs arbitrary dataclass and nested Path/NumPy value decisions. |
+| Workflow and scenario reporting | The Batch 28 source gate passes `workflow_steps_frame`, `workflow_decisions_frame`, `workflow_summary_frame`, `workflow_reporting_text`, `functional_simulation_scenario_frame` and `functional_recovery_scenario_catalog_frame`. It covers six identifiers and three replicate regimes. The native identifier renderer now escapes nonprintable Unicode separators and format characters. | Agree on dataclass-to-record and DataFrame-to-data.frame semantics. Extend validation to rejected records, default and extreme replicate inputs, interpreter Unicode-version differences and JSON coercion. `workflow_config_to_dict` still needs arbitrary dataclass and nested Path/NumPy value decisions. |
 | Quadrature and other numeric coercion | The integrated strict runner supplies 18 `functional_trapezoid_weights` comparisons. Current R source mode accepts list/null and finite scalar normalization flags, plus some nonfinite-grid inputs. | Exercise remaining NumPy array and custom object truthiness, warnings on nonfinite input, and explicit native coercion/error mappings. |
 | Trajectory and result-frame metadata | The open constructor maps to `etr_trajectory_set`. Native source mode covers missing/nonfinite samples, empty curve axes, coercible array forms and metadata indexing. | Review the complete constructor/method domain, including curve ID collisions after stringification, index representation and provenance. Keep source-compatible result schemas separate from estimator and resampling changes. |
 | Portable snapshots | Direct Python loader and native reader now verify ordered table values, Unicode, integer and logical types, missing cells and empty metadata. | `export_portable_result` remains open for arbitrary dataclass/opaque fields, Python environment capture, overwrite semantics and exact exception classes. `load_portable_result` has no historical gap row and the R reader still limits dtypes, byte sizes and supported table representations. |
@@ -76,3 +76,15 @@ The portable replay checks exact values and schemas in Python with
 with Python-produced bundles. The reporting capture writes its six
 export names, fixture domain and content hashes to
 `artifacts/native_full_contract_evidence/reporting_batch28_source_replay.json`.
+
+## Unicode reporting boundary
+
+Workflow and recovery reports share the identifier renderer. It applies
+CPython's escaping categories for ordinary Unicode scalar strings,
+including nonbreaking spaces, format characters, private-use characters
+and noncharacters. The Python source gets those categories from its
+interpreter and native R gets them from PCRE. In the replay environment
+PCRE 10.46 and CPython 3.12.14 with Unicode 15.0.0 differed on 5,812 of
+1,112,063 compared scalar values. For example, R prints U+0897 as a
+character and Python escapes it as `\u0897`. This remains a concrete
+cross-version blocker for an exact source-wide reporting closure.

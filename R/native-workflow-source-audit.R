@@ -211,25 +211,26 @@ etr_workflow_summary_frame <- function(result) {
     stringsAsFactors=FALSE)
 }
 
-# Python 1.2 f"{workflow_contract!r}" quotes and escapes source identifiers.
-# Avoid Python/reticulate at native runtime. The deliberately bounded source
-# domain is printable Unicode and ASCII/C1 control codes. Other nonprintable
-# Unicode categories remain subject to independent semantic review.
+# CPython repr escapes Other and Separator categories except ASCII space.
+# PCRE and CPython may use different Unicode data for recent code points.
 .etr_python_workflow_identifier_repr <- function(x) {
   .etr_assert(is.character(x)&&length(x)==1L&&!is.na(x),
     "workflow identifier must be one string")
   quote <- if(grepl("'",x,fixed=TRUE)&&!grepl('"',x,fixed=TRUE)) '"' else "'"
   points <- utf8ToInt(enc2utf8(x))
-  chars <- vapply(points,function(p){
+  characters <- intToUtf8(points,multiple=TRUE)
+  escape <- (points != 32L) & grepl("[\\p{C}\\p{Z}]",characters,perl=TRUE)
+  chars <- vapply(seq_along(points),function(i){
+    p <- points[[i]]
     if(p==92L) return("\\\\")
     if(p==utf8ToInt(quote)) return(paste0("\\",quote))
     if(p==10L) return("\\n")
     if(p==13L) return("\\r")
     if(p==9L) return("\\t")
-    if(p<32L||p==127L||(p>=128L&&p<=159L))
-      return(sprintf("\\x%02x",p))
-    if(p %in% c(0x2028L,0x2029L))return(sprintf("\\u%04x",p))
-    intToUtf8(p)
+    if(!escape[[i]]) return(characters[[i]])
+    if(p<=0xffL) return(sprintf("\\x%02x",p))
+    if(p<=0xffffL) return(sprintf("\\u%04x",p))
+    sprintf("\\U%08x",p)
   },character(1L),USE.NAMES=FALSE)
   paste0(quote,paste(chars,collapse=""),quote)
 }
