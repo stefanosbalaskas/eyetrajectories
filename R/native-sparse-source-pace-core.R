@@ -254,6 +254,14 @@
     noise_support[1L]>=grid[1L]&&
     noise_support[2L]<=tail(grid,1L),
     "noise_support must be finite interval inside evaluation grid")
+  .etr_spn_uncertainty_grid(grid)
+  .etr_assert(length(times)==length(residuals),
+    "observation_times and residuals must have equal length")
+  .etr_assert(is.numeric(latent_diagonal)&&
+    is.null(dim(latent_diagonal))&&
+    length(latent_diagonal)==length(grid)&&
+    all(is.finite(latent_diagonal)),
+    "latent_diagonal must be a finite value per evaluation-grid point")
   t_pool<-unlist(times,use.names=FALSE)
   squared<-unlist(lapply(residuals,function(z)z^2),use.names=FALSE)
   raw<-.etr_spn_mean(t_pool,squared,grid,noise_bandwidth,
@@ -262,7 +270,9 @@
   mask<-grid>=noise_support[1L]&grid<=noise_support[2L]
   if(sum(mask)<2L)
     .etr_spn_fail("insufficient_noise_support",
-      "fewer than two evaluation points on noise support")
+      "fewer than two evaluation points on noise support",
+      list(noise_support=as.numeric(noise_support),
+        n_grid_points=as.integer(sum(mask))))
   w<-.etr_spn_weights(grid[mask])
   variance<-sum(w*delta[mask])/sum(w)
   # Frozen primitive retains an invalid estimate and status; the public
@@ -272,7 +282,9 @@
     latent_diagonal=latent_diagonal,
     diagonal_difference=delta,support_mask=mask,
     status_code=if(is.finite(variance)&&variance>0)
-      "ok" else "noise_variance_invalid")
+      "ok" else "noise_variance_invalid",
+    bandwidth=as.numeric(noise_bandwidth),
+    support_interval=as.numeric(noise_support))
 }
 
 .etr_spn_weights<-function(grid){
@@ -285,7 +297,15 @@
 }
 
 .etr_spn_psd<-function(C,grid,action="error",tolerance=1e-8){
-  .etr_assert(action%in%c("error","project"),
+  .etr_spn_uncertainty_grid(grid)
+  .etr_assert(is.numeric(C)&&
+    identical(dim(C),c(length(grid),length(grid))),
+    sprintf("covariance must have shape (%d, %d)",
+      length(grid),length(grid)))
+  .etr_assert(all(is.finite(C)),
+    "covariance must contain only finite values")
+  .etr_assert(is.character(action)&&length(action)==1L&&!is.na(action)&&
+    action%in%c("error","project"),
     "psd_action must be error or project")
   .etr_assert(is.numeric(tolerance)&&length(tolerance)==1L&&
     is.finite(tolerance)&&tolerance>=0,
@@ -324,6 +344,19 @@
 }
 
 .etr_spn_eigensystem<-function(C,grid,k,tolerance=1e-10){
+  .etr_spn_uncertainty_grid(grid)
+  n<-length(grid)
+  .etr_assert(is.numeric(C)&&identical(dim(C),c(n,n)),
+    sprintf("covariance must have shape (%d, %d)",n,n))
+  .etr_assert(all(is.finite(C)),
+    "covariance must contain only finite values")
+  .etr_assert(is.numeric(k)&&!is.logical(k)&&length(k)==1L&&
+    is.finite(k)&&k==floor(k)&&k>=1L,
+    "n_components must be a positive integer")
+  .etr_assert(is.numeric(tolerance)&&length(tolerance)==1L&&
+    is.finite(tolerance)&&tolerance>=0,
+    "positive_tolerance must be finite non-negative")
+  k<-as.integer(k)
   w<-.etr_spn_weights(grid);sw<-sqrt(w)
   D<-outer(sw,sw)*((C+t(C))/2)
   ev<-eigen(D,symmetric=TRUE)
