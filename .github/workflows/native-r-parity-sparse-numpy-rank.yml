@@ -4,8 +4,11 @@ on:
   pull_request:
     paths:
       - "R/native-sparse-source-pace-core.R"
+      - "R/native-sparse-mfpca-source-core.R"
+      - "R/native-sparse-mfpca-source.R"
       - "tests/testthat/test-native-sparse-numpy-rank-boundary.R"
       - "tests/testthat/test-native-sparse-pair-source-order.R"
+      - "tests/testthat/test-native-sparse-planar-raw-covariance-audit.R"
       - "tests/testthat/test-native-sparse-source-pace.R"
       - "tests/testthat/test-native-sparse-mfpca-source.R"
       - ".github/workflows/native-r-parity-sparse-numpy-rank.yml"
@@ -41,7 +44,7 @@ jobs:
           Rscript - <<'RSCRIPT'
           pkgload::load_all(".", quiet=TRUE)
           before <- reticulate::py_available(initialize=FALSE)
-          testthat::test_local(".", filter="native-sparse-(numpy-rank-boundary|pair-source-order|source-pace|mfpca-source)",
+          testthat::test_local(".", filter="native-sparse-(numpy-rank-boundary|pair-source-order|planar-raw-covariance-audit|source-pace|mfpca-source)",
             reporter="summary", stop_on_failure=TRUE, stop_on_warning=TRUE)
           stopifnot(identical(before, reticulate::py_available(initialize=FALSE)))
           RSCRIPT
@@ -77,6 +80,6 @@ jobs:
           Rscript - <<'RSCRIPT'
           pkgload::load_all(".", quiet=TRUE)
           stopifnot(identical(et_python_version(), "1.2.0"))
-          testthat::test_local(".", filter="native-sparse-(numpy-rank-boundary|pair-source-order|source-pace|mfpca-source)",
+          testthat::test_local(".", filter="native-sparse-(numpy-rank-boundary|pair-source-order|planar-raw-covariance-audit|source-pace|mfpca-source)",
             reporter="summary", stop_on_failure=TRUE, stop_on_warning=TRUE)
           RSCRIPT
