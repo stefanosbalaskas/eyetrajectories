@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "R/native-sparse-source-pace-core.R"
+      - "scripts/run_accelerated_scientific_wave.R"
       - "tests/testthat/test-native-sparse-primitive-source-boundaries.R"
       - ".github/workflows/native-r-parity-sparse-primitive-boundaries.yml"
   workflow_dispatch:
