@@ -28,7 +28,7 @@ test_that("native mixed report accepts Python text label boundary cases", {
     x$dimension_name<-case$dim
     x$method<-case$method
     x$predictor_names<-case$predictor
-    x$random_slope_predictor<-case$slope
+    x["random_slope_predictor"]<-list(case$slope)
     if(!is.null(case$slope)){
       x$random_effect_dimension<-6L
       x$random_effect_covariance_parameter_count<-21L
@@ -92,7 +92,7 @@ def _mixed_string_source(dimname, method, slope, predictor, kind):
     fit<-.etr_mixed_report_string_fixture()
     fit$dimension_name<-case$dim
     fit$method<-case$method
-    fit$random_slope_predictor<-case$slope
+    fit["random_slope_predictor"]<-list(case$slope)
     fit$predictor_names<-case$predictor
     if(!is.null(case$slope)){
       fit$random_effect_dimension<-6L
