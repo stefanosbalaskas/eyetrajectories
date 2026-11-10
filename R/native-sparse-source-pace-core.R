@@ -94,16 +94,23 @@
   out
 }
 
-.etr_spn_local_fit<-function(design,y,w,required,code){
+.etr_spn_local_fit<-function(design,y,w,required,code,details=list()){
   mask<-w>0
   if(sum(mask)<required)
-    .etr_spn_fail(code,"insufficient positive-weight observations")
+    .etr_spn_fail(code,"insufficient positive-weight observations",details)
   sw<-sqrt(w[mask])
   A<-design[mask,,drop=FALSE]*sw
-  q<-qr(A,tol=1e-12)
-  if(q$rank<ncol(A))
-    .etr_spn_fail(code,"weighted local design is rank deficient")
-  as.numeric(qr.coef(q,y[mask]*sw)[1L])
+  # Frozen Python 1.2 uses NumPy matrix_rank and lstsq, not R's QR
+  # rank tolerance. For tiny time units (e.g. 1e-13 seconds), QR with
+  # tol=1e-12 can reject a full-rank local fit accepted by NumPy.
+  # NumPy's default cutoff is max(m,n) * sigma_max * eps(binary64).
+  decomposition<-svd(A,nu=ncol(A),nv=ncol(A))
+  cutoff<-max(dim(A))*max(decomposition$d)*.Machine$double.eps
+  if(sum(decomposition$d>cutoff)<ncol(A))
+    .etr_spn_fail(code,"weighted local design is rank deficient",details)
+  projected<-as.numeric(crossprod(decomposition$u,y[mask]*sw))
+  coefficients<-decomposition$v%*%(projected/decomposition$d)
+  as.numeric(coefficients[1L])
 }
 
 .etr_spn_mean<-function(t,y,points,h,min_points=3L){
@@ -118,9 +125,14 @@
     support[i]<-sum(w>0)
     if(support[i]<min_points)
       .etr_spn_fail("insufficient_mean_local_support",
-        "local-linear mean support below declared minimum")
+        "local-linear mean support below declared minimum",
+        list(evaluation_point=as.numeric(points[i]),
+          support_count=as.integer(support[i]),
+          required_count=as.integer(min_points),bandwidth=as.numeric(h)))
     v[i]<-.etr_spn_local_fit(cbind(1,delta),y,w,2L,
-      "insufficient_mean_local_support")
+      "insufficient_mean_local_support",
+      list(evaluation_point=as.numeric(points[i]),
+        support_count=as.integer(support[i]),bandwidth=as.numeric(h)))
   }
   list(values=v,support_counts=support)
 }
@@ -157,9 +169,14 @@
       support[i,j]<-sum(w>0)
       if(support[i,j]<min_pairs)
         .etr_spn_fail("insufficient_covariance_local_support",
-          "insufficient offdiagonal covariance local pairs")
+          "insufficient offdiagonal covariance local pairs",
+          list(s=as.numeric(grid[i]),t=as.numeric(grid[j]),
+            support_count=as.integer(support[i,j]),
+            required_count=as.integer(min_pairs),bandwidth=as.numeric(h)))
       C[i,j]<-.etr_spn_local_fit(cbind(1,ds,dt),
-        pairs$products,w,3L,"insufficient_covariance_local_support")
+        pairs$products,w,3L,"insufficient_covariance_local_support",
+        list(s=as.numeric(grid[i]),t=as.numeric(grid[j]),
+          support_count=as.integer(support[i,j]),bandwidth=as.numeric(h)))
     }
   }
   list(values=(C+t(C))/2,support_counts=support)
@@ -177,10 +194,15 @@
     support[i]<-sum(w>0)
     if(support[i]<min_pairs)
       .etr_spn_fail("insufficient_noise_diagonal_local_support",
-        "rotated covariance-diagonal has too few offdiagonal pairs")
+        "rotated covariance-diagonal has too few offdiagonal pairs",
+        list(evaluation_point=as.numeric(grid[i]),
+          support_count=as.integer(support[i]),
+          required_count=as.integer(min_pairs),bandwidth=as.numeric(h)))
     fitted[i]<-.etr_spn_local_fit(
       cbind(1,delta,perp^2),pairs$products,w,3L,
-      "insufficient_noise_diagonal_local_support")
+      "insufficient_noise_diagonal_local_support",
+      list(evaluation_point=as.numeric(grid[i]),
+        support_count=as.integer(support[i]),bandwidth=as.numeric(h)))
   }
   list(values=fitted,support_counts=support,
     rotation="45_degrees_linear_along_diagonal_quadratic_perpendicular")
