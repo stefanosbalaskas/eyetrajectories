@@ -93,7 +93,7 @@ test_that("heterogeneous recovery mappings normalize without losing source order
   expect_error(etr_functional_recovery_result(records),
     "successful records require at least one metric")
   records[[1L]]$metrics<-list(score=1+1i)
-  expect_error(etr_functional_recovery_result(records),"finite named numeric-like")
+  expect_error(etr_functional_recovery_result(records),"finite numeric values")
   records[[1L]]$metrics<-list(score=c(1,2))
   expect_error(etr_functional_recovery_result(records),"finite numeric values")
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
@@ -106,10 +106,11 @@ _hetero = _Rec(scenario_name='beta',replicate=0,seed=11,
 _hetero_keys = list(_hetero.metrics)
 _hetero_values = list(_hetero.metrics.values())
 ")
-  expect_identical(as.character(reticulate::py_to_r(reticulate::py_eval(
-    "_hetero_keys",convert=FALSE))),c("s","t"))
-  expect_equal(as.numeric(reticulate::py_to_r(reticulate::py_eval(
-    "_hetero_values",convert=FALSE))),unname(native$records[[1L]]$metrics),
+  expect_identical(as.character(unlist(reticulate::py_to_r(reticulate::py_eval(
+    "_hetero_keys",convert=FALSE)),use.names=FALSE)),c("s","t"))
+  expect_equal(as.numeric(unlist(reticulate::py_to_r(reticulate::py_eval(
+    "_hetero_values",convert=FALSE)),use.names=FALSE)),
+    unname(native$records[[1L]]$metrics),
     tolerance=0)
 })
 
