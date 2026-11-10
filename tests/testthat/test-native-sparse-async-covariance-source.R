@@ -80,6 +80,31 @@ test_that("async covariance validates support and admits empty/one-channel layou
     "aligned planar")
 })
 
+test_that("asynchronous measurement noise is placed only at coobserved channels",{
+  f<-.etr_async_cov_source_fixture()
+  layout<-.etr_spna_scalar_layout(f$tx,f$x,f$ty,f$y,0)
+  E<-matrix(c(.08,.02,.02,.1),2L)
+  exact<-.etr_spna_noise_eval(layout,E,tolerance=0)
+  expect_identical(exact$cross_links,1L)
+  expect_equal(diag(exact$covariance),
+    E[cbind(layout$channel,layout$channel)],tolerance=0)
+  expect_equal(exact$covariance[1,2],.02,tolerance=0)
+  expect_equal(exact$covariance[2,1],.02,tolerance=0)
+  expect_equal(exact$covariance,t(exact$covariance),tolerance=0)
+  wide<-.etr_spna_noise_eval(layout,E,tolerance=.5)
+  expect_identical(wide$cross_links,3L)
+  expect_equal(wide$covariance[3,4],.02,tolerance=0)
+  expect_equal(wide$covariance[5,6],.02,tolerance=0)
+  expect_equal(wide$covariance[1,3],0,tolerance=0)
+  empty<-.etr_spna_scalar_layout(numeric(),numeric(),
+    numeric(),numeric(),0)
+  expect_identical(dim(.etr_spna_noise_eval(empty,E)$covariance),c(0L,0L))
+  expect_identical(.etr_spna_noise_eval(empty,E)$cross_links,0L)
+  expect_error(.etr_spna_noise_eval(layout,E,-.01),"same_time_tolerance")
+  expect_error(.etr_spna_noise_eval(layout,matrix(c(1,2,2,1),2)),
+    "invalid_measurement_error_covariance")
+})
+
 test_that("async covariance and layout match Python frozen numerical source",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("Python 1.2 async source comparison is opt-in")
@@ -88,7 +113,8 @@ test_that("async covariance and layout match Python frozen numerical source",{
 import numpy as np
 from eyetrajectoriespy._sparse_multivariate import PlanarCovarianceBlocks
 from eyetrajectoriespy._sparse_multivariate_async import (
-  build_async_observation_layout,evaluate_async_planar_covariance)
+  build_async_observation_layout,evaluate_async_planar_covariance,
+  build_async_measurement_error_covariance)
 from eyetrajectoriespy._sparse_native import SparseNativeError
 _grid=np.array([0.,1.,2.,3.])
 _s=_grid[:,None]
@@ -101,6 +127,8 @@ _tx=np.array([.1,1.,2.5]);_ty=np.array([.1,1.4,2.7])
 _lay=build_async_observation_layout(_tx,np.array([3.,1.,5.]),
  _ty,np.array([2.,4.,6.]),same_time_tolerance=0.)
 _pycov=evaluate_async_planar_covariance(_grid,_blocks,_lay)
+_noise_matrix=np.array([[.08,.02],[.02,.1]])
+_source_noise=build_async_measurement_error_covariance(_lay,_noise_matrix,same_time_tolerance=.5)
 def _async_cov_for(tx,ty):
     lay=build_async_observation_layout(np.array(tx,dtype=float),
       np.ones(len(tx)),np.array(ty,dtype=float),np.ones(len(ty)))
@@ -127,6 +155,13 @@ def _async_cov_error():
   expect_identical(r$simultaneous,as.integer(
     reticulate::py_eval("_lay.n_simultaneous_pairs")))
   ours<-.etr_spna_cov_eval(f$grid,f$blocks,r)
+  noise<-.etr_spna_noise_eval(r,matrix(c(.08,.02,.02,.1),2),.5)
+  source_noise<-reticulate::py_eval("_source_noise",convert=FALSE)
+  expect_equal(noise$covariance,et_to_r(
+    reticulate::py_get_item(source_noise,0L)),
+    tolerance=1e-15,ignore_attr=TRUE)
+  expect_identical(noise$cross_links,as.integer(et_to_r(
+    reticulate::py_get_item(source_noise,1L))))
   theirs<-et_to_r(reticulate::py_eval("_pycov",convert=FALSE))
   expect_equal(ours,theirs,tolerance=1e-12,ignore_attr=TRUE)
   for(case in list(list(tx=numeric(),ty=numeric()),
