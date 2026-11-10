@@ -202,6 +202,28 @@ test_that("source-model sparse workflow uses actual custom native PACE",{
 
 
 
+test_that("sparse workflow phases retain warnings and propagate errors",{
+  seen<-character()
+  run<-withCallingHandlers(
+    .etr_sparse_timed_step("fit","fit_sparse_fpca",list(n_components=1L),{
+      warning("first diagnostic",call.=FALSE)
+      warning("second diagnostic",call.=FALSE)
+      42L
+    }),
+    warning=function(condition){
+      seen<<-c(seen,conditionMessage(condition))
+      invokeRestart("muffleWarning")
+    })
+  expect_identical(run$result,42L)
+  expect_identical(run$step$warnings,c("first diagnostic","second diagnostic"))
+  expect_identical(run$step$warnings,seen)
+  audit<-etr_workflow_steps_frame(list(run$step))
+  expect_identical(audit$warning_count,2L)
+  expect_true(is.finite(audit$elapsed_seconds)&&audit$elapsed_seconds>=0)
+  expect_error(.etr_sparse_timed_step("fit","fit_sparse_fpca",list(),
+    stop("failed estimator")), "failed estimator")
+})
+
 test_that("sparse FPCA bandwidth selection retains failed candidates and audits the refit",{
   x<-.etr_spn_source_fixture()
   cfg<-list(backend="native_covariance",dimension="signal",n_components=1L,
