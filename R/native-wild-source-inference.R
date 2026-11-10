@@ -28,7 +28,10 @@
   x
 }
 .etr_wild_source_threshold <- function(x,what){
-  .etr_assert(is.numeric(x)&&length(x)==1L&&
+  if(is.character(x)&&is.null(dim(x)))
+    x<-suppressWarnings(as.numeric(.etr_numpy_float_text(x,
+      paste0(what," must be numeric"))))
+  .etr_assert(is.numeric(x)&&is.null(dim(x))&&length(x)==1L&&
     is.finite(x)&&x>0,
     paste0(what," must be a finite positive scalar"))
   as.numeric(x)
@@ -160,8 +163,8 @@ etr_fpca_wild_bootstrap_simultaneous_frame <- function(result){
   x<-.etr_wild_source_projection(result$projection_result);n<-x$n
   tcrit<-.etr_frame_vector(result$targetwise_critical_values,n,
     "targetwise_critical_values")
-  crit<-.etr_wild_source_threshold(result$critical_value,
-    "familywise critical_value")
+  crit<-.etr_frame_vector(result$critical_value,1L,"familywise critical_value")
+  .etr_assert(crit>=0,"familywise critical_value must be nonnegative")
   for(nm in c("lower","upper"))
     .etr_frame_vector(result[[nm]],n,nm)
   data.frame(curve_id=x$ids,reference_projection=x$reference,

@@ -42,26 +42,43 @@
   measured <- function(name, fixture, field, native, source, tolerance) {
     shape <- function(x) if (is.null(dim(x))) length(x) else dim(x)
     schema <- identical(shape(native), shape(source))
-    a <- as.numeric(native)
-    b <- as.numeric(source)
-    finite <- schema && all(is.finite(a)) && all(is.finite(b))
-    error <- if (finite) max(abs(a - b), 0) else NA_real_
-    outcome <- if (!schema) "DIVERGENT_SCHEMA" else
-      if (finite && all(abs(a - b) <= tolerance * (1 + abs(b))))
-        "PASS_NUMERIC" else "DIVERGENT_NUMERIC"
+    if (is.character(native) || is.character(source)) {
+      a <- enc2utf8(as.character(native))
+      b <- enc2utf8(as.character(source))
+      comparable <- schema && is.character(native) && is.character(source)
+      error <- NA_real_
+      outcome <- if (comparable && identical(a, b)) "PASS_SCHEMA" else "DIVERGENT_SCHEMA"
+    } else {
+      a <- as.numeric(native)
+      b <- as.numeric(source)
+      comparable <- schema && all(is.finite(a)) && all(is.finite(b))
+      error <- if (comparable) max(abs(a - b), 0) else NA_real_
+      outcome <- if (!schema) "DIVERGENT_SCHEMA" else
+        if (comparable && all(abs(a - b) <= tolerance * (1 + abs(b))))
+          "PASS_NUMERIC" else "DIVERGENT_NUMERIC"
+    }
     data.frame(python_name = name, scientific_family = "seeded_resampling",
       source_fixture = fixture, field = field, outcome = outcome,
       max_abs_error = error, compared_values = length(a),
-      unequal_values = if (finite) sum(a != b) else NA_integer_,
+      unequal_values = if (comparable) sum(a != b) else NA_integer_,
       tolerance = tolerance, r_git_head = head, frozen_python_commit = pin,
       python_source_files_verified = verified_source_files,
       numpy_version = numpy_version, independently_certified = FALSE)
   }
+  record <- function(name, fixture, field, native, source, tolerance) {
+    workflow_rows[[length(workflow_rows) + 1L]] <<-
+      measured(name, fixture, field, native, source, tolerance)
+  }
   compare <- function(name, fixture, native, source, fields, tolerance) {
     for (field in fields)
-      workflow_rows[[length(workflow_rows) + 1L]] <<- measured(name,
+      record(name,
         fixture, field, native[[field]], et_to_r(reticulate::py_get_attr(source, field)),
         tolerance)
+  }
+  report <- function(name, fixture, native, source) {
+    render <- getExportedValue("eyetrajectories", paste0("etr_", name))
+    record(name, fixture, "reporting_text", render(native),
+      et_to_r(et_call(name, source)), 0)
   }
   compare_stream <- function(fixture, field, native, source, tolerance = 0) {
     stream_rows[[length(stream_rows) + 1L]] <<- measured("NumPy PCG64",
@@ -107,6 +124,79 @@
     compare(name, fixture, n, p, c("reference_projections", "reference_se",
       "studentized_roots", "critical_values", "lower", "upper", "widths", "centers"), 1e-5)
   }
+
+  unit_name <- "Analyst's unit / \u03b1"
+  labelled <- f$x
+  labelled$metadata[[unit_name]] <- labelled$curve_ids
+  py_labelled <- trajectory(labelled)
+  text_y <- sprintf("%.16f", f$y)
+  text_y[1L] <- "0_0.25"
+  py_text_y <- np$asarray(as.list(text_y), dtype = "str")
+  name <- "wild_bootstrap_fpca_projection"
+  projection <- etr_wild_bootstrap_fpca_projection(labelled, text_y,
+    n_bootstrap = 20L, random_state = 17L, independent_unit_column = unit_name)
+  py_projection <- et_call(name, py_labelled, py_text_y,
+    n_bootstrap = 20L, random_state = 17L, independent_unit_column = unit_name)
+  compare(name, "decimal_text_outcome", projection, py_projection,
+    c("reference_projection", "reference_se", "studentized_roots"), 1e-6)
+  report("fpca_wild_bootstrap_projection_reporting_text", "fitted_projection",
+    projection, py_projection)
+
+  null <- rep("1_0e-2", length(f$x$curve_ids))
+  name <- "fpca_wild_bootstrap_projection_family_test"
+  family <- etr_fpca_wild_bootstrap_projection_family_test(projection,
+    null_values = null, significance_level = .2)
+  py_family <- et_call(name, py_projection, null_values = as.list(null),
+    significance_level = .2)
+  compare(name, "decimal_text_null", family, py_family,
+    c("null_values", "observed_statistics", "targetwise_p_values", "adjusted_p_values",
+      "global_p_value", "reject_familywise", "reject_global"), 1e-7)
+  report("fpca_wild_bootstrap_family_test_reporting_text", "fitted_projection",
+    family, py_family)
+
+  name <- "fpca_wild_bootstrap_family_test_monte_carlo_diagnostics"
+  mc <- etr_fpca_wild_bootstrap_family_test_monte_carlo_diagnostics(family)
+  py_mc <- et_call(name, py_family)
+  compare(name, "fitted_projection", mc, py_mc, c("targetwise_exceedances",
+    "adjusted_exceedances", "global_exceedances", "global_tail_probability",
+    "targetwise_interval_lower", "targetwise_interval_upper", "adjusted_interval_lower",
+    "adjusted_interval_upper", "adjusted_decision_stable", "global_decision_stable"), 1e-9)
+  report("fpca_wild_bootstrap_monte_carlo_reporting_text", "fitted_projection", mc, py_mc)
+
+  zero <- rep(0, length(f$y))
+  projection <- etr_wild_bootstrap_fpca_projection(f$x, zero, n_bootstrap = 20L)
+  py_projection <- et_call("wild_bootstrap_fpca_projection", py_x, array_py(zero),
+    n_bootstrap = 20L)
+  name <- "fpca_wild_bootstrap_projection_simultaneous_interval"
+  simultaneous <- etr_fpca_wild_bootstrap_projection_simultaneous_interval(projection)
+  py_simultaneous <- et_call(name, py_projection)
+  compare(name, "zero_roots", simultaneous, py_simultaneous,
+    c("critical_value", "targetwise_critical_values", "lower", "upper"), 0)
+  name <- "fpca_wild_bootstrap_simultaneous_frame"
+  frame <- etr_fpca_wild_bootstrap_simultaneous_frame(simultaneous)
+  py_frame <- et_to_r(et_call(name, py_simultaneous))
+  record(name, "zero_roots", "columns", names(frame), names(py_frame), 0)
+  for (column in names(frame))
+    record(name, "zero_roots", column, frame[[column]], py_frame[[column]], 0)
+  report("fpca_wild_bootstrap_simultaneous_reporting_text", "zero_roots",
+    simultaneous, py_simultaneous)
+
+  scan <- etr_scan_wild_bootstrap_fpca_truncations(f$x, text_y, 2:3,
+    n_bootstrap = 20L, random_state = 17L)
+  py_scan <- et_call("scan_wild_bootstrap_fpca_truncations", py_x, py_text_y,
+    candidate_components = reticulate::tuple(2L, 3L), n_bootstrap = 20L,
+    random_state = 17L)
+  compare("scan_wild_bootstrap_fpca_truncations", "decimal_text_outcome", scan, py_scan,
+    c("reference_projections", "reference_se", "studentized_roots"), 1e-6)
+  name <- "select_fpca_wild_bootstrap_truncation"
+  selection <- etr_select_fpca_wild_bootstrap_truncation(scan, "1_000", "1e3", 0L)
+  py_selection <- et_call(name, py_scan, width_threshold = "1_000",
+    center_threshold = "1e3", stability_run = 0L)
+  compare(name, "decimal_text_thresholds", selection, py_selection,
+    c("selected_candidate_indices", "selected_components", "stable_both",
+      "width_threshold", "center_threshold"), 0)
+  report("fpca_wild_bootstrap_truncation_reporting_text", "fitted_scan",
+    selection, py_selection)
 
   f$x$metadata$participant <- rep(sprintf("p%02d", 1:12), each = 2L)
   py_x <- trajectory(f$x)
@@ -162,6 +252,13 @@
     p <- et_call(name, pboot, py_y, random_state = seed)
     compare(name, unit, n, p, c("centered_residuals", "sampled_residuals", "predictive_draws",
       "lower", "median", "upper", "predictive_se"), 1e-6)
+    report("fpca_regression_uncertainty_reporting_text", unit, nboot, pboot)
+    report("fpca_regression_future_prediction_reporting_text", unit, n, p)
+    name <- "fpca_regression_slope_simultaneous_band"
+    n <- etr_fpca_regression_slope_simultaneous_band(nboot, simultaneous_scope = "dimension")
+    p <- et_call(name, pboot, simultaneous_scope = "dimension")
+    compare(name, unit, n, p, c("critical_values", "lower", "upper"), 1e-6)
+    report("fpca_regression_slope_band_reporting_text", unit, n, p)
     ref_child <- np$random$default_rng(np$random$SeedSequence(seed)$spawn(1L)[[0L]])
     native_child <- .etr_numpy_pcg64(seed)$spawn(1L)[[1L]]
     compare_stream(paste0("fpcr_", unit), "spawned_residual_indices",
@@ -177,7 +274,7 @@
     row.names = FALSE, na = "")
   utils::write.csv(streams, file.path(folder, "seeded_rng_streams_UNSIGNED.csv"),
     row.names = FALSE, na = "")
-  bad <- rbind(workflow[workflow$outcome != "PASS_NUMERIC", ],
+  bad <- rbind(workflow[!workflow$outcome %in% c("PASS_NUMERIC", "PASS_SCHEMA"), ],
     streams[streams$outcome != "PASS_NUMERIC", ])
   if (nrow(bad)) print(bad[c("python_name", "source_fixture", "field", "outcome",
     "max_abs_error")], row.names = FALSE)

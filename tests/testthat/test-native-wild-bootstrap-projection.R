@@ -179,3 +179,41 @@ test_that("source optional NULL random_state draws from caller's R RNG", {
     inference_components=3L,random_state=-1),
     "random_state")
 })
+test_that("wild bootstrap uses the frozen numerical covariance rank cutoff",{
+  a<-rep(c(-1,1),4L)
+  b<-rep(c(-1,-1,1,1),2L)
+  make_trajectory<-function(scale)etr_trajectory_set(
+    c(0,1),array(c(a,scale*b),c(8L,2L,1L)),
+    paste0("curve",seq_len(8L)),"x")
+  outcome<-rep(0,8L)
+  x<-make_trajectory(1.5e-8)
+  error<-expect_error(etr_wild_bootstrap_fpca_projection(x,outcome,
+    residual_components=1L,inference_components=2L,n_bootstrap=20L),
+    "score covariance is rank deficient",class="etr_wild_fpcr_rank_error")
+  expect_identical(error$rank,1L)
+  expect_identical(error$required_rank,2L)
+  fit<-etr_wild_bootstrap_fpca_projection(make_trajectory(3e-8),outcome,
+    residual_components=1L,inference_components=2L,n_bootstrap=20L)
+  expect_identical(dim(fit$studentized_roots),c(20L,8L))
+  expect_true(all(fit$studentized_roots==0))
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("frozen Python 1.2 numerical rank oracle is opt-in")
+  reticulate::py_run_string("
+import numpy as np
+import eyetrajectoriespy as et
+def _et_wild_rank_witness(scale):
+    a = np.tile([-1., 1.], 4)
+    b = np.tile([-1., -1., 1., 1.], 2) * scale
+    x = et.TrajectorySet(time=np.array([0., 1.]),
+        values=np.stack([a,b],axis=1)[:,:,None],
+        curve_ids=tuple('curve'+str(i) for i in range(1,9)),dimension_names=('x',))
+    return et.wild_bootstrap_fpca_projection(x,np.zeros(8),
+        residual_components=1,inference_components=2,n_bootstrap=20)
+")
+  oracle<-reticulate::py_get_attr(reticulate::import_main(convert=FALSE),
+    "_et_wild_rank_witness")
+  expect_error(oracle(1.5e-8),
+    "score covariance is rank deficient")
+  source<-oracle(3e-8)
+  expect_identical(fit$studentized_roots,et_to_r(source$studentized_roots))
+})

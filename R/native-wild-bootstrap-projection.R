@@ -25,14 +25,23 @@
   matrix(values, nrow = replicates, ncol = curves, byrow = TRUE)
 }
 
+.etr_wild_fpcr_require_rank<-function(x,required,what){
+  singular_values<-svd(x,nu=0L,nv=0L)$d
+  tolerance<-singular_values[1L]*max(dim(x))*.Machine$double.eps
+  rank<-sum(singular_values>tolerance)
+  if(rank<required)
+    stop(errorCondition(paste0(what," is rank deficient (rank=",rank,
+      ", required=",required,")"),class="etr_wild_fpcr_rank_error",
+      rank=rank,required_rank=required))
+}
+
 .etr_wild_fpcr_prepared_fit<-function(scores,k){
   # Factorize the identical, fixed FPCA design once for every bootstrap.
   # Reusing the pivoted QR changes neither the model nor the least-squares
   # coefficient estimates; it avoids thousands of redundant factorizations.
   design<-cbind(1,scores[,seq_len(k),drop=FALSE])
-  decomp<-qr(design)
-  .etr_assert(decomp$rank==k+1L,
-    "FPCR score regression is rank deficient")
+  .etr_wild_fpcr_require_rank(design,k+1L,"FPCR score regression")
+  decomp<-qr(design,tol=0)
   function(y){
     .etr_assert(is.numeric(y)&&length(y)==nrow(design)&&
       all(is.finite(y)),"FPCR response must be finite per score row")
@@ -47,24 +56,28 @@
   .etr_wild_fpcr_prepared_fit(scores,k)(y)
 }
 
-.etr_wild_fpcr_hetero_se<-function(scores,residual,targets){
+.etr_wild_fpcr_prepared_se<-function(scores,targets){
   n<-nrow(scores);h<-ncol(scores)
   .etr_assert(is.matrix(scores)&&is.numeric(scores)&&
-    length(residual)==n&&is.matrix(targets)&&ncol(targets)==h,
+    n>=2L&&is.matrix(targets)&&ncol(targets)==h,
     "heteroscedastic FPCR score geometry is incompatible")
   gamma<-crossprod(scores)/n
-  .etr_assert(qr(gamma)$rank==h,"score covariance is rank deficient")
-  products<-scores*as.numeric(residual)
-  centered<-sweep(products,2L,colMeans(products),"-")
-  lambda<-crossprod(centered)/(n-1L)
-  direction<-targets%*%solve(gamma)
-  variance<-rowSums((direction%*%lambda)*direction)
-  tolerance<-100*.Machine$double.eps*max(1,abs(variance))
-  .etr_assert(!any(variance< -tolerance),
-    "heteroscedastic projection variance is materially negative")
-  se<-sqrt(pmax(variance,0)/n)
-  .etr_assert(all(is.finite(se)),"nonfinite heteroscedastic SE")
-  se
+  .etr_wild_fpcr_require_rank(gamma,h,"score covariance")
+  direction<-targets%*%t(solve(gamma,tol=0))
+  function(residual){
+    .etr_assert(length(residual)==n,
+      "residual vector is incompatible with score rows")
+    products<-scores*as.numeric(residual)
+    centered<-sweep(products,2L,colMeans(products),"-")
+    lambda<-crossprod(centered)/(n-1L)
+    variance<-rowSums((direction%*%lambda)*direction)
+    tolerance<-100*.Machine$double.eps*max(1,abs(variance))
+    .etr_assert(!any(variance< -tolerance),
+      "heteroscedastic projection variance is materially negative")
+    se<-sqrt(pmax(variance,0)/n)
+    .etr_assert(all(is.finite(se)),"nonfinite heteroscedastic SE")
+    se
+  }
 }
 
 #' Native wild bootstrap of fixed-target centered FPCR projections
@@ -74,7 +87,7 @@
 #'   inferential projection, bootstrap-refitted heteroscedastic scaling,
 #'   NumPy "higher" targetwise bootstrap criticals. Independent curves only.
 #' @param trajectories Complete native common-grid training trajectories.
-#' @param outcome Finite scalar response per curve.
+#' @param outcome Finite numeric, logical or decimal-text response per curve.
 #' @param targets Optional compatible target trajectories.
 #' @param n_bootstrap Number of multiplier replicates, at least 20.
 #' @param residual_components, inference_components Predeclared k and h.
@@ -103,8 +116,7 @@ etr_wild_bootstrap_fpca_projection<-function(
   n<-length(trajectories$curve_ids)
   nt<-length(trajectories$time)
   nd<-length(trajectories$dimension_names)
-  .etr_assert(is.numeric(outcome)&&is.null(dim(outcome))&&
-    length(outcome)==n&&all(is.finite(outcome)),
+  outcome<-.etr_fpcr_numeric_outcome(outcome,n,"gaussian",
     "outcome must contain finite scalar per training curve")
   .etr_assert(is.numeric(n_bootstrap)&&length(n_bootstrap)==1L&&
     is.finite(n_bootstrap)&&n_bootstrap==floor(n_bootstrap)&&
@@ -169,7 +181,8 @@ etr_wild_bootstrap_fpca_projection<-function(
   tk<-target_scores[,seq_len(k),drop=FALSE]
   pseudo_truth<-as.vector(tk%*%fk$beta[-1L])
   reference<-as.vector(target_scores%*%fh$beta[-1L])
-  reference_se<-.etr_wild_fpcr_hetero_se(scores,fk$residual,target_scores)
+  infer_se<-.etr_wild_fpcr_prepared_se(scores,target_scores)
+  reference_se<-infer_se(fk$residual)
   nq<-nrow(target_scores)
   projections<-matrix(0,B,nq)
   ses<-matrix(0,B,nq)
@@ -180,7 +193,7 @@ etr_wild_bootstrap_fpca_projection<-function(
     hs<-fit_h(pseudo_y)
     ks<-fit_k(pseudo_y)
     ps<-as.vector(target_scores%*%hs$beta[-1L])
-    ss<-.etr_wild_fpcr_hetero_se(scores,ks$residual,target_scores)
+    ss<-infer_se(ks$residual)
     root<-ps-pseudo_truth
     stat<-numeric(nq)
     positive<-ss>.Machine$double.eps*max(1,ss)

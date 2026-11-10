@@ -12,7 +12,7 @@
 \alias{etr_fpca_wild_bootstrap_truncation_reporting_text}
 \title{Native FPCR inference and wild-bootstrap manuscript reporting}
 \description{
-Eight Python-free functions construct explicit scientific reporting strings
+Python-free functions construct explicit scientific reporting strings
 from already computed results. They never fit a model, resample, calibrate a
 confidence band, or select hyperparameters.
 }
@@ -32,8 +32,9 @@ etr_fpca_wild_bootstrap_truncation_reporting_text(result, digits = 3L)
 \arguments{
 \item{result}{An explicit named R list containing the scientifically defined
 results and source-aligned fields needed by the selected reporting method.
-Objects must already have been computed. No automatic coercion to a Python
-dataclass is attempted.}
+Objects must already have been computed. Native fitted results supply
+replicate and target counts through their retained arrays. Explicit reporting
+lists may supply those counts directly.}
 \item{digits}{Nonnegative integer decimal precision for the output.}
 \item{rule}{Explicit minimum or one-standard-error selection rule for FPCA regression CV reporting.}
 }

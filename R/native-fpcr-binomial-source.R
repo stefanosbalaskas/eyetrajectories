@@ -17,15 +17,9 @@
   .etr_assert((is.numeric(outcome)||is.logical(outcome)||
       is.character(outcome))&&!is.factor(outcome)&&
     is.null(dim(outcome))&&length(outcome)==n,error_message)
-  if(is.character(outcome)) {
-    literals<-trimws(outcome)
-    # Source-compatible subset: decimal, optional exponent, signs and
-    # surrounding whitespace; no locale-specific grouping separators.
-    decimal<-"^[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)([eE][+-]?[0-9]+)?$"
-    .etr_assert(!anyNA(literals)&&
-      all(grepl(decimal,literals,perl=TRUE)),error_message)
-    numeric_outcome<-suppressWarnings(as.numeric(literals))
-  } else numeric_outcome<-as.numeric(outcome)
+  if(is.character(outcome))
+    outcome<-.etr_numpy_float_text(outcome,error_message)
+  numeric_outcome<-suppressWarnings(as.numeric(outcome))
   .etr_assert(all(is.finite(numeric_outcome)),error_message)
   .etr_fpcr_validate_binomial_outcome(numeric_outcome,family)
   numeric_outcome

@@ -66,8 +66,7 @@ etr_scan_wild_bootstrap_fpca_truncations<-function(
   etr_validate(trajectories,require_complete=TRUE)
   .etr_assert(all(is.finite(trajectories$values)),
     "training trajectories must be complete finite")
-  .etr_assert(is.numeric(outcome)&&is.null(dim(outcome))&&
-    length(outcome)==n&&all(is.finite(outcome)),
+  outcome<-.etr_fpcr_numeric_outcome(outcome,n,"gaussian",
     "outcome must contain finite scalar per training curve")
   .etr_assert(is.character(scaling)&&length(scaling)==1L&&
     !is.na(scaling)&&scaling%in%c("none","dimension_sd"),
@@ -127,13 +126,14 @@ etr_scan_wild_bootstrap_fpca_truncations<-function(
     fit_h<-.etr_wild_fpcr_prepared_fit(scores,h)
     f_h<-fit_h(outcome)
     ref<-as.vector(target_h%*%f_h$beta[-1L])
-    se<-.etr_wild_fpcr_hetero_se(score_h,fk$residual,target_h)
+    infer_se<-.etr_wild_fpcr_prepared_se(score_h,target_h)
+    se<-infer_se(fk$residual)
     projections[j,]<-ref;ses[j,]<-se
     tolerance<-100*.Machine$double.eps*max(1,abs(ref))
     for(i in seq_len(B)){
       fs<-fit_h(pseudo_y[i,])
       ps<-as.vector(target_h%*%fs$beta[-1L])
-      ss<-.etr_wild_fpcr_hetero_se(score_h,residual_k[i,],target_h)
+      ss<-infer_se(residual_k[i,])
       delta<-ps-pseudo_truth
       pos<-ss>.Machine$double.eps*max(1,ss)
       .etr_assert(!any(!pos&abs(delta)>tolerance),

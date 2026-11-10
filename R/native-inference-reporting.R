@@ -20,6 +20,14 @@
     paste0(what," must be an integer >= ",minimum))
   as.integer(x)
 }
+.etr_inference_report_count <- function(record,field,observed) {
+  declared<-record[[field]]
+  count<-.etr_inference_report_integer(
+    if(is.null(declared))observed else declared,field)
+  .etr_assert(is.null(observed)||count==observed,
+    paste0(field," must match the retained result dimensions"))
+  count
+}
 .etr_inference_report_level <- function(x,what) {
   .etr_assert(is.numeric(x) && length(x)==1L && is.finite(x) &&
     x>0 && x<1,paste0(what," must be between 0 and 1"))
@@ -51,13 +59,14 @@
 etr_fpca_wild_bootstrap_projection_reporting_text <- function(result,digits=3L) {
   d<-.etr_manuscript_digits(digits)
   .etr_inference_report_fields(result,c("upper","lower","reference_se",
-    "n_bootstrap","multiplier","residual_components","inference_components",
+    "multiplier","residual_components","inference_components",
     "confidence_level","independent_unit_column"))
   .etr_inference_report_bounds(result$lower,result$upper,"projection")
   .etr_inference_report_numeric(result$reference_se,"reference_se")
   .etr_assert(length(result$upper)==length(result$reference_se),
     "reference_se must match target intervals")
-  b<-.etr_inference_report_integer(result$n_bootstrap,"n_bootstrap")
+  b<-.etr_inference_report_count(result,"n_bootstrap",
+    dim(result$bootstrap_projections)[1L])
   k<-.etr_inference_report_integer(result$residual_components,
     "residual_components")
   h<-.etr_inference_report_integer(result$inference_components,
@@ -67,12 +76,12 @@ etr_fpca_wild_bootstrap_projection_reporting_text <- function(result,digits=3L) 
     "confidence_level")
   unit<-result$independent_unit_column
   .etr_assert(is.null(unit) ||
-    (is.character(unit)&&length(unit)==1L&&!is.na(unit)&&
-      grepl("^[A-Za-z0-9_]+$",unit)),
-    "independent_unit_column must be NULL or a simple identifier")
+    (is.character(unit)&&length(unit)==1L&&!is.na(unit)),
+    "independent_unit_column must be NULL or a single string")
   unit_note<-if(is.null(unit))
     " Curve rows were assumed to be independent sampling units." else
-    paste0(" Independence was declared by unique values of '",unit,"'.")
+    paste0(" Independence was declared by unique values of ",
+      .etr_python_workflow_identifier_repr(unit),".")
   paste0("Centered Gaussian FPCR projections were evaluated with ",b,
     " fixed-regressor multiplier wild-bootstrap replicates using '",
     multiplier,"' multipliers. Residuals and the bootstrap pseudo-truth ",
@@ -97,13 +106,13 @@ etr_fpca_regression_future_prediction_reporting_text <- function(
     result,digits=3L) {
   d<-.etr_manuscript_digits(digits)
   .etr_inference_report_fields(result,c("upper","lower",
-    "centered_residuals","n_bootstrap","n_targets","confidence_level"))
+    "centered_residuals","confidence_level"))
   .etr_inference_report_bounds(result$lower,result$upper,"future prediction")
   .etr_inference_report_numeric(result$centered_residuals,
     "centered_residuals",min_length=2L)
-  n<-.etr_inference_report_integer(result$n_targets,"n_targets")
-  .etr_assert(length(result$upper)==n,"n_targets must match interval lengths")
-  b<-.etr_inference_report_integer(result$n_bootstrap,"n_bootstrap")
+  n<-.etr_inference_report_count(result,"n_targets",length(result$upper))
+  b<-.etr_inference_report_count(result,"n_bootstrap",
+    dim(result$predictive_draws)[1L])
   level<-.etr_inference_report_level(result$confidence_level,
     "confidence_level")
   paste0("Future scalar outcomes for ",n," fixed target trajectory(ies) ",
@@ -127,12 +136,13 @@ etr_fpca_regression_future_prediction_reporting_text <- function(
 etr_fpca_regression_uncertainty_reporting_text <- function(result,digits=3L) {
   d<-.etr_manuscript_digits(digits)
   .etr_inference_report_fields(result,c("slope_upper","slope_lower",
-    "prediction_upper","prediction_lower","n_bootstrap","n_components",
+    "prediction_upper","prediction_lower","n_components",
     "resampling_unit","scaling","level"))
   .etr_inference_report_bounds(result$slope_lower,result$slope_upper,"slope")
   .etr_inference_report_bounds(result$prediction_lower,
     result$prediction_upper,"conditional mean")
-  b<-.etr_inference_report_integer(result$n_bootstrap,"n_bootstrap")
+  b<-.etr_inference_report_count(result,"n_bootstrap",
+    dim(result$bootstrap_slopes)[1L])
   k<-.etr_inference_report_integer(result$n_components,"n_components")
   level<-.etr_inference_report_level(result$level,"level")
   .etr_assert(identical(result$resampling_unit,"participant") ||
@@ -176,9 +186,9 @@ etr_fpca_regression_slope_band_reporting_text <- function(result,digits=3L) {
   .etr_assert(is.character(nms) && length(nms)==length(vals) &&
     !anyNA(nms) && all(nzchar(nms)) && !anyDuplicated(nms),
     "critical values must match distinct functional dimension names")
-  .etr_assert(result$simultaneous_scope %in% c("global","per_dimension") &&
+  .etr_assert(result$simultaneous_scope %in% c("global","dimension","per_dimension") &&
     length(result$simultaneous_scope)==1L,
-    "simultaneous_scope must be global or per_dimension")
+    "simultaneous_scope must be global or dimension")
   level<-.etr_inference_report_level(result$confidence_level,
     "confidence_level")
   critical<-paste(paste0(nms,"=",
@@ -243,13 +253,13 @@ etr_fpca_wild_bootstrap_family_test_reporting_text <- function(
     result,digits=3L) {
   d<-.etr_manuscript_digits(digits)
   .etr_inference_report_fields(result,c("projection_result",
-    "reject_familywise","n_targets","pvalue_correction",
+    "reject_familywise","pvalue_correction",
     "significance_level","global_statistic","global_p_value"))
-  .etr_inference_report_fields(result$projection_result,
-    "n_bootstrap","projection_result")
-  b<-.etr_inference_report_integer(
-    result$projection_result$n_bootstrap,"n_bootstrap")
-  n<-.etr_inference_report_integer(result$n_targets,"n_targets")
+  base<-result$projection_result
+  .etr_inference_report_fields(base,character(),"projection_result")
+  b<-.etr_inference_report_count(base,"n_bootstrap",
+    dim(base$bootstrap_projections)[1L])
+  n<-.etr_inference_report_count(result,"n_targets",length(result$reject_familywise))
   .etr_assert(is.logical(result$reject_familywise) &&
     !anyNA(result$reject_familywise) &&
     length(result$reject_familywise)==n,
@@ -291,13 +301,15 @@ etr_fpca_wild_bootstrap_monte_carlo_reporting_text <- function(
     result,digits=3L) {
   d<-.etr_manuscript_digits(digits)
   .etr_inference_report_fields(result,c("family_test_result",
-    "adjusted_decision_stable","n_bootstrap","confidence_level",
+    "adjusted_decision_stable","confidence_level",
     "global_tail_probability","global_interval_lower",
-    "global_interval_upper","n_targets"))
+    "global_interval_upper"))
   .etr_inference_report_fields(result$family_test_result,
     "significance_level","family_test_result")
-  n<-.etr_inference_report_integer(result$n_targets,"n_targets")
-  b<-.etr_inference_report_integer(result$n_bootstrap,"n_bootstrap")
+  n<-.etr_inference_report_count(result,"n_targets",
+    length(result$adjusted_decision_stable))
+  b<-.etr_inference_report_count(result,"n_bootstrap",
+    dim(result$family_test_result$projection_result$bootstrap_projections)[1L])
   .etr_assert(is.logical(result$adjusted_decision_stable) &&
     length(result$adjusted_decision_stable)==n &&
     !anyNA(result$adjusted_decision_stable),
@@ -341,13 +353,12 @@ etr_fpca_wild_bootstrap_simultaneous_reporting_text <- function(
     result,digits=3L) {
   d<-.etr_manuscript_digits(digits)
   .etr_inference_report_fields(result,c("projection_result","upper",
-    "lower","confidence_level","n_targets","critical_value"))
+    "lower","confidence_level","critical_value"))
   .etr_inference_report_fields(result$projection_result,
-    c("n_bootstrap","residual_components","inference_components",
+    c("residual_components","inference_components",
       "multiplier"),"projection_result")
   .etr_inference_report_bounds(result$lower,result$upper,"simultaneous")
-  n<-.etr_inference_report_integer(result$n_targets,"n_targets")
-  .etr_assert(length(result$lower)==n,"n_targets must match interval lengths")
+  n<-.etr_inference_report_count(result,"n_targets",length(result$lower))
   level<-.etr_inference_report_level(result$confidence_level,
     "confidence_level")
   critical<-.etr_inference_report_numeric(result$critical_value,
@@ -355,7 +366,8 @@ etr_fpca_wild_bootstrap_simultaneous_reporting_text <- function(
   .etr_assert(length(critical)==1L && critical>=0,
     "critical_value must be a nonnegative scalar")
   base<-result$projection_result
-  b<-.etr_inference_report_integer(base$n_bootstrap,"n_bootstrap")
+  b<-.etr_inference_report_count(base,"n_bootstrap",
+    dim(base$bootstrap_projections)[1L])
   k<-.etr_inference_report_integer(base$residual_components,
     "residual_components")
   h<-.etr_inference_report_integer(base$inference_components,
