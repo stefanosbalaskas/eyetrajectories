@@ -3,10 +3,10 @@ test_that("native PCG64 uses an isolated, reproducible integer-seeded stream", {
   before <- .Random.seed
   rng <- .etr_numpy_pcg64(0)
   expect_identical(rng$uniform(3L),
-    c(.6369616873214543, .2697867137638703, .04097352393619469))
+    c(0x1.461fd79fb3850p-1, 0x1.1442f7e20b674p-2, 0x1.4fa7b529d9bd0p-5))
   expect_identical(.etr_numpy_seeded_case_indices(1L, 3L, 1L), matrix(0L, 3L, 1L))
   expect_identical(.etr_numpy_pcg64(0)$normal(3L),
-    c(.1257302210933933, -.1321048632913019, .6404226504432821))
+    c(0x1.017ed89db8441p-3, -0x1.0e8cfe9bd45ccp-3, 0x1.47e57a468b06dp-1))
   expect_identical(.Random.seed, before)
   expect_error(.etr_numpy_pcg64(-1), "nonnegative integer")
   expect_error(.etr_numpy_pcg64(1.5), "nonnegative integer")
