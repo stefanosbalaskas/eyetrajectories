@@ -12,8 +12,8 @@
 #' @param scaling, multiplier Explicit FPCA scaling and wild law.
 #' @param confidence_level Fixed coverage probability.
 #' @param independent_unit_column Optional unique independent curve ID field.
-#' @param random_state Integer seed. Seeded Mammen uses NumPy-compatible
-#'   PCG64 draws and normal multipliers use the native R normal generator.
+#' @param random_state Nonnegative integer seed below 2^53 for NumPy-compatible
+#'   PCG64 normal or Mammen draws. NULL uses the current R RNG stream.
 #' @param multiplier_draws Optional B-by-n frozen source multiplier matrix.
 #' @return Native source-shape scan record, without automatic h selection.
 #' @export
@@ -161,6 +161,8 @@ etr_scan_wild_bootstrap_fpca_truncations<-function(
     independence_assumption="independent_curve_rows",
     independent_unit_column=independent_unit_column,
     simultaneous_across_targets=FALSE,random_state=random_state,
+    seeded_normal_draws_match_numpy=is.null(multiplier_draws)&&
+      !is.null(random_state)&&multiplier=="normal",
     seeded_mammen_draws_match_numpy=is.null(multiplier_draws)&&
       !is.null(random_state)&&multiplier=="mammen",
     source_full_contract_certified=FALSE)

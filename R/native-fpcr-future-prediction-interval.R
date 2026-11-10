@@ -2,11 +2,8 @@
 # regression_inference.py::fpca_regression_future_prediction_interval
 # frozen commit c1cd95ad718327550f7e55393ff38582872f7a94
 #
-# Source SeedSequence.spawn(1) + NumPy PCG64 random draws are NOT reproduced
-# by R's RNG. Supply zero-based residual_indices for a fixed-draw comparison
-# against pinned Python. Otherwise R uses its own RNG with the same
-# independent empirical-residual sampling *distribution*, not bit parity.
-# This is NOT a full source contract certificate.
+# Integer seeds select the first NumPy-compatible SeedSequence child.
+# Explicit zero-based residual indices replay a retained draw matrix.
 
 #' Marginal future-outcome intervals from paired-bootstrap FPCR predictions
 #'
@@ -18,11 +15,10 @@
 #' @param outcome One finite training outcome per reference fitted value.
 #' @param confidence_level Marginal interval nominal coverage in (0,1).
 #' @param residual_method Must be \code{"empirical_centered"}.
-#' @param random_state R RNG seed; differs from Python SeedSequence even
-#'   for identical integer seeds. NULL uses the current R RNG stream.
+#' @param random_state Nonnegative integer seed below 2^53 for a spawned
+#'   NumPy-compatible PCG64 stream. NULL uses the current R RNG stream.
 #' @param residual_indices Optional integer matrix B by target of ZERO-BASED
-#'   fixed residual indices from Python's source RNG. Enables direct
-#'   numerical source-law parity without asserting cross-language RNG parity.
+#'   fixed residual indices. These take precedence over the seed.
 #' @return Source-shaped predictive draws, quantiles, sample SD and metadata.
 #' @export
 etr_fpca_regression_future_prediction_interval<-function(
@@ -74,24 +70,18 @@ etr_fpca_regression_future_prediction_interval<-function(
     "centered FPCR residuals contain non-finite values")
   n<-length(centered)
   if(is.null(residual_indices)){
-    .etr_assert(is.null(random_state)||(
-      is.numeric(random_state)&&length(random_state)==1L&&
-      is.finite(random_state)&&random_state==floor(random_state)&&
-      random_state>=0&&random_state<=.Machine$integer.max),
-      "R random_state must be a nonnegative integer or NULL")
-    if(!is.null(random_state)){
-      had_rng<-exists(".Random.seed",envir=.GlobalEnv,inherits=FALSE)
-      if(had_rng)prior_rng<-get(".Random.seed",envir=.GlobalEnv)
-      on.exit({
-        if(had_rng)assign(".Random.seed",prior_rng,envir=.GlobalEnv)
-        else if(exists(".Random.seed",envir=.GlobalEnv,inherits=FALSE))
-          rm(".Random.seed",envir=.GlobalEnv)
-      },add=TRUE)
-      set.seed(as.integer(random_state))
+    if(is.null(random_state)){
+      index<-matrix(sample.int(n,as.double(B)*K,replace=TRUE),
+        nrow=B,ncol=K)
+      rng_source<-"r_native_random_draws_not_numpy_seedsequence"
+      rng_stream<-"r_native_random_stream_not_numpy_seedsequence"
+    }else{
+      child<-.etr_numpy_pcg64(random_state)$spawn(1L)[[1L]]
+      index<-matrix(child$integers(as.double(B)*K,n)+1L,
+        nrow=B,ncol=K,byrow=TRUE)
+      rng_source<-"numpy_seedsequence_spawned_pcg64"
+      rng_stream<-"spawned_domain_separated_stream"
     }
-    index<-matrix(sample.int(n,B*K,replace=TRUE),
-      nrow=B,ncol=K)
-    rng_source<-"r_native_random_draws_not_numpy_seedsequence"
   }else{
     .etr_assert(is.matrix(residual_indices)&&
       is.numeric(residual_indices)&&
@@ -102,6 +92,7 @@ etr_fpca_regression_future_prediction_interval<-function(
       "residual_indices must be a zero-based integer B-by-target matrix")
     index<-matrix(as.integer(residual_indices)+1L,B,K)
     rng_source<-"externally_retained_python_source_indices"
+    rng_stream<-"externally_supplied_indices_no_rng_identity_claim"
   }
   sampled<-matrix(centered[index],nrow=B,ncol=K)
   predictive<-draws+sampled
@@ -121,12 +112,7 @@ etr_fpca_regression_future_prediction_interval<-function(
     residual_method=residual_method,
     residual_source="full_sample_reference_fpcr_fit",
     residuals_centered=TRUE,
-    # Supplying external draws does not prove the producing RNG stream.
-    # The frozen Python provenance is deliberately NOT copied here.
-    residual_rng_stream=if(identical(rng_source,
-      "externally_retained_python_source_indices"))
-      "externally_supplied_indices_no_rng_identity_claim" else
-      "r_native_random_stream_not_numpy_seedsequence",
+    residual_rng_stream=rng_stream,
     residual_exchangeability_assumed=TRUE,
     heteroscedasticity_robust=FALSE,
     future_outcome_prediction_interval=TRUE,
