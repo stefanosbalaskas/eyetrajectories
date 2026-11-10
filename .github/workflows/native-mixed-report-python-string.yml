@@ -29,27 +29,22 @@ jobs:
           extra-packages: |
             any::pkgload
             any::testthat
-      - name: Parse and test mixed reporting scope
+      - name: Parse and test mixed reporting scope / POSIX
+        if: runner.os != 'Windows'
         shell: bash
         run: |
-          R_CMD=Rscript
-          R_FLAGS=(-e)
-          if [[ "$RUNNER_OS" == "Windows" ]]; then
-            # The Rscript.exe installed by setup-r is exiting 255 before R
-            # evaluation on this Windows runner. Invoke R.exe instead.
-            R_CMD=""
-            for candidate in /c/R/bin/R.exe /c/R/bin/x64/R.exe; do
-              if [[ -f "$candidate" ]]; then R_CMD="$candidate"; break; fi
-            done
-            if [[ -z "$R_CMD" ]]; then
-              echo "R executable not found under setup-r installation C:/R."
-              ls -la /c/R/bin || true
-              exit 1
-            fi
-            R_FLAGS=(--vanilla --slave -e)
-          fi
-          "$R_CMD" "${R_FLAGS[@]}" 'for(p in c("R/native-mixed-model-source-text.R","tests/testthat/test-native-mixed-model-source-text.R","tests/testthat/test-native-mixed-report-string-boundaries.R")) invisible(parse(file=p))'
-          "$R_CMD" "${R_FLAGS[@]}" 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-mixed-(model-source-text|report-string-boundaries)",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
+          Rscript -e 'for(p in c("R/native-mixed-model-source-text.R","tests/testthat/test-native-mixed-model-source-text.R","tests/testthat/test-native-mixed-report-string-boundaries.R")) invisible(parse(file=p))'
+          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-mixed-(model-source-text|report-string-boundaries)",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
+      - name: Parse and test mixed reporting scope / Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $exe = 'C:\R\bin\Rscript.exe'
+          if (!(Test-Path $exe)) { throw "Rscript missing after setup-r: $exe" }
+          & $exe -e 'for(p in c("R/native-mixed-model-source-text.R","tests/testthat/test-native-mixed-model-source-text.R","tests/testthat/test-native-mixed-report-string-boundaries.R")) invisible(parse(file=p))'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & $exe -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-mixed-(model-source-text|report-string-boundaries)",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
   pinned-python:
     name: Frozen Python 1.2 exact report string comparison
     runs-on: ubuntu-latest
