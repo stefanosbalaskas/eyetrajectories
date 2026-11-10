@@ -22,6 +22,29 @@
 #' @param metric_definitions Named recovery metric metadata records.
 #' @return Validated native recovery result, preserving failed replicates.
 #' @export
+.etr_recovery_source_metric_mapping <- function(metrics) {
+  # Python 1.2 FunctionalRecoveryRecord.__post_init__ applies
+  # str(key).strip() and float(value) to every mapping entry.
+  # Duplicate keys after stripping overwrite values in first-key order.
+  .etr_assert(is.atomic(metrics)&&!is.object(metrics)&&
+    is.null(dim(metrics))&&
+    (length(metrics)==0L||!is.null(names(metrics)))&&
+    !anyNA(names(metrics))&&
+    typeof(metrics)%in%c("double","integer","logical","character"),
+    "record metrics must be finite named numeric-like values or empty on failure")
+  result<-numeric(0)
+  for(i in seq_along(metrics)) {
+    key<-trimws(names(metrics)[[i]],whitespace="[\\h\\v]")
+    value<-suppressWarnings(as.numeric(metrics[[i]]))
+    .etr_assert(nzchar(key)&&length(value)==1L&&is.finite(value),
+      "recovery metrics require nonblank names and finite numeric values")
+    found<-match(key,names(result))
+    if(is.na(found))result<-c(result,stats::setNames(value,key))
+    else result[[found]]<-value
+  }
+  result
+}
+
 etr_functional_recovery_result <- function(records,metric_definitions=list()) {
   .etr_assert(is.list(records)&&length(records)>=1L,
     "records must be a nonempty list of recovery replicates")
@@ -48,12 +71,7 @@ etr_functional_recovery_result <- function(records,metric_definitions=list()) {
     .etr_recovery_exact_integer(r$replicate,"replicate")
     .etr_recovery_exact_integer(r$seed,"seed")
     .etr_assert(r$replicate>=0L,"replicate index must be nonnegative")
-    .etr_assert(is.numeric(r$metrics)&&!is.complex(r$metrics)&&
-      is.null(dim(r$metrics))&&
-      (length(r$metrics)==0L||!is.null(names(r$metrics)))&&
-      !anyNA(names(r$metrics))&&!anyDuplicated(names(r$metrics))&&
-      all(nzchar(names(r$metrics)))&&all(is.finite(r$metrics)),
-      "record metrics must be finite named numeric or empty on failure")
+    r$metrics<-.etr_recovery_source_metric_mapping(r$metrics)
     if(r$status=="ok") {
       .etr_assert(length(r$metrics)>=1L,
         "successful records require at least one metric")
@@ -62,10 +80,14 @@ etr_functional_recovery_result <- function(records,metric_definitions=list()) {
     } else {
       .etr_assert(length(r$metrics)==0L&&
         is.character(r$error_type)&&length(r$error_type)==1L&&
-        !is.na(r$error_type)&&nzchar(r$error_type)&&
+        !is.na(r$error_type)&&
         is.character(r$error_message)&&length(r$error_message)==1L&&
-        !is.na(r$error_message)&&nzchar(r$error_message),
+        !is.na(r$error_message),
         "failed records must have no metrics and explicit errors")
+      r$error_type<-trimws(r$error_type,whitespace="[\\h\\v]")
+      r$error_message<-trimws(r$error_message,whitespace="[\\h\\v]")
+      .etr_assert(nzchar(r$error_type)&&nzchar(r$error_message),
+        "failed records require error type and message after normalization")
     }
     if(length(r$metric_values)>0L) {
       .etr_assert(is.list(r$metric_values),
@@ -88,6 +110,7 @@ etr_functional_recovery_result <- function(records,metric_definitions=list()) {
           logical(1L))),
         "structured metric values must exactly match flattened metrics")
     }
+    records[[i]]<-r
   }
   structure(list(records=records,metric_definitions=metric_definitions),
     class="etr_functional_recovery_result")
