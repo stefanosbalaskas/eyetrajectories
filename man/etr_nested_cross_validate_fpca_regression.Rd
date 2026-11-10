@@ -9,7 +9,7 @@ etr_nested_cross_validate_fpca_regression(trajectories, outcome,
   scaling = "none", cv_unit = "curve", group_column = NULL,
   shuffle = FALSE, random_state = 0L,
   outer_fold_assignments = NULL, inner_fold_assignments = NULL,
-  coerce_numeric_text_covariates = FALSE, random_engine = "base_R")
+  coerce_numeric_text_covariates = FALSE, random_engine = "base_R", group_tie_order = "native")
 }
 \arguments{
 \item{coerce_numeric_text_covariates}{Native-only opt-in for finite numeric-text covariate columns, including interdigit underscores. The frozen Python source statsmodels model rejects object-typed columns, so FALSE preserves the default source-safe behavior.}
@@ -36,6 +36,10 @@ deterministic.}
 Each inner seed is the outer seed plus the zero-based outer fold index
 plus one. With the NumPy engine every seed must fit in an unsigned
 32-bit integer.}
+\item{group_tie_order}{Grouped sort profile. See
+\code{\link{etr_cross_validate_fpca_reconstruction}} for the native,
+NumPy SIMD and NumPy scalar options and supported domains. Explicit
+fold assignments take precedence.}
 \item{random_engine}{\code{"base_R"} retains the original native
 shuffle. \code{"numpy"} reproduces scikit-learn's seeded
 NumPy RandomState permutations at both levels.}
@@ -50,8 +54,7 @@ Grouped participant-held-out folds and seeded curve-shuffle folds
 are implemented. With grouped CV, both the outer test set and the
 inner component selection use whole-participant folds, avoiding
 train/test participant leakage. The resulting outer prediction
-frame retains a group column. Mixed-size GroupKFold ties can differ across
-NumPy builds. R glm.fit and Python statsmodels
+frame retains a group column. Select the grouped sort profile that matches the source installation. R glm.fit and Python statsmodels
 binomial IRLS/separation details, pandas coercion semantics, and complete
 Python return and exception domains
 remain unsupported and are not independently certified.}

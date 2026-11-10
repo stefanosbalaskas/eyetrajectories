@@ -8,7 +8,7 @@ etr_cross_validate_fpca_regression(trajectories, outcome,
   n_splits = 5L, scaling = "none", cv_unit = "curve",
   group_column = NULL, shuffle = FALSE, random_state = 0L,
   fold_assignments = NULL,
-  coerce_numeric_text_covariates = FALSE, random_engine = "base_R")
+  coerce_numeric_text_covariates = FALSE, random_engine = "base_R", group_tie_order = "native")
 }
 \arguments{
 \item{coerce_numeric_text_covariates}{Native-only opt-in for finite numeric-text covariate columns (including interdigit underscores). The frozen Python validator parses text but source statsmodels rejects object-typed columns, so FALSE preserves the default source-safe behavior.}
@@ -33,6 +33,10 @@ deterministic.}
 \item{random_state}{Nonnegative integer seed for shuffled curve folds,
 ignored for unshuffled or grouped folds. The NumPy engine accepts seeds
 up to \eqn{2^{32}-1}.}
+\item{group_tie_order}{Grouped sort profile. See
+\code{\link{etr_cross_validate_fpca_reconstruction}} for the native,
+NumPy SIMD and NumPy scalar options and supported domains. Explicit
+fold assignments take precedence.}
 \item{random_engine}{\code{"base_R"} retains the original native
 shuffle. \code{"numpy"} reproduces scikit-learn's seeded
 NumPy RandomState permutation.}
@@ -45,8 +49,7 @@ an additional `group` label column when grouping is requested.}
 training fold and projects held-out trajectories using only the training
 basis. Whole-group held-out folds prevent participant leakage,
 while isolated seeded curve folds allow reproducible
-sensitivity studies. Mixed-size GroupKFold tie ordering remains
-implementation-specific. Binomial inference uses
+sensitivity studies. The grouped sort profile selects the implementation of mixed-size ties. Binomial inference uses
 R stats::glm.fit; its IRLS and separation warnings can differ from statsmodels.
 Pandas nonnumeric-to-float source-fitting coercions remain outside the default; optional finite text conversion is a native-only extension;
 this is not independent full-domain source certification.}

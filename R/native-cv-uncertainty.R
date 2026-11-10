@@ -32,8 +32,20 @@
     is.finite(seed)&&seed==floor(seed)&&seed>=0&&seed<=maximum,message)
 }
 
+.etr_cv_group_labels <- function(x,group_column,group_tie_order) {
+  .etr_assert(is.character(group_column)&&length(group_column)==1L&&
+    !is.na(group_column)&&group_column%in%names(x$metadata),
+    "group_column is required and must exist in metadata")
+  raw <- x$metadata[[group_column]]
+  .etr_assert(length(raw)==length(x$curve_ids)&&!anyNA(raw),
+    "group_column must have one nonmissing group per curve")
+  if(group_tie_order=="native") return(as.character(raw))
+  enc2utf8(.etr_gfosr_pandas_labels(raw,"group_column"))
+}
+
 .etr_cv_fold_assignment <- function(x,n_splits,cv_unit,group_column,shuffle,
-    random_state,sparse_source_order=FALSE,random_engine="base_R") {
+    random_state,sparse_source_order=FALSE,random_engine="base_R",
+    group_tie_order="native") {
   n<-length(x$curve_ids)
   if(identical(cv_unit,"curve")) {
     .etr_assert(n_splits<=n,"n_splits cannot exceed number of trajectories")
@@ -65,25 +77,20 @@
     }
     return(list(fold=assignment,groups=NULL))
   }
-  .etr_assert(!is.null(group_column) && is.character(group_column) &&
-    length(group_column)==1L && !is.na(group_column) &&
-    group_column %in% names(x$metadata),
-    "group_column is required and must exist in metadata")
-  raw<-x$metadata[[group_column]]
-  .etr_assert(length(raw)==n && !anyNA(raw),
-    "group_column must have one nonmissing group per curve")
-  gr<-as.character(raw)
-  labels<-if(sparse_source_order)sort(unique(gr),method="radix") else sort(unique(gr))
+  gr<-.etr_cv_group_labels(x,group_column,group_tie_order)
+  labels<-if(sparse_source_order||group_tie_order!="native")
+    sort(unique(gr),method="radix") else sort(unique(gr))
   .etr_assert(n_splits<=length(labels),
     "n_splits cannot exceed number of unique groups")
-  sizes<-vapply(labels,function(g)sum(gr==g),integer(1L))
-  # Frozen sklearn GroupKFold visits np.argsort(group_counts)[::-1].
-  # If counts follow nondecreasing lexicographic group-label order,
-  # source NumPy argsort visits their indices in ascending order and
-  # the reversed pass visits indices in descending order, including ties.
-  # Preserve the existing native deterministic policy for all other
-  # sequences: NumPy quicksort may permute nonadjacent mixed-size ties.
-  order<-if(all(diff(sizes)>=0L)){
+  group_index<-match(gr,labels)
+  sizes<-tabulate(group_index,nbins=length(labels))
+  # Frozen GroupKFold visits the reversed result of np.argsort(counts).
+  # The native mode keeps the established deterministic tie policy.
+  order<-if(group_tie_order=="numpy_simd"){
+    rev(.etr_numpy_group_argsort_simd(sizes))
+  }else if(group_tie_order=="numpy_scalar"){
+    rev(.etr_numpy_group_argsort_scalar(sizes))
+  }else if(all(diff(sizes)>=0L)){
     rev(seq_along(labels))
   }else if(sparse_source_order&&length(sizes)<=3L){
     # NumPy's scalar and SIMD paths agree on descending label order
@@ -97,14 +104,14 @@
     group_folds[j]<-fold-1L
     totals[fold]<-totals[fold]+sizes[j]
   }
-  list(fold=group_folds[match(gr,labels)],groups=gr)
+  list(fold=group_folds[group_index],groups=gr)
 }
 
 # Exact predeclared source folds. Fold labels are 0-based, as in scikit-learn.
 # The caller may replay NumPy-shuffled KFold or GroupKFold assignments, while
 # the estimator and leakage barrier stay fully native R. No Python runtime.
 .etr_cv_explicit_fold_assignment <- function(x,n_splits,cv_unit,
-    group_column,fold_assignments) {
+    group_column,fold_assignments,group_tie_order="native") {
   n<-length(x$curve_ids)
   .etr_assert(is.numeric(fold_assignments)&&
     is.null(dim(fold_assignments))&&length(fold_assignments)==n&&
@@ -117,13 +124,7 @@
     "fold_assignments must populate every declared fold")
   if(identical(cv_unit,"curve"))
     return(list(fold=fold,groups=NULL))
-  .etr_assert(is.character(group_column)&&length(group_column)==1L&&
-    !is.na(group_column)&&group_column%in%names(x$metadata),
-    "group_column is required and must exist in metadata")
-  groups<-x$metadata[[group_column]]
-  .etr_assert(length(groups)==n&&!anyNA(groups),
-    "group_column must have one nonmissing group per curve")
-  groups<-as.character(groups)
+  groups<-.etr_cv_group_labels(x,group_column,group_tie_order)
   per_group<-split(fold,groups)
   .etr_assert(all(vapply(per_group,function(z)length(unique(z))==1L,
     logical(1L))),
@@ -151,11 +152,14 @@
 #' @param random_state Nonnegative seed for the selected curve-fold RNG.
 #' @param random_engine Use `"numpy"` for the frozen NumPy RandomState
 #'   shuffle, or `"base_R"` for the original R permutation.
+#' @param group_tie_order Use `"numpy_simd"` or `"numpy_scalar"` for
+#'   the specified NumPy 2.3.5 GroupKFold sort, or `"native"` for the
+#'   existing native grouped fold policy.
 #' @export
 etr_cross_validate_fpca_reconstruction <- function(trajectories,
     candidate_components=c(1L,2L,3L,4L,5L),n_splits=5L,scaling="none",
     cv_unit="curve",group_column=NULL,shuffle=TRUE,random_state=0L,
-    fold_assignments=NULL,random_engine="base_R") {
+    fold_assignments=NULL,random_engine="base_R",group_tie_order="native") {
   etr_validate(trajectories,require_complete=TRUE)
   .etr_assert(is.numeric(candidate_components) &&
     length(candidate_components)>=1L &&
@@ -176,12 +180,16 @@ etr_cross_validate_fpca_reconstruction <- function(trajectories,
   .etr_assert(is.logical(shuffle) && length(shuffle)==1L && !is.na(shuffle),
     "shuffle must be one explicit logical flag")
   random_engine<-match.arg(random_engine,c("base_R","numpy"))
+  group_tie_order<-match.arg(group_tie_order,c("native","numpy_simd","numpy_scalar"))
+  fold_source<-if(cv_unit=="group"&&group_tie_order!="native")
+    paste0(group_tie_order,"_groupkfold") else "native_R"
   n_splits<-as.integer(n_splits)
   split<-if(is.null(fold_assignments))
     .etr_cv_fold_assignment(trajectories,n_splits,cv_unit,
-      group_column,shuffle,random_state,random_engine=random_engine)
+      group_column,shuffle,random_state,random_engine=random_engine,
+      group_tie_order=group_tie_order)
   else .etr_cv_explicit_fold_assignment(trajectories,n_splits,
-    cv_unit,group_column,fold_assignments)
+    cv_unit,group_column,fold_assignments,group_tie_order)
   fold_errors<-vector("list",length(counts)*n_splits)
   assigns<-vector("list",n_splits)
   krow<-0L
@@ -236,7 +244,7 @@ etr_cross_validate_fpca_reconstruction <- function(trajectories,
       fit_inside_fold=TRUE,
       shuffle=if(cv_unit=="curve")shuffle else FALSE,
       group_leakage_prevented=cv_unit=="group",
-      fold_source=if(is.null(fold_assignments))"native_R" else
+      fold_source=if(is.null(fold_assignments))fold_source else
         "explicit_zero_based_source_replay",
       random_engine=if(!is.null(fold_assignments))"none_fixed_folds" else
         if(cv_unit=="curve" && shuffle)
@@ -245,7 +253,7 @@ etr_cross_validate_fpca_reconstruction <- function(trajectories,
       algorithmic_difference_from_python=if(cv_unit=="curve" && shuffle &&
           is.null(fold_assignments) && random_engine=="base_R")
         "R sample() and NumPy KFold RNG do not share permutations"
-        else if(cv_unit=="group")
+        else if(cv_unit=="group"&&group_tie_order=="native")
           "GroupKFold tie ordering is implementation-specific" else NULL)),
     class="etr_fpca_cv")
 }

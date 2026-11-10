@@ -72,14 +72,17 @@
   shuffle<-options$shuffle
   .etr_assert(is.logical(shuffle)&&length(shuffle)==1L&&!is.na(shuffle),
     "shuffle must be a nonmissing logical scalar")
+  group_tie_order<-match.arg(options$group_tie_order,c("native","numpy_simd","numpy_scalar"))
   if(!is.null(options$fold_assignments)){
     assignment<-.etr_cv_explicit_fold_assignment(x,k,unit,
-      options$group_column,options$fold_assignments)
+      options$group_column,options$fold_assignments,group_tie_order)
     policy<-"declared_folds"
   }else if(unit=="group"||!shuffle){
     assignment<-.etr_cv_fold_assignment(x,k,unit,options$group_column,
-      FALSE,NULL,sparse_source_order=TRUE)
-    policy<-if(unit=="group")"native_group_size_balanced"else"unshuffled_kfold"
+      FALSE,NULL,sparse_source_order=TRUE,group_tie_order=group_tie_order)
+    policy<-if(unit!="group")"unshuffled_kfold" else
+      if(group_tie_order=="native")"native_group_size_balanced" else
+        paste0(group_tie_order,"_groupkfold")
   }else{
     permutation<-.etr_sparse_cv_permutation(n,options$random_state)
     sizes<-rep(n%/%k,k)+as.integer(seq_len(k)<=n%%k)
@@ -153,7 +156,7 @@
     fold_assignments=NULL)
   .etr_assert(is.list(request)&&!is.data.frame(request)&&
     length(names(request))==length(request)&&!anyDuplicated(names(request))&&
-    all(names(request)%in%names(options)),
+    all(names(request)%in%c(names(options),"group_tie_order")),
     "bandwidth_selection must be a named list of declared CV options")
   options[names(request)]<-request
   positive_grid<-function(values,name){

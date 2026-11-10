@@ -103,6 +103,53 @@
   f <- .etr_wild_projection_fixture()
   py_x <- trajectory(f$x)
   py_y <- array_py(f$y)
+  grouped <- f$x
+  sizes <- rep(c(2L,2L,1L,1L),4L)
+  grouped$metadata$participant <- rep(sprintf("P%02d",seq_along(sizes)),sizes)
+  py_grouped <- trajectory(grouped)
+  witness <- as.integer(et_to_r(np$argsort(as.list(c(2L,2L,1L,1L)))))
+  if (identical(numpy_version,"2.3.5")) {
+    stopifnot(identical(witness,c(3L,2L,1L,0L))||
+      identical(witness,c(2L,3L,0L,1L)))
+    profile <- if(identical(witness,c(3L,2L,1L,0L)))"numpy_simd" else "numpy_scalar"
+    group_args <- list(cv_unit="group",group_column="participant",shuffle=FALSE)
+    component_args <- list(candidate_components=1:2,n_splits=4L)
+    nested_args <- list(candidate_components=1:2,outer_splits=4L,inner_splits=3L)
+    for (entry in list(
+      list(name="cross_validate_fpca_reconstruction",args=component_args,
+        fields=c("fold_errors","assignments")),
+      list(name="cross_validate_fpca_regression",args=component_args,
+        fields=c("fold_losses","assignments","predictions")),
+      list(name="nested_cross_validate_fpca_regression",args=nested_args,
+        fields=c("outer_folds","inner_summaries","predictions"))
+    )) {
+      reconstruction <- entry$name=="cross_validate_fpca_reconstruction"
+      native_args <- c(list(trajectories=grouped),
+        if(!reconstruction)list(outcome=f$y),entry$args,group_args,
+        list(group_tie_order=profile))
+      source_args <- entry$args
+      source_args$candidate_components <- reticulate::tuple(1L,2L)
+      native <- do.call(getExportedValue("eyetrajectories",paste0("etr_",entry$name)),
+        native_args)
+      source <- do.call(et_call,c(list(entry$name,trajectories=py_grouped),
+        if(!reconstruction)list(outcome=py_y),source_args,group_args))
+      for (field in entry$fields) {
+        a <- native[[field]]
+        b <- et_to_r(reticulate::py_get_attr(source,field))
+        record(entry$name,"mixed_size_group_ties",paste0(field,".columns"),
+          names(a),names(b),0)
+        record(entry$name,"mixed_size_group_ties",paste0(field,".rows"),
+          nrow(a),nrow(b),0)
+        for (column in intersect(names(a),names(b))) {
+          tolerance <- if(column%in%c("fold","outer_fold","n_components",
+            "selected_components")||startsWith(column,"n_"))0 else 1e-8
+          record(entry$name,"mixed_size_group_ties",paste0(field,".",column),
+            a[[column]],b[[column]],tolerance)
+        }
+      }
+    }
+    cat("GROUPED_PUBLIC_CV_SORT_PROFILE=",profile,"\n",sep="")
+  }
   for (seed in c(89, 2^32 + 89)) for (law in c("normal", "mammen")) {
     b <- if (seed == 89) 20L else 25L
     fixture <- paste(law, b, format(seed, scientific = FALSE), sep = "_")

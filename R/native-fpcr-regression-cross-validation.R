@@ -33,6 +33,8 @@
 #' @param random_state Nonnegative integer seed for shuffled curve folds.
 #' @param random_engine Use `"numpy"` for the frozen NumPy RandomState
 #'   shuffle, or `"base_R"` for the original R permutation.
+#' @param group_tie_order Grouped fold sort profile: `"native"`,
+#'   `"numpy_simd"` or `"numpy_scalar"`.
 #' @return Source-shaped fold losses, test predictions, assignments and
 #'   provenance; never fits on held-out curves.
 #' @param coerce_numeric_text_covariates Native-only optional parsing of
@@ -45,7 +47,8 @@ etr_cross_validate_fpca_regression<-function(
     family="gaussian",loss=NULL,covariates=NULL,n_splits=5L,
     scaling="none",cv_unit="curve",group_column=NULL,
     shuffle=FALSE,random_state=0L,fold_assignments=NULL,
-    coerce_numeric_text_covariates=FALSE,random_engine="base_R"){
+    coerce_numeric_text_covariates=FALSE,random_engine="base_R",
+    group_tie_order="native"){
   etr_validate(trajectories,require_complete=TRUE)
   .etr_fpcr_validate_family(family)
 
@@ -62,6 +65,9 @@ etr_cross_validate_fpca_regression<-function(
   .etr_assert(is.logical(shuffle)&&length(shuffle)==1L&&!is.na(shuffle),
     "shuffle must be one explicit logical flag")
   random_engine<-match.arg(random_engine,c("base_R","numpy"))
+  group_tie_order<-match.arg(group_tie_order,c("native","numpy_simd","numpy_scalar"))
+  fold_source<-if(cv_unit=="group"&&group_tie_order!="native")
+    paste0(group_tie_order,"_groupkfold") else "native_R"
   if(identical(cv_unit,"curve")&&shuffle){
     if(random_engine=="numpy"){
       .etr_cv_check_shuffle_seed(random_state,2^32-1,
@@ -100,9 +106,10 @@ etr_cross_validate_fpca_regression<-function(
   ns<-as.integer(n_splits)
   split<-if(is.null(fold_assignments))
     .etr_cv_fold_assignment(trajectories,ns,cv_unit,
-      group_column,shuffle,random_state,random_engine=random_engine)
+      group_column,shuffle,random_state,random_engine=random_engine,
+      group_tie_order=group_tie_order)
   else .etr_cv_explicit_fold_assignment(trajectories,ns,cv_unit,
-    group_column,fold_assignments)
+    group_column,fold_assignments,group_tie_order)
   folds<-split$fold
   fold_rows<-vector("list",ns*length(components))
   assign_rows<-vector("list",ns)
@@ -187,11 +194,11 @@ etr_cross_validate_fpca_regression<-function(
         if(identical(cv_unit,"curve")&&isTRUE(shuffle))
           if(random_engine=="numpy")"numpy_randomstate_mt19937" else "base_R_sample_not_NumPy"
         else "deterministic",
-      fold_source=if(is.null(fold_assignments))"native_R" else
+      fold_source=if(is.null(fold_assignments))fold_source else
         "explicit_zero_based_source_replay",
-      group_tie_policy=if(is.null(fold_assignments))
-        "native_size_descending_label_tie_break" else
-        "source_supplied_exact_groups",
+      group_tie_policy=if(!is.null(fold_assignments))"source_supplied_exact_groups" else
+        if(cv_unit=="group"&&group_tie_order!="native")fold_source else
+          "native_size_descending_label_tie_break",
       covariates=if(is.null(covariate_matrix))list() else
         as.list(colnames(covariate_matrix)),
       scientific_warning=paste(
