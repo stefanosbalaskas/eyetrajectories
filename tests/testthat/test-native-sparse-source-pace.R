@@ -279,6 +279,15 @@ test_that("sparse FPCA bandwidth selection retains failed candidates and audits 
   expect_true(all(condition$bandwidth_selection$fold_results$status_code=="validation_failure"))
   expect_true(all(condition$bandwidth_selection$curve_losses$failure_code==
     "predictive_covariance_ill_conditioned"))
+  bad<-cfg;bad$mean_smoother<-"local_constant"
+  condition<-expect_error(etr_run_sparse_fpca_workflow(x,bad),
+    class="etr_sparse_bandwidth_selection_error")
+  audit<-condition$bandwidth_selection
+  expect_true(all(audit$fold_results$status_code=="fit_failure"))
+  expect_true(all(audit$fold_results$failure_code=="ValueError"))
+  expect_identical(audit$provenance$mean_smoother,"local_constant")
+  bad$bandwidth_selection$failure_action<-"error"
+  expect_error(etr_run_sparse_fpca_workflow(x,bad),"mean_smoother must be 'local_linear'")
 })
 
 test_that("rotated covariance diagonal and noise estimate match frozen numerical primitives",{

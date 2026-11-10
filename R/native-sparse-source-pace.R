@@ -59,7 +59,7 @@ etr_fit_sparse_fpca_native<-function(
   n_curves<-length(trajectories$curve_ids)
   if(n_curves<3L)
     .etr_spn_fail("insufficient_pooled_support",
-      "sparse FPCA requires >=3 curves",list(n_curves=n_curves))
+      "native sparse FPCA requires at least three curves",list(n_curves=n_curves))
   .etr_assert(is.numeric(n_components)&&length(n_components)==1L&&
     !is.logical(n_components)&&is.finite(n_components)&&
     n_components==floor(n_components)&&n_components>=1L,
@@ -227,10 +227,11 @@ etr_fit_sparse_fpca_native<-function(
 
 .etr_sparse_smoothing_settings<-function(mean_smoother,covariance_smoother,kernel){
   .etr_assert(identical(mean_smoother,"local_linear"),
-    "mean_smoother must be local_linear")
+    "mean_smoother must be 'local_linear' in the first native tranche")
   .etr_assert(identical(covariance_smoother,"local_linear"),
-    "covariance_smoother must be local_linear")
-  .etr_assert(identical(kernel,"epanechnikov"),"kernel must be epanechnikov")
+    "covariance_smoother must be 'local_linear' in the first native tranche")
+  .etr_assert(identical(kernel,"epanechnikov"),
+    "kernel must be 'epanechnikov' in the first native tranche")
 }
 
 #' Conditional Gaussian uncertainty for fitted sparse FPCA/PACE scores

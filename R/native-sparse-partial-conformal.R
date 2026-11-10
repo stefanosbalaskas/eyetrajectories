@@ -9,7 +9,9 @@
     list(x$time[[i]]),list(x$values[[i]]),
     as.character(x$curve_ids[i]),
     x$dimension_names,metadata=x$metadata[i,,drop=FALSE],
-    coordinate_system=x$coordinate_system,time_unit=x$time_unit)
+    coordinate_system=x$coordinate_system,time_unit=x$time_unit,
+    provenance=x$provenance,
+    allow_infinite_values=isTRUE(attr(x,"allow_infinite_values",exact=TRUE)))
 }
 
 .etr_spnpc_observed_future<-function(x,dimension,grid){
@@ -37,6 +39,26 @@
   result
 }
 
+.etr_spnpc_group_labels<-function(values){
+  .etr_assert(is.atomic(values)&&is.null(dim(values)),
+    "group metadata must be a vector of scalar labels")
+  labels<-as.character(values)
+  if(is.double(values)&&!is.object(values)){
+    finite<-is.finite(values)
+    labels[finite]<-vapply(values[finite],.etr_python_json_float,character(1L))
+    labels[is.na(values)]<-"nan"
+    labels[which(values==Inf)]<-"inf"
+    labels[which(values==-Inf)]<-"-inf"
+  }else{
+    if(is.logical(values)){
+      labels[which(values)]<-"True"
+      labels[which(!values)]<-"False"
+    }
+    labels[is.na(labels)]<-if(is.factor(values))"nan"else"None"
+  }
+  labels
+}
+
 .etr_spnpc_group_values<-function(fit,calibration,group_column){
   fit_ids<-as.character(fit$curve_ids)
   cal_ids<-as.character(calibration$curve_ids)
@@ -53,11 +75,8 @@
     group_column%in%names(calibration$metadata)&&
     group_column%in%names(fit$metadata),
     "group_column must occur in both calibration and training metadata")
-  cg<-as.character(calibration$metadata[[group_column]])
-  tg<-as.character(fit$metadata[[group_column]])
-  .etr_assert(all(nzchar(cg))&&all(nzchar(tg))&&
-    !anyNA(cg)&&!anyNA(tg),
-    "declared exchangeability groups must be nonempty and finite identifiers")
+  cg<-.etr_spnpc_group_labels(calibration$metadata[[group_column]])
+  tg<-.etr_spnpc_group_labels(fit$metadata[[group_column]])
   .etr_assert(length(intersect(unique(cg),unique(tg)))==0L,
     "proper-training and calibration participant/group units must be disjoint")
   list(units=cg,training_units=tg)
@@ -85,7 +104,7 @@ etr_calibrate_sparse_fpca_partial_conformal_native<-function(
     condition_limit=NULL,history_ridge=NULL){
   .etr_assert(inherits(fit,"etr_sparse_fpca_native"),
     "calibration needs native sparse FPCA population fit")
-  .etr_irregular_validate_samples(calibration)
+  .etr_irregular_validate_samples(calibration,allow_infinite_values=TRUE)
   .etr_assert(is.numeric(alpha)&&length(alpha)==1L&&
     is.finite(alpha)&&alpha>0&&alpha<1,
     "alpha must lie in (0,1)")
@@ -121,9 +140,9 @@ etr_calibrate_sparse_fpca_partial_conformal_native<-function(
   curve_scores<-do.call(rbind,rows)
   groups<-split(curve_scores$nonconformity_score,
     curve_scores$calibration_unit)
-  sorted_ids<-sort(names(groups),method="radix")
-  scores<-as.numeric(vapply(sorted_ids,function(id)
-    max(groups[[id]]),numeric(1L)))
+  group_order<-order(names(groups),method="radix")
+  sorted_ids<-names(groups)[group_order]
+  scores<-unname(vapply(groups[group_order],max,numeric(1L)))
   m<-length(scores)
   rank<-as.integer(ceiling((m+1L)*(1-alpha)))
   if(rank>m)
@@ -179,7 +198,7 @@ etr_sparse_fpca_conformal_prediction_band_native<-function(
   .etr_assert(inherits(calibration,
     "etr_sparse_fpca_partial_conformal_calibration_native"),
     "calibration must be a native sparse partial conformal record")
-  .etr_irregular_validate_samples(trajectory)
+  .etr_irregular_validate_samples(trajectory,allow_infinite_values=TRUE)
   .etr_assert(length(trajectory$curve_ids)==1L,
     "target trajectory must contain one future-prediction curve")
   id<-as.character(trajectory$curve_ids[1L])
@@ -192,7 +211,7 @@ etr_sparse_fpca_conformal_prediction_band_native<-function(
     key<-calibration$group_column
     .etr_assert(key%in%names(trajectory$metadata),
       "target metadata missing declared group_column")
-    target_unit<-as.character(trajectory$metadata[[key]][1L])
+    target_unit<-.etr_spnpc_group_labels(trajectory$metadata[[key]])[1L]
     .etr_assert(!(target_unit%in%
       c(calibration$calibration_unit_ids,
         calibration$provenance$proper_training_units)),

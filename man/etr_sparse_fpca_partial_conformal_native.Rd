@@ -32,7 +32,10 @@ etr_sparse_fpca_conformal_band_frame_native(result)
 \item{history_cutoff}{Finite history endpoint used by each curve's conditional prediction.}
 \item{prediction_grid}{Finite future timestamps exactly observed on each calibration curve.}
 \item{alpha}{Conformal miscoverage level strictly inside (0,1).}
-\item{group_column}{Optional named exchangeability group in both training and calibration metadata.}
+\item{group_column}{Optional named exchangeability group in both training
+and calibration metadata. Scalar labels use source-style text. Missing
+character labels represent \code{None} and missing double or factor
+labels represent \code{nan}.}
 \item{min_history_observations}{Positive minimum native history observation count.}
 \item{condition_limit}{Optional upper bound on history-covariance condition number.}
 \item{history_ridge}{Optional nonnegative numerical history covariance ridge.}

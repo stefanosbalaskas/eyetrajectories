@@ -165,6 +165,9 @@ etr_run_sparse_multilevel_workflow<-function(trajectories,config,
 #'   trajectory collections, with common dimension and time units.
 #' @param config Explicit dimension, evaluation_grid, alpha,
 #'   backend="native_mean_curve_split_conformal", empty preprocessing.
+#'   The native_sparse_partial_conformal backend takes a native PACE
+#'   training config, a history cutoff, a prediction grid of at least
+#'   two future times, and an optional alpha with default 0.05.
 #' @return Native baseline split conformal prediction workflow with recorded
 #'   curve-wise scores and target observed-time bounds.
 #' @export
@@ -178,7 +181,7 @@ etr_run_sparse_prediction_workflow<-function(proper_training,calibration,
       min_history_observations=2L,
       condition_limit=NULL,history_ridge=NULL,
       preprocessing=list()),required=c(
-        "backend","training","history_cutoff","prediction_grid","alpha"))
+        "backend","training","history_cutoff","prediction_grid"))
     .etr_assert(is.list(cfg$training)&&
       identical(cfg$training$backend,"native_covariance"),
       "native sparse partial conformal workflow requires native PACE training config")
@@ -192,6 +195,26 @@ etr_run_sparse_prediction_workflow<-function(proper_training,calibration,
       "source sparse prediction target must contain exactly one curve")
     .etr_assert(is.null(cfg$training$observation_diagnostics),
       "prediction training observation diagnostics require a separately supplied candidate process")
+    .etr_assert(is.numeric(cfg$history_cutoff)&&length(cfg$history_cutoff)==1L&&
+      is.finite(cfg$history_cutoff),"history_cutoff must be finite")
+    grid<-cfg$prediction_grid
+    .etr_assert(is.numeric(grid)&&is.null(dim(grid))&&length(grid)>=2L&&
+      all(is.finite(grid))&&all(diff(grid)>0),
+      "prediction_grid must be a finite strictly increasing one-dimensional grid with at least two times")
+    .etr_assert(is.numeric(cfg$alpha)&&length(cfg$alpha)==1L&&
+      is.finite(cfg$alpha)&&cfg$alpha>0&&cfg$alpha<1,
+      "alpha must be finite and strictly within (0, 1)")
+    minimum<-cfg$min_history_observations
+    .etr_assert(is.numeric(minimum)&&length(minimum)==1L&&is.finite(minimum)&&
+      minimum>=1&&minimum<=.Machine$integer.max,
+      "min_history_observations must convert to a positive integer")
+    cfg$min_history_observations<-as.integer(minimum)
+    limit<-cfg$condition_limit
+    .etr_assert(is.null(limit)||(is.numeric(limit)&&length(limit)==1L&&
+      is.finite(limit)&&limit>1),"condition_limit must be finite and greater than 1")
+    ridge<-cfg$history_ridge
+    .etr_assert(is.null(ridge)||(is.numeric(ridge)&&length(ridge)==1L&&
+      is.finite(ridge)&&ridge>=0),"history_ridge must be finite and non-negative")
     # Source role assignment is always explicit; no random splitting.
     training<-etr_run_sparse_fpca_workflow(
       proper_training,cfg$training)

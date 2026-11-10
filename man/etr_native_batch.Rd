@@ -24,7 +24,7 @@ etr_validate_simplex(values, atol = 1e-7,
 etr_validate_no_long_missing_runs(x, max_missing_fraction)
 etr_irregular_trajectory_set(time, values, curve_ids, dimension_names,
   metadata = NULL, coordinate_system = "unknown",
-  time_unit = "unknown", provenance = list())
+  time_unit = "unknown", provenance = list(), allow_infinite_values = FALSE)
 etr_from_irregular_long_native(data, curve_columns, time_column,
   value_columns = c("x", "y"), metadata_columns = NULL,
   coordinate_system = "unknown", time_unit = "unknown",
@@ -61,6 +61,9 @@ and channel names.}
 \item{metadata}{Optional one-row-per-curve native R data frame.}
 \item{coordinate_system,time_unit}{Declared spatial and temporal units.}
 \item{provenance}{JSON-like named native R source-audit list.}
+\item{allow_infinite_values}{Permit infinite sample values for the source
+PACE future-prediction boundary. A target forecast uses only finite history
+values and calibration requires a finite observation at each forecast time.}
 \item{data}{Long-format data frame; rows are samples.}
 \item{curve_columns}{One or more identifier columns.}
 \item{time_column}{Numeric curve-specific observation-time column.}
