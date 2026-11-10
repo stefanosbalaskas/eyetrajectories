@@ -86,8 +86,9 @@
   # for an existing SFPC/SMFPC column: subsequent label assignment replaces
   # the value(s) in place, preserving their original position. Pandas also
   # retains duplicated nonreserved metadata names.
-  .etr_assert(!any(reserved%in%names(metadata)),
-    "metadata must not overwrite curve_id (pandas insert would fail)")
+  if(!preserve_workflow_metadata)
+    .etr_assert(!any(reserved%in%names(metadata)),
+      "metadata must not overwrite curve_id (pandas insert would fail)")
   if(preserve_workflow_metadata){
     # The legacy opt-in workflow uses unique metadata aliases, retained for
     # callers that explicitly request a no-collision table.
