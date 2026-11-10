@@ -49,8 +49,18 @@ jobs:
             filter="native-(zeroarg-catalog-source-semantic-closures|catalog-contract-boundaries|zeroarg-metadata-source-semantic-closure|math-contracts-diagnostics|functional-rqa-recovery|508-certification-batches|nonfunction-source-gaps|source-contract-gaps)",
             reporter="summary",stop_on_failure=TRUE,stop_on_warning=TRUE)
           stopifnot(identical(old,reticulate::py_available(initialize=FALSE)))
-          stopifnot(sum(etr_native_parity_catalog()$is_python_function&
-            etr_native_parity_catalog()$source_contract_gap_unresolved)==199L)
+          api <- etr_native_parity_catalog()
+          ledger <- utils::read.csv(
+            "inst/extdata/native_source_contract_gaps_stage22.csv",
+            stringsAsFactors=FALSE,check.names=FALSE)
+          stopifnot(
+            nrow(api)==508L,
+            sum(api$is_python_function)==380L,
+            sum(api$is_python_function & api$source_contract_gap_unresolved)==
+              sum(ledger$unresolved_source_gap),
+            sum(api$nonfunction_source_gap_unresolved)==1L,
+            !any(api$one_to_one_native_contract_complete)
+          )
           RSCRIPT
 
   python-oracle:
