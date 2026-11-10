@@ -145,7 +145,9 @@ class ScientificSourceEvidenceTests(unittest.TestCase):
         record = evidence.summarize(self.root, HEAD, write=False)
         self.assertEqual(record["total_observed_comparison_cases"], 8)
         self.assertEqual(record["passing_bounded_comparison_cases"], 8)
-        self.assertEqual(record["unique_python_functions_with_actual_source_cases"], 8)
+        # Baseline bounded_numeric already contains functional_trapezoid_weights;
+        # five new cases add four *distinct* source functions, not five.
+        self.assertEqual(record["unique_python_functions_with_actual_source_cases"], 7)
         for name in five:
             row = next(r for r in record["function_evidence"]
                        if r["python_name"] == name)
