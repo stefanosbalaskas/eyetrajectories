@@ -32,8 +32,20 @@ jobs:
       - name: Parse and test mixed reporting scope
         shell: bash
         run: |
-          Rscript -e 'for(p in c("R/native-mixed-model-source-text.R","tests/testthat/test-native-mixed-model-source-text.R","tests/testthat/test-native-mixed-report-string-boundaries.R")) invisible(parse(file=p))'
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-mixed-(model-source-text|report-string-boundaries)",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
+          R_CMD=Rscript
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            R_CMD=""
+            for candidate in /c/R/bin/Rscript.exe /c/R/bin/x64/Rscript.exe; do
+              if [[ -f "$candidate" ]]; then R_CMD="$candidate"; break; fi
+            done
+            if [[ -z "$R_CMD" ]]; then
+              echo "Rscript executable not found under the setup-r installation C:/R."
+              ls -la /c/R/bin || true
+              exit 1
+            fi
+          fi
+          "$R_CMD" -e 'for(p in c("R/native-mixed-model-source-text.R","tests/testthat/test-native-mixed-model-source-text.R","tests/testthat/test-native-mixed-report-string-boundaries.R")) invisible(parse(file=p))'
+          "$R_CMD" -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-mixed-(model-source-text|report-string-boundaries)",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
   pinned-python:
     name: Frozen Python 1.2 exact report string comparison
     runs-on: ubuntu-latest
