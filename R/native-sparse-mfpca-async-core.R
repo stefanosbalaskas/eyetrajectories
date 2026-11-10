@@ -254,12 +254,16 @@
     min_eig<-max_eig<-cond<-NaN;links<-0L
     if(m<min_obs)status<-"curve_too_sparse_for_async_joint_score_system"
     else{
+      source_failure<-tryCatch({
       # Fit covariance evaluated on the observed asynchronous native
       # scalar-time layout, preserving source directional xy semantics.
+      # Source evaluates the latent surface before measurement noise:
+      # an out-of-support curve must retain zero cross-noise links.
+      M<-.etr_spna_cov_eval(grid,blocks,layout)
       noise_fit<-.etr_spna_noise_eval(layout,noise,tolerance)
-      M<-.etr_spna_cov_eval(grid,blocks,layout)+
-        noise_fit$covariance+diag(ridge,m)
+      M<-M+noise_fit$covariance+diag(ridge,m)
       links<-noise_fit$cross_links
+      M<-(M+t(M))/2
       spectrum<-base::eigen(M,symmetric=TRUE,only.values=TRUE)$values
       min_eig<-min(spectrum);max_eig<-max(spectrum)
       cond<-if(min_eig<=0)Inf else max_eig/min_eig
@@ -282,6 +286,9 @@
           as.numeric(crossprod(Phi,solved))
         solve_status<-"solved"
       }
+        NULL
+      },etr_sparse_native_error=function(e)e$code)
+      if(!is.null(source_failure))status<-source_failure
     }
     diagnostics[[i]]<-data.frame(curve_id=ids[i],
       n_x_observations=layout$n_x,
