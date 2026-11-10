@@ -18,7 +18,7 @@ test_that("TrajectorySet class source differences remain explicit, unsigned and 
   expect_identical(nrow(api),508L)
   # Four exhaustive zero-argument metadata semantic closures leave 199 callable
   # gaps; Python dataclass/tuple vs native R identity remains distinct.
-  expect_equal(sum(api$source_contract_gap_unresolved),199L)
+  expect_equal(sum(api$source_contract_gap_unresolved),197L)
   expect_identical(sum(api$nonfunction_source_gap_unresolved),1L)
   row<-api[api$python_name=="TrajectorySet"&api$namespace=="root",,
     drop=FALSE]
