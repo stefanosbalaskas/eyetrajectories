@@ -6,7 +6,8 @@
   branch <- system2("git",c("branch","--show-current"),
     stdout=TRUE,stderr=FALSE)
   stopifnot(identical(branch,
-    "feat/native-zeroarg-source-semantic-closures-20261109"))
+    "feat/native-zeroarg-source-semantic-closures-20261109") ||
+    identical(branch,"feat/native-zeroarg-catalog-contract-closures-20261110"))
   dirty <- system2("git",c("status","--porcelain","--untracked-files=no"),
     stdout=TRUE,stderr=FALSE)
   stopifnot(length(dirty)==0L)
@@ -27,6 +28,7 @@
   source("scripts/preflight_rd_manuals.R",encoding="UTF-8",local=TRUE)
   testthat::test_local(".",filter=paste(c(
     "native-zeroarg-metadata-source-semantic-closure",
+    "native-zeroarg-catalog-source-semantic-closures",
     "native-math-contracts-diagnostics",
     "native-functional-rqa-recovery",
     "native-nonfunction-source-gaps",
@@ -40,10 +42,10 @@
   cat("ZEROARG_SEMANTIC_CLOSURE_DEVELOPER_QUALIFICATION_PASS=TRUE\n")
   catalog <- etr_native_parity_catalog()
   stopifnot(sum(catalog$is_python_function &
-      catalog$source_contract_gap_unresolved)==201L,
+      catalog$source_contract_gap_unresolved)==199L,
     sum(catalog$nonfunction_source_gap_unresolved)==1L,
     !any(catalog$one_to_one_native_contract_complete))
-  cat("ZEROARG_SEMANTIC_CLOSURE_CALLABLE_GAPS=201;NONFUNCTION_GAPS=1\n")
+  cat("ZEROARG_SEMANTIC_CLOSURE_CALLABLE_GAPS=199;NONFUNCTION_GAPS=1\n")
   Sys.setenv("_R_CHECK_CRAN_INCOMING_REMOTE_"="FALSE")
   source("scripts/run_batch32_cran_gate.R",
     encoding="UTF-8",local=TRUE)
