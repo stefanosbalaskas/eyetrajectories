@@ -108,9 +108,9 @@ test_that("only two additional record catalog gaps receive developer closure",{
     expect_false(row$independent_numeric_parity_pass)
   }
   expect_identical(sum(catalog$is_python_function&
-    catalog$source_contract_gap_unresolved),199L)
+    catalog$source_contract_gap_unresolved),197L)
   expect_identical(sum(catalog$nonfunction_source_gap_unresolved),1L)
   expect_identical(sum(!catalog$source_contract_gap_unresolved&
-    !catalog$nonfunction_source_gap_unresolved),308L)
+    !catalog$nonfunction_source_gap_unresolved),310L)
   expect_false(any(catalog$one_to_one_native_contract_complete))
 })
