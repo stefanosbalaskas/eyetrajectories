@@ -139,6 +139,8 @@
       "native-sparse-multilevel-source",
       "native-sparse-mfpca-async-source",
       "native-functional-rqa-recovery",
+      "native-rqa-physical-target-whole-source",
+      "native-source-windowed-rqa-time-units",
       "native-functional-simulation-seeded",
       "native-recovery-modes",
       "native-functional-diagnostics"
