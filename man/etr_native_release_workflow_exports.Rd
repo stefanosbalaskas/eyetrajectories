@@ -61,7 +61,10 @@ provenance and reporting text.
 Use \code{resampling_unit="group"} with \code{group_column} to keep entire
 groups in one fold. Supply zero-based \code{fold_assignments} in input-curve
 order to replay an external split. Seeded curve shuffles use the legacy
-NumPy permutation law. Native grouped tie ordering may differ from NumPy.
+NumPy permutation law. For grouped selectors,
+\code{group_tie_order="numpy_simd"} or \code{"numpy_scalar"} replays the
+chosen NumPy 2.3.5 tie ordering. See
+\code{\link{etr_cross_validate_fpca_reconstruction}} for supported domains.
 By default every fold must be valid. \code{min_valid_folds} changes this
 threshold. \code{failure_action="retain"} records failed folds, while
 \code{"error"} stops at the first failure. If no candidate is eligible, the

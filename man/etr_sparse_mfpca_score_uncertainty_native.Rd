@@ -21,13 +21,14 @@ etr_sparse_mfpca_score_uncertainty_frame_native(result)
 \arguments{
 \item{fit}{A native direct joint sparse \code{etr_sparse_mfpca_source} fit.}
 \item{trajectories}{The matched jointly observed irregular trajectories.}
-\item{condition_limit}{Optional source covariance condition-number limit greater than one.}
+\item{condition_limit}{Optional numeric or decimal-text source covariance
+condition-number limit, finite and greater than one.}
 \item{failure_action}{Either \code{"error"} or \code{"retain_nan"}.}
 \item{result}{A native conditional joint PACE score uncertainty result.}
 }
 \value{
-The first function returns per-curve posterior covariance matrices, standard
-errors and source-status diagnostics. The second returns one row per curve
+The first function returns per-curve posterior covariance and correlation
+matrices, standard errors and source-status diagnostics. The second returns one row per curve
 and retained joint component, with scores, conditional standard errors,
 variance, status, condition number and method.
 }

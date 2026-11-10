@@ -7,30 +7,10 @@
     mean_bandwidth,covariance_bandwidth,analysis_support_action,
     psd_action,psd_tolerance,mean_min_local_points,covariance_min_local_pairs){
   orig<-trajectories$time
-  left<-min(vapply(orig,function(t)t[1L],numeric(1L)))
-  right<-max(vapply(orig,function(t)tail(t,1L),numeric(1L)))
-  tol<-1e-12*max(1,abs(left),abs(right))
-  if(grid[1L]<left-tol||tail(grid,1L)>right+tol)
-    .etr_spn_fail("evaluation_grid_outside_pooled_support",
-      "joint sparse grid extends beyond observed pooled times")
   idx<-match(dimensions,trajectories$dimension_names)
-  for(i in seq_along(trajectories$curve_ids)){
-    v<-trajectories$values[[i]][,idx,drop=FALSE]
-    both<-is.finite(v[,1L])&is.finite(v[,2L])
-    if(any(xor(is.finite(v[,1L]),is.finite(v[,2L]))))
-      .etr_spn_fail("coordinate_specific_missingness_unsupported",
-        "jointly observed channels must have matching finite samples")
-    if(any(!both))
-      .etr_spn_fail("nonfinite_sparse_planar_observation",
-        "joint observations must be finite")
-  }
-  .etr_assert(analysis_support_action%in%c("error","restrict"),
-    "analysis_support_action must be error or restrict")
-  masks<-lapply(orig,function(t)t>=grid[1L]&t<=tail(grid,1L))
-  out_counts<-as.integer(vapply(masks,function(z)sum(!z),integer(1L)))
-  if(analysis_support_action=="error"&&any(out_counts>0L))
-    .etr_spn_fail("observations_outside_analysis_support",
-      "raw joint observations lie outside population grid")
+  .etr_spnm_validate_observations(trajectories,dimensions,idx)
+  analysis<-.etr_spnm_analysis_support(orig,grid,analysis_support_action)
+  masks<-analysis$masks
   times<-if(analysis_support_action=="restrict")
     Map(function(t,m)t[m],orig,masks)else orig
   observed<-lapply(seq_along(orig),function(i){
@@ -38,9 +18,6 @@
     if(analysis_support_action=="restrict")
       v[masks[[i]],,drop=FALSE]else v
   })
-  if(sum(lengths(times))<3L)
-    .etr_spn_fail("insufficient_joint_support",
-      "fewer than three retained planar observations")
   t_pool<-unlist(times,use.names=FALSE)
   x_pool<-unlist(lapply(observed,function(z)z[,1L]),use.names=FALSE)
   y_pool<-unlist(lapply(observed,function(z)z[,2L]),use.names=FALSE)
@@ -74,15 +51,8 @@
   joint<-.etr_spnm_operator(
     list(xx=xx$values,xy=xy$values,yy=yy$values),
     grid,psd_action,psd_tolerance)
-  support<-list(
-    analysis_support=range(grid),
-    analysis_support_action=analysis_support_action,
-    original_sample_counts=as.integer(lengths(orig)),
-    analysis_sample_counts=as.integer(lengths(times)),
-    outside_observation_count=sum(out_counts),
-    outside_counts_by_curve=out_counts)
   list(times=times,observed=observed,mean=cbind(mx$values,my$values),
-    operator=joint,support=support,
+    operator=joint,support=analysis$summary,
     mean_support_counts=cbind(mx$support_counts,my$support_counts),
     covariance_support_counts=list(cxx=xx$support_counts,
       cxy=xy$support_counts,cyy=yy$support_counts),
@@ -127,8 +97,11 @@ etr_fit_sparse_mfpca_native<-function(
     !anyNA(dimensions)&&!anyDuplicated(dimensions)&&
     all(dimensions%in%trajectories$dimension_names),
     "dimensions must identify two distinct planar observation channels")
-  .etr_assert(length(trajectories$curve_ids)>=3L,
-    "insufficient_joint_support: need >=3 curves")
+  n_curves<-length(trajectories$curve_ids)
+  if(n_curves<3L)
+    .etr_spn_fail("insufficient_joint_support",
+      "sparse planar covariance estimation requires at least three curves",
+      list(n_curves=n_curves))
   .etr_assert(is.numeric(n_components)&&length(n_components)==1L&&
     is.finite(n_components)&&n_components==floor(n_components)&&
     n_components>=1L,

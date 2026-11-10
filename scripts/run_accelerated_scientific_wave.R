@@ -105,6 +105,7 @@
       "native-numpy-pcg64",
       "native-cv-uncertainty",
       "native-fpcr-(regression|nested)-cross-validation",
+      "native-fpcr-grouped-source-folds",
       "native-fpcr-numeric-string-outcomes",
       "native-private-helper-names",
       "native-bootstrap-inference",
@@ -164,6 +165,11 @@
       source("scripts/trace_miaaft_source_witness.R",
         encoding="UTF-8",local=TRUE)
       cat("ACCELERATED_WAVE_MIAAFT_PHASE_REPLAY_SOURCE_DIFF_RECORDED=TRUE\n")
+    }
+    if(identical(Sys.getenv("ET_RUN_GROUPED_FOLD_SORT_SOURCE_DIFF"),"true")){
+      source("scripts/run_grouped_fold_sort_differential.R",
+        encoding="UTF-8",local=TRUE)
+      cat("ACCELERATED_WAVE_GROUPED_FOLD_SORT_SOURCE_DIFF_RECORDED=TRUE\n")
     }
     sparse_disagreements<-0L
     sparse_runner_errors<-character()

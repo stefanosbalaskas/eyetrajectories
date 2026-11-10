@@ -25,6 +25,28 @@
   x
 }
 
+.etr_spn_uncertainty_grid<-function(x){
+  .etr_assert(is.numeric(x)&&is.null(dim(x))&&length(x)>=2L&&
+    all(is.finite(x))&&all(diff(x)>0),"fit evaluation grid is invalid")
+  x
+}
+
+.etr_spn_score_correlations<-function(covariance,standard_errors){
+  out<-array(NaN,dim(covariance))
+  k<-ncol(standard_errors)
+  for(i in seq_len(nrow(standard_errors))){
+    P<-matrix(covariance[i,,],k,k)
+    if(!all(is.finite(P)))next
+    scale<-outer(standard_errors[i,],standard_errors[i,])
+    correlation<-matrix(NaN,k,k)
+    use<-scale>0
+    correlation[use]<-P[use]/scale[use]
+    diag(correlation)<-1
+    out[i,,]<-correlation
+  }
+  out
+}
+
 .etr_spn_check_grid_support<-function(times,grid){
   start<-min(vapply(times,function(t)t[1L],numeric(1L)))
   end<-max(vapply(times,function(t)tail(t,1L),numeric(1L)))
@@ -303,7 +325,7 @@
         for(j in seq_len(k))Phi[,j]<-.etr_spn_eval(grid,phi[j,],t)
         if(posterior){
           rhs<-Phi%*%prior
-          M<-solve(Sigma,rhs)
+          M<-solve(Sigma,rhs,tol=0)
           residual<-sqrt(sum((Sigma%*%M-rhs)^2))/
             max(1,sqrt(sum(rhs^2)))
           P<-prior-crossprod(rhs,M);P<-(P+t(P))/2
@@ -332,17 +354,24 @@
       condition_number=cond,minimum_eigenvalue=mine,
       maximum_eigenvalue=maxe,score_ridge=ridge,
       condition_limit=limit,stringsAsFactors=FALSE)
-    if(posterior)row<-transform(row,
-      posterior_minimum_eigenvalue=post_min,
-      posterior_psd_repair_applied=repaired,
-      solve_relative_residual=residual)
+    if(posterior){
+      row$posterior_minimum_eigenvalue<-post_min
+      row$posterior_psd_repair_applied<-repaired
+      row$solve_relative_residual<-residual
+      row<-row[c("curve_id","n_samples","status_code","solve_status",
+        "condition_number","minimum_eigenvalue","maximum_eigenvalue",
+        "posterior_minimum_eigenvalue","posterior_psd_repair_applied",
+        "solve_relative_residual","score_ridge","condition_limit")]
+    }
     diagnostics[[i]]<-row
   }
   diagnostic<-do.call(rbind,diagnostics)
   if(failure_action=="error"&&any(diagnostic$status_code!="ok")){
     i<-which(diagnostic$status_code!="ok")[1L]
-    .etr_spn_score_fail(diagnostic,i,
-      paste("PACE system failed for curve",ids[i]))
+    message<-if(posterior)paste("conditional PACE uncertainty system failed for curve",
+      .etr_python_workflow_identifier_repr(ids[i])) else
+      paste("PACE system failed for curve",ids[i])
+    .etr_spn_score_fail(diagnostic,i,message)
   }
   list(scores=scores,covariance=posterior_cov,
     standard_errors=standard_errors,diagnostics=diagnostic)

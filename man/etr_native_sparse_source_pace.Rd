@@ -65,14 +65,16 @@ measurement-error variance was supplied.}
 \item{mean_smoother,covariance_smoother}{Both must be \code{"local_linear"}.}
 \item{kernel}{The \code{"epanechnikov"} kernel.}
 \item{fit}{Fitted native sparse FPCA object.}
-\item{condition_limit}{Optional positive override of the retained score-system limit.}
+\item{condition_limit}{Optional numeric or decimal-text override of the
+retained score-system limit, finite and greater than one.}
 \item{failure_action}{\code{"error"} or \code{"retain_nan"} for conditional uncertainty.}
 \item{result}{Native conditional sparse score-uncertainty object.}
 }
 \value{
 The fit returns covariance, eigenfunctions, scores, fitted mean, observed-grid
 quadrature weights, and diagnostic/provenance data. The uncertainty method
-returns conditional score covariance arrays and standard errors. The frame
+returns conditional score covariance and correlation arrays and standard
+errors for trajectories in the fit's curve order and measurement units. The frame
 method returns one row per curve and component. With the error policy,
 PACE score failures raise an \code{etr_sparse_native_error} condition with
 the first failure's code and the audit rows for all curves in its details.

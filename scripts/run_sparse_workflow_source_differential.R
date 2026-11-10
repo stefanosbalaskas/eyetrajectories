@@ -17,6 +17,15 @@ def _etr_sparse_workflow_input(times, values, ids, dimensions, metadata):
         metadata=metadata, coordinate_system='degrees', time_unit='s')
 ")
   python<-reticulate::import("eyetrajectoriespy.workflows",convert=FALSE)
+  np<-reticulate::import("numpy",convert=FALSE)
+  group_profile<-NULL
+  if(identical(et_to_r(np$`__version__`),"2.3.5")){
+    order_witness<-as.integer(et_to_r(np$argsort(as.list(c(2L,2L,1L,1L)))))
+    stopifnot(identical(order_witness,c(3L,2L,1L,0L))||
+      identical(order_witness,c(2L,3L,0L,1L)))
+    group_profile<-if(identical(order_witness,c(3L,2L,1L,0L)))
+      "numpy_simd" else "numpy_scalar"
+  }
   attr<-reticulate::py_get_attr
   item<-reticulate::py_get_item
   table<-function(workflow,key)et_to_r(item(attr(workflow,"tables"),key))
@@ -95,7 +104,9 @@ def _etr_sparse_workflow_input(times, values, ids, dimensions, metadata):
     fixtures<-c("fixed_bandwidth","retained_score_failure",
       "selected_seeded_curve","selected_group_with_failed_candidate",
       "selected_three_groups_mixed_sizes")
-    if(case$prefix=="sparse_fpca")fixtures<-c(fixtures,"selected_diagonal_difference")
+    if(!is.null(group_profile))fixtures<-c(fixtures,"selected_four_groups_mixed_ties")
+    if(case$prefix=="sparse_fpca")
+      fixtures<-c(fixtures,"selected_diagonal_difference","two_component_uncertainty")
     for(fixture in fixtures){
       args<-case$args
       native_tr<-tr
@@ -104,6 +115,7 @@ def _etr_sparse_workflow_input(times, values, ids, dimensions, metadata):
         args[[case$score_min]]<-max(lengths(tr$time))+1L
         args$score_failure_action<-"retain_nan"
       }
+      if(fixture=="two_component_uncertainty")args$n_components<-2L
       selected<-startsWith(fixture,"selected_")
       if(selected){
         args$mean_bandwidth<-args$covariance_bandwidth<-NULL
@@ -135,9 +147,18 @@ def _etr_sparse_workflow_input(times, values, ids, dimensions, metadata):
           args$noise_support<-c(.20,.80)
           selector$shuffle<-FALSE
         }
+        if(fixture=="selected_four_groups_mixed_ties"){
+          native_tr$metadata$fold_group<-rep(c("A","Z","a","z"),c(4L,8L,4L,8L))
+          reference_tr<-source_input(native_tr)
+          selector$resampling_unit<-"group"
+          selector$group_column<-"fold_group"
+        }
         args$bandwidth_selection<-selector
+        if(fixture=="selected_four_groups_mixed_ties")
+          args$bandwidth_selection$group_tie_order<-group_profile
       }
       uncertainty<-list(failure_action="retain_nan")
+      if(fixture=="two_component_uncertainty")uncertainty$condition_limit<-"1e10"
       native<-case$runner(native_tr,c(list(backend="native_covariance",
         score_uncertainty=uncertainty),args))
       if(case$prefix=="sparse_mfpca"){
@@ -150,8 +171,8 @@ def _etr_sparse_workflow_input(times, values, ids, dimensions, metadata):
         args$bandwidth_selection<-do.call(reticulate::py_call,
           c(list(attr(python,selector_class)),selector))
       }
-      args$score_uncertainty<-reticulate::py_call(attr(python,
-        "ScoreUncertaintyConfig"),failure_action="retain_nan")
+      args$score_uncertainty<-do.call(reticulate::py_call,
+        c(list(attr(python,"ScoreUncertaintyConfig")),uncertainty))
       cfg<-do.call(reticulate::py_call,c(list(attr(python,case$config)),args))
       source<-reticulate::py_call(attr(python,name),trajectories=reference_tr,config=cfg)
       .etr_compare_sparse_workflow_records(native,source,function(field,ok)
@@ -163,6 +184,32 @@ def _etr_sparse_workflow_input(times, values, ids, dimensions, metadata):
       frame(name,fixture,"scores_table",native$tables$scores,table(source,"scores"))
       frame(name,fixture,"conditional_score_uncertainty",
         native$tables$score_uncertainty,table(source,"score_uncertainty"))
+      source_uncertainty<-attr(source,"score_uncertainty")
+      native_uncertainty<-native$score_uncertainty
+      for(key in c("covariance","standard_errors","correlations"))
+        compare(name,fixture,paste0("conditional_result.",key),
+          native_uncertainty[[key]],et_to_r(attr(source_uncertainty,key)))
+      frame(name,fixture,"conditional_result.diagnostics",native_uncertainty$diagnostics,
+        et_to_r(attr(source_uncertainty,"diagnostics")))
+      record(name,fixture,"conditional_result.provenance",
+        if(.etr_sparse_source_record_equal(native_uncertainty$provenance,
+            et_to_r(attr(source_uncertainty,"provenance"))))
+          "PASS_SCHEMA"else"DIVERGENT_SCHEMA")
+      if(fixture=="fixed_bandwidth"){
+        paired<-case$prefix=="sparse_mfpca"
+        module<-reticulate::import(if(paired)
+          "eyetrajectoriespy.sparse_multivariate_score_uncertainty"else
+          "eyetrajectoriespy.sparse_score_uncertainty",convert=FALSE)
+        calculate<-if(paired)etr_sparse_mfpca_score_uncertainty_native else
+          etr_sparse_fpca_score_uncertainty_native
+        source_function<-attr(module,paste0(case$prefix,"_score_uncertainty"))
+        .etr_sparse_source_error_contract(
+          function()calculate(native$fit,native_tr,condition_limit=1.01),
+          function()reticulate::py_call(source_function,fit=source_fit,
+            trajectories=reference_tr,condition_limit=1.01),
+          function(field,ok)record(name,fixture,paste0("conditional_result.",field),
+            if(ok)"PASS_SCHEMA"else"DIVERGENT_SCHEMA"))
+      }
       compare(name,fixture,"conditional_score_uncertainty_report",
         native$reports$score_uncertainty,
         et_to_r(item(attr(source,"reports"),"score_uncertainty")))

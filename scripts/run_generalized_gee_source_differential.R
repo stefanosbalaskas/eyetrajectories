@@ -349,6 +349,53 @@ _wave_gee_text_exposure=['2_0']*n
           tol=if(field=="extrapolation_flags")0 else 5e-4)
     }
   }
+  fit_name<-"fit_generalized_function_on_scalar_regression"
+  boundary_rejections<-c(
+    score_too_large="GEE did not converge",
+    subthreshold_rank="scalar design matrix",
+    rank_deficient="scalar design matrix",
+    zero_counts="first guess on the deviance")
+  for(key in c("one_update","weighted_grouped","separated",
+    "nearly_rank_deficient","numeric_curve_id",names(boundary_rejections))){
+    label<-paste0("source_gee_",key)
+    args<-.etr_native_gee_boundary_case(key)
+    n<-take(function()do.call(etr_fit_generalized_function_on_scalar_regression,args))
+    p<-take(function().etr_python_gee_boundary_call(args))
+    if(key%in%names(boundary_rejections)){
+      phrase<-boundary_rejections[[key]]
+      matched<-!n$ok&&!p$ok&&grepl(phrase,n$error,fixed=TRUE)&&
+        grepl(phrase,p$error,fixed=TRUE)
+      add(fit_name,label,"<call>",
+        if(matched)"PASS_BOTH_REJECT" else "DIVERGENT_ACCEPTANCE",
+        detail=paste("expected rejection at",phrase),
+        r_error=n$error,py_error=p$error)
+      next
+    }
+    if(!n$ok||!p$ok){
+      add(fit_name,label,"<call>","DIVERGENT_ACCEPTANCE",
+        r_error=n$error,py_error=p$error)
+      next
+    }
+    for(field in c(fit_fields,"basis_coefficients","basis_knots",
+      "observed_functions","scalar_design_matrix","linear_predictor_functions",
+      "linear_predictor_rate","linear_predictor_count","log_exposure",
+      "exposure","rate_functions","binomial_successes","binomial_denominators",
+      "binomial_observed_proportions","binomial_expected_successes",
+      "binomial_denominator_expanded_from_curve","exposure_expanded_from_curve",
+      "scale","maxiter","ctol","converged","family","link","exposure_units"))
+      compare(fit_name,label,field,n$value[[field]],
+        reticulate::py_get_attr(p$value,field),tol=1e-9)
+    warnings<-as.character(unlist(et_to_r(
+      reticulate::py_get_attr(p$value,"backend_warnings")),use.names=FALSE))
+    compare(fit_name,label,"backend_warnings",n$value$backend_warnings,warnings)
+    model<-reticulate::py_get_attr(p$value,"model")
+    updates<-reticulate::py_len(reticulate::py_get_item(
+      reticulate::py_get_attr(model,"fit_history"),"params"))
+    compare(fit_name,label,"gee_score_iterations",
+      n$value$provenance$gee_score_iterations,updates,tol=0)
+    compare(fit_name,label,"gee_score_norm",n$value$provenance$gee_score_norm,
+      reticulate::py_get_attr(model,"score_norm"),tol=1e-11)
+  }
   # Explicit negative domain pairs, with both exception messages retained.
   if(!is.null(fitted[["poisson"]])){
     for(spec in list(

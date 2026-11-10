@@ -255,35 +255,73 @@ etr_sparse_fpca_score_uncertainty_native<-function(
   .etr_assert(identical(fit$curve_ids,trajectories$curve_ids)&&
     fit$dimension%in%trajectories$dimension_names,
     "sparse FPCA fit/trajectory curve IDs and dimension must align")
+  .etr_assert(identical(fit$coordinate_system,trajectories$coordinate_system),
+    "trajectory coordinate_system does not match fit")
+  .etr_assert(identical(fit$time_unit,trajectories$time_unit),
+    "trajectory time_unit does not match fit")
   info<-fit$provenance$sparse_fpca
+  .etr_assert(is.list(info)&&identical(info$backend,"native"),
+    "fit provenance does not identify the native sparse FPCA backend")
   limit<-if(is.null(condition_limit))info$score_condition_limit
     else condition_limit
+  if(is.null(limit))limit<-1e12
+  if(.etr_trajectory_boundary_scalar(limit))
+    limit<-.etr_trajectory_boundary_double(limit,"condition_limit must be numeric")
   .etr_assert(is.numeric(limit)&&length(limit)==1L&&
     is.finite(limit)&&limit>1,
     "condition_limit must be finite and greater than one")
   .etr_assert(failure_action%in%c("error","retain_nan"),
     "failure_action must be error or retain_nan")
-  grid<-fit$evaluation_grid
+  grid<-.etr_spn_uncertainty_grid(fit$evaluation_grid)
+  k<-fit$n_components
+  .etr_assert(is.numeric(k)&&length(k)==1L&&is.finite(k)&&k>=1&&k==floor(k),
+    "fit n_components must be a positive integer")
+  .etr_assert(is.numeric(fit$eigenvalues)&&is.null(dim(fit$eigenvalues))&&
+    length(fit$eigenvalues)>=k&&all(is.finite(fit$eigenvalues[seq_len(k)]))&&
+    all(fit$eigenvalues[seq_len(k)]>=0),
+    "retained fit eigenvalues must be finite and non-negative")
+  .etr_assert(is.numeric(fit$covariance)&&
+    identical(dim(fit$covariance),rep(length(grid),2L)),
+    "fit covariance shape does not match evaluation grid")
+  .etr_assert(is.numeric(fit$eigenfunctions)&&is.matrix(fit$eigenfunctions)&&
+    nrow(fit$eigenfunctions)>=k&&ncol(fit$eigenfunctions)==length(grid),
+    "fit eigenfunctions do not align with retained components and evaluation grid")
+  .etr_assert(is.numeric(fit$noise_variance)&&length(fit$noise_variance)==1L&&
+    is.finite(fit$noise_variance)&&fit$noise_variance>=0,
+    "fit noise_variance must be finite and non-negative")
+  ridge<-info$score_ridge
+  if(is.null(ridge))ridge<-0
+  .etr_assert(is.numeric(ridge)&&length(ridge)==1L&&is.finite(ridge)&&ridge>=0,
+    "fit score_ridge must be finite and non-negative")
+  min_samples<-info$min_score_samples
+  if(is.null(min_samples))min_samples<-2L
+  .etr_assert(is.numeric(min_samples)&&length(min_samples)==1L&&
+    is.finite(min_samples)&&min_samples>=1,"fit min_score_samples must be positive")
   action<-info$analysis_support_action
+  if(is.null(action))action<-"error"
+  .etr_assert(length(action)==1L&&action%in%c("error","restrict"),
+    "fit has an unsupported analysis-support policy")
   mask<-lapply(trajectories$time,
     function(t)t>=grid[1L]&t<=tail(grid,1L))
-  if(action=="error"&&any(vapply(mask,function(m)
-      any(!m),logical(1L))))
+  outside<-lengths(trajectories$time)-vapply(mask,sum,integer(1L))
+  first_outside<-which(outside>0L)
+  if(action=="error"&&length(first_outside))
     .etr_spn_fail("observations_outside_analysis_support",
-      "sparse uncertainty times are outside fitted support")
+      "observations lie outside the fitted evaluation-grid support",
+      list(analysis_support=range(grid),
+        outside_counts_by_curve=outside[seq_len(first_outside[1L])]))
   times<-if(action=="restrict")
     Map(function(t,m)t[m],trajectories$time,mask)else
       trajectories$time
   actual<-as.integer(lengths(times))
-  .etr_assert(identical(actual,as.integer(info$sample_counts)),
+  .etr_assert(is.null(info$sample_counts)||identical(actual,as.integer(info$sample_counts)),
     "trajectories do not reproduce effective fit sample counts")
-  d<-match(fit$dimension,trajectories$dimension_names)
-  vals<-lapply(trajectories$values,function(y)as.numeric(y[,d]))
-  vals<-if(action=="restrict")Map(function(v,m)v[m],vals,mask)else vals
-  z<-.etr_spn_score_system(fit$curve_ids,times,vals,
-    grid,fit$mean,fit$covariance,fit$eigenvalues,
-    fit$eigenfunctions,fit$noise_variance,
-    info$score_ridge,limit,info$min_score_samples,
+  retained<-seq_len(k)
+  eigenvalues<-fit$eigenvalues[retained]
+  z<-.etr_spn_score_system(fit$curve_ids,times,NULL,
+    grid,NULL,fit$covariance,eigenvalues,
+    fit$eigenfunctions[retained,,drop=FALSE],fit$noise_variance,
+    ridge,limit,as.integer(min_samples),
     failure_action,posterior=TRUE)
   prov<-list(
     method="conditional_gaussian_given_fitted_population",
@@ -293,17 +331,23 @@ etr_sparse_fpca_score_uncertainty_native<-function(
     eigensystem_source="SparseFPCAResult.eigenvalues_and_eigenfunctions",
     native_observation_times=TRUE,
     raw_sparse_trajectory_interpolation_performed=FALSE,
-    score_ridge=info$score_ridge,
+    score_ridge=ridge,
     condition_limit=limit,
     condition_limit_source=if(is.null(condition_limit))
       "fitted_score_condition_limit"else"explicit_override",
     failure_action=failure_action,
-    posterior_psd_tolerance=1e-10*max(1,max(abs(fit$eigenvalues))),
+    posterior_psd_tolerance=1e-10*max(1,max(abs(eigenvalues))),
     population_estimation_uncertainty_included=FALSE,
+    mean_estimation_uncertainty_included=FALSE,
     covariance_estimation_uncertainty_included=FALSE,
-    eigensystem_estimation_uncertainty_included=FALSE)
+    eigensystem_estimation_uncertainty_included=FALSE,
+    noise_variance_estimation_uncertainty_included=FALSE,
+    bandwidth_uncertainty_included=FALSE,
+    interpretation=paste("conditional on fitted mean/covariance/eigensystem and measurement-error",
+      "variance; excludes population-estimation uncertainty"))
   structure(list(reference=fit,curve_ids=fit$curve_ids,
     covariance=z$covariance,standard_errors=z$standard_errors,
+    correlations=.etr_spn_score_correlations(z$covariance,z$standard_errors),
     diagnostics=z$diagnostics,n_components=fit$n_components,
     method="conditional_gaussian_given_fitted_population",
     provenance=prov,

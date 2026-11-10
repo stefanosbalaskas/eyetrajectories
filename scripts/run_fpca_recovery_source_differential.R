@@ -9,6 +9,8 @@
   sim <- reticulate::import("eyetrajectoriespy._functional_simulation", convert = FALSE)
   reticulate::py_run_string("
 from dataclasses import fields as _etr_recovery_dataclass_fields
+import numpy as _etr_recovery_numpy
+import pandas as _etr_recovery_pandas
 from eyetrajectoriespy._functional_simulation import FunctionalSimulationTruth
 def _etr_recovery_audit_object(cls, **fields):
     obj = object.__new__(cls)
@@ -18,6 +20,14 @@ def _etr_recovery_audit_object(cls, **fields):
     for key, value in fields.items():
         object.__setattr__(obj, key, value)
     return obj
+def _etr_recovery_source_table(fn, result):
+    with _etr_recovery_numpy.errstate(over='ignore', invalid='ignore'):
+        return fn(result)
+def _etr_recovery_source_column(table, name, numeric):
+    values = table[name]
+    if numeric:
+        return values.to_numpy(dtype=float)
+    return [None if _etr_recovery_pandas.isna(x) else x for x in values]
 ")
   make <- reticulate::py_eval("_etr_recovery_audit_object", convert = FALSE)
   py_call <- reticulate::py_call
@@ -166,6 +176,148 @@ def _etr_recovery_audit_object(cls, **fields):
   duplicate_error <- function(e) !is.null(e) && grepl("duplicate metric labels", e, fixed = TRUE)
   record(frame_name, "duplicate_metric", "<call>",
     if (duplicate_error(left$error) && duplicate_error(right$error))
+      "PASS_BOTH_REJECT" else "DIVERGENT_ACCEPTANCE")
+
+  py_integer <- function(x) py_call(builtins$int, sprintf("%.0f", x))
+  py_metric <- function(x) do.call(py_call,
+    c(list(export("FunctionalRecoveryMetric")), unclass(x)))
+  py_value <- function(x, component = x$component) py_call(
+    export("FunctionalRecoveryValue"), metric = py_metric(x$metric),
+    value = x$value, component = component, source = x$source)
+  source_result <- function(records, definitions = list()) {
+    native <- etr_functional_recovery_result(records, definitions)
+    source_records <- lapply(records, function(z) {
+      metric_values <- lapply(z$metric_values, function(v)
+        py_value(v, if (is.null(v$component)) NULL else py_integer(v$component)))
+      mapping <- reticulate::dict()
+      for (key in names(z$metrics)) mapping[[key]] <- z$metrics[[key]]
+      py_call(export("FunctionalRecoveryRecord"), scenario_name = z$scenario_name,
+        replicate = py_integer(z$replicate), seed = py_integer(z$seed), metrics = mapping,
+        metric_values = do.call(reticulate::tuple, metric_values), status = z$status,
+        error_type = z$error_type, error_message = z$error_message)
+    })
+    python <- py_call(export("FunctionalRecoveryResult"),
+      records = do.call(reticulate::tuple, source_records),
+      metric_definitions = do.call(reticulate::tuple, lapply(definitions, py_metric)))
+    list(native = native, python = python)
+  }
+  source_table <- reticulate::py_eval("_etr_recovery_source_table", convert = FALSE)
+  source_column <- reticulate::py_eval("_etr_recovery_source_column", convert = FALSE)
+  compare_reporting <- function(name, fixture, native, expected) {
+    expected_names <- as.character(unlist(et_to_r(expected$columns$tolist()),
+      use.names = FALSE))
+    shape <- identical(names(native), expected_names) &&
+      nrow(native) == et_to_r(py_call(builtins$len, expected))
+    schema(name, fixture, "shape", shape)
+    if (!shape) return(invisible(NULL))
+    nullable <- function(x) vapply(as.list(x), function(v) {
+      if (is.null(v) || is.na(v)) NA_character_ else enc2utf8(as.character(v))
+    }, character(1L), USE.NAMES = FALSE)
+    for (field in names(native)) {
+      lhs <- native[[field]]
+      numeric <- is.numeric(lhs)
+      rhs <- et_to_r(py_call(source_column, expected, field, numeric))
+      if (!numeric) {
+        schema(name, fixture, field, identical(nullable(lhs), nullable(rhs)))
+      } else {
+        lhs <- as.numeric(lhs)
+        rhs <- as.numeric(rhs)
+        finite <- is.finite(lhs) & is.finite(rhs)
+        tolerance <- if (field %in% c("replicate", "seed", "component", "n",
+          "n_total", "n_success", "n_failed")) 0 else 1e-12 * pmax(1, abs(rhs[finite]))
+        matching <- identical(is.na(lhs), is.na(rhs)) &&
+          identical(is.finite(lhs), is.finite(rhs)) &&
+          identical(lhs[!is.finite(lhs) & !is.na(lhs)],
+            rhs[!is.finite(rhs) & !is.na(rhs)]) &&
+          all(abs(lhs[finite] - rhs[finite]) <= tolerance)
+        difference <- if (any(finite)) max(abs(lhs[finite] - rhs[finite])) else 0
+        record(name, fixture, field,
+          if (matching) "PASS_NUMERIC" else "DIVERGENT_NUMERIC", difference)
+      }
+    }
+    invisible(NULL)
+  }
+  def <- etr_functional_recovery_metric_catalog()[["mean_ise"]]
+  structured <- list(metric = def, value = .375, component = 2^53-1, source = "x")
+  flat <- function(scenario, index, metric) list(scenario_name = scenario,
+    replicate = index, seed = 2^53-1, status = "ok", metrics = metric)
+  failed <- function(scenario, status) list(scenario_name = scenario,
+    replicate = 2L, seed = -2^53+1, status = status, metrics = numeric(),
+    error_type = "ValueError", error_message = "explicit failure")
+  successful <- flat("\u00e9", 2^31 + 2, setNames(.375,
+    etr_functional_recovery_value_key(structured)))
+  successful$metric_values <- list(structured)
+  mixed <- list(successful,
+    flat("a", 1L, c(mean_ise = .25, undeclared = -1.2)),
+    flat("\u00e9", 0L, c(mean_ise = .125)), flat("Z", 0L, c(mean_ise = .5)),
+    failed("a", "fit_failed"), failed("\u03b1", "simulation_failed"),
+    failed("\u00e9", "recovery_failed"))
+  extreme <- list(
+    cancellation = c(1e16, 1, -1e16),
+    opposite = c(-1e308, 1e308),
+    positive = c(1e308, 1e308),
+    pairwise = rep(c(1e16, 2, -1e16, 1, 1, 1, 1), length.out = 259L))
+  extreme <- unlist(lapply(names(extreme), function(scenario)
+    lapply(seq_along(extreme[[scenario]]), function(i)
+      flat(scenario, i - 1L, c(mean_ise = extreme[[scenario]][i])))),
+    recursive = FALSE, use.names = FALSE)
+  results <- list(
+    mixed_order_missing_and_wide = source_result(mixed, list(def)),
+    all_failed = source_result(list(failed("\u00e9", "simulation_failed"),
+      failed("a", "fit_failed"), failed("Z", "recovery_failed"))),
+    extreme_reductions = source_result(extreme, list(def)))
+  funcs <- list(
+    functional_recovery_frame = etr_functional_recovery_frame,
+    functional_recovery_failure_frame = etr_functional_recovery_failure_frame,
+    functional_recovery_summary_frame = function(x)
+      etr_functional_recovery_summary_frame(x, python_boundary_mode = TRUE))
+  for (fixture in names(results)) {
+    result <- results[[fixture]]
+    for (name in names(funcs)) compare_reporting(name, fixture,
+      funcs[[name]](result$native),
+      py_call(source_table, export(name), result$python))
+  }
+  for (name in names(funcs)) {
+    native_error <- safe(funcs[[name]](list()))$error
+    source_error <- safe(py_call(export(name), reticulate::dict()))$error
+    matches <- !is.null(native_error) &&
+      grepl("native functional recovery result", native_error, fixed = TRUE) &&
+      !is.null(source_error) && grepl("FunctionalRecoveryResult", source_error, fixed = TRUE)
+    record(name, "invalid_result_type", "<call>",
+      if (matches) "PASS_BOTH_REJECT" else "DIVERGENT_ACCEPTANCE")
+  }
+
+  mapped <- list(values = list(
+    list(metric = unclass(def), value = " 1_2.5 ", component = "2_147_483_648",
+      source = "\u2003x\u00a0"),
+    list(metric = unclass(def), value = TRUE, component = NULL, source = NULL)))
+  mapped$values[[1L]]$metric$description <- "\u2003A custom definition\u00a0"
+  mapped$values[[1L]]$metric$direction <- "higher_is_better"
+  mapped_values <- do.call(reticulate::tuple, lapply(mapped$values, py_value))
+  mapped_source <- py_call(export("FunctionalRecoveryAssessment"), values = mapped_values)
+  compare_reporting(frame_name, "mapped_same_name_and_nullable",
+    etr_functional_recovery_assessment_frame(mapped, python_boundary_mode = TRUE),
+    py_call(export(frame_name), mapped_source))
+  for (fixture in c("missing", "explicit_none", "bool", "float", "mapping")) {
+    estimator <- switch(fixture, bool = TRUE, float = -.125,
+      mapping = list(name = "quote's\nline", flags = list(TRUE, NULL, 2L)), NULL)
+    mapped$provenance <- if (fixture == "missing") list() else list(estimator = estimator)
+    provenance <- if (fixture == "missing") reticulate::dict()
+      else reticulate::dict(estimator = estimator)
+    source <- py_call(export("FunctionalRecoveryAssessment"), values = mapped_values,
+      provenance = provenance)
+    schema(report_name, paste0("mapped_estimator_", fixture), "report",
+      identical(etr_functional_recovery_reporting_text(mapped, python_boundary_mode = TRUE),
+        et_to_r(py_call(export(report_name), source))))
+  }
+  invalid <- mapped
+  invalid$values[[1L]]$value <- "Inf"
+  left <- safe(etr_functional_recovery_assessment_frame(invalid,
+    python_boundary_mode = TRUE))$error
+  right <- safe(py_value(invalid$values[[1L]]))$error
+  record(frame_name, "nonfinite_value", "<call>",
+    if (!is.null(left) && grepl("must be finite", left, fixed = TRUE) &&
+        !is.null(right) && grepl("must be finite", right, fixed = TRUE))
       "PASS_BOTH_REJECT" else "DIVERGENT_ACCEPTANCE")
 
   out <- do.call(rbind, rows)

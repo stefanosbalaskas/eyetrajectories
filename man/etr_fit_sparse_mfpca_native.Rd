@@ -47,5 +47,8 @@ etr_fit_sparse_mfpca_native(
 \value{
 A source-shaped native joint sparse FPCA model, including smoothed and PSD
 covariance blocks (xx, xy, yx, yy), scores, vector eigenfunctions, retained
-quadrature weights, and complete source-domain diagnostics.
+quadrature weights, and fitted diagnostics. Structured sparse errors retain
+curve and zero-based sample indices for invalid planar observations,
+support counts for rejected analysis grids, and covariance eigenvalue or
+rank details when the declared PSD or component controls fail.
 }

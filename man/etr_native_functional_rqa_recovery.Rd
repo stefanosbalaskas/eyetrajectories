@@ -34,8 +34,8 @@ etr_windowed_rqa_functional_mean_band(trajectories, metrics,
 etr_functional_recovery_metric_catalog()
 etr_functional_recovery_metric_catalog_frame()
 etr_functional_recovery_value_key(value)
-etr_functional_recovery_assessment_frame(assessment)
-etr_functional_recovery_reporting_text(assessment)
+etr_functional_recovery_assessment_frame(assessment, python_boundary_mode = FALSE)
+etr_functional_recovery_reporting_text(assessment, python_boundary_mode = FALSE)
 }
 \arguments{
 \item{trajectories}{Complete native functional trajectories, with
@@ -87,6 +87,10 @@ over the seed.}
 \item{assessment}{Native assessment list with a nonempty \code{values}
 list of finite recovery values. Built-in and custom metric definitions
 carry direction, units, scope and description.}
+\item{python_boundary_mode}{Use source text stripping, numeric scalar
+coercion, and same-name custom metric metadata for mapped records.
+Reporting accepts an explicit \code{NULL} estimator or a plain
+R scalar, list or named mapping with source-compatible representation.}
 }
 \value{
 \code{etr_windowed_rqa_sensitivity} returns native analyses, design

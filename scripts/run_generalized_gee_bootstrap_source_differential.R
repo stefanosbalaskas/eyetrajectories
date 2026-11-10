@@ -13,8 +13,7 @@
     requireNamespace("pkgload",quietly=TRUE))
   pkgload::load_all(".",quiet=TRUE)
   stopifnot(identical(et_python_version(),"1.2.0"))
-  # Initialize the same matched input fixtures as the already verified
-  # 48-case GEE differential whenever this script is invoked standalone.
+  # Initialize the matched input fixtures when invoked standalone.
   prepared<-tryCatch(reticulate::py_eval(
     "'_wave_gee_cases' in globals()",convert=TRUE),
     error=function(e)FALSE)
@@ -67,34 +66,39 @@
         "DIVERGENT_NUMERIC",delta,
       detail=paste0("relative absolute tolerance=",tol))
   }
-  for(key in c("poisson","grouped","exposure")){
-    family<-if(key=="grouped")"binomial" else "poisson"
-    fixture<-.etr_native_gee_fixture(family,grouped=key=="grouped")
-    args<-list(trajectories=fixture$x,design=fixture$design,
-      predictors="treatment",participant_column="participant_id",
-      dimension="outcome",family=family,basis_size=4L,
-      spline_degree=3L)
-    pyargs<-list(trajectories=pyitem(key,"trajectories"),
-      design=pyitem(key,"design"),
-      predictors=reticulate::py_eval("['treatment']",convert=FALSE),
-      participant_column="participant_id",dimension="outcome",
-      family=family,basis_size=4L,spline_degree=3L)
-    if(key=="grouped"){
-      args$binomial_denominator<-fixture$den
-      pyargs$binomial_denominator<-pyitem(key,"den")
-    }
-    if(key=="exposure"){
-      args$exposure<-rep(2.5,36L)
-      pyargs$exposure<-pyitem(key,"exposure")
+  for(key in c("poisson","grouped","exposure","source_conditioned")){
+    if(key=="source_conditioned"){
+      args<-.etr_native_gee_boundary_case("nearly_rank_deficient")
+      pr<-safe(function().etr_python_gee_boundary_call(args))
+    }else{
+      family<-if(key=="grouped")"binomial" else "poisson"
+      fixture<-.etr_native_gee_fixture(family,grouped=key=="grouped")
+      args<-list(trajectories=fixture$x,design=fixture$design,
+        predictors="treatment",participant_column="participant_id",
+        dimension="outcome",family=family,basis_size=4L,
+        spline_degree=3L)
+      pyargs<-list(trajectories=pyitem(key,"trajectories"),
+        design=pyitem(key,"design"),
+        predictors=reticulate::py_eval("['treatment']",convert=FALSE),
+        participant_column="participant_id",dimension="outcome",
+        family=family,basis_size=4L,spline_degree=3L)
+      if(key=="grouped"){
+        args$binomial_denominator<-fixture$den
+        pyargs$binomial_denominator<-pyitem(key,"den")
+      }
+      if(key=="exposure"){
+        args$exposure<-rep(2.5,36L)
+        pyargs$exposure<-pyitem(key,"exposure")
+      }
+      pr<-safe(function()do.call(reticulate::py_call,
+        c(list(etpy_get_export(
+          "fit_generalized_function_on_scalar_regression")),pyargs)))
     }
     # Full source and native fits, no saved objects or fitted-value
     # substitution. Exact input equality was asserted by the preceding
     # generalized source-runner when this object was initialized.
     nr<-safe(function()do.call(
       etr_fit_generalized_function_on_scalar_regression,args))
-    pr<-safe(function()do.call(reticulate::py_call,
-      c(list(etpy_get_export(
-        "fit_generalized_function_on_scalar_regression")),pyargs)))
     if(!nr$ok||!pr$ok){
       add(key,"reference_fit","<call>",
         if(nr$ok==pr$ok)"PASS_BOTH_REJECT"else
@@ -137,7 +141,8 @@
       native$sampled_participant_indices,sampled$result,tol=0)
     compare(key,"bootstrap","bootstrap_coefficient_functions",
       native$bootstrap_coefficient_functions,
-      getpy(python,"bootstrap_coefficient_functions"))
+      getpy(python,"bootstrap_coefficient_functions"),
+      tol=if(key=="source_conditioned")1e-9 else 1e-4)
     # Preserve exact identities and new cluster names, including duplicate
     # participant draws that must be assigned distinct group IDs.
     for(field in c("sampled_source_participant_ids",
@@ -184,6 +189,7 @@
           if(same)"PASS_SCHEMA"else"DIVERGENT_SCHEMA")
       }
     }
+    if(key=="source_conditioned")next
     for(spec in list(
        list(name="bootstrap_count_boundary",n_bootstrap=99L),
        list(name="no_silent_redraw",n_bootstrap=100L,
