@@ -188,6 +188,39 @@
   (result+t(result))/2
 }
 
+
+# Frozen _sparse_multivariate_async.build_async_measurement_error_covariance.
+# Assign diagonal channel noise and only those cross-channel terms which
+# are simultaneous under the explicitly declared native-time tolerance.
+.etr_spna_noise_eval<-function(layout,noise,tolerance=0){
+  .etr_assert(is.list(layout)&&is.numeric(layout$time)&&
+    is.null(dim(layout$time))&&all(is.finite(layout$time))&&
+    is.numeric(layout$channel)&&is.null(dim(layout$channel))&&
+    length(layout$time)==length(layout$channel)&&
+    all(layout$channel%in%c(1L,2L)),
+    "layout times/channels must be finite aligned planar observations")
+  .etr_assert(is.numeric(tolerance)&&length(tolerance)==1L&&
+    is.finite(tolerance)&&tolerance>=0,
+    "same_time_tolerance must be finite and nonnegative")
+  E<-.etr_spnm_error("fixed_matrix",covariance=noise)$covariance
+  times<-layout$time
+  ch<-as.integer(layout$channel)
+  n<-length(times)
+  matrix_noise<-matrix(0,n,n)
+  if(!n)return(list(covariance=matrix_noise,cross_links=0L))
+  diag(matrix_noise)<-E[cbind(ch,ch)]
+  links<-0L
+  if(n>=2L)for(i in seq_len(n-1L))
+    for(j in seq.int(i+1L,n)){
+      if(ch[i]!=ch[j]&&abs(times[i]-times[j])<=tolerance){
+        matrix_noise[i,j]<-E[ch[i],ch[j]]
+        matrix_noise[j,i]<-E[ch[j],ch[i]]
+        links<-links+1L
+      }
+    }
+  list(covariance=matrix_noise,cross_links=links)
+}
+
 .etr_spna_pace<-function(ids,views,grid,mu,blocks,eigen,noise,
     tolerance,ridge,limit,min_obs,failure){
   n<-length(ids);k<-length(eigen$eigenvalues)
@@ -202,15 +235,10 @@
     else{
       # Fit covariance evaluated on the observed asynchronous native
       # scalar-time layout, preserving source directional xy semantics.
-      M<-.etr_spna_cov_eval(grid,blocks,layout)
-      for(a in seq_len(m))M[a,a]<-M[a,a]+noise[ch[a],ch[a]]+ridge
-      for(a in seq_len(m))if(a<m)for(b in seq.int(a+1L,m)){
-        if(ch[a]!=ch[b]&&abs(t[a]-t[b])<=tolerance){
-          M[a,b]<-M[a,b]+noise[ch[a],ch[b]]
-          M[b,a]<-M[b,a]+noise[ch[b],ch[a]]
-          links<-links+1L
-        }
-      }
+      noise_fit<-.etr_spna_noise_eval(layout,noise,tolerance)
+      M<-.etr_spna_cov_eval(grid,blocks,layout)+
+        noise_fit$covariance+diag(ridge,m)
+      links<-noise_fit$cross_links
       spectrum<-base::eigen(M,symmetric=TRUE,only.values=TRUE)$values
       min_eig<-min(spectrum);max_eig<-max(spectrum)
       cond<-if(min_eig<=0)Inf else max_eig/min_eig
