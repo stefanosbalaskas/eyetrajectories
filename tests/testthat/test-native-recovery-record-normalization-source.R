@@ -114,6 +114,46 @@ _hetero_values = list(_hetero.metrics.values())
     tolerance=0)
 })
 
+test_that("structured duplicate-key source constructor retains last flat value", {
+  metric<-list(name="m",quantity="q",direction="lower_is_better",
+    units="u",scope="s",description="d")
+  value<-function(x)list(metric=metric,value=x,component=NULL,source=NULL)
+  record<-list(scenario_name="dup",replicate=0L,seed=22L,
+    metrics=c(m=2),metric_values=list(value(1),value(2)),
+    status="ok",error_type=NULL,error_message=NULL)
+  result<-etr_functional_recovery_result(list(record))
+  expect_identical(result$records[[1L]]$metrics,c(m=2))
+  frame<-etr_functional_recovery_frame(result)
+  expect_identical(frame$metric,c("m","m"))
+  expect_equal(frame$value,c(1,2),tolerance=0)
+  record$metrics<-c(m=1)
+  expect_error(etr_functional_recovery_result(list(record)),"exactly match")
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Frozen Python 1.2 structured duplicate-key oracle is opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  reticulate::py_run_string("
+from eyetrajectoriespy.recovery import FunctionalRecoveryMetric, FunctionalRecoveryValue
+from eyetrajectoriespy.simulate import (
+  FunctionalRecoveryRecord, FunctionalRecoveryResult, functional_recovery_frame)
+_m = FunctionalRecoveryMetric(
+  name='m',quantity='q',direction='lower_is_better',
+  units='u',scope='s',description='d')
+_duplicated = FunctionalRecoveryRecord(
+  scenario_name='dup',replicate=0,seed=22,metrics={'m':2.0},
+  metric_values=(FunctionalRecoveryValue(metric=_m,value=1.0),
+                 FunctionalRecoveryValue(metric=_m,value=2.0)))
+_duplicated_frame = functional_recovery_frame(
+  FunctionalRecoveryResult(records=(_duplicated,)))
+")
+  values<-reticulate::py_to_r(reticulate::py_eval(
+    "_duplicated_frame['value'].tolist()",convert=FALSE))
+  expect_equal(frame$value,as.numeric(unlist(values,use.names=FALSE)),
+    tolerance=0)
+  expect_equal(as.numeric(result$records[[1L]]$metrics[[1L]]),
+    as.numeric(reticulate::py_eval("_duplicated.metrics['m']",convert=TRUE)),
+    tolerance=0)
+})
+
 test_that("source-normalized records feed three native recovery frames", {
   result<-etr_functional_recovery_result(.etr_recovery_source_records_fixture())
   values<-etr_functional_recovery_frame(result)
