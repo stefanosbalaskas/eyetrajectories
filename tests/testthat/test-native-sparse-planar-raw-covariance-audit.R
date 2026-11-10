@@ -57,6 +57,91 @@ test_that("planar joint operator checks raw asymmetry before symmetrizing",{
   expect_equal(failure$details$maximum_symmetry_error,.005,tolerance=1e-12)
 })
 
+test_that("planar local covariance failures retain source coordinates and block",{
+  few<-list(s=rep(c(0,1,2),each=2),t=rep(c(0,1),3),
+    products=as.numeric(seq_len(6)))
+  failed<-tryCatch(
+    .etr_spnm_surface(few,c(0,1,2),.1,min_pairs=6L,
+      cross=TRUE,block_name="xy"),
+    error=identity)
+  expect_s3_class(failed,"etr_sparse_native_error")
+  expect_identical(failed$code,
+    "insufficient_cross_covariance_local_support")
+  expect_identical(failed$details$block,"xy")
+  expect_equal(failed$details$s,0)
+  expect_equal(failed$details$t,0)
+  expect_identical(failed$details$support_count,1L)
+  expect_identical(failed$details$required_count,6L)
+  expect_equal(failed$details$bandwidth,.1)
+
+  rank_one<-list(s=rep(0,6),t=rep(0,6),products=1:6)
+  deficient<-tryCatch(
+    .etr_spnm_surface(rank_one,c(0,1,2),2,min_pairs=6L,
+      cross=FALSE,block_name="yy"),
+    error=identity)
+  expect_s3_class(deficient,"etr_sparse_native_error")
+  expect_identical(deficient$code,"insufficient_covariance_local_support")
+  expect_identical(deficient$details$block,"yy")
+  expect_equal(deficient$details$s,0)
+  expect_equal(deficient$details$t,0)
+  expect_identical(deficient$details$support_count,6L)
+  expect_equal(deficient$details$bandwidth,2)
+  expect_false("required_count"%in%names(deficient$details))
+})
+
+test_that("planar insufficient support and rank diagnostics match frozen source",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Frozen Python 1.2 planar failure diagnostics are opt-in")
+  expect_identical(et_python_version(),"1.2.0")
+  reticulate::py_run_string("
+import numpy as np
+from eyetrajectoriespy._sparse_native import RawCovariancePairs, SparseNativeError
+from eyetrajectoriespy._sparse_multivariate import _local_linear_planar_surface
+def _surface_error(mode):
+    if mode=='few':
+        s=np.repeat([0.,1.,2.],2)
+        t=np.tile([0.,1.],3)
+        h=.1
+        block='xy'
+    else:
+        s=np.zeros(6)
+        t=np.zeros(6)
+        h=2.
+        block='yy'
+    pairs=RawCovariancePairs(s=s,t=t,products=np.arange(1,7,dtype=float),
+       curve_index=np.zeros(6,dtype=int),mirrored=False)
+    try:
+        _local_linear_planar_surface(pairs,np.array([0.,1.,2.]),
+           bandwidth=h,min_local_pairs=6,block_name=block)
+    except SparseNativeError as exc:
+        return {'code':exc.code,'details':exc.details}
+    raise AssertionError('Expected source planar local support failure')
+")
+  for(mode in c("few","rank")){
+    source<-reticulate::py_to_r(reticulate::py_call(
+      reticulate::py_get_attr(reticulate::py,"_surface_error"),
+      mode))
+    if(mode=="few"){
+      pairs<-list(s=rep(c(0,1,2),each=2),t=rep(c(0,1),3),
+        products=as.numeric(seq_len(6)))
+      native<-tryCatch(
+        .etr_spnm_surface(pairs,c(0,1,2),.1,6L,
+          cross=TRUE,block_name="xy"),error=identity)
+    }else{
+      pairs<-list(s=rep(0,6),t=rep(0,6),products=as.numeric(seq_len(6)))
+      native<-tryCatch(
+        .etr_spnm_surface(pairs,c(0,1,2),2,6L,
+          cross=FALSE,block_name="yy"),error=identity)
+    }
+    expect_identical(native$code,source$code)
+    expect_identical(sort(names(native$details)),
+      sort(names(source$details)))
+    for(field in names(source$details))
+      expect_equal(native$details[[field]],source$details[[field]],
+        tolerance=1e-12,ignore_attr=TRUE,info=paste(mode,field))
+  }
+})
+
 test_that("planar raw pairs smoothing and PSD audit match frozen Python 1.2",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("Frozen Python 1.2 raw planar source oracle is opt-in")
