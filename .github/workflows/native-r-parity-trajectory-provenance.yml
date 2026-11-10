@@ -33,7 +33,7 @@ jobs:
           use-public-rspm: true
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          dependencies: "hard"
+          dependencies: '"hard"'
           extra-packages: |
             any::pkgload
             any::testthat
@@ -66,7 +66,7 @@ jobs:
           use-public-rspm: true
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          dependencies: "hard"
+          dependencies: '"hard"'
           extra-packages: |
             any::pkgload
             any::testthat
