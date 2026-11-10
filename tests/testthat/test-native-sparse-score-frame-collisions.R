@@ -60,7 +60,10 @@ test_that("sparse source inserted curve_id collision and retained NAN match poli
   z<-.etr_sparse_frame_semantic_fixture("SFPC")
   z$metadata$curve_id<-z$curve_ids
   expect_error(etr_sparse_fpca_score_frame(z),"curve_id")
-  expect_error(etr_sparse_mfpca_score_frame(z),"curve_id")
+  expect_error(etr_sparse_mfpca_score_frame(z),
+    "native sparse MFPCA source result")
+  expect_error(etr_sparse_mfpca_score_frame(structure(z,
+    class="etr_sparse_mfpca_source")),"curve_id")
   z$metadata$curve_id<-NULL
   z$scores[2,1]<-NaN
   for(f in list(etr_sparse_fpca_score_frame,
