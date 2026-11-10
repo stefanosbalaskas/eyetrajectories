@@ -104,17 +104,21 @@
     stringsAsFactors=FALSE)
   # Nested data.frame arguments may normalize duplicate names even under
   # check.names=FALSE. Restore the exact pandas metadata column index.
-  names(output)<-c("curve_id",names(metadata))
+  schema_names<-c("curve_id",names(metadata))
+  names(output)<-schema_names
   for(j in seq_len(k)){
-    existing<-which(names(output)==output_names[[j]])
+    existing<-which(schema_names==output_names[[j]])
     if(length(existing)){
-      # A 1D pandas Series assignment broadcasts to every duplicate column
-      # carrying the selected label, not just the first duplicate.
+      # Base R's [[<-.data.frame may auto-repair duplicated names during
+      # column replacement. Track the authoritative labels separately.
       for(pos in existing)output[[pos]]<-scores[,j]
     }else{
       output[[output_names[[j]]]]<-scores[,j]
+      schema_names<-c(schema_names,output_names[[j]])
     }
   }
+  # Restore the exact pandas column index after all base-R mutations.
+  names(output)<-schema_names
   rownames(output)<-NULL
   output
 }
