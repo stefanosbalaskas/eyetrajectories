@@ -1,8 +1,23 @@
 # Source: eyetrajectoriespy 1.2.0 wild_regression.py, immutable
 # commit c1cd95ad718327550f7e55393ff38582872f7a94.
 # Independent R FPCA/least squares/studentization; no Python backend.
-# Optional fixed multiplier matrix replays frozen-source draws. R RNG
-# does NOT reproduce NumPy PCG64 without supplied multipliers.
+# Seeded Mammen and fixed-multiplier replay follow the frozen source draws.
+
+.etr_wild_fpcr_multipliers <- function(replicates, curves, multiplier, seed) {
+  .etr_assert(is.null(seed) || (is.numeric(seed) && length(seed) == 1L &&
+    is.finite(seed) && seed == floor(seed) && seed >= 0 && seed <= .Machine$integer.max),
+    "random_state must be NULL or a native nonnegative integer")
+  n <- as.double(replicates) * curves
+  if (multiplier == "normal") {
+    draw <- function() stats::rnorm(n)
+    values <- if (is.null(seed)) draw() else .etr_seed_scope(as.integer(seed), draw)
+  } else {
+    u <- if (is.null(seed)) stats::runif(n) else .etr_numpy_pcg64(seed)$uniform(n)
+    sqrt5 <- sqrt(5)
+    values <- ifelse(u < (sqrt5 + 1) / (2 * sqrt5), (1 - sqrt5) / 2, (1 + sqrt5) / 2)
+  }
+  matrix(values, nrow = replicates, ncol = curves, byrow = TRUE)
+}
 
 .etr_wild_fpcr_prepared_fit<-function(scores,k){
   # Factorize the identical, fixed FPCA design once for every bootstrap.
@@ -61,7 +76,8 @@
 #' @param multiplier Exact "normal" or "mammen".
 #' @param confidence_level Interval probability in (0,1).
 #' @param independent_unit_column If supplied, metadata IDs must be unique.
-#' @param random_state Native R seed. Not a NumPy-equivalent random stream.
+#' @param random_state Integer seed. Seeded Mammen uses NumPy-compatible
+#'   PCG64 draws and normal multipliers use the native R normal generator.
 #' @param multiplier_draws Optional finite B-by-n numeric matrix of fixed
 #'   source draws; overrides R RNG and permits numerical oracle replay.
 #' @return Native result reusing source schema numerical fields. Full-domain
@@ -125,28 +141,7 @@ etr_wild_bootstrap_fpca_projection<-function(
     "targets must match training time channel units geometry and be complete finite")
   B<-as.integer(n_bootstrap)
   if(is.null(multiplier_draws)){
-    .etr_assert(is.null(random_state)||
-      (is.numeric(random_state)&&length(random_state)==1L&&
-      is.finite(random_state)&&random_state==floor(random_state)&&
-      random_state>=0&&random_state<=.Machine$integer.max),
-      "random_state must be NULL or a native nonnegative integer")
-    draw_mult<-function(){
-      if(multiplier=="normal"){
-        matrix(stats::rnorm(B*n),nrow=B,ncol=n,byrow=TRUE)
-      }else{
-        sq<-sqrt(5)
-        negative<-(1-sq)/2
-        positive<-(1+sq)/2
-        pneg<-(sq+1)/(2*sq)
-        u<-matrix(stats::runif(B*n),B,n,byrow=TRUE)
-        ifelse(u<pneg,negative,positive)
-      }
-    }
-    # NULL mirrors Python's accepted unseeded domain. Native R uses its
-    # current RNG stream, not NumPy PCG64; seeded calls restore R RNG.
-    mult<-if(is.null(random_state))draw_mult() else
-      .etr_seed_scope(as.integer(random_state),draw_mult)
-    mult<-matrix(mult,nrow=B,ncol=n)
+    mult<-.etr_wild_fpcr_multipliers(B,n,multiplier,random_state)
   }else{
     mult<-multiplier_draws
     .etr_assert(is.matrix(mult)&&is.numeric(mult)&&
@@ -217,6 +212,8 @@ etr_wild_bootstrap_fpca_projection<-function(
     component_selection_uncertainty_included=FALSE,
     random_state=random_state,
     fixed_source_multiplier_draws_supplied=!is.null(multiplier_draws),
+    seeded_mammen_draws_match_numpy=is.null(multiplier_draws)&&
+      !is.null(random_state)&&multiplier=="mammen",
     source_full_contract_certified=FALSE)
   structure(list(reference_fpca=fit,
     target_curve_ids=targets$curve_ids,

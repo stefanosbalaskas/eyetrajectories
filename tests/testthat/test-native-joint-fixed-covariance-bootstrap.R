@@ -200,8 +200,8 @@ def _etr_joint_source_adapter(time, observed, scalar,
     "sampled_participant_indices"))
   expect_identical(dim(sampled),c(100L,8L))
   native<-etr_bootstrap_functional_mixed_effects_coefficients(
-    fit,n_bootstrap=100L,random_state=23L,
-    sampled_participant_indices=sampled)
+    fit,n_bootstrap=100L,random_state=23L)
+  expect_equal(native$sampled_participant_indices,sampled,tolerance=0)
   for(field in c("bootstrap_fixed_basis_coefficients",
       "bootstrap_coefficient_functions","bootstrap_mean",
       "bootstrap_standard_errors","sampled_participant_indices")){
@@ -227,4 +227,19 @@ def _etr_joint_source_adapter(time, observed, scalar,
         info=paste("pinned joint GLS simultaneous bands",scope,field))
     }
   }
+})
+
+test_that("native iid likelihood refits use the same seeded participant bundles",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("pinned NumPy participant indices are opt-in")
+  if(!identical(Sys.getenv("ET_RUN_SCIENTIFIC_SLOW"),"true"))
+    skip("20 full native likelihood refits are opt-in")
+  fit<-.etr_joint_fixed_boot_fixture()
+  rng<-reticulate::import("numpy",convert=TRUE)$random$default_rng(23L)
+  units<-length(fit$participant_ids)
+  expected<-rng$integers(0L,units,size=reticulate::tuple(20L,units))
+  actual<-etr_bootstrap_functional_mixed_effects_full_refit(
+    fit,n_bootstrap=20L,random_state=23L)
+  expect_equal(actual$sampled_participant_indices,expected,tolerance=0)
+  expect_true(all(actual$convergence_flags))
 })

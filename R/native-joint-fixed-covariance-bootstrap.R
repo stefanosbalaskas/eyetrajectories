@@ -136,10 +136,9 @@
   source<-.etr_joint_bootstrap_gls_contributions(result)
   np<-length(source$participant_ids);B<-as.integer(n_bootstrap)
   if(is.null(sampled_participant_indices)){
-    sample_once<-function()
-      matrix(sample.int(np,B*np,replace=TRUE)-1L,nrow=B,ncol=np)
-    indices<-if(is.null(random_state))sample_once() else
-      .etr_seed_scope(as.integer(random_state),sample_once)
+    indices<-if(is.null(random_state))
+      matrix(sample.int(np,B*np,replace=TRUE)-1L,nrow=B,ncol=np) else
+      .etr_numpy_seeded_case_indices(random_state,B,np)
   }else{
     indices<-sampled_participant_indices
     .etr_assert(is.matrix(indices)&&is.numeric(indices)&&
@@ -189,7 +188,9 @@
     n_bootstrap=B,
     random_state=if(is.null(random_state))NULL else as.integer(random_state),
     sampled_source_indices_supplied=!is.null(sampled_participant_indices),
-    native_rng="base_R_not_NumPy_PCG64",
+    native_rng=if(!is.null(sampled_participant_indices))
+      "caller_supplied_fixed_indices" else if(is.null(random_state))
+      "base_R_unseeded" else "numpy_pcg64",
     resampling_unit="participant",
     whole_trial_bundles_resampled=TRUE,
     curves_resampled_independently=FALSE,

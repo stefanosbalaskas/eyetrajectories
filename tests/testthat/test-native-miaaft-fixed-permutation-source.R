@@ -121,6 +121,12 @@ def _et_public_miaaft_pair(values, times, n_surrogates, seed):
     expect_equal(unname(native$cross_spectral_errors),
       unname(py$cross_spectral_errors),tolerance=1e-10,
       ignore_attr=TRUE)
+    seeded<-etr_generate_multivariate_iaaft_surrogates(
+      x,"a",c("z","x","y"),"x",n_surrogates=2L,
+      max_iterations=100L,tolerance=.5,random_state=89L)
+    expect_true(seeded$provenance$seeded_initialization_matches_numpy)
+    expect_equal(seeded$surrogates,native$surrogates,tolerance=0)
+    expect_identical(seeded$convergence_iterations,native$convergence_iterations)
   }
 })
 

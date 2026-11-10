@@ -14,14 +14,16 @@ etr_generate_multivariate_iaaft_surrogates(trajectories, curve, dimensions,
 \item{n_surrogates}{Number of rank-matched surrogate matrices.}
 \item{max_iterations}{Maximum Fourier/rank remapping iterations.}
 \item{tolerance}{Positive absolute change tolerance for combined spectral error.}
-\item{random_state}{Optional base R RNG seed, with caller state restored.}
-\item{initial_permutations}{Optional integer-valued zero-based three-dimensional array of shape (n_surrogates, n_time, n_selected_dimensions), containing complete initial time-index permutations for every surrogate/channel. Replays frozen NumPy initialization deterministically without invoking Python or asserting PCG64 stream identity.}
+\item{random_state}{Integer seed for NumPy-compatible PCG64 permutations,
+or NULL for unseeded native R draws.}
+\item{initial_permutations}{Optional integer-valued zero-based three-dimensional
+array of shape (n_surrogates, n_time, n_selected_dimensions), containing
+complete initial time-index permutations for every surrogate and channel.}
 }
 \value{Native multivariate IAAFT source-shaped surrogate array, exact
 empirical marginals, spectral/cross-spectral residual errors,
 convergence counts and scientific provenance.}
 \description{Imposes the published reference-anchored multivariate Fourier
-phase constraints with iterative marginal rank remapping. Cross-spectrum
-agreement is approximate after rank remapping, not exact. Base R and
-NumPy PCG64 random streams differ; full Python source contract parity
-and independent certification are not claimed.}
+phase constraints with iterative marginal rank remapping. The output
+records approximate cross-spectrum agreement after rank remapping.
+The seeded and supplied initialization paths run entirely in R.}

@@ -75,17 +75,16 @@ res=et.multivariate_surrogate_nonlinearity_test(
 ref_p=min(1.,2*min((np.sum(res.surrogate_statistics>=res.observed_statistic)+1)/4,
                       (np.sum(res.surrogate_statistics<=res.observed_statistic)+1)/4))
 ")
-  # Replay the public source surrogate test under a fixed Python seed;
-  # the native R p-value is checked by its plus-one inference rule only.
-  direct<-reticulate::py_call(
+  source_test<-function(trajectories)reticulate::py_call(
     etpy_get_export("multivariate_surrogate_nonlinearity_test"),
-    trajectories=reticulate::py_eval("x",convert=FALSE),
+    trajectories=trajectories,
     curve="example",dimensions=reticulate::py_eval(
       "('x','y','z')",convert=FALSE),reference_dimension="y",
     statistic="largest_lyapunov",embedding_dimension=2L,delay=2L,
     theiler_window=3L,max_horizon=7L,fit_start=1L,fit_end=4L,
     n_surrogates=3L,max_iterations=100L,tolerance=.7,
     alternative="two-sided",random_state=17L)
+  direct<-source_test(reticulate::py_eval("x",convert=FALSE))
   for(field in c("observed_statistic","surrogate_statistics","p_value")){
     replay<-et_to_r(reticulate::py_get_attr(direct,field))
     source<-reticulate::py_eval(paste0("res.",field),convert=TRUE)
@@ -101,6 +100,24 @@ ref_p=min(1.,2*min((np.sum(res.surrogate_statistics>=res.observed_statistic)+1)/
     (sum(native$surrogate_statistics>=native$observed_statistic)+1)/4,
     (sum(native$surrogate_statistics<=native$observed_statistic)+1)/4)),
     tolerance=0)
-  # Draw-level p-values can differ: R and NumPy PCG64 cannot replay seeds.
+  expect_true(native$surrogate_result$provenance$seeded_initialization_matches_numpy)
   expect_false(native$provenance$source_python_equivalent_stochastic_draws)
+
+  # The periodic fixture creates almost equal inverse-FFT ranks and can
+  # diverge after remapping. Separate those ranks and pass identical input
+  # bytes to both runtimes for the seeded end-to-end comparison.
+  separated<-.etr_multivariate_lle_fixture()
+  for(j in seq_len(3L))
+    separated$values[1L,,j]<-separated$values[1L,,j]+
+      .01*sin(seq_len(96L)*sqrt(2)*(1+j/7))
+  py_input<-reticulate::py_call(etpy_get_export("TrajectorySet"),
+    time=separated$time,values=separated$values,
+    curve_ids=reticulate::tuple("example"),dimension_names=reticulate::tuple("x","y","z"),
+    coordinate_system=separated$coordinate_system,time_unit=separated$time_unit)
+  native_separated<-.etr_multivariate_lle_call(separated,"two-sided")
+  python_separated<-source_test(py_input)
+  for(field in c("observed_statistic","surrogate_statistics","p_value"))
+    expect_equal(native_separated[[field]],
+      et_to_r(reticulate::py_get_attr(python_separated,field)),
+      tolerance=1e-8,ignore_attr=TRUE,info=paste("seeded native nonlinear source",field))
 })

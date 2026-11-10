@@ -12,7 +12,8 @@
 #' @param scaling, multiplier Explicit FPCA scaling and wild law.
 #' @param confidence_level Fixed coverage probability.
 #' @param independent_unit_column Optional unique independent curve ID field.
-#' @param random_state Native R seed, not NumPy PCG64.
+#' @param random_state Integer seed. Seeded Mammen uses NumPy-compatible
+#'   PCG64 draws and normal multipliers use the native R normal generator.
 #' @param multiplier_draws Optional B-by-n frozen source multiplier matrix.
 #' @return Native source-shape scan record, without automatic h selection.
 #' @export
@@ -47,26 +48,7 @@ etr_scan_wild_bootstrap_fpca_truncations<-function(
     !is.na(multiplier)&&multiplier%in%c("normal","mammen"),
     "multiplier must be normal or mammen")
   if(is.null(multiplier_draws)){
-    .etr_assert(is.null(random_state)||
-      (is.numeric(random_state)&&length(random_state)==1L&&
-      is.finite(random_state)&&random_state==floor(random_state)&&
-      random_state>=0&&random_state<=.Machine$integer.max),
-      "random_state must be NULL or a native nonnegative integer")
-    draw_mult<-function(){
-      if(multiplier=="normal"){
-        matrix(stats::rnorm(B*n),B,n,byrow=TRUE)
-      }else{
-        sq<-sqrt(5)
-        pneg<-(sq+1)/(2*sq)
-        uu<-matrix(stats::runif(B*n),B,n,byrow=TRUE)
-        ifelse(uu<pneg,(1-sq)/2,(1+sq)/2)
-      }
-    }
-    # NULL mirrors Python's accepted unseeded domain. Native R uses its
-    # current RNG stream, not NumPy PCG64; seeded calls restore R RNG.
-    mult<-if(is.null(random_state))draw_mult() else
-      .etr_seed_scope(as.integer(random_state),draw_mult)
-    mult<-matrix(mult,B,n)
+    mult<-.etr_wild_fpcr_multipliers(B,n,multiplier,random_state)
   }else{
     mult<-multiplier_draws
     .etr_assert(is.matrix(mult)&&is.numeric(mult)&&
@@ -179,6 +161,8 @@ etr_scan_wild_bootstrap_fpca_truncations<-function(
     independence_assumption="independent_curve_rows",
     independent_unit_column=independent_unit_column,
     simultaneous_across_targets=FALSE,random_state=random_state,
+    seeded_mammen_draws_match_numpy=is.null(multiplier_draws)&&
+      !is.null(random_state)&&multiplier=="mammen",
     source_full_contract_certified=FALSE)
   structure(list(reference_fpca=fit,
     target_curve_ids=targets$curve_ids,

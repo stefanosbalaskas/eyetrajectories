@@ -103,8 +103,8 @@
       next
     }
     nres<-nr$result;pres<-pr$result
-    # Public pinned Python 1.2 performs 100 whole-participant full GEE
-    # refits. Native R receives its exact realized indices. No RNG bridge.
+    # Each runtime performs 100 whole-participant refits from the same
+    # integer seed. Compare the independently generated index matrices.
     ps<-safe(function()reticulate::py_call(
       etpy_get_export(
         "bootstrap_generalized_function_on_scalar_coefficients"),
@@ -123,14 +123,16 @@
     }
     ns<-safe(function()
       etr_bootstrap_generalized_function_on_scalar_coefficients(
-        nres,n_bootstrap=100L,random_state=20261109L,
-        sampled_participant_indices=sampled$result))
+        nres,n_bootstrap=100L,random_state=20261109L))
     if(!ns$ok){
       add(key,"bootstrap","<call>","DIVERGENT_ACCEPTANCE",
         native_error=ns$error)
       next
     }
     native<-ns$result;python<-ps$result
+    add(key,"bootstrap","native_pcg64",
+      if(identical(native$provenance$generalized_function_on_scalar_bootstrap$
+        native_random_engine,"numpy_pcg64"))"PASS_SCHEMA"else"DIVERGENT_SCHEMA")
     compare(key,"bootstrap","sampled_participant_indices",
       native$sampled_participant_indices,sampled$result,tol=0)
     compare(key,"bootstrap","bootstrap_coefficient_functions",
