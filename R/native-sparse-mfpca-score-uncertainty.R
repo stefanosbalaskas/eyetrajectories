@@ -42,8 +42,10 @@ etr_sparse_mfpca_score_uncertainty_native<-function(fit,trajectories,
     identical(source$rank_k_covariance_used_for_scoring,FALSE),
     "fit provenance does not support full native-time joint PACE uncertainty")
   grid<-.etr_spn_grid(fit$evaluation_grid)
-  k<-as.integer(fit$n_components);ng<-length(grid)
-  .etr_assert(k>=1L&&is.numeric(fit$eigenvalues)&&
+  k<-fit$n_components;ng<-length(grid)
+  .etr_assert(is.numeric(k)&&length(k)==1L&&is.finite(k)&&k>=1&&k==floor(k),
+    "fit n_components must be a positive integer")
+  .etr_assert(is.numeric(fit$eigenvalues)&&is.null(dim(fit$eigenvalues))&&
     length(fit$eigenvalues)>=k&&
     all(is.finite(fit$eigenvalues[seq_len(k)]))&&
     all(fit$eigenvalues[seq_len(k)]>=0),
@@ -59,14 +61,15 @@ etr_sparse_mfpca_score_uncertainty_native<-function(fit,trajectories,
   .etr_assert(all(vapply(blocks,function(C)
       is.matrix(C)&&identical(dim(C),c(ng,ng))&&
       all(is.finite(C)),logical(1L)))&&
-    max(abs(blocks$cyx-t(blocks$cxy)))<=
-      1e-12+1e-10*max(abs(blocks$cxy)),
+    all(abs(blocks$cyx-t(blocks$cxy))<=1e-12+1e-10*abs(t(blocks$cxy))),
     "joint fitted covariance blocks must be finite and satisfy Cyx=Cxy^T")
   measurement<-.etr_spnm_error("fixed_matrix",
     covariance=fit$measurement_error_covariance)$covariance
   ridge<-source$score_ridge
   limit<-if(is.null(condition_limit))source$score_condition_limit
     else condition_limit
+  if(.etr_trajectory_boundary_scalar(limit))
+    limit<-.etr_trajectory_boundary_double(limit,"condition_limit must be numeric")
   .etr_assert(is.numeric(ridge)&&length(ridge)==1L&&
     is.finite(ridge)&&ridge>=0,
     "fitted score_ridge must be finite nonnegative")
@@ -77,31 +80,16 @@ etr_sparse_mfpca_score_uncertainty_native<-function(fit,trajectories,
   .etr_assert(length(min_time)==1L&&min_time>=1L,
     "fitted min_score_time_points must be positive")
   index<-match(fit$dimensions,trajectories$dimension_names)
-  for(i in seq_along(trajectories$curve_ids)){
-    v<-trajectories$values[[i]][,index,drop=FALSE]
-    good1<-is.finite(v[,1L]);good2<-is.finite(v[,2L])
-    if(any(xor(good1,good2)))
-      .etr_spn_fail("coordinate_specific_missingness_unsupported",
-        "native joint score observations require paired finite channels")
-    if(any(!(good1&good2)))
-      .etr_spn_fail("nonfinite_sparse_planar_observation",
-        "joint observations must be finite")
-  }
+  .etr_spnm_validate_observations(trajectories,fit$dimensions,index)
   action<-source$analysis_support_action
-  .etr_assert(action%in%c("error","restrict"),
-    "fit analysis_support_action must be error or restrict")
-  masks<-lapply(trajectories$time,
-    function(t)t>=grid[1L]&t<=tail(grid,1L))
-  if(identical(action,"error")&&any(vapply(masks,
-      function(x)any(!x),logical(1L))))
-    .etr_spn_fail("observations_outside_analysis_support",
-      "joint uncertainty observation times exceed fit support")
+  if(is.null(action))action<-"error"
+  analysis<-.etr_spnm_analysis_support(trajectories$time,grid,action)
   times<-if(identical(action,"restrict"))
-    Map(function(t,m)t[m],trajectories$time,masks)
+    Map(function(t,m)t[m],trajectories$time,analysis$masks)
       else trajectories$time
-  counts<-as.integer(lengths(times))
-  .etr_assert(identical(counts,
-    as.integer(source$analysis_sample_counts)),
+  counts<-analysis$summary$analysis_sample_counts
+  .etr_assert(is.null(source$analysis_sample_counts)||
+    identical(counts,as.integer(source$analysis_sample_counts)),
     "joint uncertainty observations do not reproduce fitted analysis sample counts")
   prior<-diag(fit$eigenvalues[seq_len(k)],nrow=k)
   tol<-1e-10*max(1,max(abs(fit$eigenvalues[seq_len(k)])))
@@ -141,7 +129,7 @@ etr_sparse_mfpca_score_uncertainty_native<-function(fit,trajectories,
             Phi[,j]<-as.vector(pointwise)
           }
           rhs<-Phi%*%prior
-          solved<-tryCatch(solve(Sigma,rhs),error=function(e)NULL)
+          solved<-tryCatch(solve(Sigma,rhs,tol=0),error=function(e)NULL)
           if(is.null(solved))"joint_score_covariance_solve_failed"
           else{
             solve_relative<-sqrt(sum((Sigma%*%solved-rhs)^2))/
@@ -198,8 +186,8 @@ etr_sparse_mfpca_score_uncertainty_native<-function(fit,trajectories,
   if(failure_action=="error"&&any(audit$status_code!="ok")){
     ii<-which(audit$status_code!="ok")[1L]
     .etr_spn_score_fail(audit,ii,
-      paste("conditional joint PACE uncertainty failed for curve",
-        fit$curve_ids[ii]))
+      paste("conditional joint-PACE uncertainty failed for curve",
+        .etr_python_workflow_identifier_repr(fit$curve_ids[ii])))
   }
   method<-"conditional_gaussian_given_fitted_joint_population"
   provenance<-list(
@@ -229,9 +217,13 @@ etr_sparse_mfpca_score_uncertainty_native<-function(fit,trajectories,
     eigensystem_estimation_uncertainty_included=FALSE,
     measurement_error_specification_uncertainty_included=FALSE,
     bandwidth_uncertainty_included=FALSE,
-    asynchronous_channel_grids_supported=FALSE)
+    asynchronous_channel_grids_supported=FALSE,
+    interpretation=paste("conditional on fitted joint covariance/eigensystem, measurement-error",
+      "covariance, and score regularization; excludes population-estimation",
+      "and bandwidth uncertainty"))
   structure(list(reference=fit,curve_ids=fit$curve_ids,
     covariance=posterior,standard_errors=stderr,diagnostics=audit,
+    correlations=.etr_spn_score_correlations(posterior,stderr),
     n_components=k,method=method,provenance=provenance,
     source_python_full_contract_certified=FALSE,
     independent_full_source_certified=FALSE),

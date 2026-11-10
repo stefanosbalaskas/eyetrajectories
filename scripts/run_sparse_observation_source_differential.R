@@ -18,9 +18,10 @@
     do.call(call,c(list(attr(source_api,"observation_process_data")),input))
   }
   source_options<-function(options){
-    for(key in c("history_predictors","time_bins","eccentricity_reference")){
+    for(key in c("predictors","history_predictors","time_bins",
+        "association_bins","eccentricity_reference")){
       value<-options[[key]]
-      if(length(value)>1L||key=="history_predictors")
+      if(length(value)>1L||(!is.null(value)&&key%in%c("predictors","history_predictors")))
         options[key]<-list(as.list(value))
     }
     options
@@ -48,7 +49,9 @@
   report_source<-function(result)et_to_r(call(attr(source_api,
     "observation_process_reporting_text"),result=result))
   standalone<-0L
-  for(fixture in c("after_observed","all_candidates","without_coordinates","numeric_identifiers")){
+  for(fixture in c("after_observed","all_candidates","without_coordinates",
+      "numeric_identifiers","rounded_decimal_ties","numeric_text_controls",
+      "changing_groups","nonfinite_without_profiles","constant_no_profiles")){
     input<-.etr_obs_fixture_input()
     opts<-.etr_obs_fixture_options()
     if(fixture!="after_observed"){
@@ -63,6 +66,31 @@
       input$frame$curve<-rep(c(2,10,-.5),c(6L,6L,5L))
       input$frame$participant<-rep(c(1,2),c(12L,5L))
     }
+    if(fixture=="rounded_decimal_ties"){
+      opts$time_bins<-c(0,1.2345,2.5005,7)
+      opts$association_bins<-c(0,.1235,.9875,1)
+      opts$history_predictors<-character()
+    }
+    if(fixture=="numeric_text_controls"){
+      input$frame$time<-paste0("+",input$frame$time,".0")
+      input$frame$observed<-ifelse(input$frame$observed==1L,"0_1","0_0")
+      opts$time_bins<-c("0","2.5","5","7")
+      opts$eccentricity_reference<-c(".1",".2")
+      opts$low_support_threshold<-"6e-1"
+    }
+    if(fixture=="changing_groups"){
+      input$frame$participant<-rep(c("team b","","team a"),length.out=nrow(input$frame))
+      input$frame$design<-rep(c(TRUE,FALSE),length.out=nrow(input$frame))
+    }
+    if(fixture=="nonfinite_without_profiles"){
+      input$frame$design[2L]<-Inf
+      opts["association_bins"]<-list(NULL)
+    }
+    if(fixture=="constant_no_profiles"){
+      opts["time_basis"]<-list(NULL)
+      opts$predictors<-"fixed"
+      opts$history_predictors<-character()
+    }
     process<-do.call(etr_observation_process_data,input)
     source<-source_process(input)
     native<-do.call(etr_diagnose_observation_process,c(list(process),opts))
@@ -75,9 +103,38 @@
       if(nzchar(mismatch))stop(fixture," ",key," ",mismatch,call.=FALSE)
       standalone<-standalone+1L
     }
+    # Python appends history columns by iteration over a set. Compare those
+    # columns by name, while requiring the original candidate columns in order.
+    ncols<-ncol(process$frame)
+    stopifnot(identical(head(names(native$candidate_frame),ncols),
+      head(names(read(expected,"candidate_frame")),ncols)))
     stopifnot(identical(etr_observation_process_reporting_text(native),report_source(expected)))
   }
   cat("OBSERVATION_STANDALONE_TABLES_MATCHED=",standalone,"\n",sep="")
+  rejects<-list(
+    invalid_decimal_time=list(column="time",index=2L,value="0x1",
+      message="candidate times must be numeric"),
+    missing_observed=list(column="observed",index=1L,value=NA_real_,
+      message="must not contain missing values"),
+    invalid_binary=list(column="observed",index=1L,value="0x1",
+      message="must be binary"),
+    missing_group=list(column="participant",index=1L,value=NA_character_,
+      message="group identifiers must not be missing"),
+    observed_coordinate_in_missing_row=list(column="x",index=3L,value=1,
+      message="contains values on unobserved rows")
+  )
+  for(fixture in names(rejects)){
+    input<-.etr_obs_fixture_input()
+    case<-rejects[[fixture]]
+    input$frame[[case$column]][case$index]<-case$value
+    native<-tryCatch(do.call(etr_observation_process_data,input),error=identity)
+    source<-tryCatch(source_process(input),error=identity)
+    if(!inherits(native,"error")||!inherits(source,"python.builtin.ValueError")||
+      !all(vapply(list(native,source),function(e)
+        grepl(case$message,conditionMessage(e),fixed=TRUE),logical(1L))))
+      stop(fixture," does not reproduce the observation boundary",call.=FALSE)
+  }
+  cat("OBSERVATION_CONSTRUCTOR_REJECTIONS_MATCHED=",length(rejects),"\n",sep="")
 
   reticulate::py_run_string("
 import numpy as np
@@ -174,6 +231,19 @@ def _etr_obs_workflow_input(times, values, ids, dimensions, metadata):
     r_scope<-native$observation_diagnostics$provenance[scope]
     p_scope<-read(expected,"provenance")[scope]
     record(name,"diagnostic_scope",if(identical(r_scope,p_scope))""else"scientific scope differs")
+    for(key in c("curves","groups","profiles","candidates")){
+      a<-etr_observation_process_frame(native$observation_diagnostics,key)
+      b<-read(expected,fields[[key]])
+      record(name,paste0("diagnostic_",key),difference(a,b,unordered=key=="candidates"))
+    }
+    observed_step<-tail(native$steps,1L)[[1L]]
+    record(name,"diagnostic_step_contract",if(
+      identical(observed_step[["function"]],read(step,"function"))&&
+      identical(observed_step$status,read(step,"status"))&&
+      length(observed_step$warnings)==length(read(step,"warnings"))&&
+      isTRUE(observed_step$duration_measured)&&
+      is.finite(observed_step$elapsed_seconds)&&observed_step$elapsed_seconds>=0
+      )""else"diagnostic step function, status, warnings or elapsed time differs")
   }
   out<-do.call(rbind,rows)
   head<-system2("git",c("rev-parse","HEAD"),stdout=TRUE)

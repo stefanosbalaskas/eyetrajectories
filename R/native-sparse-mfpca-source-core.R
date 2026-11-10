@@ -2,6 +2,50 @@
 # and full-covariance PACE algorithms. Python-free, no marginal fdapace or
 # raw-trajectory interpolation. Uncertified source-model implementation.
 
+.etr_spnm_validate_observations<-function(trajectories,dimensions,index){
+  for(i in seq_along(trajectories$curve_ids)){
+    values<-trajectories$values[[i]][,index,drop=FALSE]
+    finite<-is.finite(values)
+    mismatch<-which(xor(finite[,1L],finite[,2L]))
+    details<-list(curve_id=trajectories$curve_ids[i],dimensions=dimensions)
+    if(length(mismatch)){
+      details$n_coordinate_specific_missing<-length(mismatch)
+      details$sample_indices<-mismatch-1L
+      .etr_spn_fail("coordinate_specific_missingness_unsupported",
+        "x and y must be jointly observed at every retained sparse timestamp",details)
+    }
+    absent<-which(!finite[,1L]&!finite[,2L])
+    if(length(absent)){
+      details$n_nonfinite_joint_samples<-length(absent)
+      details$sample_indices<-absent-1L
+      .etr_spn_fail("nonfinite_sparse_planar_observation",
+        "absent planar observations must be represented by absent samples",details)
+    }
+  }
+}
+
+.etr_spnm_analysis_support<-function(times,grid,action){
+  .etr_assert(length(action)==1L&&action%in%c("error","restrict"),
+    "analysis_support_action must be error or restrict")
+  .etr_spn_check_grid_support(times,grid)
+  masks<-lapply(times,function(t)t>=grid[1L]&t<=tail(grid,1L))
+  counts<-as.integer(vapply(masks,sum,integer(1L)))
+  outside<-as.integer(lengths(times)-counts)
+  support<-list(analysis_support=range(grid),analysis_support_action=action,
+    original_sample_counts=as.integer(lengths(times)),analysis_sample_counts=counts,
+    outside_observation_count=sum(outside),outside_counts_by_curve=outside)
+  if(action=="error"&&any(outside>0L))
+    .etr_spn_fail("observations_outside_analysis_support",
+      "observations lie outside the declared evaluation-grid support",
+      support[c("analysis_support","outside_observation_count","outside_counts_by_curve")])
+  if(sum(counts)<3L)
+    .etr_spn_fail("insufficient_joint_support",
+      "fewer than three planar observations remain on declared support",
+      list(analysis_support=range(grid),in_support_observation_count=sum(counts),
+        in_support_counts_by_curve=counts))
+  list(masks=masks,summary=support)
+}
+
 .etr_spnm_pairs<-function(times,rx,ry){
   xx<-.etr_spn_pairs(times,rx)
   yy<-.etr_spn_pairs(times,ry)
@@ -61,7 +105,8 @@
   mismatch<-max(abs(xx-t(xx)),abs(yy-t(yy)),abs(yx-t(xy)))
   if(mismatch>symmetry_tolerance)
     .etr_spn_fail("joint_covariance_symmetry_failure",
-      "planar covariance blocks violate joint symmetry")
+      "planar covariance blocks violate joint symmetry tolerance",
+      list(maximum_symmetry_error=mismatch,symmetry_tolerance=symmetry_tolerance))
   original<-rbind(cbind(xx,xy),cbind(yx,yy))
   original<-(original+t(original))/2
   w<-.etr_spn_weights(grid)
@@ -72,7 +117,10 @@
   substantial<-ev$values < -tolerance
   if(action=="error"&&any(substantial))
     .etr_spn_fail("joint_covariance_psd_failure",
-      "joint weighted covariance operator has negative eigenvalues")
+      "planar covariance operator has eigenvalues below the PSD tolerance",
+      list(most_negative_eigenvalue=min(ev$values),
+        negative_eigenvalue_count=sum(negative),
+        substantial_negative_eigenvalue_count=sum(substantial),tolerance=tolerance))
   out<-original;applied<-"none"
   if(any(negative)){
     applied<-if(action=="project")"project"else
@@ -111,9 +159,12 @@
   sw<-sqrt(rep(.etr_spn_weights(grid),2L))
   A<-outer(sw,sw)*((matrix+t(matrix))/2)
   e<-eigen(A,symmetric=TRUE)
-  if(sum(e$values>tolerance)<k)
+  positive<-sum(e$values>tolerance)
+  if(positive<k)
     .etr_spn_fail("insufficient_positive_joint_components",
-      "joint operator has fewer positive eigenfunctions than requested")
+      "joint covariance has fewer positive components than requested",
+      list(requested_components=k,positive_components=positive,
+        positive_tolerance=tolerance))
   lambda<-e$values[seq_len(k)]
   flat<-t(sweep(e$vectors[,seq_len(k),drop=FALSE],1L,sw,"/"))
   for(i in seq_len(k))if(flat[i,which.max(abs(flat[i,]))]<0)

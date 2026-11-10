@@ -47,6 +47,7 @@ test_that("native sparse PACE fits a local covariance and conditions on full ope
   u<-etr_sparse_fpca_score_uncertainty_native(f,x)
   expect_identical(dim(u$covariance),c(24L,1L,1L))
   expect_identical(dim(u$standard_errors),c(24L,1L))
+  expect_identical(u$correlations,array(1,c(24L,1L,1L)))
   expect_true(all(is.finite(u$standard_errors)))
   expect_true(all(u$standard_errors>=0))
   expect_true(all(u$covariance>= -1e-9))
@@ -82,6 +83,23 @@ test_that("source sparse FPCA guards unsupported estimators and source support",
     "curve IDs")
   expect_error(etr_sparse_fpca_score_uncertainty_native(f,x,
     condition_limit=1),"condition_limit")
+  other<-x;other$coordinate_system<-"pixels"
+  expect_error(etr_sparse_fpca_score_uncertainty_native(f,other),"coordinate_system")
+  other<-x;other$time_unit<-"ms"
+  expect_error(etr_sparse_fpca_score_uncertainty_native(f,other),"time_unit")
+  changed<-f;changed$covariance<-f$covariance[-1L,-1L]
+  expect_error(etr_sparse_fpca_score_uncertainty_native(changed,x),"covariance shape")
+  changed<-f;changed$eigenvalues[1L]<- -1
+  expect_error(etr_sparse_fpca_score_uncertainty_native(changed,x),"non-negative")
+  failure<-tryCatch(etr_sparse_fpca_score_uncertainty_native(f,x,
+    condition_limit=1.01),error=identity)
+  expect_s3_class(failure,"etr_sparse_native_error")
+  retained<-etr_sparse_fpca_score_uncertainty_native(f,x,
+    condition_limit="1.01",failure_action="retain_nan")
+  expect_true(all(is.nan(retained$correlations)))
+  expect_identical(failure$details$all_curve_diagnostics,
+    lapply(seq_len(nrow(retained$diagnostics)),function(i)
+      as.list(retained$diagnostics[i,,drop=FALSE])))
 })
 
 test_that("sparse FPCA source controls and score-failure audits survive the workflow",{
@@ -153,7 +171,7 @@ def _etr_spn_build_irregular(times, values, ids):
       reticulate::py_eval("_etr_spn_module",convert=FALSE),
       "sparse_fpca_score_uncertainty"),
     fit=pyfit,trajectories=py)
-  for(field in c("covariance","standard_errors")){
+  for(field in c("covariance","standard_errors","correlations")){
     expect_equal(unname(nrposterior[[field]]),
       unname(get(pyposterior,field)),tolerance=2e-6,
       ignore_attr=TRUE,info=paste("source sparse posterior",field))

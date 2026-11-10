@@ -109,6 +109,13 @@ etr_run_functional_mixed_effects_workflow<-function(
     !anyDuplicated(names(request))&&all(names(request)%in%names(parameters)),
     "score_uncertainty must be a named list with condition_limit and/or failure_action")
   parameters[names(request)]<-request
+  if(!is.null(parameters$condition_limit)){
+    limit<-parameters$condition_limit
+    message<-"condition_limit must be finite and greater than 1"
+    .etr_assert(.etr_trajectory_boundary_scalar(limit),message)
+    parameters$condition_limit<-.etr_trajectory_boundary_double(limit,message)
+    .etr_assert(is.finite(parameters$condition_limit)&&parameters$condition_limit>1,message)
+  }
   if(inherits(fit,"etr_sparse_mfpca_source")){
     calculate<-etr_sparse_mfpca_score_uncertainty_native
     as_frame<-etr_sparse_mfpca_score_uncertainty_frame_native

@@ -35,7 +35,8 @@ identifier, candidate time, and binary observation indicator columns.}
 \code{"candidate_time"}, \code{"design"}, or
 \code{"external_candidate_time"} per predictor.}
 \item{coordinate_columns}{Optional pair of observed coordinate columns with
-finite values on retained rows and missing values on unretained rows.}
+finite values on retained rows and missing values on unretained rows after
+decimal numeric conversion.}
 \item{time_unit, coordinate_system, provenance}{Source metadata.}
 \item{process}{An explicit denominator from \code{etr_observation_process_data()}.}
 \item{predictors}{Subset of declared candidate-time predictors. The default
@@ -45,14 +46,16 @@ Available names are \code{previous_observed_x}, \code{previous_observed_y},
 \code{previous_observed_eccentricity}, \code{previous_observed_speed},
 \code{time_since_last_observed}, \code{preceding_observed_run_length},
 and \code{preceding_missing_run_length}.}
-\item{eccentricity_reference}{Optional finite pair of coordinate values.}
+\item{eccentricity_reference}{Optional finite pair of numeric or decimal-text
+coordinate values.}
 \item{risk_set}{Evaluate all candidate rows or those immediately following
 an observed candidate within a curve, using \code{"after_observed"}.}
 \item{time_basis}{\code{"linear"} includes a descriptive time association.
 \code{NULL} omits it.}
 \item{time_bins, association_bins}{Number of equal-width bins, increasing
 edge vector, or \code{NULL}.}
-\item{low_support_threshold}{Observed fraction threshold in \eqn{[0,1]}.}
+\item{low_support_threshold}{Numeric or decimal-text observed fraction
+threshold in \eqn{[0,1]}.}
 \item{result}{An observation-process diagnostic result.}
 \item{table}{One of \code{"global"}, \code{"curves"}, \code{"groups"},
 \code{"time"}, \code{"support"}, \code{"associations"}, \code{"profiles"},
@@ -63,6 +66,10 @@ Time summaries use the selected risk set. Regional support uses the full
 candidate denominator and identifies empty, zero-observation, and low-support
 regions. Predictor associations summarize observed versus missing rows.
 History variables use earlier observations within the same curve.
+Regional counts use the original bin edges. Displayed interval endpoints
+follow the pandas decimal rounding convention on the tested finite domain.
+Original candidate columns retain their order and history columns use a
+fixed native order.
 }
 \value{
 The constructor returns an \code{etr_observation_process_data} record.

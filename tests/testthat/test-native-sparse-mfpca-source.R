@@ -73,9 +73,12 @@ test_that("joint sparse covariance fails closed on unsupported sample/error mode
   args<-.etr_spnm_args()
   bad<-tr
   bad$values[[1L]][1L,1L]<-NA_real_
-  expect_error(do.call(etr_fit_sparse_mfpca_native,
+  failure<-expect_error(do.call(etr_fit_sparse_mfpca_native,
     c(list(trajectories=bad),args)),
     "coordinate_specific_missingness_unsupported")
+  expect_identical(failure$details$curve_id,tr$curve_ids[1L])
+  expect_identical(failure$details$sample_indices,0L)
+  expect_identical(failure$details$n_coordinate_specific_missing,1L)
   bad<-tr;bad$values[[1L]][1L,]<-NA_real_
   expect_error(do.call(etr_fit_sparse_mfpca_native,
     c(list(trajectories=bad),args)),

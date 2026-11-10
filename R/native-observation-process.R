@@ -15,8 +15,21 @@
   },character(1L)))
   as.character(x)
 }
-.etr_obs_number <- function(x){
+.etr_obs_number <- function(x,numpy=FALSE){
   if(is.factor(x))x<-as.character(x)
+  if(is.character(x)){
+    x<-trimws(x,whitespace="[\\h\\v]")
+    if(numpy){
+      x<-.etr_numpy_float_text(x,"values must be numeric")
+    }else{
+      # pandas.to_numeric accepts decimal text, not R hexadecimal notation
+      # or the digit separators allowed by Python's float constructor.
+      decimal<-"^[+-]?(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?$"
+      valid<-grepl(decimal,x,perl=TRUE)|grepl("^[+-]?inf(?:inity)?$",
+        x,ignore.case=TRUE,perl=TRUE)
+      x[!valid]<-NA_character_
+    }
+  }
   suppressWarnings(as.numeric(x))
 }
 
@@ -49,11 +62,18 @@ etr_observation_process_data <- function(frame,curve_column,time_column,observed
     frame[[group_column]]<-.etr_obs_labels(frame[[group_column]])
   }
   time<-.etr_obs_number(frame[[time_column]])
+  .etr_assert(!any(is.na(time)&!is.na(frame[[time_column]])&
+    nzchar(trimws(as.character(frame[[time_column]])))),
+    "candidate times must be numeric")
   .etr_assert(length(time)==nrow(frame)&&all(is.finite(time)),
-    "candidate times must be finite numeric values")
-  observed<-.etr_obs_number(frame[[observed_column]])
+    "candidate times must be finite")
+  .etr_assert(!anyNA(frame[[observed_column]]),
+    paste(observed_column,"must not contain missing values"))
+  observed<-tryCatch(.etr_obs_number(frame[[observed_column]],numpy=TRUE),
+    error=function(e)stop(paste(observed_column,"must be binary 0/1 or boolean"),
+      call.=FALSE))
   .etr_assert(length(observed)==nrow(frame)&&all(observed%in%c(0,1)),
-    "observed_column must be binary 0/1 or boolean")
+    paste(observed_column,"must be binary 0/1 or boolean"))
   frame[[time_column]]<-time
   frame[[observed_column]]<-as.integer(observed)
   .etr_assert(!anyDuplicated(frame[c(curve_column,time_column)]),
@@ -163,9 +183,10 @@ etr_observation_process_data <- function(frame,curve_column,time_column,observed
 
 .etr_obs_edges <- function(values,bins,name){
   if(is.null(bins))return(NULL)
-  .etr_assert(is.numeric(bins)&&is.null(dim(bins))&&!anyNA(bins),
+  .etr_assert((is.atomic(bins)||is.list(bins))&&is.null(dim(bins))&&!anyNA(bins)&&
+    !(is.logical(bins)&&length(bins)==1L),
     paste(name,"must be an integer count or finite edge vector"))
-  if(length(bins)==1L){
+  if(is.numeric(bins)&&length(bins)==1L){
     .etr_assert(is.finite(bins)&&bins==floor(bins)&&bins>=2&&bins<.Machine$integer.max,
       paste(name,"integer must be >= 2"))
     limits<-range(values)
@@ -173,7 +194,10 @@ etr_observation_process_data <- function(frame,curve_column,time_column,observed
     .etr_assert(limits[2L]>limits[1L],paste(name,"cannot be constructed for constant values"))
     return(seq(limits[1L],limits[2L],length.out=bins+1L))
   }
-  .etr_assert(length(bins)>=3L&&all(is.finite(bins)),
+  .etr_assert(all(lengths(as.list(bins))==1L)&&length(bins)>=3L,
+    paste(name,"edges must contain at least three finite values"))
+  bins<-.etr_obs_number(unlist(bins,use.names=FALSE),numpy=TRUE)
+  .etr_assert(all(is.finite(bins)),
     paste(name,"edges must contain at least three finite values"))
   .etr_assert(all(diff(bins)>0),paste(name,"edges must be strictly increasing"))
   .etr_assert(bins[1L]<=min(values)&&tail(bins,1L)>=max(values),
@@ -205,12 +229,23 @@ etr_observation_process_data <- function(frame,curve_column,time_column,observed
 .etr_obs_bins <- function(edges){
   # Membership uses the original edges. Reported interval labels use the
   # rounded breakpoints of pandas cut with include_lowest.
-  round_breaks<-function(precision)vapply(edges,function(x)
-    round(x,if(x!=0&&abs(x)<1)precision-1L-floor(log10(abs(x)))else precision),
-    numeric(1L))
+  round_breaks<-function(precision)vapply(edges,function(x){
+    if(x==0)return(x)
+    digits<-if(abs(x)<1)precision-1L-floor(log10(abs(x)))else precision
+    scale<-10^digits
+    scaled<-x*scale
+    if(!is.finite(scaled)||!is.finite(scale))return(x)
+    # NumPy around scales in double precision before rounding to even.
+    out<-round(scaled)/scale
+    if(out==0&&x<0)-0.0 else out
+  },numeric(1L))
   for(precision in 3:19){
     displayed<-round_breaks(precision)
     if(!anyDuplicated(displayed))break
+  }
+  if(anyDuplicated(displayed)){
+    precision<-3L
+    displayed<-round_breaks(precision)
   }
   displayed[1L]<-displayed[1L]-10^(-precision)
   lower<-head(displayed,-1L);upper<-tail(displayed,-1L)
@@ -312,9 +347,7 @@ etr_diagnose_observation_process <- function(process,predictors=NULL,
     "process must be an etr_observation_process_data")
   .etr_assert(is.null(time_basis)||identical(time_basis,"linear"),
     "time_basis must be NULL or linear")
-  .etr_assert(is.numeric(low_support_threshold)&&length(low_support_threshold)==1L&&
-    is.finite(low_support_threshold)&&low_support_threshold>=0&&low_support_threshold<=1,
-    "low_support_threshold must be finite and within [0, 1]")
+  low_support_threshold<-.etr_obs_threshold(low_support_threshold)
   .etr_assert(identical(risk_set,"all_candidates")||identical(risk_set,"after_observed"),
     "risk_set must be all_candidates or after_observed")
   requested<-if(is.null(predictors))process$candidate_predictors else unique(as.character(predictors))
@@ -322,10 +355,7 @@ etr_diagnose_observation_process <- function(process,predictors=NULL,
   .etr_assert(all(requested%in%process$candidate_predictors),
     "predictors must have been declared as complete candidate-time predictors")
   .etr_assert(all(history%in%.etr_obs_history_names),"unknown history predictor")
-  .etr_assert(is.null(eccentricity_reference)||
-    (is.numeric(eccentricity_reference)&&is.null(dim(eccentricity_reference))&&
-      length(eccentricity_reference)==2L&&all(is.finite(eccentricity_reference))),
-    "eccentricity_reference must contain two finite coordinates")
+  eccentricity_reference<-.etr_obs_reference(eccentricity_reference)
 
   data<-process$frame
   time<-data[[process$time_column]]
@@ -416,6 +446,10 @@ etr_diagnose_observation_process <- function(process,predictors=NULL,
     }
     add(values[finite],y[finite],predictor,"history",numeric=TRUE,excluded=sum(!finite))
   }
+  normalized_bins<-function(bins)if(is.null(bins)||is.numeric(bins))bins else
+    .etr_obs_number(unlist(bins,use.names=FALSE),numpy=TRUE)
+  association_bins<-normalized_bins(association_bins)
+  time_bins<-normalized_bins(time_bins)
   provenance<-list(scope=.etr_obs_scope,denominator_source="explicit_candidate_rows",
     time_basis=time_basis,time_bins=edges,association_bins=association_bins,
     risk_set=risk_set,low_support_threshold=low_support_threshold,
@@ -434,6 +468,25 @@ etr_diagnose_observation_process <- function(process,predictors=NULL,
       status_code=character(),message=character())),risk_set=risk_set,time_basis=time_basis,
     association_bins=association_bins,time_bins=time_bins,low_support_threshold=low_support_threshold,
     scope=.etr_obs_scope,provenance=provenance),class="etr_observation_process_diagnostic")
+}
+
+.etr_obs_threshold <- function(value){
+  message<-"low_support_threshold must be finite and within [0, 1]"
+  .etr_assert(.etr_trajectory_boundary_scalar(value),message)
+  result<-.etr_trajectory_boundary_double(value,message)
+  .etr_assert(is.finite(result)&&result>=0&&result<=1,message)
+  result
+}
+
+.etr_obs_reference <- function(value){
+  if(is.null(value))return(NULL)
+  message<-"eccentricity_reference must contain two finite coordinates"
+  .etr_assert((is.atomic(value)||is.list(value))&&is.null(dim(value))&&
+    length(value)==2L&&all(vapply(as.list(value),.etr_trajectory_boundary_scalar,
+      logical(1L))),message)
+  result<-.etr_trajectory_boundary_double(unlist(value,use.names=FALSE),message)
+  .etr_assert(all(is.finite(result)),message)
+  result
 }
 
 #' Extract a native observation-process diagnostic table
@@ -483,6 +536,8 @@ etr_observation_process_reporting_text <- function(result){
     all(names(request)%in%names(defaults)),
     "observation_diagnostics must be a named list of diagnostic options")
   defaults[names(request)]<-request
+  defaults$low_support_threshold<-.etr_obs_threshold(defaults$low_support_threshold)
+  defaults["eccentricity_reference"]<-list(.etr_obs_reference(defaults$eccentricity_reference))
   defaults
 }
 
