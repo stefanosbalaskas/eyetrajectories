@@ -64,6 +64,53 @@ test_that("callback mapping normalization and failure boundaries follow Python s
   expect_match(recorded$records[[1L]]$error_message,"callback failure")
 })
 
+test_that("distinct semantic labels may collide as flattened structured keys", {
+  metric<-function(name)list(name=name,quantity="q",direction="lower_is_better",
+    units="u",scope="s",description="d")
+  values<-list(
+    list(metric=metric("a.source_b"),value=1,component=NULL,source=NULL),
+    list(metric=metric("a"),value=2,component=NULL,source="b"))
+  assessment<-structure(list(values=values,provenance=list()),
+    class="etr_functional_recovery_assessment")
+  native<-.etr_recovery_runner_assessment(assessment)
+  expect_identical(native$metrics,c("a.source_b"=2))
+  expect_identical(length(native$metric_values),2L)
+  evidence<-etr_functional_recovery_result(
+    list(list(scenario_name="collision",replicate=0L,seed=20L,
+      status="ok",metrics=native$metrics,metric_values=values)),
+    metric_definitions=native$definitions)
+  detail<-etr_functional_recovery_frame(evidence)
+  expect_identical(detail$metric,c("a.source_b","a"))
+  expect_identical(detail$value,c(1,2))
+  expect_identical(detail$source,c(NA_character_,"b"))
+
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Frozen Python 1.2 collision dictionary requires oracle")
+  expect_identical(et_python_version(),"1.2.0")
+  reticulate::py_run_string("
+from eyetrajectoriespy.recovery import (
+ FunctionalRecoveryMetric as _RM,
+ FunctionalRecoveryValue as _RV,
+ FunctionalRecoveryAssessment as _RA
+)
+def _met(name):
+ return _RM(name=name,quantity='q',direction='lower_is_better',
+  units='u',scope='s',description='d')
+_collided = _RA(values=(
+ _RV(metric=_met('a.source_b'),value=1),
+ _RV(metric=_met('a'),value=2,source='b')
+))
+_collided_mapping = dict(_collided.as_mapping())
+")
+  pykeys<-reticulate::py_to_r(reticulate::py_eval(
+    "list(_collided_mapping.keys())",convert=FALSE))
+  expect_identical(as.character(unlist(pykeys,use.names=FALSE)),
+    names(native$metrics))
+  expect_equal(as.numeric(reticulate::py_eval(
+    "_collided_mapping['a.source_b']",convert=TRUE)),
+    as.numeric(native$metrics[[1L]]),tolerance=0)
+})
+
 test_that("recovery fixture generates source-required n_time-by-one matrices",{
   irregular_times<-c(0,.13,.5,.91,1)
   expect_identical(dim(.etr_structured_runner_mean(irregular_times)),
