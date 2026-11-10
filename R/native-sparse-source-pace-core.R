@@ -297,7 +297,11 @@
   neg<-e$values<0;substantial<-e$values < -tolerance
   if(action=="error"&&any(substantial))
     .etr_spn_fail("covariance_psd_failure",
-      "fitted weighted covariance has substantial negative eigenvalues")
+      "fitted weighted covariance has substantial negative eigenvalues",
+      list(most_negative_eigenvalue=as.numeric(min(e$values)),
+        negative_eigenvalue_count=as.integer(sum(neg)),
+        substantial_negative_eigenvalue_count=as.integer(sum(substantial)),
+        tolerance=as.numeric(tolerance)))
   applied<-"none";R<-C
   if(any(neg)){
     applied<-if(action=="project")"project"else
@@ -325,7 +329,10 @@
   ev<-eigen(D,symmetric=TRUE)
   if(sum(ev$values>tolerance)<k)
     .etr_spn_fail("insufficient_positive_components",
-      "operator has fewer positive components than requested")
+      "operator has fewer positive components than requested",
+      list(requested_components=as.integer(k),
+        positive_components=as.integer(sum(ev$values>tolerance)),
+        positive_tolerance=as.numeric(tolerance)))
   lambda<-ev$values[seq_len(k)]
   phi<-t(sweep(ev$vectors[,seq_len(k),drop=FALSE],1L,sw,"/"))
   for(j in seq_len(k))if(phi[j,which.max(abs(phi[j,]))]<0)
@@ -333,16 +340,35 @@
   list(eigenvalues=lambda,eigenfunctions=phi,quadrature_weights=w)
 }
 
+.etr_spn_interp_inputs<-function(grid,t){
+  # The frozen Python interpolation primitives accept >=2 grid points
+  # (fitting itself still requires >=3 points). Preserve that distinction.
+  .etr_spn_uncertainty_grid(grid)
+  .etr_assert(is.numeric(t)&&is.null(dim(t))&&all(is.finite(t)),
+    "times must be a finite one-dimensional array")
+  if(any(t<grid[1L])||any(t>tail(grid,1L)))
+    .etr_spn_fail("native_time_outside_fitted_support",
+      "native observation times fall outside fitted population support",
+      list(grid_start=as.numeric(grid[1L]),
+        grid_end=as.numeric(tail(grid,1L)),
+        target_min=as.numeric(min(t)),
+        target_max=as.numeric(max(t))))
+  invisible(NULL)
+}
+
 .etr_spn_eval<-function(grid,v,t){
-  .etr_assert(all(t>=grid[1L])&&all(t<=tail(grid,1L)),
-    "native_time_outside_fitted_support")
-  stats::approx(grid,v,xout=t,rule=1,ties="ordered")$y
+  .etr_spn_interp_inputs(grid,t)
+  .etr_assert(is.numeric(v)&&is.null(dim(v))&&length(v)==length(grid),
+    "fitted_values must have one value per evaluation-grid point")
+  stats::approx(grid,v,xout=t,rule=1,ties="ordered",
+    na.rm=FALSE)$y
 }
 
 .etr_spn_cov_eval<-function(grid,C,t){
+  .etr_spn_interp_inputs(grid,t)
   n<-length(grid);m<-length(t)
-  .etr_assert(all(t>=grid[1L])&&all(t<=grid[n]),
-    "native_time_outside_fitted_support")
+  .etr_assert(is.numeric(C)&&identical(dim(C),c(n,n)),
+    sprintf("fitted_covariance must have shape (%d, %d)",n,n))
   a<-pmin(findInterval(t,grid,all.inside=TRUE),n-1L)
   u<-(t-grid[a])/(grid[a+1L]-grid[a])
   V<-matrix(0,m,m)
