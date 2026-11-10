@@ -74,6 +74,13 @@ test_that("seeded child draws leave caller RNG intact and NULL uses its stream",
   expect_identical(a$provenance$
     fpca_regression_future_prediction_interval$residual_rng_stream,
     "spawned_domain_separated_stream")
+  legacy<-etr_fpca_regression_future_prediction_interval(
+    z$result,z$outcome,random_state=121L,random_engine="base_R")
+  legacy_indices<-withr::with_seed(121L,
+    matrix(sample.int(4L,40L,replace=TRUE),20L,2L))
+  expect_identical(legacy$sampled_residuals,
+    matrix(legacy$centered_residuals[legacy_indices],20L,2L))
+  expect_identical(.Random.seed,before)
   index<-matrix(sample.int(4L,40L,replace=TRUE),20L,2L)
   after<-.Random.seed
   assign(".Random.seed",before,envir=.GlobalEnv)

@@ -93,6 +93,17 @@ test_that("wild bootstrap is fixed-design, entire-function and reproducible",{
   b2<-etr_bootstrap_function_on_scalar_coefficients(r,n_bootstrap=100L,
     multiplier="rademacher",random_state=8L)
   expect_identical(b$bootstrap_coefficients,b2$bootstrap_coefficients)
+  for(law in c("rademacher","normal")){
+    legacy<-etr_bootstrap_function_on_scalar_coefficients(r,n_bootstrap=100L,
+      multiplier=law,random_state=8L,random_engine="base_R")
+    expected<-withr::with_seed(8L, {
+      if(law=="rademacher")
+        t(replicate(100L,sample(c(-1,1),8L,replace=TRUE)))
+      else matrix(stats::rnorm(800L),100L,8L,byrow=TRUE)
+    })
+    expect_identical(legacy$multipliers,expected)
+    expect_identical(.Random.seed,before)
+  }
   expect_error(etr_bootstrap_function_on_scalar_coefficients(r,
     n_bootstrap=50L),"n_bootstrap")
   bands<-etr_function_on_scalar_simultaneous_bands(b,
@@ -270,6 +281,17 @@ test_that("pinned Python 1.2 fixed-design FOS OLS reference is opt-in",{
     unname(et_to_r(py$coefficients)),tolerance=1e-8)
   expect_equal(unname(r$standard_errors),
     unname(et_to_r(py$standard_errors)),tolerance=1e-8)
+  for(law in c("normal","rademacher")){
+    source<-reticulate::py_call(
+      etpy_get_export("bootstrap_function_on_scalar_coefficients"),
+      py,n_bootstrap=103L,multiplier=law,random_state=81L)
+    native<-etr_bootstrap_function_on_scalar_coefficients(
+      r,n_bootstrap=103L,multiplier=law,random_state=81L)
+    expect_equal(native$multipliers,et_to_r(source$multipliers),
+      tolerance=2*.Machine$double.eps,info=law)
+    expect_equal(native$bootstrap_coefficients,et_to_r(source$bootstrap_coefficients),
+      tolerance=1e-10,ignore_attr=TRUE,info=law)
+  }
 })
 
 

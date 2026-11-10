@@ -19,12 +19,14 @@
 #'   NumPy-compatible PCG64 stream. NULL uses the current R RNG stream.
 #' @param residual_indices Optional integer matrix B by target of ZERO-BASED
 #'   fixed residual indices. These take precedence over the seed.
+#' @param random_engine Seeded residual RNG. Use `"base_R"` for the
+#'   previous native residual draws, or `"numpy"` for source draws.
 #' @return Source-shaped predictive draws, quantiles, sample SD and metadata.
 #' @export
 etr_fpca_regression_future_prediction_interval<-function(
     result,outcome,confidence_level=.95,
     residual_method="empirical_centered",random_state=0L,
-    residual_indices=NULL){
+    residual_indices=NULL,random_engine="numpy"){
   .etr_recovery_source_fields(result,c("reference_regression",
     "bootstrap_slopes","bootstrap_mean_predictions",
     "target_curve_ids","target_source","provenance"),
@@ -70,7 +72,12 @@ etr_fpca_regression_future_prediction_interval<-function(
     "centered FPCR residuals contain non-finite values")
   n<-length(centered)
   if(is.null(residual_indices)){
-    if(is.null(random_state)){
+    random_engine<-match.arg(random_engine,c("numpy","base_R"))
+    if(is.null(random_state)||random_engine=="base_R"){
+      if(!is.null(random_state)){
+        restore<-.etr_simulation_rng(random_state)
+        on.exit(restore(),add=TRUE)
+      }
       index<-matrix(sample.int(n,as.double(B)*K,replace=TRUE),
         nrow=B,ncol=K)
       rng_source<-"r_native_random_draws_not_numpy_seedsequence"

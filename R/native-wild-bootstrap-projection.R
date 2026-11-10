@@ -3,8 +3,17 @@
 # Independent R FPCA/least squares/studentization; no Python backend.
 # Seeded normal and Mammen multipliers follow the frozen source draws.
 
-.etr_wild_fpcr_multipliers <- function(replicates, curves, multiplier, seed) {
-  rng <- if (is.null(seed)) NULL else .etr_numpy_pcg64(seed)
+.etr_wild_fpcr_multipliers <- function(replicates, curves, multiplier, seed,
+                                      random_engine = "numpy") {
+  rng <- NULL
+  if (!is.null(seed)) {
+    if (random_engine == "numpy") {
+      rng <- .etr_numpy_pcg64(seed)
+    } else {
+      restore <- .etr_simulation_rng(seed)
+      on.exit(restore(), add = TRUE)
+    }
+  }
   n <- as.double(replicates) * curves
   if (multiplier == "normal") {
     values <- if (is.null(rng)) stats::rnorm(n) else rng$normal(n)
@@ -77,6 +86,8 @@
 #'   PCG64 normal or Mammen draws. NULL uses the current R RNG stream.
 #' @param multiplier_draws Optional finite B-by-n numeric matrix of fixed
 #'   source draws; overrides R RNG and permits numerical oracle replay.
+#' @param random_engine Seeded multiplier RNG. Use `"base_R"` to replay
+#'   previous native normal multipliers, or `"numpy"` for source draws.
 #' @return Native result reusing source schema numerical fields. Full-domain
 #'   source accepted-type and dataclass contracts remain unsigned.
 #' @export
@@ -85,7 +96,7 @@ etr_wild_bootstrap_fpca_projection<-function(
     residual_components=2L,inference_components=3L,
     scaling="none",multiplier="normal",
     confidence_level=.95,independent_unit_column=NULL,
-    random_state=0L,multiplier_draws=NULL){
+    random_state=0L,multiplier_draws=NULL,random_engine="numpy"){
   etr_validate(trajectories,require_complete=TRUE)
   .etr_assert(all(is.finite(trajectories$values)),
     "training trajectories must be complete finite")
@@ -138,7 +149,8 @@ etr_wild_bootstrap_fpca_projection<-function(
     "targets must match training time channel units geometry and be complete finite")
   B<-as.integer(n_bootstrap)
   if(is.null(multiplier_draws)){
-    mult<-.etr_wild_fpcr_multipliers(B,n,multiplier,random_state)
+    random_engine<-match.arg(random_engine,c("numpy","base_R"))
+    mult<-.etr_wild_fpcr_multipliers(B,n,multiplier,random_state,random_engine)
   }else{
     mult<-multiplier_draws
     .etr_assert(is.matrix(mult)&&is.numeric(mult)&&
@@ -210,9 +222,9 @@ etr_wild_bootstrap_fpca_projection<-function(
     random_state=random_state,
     fixed_source_multiplier_draws_supplied=!is.null(multiplier_draws),
     seeded_normal_draws_match_numpy=is.null(multiplier_draws)&&
-      !is.null(random_state)&&multiplier=="normal",
+      !is.null(random_state)&&random_engine=="numpy"&&multiplier=="normal",
     seeded_mammen_draws_match_numpy=is.null(multiplier_draws)&&
-      !is.null(random_state)&&multiplier=="mammen",
+      !is.null(random_state)&&random_engine=="numpy"&&multiplier=="mammen",
     source_full_contract_certified=FALSE)
   structure(list(reference_fpca=fit,
     target_curve_ids=targets$curve_ids,

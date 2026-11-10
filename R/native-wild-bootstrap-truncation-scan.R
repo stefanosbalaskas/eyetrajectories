@@ -15,13 +15,16 @@
 #' @param random_state Nonnegative integer seed below 2^53 for NumPy-compatible
 #'   PCG64 normal or Mammen draws. NULL uses the current R RNG stream.
 #' @param multiplier_draws Optional B-by-n frozen source multiplier matrix.
+#' @param random_engine Seeded multiplier RNG. Use `"base_R"` to replay
+#'   previous native normal multipliers, or `"numpy"` for source draws.
 #' @return Native source-shape scan record, without automatic h selection.
 #' @export
 etr_scan_wild_bootstrap_fpca_truncations<-function(
     trajectories,outcome,candidate_components,targets=NULL,
     n_bootstrap=1000L,residual_components=2L,
     scaling="none",multiplier="normal",confidence_level=.95,
-    independent_unit_column=NULL,random_state=0L,multiplier_draws=NULL){
+    independent_unit_column=NULL,random_state=0L,multiplier_draws=NULL,
+    random_engine="numpy"){
   .etr_assert(is.numeric(candidate_components)&&
     length(candidate_components)>=2L&&
     all(is.finite(candidate_components))&&
@@ -48,7 +51,8 @@ etr_scan_wild_bootstrap_fpca_truncations<-function(
     !is.na(multiplier)&&multiplier%in%c("normal","mammen"),
     "multiplier must be normal or mammen")
   if(is.null(multiplier_draws)){
-    mult<-.etr_wild_fpcr_multipliers(B,n,multiplier,random_state)
+    random_engine<-match.arg(random_engine,c("numpy","base_R"))
+    mult<-.etr_wild_fpcr_multipliers(B,n,multiplier,random_state,random_engine)
   }else{
     mult<-multiplier_draws
     .etr_assert(is.matrix(mult)&&is.numeric(mult)&&
@@ -162,9 +166,9 @@ etr_scan_wild_bootstrap_fpca_truncations<-function(
     independent_unit_column=independent_unit_column,
     simultaneous_across_targets=FALSE,random_state=random_state,
     seeded_normal_draws_match_numpy=is.null(multiplier_draws)&&
-      !is.null(random_state)&&multiplier=="normal",
+      !is.null(random_state)&&random_engine=="numpy"&&multiplier=="normal",
     seeded_mammen_draws_match_numpy=is.null(multiplier_draws)&&
-      !is.null(random_state)&&multiplier=="mammen",
+      !is.null(random_state)&&random_engine=="numpy"&&multiplier=="mammen",
     source_full_contract_certified=FALSE)
   structure(list(reference_fpca=fit,
     target_curve_ids=targets$curve_ids,
