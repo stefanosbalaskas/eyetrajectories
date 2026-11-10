@@ -118,7 +118,12 @@ etr_functional_recovery_result <- function(records,metric_definitions=list()) {
     if(length(r$metric_values)>0L) {
       .etr_assert(is.list(r$metric_values),
         "metric_values must be a list of structured recovery values")
-      keys<-character(length(r$metric_values))
+      # FunctionalRecoveryRecord.__post_init__ flattens metric_values
+      # through a Python dict comprehension. Repeated semantic keys keep
+      # the last value without moving the first key position. Assessment
+      # constructors separately reject duplicate triples; do not conflate
+      # these two public source contracts.
+      flattened<-numeric(0)
       for(j in seq_along(r$metric_values)){
         v<-r$metric_values[[j]]
         .etr_assert(is.list(v)&&is.list(v$metric)&&
@@ -126,14 +131,16 @@ etr_functional_recovery_result <- function(records,metric_definitions=list()) {
           is.numeric(v$value)&&!is.complex(v$value)&&length(v$value)==1L&&
           is.finite(v$value),
           "structured metric values require finite metric/value")
-        keys[j]<-etr_functional_recovery_value_key(v)
+        key<-etr_functional_recovery_value_key(v)
+        found<-match(key,names(flattened))
+        if(is.na(found))
+          flattened<-c(flattened,stats::setNames(as.numeric(v$value),key))
+        else flattened[[found]]<-as.numeric(v$value)
       }
-      .etr_assert(!anyDuplicated(keys)&&
-        identical(sort(keys),sort(names(r$metrics)))&&
-        all(vapply(seq_along(keys),function(j)
-          isTRUE(all.equal(as.numeric(r$metrics[[keys[j]]]),
-            as.numeric(r$metric_values[[j]]$value),tolerance=0)),
-          logical(1L))),
+      .etr_assert(identical(sort(names(flattened)),sort(names(r$metrics)))&&
+        all(vapply(names(flattened),function(key)
+          identical(as.numeric(flattened[[key]]),
+            as.numeric(r$metrics[[key]])),logical(1L))),
         "structured metric values must exactly match flattened metrics")
     }
     records[[i]]<-r
