@@ -12,14 +12,8 @@
     all(is.finite(spawn_key) & spawn_key >= 0 & spawn_key < word &
       spawn_key == floor(spawn_key)),
     "spawn_key must contain unsigned 32-bit child indices")
-  xor <- function(a, b) bitwXor(a %% limb, b %% limb) +
-    limb * bitwXor(floor(a / limb), floor(b / limb))
-  multiply <- function(a, b) {
-    low_a <- a %% limb
-    low_b <- b %% limb
-    cross <- (floor(a / limb) * low_b + floor(b / limb) * low_a) %% limb
-    (low_a * low_b + limb * cross) %% word
-  }
+  xor <- .etr_numpy_u32_xor
+  multiply <- .etr_numpy_u32_mul
   mix_word <- function(a) xor(a, floor(a / limb))
   key <- 0x43b0d7e5
   hash <- function(a) {
@@ -128,21 +122,7 @@
       }
     }, integer(1L))
   }
-  permutation <- function(n) {
-    result <- seq_len(n)
-    if (n <= 1L) return(result)
-    for (i in seq.int(n, 2L)) {
-      bound <- 2^ceiling(log2(i))
-      repeat {
-        j <- 1 + raw32() %% bound
-        if (j <= i) break
-      }
-      first <- result[i]
-      result[i] <- result[j]
-      result[j] <- first
-    }
-    result
-  }
+  permutation <- function(n) .etr_numpy_masked_permutation(n,raw32)
   children_spawned <- 0
   spawn <- function(n) {
     .etr_assert(is.numeric(n) && length(n) == 1L && is.finite(n) &&

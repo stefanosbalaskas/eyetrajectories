@@ -149,10 +149,15 @@ assert sorted(set(_fold))==[0,1,2]
   expect_identical(result$provenance$fold_source,
     "explicit_zero_based_source_replay")
   expect_identical(result$provenance$random_engine,"none_fixed_folds")
+  seeded<-etr_cross_validate_fpca_regression(z$trajectories,z$outcome,
+    candidate_components=c(1L,2L),n_splits=3L,shuffle=TRUE,
+    random_state=19L,random_engine="numpy")
+  expect_identical(seeded$provenance$random_engine,"numpy_randomstate_mt19937")
   for(field in c("fold_losses","assignments","predictions")){
     expected<-reticulate::py_to_r(reticulate::py_get_attr(
       reticulate::py_eval("_et_cv",convert=FALSE),field))
     actual<-result[[field]]
+    expect_identical(seeded[[field]],actual)
     expect_identical(names(actual),names(expected))
     for(col in names(expected)){
       if(is.numeric(actual[[col]]))

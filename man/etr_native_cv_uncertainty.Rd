@@ -19,7 +19,7 @@
 etr_cross_validate_fpca_reconstruction(trajectories,
   candidate_components = c(1L, 2L, 3L, 4L, 5L), n_splits = 5L, scaling = "none",
   cv_unit = "curve", group_column = NULL, shuffle = TRUE, random_state = 0L,
-  fold_assignments = NULL)
+  fold_assignments = NULL, random_engine = "base_R")
 etr_summarise_fpca_cross_validation(result)
 etr_select_fpca_components_cv(result, rule = "minimum")
 etr_summarise_fpca_regression_cv(result)
@@ -42,7 +42,10 @@ etr_fpca_regression_future_prediction_frame(result)
 \item{cv_unit}{Use curve-level or group-level partitioning.}
 \item{group_column}{Required metadata column for grouped holdouts.}
 \item{shuffle}{Whether to shuffle curve order prior to fold assignment.}
-\item{random_state}{Nonnegative R RNG seed, scoped and restored; does not reproduce NumPy permutations.}
+\item{random_state}{Nonnegative integer seed for the selected shuffle engine.}
+\item{random_engine}{\code{"base_R"} retains the original native
+shuffle. \code{"numpy"} reproduces scikit-learn's seeded
+NumPy RandomState permutation for seeds up to \eqn{2^{32}-1}.}
 \item{fold_assignments}{Optional numeric vector of zero-based source-fold IDs, one per curve; all declared folds must occur and grouped curves may not be split. Replays externally observed folds without invoking Python.}
 \item{result}{Native FPCA CV object, declared regression CV object or a source-shaped, previously computed uncertainty structure.}
 \item{rule}{Explicit minimum or one-standard-error heuristic.}

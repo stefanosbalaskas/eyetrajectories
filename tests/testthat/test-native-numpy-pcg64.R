@@ -76,3 +76,25 @@ test_that("native PCG64 agrees exactly on seeded uniforms, integers and permutat
       expect_identical(native$permutation(n), as.integer(reference$permutation(n)) + 1L)
   }
 })
+
+test_that("native RandomState matches legacy NumPy permutation and is isolated",{
+  withr::local_seed(519)
+  before<-.Random.seed
+  expect_identical(.etr_numpy_randomstate_permutation(1L,0L),1L)
+  for(seed in c(-1,1.5,2^32))
+    expect_error(.etr_numpy_randomstate_permutation(12L,seed),"unsigned 32-bit")
+  expect_identical(.Random.seed,before)
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("pinned NumPy RandomState oracle opt-in")
+  np<-reticulate::import("numpy",convert=FALSE)
+  python<-reticulate::import_builtins(convert=FALSE)
+  for(seed in c(0,19,2^31,2^32-1)){
+    for(n in c(0L,1L,2L,11L,256L,624L,1025L)){
+      expected<-reticulate::py_to_r(np$random$RandomState(
+        python$int(sprintf("%.0f",seed)))$permutation(n))
+      expect_identical(.etr_numpy_randomstate_permutation(n,seed),
+        as.integer(expected)+1L)
+    }
+  }
+  expect_identical(.Random.seed,before)
+})

@@ -9,7 +9,7 @@ etr_nested_cross_validate_fpca_regression(trajectories, outcome,
   scaling = "none", cv_unit = "curve", group_column = NULL,
   shuffle = FALSE, random_state = 0L,
   outer_fold_assignments = NULL, inner_fold_assignments = NULL,
-  coerce_numeric_text_covariates = FALSE)
+  coerce_numeric_text_covariates = FALSE, random_engine = "base_R")
 }
 \arguments{
 \item{coerce_numeric_text_covariates}{Native-only opt-in for finite numeric-text covariate columns, including interdigit underscores. The frozen Python source statsmodels model rejects object-typed columns, so FALSE preserves the default source-safe behavior.}
@@ -30,11 +30,15 @@ as fixed prediction features.}
 participant/cluster holdout in both outer evaluation and inner selection.}
 \item{group_column}{Required metadata column for grouped folds;
 every curve from one group remains within a single fold.}
-\item{shuffle}{Logical curve-fold shuffle using isolated native R
-RNG; grouped folds are deterministic even if \code{shuffle=TRUE}.}
-\item{random_state}{Nonnegative integer R seed for shuffled curve
-folds; inner seeds use the source offsets outer_fold + 1. R and
-sklearn NumPy RandomState shuffle permutations are not identical.}
+\item{shuffle}{Logical flag for shuffled curve folds. Grouped folds are
+deterministic.}
+\item{random_state}{Nonnegative integer seed for shuffled curve folds.
+Each inner seed is the outer seed plus the zero-based outer fold index
+plus one. With the NumPy engine every seed must fit in an unsigned
+32-bit integer.}
+\item{random_engine}{\code{"base_R"} retains the original native
+shuffle. \code{"numpy"} reproduces scikit-learn's seeded
+NumPy RandomState permutations at both levels.}
 \item{outer_fold_assignments}{Optional one zero-based fold ID per original trajectory; all outer folds must occur and grouped units cannot split.}
 \item{inner_fold_assignments}{Optional list of length outer_splits; for each outer fold, zero-based inner fold IDs align with its original-order training subset. Group leakage is rejected at both levels.}
 }
@@ -46,8 +50,8 @@ Grouped participant-held-out folds and seeded curve-shuffle folds
 are implemented. With grouped CV, both the outer test set and the
 inner component selection use whole-participant folds, avoiding
 train/test participant leakage. The resulting outer prediction
-frame retains a group column. Nonmonotone GroupKFold ties and
-R versus NumPy RNG streams can differ. R glm.fit and Python statsmodels
+frame retains a group column. Mixed-size GroupKFold ties can differ across
+NumPy builds. R glm.fit and Python statsmodels
 binomial IRLS/separation details, pandas coercion semantics, and complete
 Python return and exception domains
 remain unsupported and are not independently certified.}

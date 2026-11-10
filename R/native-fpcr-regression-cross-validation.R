@@ -2,7 +2,7 @@
 # c1cd95ad718327550f7e55393ff38582872f7a94
 # prediction.py::cross_validate_fpca_regression
 # Native Gaussian OLS and bounded binomial logit FPCR with
-# whole-group held-out folds and native R seeded curve fold shuffle.
+# whole-group held-out folds and source-seeded curve fold shuffle.
 # Binomial stats::glm.fit is not identical to statsmodels IRLS.
 
 #' Leakage-free native Gaussian and binomial FPCR held-out prediction
@@ -10,8 +10,8 @@
 #' Refits unsupervised dense FPCA and Gaussian OLS or binomial logit GLM
 #' *inside* each training fold. Reuses the same training FPCA basis for
 #' test projections.
-#' Supports group held-out and R-seeded curve shuffled folds.
-#' Exact Python shuffle RNG and nonmonotone GroupKFold ties remain unresolved.
+#' Supports group holdout and native or source-seeded shuffled curve folds.
+#' Mixed-size GroupKFold ties remain dependent on the source NumPy build.
 #' For binomial outcomes, R stats::glm.fit may differ from statsmodels;
 #' numeric covariates are fitted within training folds only.
 #' @param trajectories Complete native common-grid trajectory set.
@@ -29,10 +29,10 @@
 #'   of a participant/group together in the same held-out fold.
 #' @param group_column For group CV, required metadata column containing
 #'   nonmissing group identifiers. Ignored for curve CV.
-#' @param shuffle Logical flag; for curve CV uses isolated base-R
-#'   random assignment. Group CV is deterministic regardless of shuffle.
-#' @param random_state Nonnegative native R seed for shuffled curve folds;
-#'   ignored for unshuffled/group modes. Does not reproduce NumPy draws.
+#' @param shuffle Shuffle the curve folds. Group CV is deterministic.
+#' @param random_state Nonnegative integer seed for shuffled curve folds.
+#' @param random_engine Use `"numpy"` for the frozen NumPy RandomState
+#'   shuffle, or `"base_R"` for the original R permutation.
 #' @return Source-shaped fold losses, test predictions, assignments and
 #'   provenance; never fits on held-out curves.
 #' @param coerce_numeric_text_covariates Native-only optional parsing of
@@ -45,7 +45,7 @@ etr_cross_validate_fpca_regression<-function(
     family="gaussian",loss=NULL,covariates=NULL,n_splits=5L,
     scaling="none",cv_unit="curve",group_column=NULL,
     shuffle=FALSE,random_state=0L,fold_assignments=NULL,
-    coerce_numeric_text_covariates=FALSE){
+    coerce_numeric_text_covariates=FALSE,random_engine="base_R"){
   etr_validate(trajectories,require_complete=TRUE)
   .etr_fpcr_validate_family(family)
 
@@ -61,13 +61,16 @@ etr_cross_validate_fpca_regression<-function(
       "group_column is required for group CV")
   .etr_assert(is.logical(shuffle)&&length(shuffle)==1L&&!is.na(shuffle),
     "shuffle must be one explicit logical flag")
-  if(identical(cv_unit,"curve")&&isTRUE(shuffle))
-    .etr_assert(is.numeric(random_state)&&
-      length(random_state)==1L&&is.finite(random_state)&&
-      random_state==floor(random_state)&&random_state>=0&&
-      random_state<=.Machine$integer.max,
-      "random_state must be a nonnegative R integer seed for shuffled curve folds")
-  else
+  random_engine<-match.arg(random_engine,c("base_R","numpy"))
+  if(identical(cv_unit,"curve")&&shuffle){
+    if(random_engine=="numpy"){
+      .etr_cv_check_shuffle_seed(random_state,2^32-1,
+        "random_state must be an unsigned 32-bit integer for NumPy shuffle")
+    }else{
+      .etr_cv_check_shuffle_seed(random_state,.Machine$integer.max,
+        "random_state must be a nonnegative R integer seed for shuffled curve folds")
+    }
+  }else
     .etr_assert(is.null(random_state)||(
       is.numeric(random_state)&&length(random_state)==1L&&
       !is.na(random_state)&&is.finite(random_state)),
@@ -95,11 +98,9 @@ etr_cross_validate_fpca_regression<-function(
     n_splits>=2L&&n_splits<=n,
     "n_splits must be an integer between 2 and the number of curves")
   ns<-as.integer(n_splits)
-  # Group identity stays intact. Shuffled folds use isolated base-R RNG,
-  # so a shared seed need not reproduce NumPy/Scikit-learn permutations.
   split<-if(is.null(fold_assignments))
     .etr_cv_fold_assignment(trajectories,ns,cv_unit,
-      group_column,shuffle,random_state)
+      group_column,shuffle,random_state,random_engine=random_engine)
   else .etr_cv_explicit_fold_assignment(trajectories,ns,cv_unit,
     group_column,fold_assignments)
   folds<-split$fold
@@ -184,7 +185,8 @@ etr_cross_validate_fpca_regression<-function(
       shuffle=if(identical(cv_unit,"curve"))shuffle else FALSE,
       random_engine=if(!is.null(fold_assignments))"none_fixed_folds" else
         if(identical(cv_unit,"curve")&&isTRUE(shuffle))
-        "base_R_sample_not_NumPy" else "deterministic",
+          if(random_engine=="numpy")"numpy_randomstate_mt19937" else "base_R_sample_not_NumPy"
+        else "deterministic",
       fold_source=if(is.null(fold_assignments))"native_R" else
         "explicit_zero_based_source_replay",
       group_tie_policy=if(is.null(fold_assignments))

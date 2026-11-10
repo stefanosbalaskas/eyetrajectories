@@ -8,7 +8,7 @@ etr_cross_validate_fpca_regression(trajectories, outcome,
   n_splits = 5L, scaling = "none", cv_unit = "curve",
   group_column = NULL, shuffle = FALSE, random_state = 0L,
   fold_assignments = NULL,
-  coerce_numeric_text_covariates = FALSE)
+  coerce_numeric_text_covariates = FALSE, random_engine = "base_R")
 }
 \arguments{
 \item{coerce_numeric_text_covariates}{Native-only opt-in for finite numeric-text covariate columns (including interdigit underscores). The frozen Python validator parses text but source statsmodels rejects object-typed columns, so FALSE preserves the default source-safe behavior.}
@@ -28,11 +28,14 @@ the number of curves or unique groups respectively.}
 every curve from a held-out participant/group from training folds.}
 \item{group_column}{Metadata column containing group identifiers;
 required for \code{cv_unit="group"}.}
-\item{shuffle}{Logical flag. With curve CV, use native seeded R
-shuffle; group CV is deterministic irrespective of this flag.}
-\item{random_state}{Nonnegative integer base-R seed for shuffled
-curve folds, ignored for unshuffled or grouped folds. Base-R random
-permutations cannot be equated with sklearn's NumPy RandomState.}
+\item{shuffle}{Logical flag for shuffled curve folds. Group CV is
+deterministic.}
+\item{random_state}{Nonnegative integer seed for shuffled curve folds,
+ignored for unshuffled or grouped folds. The NumPy engine accepts seeds
+up to \eqn{2^{32}-1}.}
+\item{random_engine}{\code{"base_R"} retains the original native
+shuffle. \code{"numpy"} reproduces scikit-learn's seeded
+NumPy RandomState permutation.}
 \item{fold_assignments}{Optional complete zero-based integer fold IDs matching a source KFold/GroupKFold result. Grouped units must never straddle folds. This overrides native fold generation without altering fitting or predictions.}
 }
 \value{Retained fold-loss, assignment and out-of-fold prediction frames
@@ -41,9 +44,9 @@ an additional `group` label column when grouping is requested.}
 \description{Refits FPCA and Gaussian OLS or binomial logit regression inside each
 training fold and projects held-out trajectories using only the training
 basis. Whole-group held-out folds prevent participant leakage,
-while isolated native-R shuffled curve folds allow reproducible
-sensitivity studies. Nonmonotone GroupKFold tie ordering and shuffled
-NumPy permutations remain implementation-specific. Binomial inference uses
+while isolated seeded curve folds allow reproducible
+sensitivity studies. Mixed-size GroupKFold tie ordering remains
+implementation-specific. Binomial inference uses
 R stats::glm.fit; its IRLS and separation warnings can differ from statsmodels.
 Pandas nonnumeric-to-float source-fitting coercions remain outside the default; optional finite text conversion is a native-only extension;
 this is not independent full-domain source certification.}
