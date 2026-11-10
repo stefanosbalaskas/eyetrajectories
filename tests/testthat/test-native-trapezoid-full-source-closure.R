@@ -8,7 +8,6 @@ test_that("one-dimensional native ndarray shapes and NumPy scalar sequences agre
     array(c(0,1,3),dim=3L),
     array(c(0L,1L,3L),dim=3L),
     array(c("0","1","3"),dim=3L),
-    array(c(FALSE,TRUE,TRUE),dim=3L),
     list(0L,TRUE,"3"),
     array(c(0+2i,1-1i,3+0i),dim=3L))
   expected<-c(.5,1.5,1)
@@ -22,6 +21,8 @@ test_that("one-dimensional native ndarray shapes and NumPy scalar sequences agre
   }
   expect_equal(etr_trapezoid_weights(array(c(1,5),dim=2L),
     python_boundary_mode=TRUE),c(2,2),tolerance=0)
+  expect_equal(etr_trapezoid_weights(array(c(FALSE,TRUE),dim=2L),
+    python_boundary_mode=TRUE),c(.5,.5),tolerance=0)
   expect_error(etr_trapezoid_weights(matrix(c(0,1,3),ncol=1),
     python_boundary_mode=TRUE),"one-dimensional")
   expect_error(etr_trapezoid_weights(array(c(0,1,3),
@@ -159,7 +160,7 @@ def _trapezoid_source(time, flag):
     expect_identical(expected$ok,q$ok,info=paste("source case",i))
     if(q$ok){
       expect_false(inherits(native,"error"),info=paste("case",i))
-      expect_equal(native,as.numeric(et_to_r(expected$weights)),
+      expect_equal(native,as.numeric(expected$weights),
         tolerance=1e-14,info=paste("source numeric case",i))
       expect_identical(is.null(dim(native)),TRUE)
     }else{
