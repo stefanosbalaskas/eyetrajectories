@@ -58,12 +58,19 @@
   }
   .etr_assert(!anyDuplicated(labels),
     "recovery assessment contains duplicate metric labels")
-  # The Python flattened MappingProxyType dictionary cannot retain a
-  # collision; fail closed instead of silently losing recovery evidence.
-  .etr_assert(!anyDuplicated(keys),
-    "recovery assessment flattened metric keys must be unique")
-  names(metrics)<-keys
-  list(metrics=metrics,metric_values=values,
+  # Python FunctionalRecoveryAssessment rejects duplicate semantic triples,
+  # but as_mapping() uses a dict comprehension. Two *different* triples can
+  # have the same flattened key (e.g. metric "a.source_b" versus metric "a"
+  # with source "b"). In that case the last value replaces the first while
+  # the detailed semantic values are retained in their source order.
+  flattened<-numeric(0)
+  for(i in seq_along(keys)){
+    found<-match(keys[[i]],names(flattened))
+    if(is.na(found))
+      flattened<-c(flattened,stats::setNames(metrics[[i]],keys[[i]]))
+    else flattened[[found]]<-metrics[[i]]
+  }
+  list(metrics=flattened,metric_values=values,
     assessment_provenance=provenance,definitions=definitions)
 }
 
