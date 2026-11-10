@@ -110,12 +110,22 @@
 }
 
 .etr_spna_scalar_layout<-function(tx,x,ty,y,tolerance){
-  n<-length(tx)+length(ty)
+  valid<-function(a)is.numeric(a)&&is.null(dim(a))&&all(is.finite(a))
+  .etr_assert(valid(tx)&&valid(x)&&valid(ty)&&valid(y)&&
+    length(tx)==length(x)&&length(ty)==length(y),
+    "coordinate times/values must be aligned finite one-dimensional vectors")
+  .etr_assert(is.numeric(tolerance)&&length(tolerance)==1L&&
+    is.finite(tolerance)&&tolerance>=0,
+    "same_time_tolerance must be finite and nonnegative")
   times<-c(tx,ty);channels<-c(rep(1L,length(tx)),rep(2L,length(ty)))
   values<-c(x,y);original<-c(seq_along(tx),seq_along(ty))
   order<-order(times,channels,method="radix")
+  # Python AsyncObservationLayout uses zero-based source_indices and
+  # channels. Retain native 1-based channel/original internal fields
+  # but expose source_indices for source-verified diagnostic reuse.
   list(time=times[order],channel=channels[order],
     value=values[order],original=original[order],
+    source_indices=as.integer(original[order]-1L),
     n_x=length(tx),n_y=length(ty),
     simultaneous=sum(vapply(tx,function(t)
       sum(abs(ty-t)<=tolerance),integer(1L))))
