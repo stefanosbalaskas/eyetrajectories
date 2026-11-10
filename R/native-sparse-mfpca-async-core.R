@@ -257,9 +257,11 @@
       source_failure<-tryCatch({
       # Fit covariance evaluated on the observed asynchronous native
       # scalar-time layout, preserving source directional xy semantics.
+      # Source evaluates the latent surface before measurement noise:
+      # an out-of-support curve must retain zero cross-noise links.
+      M<-.etr_spna_cov_eval(grid,blocks,layout)
       noise_fit<-.etr_spna_noise_eval(layout,noise,tolerance)
-      M<-.etr_spna_cov_eval(grid,blocks,layout)+
-        noise_fit$covariance+diag(ridge,m)
+      M<-M+noise_fit$covariance+diag(ridge,m)
       links<-noise_fit$cross_links
       M<-(M+t(M))/2
       spectrum<-base::eigen(M,symmetric=TRUE,only.values=TRUE)$values
