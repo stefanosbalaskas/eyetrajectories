@@ -121,6 +121,63 @@
       sum(abs(ty-t)<=tolerance),integer(1L))))
 }
 
+
+# Native port of frozen Python 1.2
+# _sparse_multivariate_async.evaluate_async_planar_covariance:
+# assemble the exact observed scalar-time covariance without
+# synchronizing or interpolating raw coordinate observations.
+.etr_spna_cov_eval<-function(grid,blocks,layout){
+  .etr_assert(is.numeric(grid)&&is.null(dim(grid))&&
+    length(grid)>=2L&&all(is.finite(grid))&&
+    all(diff(grid)>0),
+    "evaluation_grid must be a finite strictly increasing vector")
+  .etr_assert(is.list(layout)&&is.numeric(layout$time)&&
+    is.null(dim(layout$time))&&all(is.finite(layout$time))&&
+    is.numeric(layout$channel)&&is.null(dim(layout$channel))&&
+    length(layout$channel)==length(layout$time)&&
+    all(is.finite(layout$channel))&&
+    all(layout$channel%in%c(1L,2L)),
+    "layout times/channels must be finite aligned planar observations")
+  n<-length(layout$time)
+  if(!n)return(matrix(numeric(),0L,0L))
+  t<-layout$time
+  if(min(t)<grid[1L]||max(t)>tail(grid,1L))
+    .etr_spn_fail("native_time_outside_fitted_support",
+      "native observation times fall outside fitted surface support",
+      list(grid_start=as.numeric(grid[1L]),
+        grid_end=as.numeric(tail(grid,1L)),
+        target_min=as.numeric(min(t)),
+        target_max=as.numeric(max(t))))
+  m<-length(grid)
+  for(nm in c("cxx","cxy","cyy")){
+    block<-blocks[[nm]]
+    .etr_assert(is.matrix(block)&&is.numeric(block)&&
+      identical(dim(block),c(m,m))&&all(is.finite(block)),
+      paste0(nm," must be a finite ",m," by ",m," planar covariance block"))
+  }
+  ix<-which(layout$channel==1L)
+  iy<-which(layout$channel==2L)
+  result<-matrix(0,n,n)
+  if(length(ix)){
+    xx<-.etr_spnm_interp(grid,blocks$cxx,t[ix])
+    result[ix,ix]<-xx
+  }
+  if(length(iy)){
+    yy<-.etr_spnm_interp(grid,blocks$cyy,t[iy])
+    result[iy,iy]<-yy
+  }
+  if(length(ix)&&length(iy)){
+    # Cross block is *directional*. The reverse block must be its
+    # transpose, not a separately smoothed/self-symmetrized Cxy.
+    all_xy<-.etr_spnm_interp(grid,blocks$cxy,c(t[ix],t[iy]))
+    xy<-all_xy[seq_along(ix),
+      length(ix)+seq_along(iy),drop=FALSE]
+    result[ix,iy]<-xy
+    result[iy,ix]<-t(xy)
+  }
+  (result+t(result))/2
+}
+
 .etr_spna_pace<-function(ids,views,grid,mu,blocks,eigen,noise,
     tolerance,ridge,limit,min_obs,failure){
   n<-length(ids);k<-length(eigen$eigenvalues)
@@ -133,24 +190,9 @@
     min_eig<-max_eig<-cond<-NaN;links<-0L
     if(m<min_obs)status<-"curve_too_sparse_for_async_joint_score_system"
     else{
-      # Evaluate four fitted blocks on the full scalar native-time layout.
-      # Cxy(s,t) is directional; Cyx(t,s) is its transpose.
-      M<-matrix(0,m,m)
-      for(a in seq_len(m))for(b in seq_len(m)){
-        C<-switch(paste0(ch[a],ch[b]),
-          "11"=blocks$cxx,"12"=blocks$cxy,
-          "21"=blocks$cyx,"22"=blocks$cyy)
-        ia<-min(findInterval(t[a],grid,all.inside=TRUE),
-          length(grid)-1L)
-        ib<-min(findInterval(t[b],grid,all.inside=TRUE),
-          length(grid)-1L)
-        fa<-(t[a]-grid[ia])/(grid[ia+1L]-grid[ia])
-        fb<-(t[b]-grid[ib])/(grid[ib+1L]-grid[ib])
-        M[a,b]<-(1-fa)*(1-fb)*C[ia,ib]+
-          fa*(1-fb)*C[ia+1L,ib]+
-          (1-fa)*fb*C[ia,ib+1L]+fa*fb*C[ia+1L,ib+1L]
-      }
-      M<-(M+t(M))/2
+      # Fit covariance evaluated on the observed asynchronous native
+      # scalar-time layout, preserving source directional xy semantics.
+      M<-.etr_spna_cov_eval(grid,blocks,layout)
       for(a in seq_len(m))M[a,a]<-M[a,a]+noise[ch[a],ch[a]]+ridge
       for(a in seq_len(m))if(a<m)for(b in seq.int(a+1L,m)){
         if(ch[a]!=ch[b]&&abs(t[a]-t[b])<=tolerance){
