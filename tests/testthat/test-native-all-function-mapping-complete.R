@@ -47,12 +47,13 @@ test_that("all newly mapped scientific alternatives remain explicitly uncertifie
   # zero-argument native metadata semantic closures. No estimator or
   # plotting alternative inherits this finite-domain resolution.
   expect_identical(nrow(gap),203L)
-  expect_identical(sum(gap$unresolved_source_gap),199L)
+  expect_identical(sum(gap$unresolved_source_gap),197L)
   expect_identical(sort(gap$python_name[!gap$unresolved_source_gap]),
     sort(c("functional_recovery_metric_catalog",
       "functional_recovery_metric_catalog_frame",
       "list_mathematical_contracts",
-      "mathematical_contract_frame")))
+      "mathematical_contract_frame",
+      "sparse_fpca_score_frame","sparse_mfpca_score_frame")))
   expect_true(all(gap$unresolved_source_gap[match(recent,gap$python_name)]))
   expect_identical(length(unique(gap$python_name)),nrow(gap))
 })

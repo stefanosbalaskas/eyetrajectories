@@ -81,7 +81,8 @@ test_that("six scientific extractors retain source order, column names, and scop
   expect_equal(attr(ex,"exposure_audit")$extreme_exposure_ratio,2)
   expect_true(attr(ex,"exposure_audit")$varies_between_curves)
   sf<-etr_sparse_fpca_score_frame(z$sparse)
-  sm<-etr_sparse_mfpca_score_frame(z$sparse)
+  sm<-etr_sparse_mfpca_score_frame(structure(z$sparse,
+    class="etr_sparse_mfpca_source"))
   expect_identical(names(sf),c("curve_id","group","SFPC1","SFPC2"))
   expect_identical(names(sm),c("curve_id","group","SMFPC1","SMFPC2"))
   expect_equal(sf$SFPC2,c(2,4))
@@ -116,7 +117,8 @@ test_that("native science frames reject invalid identifiers, shape, uncertainty 
   bad<-z$sparse;bad$metadata$curve_id<-c("a","b")
   expect_error(etr_sparse_fpca_score_frame(bad),"overwrite")
   bad<-z$sparse;bad$scores[1,2]<-Inf
-  expect_error(etr_sparse_mfpca_score_frame(bad),"scores")
+  expect_error(etr_sparse_mfpca_score_frame(structure(bad,
+    class="etr_sparse_mfpca_source")),"scores")
 })
 
 test_that("six adapter mappings retain open typed-Python source gaps",{
@@ -131,7 +133,11 @@ test_that("six adapter mappings retain open typed-Python source gaps",{
   expect_identical(sort(rows$native_r_candidate),
     sort(paste0("etr_",names)))
   expect_true(all(rows$native_implementation_started))
-  expect_true(all(rows$source_contract_gap_unresolved))
+  closed<-rows$python_name%in%
+    c("sparse_fpca_score_frame","sparse_mfpca_score_frame")
+  expect_identical(sum(closed),2L)
+  expect_false(any(rows$source_contract_gap_unresolved[closed]))
+  expect_true(all(rows$source_contract_gap_unresolved[!closed]))
   expect_false(any(rows$one_to_one_native_contract_complete))
   expect_gte(sum(p$is_python_function & p$named_native_candidate),332L)
   expect_gte(sum(p$native_implementation_started),307L)
@@ -217,7 +223,8 @@ _sf_python={
       z$contrast),
     exposure=etr_generalized_function_on_scalar_exposure_frame(z$fit),
     sparse=etr_sparse_fpca_score_frame(z$sparse),
-    multivariate=etr_sparse_mfpca_score_frame(z$sparse))
+    multivariate=etr_sparse_mfpca_score_frame(structure(z$sparse,
+    class="etr_sparse_mfpca_source")))
   # Executable source exports: six distinct typed result-frame contracts.
   # Each output also matches the pre-existing pinned Python source table;
   # no fixture or estimator is replaced by this additional attribution.
