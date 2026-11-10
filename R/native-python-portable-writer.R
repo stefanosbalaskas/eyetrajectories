@@ -16,12 +16,16 @@
     all(shape>=0L), "unsupported portable array shape")
   order <- if(length(shape)>1L) as.vector(aperm(array(x,dim=shape),
     rev(seq_along(shape)))) else as.vector(x)
+  integer_array <- is.integer(x) && !anyNA(x)
   if(is.character(x)){
+    order <- enc2utf8(order)
     width <- max(1L,vapply(order,function(z)length(utf8ToInt(z)),
       integer(1L)),na.rm=TRUE)
     descr <- paste0("<U",width)
   } else if(is.logical(x)) {
     descr <- "|b1"
+  } else if(integer_array) {
+    descr <- "<i4"
   } else {
     descr <- "<f8"
   }
@@ -50,15 +54,19 @@
     }
   } else if(is.logical(x)){
     writeBin(as.raw(as.integer(order)),con)
+  } else if(integer_array){
+    writeBin(order,con,size=4L,endian="little")
   } else {
     .etr_assert(!any(is.infinite(order) | is.nan(order)),
       "portable numeric arrays must not contain infinity or NaN")
     writeBin(as.double(order),con,size=8L,endian="little")
   }
   dtype <- if(is.character(x)) {
-    paste0("str",width)
+    descr
   } else if(is.logical(x)) {
     "bool"
+  } else if(integer_array) {
+    "int32"
   } else {
     "float64"
   }
@@ -90,8 +98,8 @@
 #'
 #' @description Writes JSON and unpickled NumPy arrays using the frozen
 #'   Python 1.2 portable schema. Native export supports only common-grid
-#'   trajectory results and numeric, character, or logical metadata; it
-#'   explicitly rejects unsupported scopes instead of claiming full parity.
+#'   trajectory results and one-dimensional numeric, character, or logical
+#'   metadata. Missing character and logical cells use JSON null.
 #' @param result An etr_trajectory_set; other result classes are unsupported.
 #' @param directory New or empty destination directory.
 #' @param include_environment Must be FALSE: an R environment is not a
@@ -121,11 +129,13 @@ etr_export_python_portable_result <- function(result,directory,
     .etr_assert(!file.exists(directory),"portable destination is a file")
   }
   .etr_assert(is.data.frame(result$metadata) &&
+    !anyNA(names(result$metadata)) && all(nzchar(names(result$metadata))) &&
+    !anyDuplicated(names(result$metadata)) &&
     all(vapply(result$metadata,function(z)
-      (is.numeric(z)||is.character(z)||is.logical(z))&&
-      !is.factor(z)&&(!is.character(z)||!anyNA(z))&&
-      (!is.logical(z)||!anyNA(z)),logical(1L))),
-    "unsupported metadata column type or missing categorical metadata")
+      is.null(dim(z)) && !is.factor(z) &&
+        (is.numeric(z)||is.character(z)||is.logical(z)),
+      logical(1L))),
+    "unsupported metadata column type or labels")
   temp <- tempfile("etr_portable_writer_")
   dir.create(temp,recursive=TRUE)
   on.exit(unlink(temp,recursive=TRUE),add=TRUE)
@@ -140,6 +150,13 @@ etr_export_python_portable_result <- function(result,directory,
     c(list('__portable_type__'="ndarray",key=key),info)
   }
   md <- result$metadata
+  encode_column <- function(column) {
+    if ((is.character(column) || is.logical(column)) && anyNA(column)) {
+      return(list('__portable_type__'="object_array",
+        shape=list(length(column)), items=as.list(unname(column))))
+    }
+    add_array(column)
+  }
   payload <- list(
     '__portable_type__'="dataclass",
     python_type="eyetrajectoriespy.types.TrajectorySet",
@@ -153,7 +170,7 @@ etr_export_python_portable_result <- function(result,directory,
       metadata=list('__portable_type__'="dataframe",
         columns=as.list(names(md)),
         index=as.list(result$curve_ids),
-        data=lapply(md,add_array)),
+        data=unname(lapply(md,encode_column))),
       coordinate_system=result$coordinate_system,
       time_unit=result$time_unit,
       provenance=if(!length(result$provenance))

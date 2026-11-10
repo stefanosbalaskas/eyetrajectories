@@ -69,7 +69,11 @@ test_that("catalog records preserve all pinned fields and isolated copies",{
   attr<-reticulate::py_get_attr
   call<-reticulate::py_call
   item<-reticulate::py_get_item
+  dataclasses<-reticulate::import("dataclasses",convert=FALSE)
   equal_record<-function(native,source){
+    source_fields<-dataclasses$fields(source)
+    expect_identical(names(native),vapply(seq_len(reticulate::py_len(source_fields)),
+      function(i)et_to_r(attr(item(source_fields,i-1L),"name")),character(1L)))
     for(field in names(native)){
       actual<-enc2utf8(native[[field]])
       expected<-enc2utf8(unlist(et_to_r(attr(source,field)),use.names=FALSE))
@@ -95,6 +99,34 @@ test_that("catalog records preserve all pinned fields and isolated copies",{
     expect_error(call(lookup,name),"TypeError")
   expect_error(call(lookup),"TypeError")
   expect_error(call(lookup,"fpca",1L),"TypeError")
+})
+
+test_that("catalog author review exposes native representation and lookup boundaries",{
+  old<-options(warnPartialMatchArgs=FALSE)
+  on.exit(options(old),add=TRUE)
+  expect_identical(etr_get_mathematical_contract(na="quadrature")$key,
+    "quadrature")
+  expect_identical(etr_get_mathematical_contract(matrix("quadrature"))$key,
+    "quadrature")
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Pinned direct-source catalog boundaries are opt in")
+  expect_identical(et_python_version(),"1.2.0")
+  call<-reticulate::py_call
+  item<-reticulate::py_get_item
+  np<-reticulate::import("numpy",convert=FALSE)
+  lookup<-etpy_get_export("get_mathematical_contract")
+  expect_error(call(lookup,na="quadrature"),"TypeError")
+  expect_error(call(lookup,np$array(matrix("quadrature"),dtype="str")),"TypeError")
+  expect_error(call(lookup,np$array(as.list(c("fpca","quadrature")),dtype="str")),
+    "truth value of an array")
+  source_joint<-call(lookup,np$array(matrix("fit_sparse_mfpca"),dtype="str"))
+  expect_identical(et_to_r(source_joint$key),"sparse-mfpca-joint-pace")
+  math<-call(etpy_get_export("list_mathematical_contracts"))
+  recovery<-call(etpy_get_export("functional_recovery_metric_catalog"))
+  expect_error(reticulate::py_set_attr(item(math,0L),"title","edited"),
+    "FrozenInstanceError")
+  expect_error(reticulate::py_set_attr(item(recovery,0L),"quantity","edited"),
+    "FrozenInstanceError")
 })
 
 test_that("catalog full-source Python 1.2 field comparison is opt in",{

@@ -48,7 +48,10 @@ The loader accepts the published version-one Python format with the
 exact \code{arrays.npz} filename, and bounds uncompressed size.
 It reads safe NumPy NPY v1-v3 little-endian binary arrays using a
 typed subset of floating, integer, bool and UTF-32 Unicode
-descriptors, and primitive homogeneous JSON-backed object arrays.
+descriptors, and primitive homogeneous JSON-backed object arrays. JSON
+nulls become missing values of the observed type. If every cell is null,
+the snapshot carries logical missing values because the source has no
+element type information.
 Pickling or backend execution is never attempted. Unsupported dtypes,
 heterogeneous object arrays, irregular table schemas and unknown
 markers fail closed instead of silently discarding scientific state.

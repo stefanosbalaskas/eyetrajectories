@@ -30,7 +30,11 @@ contracts. All external approvals require genuine independent review.
 \section{Exported entry points}{
 \describe{
 \item{\code{etr_detect_functional_outliers_skfda}}{\emph{detect functional outliers skfda} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
-\item{\code{etr_export_python_portable_result}}{\emph{export python portable result} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
+\item{\code{etr_export_python_portable_result}}{Writes a common-grid
+trajectory snapshot in the Python 1.2 JSON and NPZ format. Metadata columns
+are ordered and indexed by curve ID, with numeric, character and logical
+vectors supported. Missing character and logical cells are JSON nulls.
+The destination must be new or empty.}
 \item{\code{etr_fit_sparse_fpca_fdapy}}{\emph{fit sparse fpca fdapy} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
 \item{\code{etr_native_source_contract_review_queue}}{\emph{native source contract review queue} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
 \item{\code{etr_to_fdapy_irregular}}{\emph{to fdapy irregular} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
