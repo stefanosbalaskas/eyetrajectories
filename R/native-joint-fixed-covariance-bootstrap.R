@@ -105,9 +105,10 @@
   total_information<-apply(information,c(2L,3L),sum)
   total_information<-matrix(total_information,nrow=k,ncol=k)
   total_scores<-colSums(scores)
-  .etr_assert(qr(total_information)$rank==k,
-    "reference fixed-covariance GLS system is rank deficient")
-  reference_gls<-as.numeric(solve(total_information,total_scores))
+  reference_gls<-tryCatch(
+    as.numeric(solve(total_information,total_scores,tol=0)),
+    error=function(e)stop("reference fixed-covariance GLS system is singular",
+      call.=FALSE))
   backend<-as.numeric(t(fit$fixed_basis_coefficients))
   max_difference<-max(abs(reference_gls-backend))
   .etr_assert(all(abs(reference_gls-backend)<=
@@ -122,33 +123,13 @@
 .etr_joint_fixed_covariance_gls_bootstrap<-function(
     result,n_bootstrap=1000L,random_state=0L,
     sampled_participant_indices=NULL){
-  .etr_assert(is.numeric(n_bootstrap)&&length(n_bootstrap)==1L&&
-    !is.logical(n_bootstrap)&&is.finite(n_bootstrap)&&
-    n_bootstrap==floor(n_bootstrap)&&n_bootstrap>=100L&&
-    n_bootstrap<=.Machine$integer.max,
-    "n_bootstrap must be an integer >=100")
-  .etr_assert(is.null(random_state)||
-    (is.numeric(random_state)&&length(random_state)==1L&&
-      !is.logical(random_state)&&is.finite(random_state)&&
-      random_state==floor(random_state)&&random_state>=0L&&
-      random_state<=.Machine$integer.max),
-    "random_state must be NULL or a supported nonnegative integer")
+  controls<-.etr_joint_mixed_boot_controls(n_bootstrap,random_state,100L)
+  B<-controls$n_bootstrap
+  random_state<-controls$random_state
   source<-.etr_joint_bootstrap_gls_contributions(result)
-  np<-length(source$participant_ids);B<-as.integer(n_bootstrap)
-  if(is.null(sampled_participant_indices)){
-    indices<-if(is.null(random_state))
-      matrix(sample.int(np,B*np,replace=TRUE)-1L,nrow=B,ncol=np) else
-      .etr_numpy_seeded_case_indices(random_state,B,np)
-  }else{
-    indices<-sampled_participant_indices
-    .etr_assert(is.matrix(indices)&&is.numeric(indices)&&
-      identical(dim(indices),c(B,np))&&
-      all(is.finite(indices))&&
-      all(indices==floor(indices))&&
-      all(indices>=0)&&all(indices<np),
-      "sampled_participant_indices must be a finite zero-based B-by-participant index matrix")
-    indices<-matrix(as.integer(indices),B,np)
-  }
+  draws<-.etr_joint_mixed_boot_draws(B,length(source$participant_ids),
+    random_state,sampled_participant_indices)
+  indices<-draws$indices
   k<-source$n_parameters
   p<-source$n_coefficients
   nf<-source$n_basis
@@ -164,10 +145,11 @@
         nrow=k,ncol=k)
       score<-score+source$scores[g,]
     }
-    .etr_assert(qr(info)$rank==k,
+    singular_values<-svd(info,nu=0L,nv=0L)$d
+    .etr_assert(min(singular_values)>max(singular_values)*k*.Machine$double.eps,
       paste("participant-cluster bootstrap replicate",b,
         "produced a rank-deficient fixed-effect information matrix; no replicate was discarded"))
-    beta<-tryCatch(solve(info,score),error=function(e)
+    beta<-tryCatch(solve(info,score,tol=0),error=function(e)
       stop(paste("participant-cluster bootstrap replicate",b,
         "could not solve the fixed-effect GLS system; no replicate was discarded:",
         conditionMessage(e)),call.=FALSE))
@@ -182,29 +164,48 @@
   conditioned<-if(is.null(result$trial_random_effect))
     "reference_participant_and_residual_covariance_fixed" else
     "reference_participant_and_trial_random_effect_covariances_and_residual_covariance_fixed"
+  residual_family<-result[["residual_correlation",exact=TRUE]]
+  if(is.null(residual_family))residual_family<-"iid"
+  participant_boundary<-.etr_nested_source_covariance_diagnostics(
+    result$random_effect_covariance)$boundary
+  trial_boundary<-isTRUE(result$trial_random_effect_boundary_fit)
+  residual_boundary<-isTRUE(result$residual_correlation_boundary_fit)
   provenance<-result$provenance
   provenance$functional_mixed_effects_bootstrap<-list(
     method="participant_cluster_case_bootstrap_fixed_covariance_gls",
     n_bootstrap=B,
-    random_state=if(is.null(random_state))NULL else as.integer(random_state),
+    random_state=random_state,
     sampled_source_indices_supplied=!is.null(sampled_participant_indices),
-    native_rng=if(!is.null(sampled_participant_indices))
-      "caller_supplied_fixed_indices" else if(is.null(random_state))
-      "base_R_unseeded" else "numpy_pcg64",
+    native_rng=draws$engine,
     resampling_unit="participant",
     whole_trial_bundles_resampled=TRUE,
     curves_resampled_independently=FALSE,
+    participant_draws_with_replacement=TRUE,
     fixed_effects_reestimated_each_replicate=TRUE,
     variance_components_refit=FALSE,
     random_effect_covariance_conditioned_on_reference=TRUE,
     trial_random_effect_covariance_conditioned_on_reference=
       !is.null(result$trial_random_effect),
+    reference_trial_random_effect=result$trial_random_effect,
+    reference_trial_random_basis_size=if(is.null(result$trial_random_effect))
+      0L else ncol(result$trial_random_basis),
     residual_variance_conditioned_on_reference=TRUE,
     residual_correlation_conditioned_on_reference=TRUE,
+    reference_residual_correlation=residual_family,
+    reference_residual_correlation_parameter=result$residual_correlation_parameter,
+    reference_residual_correlation_parameter_name=
+      result$residual_correlation_parameter_name,
     fixed_basis_refit=FALSE,random_basis_refit=FALSE,
+    basis_selection_repeated=FALSE,
+    reference_boundary_fit=participant_boundary||trial_boundary||residual_boundary,
+    reference_random_slope_predictor=result$random_slope_predictor,
+    reference_random_effect_dimension=ncol(result$random_effect_covariance),
+    random_intercept_slope_covariance_conditioned_on_reference=
+      !is.null(result$random_slope_predictor),
     reference_gls_max_abs_difference=
       source$max_reference_gls_difference,
     failed_replicate_policy="raise",
+    simultaneous_band_calibration=FALSE,
     source_python_full_contract_certified=FALSE,
     independent_full_source_certified=FALSE)
   structure(list(reference=result,
@@ -214,7 +215,7 @@
     bootstrap_mean=estimate,
     bootstrap_standard_errors=se,
     bootstrap_type="conditional_covariance",
-    random_state=if(is.null(random_state))NULL else as.integer(random_state),
+    random_state=random_state,
     covariance_conditioning=conditioned,
     provenance=provenance,
     source_python_full_contract_certified=FALSE,

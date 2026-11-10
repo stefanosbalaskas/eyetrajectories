@@ -7,6 +7,54 @@
 # intercepts. Python 1.2 optimizer and all typed input/error domains are
 # NOT independently certified. Unsupported covariance families fail closed.
 
+.etr_joint_mixed_boot_controls<-function(n_bootstrap,random_state,minimum){
+  .etr_assert(is.numeric(n_bootstrap)&&length(n_bootstrap)==1L&&
+    is.null(dim(n_bootstrap))&&is.finite(n_bootstrap)&&
+    n_bootstrap==floor(n_bootstrap)&&
+    n_bootstrap>=minimum&&n_bootstrap<=.Machine$integer.max,
+    paste("n_bootstrap must be an integer at least",minimum))
+  .etr_assert(is.null(random_state)||
+    (is.numeric(random_state)&&length(random_state)==1L&&
+      is.null(dim(random_state))&&is.finite(random_state)&&
+      random_state==floor(random_state)&&random_state>=0&&
+      random_state<2^53),
+    "random_state must be NULL or an exactly represented nonnegative integer below 2^53")
+  if(!is.null(random_state)&&random_state<=.Machine$integer.max)
+    random_state<-as.integer(random_state)
+  list(n_bootstrap=as.integer(n_bootstrap),random_state=random_state)
+}
+
+.etr_joint_mixed_boot_draws<-function(B,N,random_state,sampled){
+  if(!is.null(sampled)){
+    .etr_assert(is.matrix(sampled)&&is.numeric(sampled)&&
+      identical(dim(sampled),c(B,N))&&
+      all(is.finite(sampled))&&all(sampled==floor(sampled))&&
+      all(sampled>=0L)&&all(sampled<N),
+      "sampled_participant_indices must be finite zero-based B-by-participant indices")
+    return(list(indices=matrix(as.integer(sampled),B,N),
+      engine="caller_supplied_fixed_indices"))
+  }
+  if(is.null(random_state))
+    return(list(indices=matrix(sample.int(N,as.double(B)*N,replace=TRUE)-1L,B,N),
+      engine="base_R_unseeded"))
+  list(indices=.etr_numpy_seeded_case_indices(random_state,B,N),
+    engine="numpy_pcg64")
+}
+
+.etr_joint_refit_draw_bundle<-function(bundles,ids,sampled,replicate){
+  chosen<-sampled+1L
+  selected<-bundles[chosen]
+  size<-lengths(selected)
+  draw<-seq_along(selected)-1L
+  within_draw<-sequence(size)-1L
+  participant_ids<-sprintf("bootstrap_%04d_draw_%04d",replicate,draw)
+  list(rows=unlist(selected,use.names=FALSE),
+    source_ids=ids[chosen],participant_ids=participant_ids,
+    membership=rep(participant_ids,times=size),within_draw=within_draw,
+    curve_ids=sprintf("b%04d_d%04d_c%04d",replicate,
+      rep(draw,times=size),within_draw))
+}
+
 .etr_native_mixed_boot_indices<-function(reference,n_bootstrap,
     random_state,sampled_participant_indices){
   .etr_mixed_moments_fit(reference)
@@ -49,8 +97,9 @@
 #'   Python spline-coefficient MixedLM GLS covariance is NOT reproduced.
 #' @param result Converged restricted native mixed-moments fit.
 #' @param n_bootstrap Number of participant case replicates >=100.
-#' @param random_state Integer seed. Joint likelihood fits use
-#'   NumPy-compatible PCG64 draws. Native moments fits use base R draws.
+#' @param random_state Joint likelihood fits use NumPy-compatible PCG64
+#'   for exactly represented nonnegative integer seeds below 2^53. NULL
+#'   uses ambient base R draws. Native moments fits use base R integer seeds.
 #' @param sampled_participant_indices Optional zero-based B-by-participant
 #'   retained Python index matrix.
 #' @return Native fixed-covariance participant-case coefficient bootstrap.
@@ -131,8 +180,9 @@ etr_bootstrap_functional_mixed_effects_coefficients<-function(
 #'   not a Python Gaussian spline MixedLM/REML full-refit bootstrap.
 #' @param result Converged restricted native mixed-moments fit.
 #' @param n_bootstrap Number of full re-estimations >=100.
-#' @param random_state Integer seed. Joint likelihood fits use
-#'   NumPy-compatible PCG64 draws. Native moments fits use base R draws.
+#' @param random_state Joint likelihood fits use NumPy-compatible PCG64
+#'   for exactly represented nonnegative integer seeds below 2^53. NULL
+#'   uses ambient base R draws. Native moments fits use base R integer seeds.
 #' @param sampled_participant_indices Optional zero-based B-by-participant
 #'   fixed source draw index matrix.
 #' @return Native full-refit participant bootstrap with covariance audit.

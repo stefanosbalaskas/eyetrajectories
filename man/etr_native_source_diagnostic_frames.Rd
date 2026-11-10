@@ -40,6 +40,8 @@ geometry rather than Python Matplotlib Axes.
 Source surrogate indices and bootstrap replicate labels begin at zero.
 Optional mixed-effects refit diagnostics include residual correlation,
 trial-level covariance and random-slope covariance diagnostics when present.
+Positive infinite condition numbers preserve singular covariance or
+correlation diagnostics in the output frame.
 Inputs are validated strictly and do not imply a new fit or inferential
 calibration. R and Python plotting APIs are not return-type or pixel
 equivalent, and no claim of full 508-contract certification is made.

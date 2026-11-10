@@ -163,14 +163,15 @@ _df_boot=dict(
 _df_full=_df_obj(et.FunctionalMixedEffectsFullRefitBootstrapResult,
     **_df_boot)
 _df_more=dict(_df_boot,
+    random_effect_covariance_condition_numbers=np.array([2.,np.inf]),
     residual_correlation_parameters=np.array([.1,.2]),
-    residual_correlation_condition_numbers=np.array([1.1,1.2]),
+    residual_correlation_condition_numbers=np.array([1.1,np.inf]),
     residual_correlation_boundary_flags=np.array([False,True]),
     residual_correlation_independence_flags=np.array([False,False]),
     trial_random_effect_covariances=_df_cov/4,
     trial_random_effect_covariance_eigenvalues=np.array(
       [[.25,.5],[.75,1.]]),
-    trial_random_effect_covariance_condition_numbers=np.array([2.,3.]),
+    trial_random_effect_covariance_condition_numbers=np.array([2.,np.inf]),
     trial_random_effect_boundary_flags=np.array([False,False]),
     trial_random_effect_singular_flags=np.array([False,False]),
     random_slope_covariances=_df_cov/3,
@@ -184,12 +185,15 @@ _df_oracle={
 }
 ")
   z<-.etr_source_diagnostic_fixtures()
+  extended<-.etr_source_diagnostic_fixtures(TRUE)$bootstrap
+  extended$random_effect_covariance_condition_numbers[2L]<-Inf
+  extended$residual_correlation_condition_numbers[2L]<-Inf
+  extended$trial_random_effect_covariance_condition_numbers[2L]<-Inf
   outputs<-list(
     surrogate=etr_multivariate_iaaft_diagnostics_frame(z$surrogate),
     base=etr_functional_mixed_effects_variance_bootstrap_frame(
       z$bootstrap),
-    extended=etr_functional_mixed_effects_variance_bootstrap_frame(
-      .etr_source_diagnostic_fixtures(TRUE)$bootstrap))
+    extended=etr_functional_mixed_effects_variance_bootstrap_frame(extended))
   # Attribute the two distinct public Python data-table functions to
   # direct frozen-source execution, including the extended covariance case.
   direct<-list(

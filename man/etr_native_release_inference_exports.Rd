@@ -28,6 +28,10 @@ full-domain Python 1.2 parity certificate. Review estimator-specific
 technical documentation, assumptions and corresponding R/source tests
 before scientific reporting; particular uncertainty methods may be
 research-only with no external coverage validation.
+For joint mixed-effects bootstrap fits, \code{random_state} accepts
+exactly represented nonnegative integer seeds below \eqn{2^{53}}.
+Explicit seeds use NumPy-compatible PCG64 draws. A supplied zero-based
+draw matrix takes precedence. A null seed uses the ambient R stream.
 }
 \section{Exported entry points}{
 \describe{
