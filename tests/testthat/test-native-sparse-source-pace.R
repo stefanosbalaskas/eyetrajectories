@@ -173,8 +173,20 @@ test_that("source-model sparse workflow uses actual custom native PACE",{
   expect_false(w$provenance$fdapace_backend_used)
   expect_false(w$provenance$full_source_contract_certified)
   expect_identical(nrow(w$tables$scores),24L)
+  expect_identical(w$tables$scores,etr_sparse_fpca_score_frame(w$fit))
+  expect_null(w$score_uncertainty)
   expect_equal(w$fit$scores,.etr_spn_fit_from_fixture(x)$scores,
     tolerance=1e-10,ignore_attr=TRUE)
+  config$score_uncertainty<-list()
+  w<-etr_run_sparse_fpca_workflow(x,config)
+  expect_s3_class(w$score_uncertainty,"etr_sparse_fpca_score_uncertainty_native")
+  expect_identical(w$tables$score_uncertainty,
+    etr_sparse_fpca_score_uncertainty_frame_native(w$score_uncertainty))
+  expect_identical(w$steps[[2L]]$name,"score_uncertainty")
+  expect_true(w$decisions$score_uncertainty_requested$value)
+  config$score_uncertainty<-list(unknown=TRUE)
+  expect_error(etr_run_sparse_fpca_workflow(x,config),"score_uncertainty")
+  config$score_uncertainty<-NULL
   config$backend<-"unsupported"
   expect_error(etr_run_sparse_fpca_workflow(x,config),
     "unsupported fields|fdapace backend")

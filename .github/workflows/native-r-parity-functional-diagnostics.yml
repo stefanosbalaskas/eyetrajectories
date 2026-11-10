@@ -39,7 +39,9 @@ jobs:
       - name: Native and earlier cumulative register assertions
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="(?:native-functional-diagnostics)|native-(?:parity-ledger|distances-parity-ledger|trajectory-parity-ledger|portable-parity-ledger|irregular-parity-ledger|recurrence-parity-ledger)|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))'
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="(?:native-functional-diagnostics)|native-(?:parity-ledger|distances-parity-ledger|trajectory-parity-ledger|portable-parity-ledger|irregular-parity-ledger|recurrence-parity-ledger)|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))
+          RSCRIPT
 
   python-reference:
     name: direct Python 1.2 numeric oracle

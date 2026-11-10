@@ -38,6 +38,15 @@ test_that("paired sparse joint covariance is estimated without marginal fdapace"
     "sparse_mfpca:native_direct_block_covariance_PACE")
   expect_false(wf$provenance$source_full_domain_certified)
   expect_equal(wf$fit$eigenvalues,fit$eigenvalues,tolerance=1e-12)
+  expect_identical(wf$tables$scores,etr_sparse_mfpca_score_frame(wf$fit))
+  expect_null(wf$score_uncertainty)
+  config$score_uncertainty<-list(condition_limit=1e10)
+  wf<-etr_run_sparse_mfpca_workflow(tr,config)
+  expect_s3_class(wf$score_uncertainty,"etr_sparse_mfpca_score_uncertainty_native")
+  expect_identical(wf$tables$score_uncertainty,
+    etr_sparse_mfpca_score_uncertainty_frame_native(wf$score_uncertainty))
+  expect_identical(wf$steps[[2L]]$parameters$condition_limit,1e10)
+  expect_true(wf$decisions$score_uncertainty_requested$value)
 })
 
 test_that("joint sparse covariance fails closed on unsupported sample/error mode",{

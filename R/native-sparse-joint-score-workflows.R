@@ -186,7 +186,8 @@ etr_fit_sparse_mfpca<-function(trajectories,dimensions=c("x","y"),
 #' Run native paired sparse two-channel joint-score workflow
 #' @param trajectories Native two-channel irregular trajectories.
 #' @param config Explicit dimensions, backend, component counts and empty
-#'   preprocessing. No implicit bandwidth optimization.
+#'   preprocessing. The native_covariance backend also accepts a
+#'   score_uncertainty list with optional condition_limit and failure_action.
 #' @param observation_process Must be NULL.
 #' @export
 etr_run_sparse_mfpca_workflow<-function(trajectories,config,
@@ -205,22 +206,37 @@ etr_run_sparse_mfpca_workflow<-function(trajectories,config,
       score_ridge=0,score_condition_limit=1e12,
       min_score_time_points=2L,score_failure_action="error",
       mean_min_local_points=3L,covariance_min_local_pairs=6L,
+      score_uncertainty=NULL,
       preprocessing=list()),required=c("dimensions","backend",
       "n_components","evaluation_grid","mean_bandwidth",
       "covariance_bandwidth","measurement_error"))
     .etr_assert(inherits(trajectories,"etr_irregular_trajectory_set"),
       "joint source workflow requires paired irregular trajectories")
-    params<-cfg[setdiff(names(cfg),"preprocessing")]
+    params<-cfg[setdiff(names(cfg),c("preprocessing","score_uncertainty"))]
     fit<-do.call(etr_fit_sparse_mfpca,c(list(
       trajectories=trajectories,observation_process=observation_process),
       params))
+    uncertainty<-.etr_sparse_workflow_uncertainty(
+      cfg$score_uncertainty,fit,trajectories)
+    steps<-list(.etr_source_workflow_step(
+      "fit_sparse_mfpca_native_joint_PACE",params))
+    reports<-list(fit=etr_sparse_mfpca_reporting_text(fit))
+    tables<-list(scores=etr_sparse_mfpca_score_frame(fit),
+      score_diagnostics=fit$score_diagnostics,
+      eigenvalues=data.frame(component=seq_len(fit$n_components),
+        eigenvalue=fit$eigenvalues))
+    if(!is.null(uncertainty)){
+      steps[[2L]]<-uncertainty$step
+      reports$score_uncertainty<-uncertainty$report
+      tables$score_uncertainty<-uncertainty$frame
+    }
     return(structure(list(
       workflow_schema_version=1L,
       workflow_contract="sparse_mfpca:native_direct_block_covariance_PACE",
-      config=cfg,fit=fit,
-      steps=list(.etr_source_workflow_step(
-        "fit_sparse_mfpca_native_joint_PACE",params)),
-      decisions=lapply(params,.etr_source_workflow_decision),
+      config=cfg,fit=fit,score_uncertainty=uncertainty$result,
+      steps=steps,
+      decisions=c(lapply(params,.etr_source_workflow_decision),list(
+        score_uncertainty_requested=.etr_source_workflow_decision(!is.null(uncertainty)))),
       provenance=list(
         input_layout="paired_irregular_native",
         preprocessing_executed=FALSE,
@@ -229,14 +245,7 @@ etr_run_sparse_mfpca_workflow<-function(trajectories,config,
         cross_channel_covariance_modeled=TRUE,
         source_full_domain_certified=FALSE,
         independent_full_contract_certified=FALSE),
-      reports=list(fit=paste(
-        "Source-model direct sparse joint PACE fit",
-        "with directional cross covariance; not yet independently certified.")),
-      tables=list(scores=data.frame(curve_id=fit$curve_ids,
-          fit$scores,check.names=FALSE),
-        score_diagnostics=fit$score_diagnostics,
-        eigenvalues=data.frame(component=seq_len(fit$n_components),
-          eigenvalue=fit$eigenvalues))),
+      reports=reports,tables=tables),
       class="etr_native_sparse_mfpca_workflow"))
   }
   cfg<-.etr_source_workflow_config(config,list(
@@ -312,14 +321,7 @@ etr_run_sparse_mfpca_async_workflow<-function(trajectories,config,
       reports=list(fit=paste(
         "Native direct asynchronous sparse MFPCA joint PACE",
         "using directional latent covariance and exact scalar times.")),
-      tables=list(scores={
-        frame<-data.frame(
-          curve_id=as.character(fit$curve_ids),
-          fit$metadata,check.names=FALSE)
-        for(j in seq_len(fit$n_components))
-          frame[[paste0("ASMFPC",j)]]<-fit$scores[,j]
-        frame
-      }))
+      tables=list(scores=.etr_scientific_frame_metadata(fit,"ASMFPC")))
     return(structure(evidence,
       class="etr_native_sparse_mfpca_workflow"))
   }

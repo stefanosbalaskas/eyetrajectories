@@ -38,7 +38,9 @@ jobs:
       - name: Cross-validation native numerical, grouped holdouts and ledger
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="(?:native-cv-uncertainty)|(?:native-nonlinear-reporting)|(?:native-fpca-extensions)|(?:native-functional-diagnostics)|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))'
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE); was<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="(?:native-cv-uncertainty)|(?:native-nonlinear-reporting)|(?:native-fpca-extensions)|(?:native-functional-diagnostics)|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(was,reticulate::py_available(initialize=FALSE)))
+          RSCRIPT
 
   python-v1-2-cv:
     name: Cross-validation pinned Python 1.2 heldout CV numerical oracle

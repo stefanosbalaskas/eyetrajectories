@@ -39,6 +39,14 @@ models. Native \code{method="nlme::lme"} is required; Python's optimizer
 is not silently substituted, and the typed Python workflow/result
 contract is not certified. The coefficient table uses seven source-ordered
 pointwise Wald columns. See \code{docs/native-joint-bspline-source-workflow-wave.md}.
+
+The \code{native_covariance} configurations of \code{etr_run_sparse_fpca_workflow}
+and \code{etr_run_sparse_mfpca_workflow} accept \code{score_uncertainty=list()}
+to request conditional PACE score uncertainty. The list may specify
+\code{condition_limit} and \code{failure_action} (\code{"error"} or
+\code{"retain_nan"}). The workflow returns the conditional result and a
+per-curve, per-component table. The \code{scores} table retains input
+metadata and uses \code{SFPC} or \code{SMFPC} component prefixes.
 }
 \section{Exported entry points}{
 \describe{

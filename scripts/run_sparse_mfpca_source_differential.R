@@ -11,8 +11,9 @@
     local=TRUE,encoding="UTF-8")
   tr<-.etr_spnm_fixture()
   args<-.etr_spnm_args()
-  native<-do.call(etr_fit_sparse_mfpca_native,c(
-    list(trajectories=tr),args))
+  native_call<-function(parameters)do.call(etr_fit_sparse_mfpca,c(
+    list(trajectories=tr,backend="native_covariance"),parameters))
+  native<-native_call(args)
   reticulate::py_run_string("
 import numpy as np
 import eyetrajectoriespy as _etr_spnm_diff_et
@@ -100,8 +101,7 @@ def _etr_spnm_diff_input(times, values, ids):
     py_args<-modifyList(pyargs,new)
     if("measurement_error_variance"%in%names(new))
       py_args$measurement_error_variance<-reticulate::tuple(.08,-.1)
-    left<-safe(function()do.call(
-      etr_fit_sparse_mfpca_native,c(list(trajectories=tr),r_args)))
+    left<-safe(function()native_call(r_args))
     right<-safe(function()do.call(reticulate::py_call,
       c(list(public,trajectories=pytr),py_args)))
     record(name,"<call>",if(!left$ok&&!right$ok)

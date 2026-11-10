@@ -39,11 +39,17 @@ jobs:
       - name: Parse and reject stage-numbered public names
         shell: bash
         run: |
-          Rscript -e 'invisible(lapply(list.files("R",pattern="\\.R$",full.names=TRUE),parse)); exports<-readLines("NAMESPACE"); stopifnot(!any(grepl("export\\(etr[0-9]+_",exports)))'
+          Rscript - <<'RSCRIPT'
+          invisible(lapply(list.files("R",pattern="\\.R$",full.names=TRUE),parse))
+          exports <- readLines("NAMESPACE")
+          stopifnot(!any(grepl("export\\(etr[0-9]+_",exports)))
+          RSCRIPT
       - name: Complete registration plot and historical parity test contexts
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); prev<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-functional-registration-plots|native-nine-scientific-plots|native-functional-rqa-recovery|native-fpca-bootstrap-source|native-math-contracts-diagnostics|native-transfer-entropy-visual|native-source-contract-gaps|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(prev,reticulate::py_available(initialize=FALSE)))'
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE); prev<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-functional-registration-plots|native-nine-scientific-plots|native-functional-rqa-recovery|native-fpca-bootstrap-source|native-math-contracts-diagnostics|native-transfer-entropy-visual|native-source-contract-gaps|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(prev,reticulate::py_available(initialize=FALSE)))
+          RSCRIPT
   python-source:
     name: Published Python 1.2 reconstruction and warping source geometry
     runs-on: ubuntu-latest

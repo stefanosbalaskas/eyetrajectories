@@ -24,7 +24,7 @@ def _etr_fcd_tr(time,values,ids,batch):
     curve_ids=tuple(str(x) for x in ids),
     dimension_names=('x',),
     metadata=pd.DataFrame({'participant':list(batch)}),
-    coordinate_system='arbitrary',
+    coordinate_system='unknown',
     time_unit='s')
 ")
   results<-list()
@@ -144,7 +144,7 @@ def _etr_fcd_tr(time,values,ids,batch):
   batches<-rep(sprintf("participant_%02d",seq_len(n/2)),each=2L)
   traj<-etr_trajectory_set(time,X,curve_ids=ids,dimension_names="x",
     metadata=data.frame(participant=batches),
-    coordinate_system="arbitrary",time_unit="s")
+    coordinate_system="unknown",time_unit="s")
   source_tr<-reticulate::py_call(
     reticulate::py_eval("_etr_fcd_tr",convert=FALSE),
     time=reticulate::r_to_py(time),
@@ -173,7 +173,7 @@ def _etr_fcd_tr(time,values,ids,batch):
   rx<-etr_trajectory_set(as.numeric(trqa),v,
     curve_ids=qids,dimension_names="x",
     metadata=data.frame(participant=group),
-    coordinate_system="arbitrary",time_unit="s")
+    coordinate_system="unknown",time_unit="s")
   px<-reticulate::py_call(
     reticulate::py_eval("_etr_fcd_tr",convert=FALSE),
     time=reticulate::r_to_py(as.numeric(trqa)),
@@ -181,13 +181,14 @@ def _etr_fcd_tr(time,values,ids,batch):
     ids=reticulate::r_to_py(as.list(qids)),
     batch=reticulate::r_to_py(as.list(group)))
   local<-etr_windowed_rqa_sensitivity(rx,
-    metrics="recurrence_rate",
+    metrics="recurrence_rate",dimensions="x",
     window_step_pairs=list(c(5L,2L),c(7L,3L)),
     radius=1)
   source<-reticulate::py_call(reticulate::py_get_attr(
     reticulate::py_eval("_etr_fcd_rqa",convert=FALSE),
     "windowed_rqa_sensitivity"),
     trajectories=px,metrics=reticulate::tuple("recurrence_rate"),
+    dimensions=reticulate::tuple("x"),
     window_step_pairs=reticulate::tuple(
       reticulate::tuple(5L,2L),reticulate::tuple(7L,3L)),
     radius=1)
@@ -212,15 +213,16 @@ def _etr_fcd_tr(time,values,ids,batch):
   }
   # Recorded BOTH_REJECT outcomes require actual Python invocation;
   # do not count R-only errors as source comparisons.
-  safe<-function(fun)tryCatch(
-    list(ok=TRUE,message=""),error=function(e)
-      list(ok=FALSE,message=conditionMessage(e)))
+  safe<-function(fun)tryCatch({
+    fun()
+    list(ok=TRUE,message="")
+  },error=function(e)list(ok=FALSE,message=conditionMessage(e)))
   for(bad in list(
       list(kind="duplicate",pairs=list(c(5L,2L),c(5L,2L))),
       list(kind="fractional",pairs=list(c(5L,2.5))),
       list(kind="missing_radius",pairs=list(c(5L,2L))))){
     lhs<-safe(function()etr_windowed_rqa_sensitivity(rx,
-      metrics="recurrence_rate",window_step_pairs=bad$pairs,
+      metrics="recurrence_rate",dimensions="x",window_step_pairs=bad$pairs,
       radius=if(bad$kind=="missing_radius")NULL else 1))
     py_pairs<-reticulate::r_to_py(lapply(bad$pairs,
       function(x)do.call(reticulate::tuple,as.list(x))))
@@ -229,6 +231,7 @@ def _etr_fcd_tr(time,values,ids,batch):
         reticulate::py_eval("_etr_fcd_rqa",convert=FALSE),
         "windowed_rqa_sensitivity"),
       trajectories=px,metrics=reticulate::tuple("recurrence_rate"),
+      dimensions=reticulate::tuple("x"),
       window_step_pairs=py_pairs,
       radius=if(bad$kind=="missing_radius")NULL else 1))
     add("windowed_rqa_sensitivity",bad$kind,"<call>",

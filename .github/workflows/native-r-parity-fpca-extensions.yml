@@ -38,7 +38,9 @@ jobs:
       - name: FPCA extensions native R and frozen inventory regression
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); started<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="(?:native-fpca-extensions)|(?:native-functional-diagnostics)|native-(?:parity-ledger|distances-parity-ledger|trajectory-parity-ledger|portable-parity-ledger|irregular-parity-ledger|recurrence-parity-ledger)|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(started,reticulate::py_available(initialize=FALSE)))'
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE); started<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="(?:native-fpca-extensions)|(?:native-functional-diagnostics)|native-(?:parity-ledger|distances-parity-ledger|trajectory-parity-ledger|portable-parity-ledger|irregular-parity-ledger|recurrence-parity-ledger)|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(started,reticulate::py_available(initialize=FALSE)))
+          RSCRIPT
 
   python-v1-2-oracle:
     name: FPCA extensions independent Python 1.2 reference

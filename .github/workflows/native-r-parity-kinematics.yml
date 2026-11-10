@@ -41,7 +41,9 @@ jobs:
       - name: Check native analytic geometry and strict parity inventory
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); testthat::test_local(".",filter="native-planar-geometry-parity|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE)'
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE); testthat::test_local(".",filter="native-planar-geometry-parity|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
       - name: Require incomplete parity to fail closed
         shell: bash
         run: |

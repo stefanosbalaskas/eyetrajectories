@@ -179,6 +179,8 @@
         "MULTILEVEL")
       sparse_runner("scripts/run_sparse_mfpca_async_source_differential.R",
         "ASYNC")
+      sparse_runner("scripts/run_sparse_workflow_source_differential.R",
+        "WORKFLOW")
       sparse_runner("scripts/run_functional_core_source_differential.R",
         "FUNCTIONAL_CORE")
       cat("ACCELERATED_WAVE_SPARSE_FPCA_SOURCE_DIFF_ATTEMPTED=TRUE\n")
@@ -186,6 +188,7 @@
       cat("ACCELERATED_WAVE_SPARSE_PREDICTION_SOURCE_DIFF_ATTEMPTED=TRUE\n")
       cat("ACCELERATED_WAVE_SPARSE_MULTILEVEL_SOURCE_DIFF_ATTEMPTED=TRUE\n")
       cat("ACCELERATED_WAVE_SPARSE_ASYNC_SOURCE_DIFF_ATTEMPTED=TRUE\n")
+      cat("ACCELERATED_WAVE_SPARSE_WORKFLOW_SOURCE_DIFF_ATTEMPTED=TRUE\n")
       cat("ACCELERATED_WAVE_FUNCTIONAL_CORE_SOURCE_DIFF_ATTEMPTED=TRUE\n")
     }
     runpy("scripts/summarize_scientific_source_evidence.py")

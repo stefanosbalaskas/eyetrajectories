@@ -74,14 +74,17 @@
     result$n_components>=1L,
     "n_components must be a positive integer")
   k<-as.integer(result$n_components)
-  .etr_scientific_frame_matrix(result$scores,n,k,"scores")
+  scores<-result$scores
+  .etr_assert(is.matrix(scores)&&is.numeric(scores)&&
+    identical(dim(scores),c(n,k))&&!any(is.infinite(scores)),
+    "scores must be a numeric matrix with one row per curve and no infinities")
   output_names<-paste0(prefix,seq_len(k))
   .etr_assert(!any(c("curve_id",output_names) %in% names(result$metadata)),
     "metadata must not overwrite curve_id or component score columns")
   output<-data.frame(curve_id=ids,stringsAsFactors=FALSE)
   for(name in names(result$metadata))
     output[[name]]<-result$metadata[[name]]
-  for(j in seq_len(k))output[[output_names[j]]]<-result$scores[,j]
+  for(j in seq_len(k))output[[output_names[j]]]<-scores[,j]
   rownames(output)<-NULL
   output
 }
@@ -89,6 +92,7 @@
 #' Score table for an explicitly declared sparse FPCA result
 #' @param result Native list containing curve_ids, metadata, scores,
 #'   n_components, as returned by a separately qualified sparse fit.
+#'   Missing scores from a retained fit failure are kept in their original rows.
 #' @return A data frame with source curve IDs, metadata and SFPC scores.
 #' @export
 etr_sparse_fpca_score_frame <- function(result) {

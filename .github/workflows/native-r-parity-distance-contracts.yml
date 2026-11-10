@@ -38,7 +38,9 @@ jobs:
       - name: Full native DTW/Frechet path tests and closed 508 gate
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); was <- reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="(?:native-distance-contracts|native-distances-parity-ledger)|full-native-r-parity-ledger|native-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(reticulate::py_available(initialize=FALSE),was))'
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE); was <- reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="(?:native-distance-contracts|native-distances-parity-ledger)|full-native-r-parity-ledger|native-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(reticulate::py_available(initialize=FALSE),was))
+          RSCRIPT
 
   python-reference-oracle:
     name: Pinned Python 1.2 path and normalized-cost oracle / Linux

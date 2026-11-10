@@ -152,17 +152,27 @@ etr_functional_mixed_effects_residual_reporting_text <- function(result) {
   .etr_assert(is.matrix(x)&&is.numeric(x)&&
     identical(dim(x),c(2L,2L))&&all(is.finite(x)),
     "measurement_error_covariance must be a finite 2-by-2 matrix")
-  .etr_assert(all(abs(x)<1e4)&&all(x==0 | abs(x)>=1e-3),
-    "measurement_error_covariance source rendering is restricted to ordinary decimal magnitudes")
-  # Python array2string(precision=3) prints decimal integers with a dot.
-  f<-function(v){
-    value<-format(round(v,digits),scientific=FALSE,trim=TRUE,
-      nsmall=0L)
-    if(!grepl(".",value,fixed=TRUE))paste0(value,".") else value
-  }
-  rows<-apply(x,1L,function(v)paste(vapply(v,f,character(1L)),
-    collapse=", "))
-  paste0("[[",rows[1L],"],\n [",rows[2L],"]]")
+  # Align the decimal points across the complete matrix, as array2string
+  # does. Scientific notation uses equal mantissa and exponent widths.
+  values<-as.vector(t(x))
+  magnitude<-abs(values[values!=0])
+  scientific<-length(magnitude)>0L&&(max(magnitude)>=1e8||
+    min(magnitude)<1e-4||max(magnitude)/min(magnitude)>1e3)
+  formatted<-sprintf(paste0("%#.",digits,if(scientific)"e"else"f"),values)
+  mantissa<-sub("e.*$","",formatted)
+  whole<-sub("\\..*$","",mantissa)
+  fraction<-sub("0+$","",sub("^[^.]*\\.","",mantissa))
+  left<-strrep(" ",max(nchar(whole))-nchar(whole))
+  right_width<-max(nchar(fraction))-nchar(fraction)
+  if(scientific){
+    exponent<-as.integer(sub("^.*e","",formatted))
+    exponent_width<-max(2L,nchar(abs(exponent)))+1L
+    right<-paste0(strrep("0",right_width),"e",
+      sprintf(paste0("%+0",exponent_width,"d"),exponent))
+  }else right<-strrep(" ",right_width)
+  fields<-paste0(left,whole,".",fraction,right)
+  paste0("[[",fields[1L],", ",fields[2L],"],\n [",
+    fields[3L],", ",fields[4L],"]]")
 }
 
 #' Reporting for explicitly audited native sparse multivariate PACE
@@ -275,8 +285,8 @@ etr_sparse_fpca_reporting_text <- function(result,digits=3L) {
   if(is.null(count)||length(count)==0L)sample_range<-"not recorded"
   else{
     .etr_assert(is.numeric(count)&&all(is.finite(count))&&
-      all(count>=1)&&all(count==floor(count)),
-      "sample_counts must be positive whole counts")
+      all(count>=0)&&all(count==floor(count)),
+      "sample_counts must be nonnegative whole counts")
     sample_range<-paste0(min(count),"\u2013",max(count))
   }
   eigentext<-paste(vapply(eigen,function(x)

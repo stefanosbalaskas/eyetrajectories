@@ -39,7 +39,9 @@ jobs:
       - name: Source counts and native recovery Monte Carlo tests
         shell: bash
         run: |
-          Rscript -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-functional-recovery-evidence|native-functional-inference-visuals|native-functional-registration-plots|native-source-contract-gaps|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-functional-recovery-evidence|native-functional-inference-visuals|native-functional-registration-plots|native-source-contract-gaps|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))
+          RSCRIPT
   pinned-python:
     name: Exact typed Python 1.2 recovery tables and Matplotlib geometry
     runs-on: ubuntu-latest
