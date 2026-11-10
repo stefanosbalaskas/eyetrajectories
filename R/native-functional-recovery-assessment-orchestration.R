@@ -70,11 +70,17 @@
 .etr_recovery_runner_metrics <- function(recovered) {
   if(inherits(recovered,"etr_functional_recovery_assessment"))
     return(.etr_recovery_runner_assessment(recovered))
-  .etr_assert(is.numeric(recovered)&&is.null(dim(recovered))&&
-    length(recovered)>0L&&all(is.finite(recovered))&&
-    !is.null(names(recovered))&&!anyNA(names(recovered))&&
-    all(nzchar(names(recovered)))&&!anyDuplicated(names(recovered)),
-    "recovery must return named finite numeric metrics or structured assessment")
-  list(metrics=recovered,metric_values=list(),
+  # Python run_functional_recovery_scenarios passes plain mappings to
+  # FunctionalRecoveryRecord, which coerces names and float-like values.
+  # The native accepted domain is named scalar vectors or heterogeneous
+  # named lists; arbitrary Python Mapping protocols remain out of scope.
+  .etr_assert((is.atomic(recovered)||is.list(recovered))&&
+    !is.object(recovered)&&is.null(dim(recovered))&&
+    length(recovered)>0L&&!is.null(names(recovered)),
+    "recovery must return named finite numeric-like metrics or structured assessment")
+  metrics<-.etr_recovery_source_metric_mapping(recovered)
+  .etr_assert(length(metrics)>0L,
+    "successful records require at least one metric")
+  list(metrics=metrics,metric_values=list(),
     assessment_provenance=list(),definitions=list())
 }
