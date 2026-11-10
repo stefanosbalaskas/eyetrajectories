@@ -32,11 +32,15 @@
 #'
 #' @param trajectories Complete common-grid native trajectories.
 #' @param config Named list with n_components, scaling and empty preprocessing.
+#' @param measure_time Measure elapsed fit time and record signaled warnings
+#'   for source-shaped workflow bundle export. Defaults to FALSE.
 #' @return Source-inspired native workflow with FPCA fit, scores, variance
 #'   table, declarations and complete audit of absent preprocessing.
 #' @export
-etr_run_fpca_workflow <- function(trajectories,config=list()){
+etr_run_fpca_workflow <- function(trajectories,config=list(),measure_time=FALSE){
   etr_validate(trajectories,require_complete=TRUE)
+  .etr_assert(identical(measure_time,TRUE)||identical(measure_time,FALSE),
+    "measure_time must be TRUE or FALSE")
   cfg<-.etr_source_workflow_config(config,
     list(n_components=.95,scaling="none",preprocessing=list()))
   .etr_assert(is.character(cfg$scaling)&&length(cfg$scaling)==1L&&
@@ -48,12 +52,20 @@ etr_run_fpca_workflow <- function(trajectories,config=list()){
      (typeof(cfg$n_components)=="double"&&cfg$n_components>0&&
       cfg$n_components<1)),
     "n_components must be positive integer or fraction strictly between 0 and 1")
-  fit<-etr_fit_fpca(trajectories,
+  parameters<-list(n_components=cfg$n_components,scaling=cfg$scaling)
+  fit_model<-function() etr_fit_fpca(trajectories,
     n_components=cfg$n_components,scaling=cfg$scaling)
-  parameters=list(n_components=cfg$n_components,scaling=cfg$scaling)
+  if(measure_time) {
+    measured<-.etr_sparse_timed_step("fit","etr_fit_fpca",parameters,fit_model())
+    fit<-measured$result
+    step<-measured$step
+  } else {
+    fit<-fit_model()
+    step<-.etr_source_workflow_step("fit_fpca",parameters)
+  }
   structure(list(workflow_schema_version=1L,
     workflow_contract="fpca:v1",config=cfg,fit=fit,
-    steps=list(.etr_source_workflow_step("fit_fpca",parameters)),
+    steps=list(step),
     decisions=list(
       requested_n_components=.etr_source_workflow_decision(cfg$n_components),
       retained_n_components=.etr_source_workflow_decision(
