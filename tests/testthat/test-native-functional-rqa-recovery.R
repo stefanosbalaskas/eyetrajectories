@@ -70,6 +70,26 @@ test_that("native recovery assessment preserves metric semantics and ordering",{
   expect_match(prose,"not an estimator-tuning input")
 })
 
+test_that("mapped recovery assessment accepts source normalization and estimator values",{
+  definition<-etr_functional_recovery_metric_catalog()[["mean_ise"]]
+  definition$description<-"\u2003Custom meaning\u00a0"
+  definition$direction<-"higher_is_better"
+  assessment<-list(values=list(list(metric=definition,value=" 1_2.5 ",
+    component="2_147_483_648",source="\u2003x\u00a0")),
+    provenance=list(estimator=NULL))
+  expect_error(etr_functional_recovery_assessment_frame(assessment),"numeric scalar")
+  out<-etr_functional_recovery_assessment_frame(assessment,python_boundary_mode=TRUE)
+  expect_identical(out$value,12.5)
+  expect_identical(out$component,2147483649)
+  expect_identical(out$description,"Custom meaning")
+  expect_identical(out$source,"x")
+  expect_match(etr_functional_recovery_reporting_text(assessment,
+    python_boundary_mode=TRUE),"for estimator None.",fixed=TRUE)
+  assessment$values[[1L]]$component<-"1.0"
+  expect_error(etr_functional_recovery_assessment_frame(assessment,
+    python_boundary_mode=TRUE),"integer literal")
+})
+
 test_that("windowed-RQA sensitivity reports exact source reuse and centers",{
   x<-.etr_test_functional_rqa_fixture()
   a<-etr_windowed_rqa_sensitivity(x,metrics="recurrence_rate",
