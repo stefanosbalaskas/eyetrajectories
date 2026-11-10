@@ -1,8 +1,7 @@
 # Frozen Python 1.2 regression_inference.py:
 # paired nonparametric bootstrap of FULL Gaussian FPCR refits, not
 # future-outcome prediction and not calibrated simultaneous bands.
-# Base R RNG is not the NumPy PCG64 stream. Fixed source draw indices are
-# accepted for direct deterministic cross-language numerical verification.
+# Integer seeds and caller-supplied source indices support deterministic replay.
 
 .etr_fpcr_bootstrap_fit <- function(x,y,k,scaling,targets) {
   fpca<-.etr_fpca_stability_fit(x,k,scaling)
@@ -30,12 +29,14 @@
     "FPCR conditional mean prediction must be finite")
   list(fpca=fpca,fit=fit,beta=beta,slope=slope,predictions=predictions)
 }
-.etr_fpcr_bootstrap_indices <- function(trajectories,unit,participant_column) {
+.etr_fpcr_bootstrap_indices <- function(trajectories,unit,participant_column,rng) {
   n<-length(trajectories$curve_ids)
-  if(unit=="curve")return(sample.int(n,n,replace=TRUE))
+  draw<-function(size)if(is.null(rng))sample.int(size,size,replace=TRUE) else
+    rng$integers(size,size)+1L
+  if(unit=="curve")return(draw(n))
   groups<-as.character(trajectories$metadata[[participant_column]])
   labels<-unique(groups)
-  selected<-sample(labels,length(labels),replace=TRUE)
+  selected<-labels[draw(length(labels))]
   unlist(lapply(selected,function(g)which(groups==g)),use.names=FALSE)
 }
 .etr_fpcr_bootstrap_sample <- function(x,index,b) {
@@ -92,14 +93,14 @@
 #' @param resample_unit "curve" or "participant".
 #' @param participant_column Required complete group metadata for participant.
 #' @param level Pointwise percentile central mass strictly between 0 and 1.
-#' @param random_state Nonnegative R seed; R and NumPy seeds are not equivalent.
+#' @param random_state Nonnegative integer for NumPy-compatible PCG64 draws,
+#'   or NULL for unseeded native R draws.
 #' @param bootstrap_indices Optional list of zero-based fixed source-curve
 #'   index vectors from the pinned Python bootstrap for numerical replay.
 #'   With `resample_unit="participant"`, each vector must concatenate exactly
 #'   one *whole original participant* per sampled participant unit, retaining
 #'   the observed order of that participant's curves. Repeated groups and
-#'   unequal original group sizes are allowed. Native random draws are
-#'   unchanged when this is NULL.
+#'   unequal original group sizes are allowed.
 #' @return Source-shaped Gaussian FPCR reference and bootstrap fields,
 #'   source-invariant estimands, explicit RNG and coverage provenance.
 #' @export
@@ -143,10 +144,10 @@ etr_bootstrap_fpca_regression_uncertainty <- function(
   .etr_assert(is.numeric(level)&&length(level)==1L&&
     is.finite(level)&&level>0&&level<1,
     "level must lie in (0, 1)")
-  .etr_assert(is.numeric(random_state)&&length(random_state)==1L&&
+  .etr_assert(is.null(random_state)||(is.numeric(random_state)&&length(random_state)==1L&&
     is.finite(random_state)&&random_state==floor(random_state)&&
-    random_state>=0L&&random_state<=.Machine$integer.max,
-    "random_state must be a nonnegative integer R seed")
+    random_state>=0L&&random_state<2^53),
+    "random_state must be NULL or an exactly represented nonnegative integer")
   if(is.null(targets)) {
     target<-trajectories;target_source<-"training"
   } else {
@@ -179,8 +180,8 @@ etr_bootstrap_fpca_regression_uncertainty <- function(
   }
   reference<-.etr_fpcr_bootstrap_fit(
     trajectories,outcome,k,scaling,target)
-  restore<-.etr_simulation_rng(random_state)
-  on.exit(restore(),add=TRUE)
+  rng<-if(is.null(bootstrap_indices)&&!is.null(random_state))
+    .etr_numpy_pcg64(random_state) else NULL
   nt<-length(trajectories$time)
   nd<-length(trajectories$dimension_names)
   ntarget<-length(target$curve_ids)
@@ -191,7 +192,7 @@ etr_bootstrap_fpca_regression_uncertainty <- function(
   for(i in seq_len(b)){
     index<-if(is.null(bootstrap_indices))
       .etr_fpcr_bootstrap_indices(trajectories,resample_unit,
-        participant_column)
+        participant_column,rng)
     else as.integer(bootstrap_indices[[i]])+1L
     .etr_assert(length(index)>k+2L,
       paste("bootstrap replicate",i,"has too few independent observations"))
@@ -229,7 +230,7 @@ etr_bootstrap_fpca_regression_uncertainty <- function(
     operator_scaled_fpcr_test=FALSE,
     random_state=random_state,
     random_engine=if(is.null(bootstrap_indices))
-      "base_R_not_NumPy" else if(resample_unit=="participant")
+      (if(is.null(rng))"base_R_unseeded"else"numpy_pcg64") else if(resample_unit=="participant")
       "externally_fixed_source_participant_indices" else
       "externally_fixed_source_curve_indices",
     source_schema_equivalent=FALSE)

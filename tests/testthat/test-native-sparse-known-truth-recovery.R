@@ -58,7 +58,7 @@ test_that("sparse source metrics omit diagnostics and relative zero-truth-noise"
   expect_error(etr_evaluate_sparse_fpca_recovery(bad,z$truth),"exact truth")
   bad<-z$fit;bad$eigenfunctions<-matrix(1,2,3)
   expect_error(etr_evaluate_sparse_fpca_recovery(bad,z$truth),
-    "one mode by time")
+    "truth contains fewer components")
 })
 test_that("frozen Python 1.2 sparse known-truth score/covariance oracle matches",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))

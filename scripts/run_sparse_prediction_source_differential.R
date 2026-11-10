@@ -6,6 +6,7 @@
     requireNamespace("reticulate",quietly=TRUE))
   pkgload::load_all(".",quiet=TRUE)
   stopifnot(identical(et_python_version(),"1.2.0"))
+  source("scripts/sparse_workflow_source_records.R",local=TRUE)
   source("tests/testthat/helper-native-sparse-source-fixture.R",
     local=TRUE,encoding="UTF-8")
   source("tests/testthat/helper-native-sparse-partial-conformal-fixture.R",
@@ -92,6 +93,13 @@ _etr_sparse_workflow_config=_etr_sparse_workflow_predconfig(
   }
   read<-function(x,name)
     et_to_r(reticulate::py_get_attr(x,name))
+  compare_records<-function(fixture,native,source){
+    .etr_compare_sparse_workflow_records(native,source,function(field,ok)
+      add(fixture,field,if(ok)"PASS_SCHEMA"else"DIVERGENT_SCHEMA"))
+    add(fixture,"prediction_band_report",if(identical(native$reports$prediction_band,
+      read(source,"reports")$prediction_band))"PASS_SCHEMA"else"DIVERGENT_SCHEMA")
+  }
+  compare_records("grouped_fixed_noise",native,py)
   source_tables<-reticulate::py_get_attr(py,"tables")
   source_band<-et_to_r(reticulate::py_get_item(
     source_tables,"prediction_band"))
@@ -204,13 +212,15 @@ _etr_bad_pred_cfg=_etr_sparse_workflow_predconfig(
   selected_cfg$training$mean_bandwidth<-selected_cfg$training$covariance_bandwidth<-NULL
   selected_cfg$training$bandwidth_selection<-list(mean_bandwidths=c(.5,.6),
     covariance_bandwidths=.85,n_splits=3L,shuffle=FALSE)
+  selected_cfg$training$score_uncertainty<-list()
   selected_native<-etr_run_sparse_prediction_workflow(
     proper,calibration,target,selected_cfg)
   reticulate::py_run_string("
 from dataclasses import replace
-from eyetrajectoriespy.workflows import SparseFPCABandwidthSelectionConfig
+from eyetrajectoriespy.workflows import SparseFPCABandwidthSelectionConfig, ScoreUncertaintyConfig
 _etr_selected_training=replace(_etr_sparse_workflow_training,
     mean_bandwidth=None,covariance_bandwidth=None,
+    score_uncertainty=ScoreUncertaintyConfig(),
     bandwidth_selection=SparseFPCABandwidthSelectionConfig(
         mean_bandwidths=(.5,.6),covariance_bandwidths=(.85,),n_splits=3,shuffle=False))
 _etr_selected_prediction=replace(_etr_sparse_workflow_config,training=_etr_selected_training)
@@ -218,6 +228,7 @@ _etr_selected_prediction=replace(_etr_sparse_workflow_config,training=_etr_selec
   selected_source<-reticulate::py_call(pyfunction,proper_training=sourceproper,
     calibration=sourcecal,target=sourcetarget,
     config=reticulate::py_eval("_etr_selected_prediction",convert=FALSE))
+  compare_records("selected_proper_training",selected_native,selected_source)
   audit<-selected_native$training_workflow$bandwidth_selection
   source_audit<-reticulate::py_get_attr(reticulate::py_get_attr(
     selected_source,"training_workflow"),"bandwidth_selection")

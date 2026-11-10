@@ -491,11 +491,12 @@ etr_observation_process_reporting_text <- function(result){
   workflow$decisions$observation_diagnostics_requested<-
     .etr_source_workflow_decision(!is.null(options))
   if(is.null(options))return(workflow)
-  result<-do.call(etr_diagnose_observation_process,c(list(process=process),options))
-  step<-.etr_source_workflow_step("diagnose_observation_process",options)
-  step$name<-"observation_process_diagnostics"
+  run<-.etr_sparse_timed_step("observation_process_diagnostics",
+    "diagnose_observation_process",options,
+    do.call(etr_diagnose_observation_process,c(list(process=process),options)))
+  result<-run$result
   workflow$observation_diagnostics<-result
-  workflow$steps[[length(workflow$steps)+1L]]<-step
+  workflow$steps[[length(workflow$steps)+1L]]<-run$step
   workflow$reports$observation_diagnostics<-etr_observation_process_reporting_text(result)
   workflow$tables$observation_global<-result$global_summary
   workflow$tables$observation_time<-result$time_summary

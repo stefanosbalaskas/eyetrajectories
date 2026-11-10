@@ -124,10 +124,9 @@
       all(nzchar(as.character(result$curve_trial_ids))),
     "nested source trial identities are incomplete")
   if(is.null(sampled_participant_indices)){
-    draw<-function()
-      matrix(sample.int(N,B*N,replace=TRUE)-1L,nrow=B,ncol=N)
-    sampled<-if(is.null(random_state))draw() else
-      .etr_seed_scope(as.integer(random_state),draw)
+    sampled<-if(is.null(random_state))
+      matrix(sample.int(N,B*N,replace=TRUE)-1L,nrow=B,ncol=N) else
+      .etr_numpy_seeded_case_indices(random_state,B,N)
   }else{
     sampled<-sampled_participant_indices
     .etr_assert(is.matrix(sampled)&&is.numeric(sampled)&&
@@ -273,7 +272,9 @@
     source_model_structure=kind,residual_correlation=correlation,
     n_bootstrap=B,
     sampled_indices_supplied=!is.null(sampled_participant_indices),
-    native_rng="base_R_not_NumPy_PCG64",
+    native_rng=if(!is.null(sampled_participant_indices))
+      "caller_supplied_fixed_indices" else if(is.null(random_state))
+      "base_R_unseeded" else "numpy_pcg64",
     duplicate_participant_draws_receive_distinct_group_ids=TRUE,
     nested_trials_receive_distinct_ids=nested,
     participant_covariance_refit=TRUE,

@@ -86,6 +86,28 @@ def frozen_component_envelope_source_quantiles(values,level):
 })
 
 # Actual pinned-Python 1.2 public export and source-signature witness.
+test_that("seeded envelopes match the pinned curve and participant bootstraps",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("pinned Python 1.2 seeded component envelopes are opt-in")
+  x<-.etr_fpca_envelope_fixture()
+  py_x<-reticulate::py_call(etpy_get_export("TrajectorySet"),
+    time=x$time,values=x$values,curve_ids=do.call(reticulate::tuple,as.list(x$curve_ids)),
+    dimension_names=reticulate::tuple("x","y"),metadata=x$metadata,
+    coordinate_system=x$coordinate_system,time_unit=x$time_unit)
+  for(unit in c("curve","participant")){
+    group<-if(unit=="participant")"subject"else NULL
+    args<-list(n_bootstrap=5L,n_components=2L,resample_unit=unit,
+      participant_column=group,level=.8,random_state=41L)
+    native<-do.call(etr_bootstrap_fpca_component_envelopes,c(list(x),args))
+    reference<-do.call(reticulate::py_call,
+      c(list(etpy_get_export("bootstrap_fpca_component_envelopes"),py_x),args))
+    expect_identical(native$provenance$random_engine,"numpy_pcg64")
+    for(field in c("lower","median","upper","similarities"))
+      expect_equal(native[[field]],et_to_r(reticulate::py_get_attr(reference,field)),
+        tolerance=1e-7,ignore_attr=TRUE,info=paste(unit,field))
+  }
+})
+
 # This verifies callable/source availability, NOT native scientific parity.
 test_that("unreviewed Python 1.2 source symbols are inspectable: bootstrap_fpca_component_envelopes",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))

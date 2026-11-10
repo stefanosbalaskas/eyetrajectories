@@ -17,10 +17,12 @@
   else etr_fit_fpca(x,n_components=as.integer(k),scaling=scaling)
 }
 
-.etr_fpca_stability_boot <- function(x,unit,participant_column=NULL) {
+.etr_fpca_stability_boot <- function(x,unit,participant_column=NULL,rng=NULL) {
   n<-length(x$curve_ids)
+  draw<-function(size)if(is.null(rng))sample.int(size,size,replace=TRUE) else
+    rng$integers(size,size)+1L
   if(unit=="curve"){
-    selected<-sample.int(n,n,replace=TRUE)
+    selected<-draw(n)
     label<-sprintf("bootstrap_curve_%05d|%s",
       seq_len(n)-1L,x$curve_ids[selected])
     metadata<-x$metadata[selected,,drop=FALSE]
@@ -35,7 +37,7 @@
     g<-as.character(g);groups<-unique(g)
     .etr_assert(length(groups)>=2L,
       "participant bootstrap requires at least two participants")
-    picked<-sample(groups,length(groups),replace=TRUE)
+    picked<-groups[draw(length(groups))]
     selected<-integer();group_labels<-character()
     for(i in seq_along(picked)){
       ids<-which(g==picked[i])

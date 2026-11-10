@@ -83,13 +83,14 @@
 
 # Frozen Python 1.2 generalized_function_on_scalar.py participant-case bootstrap.
 # Full GEE fits are repeated for each participant-resampled replicate.
-# Source RNG is NumPy PCG64; optional fixed indices replay the source draws.
+# Seeded participant draws follow NumPy PCG64.
 
 #' Whole-participant case bootstrap of native generalized functional GEE
 #'
 #' @param result Native generalized functional GEE fit.
 #' @param n_bootstrap Number of full GEE refits (>=100).
-#' @param random_state Native base-R seed; not NumPy PCG64 equivalent.
+#' @param random_state Nonnegative integer for NumPy-compatible PCG64 draws,
+#'   or NULL for unseeded native R draws.
 #' @param failed_replicate_policy Exactly "raise"; no failed rep is replaced.
 #' @param sampled_participant_indices Optional B-by-participant matrix of
 #'   zero-based retained Python source draw indices for exact oracle replay.
@@ -120,10 +121,9 @@ etr_bootstrap_generalized_function_on_scalar_coefficients<-function(
     all(group%in%ids)&&np>0L,
     "source participant/curve membership is inconsistent")
   if(is.null(sampled_participant_indices)){
-    draw_indices<-function()
-      matrix(sample.int(np,B*np,replace=TRUE)-1L,nrow=B,ncol=np)
-    sampled<-if(is.null(random_state))draw_indices() else
-      .etr_seed_scope(as.integer(random_state),draw_indices)
+    sampled<-if(is.null(random_state))
+      matrix(sample.int(np,B*np,replace=TRUE)-1L,nrow=B,ncol=np) else
+      .etr_numpy_seeded_case_indices(random_state,B,np)
   }else{
     sampled<-sampled_participant_indices
     .etr_assert(is.matrix(sampled)&&is.numeric(sampled)&&
@@ -162,7 +162,9 @@ etr_bootstrap_generalized_function_on_scalar_coefficients<-function(
     method="whole_participant_case_bootstrap_full_gee_refit",
     n_bootstrap=B,random_state=if(is.null(random_state))NULL else as.integer(random_state),
     source_draws_supplied=!is.null(sampled_participant_indices),
-    native_random_engine="base_R_not_NumPy_PCG64",
+    native_random_engine=if(!is.null(sampled_participant_indices))
+      "caller_supplied_fixed_indices" else if(is.null(random_state))
+      "base_R_unseeded" else "numpy_pcg64",
     resampling_unit="participant",
     whole_participant_curve_bundles_resampled=TRUE,
     duplicate_source_participants_receive_distinct_group_ids=TRUE,

@@ -30,8 +30,71 @@ test_that("catalog tuple/dataclass semantics are mapped but types remain native"
   expect_identical(names(metrics),etr_functional_recovery_metric_catalog_frame()$metric)
   expect_error(etr_get_mathematical_contract("__unknown_key__"),"No mathematical contract")
   expect_error(etr_get_mathematical_contract(1L),"single string")
+  for(name in list(NULL,NA_character_,TRUE,1L,c("fpca","quadrature"))){
+    expect_error(etr_get_mathematical_contract(name),
+      class="etr_mathematical_contract_type_error")
+  }
+  for(name in c("","__unknown_key__","FPCA"," fpca","ανύπαρκτο")){
+    error<-expect_error(etr_get_mathematical_contract(name),
+      class="etr_mathematical_contract_key_error")
+    expect_identical(error$name,name)
+  }
   expect_true(inherits(contracts[[1]],"etr_mathematical_contract"))
   expect_true(inherits(metrics[[1]],"etr_recovery_metric"))
+})
+
+test_that("catalog records preserve all pinned fields and isolated copies",{
+  contracts<-etr_list_mathematical_contracts()
+  metrics<-etr_functional_recovery_metric_catalog()
+  catalog_functions<-list(etr_list_mathematical_contracts,
+    etr_functional_recovery_metric_catalog)
+  for(fun in catalog_functions){
+    expect_length(formals(fun),0L)
+    expect_error(fun(1L),"unused argument")
+    expect_error(fun(unexpected_argument=TRUE),"unused argument")
+    records<-fun()
+    modified<-records
+    modified[[1L]][[2L]]<-"changed by caller"
+    expect_identical(fun(),records)
+  }
+  for(record in contracts)
+    for(key in c(record$key,record$public_api))
+      expect_identical(etr_get_mathematical_contract(key),record)
+  expect_error(etr_get_mathematical_contract())
+  expect_error(etr_get_mathematical_contract("fpca",1L),"unused argument")
+
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Pinned direct-source catalog records are opt in")
+  expect_identical(et_python_version(),"1.2.0")
+  attr<-reticulate::py_get_attr
+  call<-reticulate::py_call
+  item<-reticulate::py_get_item
+  equal_record<-function(native,source){
+    for(field in names(native)){
+      actual<-enc2utf8(native[[field]])
+      expected<-enc2utf8(unlist(et_to_r(attr(source,field)),use.names=FALSE))
+      expect_identical(actual,expected,info=field)
+    }
+  }
+  check_catalog<-function(native,source){
+    reference<-call(source)
+    expect_length(native,reticulate::py_len(reference))
+    for(i in seq_along(native))equal_record(native[[i]],item(reference,i-1L))
+    expect_error(call(source,1L),"TypeError")
+    expect_error(call(source,unexpected_argument=TRUE),"TypeError")
+  }
+  check_catalog(contracts,etpy_get_export("list_mathematical_contracts"))
+  check_catalog(metrics,etpy_get_export("functional_recovery_metric_catalog"))
+  lookup<-etpy_get_export("get_mathematical_contract")
+  for(record in contracts)
+    for(key in c(record$key,record$public_api))
+      equal_record(etr_get_mathematical_contract(key),call(lookup,key))
+  for(name in c("","__unknown_key__","FPCA"," fpca","ανύπαρκτο"))
+    expect_error(call(lookup,name),"KeyError")
+  for(name in list(NULL,TRUE,1L,list("fpca","quadrature")))
+    expect_error(call(lookup,name),"TypeError")
+  expect_error(call(lookup),"TypeError")
+  expect_error(call(lookup,"fpca",1L),"TypeError")
 })
 
 test_that("catalog full-source Python 1.2 field comparison is opt in",{

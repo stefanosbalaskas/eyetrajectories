@@ -135,7 +135,7 @@ test_that("the source recovery runner retains plain numeric metric callbacks",{
 })
 
 test_that("structured assessment catches duplicate labels and conflicting definitions",{
-  metric<-.etr_recovery_source_metric("source_variance_absolute_error")
+  metric<-unclass(etr_functional_recovery_metric_catalog()[["source_variance_absolute_error"]])
   make_value<-function(value,source="curve")
     list(metric=metric,value=value,component=0L,source=source)
   ass<-structure(list(values=list(make_value(.15)),
