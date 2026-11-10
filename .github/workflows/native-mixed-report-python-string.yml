@@ -37,14 +37,20 @@ jobs:
           Rscript -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-mixed-(model-source-text|report-string-boundaries)",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
       - name: Parse and test mixed reporting scope / Windows
         if: runner.os == 'Windows'
-        shell: pwsh
+        # Use the exact shell that setup-r-dependencies successfully invokes,
+        # avoiding argument translation through PowerShell or Rtools Bash.
+        shell: 'C:\R\bin\Rscript.EXE {0}'
         run: |
-          $exe = 'C:\R\bin\Rscript.exe'
-          if (!(Test-Path $exe)) { throw "Rscript missing after setup-r: $exe" }
-          & $exe -e 'for(p in c("R/native-mixed-model-source-text.R","tests/testthat/test-native-mixed-model-source-text.R","tests/testthat/test-native-mixed-report-string-boundaries.R")) invisible(parse(file=p))'
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          & $exe -e 'pkgload::load_all(".",quiet=TRUE); before<-reticulate::py_available(initialize=FALSE); testthat::test_local(".",filter="native-mixed-(model-source-text|report-string-boundaries)",reporter="summary",stop_on_failure=TRUE); stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))'
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          for (p in c("R/native-mixed-model-source-text.R",
+                       "tests/testthat/test-native-mixed-model-source-text.R",
+                       "tests/testthat/test-native-mixed-report-string-boundaries.R"))
+            invisible(parse(file=p))
+          pkgload::load_all(".", quiet=TRUE)
+          before <- reticulate::py_available(initialize=FALSE)
+          testthat::test_local(".",
+            filter="native-mixed-(model-source-text|report-string-boundaries)",
+            reporter="summary", stop_on_failure=TRUE)
+          stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))
   pinned-python:
     name: Frozen Python 1.2 exact report string comparison
     runs-on: ubuntu-latest
