@@ -17,6 +17,7 @@ test_that("sparse source score labels overwrite colliding metadata in place", {
     f<-if(prefix=="SFPC")etr_sparse_fpca_score_frame
       else etr_sparse_mfpca_score_frame
     z<-.etr_sparse_frame_semantic_fixture(prefix)
+    if(prefix=="SMFPC")class(z)<-"etr_sparse_mfpca_source"
     z$metadata[[paste0(prefix,"1")]]<-c(-1,-2,-3)
     z$metadata$tail<-c(TRUE,FALSE,TRUE)
     frame<-f(z)
@@ -37,6 +38,7 @@ test_that("sparse source scores replace all duplicate labeled columns", {
     f<-if(prefix=="SFPC")etr_sparse_fpca_score_frame
       else etr_sparse_mfpca_score_frame
     z<-.etr_sparse_frame_semantic_fixture(prefix)
+    if(prefix=="SMFPC")class(z)<-"etr_sparse_mfpca_source"
     extras<-data.frame(c(-1,-2,-3),c(-7,-8,-9),
       c(11L,12L,13L),c(14L,15L,16L),check.names=FALSE)
     names(extras)<-c(paste0(prefix,"1"),paste0(prefix,"1"),"dup","dup")
@@ -63,7 +65,10 @@ test_that("sparse source inserted curve_id collision and retained NAN match poli
   z$scores[2,1]<-NaN
   for(f in list(etr_sparse_fpca_score_frame,
     etr_sparse_mfpca_score_frame)){
-    frame<-f(z)
+    input<-z
+    if(identical(f,etr_sparse_mfpca_score_frame))
+      class(input)<-"etr_sparse_mfpca_source"
+    frame<-f(input)
     expect_true(is.nan(frame[[4L]][2L]))
     expect_equal(frame[[4L]][c(1,3)],c(1,5))
   }
@@ -117,6 +122,7 @@ for prefix, cls, function in (
     f<-if(prefix=="SFPC")etr_sparse_fpca_score_frame
       else etr_sparse_mfpca_score_frame
     z<-.etr_sparse_frame_semantic_fixture(prefix)
+    if(prefix=="SMFPC")class(z)<-"etr_sparse_mfpca_source"
     extras<-data.frame(c(-1,-2,-3),c(-7,-8,-9),
       c(11L,12L,13L),c(14L,15L,16L),check.names=FALSE)
     names(extras)<-c(paste0(prefix,"1"),paste0(prefix,"1"),"dup","dup")
