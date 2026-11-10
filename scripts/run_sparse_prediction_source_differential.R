@@ -263,9 +263,9 @@ _etr_bad_pred_cfg=_etr_sparse_workflow_predconfig(
     right<-reticulate::py_call(pyfunction,proper_training=sourceproper,
       calibration=pydata(groups,typed_groups=TRUE),
       target=pydata(new_target,typed_groups=TRUE),config=pycfg)
-    compare_result_fields(nm,left$calibration,read(right,"calibration"),
+    compare_result_fields(paste0(nm,"_calibration"),left$calibration,read(right,"calibration"),
       c("calibration_unit_ids","curve_scores","unit_scores","provenance"))
-    compare_result_fields(nm,left$band,read(right,"band"),
+    compare_result_fields(paste0(nm,"_band"),left$band,read(right,"band"),
       c("target_calibration_unit","lower","upper","provenance"))
   }
   ignored<-with_infinite(target,5L)
