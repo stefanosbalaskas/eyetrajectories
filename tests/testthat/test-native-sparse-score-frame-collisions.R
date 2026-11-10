@@ -150,3 +150,17 @@ for prefix, cls, function in (
     expect_error(f(z),"curve_id")
   }
 })
+
+test_that("internal sparse workflow retains explicit collision-safe metadata aliases", {
+  z<-.etr_sparse_frame_semantic_fixture("SFPC")
+  z$metadata$curve_id<-c("raw1","raw2","raw3")
+  z$metadata$SFPC1<-c(-1,-2,-3)
+  frame<-.etr_scientific_frame_metadata(z,"SFPC",
+    preserve_workflow_metadata=TRUE)
+  expect_identical(frame$curve_id,z$curve_ids)
+  expect_false(anyDuplicated(names(frame))>0L)
+  expect_true(any(grepl("^curve_id[.]1$",names(frame))))
+  expect_identical(frame$SFPC1,c(1,3,5))
+  expect_identical(frame$SFPC2,c(2,4,6))
+  expect_error(etr_sparse_fpca_score_frame(z),"curve_id")
+})
