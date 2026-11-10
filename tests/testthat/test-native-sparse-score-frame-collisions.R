@@ -43,6 +43,7 @@ test_that("sparse source scores replace all duplicate labeled columns", {
       c(11L,12L,13L),c(14L,15L,16L),check.names=FALSE)
     names(extras)<-c(paste0(prefix,"1"),paste0(prefix,"1"),"dup","dup")
     z$metadata<-data.frame(z$metadata,extras,check.names=FALSE)
+    names(z$metadata)[3:6]<-names(extras)
     out<-f(z)
     expect_identical(names(out),
       c("curve_id","group","site",paste0(prefix,"1"),
@@ -130,6 +131,7 @@ for prefix, cls, function in (
       c(11L,12L,13L),c(14L,15L,16L),check.names=FALSE)
     names(extras)<-c(paste0(prefix,"1"),paste0(prefix,"1"),"dup","dup")
     z$metadata<-data.frame(z$metadata,extras,check.names=FALSE)
+    names(z$metadata)[3:6]<-names(extras)
     native<-f(z)
     python<-reticulate::py_to_r(reticulate::py_eval(
       paste0("_sp_frame_cases['",prefix,"']"),convert=FALSE))
