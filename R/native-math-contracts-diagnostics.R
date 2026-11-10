@@ -46,16 +46,21 @@ etr_list_mathematical_contracts <- function() {
 #' Find one frozen mathematical source contract by key or public API name
 #' @param name Exact source contract key or public API function name.
 #' @return Native semantic mathematical metadata structure.
+#'   Invalid name types and unknown strings signal
+#'   `etr_mathematical_contract_type_error` and
+#'   `etr_mathematical_contract_key_error`, respectively.
 #' @export
 etr_get_mathematical_contract <- function(name) {
-  .etr_assert(is.character(name)&&length(name)==1L&&
-    !is.na(name),"name must be a single string")
+  if(!is.character(name)||length(name)!=1L||is.na(name))
+    stop(errorCondition("name must be a single string",
+      class=c("etr_mathematical_contract_type_error","simpleError")))
   contracts<-etr_list_mathematical_contracts()
   if(name%in%names(contracts))return(contracts[[name]])
   found<-which(vapply(contracts,function(x)name%in%x$public_api,
     logical(1L)))
-  .etr_assert(length(found)==1L,
-    paste("No mathematical contract is registered for",name))
+  if(length(found)!=1L)
+    stop(errorCondition(paste("No mathematical contract is registered for",name),
+      class=c("etr_mathematical_contract_key_error","simpleError"),name=name))
   contracts[[found]]
 }
 
