@@ -5,11 +5,10 @@
 # It does not fit MixedLM, certify estimator parity or claim coverage.
 
 .etr_fmixed_report_string <- function(x,name) {
-  .etr_assert(is.character(x)&&length(x)==1L&&!is.na(x)&&
-    nzchar(x)&&!grepl("'",x,fixed=TRUE)&&
-    !grepl("\\",x,fixed=TRUE)&&!grepl("\\n",x,fixed=TRUE)&&
-    !grepl("\\r",x,fixed=TRUE),
-    paste(name,"must be a source-compatible nonempty plain string"))
+  # Preserve genuine source text. Python's public reporter uses literal
+  # interpolation for predictor names and Python !r for typed identifiers.
+  .etr_assert(is.character(x)&&length(x)==1L&&!is.na(x)&&nzchar(x),
+    paste(name,"must be a source-compatible nonempty string"))
   x
 }
 .etr_fmixed_report_flag <- function(x,name) {
@@ -23,8 +22,8 @@
     "source count must be a positive representable integer")
   as.integer(x)
 }
-.etr_fmixed_report_repr <- function(x,name)paste0("'",
-  .etr_fmixed_report_string(x,name),"'")
+.etr_fmixed_report_repr <- function(x,name)
+  .etr_python_workflow_identifier_repr(.etr_fmixed_report_string(x,name))
 
 #' Manuscript wording for a declared functional mixed-effects fit
 #'
