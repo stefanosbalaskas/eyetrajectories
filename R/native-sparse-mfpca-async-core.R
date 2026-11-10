@@ -151,37 +151,39 @@
   n<-length(layout$time)
   if(!n)return(matrix(numeric(),0L,0L))
   t<-layout$time
-  if(min(t)<grid[1L]||max(t)>tail(grid,1L))
-    .etr_spn_fail("native_time_outside_fitted_support",
-      "native observation times fall outside fitted surface support",
-      list(grid_start=as.numeric(grid[1L]),
-        grid_end=as.numeric(tail(grid,1L)),
-        target_min=as.numeric(min(t)),
-        target_max=as.numeric(max(t))))
   m<-length(grid)
-  for(nm in c("cxx","cxy","cyy")){
-    block<-blocks[[nm]]
+  # Python evaluates XX first, YY second, and directional XY last.
+  # Its SparseNativeError support coordinates therefore describe the
+  # *first offending block*, not the pooled union of x and y times.
+  evaluate_block<-function(block,left,right,label){
     .etr_assert(is.matrix(block)&&is.numeric(block)&&
       identical(dim(block),c(m,m))&&all(is.finite(block)),
-      paste0(nm," must be a finite ",m," by ",m," planar covariance block"))
+      paste0(label," must be a finite ",m," by ",m," planar covariance block"))
+    target_min<-min(c(left,right))
+    target_max<-max(c(left,right))
+    if(target_min<grid[1L]||target_max>tail(grid,1L))
+      .etr_spn_fail("native_time_outside_fitted_support",
+        "native observation times fall outside fitted surface support",
+        list(grid_start=as.numeric(grid[1L]),
+          grid_end=as.numeric(tail(grid,1L)),
+          target_min=as.numeric(target_min),
+          target_max=as.numeric(target_max)))
+    combined<-c(left,right)
+    surface<-.etr_spnm_interp(grid,block,combined)
+    surface[seq_along(left),
+      length(left)+seq_along(right),drop=FALSE]
   }
   ix<-which(layout$channel==1L)
   iy<-which(layout$channel==2L)
   result<-matrix(0,n,n)
-  if(length(ix)){
-    xx<-.etr_spnm_interp(grid,blocks$cxx,t[ix])
-    result[ix,ix]<-xx
-  }
-  if(length(iy)){
-    yy<-.etr_spnm_interp(grid,blocks$cyy,t[iy])
-    result[iy,iy]<-yy
-  }
+  if(length(ix))
+    result[ix,ix]<-evaluate_block(
+      blocks$cxx,t[ix],t[ix],"cxx")
+  if(length(iy))
+    result[iy,iy]<-evaluate_block(
+      blocks$cyy,t[iy],t[iy],"cyy")
   if(length(ix)&&length(iy)){
-    # Cross block is *directional*. The reverse block must be its
-    # transpose, not a separately smoothed/self-symmetrized Cxy.
-    all_xy<-.etr_spnm_interp(grid,blocks$cxy,c(t[ix],t[iy]))
-    xy<-all_xy[seq_along(ix),
-      length(ix)+seq_along(iy),drop=FALSE]
+    xy<-evaluate_block(blocks$cxy,t[ix],t[iy],"cxy")
     result[ix,iy]<-xy
     result[iy,ix]<-t(xy)
   }
