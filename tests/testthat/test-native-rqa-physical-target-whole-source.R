@@ -136,6 +136,17 @@ test_that("Python 1.2 RQA sensitivity exact tables and profiles match two polici
         as.data.frame(et_to_r(reticulate::py_get_attr(source,table)),
           stringsAsFactors=FALSE,check.names=FALSE),
         paste(scenario$id,table))
+    # Scientific cross-language mapping: Python frozen dataclass fields
+    # to the exact ordered native R S3 record, not Python class identity.
+    dataclasses <- reticulate::import("dataclasses",convert=FALSE)
+    expect_true(isTRUE(et_to_r(dataclasses$is_dataclass(source))))
+    src_fields <- dataclasses$fields(source)
+    field_names <- vapply(seq_len(reticulate::py_len(src_fields)),
+      function(j)as.character(et_to_r(
+        reticulate::py_get_attr(reticulate::py_get_item(
+          src_fields,as.integer(j-1L)),"name"))),character(1L))
+    expect_identical(names(native),field_names,
+      info=paste(scenario$id,"whole-result field order"))
     expect_identical(length(native$analyses),
       as.integer(reticulate::py_len(source$analyses)))
     for(i in seq_along(native$analyses)) {
