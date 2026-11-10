@@ -43,11 +43,11 @@
   }
   pairs<-.etr_spnm_pairs(times,residual_x,residual_y)
   xx<-.etr_spnm_surface(pairs$xx,grid,covariance_bandwidth,
-    covariance_min_local_pairs)
+    covariance_min_local_pairs,block_name="xx")
   xy<-.etr_spnm_surface(pairs$xy,grid,covariance_bandwidth,
-    covariance_min_local_pairs,cross=TRUE)
+    covariance_min_local_pairs,cross=TRUE,block_name="xy")
   yy<-.etr_spnm_surface(pairs$yy,grid,covariance_bandwidth,
-    covariance_min_local_pairs)
+    covariance_min_local_pairs,block_name="yy")
   joint<-.etr_spnm_operator(
     list(xx=xx$values,xy=xy$values,yy=yy$values),
     grid,psd_action,psd_tolerance)
