@@ -52,9 +52,14 @@
   parts<-lapply(seq_along(times),function(i){
     t<-times[[i]];n<-length(t)
     if(n<2L)return(NULL)
-    idx<-which(row(matrix(0,n,n))!=col(matrix(0,n,n)),
-      arr.ind=TRUE)
-    a<-idx[,1L];b<-idx[,2L]
+    # Frozen _sparse_multivariate.raw_planar_covariance_pairs loops
+    # left index outer, right index inner (Python row-major order).
+    # which(...,arr.ind=TRUE) is column-major in R and permutes the
+    # directional xy products even when the fitted operator is close.
+    left<-rep(seq_len(n),each=n)
+    right<-rep(seq_len(n),times=n)
+    keep<-left!=right
+    a<-left[keep];b<-right[keep]
     list(s=t[a],t=t[b],products=rx[[i]][a]*ry[[i]][b])
   })
   xy<-list(s=unlist(lapply(parts,function(z)z$s),use.names=FALSE),
@@ -87,8 +92,11 @@
         pairs$products,w,3L,code)
     }
   }
-  list(values=if(cross)C else (C+t(C))/2,
-    support_counts=count)
+  # Python smooth_planar_covariance_pairs retains the *raw* fitted
+  # xx/xy/yy surfaces. Auditing and any explicit symmetry enforcement
+  # happen later in audit_repair_planar_covariance. Pre-symmetrizing
+  # xx/yy here conceals asymmetry and changes published smoothed_* data.
+  list(values=C,support_counts=count)
 }
 
 .etr_spnm_operator<-function(blocks,grid,action="error",
