@@ -163,6 +163,9 @@ def _etr_sparse_workflow_input(times, values, ids, dimensions, metadata):
       frame(name,fixture,"scores_table",native$tables$scores,table(source,"scores"))
       frame(name,fixture,"conditional_score_uncertainty",
         native$tables$score_uncertainty,table(source,"score_uncertainty"))
+      compare(name,fixture,"conditional_score_uncertainty_report",
+        native$reports$score_uncertainty,
+        et_to_r(item(attr(source,"reports"),"score_uncertainty")))
       compare(name,fixture,"score_uncertainty_requested",
         native$decisions$score_uncertainty_requested$value,
         et_to_r(attr(item(attr(source,"decisions"),"score_uncertainty_requested"),"value")))
@@ -177,6 +180,16 @@ def _etr_sparse_workflow_input(times, values, ids, dimensions, metadata):
       if(selected){
         audit<-native$bandwidth_selection
         source_audit<-attr(source,"bandwidth_selection")
+        provenance<-et_to_r(attr(source_audit,"provenance"))
+        record(name,fixture,"selector.provenance_fields",
+          if(all(names(provenance)%in%names(audit$provenance)))
+            "PASS_SCHEMA"else"DIVERGENT_SCHEMA")
+        for(key in names(provenance))
+          record(name,fixture,paste0("selector.provenance.",key),
+            if(.etr_sparse_source_record_equal(audit$provenance[[key]],provenance[[key]]))
+              "PASS_SCHEMA"else"DIVERGENT_SCHEMA")
+        compare(name,fixture,"selector.report",native$reports$bandwidth_selection,
+          et_to_r(item(attr(source,"reports"),"bandwidth_selection")))
         for(key in c("assignments","candidates","fold_results","curve_losses","candidate_summary"))
           frame(name,fixture,paste0("selector.",key),audit[[key]],
             et_to_r(attr(source_audit,key)),selector=TRUE)
@@ -188,6 +201,51 @@ def _etr_sparse_workflow_input(times, values, ids, dimensions, metadata):
           compare(name,fixture,paste0("selector.refit.",key),native$decisions[[key]]$source,
             et_to_r(attr(item(attr(source,"decisions"),key),"source")))
       }
+    }
+    if(case$prefix=="sparse_fpca"){
+      fixture<-"selected_invalid_smoother"
+      selector<-list(mean_bandwidths=c(.60,.70),covariance_bandwidths=c(.90,1),
+        n_splits=3L,shuffle=FALSE)
+      args<-case$args
+      args$mean_bandwidth<-args$covariance_bandwidth<-NULL
+      args$mean_smoother<-"local_constant"
+      native_error<-tryCatch(case$runner(tr,c(list(backend="native_covariance",
+        bandwidth_selection=selector),args)),error=identity)
+      source_selector<-reticulate::import("eyetrajectoriespy.sparse_bandwidth_selection",
+        convert=FALSE)
+      direct_args<-args[setdiff(names(args),c("n_components","score_ridge"))]
+      source_audit<-do.call(reticulate::py_call,c(list(
+        attr(source_selector,"select_sparse_fpca_bandwidths"),trajectories=source_tr),
+        direct_args,selector))
+      audit<-native_error$bandwidth_selection
+      record(name,fixture,"selector.no_candidate_error",
+        if(inherits(native_error,"etr_sparse_bandwidth_selection_error")&&
+          is.null(audit$selected_bandwidths)&&
+          is.null(et_to_r(attr(source_audit,"selected_bandwidths"))))
+            "PASS_BOTH_REJECT"else"DIVERGENT_ACCEPTANCE")
+      for(key in c("fold_results","candidate_summary","curve_losses"))
+        frame(name,fixture,paste0("selector.",key),audit[[key]],
+          et_to_r(attr(source_audit,key)),selector=TRUE)
+      compare(name,fixture,"selector.failure_message",
+        audit$fold_results$failure_message,
+        et_to_r(attr(source_audit,"fold_results"))$failure_message)
+      compare(name,fixture,"selector.status_code",audit$status_code,
+        et_to_r(attr(source_audit,"status_code")))
+      report<-reticulate::py_call(attr(source_selector,
+        "sparse_fpca_bandwidth_selection_reporting_text"),result=source_audit)
+      compare(name,fixture,"selector.report",.etr_sparse_bandwidth_report(audit),et_to_r(report))
+      selector$failure_action<-"error"
+      native_error<-tryCatch(case$runner(tr,c(list(backend="native_covariance",
+        bandwidth_selection=selector),args)),error=identity)
+      source_error<-tryCatch(do.call(reticulate::py_call,c(list(
+        attr(source_selector,"select_sparse_fpca_bandwidths"),trajectories=source_tr),
+        direct_args,selector)),error=identity)
+      message<-conditionMessage(native_error)
+      record(name,fixture,"selector.fail_fast",
+        if(inherits(source_error,"python.builtin.ValueError")&&
+          grepl("mean_smoother",message,fixed=TRUE)&&
+          grepl(message,conditionMessage(source_error),fixed=TRUE))
+            "PASS_BOTH_REJECT"else"DIVERGENT_ACCEPTANCE")
     }
   }
   out<-do.call(rbind,rows)

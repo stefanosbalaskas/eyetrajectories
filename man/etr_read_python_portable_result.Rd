@@ -45,13 +45,17 @@ manifest itself is not cryptographically signed. Provenance/source
 authenticity is not thereby established.
 
 The loader accepts the published version-one Python format with the
-exact \code{arrays.npz} filename, and bounds uncompressed size.
+exact \code{arrays.npz} filename, including array-free snapshots, and
+bounds uncompressed size.
 It reads safe NumPy NPY v1-v3 little-endian binary arrays using a
 typed subset of floating, integer, bool and UTF-32 Unicode
 descriptors, and primitive homogeneous JSON-backed object arrays. JSON
 nulls become missing values of the observed type. If every cell is null,
 the snapshot carries logical missing values because the source has no
 element type information.
+Signed and unsigned 64-bit integers must be within the inclusive exact
+integer range of base R doubles. Embedded NUL characters in Unicode
+arrays are rejected because R strings cannot represent them.
 Pickling or backend execution is never attempted. Unsupported dtypes,
 heterogeneous object arrays, irregular table schemas and unknown
 markers fail closed instead of silently discarding scientific state.

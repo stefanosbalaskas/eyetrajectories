@@ -131,6 +131,10 @@ test_that("joint fixed-covariance mixed bootstrap solves true full-time GLS",{
   expect_error(etr_bootstrap_functional_mixed_effects_coefficients(
     fit,n_bootstrap=100L,
     sampled_participant_indices=bad),"zero-based")
+  for(seed in list(TRUE,2^53,-1,1.5,NA_real_,matrix(2,1L,1L))){
+    expect_error(etr_bootstrap_functional_mixed_effects_coefficients(
+      fit,n_bootstrap=100L,random_state=seed),"random_state")
+  }
   expect_identical(original_seed,before)
 })
 
@@ -179,29 +183,26 @@ def _etr_joint_source_adapter(time, observed, scalar,
     return obj
 ")
   fn<-reticulate::py_eval("_etr_joint_source_adapter",convert=FALSE)
-  pyref<-reticulate::py_call(fn,
-    reticulate::r_to_py(fit$time),
-    reticulate::r_to_py(fit$observed_functions),
-    reticulate::r_to_py(fit$scalar_design),
-    reticulate::r_to_py(fit$fixed_basis),
-    reticulate::r_to_py(fit$fixed_basis_coefficients),
-    reticulate::r_to_py(fit$random_long_design),
-    reticulate::r_to_py(fit$random_effect_covariance),
-    as.numeric(fit$residual_variance),
-    reticulate::r_to_py(fit$residual_correlation_matrix),
-    reticulate::r_to_py(fit$participant_ids),
-    reticulate::r_to_py(fit$curve_participant_ids),
-    reticulate::r_to_py(fit$source_curve_ids),
-    reticulate::r_to_py(fit$predictor_names))
+  source_reference<-function(fit)reticulate::py_call(fn,
+    fit$time,fit$observed_functions,fit$scalar_design,fit$fixed_basis,
+    fit$fixed_basis_coefficients,fit$random_long_design,fit$random_effect_covariance,
+    as.numeric(fit$residual_variance),fit$residual_correlation_matrix,
+    fit$participant_ids,fit$curve_participant_ids,fit$source_curve_ids,
+    fit$predictor_names)
+  source_bootstrap<-etpy_get_export("bootstrap_functional_mixed_effects_coefficients")
+  seed<-2^32+23
+  python_seed<-reticulate::import_builtins(convert=FALSE)$int(sprintf("%.0f",seed))
   pyboot<-reticulate::py_call(
-    etpy_get_export("bootstrap_functional_mixed_effects_coefficients"),
-    result=pyref,n_bootstrap=100L,random_state=23L)
+    source_bootstrap,result=source_reference(fit),n_bootstrap=100L,
+    random_state=python_seed)
   sampled<-et_to_r(reticulate::py_get_attr(pyboot,
     "sampled_participant_indices"))
   expect_identical(dim(sampled),c(100L,8L))
   native<-etr_bootstrap_functional_mixed_effects_coefficients(
-    fit,n_bootstrap=100L,random_state=23L)
+    fit,n_bootstrap=100L,random_state=seed)
   expect_equal(native$sampled_participant_indices,sampled,tolerance=0)
+  expect_identical(native$random_state,seed)
+  expect_identical(native$provenance$functional_mixed_effects_bootstrap$random_state,seed)
   for(field in c("bootstrap_fixed_basis_coefficients",
       "bootstrap_coefficient_functions","bootstrap_mean",
       "bootstrap_standard_errors","sampled_participant_indices")){
@@ -227,19 +228,72 @@ def _etr_joint_source_adapter(time, observed, scalar,
         info=paste("pinned joint GLS simultaneous bands",scope,field))
     }
   }
+
+  # Reparameterize the same fit with a predictor nearly parallel to the
+  # intercept. The fixed-effect information remains full rank under the
+  # source SVD tolerance even though a fixed QR tolerance rejects it.
+  near<-fit
+  scale<-1e-4
+  near$scalar_design[,2L]<-1+scale*fit$scalar_design[,2L]
+  cols<-seq_len(ncol(fit$fixed_basis))
+  near$fixed_long_design[,cols+length(cols)]<-
+    fit$fixed_long_design[,cols]+scale*fit$fixed_long_design[,cols+length(cols)]
+  near$fixed_basis_coefficients[2L,]<-fit$fixed_basis_coefficients[2L,]/scale
+  near$fixed_basis_coefficients[1L,]<-
+    fit$fixed_basis_coefficients[1L,]-near$fixed_basis_coefficients[2L,]
+  near_source<-reticulate::py_call(source_bootstrap,result=source_reference(near),
+    n_bootstrap=100L,random_state=python_seed)
+  near_native<-etr_bootstrap_functional_mixed_effects_coefficients(near,
+    n_bootstrap=100L,random_state=seed)
+  expect_equal(unname(near_native$bootstrap_coefficient_functions),
+    unname(et_to_r(reticulate::py_get_attr(near_source,"bootstrap_coefficient_functions"))),
+    tolerance=1e-6,ignore_attr=TRUE)
 })
 
-test_that("native iid likelihood refits use the same seeded participant bundles",{
+test_that("native and source iid likelihood refits use the same wide-seed participant bundles",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("pinned NumPy participant indices are opt-in")
   if(!identical(Sys.getenv("ET_RUN_SCIENTIFIC_SLOW"),"true"))
     skip("20 full native likelihood refits are opt-in")
   fit<-.etr_joint_fixed_boot_fixture()
-  rng<-reticulate::import("numpy",convert=TRUE)$random$default_rng(23L)
-  units<-length(fit$participant_ids)
-  expected<-rng$integers(0L,units,size=reticulate::tuple(20L,units))
+  reticulate::py_run_string("
+import numpy as np
+import pandas as pd
+import eyetrajectoriespy as _etr_joint_source
+def _etr_joint_public_full_refit(time, observed, scalar, ids, groups, seed):
+    trajectories=_etr_joint_source.TrajectorySet(
+        time=np.asarray(time), values=np.asarray(observed)[:,:,None],
+        curve_ids=tuple(ids), dimension_names=('signal',),
+        metadata=pd.DataFrame({'pid':groups}),
+        coordinate_system='degrees', time_unit='s')
+    design=pd.DataFrame({'curve_id':ids,'x':np.asarray(scalar)[:,1]})
+    fit=_etr_joint_source.fit_functional_mixed_effects_regression(
+        trajectories, design, predictors=('x',), participant_column='pid',
+        dimension='signal', fixed_basis_size=2, random_basis_size=2,
+        spline_degree=1, reml=True)
+    return _etr_joint_source.bootstrap_functional_mixed_effects_full_refit(
+        fit, n_bootstrap=20, random_state=int(seed))
+")
+  seed<-2^53-1
+  source<-reticulate::py_call(reticulate::py_eval(
+    "_etr_joint_public_full_refit",convert=FALSE),fit$time,
+    fit$observed_functions,fit$scalar_design,fit$source_curve_ids,
+    fit$curve_participant_ids,sprintf("%.0f",seed))
   actual<-etr_bootstrap_functional_mixed_effects_full_refit(
-    fit,n_bootstrap=20L,random_state=23L)
-  expect_equal(actual$sampled_participant_indices,expected,tolerance=0)
+    fit,n_bootstrap=20L,random_state=seed)
+  expect_identical(actual$random_state,seed)
+  expect_identical(actual$provenance$functional_mixed_effects_full_refit_bootstrap$random_state,seed)
+  expect_equal(actual$sampled_participant_indices,
+    et_to_r(reticulate::py_get_attr(source,"sampled_participant_indices")),tolerance=0)
+  expected_audit<-reticulate::py_call(
+    etpy_get_export("functional_mixed_effects_full_refit_audit_frame"),bootstrap=source)
+  expect_equal(etr_functional_mixed_effects_full_refit_audit_frame(actual),
+    et_to_r(expected_audit),ignore_attr=TRUE)
+  for(field in c("bootstrap_fixed_basis_coefficients",
+      "bootstrap_coefficient_functions","bootstrap_mean","bootstrap_standard_errors")){
+    expect_equal(unname(actual[[field]]),
+      unname(et_to_r(reticulate::py_get_attr(source,field))),
+      tolerance=1e-8,ignore_attr=TRUE,info=field)
+  }
   expect_true(all(actual$convergence_flags))
 })

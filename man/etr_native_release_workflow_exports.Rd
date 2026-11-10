@@ -56,7 +56,8 @@ covariance_bandwidths=c(0.8, 1), n_splits=5L)} in place of the two fixed
 bandwidth arguments. The workflow refits each candidate within each training
 fold, ranks eligible candidates by mean held-out Gaussian predictive loss,
 then refits the selected model. The selection result contains assignments,
-curve losses, fold outcomes and candidate summaries.
+curve losses, fold outcomes, candidate summaries, and the selector
+provenance and reporting text.
 Use \code{resampling_unit="group"} with \code{group_column} to keep entire
 groups in one fold. Supply zero-based \code{fold_assignments} in input-curve
 order to replay an external split. Seeded curve shuffles use the legacy
@@ -67,6 +68,12 @@ threshold. \code{failure_action="retain"} records failed folds, while
 \code{etr_sparse_bandwidth_selection_error} condition contains the audit in
 \code{bandwidth_selection}. Sparse prediction selects bandwidths using its
 proper-training curves.
+
+The \code{native_sparse_partial_conformal} prediction workflow takes a PACE
+training configuration, a finite history cutoff, and at least two future
+times. Its default \code{alpha} is \code{0.05}. The target forecast uses
+finite observations through the cutoff. Calibration also requires one
+finite response at each declared future timestamp.
 
 The native covariance backends of sparse FPCA, paired and asynchronous
 sparse MFPCA, and sparse multilevel FPCA accept descriptive observation

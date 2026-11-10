@@ -68,6 +68,39 @@ etr_run_functional_mixed_effects_workflow<-function(
 }
 
 # Native source-model workflow lane. Legacy fdapace remains separate.
+.etr_sparse_uncertainty_report <- function(result) {
+  n_curves<-length(result$curve_ids)
+  failed<-sum(result$diagnostics$status_code!="ok")
+  if(inherits(result,"etr_sparse_mfpca_score_uncertainty_native")){
+    finite<-result$standard_errors[is.finite(result$standard_errors)]
+    median_se<-if(length(finite))sprintf("%.3f",stats::median(finite))else"nan"
+    return(paste0("Conditional joint-PACE score uncertainty was computed for ",
+      n_curves," curve(s) and ",result$n_components," retained joint component(s) ",
+      "using the full fitted planar covariance, declared measurement-error covariance, ",
+      "native observation times, and the fitted score ridge. ",n_curves-failed,
+      " curve(s) were solved and ",failed," failure(s) were retained under the declared ",
+      "failure policy; the median finite conditional score SE was ",median_se,
+      ". These covariances condition on the fitted joint population objects and do ",
+      "not include uncertainty from estimating the mean, covariance, eigensystem, ",
+      "measurement-error specification, or smoothing bandwidths."))
+  }
+  ridge<-result$provenance$score_ridge
+  ridge_text<-if(ridge>0)paste0(" The fitted PACE score ridge (",sprintf("%g",ridge),
+    ") was inherited as numerical regularization of the score system and was not ",
+    "interpreted as additional measurement-error variance.")else
+      " No score ridge was added to the conditional system."
+  failure_text<-if(failed)paste0(" ",failed," of ",n_curves,
+    " curve-level uncertainty systems failed the declared numerical diagnostics and ",
+    "were retained explicitly rather than silently dropped.")else
+      " All curve-level conditional uncertainty systems passed the declared numerical diagnostics."
+  paste0("Conditional PACE score uncertainty was computed for ",n_curves,
+    " curves and ",result$n_components," retained component(s) using the full fitted ",
+    "covariance evaluated at native observation times. The covariance is conditional ",
+    "on the fitted mean, covariance surface, eigensystem, and measurement-error variance ",
+    "and therefore excludes population-estimation uncertainty, including uncertainty ",
+    "from estimating smoothing bandwidths and the noise variance.",ridge_text,failure_text)
+}
+
 .etr_sparse_workflow_uncertainty <- function(request, fit, trajectories) {
   if(is.null(request))return(NULL)
   parameters<-list(condition_limit=NULL,failure_action="error")
@@ -88,12 +121,8 @@ etr_run_functional_mixed_effects_workflow<-function(
   run<-.etr_sparse_timed_step("score_uncertainty",source_function,parameters,
     do.call(calculate,c(list(fit=fit,trajectories=trajectories),parameters)))
   result<-run$result
-  list(result=result,step=run$step,frame=as_frame(result),report=paste0(
-    "Conditional PACE score uncertainty uses the full fitted covariance ",
-    "evaluated at native observation times and excludes uncertainty in ",
-    "the estimated population fit. ",
-    sum(result$diagnostics$status_code=="ok")," of ",
-    length(result$curve_ids)," curve-level systems passed."))
+  list(result=result,step=run$step,frame=as_frame(result),
+    report=.etr_sparse_uncertainty_report(result))
 }
 
 .etr_run_sparse_fpca_source_native_workflow<-function(
@@ -121,7 +150,6 @@ etr_run_functional_mixed_effects_workflow<-function(
     observation_process,cfg$observation_diagnostics)
   .etr_assert(inherits(trajectories,"etr_irregular_trajectory_set"),
     "source-model sparse FPCA requires native irregular trajectories")
-  .etr_sparse_smoothing_settings(cfg$mean_smoother,cfg$covariance_smoother,cfg$kernel)
   selection_run<-.etr_sparse_bandwidth_selection(trajectories,cfg,paired=FALSE)
   selection<-selection_run$result
   params<-cfg[setdiff(names(cfg),c("preprocessing","score_uncertainty",

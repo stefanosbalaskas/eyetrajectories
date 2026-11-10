@@ -102,11 +102,17 @@ etr_validate_no_long_missing_runs <- function(x,max_missing_fraction) {
 #' @param metadata One-row-per-curve data frame, optional.
 #' @param coordinate_system,time_unit Nonempty metadata strings.
 #' @param provenance JSON-like named list.
+#' @param allow_infinite_values Retain infinite sample values for the sparse
+#'   future-prediction boundary. Other native analyses retain finite-value
+#'   validation.
 #' @return New \code{etr_irregular_trajectory_set}.
 #' @export
 etr_irregular_trajectory_set <- function(
     time,values,curve_ids,dimension_names,metadata=NULL,
-    coordinate_system="unknown",time_unit="unknown",provenance=list()) {
+    coordinate_system="unknown",time_unit="unknown",provenance=list(),
+    allow_infinite_values=FALSE) {
+  .etr_assert(is.logical(allow_infinite_values)&&length(allow_infinite_values)==1L&&
+    !is.na(allow_infinite_values),"allow_infinite_values must be TRUE or FALSE")
   .etr_assert(is.list(time) && length(time)>=1L &&
     is.list(values) && length(values)==length(time),
     "irregular time and values must be equally sized nonempty lists")
@@ -127,7 +133,7 @@ etr_irregular_trajectory_set <- function(
     .etr_assert(is.matrix(v) && is.numeric(v) &&
       identical(dim(v),c(length(t),nd)),
       paste0("values[",i,"] must match curve time and dimension counts"))
-    .etr_assert(!any(is.infinite(v)),
+    .etr_assert(allow_infinite_values||!any(is.infinite(v)),
       "irregular trajectory values cannot contain infinity")
   }
   if(is.null(metadata)) metadata <- data.frame(row.names=seq_len(n))
@@ -141,21 +147,24 @@ etr_irregular_trajectory_set <- function(
     "time_unit must be a nonempty string")
   .etr_assert(.etr_provenance_valid(provenance),
     "provenance must be a JSON-like named list")
-  structure(list(time=lapply(time,as.numeric),
+  out<-structure(list(time=lapply(time,as.numeric),
     values=lapply(values,function(v)matrix(as.numeric(v),nrow=nrow(v),
                                             ncol=ncol(v))),
     curve_ids=curve_ids,dimension_names=dimension_names,
     metadata=metadata,coordinate_system=coordinate_system,
     time_unit=time_unit,provenance=provenance),
     class="etr_irregular_trajectory_set")
+  if(allow_infinite_values)attr(out,"allow_infinite_values")<-TRUE
+  out
 }
 
-.etr_irregular_validate_samples <- function(x){
+.etr_irregular_validate_samples <- function(x,allow_infinite_values=FALSE){
   .etr_assert(inherits(x,"etr_irregular_trajectory_set") && is.list(x),
     "trajectories must be a native irregular trajectory set")
   etr_irregular_trajectory_set(x$time,x$values,x$curve_ids,
     x$dimension_names,x$metadata,x$coordinate_system,x$time_unit,
-    x$provenance)
+    x$provenance,allow_infinite_values=allow_infinite_values&&
+      isTRUE(attr(x,"allow_infinite_values",exact=TRUE)))
   invisible(TRUE)
 }
 

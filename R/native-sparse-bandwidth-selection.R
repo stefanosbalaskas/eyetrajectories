@@ -90,7 +90,7 @@
   }
   validation<-lapply(seq_len(k)-1L,function(i)which(assignment$fold==i))
   .etr_assert(all(n-lengths(validation)>=3L),
-    "each training fold must contain at least three curves")
+    "each training fold must contain at least three curves for native sparse FPCA")
   order<-unlist(validation,use.names=FALSE)
   frame<-data.frame(curve_id=x$curve_ids[order],
     fold=assignment$fold[order],stringsAsFactors=FALSE)
@@ -168,10 +168,9 @@
     if(paired)c("dimensions","measurement_error","measurement_error_variance",
       "measurement_error_covariance") else c("dimension","noise_bandwidth",
       "noise_support","noise_variance_method","measurement_error_variance",
-      "positive_eigen_tolerance","noise_min_local_points"))
+      "positive_eigen_tolerance","mean_smoother","covariance_smoother",
+      "kernel","noise_min_local_points"))
   parameters<-c(cfg[model_parameters],options)
-  if(!paired)parameters<-c(parameters,list(mean_smoother="local_linear",
-    covariance_smoother="local_linear",kernel="epanechnikov"))
   if(is.null(options$fold_assignments))parameters$fold_assignments<-NULL
   .etr_sparse_timed_step("bandwidth_selection",
     if(paired)"select_sparse_mfpca_bandwidths"else"select_sparse_fpca_bandwidths",
@@ -188,14 +187,30 @@
   columns<-match(dimensions,x$dimension_names)
   .etr_assert(!anyNA(columns)&&!anyDuplicated(columns),
     "bandwidth selection requires distinct observed response dimensions")
-  for(values in x$values){
-    observed<-values[,columns,drop=FALSE]
-    if(paired&&any(xor(is.finite(observed[,1L]),is.finite(observed[,2L]))))
-      .etr_spn_fail("coordinate_specific_missingness_unsupported",
-        "bandwidth selection requires paired finite observations")
-    if(any(!is.finite(observed)))
-      .etr_spn_fail(if(paired)"nonfinite_sparse_planar_observation"else
-        "nonfinite_sparse_observation","bandwidth selection requires finite observations")
+  if(paired&&length(x$curve_ids)<3L)
+    .etr_spn_fail("insufficient_joint_support",
+      "sparse planar bandwidth selection requires at least three curves",
+      list(n_curves=length(x$curve_ids)))
+  for(i in seq_along(x$curve_ids)){
+    finite<-is.finite(x$values[[i]][,columns,drop=FALSE])
+    if(paired){
+      mismatch<-which(finite[,1L]!=finite[,2L])
+      if(length(mismatch))
+        .etr_spn_fail("coordinate_specific_missingness_unsupported",
+          "x and y must be jointly observed at every retained sparse timestamp",
+          list(curve_id=x$curve_ids[i],sample_indices=mismatch-1L,
+            dimensions=dimensions))
+      nonfinite<-which(!finite[,1L])
+      if(length(nonfinite))
+        .etr_spn_fail("nonfinite_sparse_planar_observation",
+          "bandwidth selection requires finite paired planar samples",
+          list(curve_id=x$curve_ids[i],sample_indices=nonfinite-1L,
+            dimensions=dimensions))
+    }else if(any(!finite)){
+      .etr_spn_fail("nonfinite_sparse_observation",
+        "bandwidth selection requires finite observed sparse samples",
+        list(curve_id=x$curve_ids[i],dimension=dimensions))
+    }
   }
   grid<-.etr_spn_grid(cfg$evaluation_grid)
   action<-cfg$analysis_support_action
@@ -206,7 +221,8 @@
   effective<-vapply(inside,sum,integer(1L))
   if(action=="error"&&any(effective!=raw))
     .etr_spn_fail("observations_outside_analysis_support",
-      "training/validation observations lie outside declared support")
+      "training/validation observations lie outside declared support",
+      list(analysis_support=range(grid),curve_ids=x$curve_ids[effective!=raw]))
   limit<-options$predictive_condition_limit
   .etr_assert(is.numeric(limit)&&length(limit)==1L&&is.finite(limit)&&limit>1,
     "predictive_condition_limit must be finite and greater than one")
@@ -247,7 +263,8 @@
         is.finite(bandwidth)&&bandwidth>0,"noise_bandwidth must be a positive scalar")
     }
     controls<-c(common,"noise_variance_method","measurement_error_variance",
-      "noise_bandwidth","noise_support","noise_min_local_points","positive_eigen_tolerance")
+      "noise_bandwidth","noise_support","noise_min_local_points",
+      "positive_eigen_tolerance","mean_smoother","covariance_smoother","kernel")
     fit_population<-function(train,mean_bw,cov_bw)do.call(etr_fit_sparse_fpca_native,
       c(list(trajectories=train,dimension=dimensions,n_components=1L,
         evaluation_grid=grid,mean_bandwidth=mean_bw,covariance_bandwidth=cov_bw,
@@ -268,7 +285,7 @@
   failure<-function(value){
     if(!inherits(value,"error"))return(list(failure_code=NA_character_,failure_message=NA_character_))
     message<-conditionMessage(value)
-    code<-if(grepl("^[a-z][a-z0-9_]+:",message))sub(":.*$","",message)else"ValueError"
+    code<-if(inherits(value,"etr_sparse_native_error"))value$code else "ValueError"
     list(failure_code=code,failure_message=message)
   }
   criterion<-if(paired)"mean_curve_planar_gaussian_nll"else"mean_curve_gaussian_nll"
@@ -368,20 +385,82 @@
   selected<-if(length(ranked))as.list(candidates[ranked[1L],,drop=FALSE])else NULL
   if(!paired&&!is.null(selected))selected["noise_bandwidth"]<-list(cfg$noise_bandwidth)
   group_column<-if(options$resampling_unit=="group")options$group_column else NULL
+  provenance<-.etr_sparse_cv_provenance(cfg,options,grid,noise,folds,criterion,
+    paired,nrow(candidates),required,group_column)
   structure(list(assignments=folds$assignments,fold_results=fold_results,
     curve_losses=curve_losses,candidate_summary=summary,candidates=candidates,
     selected_bandwidths=selected,criterion=criterion,resampling_unit=options$resampling_unit,
     n_splits=k,group_column=group_column,min_valid_folds=as.integer(required),
     status_code=if(is.null(selected))"no_eligible_candidate"else"ok",
-    provenance=list(population_refit_inside_fold=TRUE,fold_policy=folds$policy,
-      group_leakage_prevented=options$resampling_unit=="group",
-      random_state=if(folds$policy=="numpy_randomstate_kfold")options$random_state else NULL,
-      validation_observations_used_for_population_fitting=FALSE,
-      full_fitted_covariance_used_for_validation=TRUE,
-      score_ridge_included_in_validation_covariance=FALSE,
-      measurement_error_covariance=noise,
-      failure_action=failure_action,predictive_condition_limit=limit),
-    parameters=options),class="etr_sparse_bandwidth_selection")
+    provenance=provenance,parameters=options),class="etr_sparse_bandwidth_selection")
+}
+
+.etr_sparse_cv_provenance<-function(cfg,options,grid,noise,folds,criterion,
+    paired,n_candidates,required,group_column){
+  grouped<-options$resampling_unit=="group"
+  shuffled<-!grouped&&isTRUE(options$shuffle)&&folds$policy!="declared_folds"
+  common<-list(criterion=criterion,population_refit_inside_fold=TRUE,
+    fold_policy=folds$policy,
+    validation_observations_used_for_population_fitting=FALSE,
+    full_fitted_covariance_used_for_validation=TRUE,
+    score_ridge_included_in_validation_covariance=FALSE,
+    resampling_unit=options$resampling_unit,group_column=group_column,
+    group_leakage_prevented=grouped,n_splits=length(folds$validation),
+    shuffle=shuffled,random_state=if(shuffled)options$random_state else NULL,
+    min_valid_folds=as.integer(required),failure_action=options$failure_action,
+    predictive_condition_limit=options$predictive_condition_limit,
+    candidate_order="sorted_unique_mean_x_covariance_cartesian_product",
+    selection_rule="minimum_mean_fold_loss",
+    tie_break_rule=paste("minimum loss, then larger mean/covariance bandwidths",
+      "lexicographically, then candidate_id"),
+    one_se_rule_implemented=FALSE,
+    one_se_reason=paste("no predeclared scalar simplicity ordering for a",
+      "multidimensional bandwidth tuple"),
+    automatic_fit_bandwidth_selection_performed=FALSE,
+    evaluation_grid=as.numeric(grid),analysis_support_action=cfg$analysis_support_action,
+    psd_action=cfg$psd_action,psd_tolerance=cfg$psd_tolerance,
+    mean_min_local_points=as.integer(cfg$mean_min_local_points),
+    covariance_min_local_pairs=as.integer(cfg$covariance_min_local_pairs),
+    candidate_count=n_candidates,fold_assignment_count=nrow(folds$assignments),
+    measurement_error_covariance=noise)
+  if(grouped)common$group_count<-length(unique(folds$assignments$group))
+  if(paired){
+    c(common,list(method="group_aware_training_fold_sparse_planar_population_cv",
+      criterion_formula=paste0("0.5*(logdet(Sigma_i)+r_i^T Sigma_i^-1 r_i+",
+        "2*m_i*log(2*pi))/(2*m_i); fold mean weights held-out curves equally"),
+      predictive_covariance="full_fitted_joint_covariance_plus_declared_measurement_error",
+      joint_pace_scoring_performed=FALSE,
+      validation_observations_used_for_score_fitting=FALSE,
+      full_fitted_joint_covariance_used_for_validation=TRUE,
+      rank_k_covariance_used_for_validation=FALSE,
+      raw_sparse_trajectory_interpolation_performed=FALSE,
+      score_observation_order="time_major_interleaved_xy",
+      operator_storage_order="channel_major",
+      measurement_error_mode=cfg$measurement_error,measurement_error_tuned=FALSE,
+      measurement_error_policy="fixed_declared_across_candidates_and_folds",
+      selected_values_must_be_passed_explicitly_to_fit_sparse_mfpca=TRUE,
+      rank_tuned=FALSE,score_ridge_tuned=FALSE,evaluation_grid_tuned=FALSE,
+      psd_policy_tuned=FALSE,support_policy_tuned=FALSE))
+  }else{
+    c(common,list(method="group_aware_training_fold_sparse_population_cv",
+      criterion_formula=paste0("curve mean of 0.5*(logdet(Sigma_i)+r_i^T Sigma_i^-1 r_i+",
+        "m_i*log(2*pi))/m_i; fold mean weights held-out curves equally"),
+      validation_distribution=paste("Gaussian observation model from training-only",
+        "fitted mean, full latent covariance, and measurement-error variance"),
+      fit_inside_fold=TRUE,validation_observations_used_for_training=FALSE,
+      validation_observations_used_for_pace_scoring=FALSE,
+      noise_bandwidth_tuned=FALSE,
+      noise_bandwidth_policy=if(is.null(cfg$noise_bandwidth))
+        "not_applicable_fixed_measurement_error_variance" else
+        "fixed_declared_across_candidates_and_folds",
+      selected_values_must_be_passed_explicitly_to_fit_sparse_fpca=TRUE,
+      noise_variance_method=cfg$noise_variance_method,noise_bandwidth=cfg$noise_bandwidth,
+      noise_support=cfg$noise_support,measurement_error_variance=cfg$measurement_error_variance,
+      positive_eigen_tolerance=cfg$positive_eigen_tolerance,mean_smoother=cfg$mean_smoother,
+      covariance_smoother=cfg$covariance_smoother,kernel=cfg$kernel,
+      noise_min_local_points=as.integer(cfg$noise_min_local_points),
+      training_population_fit_n_components=1L,training_score_failure_action="retain_nan"))
+  }
 }
 
 .etr_sparse_bandwidth_refit <- function(parameters,selection){
@@ -393,6 +472,50 @@
   bandwidths<-c("mean_bandwidth","covariance_bandwidth")
   parameters[bandwidths]<-selection$selected_bandwidths[bandwidths]
   parameters
+}
+
+.etr_sparse_bandwidth_report<-function(result){
+  failed<-sum(result$fold_results$status_code!="ok")
+  grouped<-result$resampling_unit=="group"
+  selected<-result$selected_bandwidths
+  if(result$criterion=="mean_curve_planar_gaussian_nll"){
+    unit<-if(grouped)paste("groups from metadata column",
+      .etr_python_workflow_identifier_repr(result$group_column))else"curves"
+    selection<-if(is.null(selected))"No candidate met the declared valid-fold requirement."else{
+      row<-match(selected$candidate_id,result$candidate_summary$candidate_id)
+      sprintf(paste("The minimum eligible mean fold loss selected %s",
+        "(mean bandwidth=%.3f, covariance bandwidth=%.3f, mean loss=%.3f)."),
+        selected$candidate_id,selected$mean_bandwidth,selected$covariance_bandwidth,
+        result$candidate_summary$mean_loss[row])
+    }
+    return(paste0("Sparse planar MFPCA bandwidth selection evaluated ",nrow(result$candidates),
+      " declared mean/covariance candidate(s) using ",result$n_splits,
+      "-fold cross-validation over ",unit,". Population mean and full joint latent ",
+      "covariance surfaces were refitted from training curves only. Held-out curves ",
+      "were scored by Gaussian negative log predictive density from the full fitted ",
+      "joint covariance plus the fixed declared 2x2 measurement-error covariance, ",
+      "normalised per scalar planar observation and then averaged equally across curves. ",
+      "Joint-PACE scores were not used for selection. ",sum(result$candidate_summary$eligible),
+      " candidate(s) were eligible and ",failed," candidate-fold failure(s) were retained. ",
+      selection," Selected values are not applied automatically to fit_sparse_mfpca(); ",
+      "they must be supplied explicitly."))
+  }
+  unit<-if(grouped)paste("grouped by",
+    .etr_python_workflow_identifier_repr(result$group_column))else"at the curve level"
+  prefix<-paste0("Sparse-FPCA mean/covariance bandwidths were evaluated using ",result$n_splits,
+    "-fold cross-validation ",unit,". Population mean, covariance, and measurement-noise ",
+    "objects were refitted using training curves only. The prespecified criterion was mean ",
+    "held-out-curve Gaussian negative log predictive density, using the full fitted latent ",
+    "covariance plus measurement-error variance; held-out observations were not used for ",
+    "population fitting or PACE score estimation. The audit evaluated ",nrow(result$candidates),
+    " bandwidth candidate(s) and retained ",failed," failed candidate-fold evaluation(s).")
+  noise<-result$provenance$noise_bandwidth
+  if(!is.null(noise))prefix<-paste0(prefix," The diagonal-difference noise bandwidth ",
+    sprintf("%g",noise)," was declared in advance and held fixed rather than tuned by this criterion.")
+  if(is.null(selected))return(paste0(prefix," No candidate satisfied the declared valid-fold requirement."))
+  paste0(prefix," The minimum mean fold loss selected mean bandwidth ",sprintf("%g",selected$mean_bandwidth),
+    " and covariance bandwidth ",sprintf("%g",selected$covariance_bandwidth),
+    ". The selected numeric values were not applied automatically to the fitter.")
 }
 
 .etr_sparse_bandwidth_workflow <- function(workflow,selection_run){
@@ -407,11 +530,6 @@
       values[[key]],"audited_selector",selection$criterion)
   workflow$tables$bandwidth_candidates<-selection$candidate_summary
   workflow$tables$bandwidth_curve_losses<-selection$curve_losses
-  workflow$reports$bandwidth_selection<-paste0(selection$n_splits,
-    " training-only folds evaluated ",nrow(selection$candidates),
-    " candidates by held-out Gaussian negative log predictive density. ",
-    sum(selection$fold_results$status_code!="ok"),
-    " candidate-fold failures were retained. Selected mean bandwidth ",
-    values$mean_bandwidth," and covariance bandwidth ",values$covariance_bandwidth,".")
+  workflow$reports$bandwidth_selection<-.etr_sparse_bandwidth_report(selection)
   workflow
 }

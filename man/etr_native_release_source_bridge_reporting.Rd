@@ -30,11 +30,18 @@ contracts. All external approvals require genuine independent review.
 \section{Exported entry points}{
 \describe{
 \item{\code{etr_detect_functional_outliers_skfda}}{\emph{detect functional outliers skfda} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
-\item{\code{etr_export_python_portable_result}}{Writes a common-grid
-trajectory snapshot in the Python 1.2 JSON and NPZ format. Metadata columns
-are ordered and indexed by curve ID, with numeric, character and logical
-vectors supported. Missing character and logical cells are JSON nulls.
-The destination must be new or empty.}
+\item{\code{etr_export_python_portable_result}}{Writes common-grid and
+irregular trajectories, dense FPCA and MFPCA fits, and compositional FPCA
+fits in the Python 1.2 JSON and NPZ snapshot format. Irregular samples keep
+their curve-specific grids and matrix shapes. Metadata columns are ordered
+and indexed by curve ID, with numeric, character and logical vectors
+supported. Missing character and logical cells are JSON nulls. The dense
+fit carries the R component count, scaling and total variance under
+\code{provenance$native_r_fpca}. Its Python \code{model} field is null.
+Compositional fits retain their zero-based reference dimension, epsilon and
+nested dense fit. Exports record the R package version. Both
+\code{overwrite} and \code{include_environment} must be false, and the
+destination must be new or empty.}
 \item{\code{etr_fit_sparse_fpca_fdapy}}{\emph{fit sparse fpca fdapy} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
 \item{\code{etr_native_source_contract_review_queue}}{\emph{native source contract review queue} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
 \item{\code{etr_to_fdapy_irregular}}{\emph{to fdapy irregular} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}

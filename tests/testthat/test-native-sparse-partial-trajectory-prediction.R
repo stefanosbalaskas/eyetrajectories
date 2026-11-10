@@ -52,6 +52,20 @@ test_that("conditional latent and noisy future uncertainty use full covariance",
     tolerance=1e-12)
   expect_equal(out$latent_covariance,other$latent_covariance,
     tolerance=1e-12)
+  altered$values[[1L]][5L,1L]<-Inf
+  expect_error(do.call(etr_irregular_trajectory_set,unclass(altered)),
+    "irregular trajectory values cannot contain infinity")
+  altered<-do.call(etr_irregular_trajectory_set,
+    c(unclass(altered),list(allow_infinite_values=TRUE)))
+  expect_error(etr_common_overlap_interval(altered),
+    "irregular trajectory values cannot contain infinity")
+  ignored<-etr_sparse_fpca_partial_trajectory_prediction_native(
+    fit,altered,history_cutoff=.53,prediction_grid=future)
+  expect_identical(ignored$conditional_mean,out$conditional_mean)
+  altered$values[[1L]][1L,1L]<-Inf
+  expect_error(etr_sparse_fpca_partial_trajectory_prediction_native(
+    fit,altered,history_cutoff=.53,prediction_grid=future),
+    "nonfinite_history_observation",class="etr_sparse_native_error")
   frame<-etr_sparse_fpca_partial_prediction_frame_native(out)
   expect_identical(names(frame),c("curve_id","dimension","time",
     "conditional_mean","latent_standard_error",

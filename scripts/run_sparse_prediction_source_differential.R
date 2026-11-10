@@ -65,11 +65,15 @@ _etr_sparse_workflow_config=_etr_sparse_workflow_predconfig(
 ")
   build<-reticulate::py_eval(
     "_etr_sparse_workflow_irregular",convert=FALSE)
-  pydata<-function(x)reticulate::py_call(build,
-    time=reticulate::r_to_py(x$time),
-    values=reticulate::r_to_py(x$values),
-    ids=reticulate::r_to_py(as.list(as.character(x$curve_ids))),
-    batch=reticulate::r_to_py(as.list(as.character(x$metadata$batch))))
+  pydata<-function(x,typed_groups=FALSE){
+    batch<-x$metadata$batch
+    batch<-if(!typed_groups)as.list(as.character(batch))else if(is.character(batch))
+      lapply(batch,function(label)if(is.na(label))NULL else label)else as.list(batch)
+    reticulate::py_call(build,time=reticulate::r_to_py(x$time),
+      values=reticulate::r_to_py(x$values),
+      ids=reticulate::r_to_py(as.list(as.character(x$curve_ids))),
+      batch=reticulate::r_to_py(batch))
+  }
   sourceproper<-pydata(proper);sourcecal<-pydata(calibration)
   sourcetarget<-pydata(target)
   pyfunction<-reticulate::py_eval(
@@ -188,13 +192,18 @@ _etr_sparse_workflow_config=_etr_sparse_workflow_predconfig(
   # the exact error message and language-specific exception representation.
   safe<-function(f)tryCatch(list(ok=TRUE,message="",value=f()),
     error=function(e)list(ok=FALSE,message=conditionMessage(e),value=e))
+  with_infinite<-function(x,index){
+    x$values[[1L]][index,1L]<-Inf
+    do.call(etr_irregular_trajectory_set,
+      c(unclass(x),list(allow_infinite_values=TRUE)))
+  }
   invalid<-list(
     calibration_missing_future_grid=list(
       mutate=function(x) {
         x$time[[1L]][5L]<-.6005
         x
-      },
-      py_mutate=".time[0][4]=.6005"),
+      }),
+    calibration_infinite_future=list(mutate=function(x)with_infinite(x,5L)),
     insufficient_calibration_resolution=list(alpha=.01))
   for(nm in names(invalid)){
     spec<-invalid[[nm]]
@@ -213,8 +222,7 @@ _etr_bad_pred_cfg=_etr_sparse_workflow_predconfig(
         proper_training=sourceproper,calibration=sourcecal,
         target=sourcetarget,config=badpy))
     }else{
-      badcal<-calibration
-      badcal$time[[1L]][5L]<-.6005
+      badcal<-spec$mutate(calibration)
       left<-safe(function()etr_run_sparse_prediction_workflow(
         proper,badcal,target,config))
       pybad<-pydata(badcal)
@@ -241,6 +249,71 @@ _etr_bad_pred_cfg=_etr_sparse_workflow_predconfig(
   compare_result_fields("mixed_case_unicode_groups",mixed_native$calibration,
     read(mixed_source,"calibration"),c("calibration_unit_ids","unit_scores",
       "curve_scores","critical_value","provenance"))
+  group_cases<-list(
+    empty_and_none_group_labels=list(cal=c("",NA_character_,"cal_3","cal_4"),
+      target="target_unique"),
+    numeric_missing_group_labels=list(cal=c(NA_real_,1,2.5,Inf),target=3))
+  for(nm in names(group_cases)){
+    spec<-group_cases[[nm]]
+    groups<-calibration
+    groups$metadata$batch<-rep(spec$cal,each=3L)
+    new_target<-target
+    new_target$metadata$batch<-spec$target
+    left<-etr_run_sparse_prediction_workflow(proper,groups,new_target,config)
+    right<-reticulate::py_call(pyfunction,proper_training=sourceproper,
+      calibration=pydata(groups,typed_groups=TRUE),
+      target=pydata(new_target,typed_groups=TRUE),config=pycfg)
+    compare_result_fields(paste0(nm,"_calibration"),left$calibration,read(right,"calibration"),
+      c("calibration_unit_ids","curve_scores","unit_scores","provenance"))
+    compare_result_fields(paste0(nm,"_band"),left$band,read(right,"band"),
+      c("target_calibration_unit","lower","upper","provenance"))
+  }
+  ignored<-with_infinite(target,5L)
+  left<-etr_run_sparse_prediction_workflow(proper,calibration,ignored,config)
+  right<-reticulate::py_call(pyfunction,proper_training=sourceproper,
+    calibration=sourcecal,target=pydata(ignored),config=pycfg)
+  compare_result_fields("ignored_target_infinite_future",left$band,read(right,"band"),
+    c("lower","upper","critical_value","provenance"))
+  compare_result_fields("ignored_target_infinite_future",left$band$prediction,
+    read(read(right,"band"),"prediction"),c("history_values","conditional_mean",
+      "observed_predictive_standard_errors"))
+  infinite_history<-with_infinite(target,1L)
+  .etr_sparse_source_error_contract(function()etr_run_sparse_prediction_workflow(
+    proper,calibration,infinite_history,config),function()reticulate::py_call(
+      pyfunction,proper_training=sourceproper,calibration=sourcecal,
+      target=pydata(infinite_history),config=pycfg),function(field,ok)
+        add("target_infinite_history",field,if(ok)"PASS_SCHEMA"else"DIVERGENT_SCHEMA"))
+  defaults<-config
+  defaults$alpha<-defaults$group_column<-NULL
+  defaults$min_history_observations<-2.9
+  defaults$condition_limit<-1e9
+  defaults$history_ridge<-.001
+  default_cal<-.etr_spnpc_fixture(24L)
+  left<-etr_run_sparse_prediction_workflow(proper,default_cal,target,defaults)
+  reticulate::py_run_string("
+from dataclasses import replace
+_etr_default_prediction = _etr_sparse_workflow_predconfig(
+    training=_etr_sparse_workflow_training, history_cutoff=.5,
+    prediction_grid=(.60,.72,.84), min_history_observations=2.9,
+    condition_limit=1e9, history_ridge=.001)
+")
+  right<-reticulate::py_call(pyfunction,proper_training=sourceproper,
+    calibration=pydata(default_cal),target=sourcetarget,
+    config=reticulate::py_eval("_etr_default_prediction",convert=FALSE))
+  compare_result_fields("default_alpha_explicit_history_controls",left$calibration,
+    read(right,"calibration"),c("alpha","min_history_observations","condition_limit",
+      "history_ridge","unit_scores","critical_value"))
+  compare_records("default_alpha_explicit_history_controls",left,right)
+  single<-config
+  single$prediction_grid<-.72
+  left<-safe(function()etr_run_sparse_prediction_workflow(proper,calibration,target,single))
+  right<-safe(function()reticulate::py_run_string(
+    "replace(_etr_sparse_workflow_config, prediction_grid=(.72,))"))
+  add("single_point_workflow_grid","<call>",
+    if(!left$ok&&!right$ok&&grepl("prediction_grid",left$message,fixed=TRUE)&&
+      grepl("prediction_grid",right$message,fixed=TRUE))
+        "PASS_BOTH_REJECT"else"DIVERGENT_ACCEPTANCE",
+    r_error=left$message,python_error=right$message)
   selected_cfg<-config
   selected_cfg$training$mean_bandwidth<-selected_cfg$training$covariance_bandwidth<-NULL
   selected_cfg$training$bandwidth_selection<-list(mean_bandwidths=c(.5,.6),

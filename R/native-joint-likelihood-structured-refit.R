@@ -72,20 +72,12 @@
     inherits(result$fitted_model,"lme")&&
     identical(result$backend,"nlme::lme"),
     "structured full-refit requires a converged joint nlme likelihood fit")
-  .etr_assert(is.numeric(n_bootstrap)&&length(n_bootstrap)==1L&&
-    !is.logical(n_bootstrap)&&is.finite(n_bootstrap)&&
-    n_bootstrap==floor(n_bootstrap)&&
-    n_bootstrap>=20L&&n_bootstrap<=.Machine$integer.max,
-    "n_bootstrap must be an integer >=20 for full-refit diagnostics")
-  .etr_assert(is.null(random_state)||
-    (is.numeric(random_state)&&length(random_state)==1L&&
-      !is.logical(random_state)&&is.finite(random_state)&&
-      random_state==floor(random_state)&&random_state>=0&&
-      random_state<=.Machine$integer.max),
-    "random_state must be NULL or a nonnegative integer")
+  controls<-.etr_joint_mixed_boot_controls(n_bootstrap,random_state,20L)
+  B<-controls$n_bootstrap
+  random_state<-controls$random_state
   group_ids<-as.character(result$participant_ids)
   group<-as.character(result$curve_participant_ids)
-  N<-length(group_ids);B<-as.integer(n_bootstrap)
+  N<-length(group_ids)
   nt<-length(result$time)
   Y<-result$observed_functions
   X<-result$scalar_design
@@ -123,20 +115,8 @@
     length(result$curve_trial_ids)==nc &&
       all(nzchar(as.character(result$curve_trial_ids))),
     "nested source trial identities are incomplete")
-  if(is.null(sampled_participant_indices)){
-    sampled<-if(is.null(random_state))
-      matrix(sample.int(N,B*N,replace=TRUE)-1L,nrow=B,ncol=N) else
-      .etr_numpy_seeded_case_indices(random_state,B,N)
-  }else{
-    sampled<-sampled_participant_indices
-    .etr_assert(is.matrix(sampled)&&is.numeric(sampled)&&
-      identical(dim(sampled),c(B,N))&&
-      all(is.finite(sampled))&&
-      all(sampled==floor(sampled))&&
-      all(sampled>=0L)&&all(sampled<N),
-      "sampled_participant_indices must be finite zero-based B-by-participant")
-    sampled<-matrix(as.integer(sampled),nrow=B,ncol=N)
-  }
+  draws<-.etr_joint_mixed_boot_draws(B,N,random_state,sampled_participant_indices)
+  sampled<-draws$indices
   nt_trial<-if(nested)ncol(result$trial_random_basis)else 0L
   fixed<-array(NA_real_,c(B,np,nf))
   curves<-array(NA_real_,c(B,np,nt))
@@ -163,41 +143,35 @@
   warnings<-vector("list",B)
   coefficient_names<-as.character(result$predictor_names)[-1L]
   for(b in seq_len(B)){
-    chosen<-sampled[b,]+1L
-    source_rows<-unlist(source_bundles[chosen],use.names=FALSE)
-    repeats<-lengths(source_bundles[chosen])
-    new_groups<-sprintf("bootstrap_%04d_draw_%04d",
-      b-1L,seq_len(N)-1L)
-    membership<-rep(new_groups,times=repeats)
-    new_curves<-sprintf("b%04d_curve_%05d",
-      b-1L,seq_along(source_rows)-1L)
-    source_ids[[b]]<-group_ids[chosen]
-    bootstrap_ids[[b]]<-new_groups
-    meta<-data.frame(.etr_bootstrap_pid=membership,
+    bundle<-.etr_joint_refit_draw_bundle(source_bundles,group_ids,sampled[b,],b-1L)
+    source_rows<-bundle$rows
+    source_ids[[b]]<-bundle$source_ids
+    bootstrap_ids[[b]]<-bundle$participant_ids
+    meta<-data.frame(.etr_bootstrap_pid=bundle$membership,
       stringsAsFactors=FALSE)
     if(nested){
       # Python gives each source trial occurrence an independent trial ID,
       # including repeated draws from the same source participant.
-      trial_ids<-sprintf("bootstrap_%04d_trial_%05d",
-        b-1L,seq_along(source_rows)-1L)
+      trial_ids<-sprintf("%s_trial_%04d",
+        bundle$membership,bundle$within_draw)
       meta$.etr_bootstrap_trial<-trial_ids
       trial_audit[[b]]<-data.frame(
         source_participant_id=as.character(group[source_rows]),
-        bootstrap_participant_id=membership,
+        bootstrap_participant_id=bundle$membership,
         source_trial_id=as.character(
           result$curve_trial_ids[source_rows]),
         bootstrap_trial_id=trial_ids,
         stringsAsFactors=FALSE)
-    }else trial_audit[[b]]<-NULL
+    }
     tr<-etr_trajectory_set(result$time,
       array(as.numeric(Y[source_rows,,drop=FALSE]),
         dim=c(length(source_rows),nt,1L)),
-      new_curves,as.character(result$dimension_name),
+      bundle$curve_ids,as.character(result$dimension_name),
       metadata=meta,
       coordinate_system=if(is.null(result$coordinate_system))
         "unknown" else result$coordinate_system,
       time_unit=result$time_unit)
-    d<-data.frame(curve_id=new_curves,stringsAsFactors=FALSE)
+    d<-data.frame(curve_id=bundle$curve_ids,stringsAsFactors=FALSE)
     for(j in seq_along(coefficient_names))
       d[[coefficient_names[[j]]]]<-X[source_rows,j+1L]
     alerts<-character()
@@ -215,6 +189,12 @@
     fixed[b,,]<-fit$fixed_basis_coefficients
     curves[b,,]<-fit$fixed_coefficient_functions
     covs[b,,]<-fit$random_effect_covariance
+    covariance<-.etr_nested_source_covariance_diagnostics(
+      fit$random_effect_covariance)
+    eigenvalues[b,]<-covariance$eigenvalues
+    condition[b]<-covariance$condition_number
+    boundary[b]<-covariance$boundary
+    singular[b]<-covariance$singular
     intercept[b,,]<-if(nested)
       fit$random_intercept_covariance else
         fit$random_effect_covariance[seq_len(nr),seq_len(nr),drop=FALSE]
@@ -227,34 +207,30 @@
           fit$random_effect_covariance[seq_len(nr),
             nr+seq_len(nr),drop=FALSE]
       evs<-eigen(slopes[b,,],symmetric=TRUE,only.values=TRUE)$values
-      slope_boundary[b]<-min(evs)<=1e-7*max(1,max(abs(evs)))
+      slope_boundary[b]<-max(evs)<=.10*max(
+        max(abs(covariance$eigenvalues)),.Machine$double.eps)||
+        min(evs)<=1e-8*covariance$scale
     }
-    e<-eigen(fit$random_effect_covariance,
-      symmetric=TRUE,only.values=TRUE)$values
-    eigenvalues[b,]<-e
-    condition[b]<-if(min(abs(e))>0)
-      max(abs(e))/min(abs(e))else Inf
-    boundary[b]<-min(e)<=1e-7*max(1,max(abs(e)))
-    singular[b]<-min(abs(e))<=1e-10*max(1,max(abs(e)))
     if(nested){
       trials[b,,]<-fit$trial_random_effect_covariance
-      te<-eigen(fit$trial_random_effect_covariance,
-        symmetric=TRUE,only.values=TRUE)$values
-      trial_eigen[b,]<-te
-      trial_condition[b]<-if(min(abs(te))>0)
-        max(abs(te))/min(abs(te))else Inf
-      trial_boundary[b]<-min(te)<=1e-7*max(1,max(abs(te)))
-      trial_singular[b]<-min(abs(te))<=1e-10*max(1,max(abs(te)))
+      trial_eigen[b,]<-fit$trial_random_effect_covariance_eigenvalues
+      trial_condition[b]<-fit$trial_random_effect_covariance_condition_number
+      trial_boundary[b]<-fit$trial_random_effect_boundary_fit
+      trial_singular[b]<-fit$trial_random_effect_singular
+      boundary[b]<-boundary[b]||trial_boundary[b]
     }
     if(!is.null(rho)){
+      residual_diagnostics<-if(nested)fit else
+        .etr_nested_source_residual_contract(fit$time,correlation,
+          fit$residual_correlation_parameter,fit$residual_correlation_matrix,
+          fit$residual_functions,fit$residual_variance,fit$time_unit)
       rho[b]<-fit$residual_correlation_parameter
-      rho_boundary[b]<-isTRUE(fit$residual_correlation_boundary_fit)
+      rho_boundary[b]<-residual_diagnostics$residual_correlation_boundary_fit
       rho_independence[b]<-isTRUE(
-        fit$residual_correlation_independence_limit_fit)
-      correlation_eigen<-eigen(fit$residual_correlation_matrix,
-        symmetric=TRUE,only.values=TRUE)$values
-      rho_condition[b]<-max(correlation_eigen)/
-        min(correlation_eigen)
+        residual_diagnostics$residual_correlation_independence_limit_fit)
+      rho_condition[b]<-
+        residual_diagnostics$residual_correlation_condition_number
+      boundary[b]<-boundary[b]||rho_boundary[b]
     }
     sigma2[b]<-fit$residual_variance
     loglik[b]<-as.numeric(stats::logLik(fit$fitted_model))
@@ -270,11 +246,9 @@
   provenance$functional_mixed_effects_full_refit_bootstrap<-list(
     method="participant_cluster_case_bootstrap_full_ml_reml_refit",
     source_model_structure=kind,residual_correlation=correlation,
-    n_bootstrap=B,
+    n_bootstrap=B,random_state=random_state,
     sampled_indices_supplied=!is.null(sampled_participant_indices),
-    native_rng=if(!is.null(sampled_participant_indices))
-      "caller_supplied_fixed_indices" else if(is.null(random_state))
-      "base_R_unseeded" else "numpy_pcg64",
+    native_rng=draws$engine,
     duplicate_participant_draws_receive_distinct_group_ids=TRUE,
     nested_trials_receive_distinct_ids=nested,
     participant_covariance_refit=TRUE,
@@ -316,8 +290,7 @@
     residual_correlation_boundary_flags=rho_boundary,
     residual_correlation_independence_flags=rho_independence,
     residual_correlation_condition_numbers=rho_condition,
-    random_state=if(is.null(random_state))NULL else
-      as.integer(random_state),
+    random_state=random_state,
     bootstrap_type="full_refit",failure_policy="raise",
     variance_components_refit=TRUE,
     provenance=provenance,

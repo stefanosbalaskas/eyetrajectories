@@ -28,7 +28,7 @@ etr_sparse_fpca_partial_trajectory_prediction_native<-function(
     identical(fit$fit_method,"native_covariance")&&
     identical(fit$provenance$sparse_fpca$backend,"native"),
     "fit must retain a native sparse FPCA covariance population")
-  .etr_irregular_validate_samples(trajectory)
+  .etr_irregular_validate_samples(trajectory,allow_infinite_values=TRUE)
   .etr_assert(length(trajectory$curve_ids)==1L,
     "trajectory must contain exactly one target curve")
   .etr_assert(fit$dimension%in%trajectory$dimension_names&&

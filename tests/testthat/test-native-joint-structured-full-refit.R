@@ -77,6 +77,34 @@ test_that("structured full likelihood resamples whole participants and refits co
   if(!identical(Sys.getenv("ET_RUN_SCIENTIFIC_SLOW"),"true"))
     skip("set ET_RUN_SCIENTIFIC_SLOW=true for four 20-replicate actual likelihood refits")
   skip_if_not_installed("nlme")
+  source_trial_frame<-NULL
+  if(identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true")){
+    reticulate::py_run_string("
+import numpy as np
+import eyetrajectoriespy as _etr_nested_source
+from eyetrajectoriespy.functional_mixed_effects_full_refit import _bootstrap_dataset
+def _etr_nested_source_trial_frame(time, observed, scalar, ids, participants,
+                                   groups, trials, indices):
+    fit=object.__new__(_etr_nested_source.FunctionalMixedEffectsResult)
+    fields=dict(time=np.asarray(time), observed_functions=np.asarray(observed),
+                scalar_design_matrix=np.asarray(scalar), predictor_names=('x',),
+                source_curve_ids=tuple(ids), participant_ids=tuple(participants),
+                curve_participant_ids=tuple(groups), curve_trial_ids=tuple(trials),
+                participant_column='pid', trial_column='trial',
+                trial_random_effect='functional_intercept',
+                dimension_name='signal', coordinate_system='degrees', time_unit='s',
+                provenance={})
+    for name, value in fields.items():
+        object.__setattr__(fit,name,value)
+    audit=tuple(_bootstrap_dataset(fit,participant_sample=sample,bootstrap_index=i)[4]
+                for i,sample in enumerate(np.asarray(indices)))
+    result=object.__new__(_etr_nested_source.FunctionalMixedEffectsFullRefitBootstrapResult)
+    object.__setattr__(result,'bootstrap_trial_audit',audit)
+    return _etr_nested_source.functional_mixed_effects_full_refit_trial_audit_frame(result)
+")
+    source_trial_frame<-reticulate::py_eval("_etr_nested_source_trial_frame",
+      convert=FALSE)
+  }
   for(kind in c("serial","slope","nested_trial","nested_slope")){
     reference<-.etr_structured_refit_synthetic(kind)
     expect_identical(reference$coordinate_system,"degrees")
@@ -85,15 +113,21 @@ test_that("structured full likelihood resamples whole participants and refits co
     n<-length(reference$participant_ids)
     selected<-matrix(rep(seq_len(n)-1L,times=20L),
       nrow=20L,byrow=TRUE)
+    nested<-kind%in%c("nested_trial","nested_slope")
+    if(nested)selected[2L,1L]<-selected[2L,2L]
     set.seed(4321L)
     state<-.Random.seed
+    seed<-2^32+21
     out<-etr_bootstrap_functional_mixed_effects_full_refit(
-      reference,n_bootstrap=20L,random_state=21L,
+      reference,n_bootstrap=20L,random_state=seed,
       sampled_participant_indices=selected)
     expect_identical(state,.Random.seed,
       info=paste(kind,"retained R RNG state"))
     expect_s3_class(out,"etr_joint_mixed_structured_full_refit_bootstrap")
     expect_identical(out$bootstrap_type,"full_refit")
+    expect_identical(out$random_state,seed)
+    expect_identical(out$sampled_participant_indices,selected)
+    expect_identical(length(out$bootstrap_trial_audit),20L)
     expect_identical(dim(out$bootstrap_fixed_basis_coefficients),
       c(20L,2L,2L))
     expect_identical(dim(out$bootstrap_coefficient_functions),
@@ -111,15 +145,35 @@ test_that("structured full likelihood resamples whole participants and refits co
     expect_equal(out$residual_variances[1L],
       reference$residual_variance,tolerance=5e-3,
       info=paste(kind,"identity-refit residual variance"))
-    if(kind%in%c("nested_trial","nested_slope")){
+    trial_frame<-etr_functional_mixed_effects_full_refit_trial_audit_frame(out)
+    expect_equal(out$random_effect_covariance_eigenvalues[1L,],
+      sort(eigen(out$random_effect_covariances[1L,,],symmetric=TRUE,
+        only.values=TRUE)$values),tolerance=1e-12)
+    if(nested){
       expect_identical(dim(out$trial_random_effect_covariances),
         c(20L,2L,2L))
       expect_equal(nrow(out$bootstrap_trial_audit[[1L]]),
         nrow(reference$observed_functions))
       expect_false(anyDuplicated(
         out$bootstrap_trial_audit[[1L]]$bootstrap_trial_id)>0L)
+      expect_equal(nrow(trial_frame),20L*nrow(reference$observed_functions))
+      expect_identical(trial_frame$bootstrap_trial_id[1L],
+        "bootstrap_0000_draw_0000_trial_0000")
+      duplicate<-trial_frame[trial_frame$bootstrap_replicate==1L,]
+      expect_identical(duplicate$source_participant_id[1:6],
+        rep(reference$participant_ids[2L],6L))
+      expect_equal(length(unique(duplicate$bootstrap_trial_id)),
+        nrow(reference$observed_functions))
+      if(!is.null(source_trial_frame)){
+        expected<-reticulate::py_call(source_trial_frame,
+          reference$time,reference$observed_functions,reference$scalar_design,
+          reference$source_curve_ids,reference$participant_ids,
+          reference$curve_participant_ids,reference$curve_trial_ids,selected)
+        expect_equal(trial_frame,et_to_r(expected),ignore_attr=TRUE)
+      }
     }else{
       expect_null(out$trial_random_effect_covariances)
+      expect_equal(nrow(trial_frame),0L)
     }
     if(kind%in%c("slope","nested_slope")){
       expect_identical(dim(out$random_slope_covariances),

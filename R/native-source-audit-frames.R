@@ -177,28 +177,37 @@ etr_functional_mixed_effects_full_refit_trial_audit_frame <- function(bootstrap)
   .etr_frame_record(bootstrap,"bootstrap_trial_audit","bootstrap")
   sets<-bootstrap$bootstrap_trial_audit
   .etr_assert(is.list(sets),"bootstrap_trial_audit must be a list of replicate records")
+  fields<-c("source_participant_id","bootstrap_participant_id",
+    "source_trial_id","bootstrap_trial_id")
   out<-data.frame(bootstrap_replicate=integer(),
     source_participant_id=character(),
     bootstrap_participant_id=character(),
     source_trial_id=character(),
     bootstrap_trial_id=character(),stringsAsFactors=FALSE)
-  for(i in seq_along(sets)){
+  frames<-lapply(seq_along(sets),function(i){
     records<-sets[[i]]
+    if(!length(records))return(NULL)
     .etr_assert(is.list(records),
       "each bootstrap trial audit replicate must be a list")
-    if(!length(records))next
-    rows<-lapply(records,function(record){
-      .etr_assert(is.character(record)&&length(record)==4L&&
-        !anyNA(record),"trial audit record must have four source/target identifiers")
-      record
-    })
-    m<-do.call(rbind,rows)
-    out<-rbind(out,data.frame(bootstrap_replicate=rep(as.integer(i-1L),
-      nrow(m)),source_participant_id=m[,1L],
-      bootstrap_participant_id=m[,2L],
-      source_trial_id=m[,3L],bootstrap_trial_id=m[,4L],
-      stringsAsFactors=FALSE))
-  }
+    if(is.data.frame(records)){
+      .etr_frame_record(records,fields,"bootstrap trial audit replicate")
+      records<-records[fields]
+      .etr_assert(all(vapply(records,function(column)
+        is.character(column)&&is.null(dim(column))&&!anyNA(column),
+        logical(1L))),"trial audit identifiers must be nonmissing character columns")
+    }else{
+      rows<-lapply(records,function(record){
+        .etr_assert(is.character(record)&&length(record)==4L&&
+          !anyNA(record),"trial audit record must have four source/target identifiers")
+        unname(record)
+      })
+      records<-as.data.frame(do.call(rbind,rows),stringsAsFactors=FALSE)
+      names(records)<-fields
+    }
+    data.frame(bootstrap_replicate=rep(i-1L,nrow(records)),
+      records,stringsAsFactors=FALSE)
+  })
+  out<-do.call(rbind,c(list(out),frames))
   rownames(out)<-NULL;out
 }
 
