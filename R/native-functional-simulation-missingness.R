@@ -1,7 +1,7 @@
 # Frozen Python 1.2 _functional_simulation.py::_missingness_mask:
 # source SHA c1cd95ad718327550f7e55393ff38582872f7a94.
 # Native R dense MCAR and contiguous-block observation dropout.
-# No Python dependency; native sampling does not claim NumPy RNG parity.
+# No Python dependency. A supplied PCG64 stream consumes source draws.
 
 .etr_functional_simulation_missingness_spec <- function(missingness) {
   if(is.null(missingness))return(list(kind="none",parameter=NULL))
@@ -27,19 +27,22 @@
   list(kind=kind,parameter=number)
 }
 
-.etr_functional_simulation_missingness_draw <- function(nt,spec) {
+.etr_functional_simulation_missingness_draw <- function(nt,spec,rng=NULL) {
   .etr_assert(is.numeric(nt)&&length(nt)==1L&&
     nt>=2L&&nt==as.integer(nt),
     "dense missingness requires at least two samples")
   if(identical(spec$kind,"none"))return(rep(FALSE,nt))
-  if(identical(spec$kind,"mcar"))
-    return(stats::runif(nt)<spec$parameter)
+  if(identical(spec$kind,"mcar")){
+    uniform<-if(is.null(rng))stats::runif(nt) else rng$uniform(nt)
+    return(uniform<spec$parameter)
+  }
   .etr_assert(identical(spec$kind,"block"),"unknown source missingness kind")
   block<-as.integer(floor(spec$parameter*nt))
   if(spec$parameter>0&&block==0L)block<-1L
   mask<-rep(FALSE,nt)
   if(block>0L){
-    start<-sample.int(nt-block+1L,1L)
+    start<-if(is.null(rng))sample.int(nt-block+1L,1L) else
+      rng$integers(1L,nt-block+1L)+1L
     mask[seq.int(start,length.out=block)]<-TRUE
   }
   mask

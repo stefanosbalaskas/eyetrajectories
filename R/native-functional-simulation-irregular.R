@@ -5,7 +5,7 @@
 # No interpolation, latent-grid resampling or Python runtime.
 
 .etr_functional_simulation_irregular_schedules <- function(
-    observation_times,samples_per_curve,design,grid,n) {
+    observation_times,samples_per_curve,design,grid,n,rng=NULL) {
   .etr_assert(!( !is.null(observation_times) &&
     !is.null(samples_per_curve)),
     "for irregular simulation, specify observation_times or samples_per_curve, not both")
@@ -45,14 +45,23 @@
   .etr_assert(upper>=lower,
     "sample-count bounds must satisfy 2 <= minimum <= maximum")
   counts<-if(lower==upper)rep.int(lower,n) else
-    as.integer(sample.int(upper-lower+1L,n,replace=TRUE)+lower-1L)
+    if(is.null(rng))as.integer(sample.int(upper-lower+1L,n,replace=TRUE)+lower-1L) else
+      rng$integers(n,upper-lower+1L)+lower
+  uniform<-if(is.null(rng))stats::runif else
+    function(size,lo,hi)lo+(hi-lo)*rng$uniform(size)
+  centered<-if(is.null(rng))function(size)stats::rbeta(size,4,4) else
+    function(size)vapply(seq_len(size),function(i){
+      left<-.etr_functional_simulation_numpy_gamma(rng,4)
+      right<-.etr_functional_simulation_numpy_gamma(rng,4)
+      left/(left+right)
+    },numeric(1L))
   times<-lapply(counts,function(count) {
     if(count==2L)return(c(grid[1L],grid[length(grid)]))
     size<-count-2L
     unit<-switch(design,
-      uniform=stats::runif(size,.01,.99),
-      center_clustered=.01+.98*stats::rbeta(size,4,4),
-      boundary_poor=stats::runif(size,.15,.85))
+      uniform=uniform(size,.01,.99),
+      center_clustered=.01+.98*centered(size),
+      boundary_poor=uniform(size,.15,.85))
     c(grid[1L],
       grid[1L]+(grid[length(grid)]-grid[1L])*sort(unit),
       grid[length(grid)])
@@ -67,7 +76,7 @@
     participant_eigenvalues,trial_eigenvalues,measurement_noise_sd,
     measurement_noise_covariance,missingness,phase_variation,
     score_distribution,score_df,orthonormal_tolerance,random_state,
-    source_draws) {
+    source_draws,random_engine) {
   np<-.etr_scenario_integer(n_participants,"n_participants",1L)
   trials<-.etr_scenario_integer(trials_per_participant,
     "trials_per_participant",1L)
@@ -122,7 +131,7 @@
   noise_sd<-noise_spec$sd
   noise_covariance<-noise_spec$covariance
   missing_spec<-.etr_functional_simulation_missingness_spec(missingness)
-  seed<-.etr_scenario_integer(random_state,"random_state",0L)
+  seed<-.etr_functional_simulation_seed(random_state,random_engine)
   pidx<-rep(seq_len(np),each=trials)
   ids<-character(n)
   participant_ids<-character(n)
@@ -134,16 +143,19 @@
   }
   metadata<-data.frame(participant_id=participant_ids,
     trial_id=trial_ids,stringsAsFactors=FALSE)
-  restore<-.etr_simulation_rng(seed)
-  on.exit(restore(),add=TRUE)
+  rng<-NULL
+  if(identical(random_engine,"numpy")){
+    rng<-.etr_numpy_pcg64(seed)
+  }else{
+    restore<-.etr_simulation_rng(seed)
+    on.exit(restore(),add=TRUE)
+  }
 
   if(is.null(source_draws)){
     curve_scores<-.etr_functional_simulation_sample_curve_scores(
-      n,eigenvalues,score_spec)
-    participant_scores<-matrix(stats::rnorm(np*k),np,k)*
-      matrix(rep(sqrt(pv),each=np),np,k)
-    trial_scores<-matrix(stats::rnorm(n*k),n,k)*
-      matrix(rep(sqrt(tv),each=n),n,k)
+      n,eigenvalues,score_spec,rng)
+    participant_scores<-.etr_functional_simulation_normal_scores(np,pv,rng)
+    trial_scores<-.etr_functional_simulation_normal_scores(n,tv,rng)
   }else{
     required<-c("curve_scores","participant_scores",
       "trial_scores","measurement_noise")
@@ -166,16 +178,16 @@
         paste("source_draws",field,"must have finite source matrix geometry"))
     }
   }
-  scores<-curve_scores+trial_scores+
-    participant_scores[pidx,,drop=FALSE]
-  # Schedules are generated AFTER score draws, exactly as the frozen
-  # source call order, but base-R random numbers are not NumPy PCG64.
+  curve_participants<-participant_scores[pidx,,drop=FALSE]
+  scores<-if(is.null(rng))curve_scores+trial_scores+curve_participants else
+    curve_scores+curve_participants+trial_scores
+  # Schedules consume draws after the hierarchy and before phase variation.
   sampling<-.etr_functional_simulation_irregular_schedules(
     observation_times,samples_per_curve,irregular_time_design,
-    truth_grid,n)
+    truth_grid,n,rng)
   schedules<-sampling$schedules
   phase_exponents<-.etr_functional_simulation_phase_draw(
-    phase_spec,n,source_draws)
+    phase_spec,n,source_draws,rng)
   if(!is.null(source_draws)){
     if("missingness_mask"%in%names(source_draws))
       .etr_assert(is.list(source_draws$missingness_mask)&&
@@ -203,7 +215,8 @@
     value
   }
   warped_grid<-matrix(rep(truth_grid,each=n),nrow=n,ncol=nt)
-  if(!is.null(phase_variation))
+  evaluate_at_warp<-!is.null(phase_variation)||!is.null(rng)
+  if(evaluate_at_warp)
     for(i in seq_len(n))
       warped_grid[i,]<-.etr_functional_simulation_power_warp(
         truth_grid,truth_grid,phase_exponents[i])
@@ -220,15 +233,18 @@
   output_times<-vector("list",n)
   output_latent<-vector("list",n)
   output_values<-vector("list",n)
+  if(!is.null(rng))noise_draw<-.etr_functional_simulation_numpy_noise(noise_covariance,rng)
   for(i in seq_len(n)) {
     time<-schedules[[i]]
     warped_pre_times[[i]]<-
-      if(is.null(phase_variation))time else
+      if(!evaluate_at_warp)time else
         .etr_functional_simulation_power_warp(
           time,truth_grid,phase_exponents[i])
     pre_latent[[i]]<-evaluate_curve(warped_pre_times[[i]],i)
     nt_curve<-length(time)
-    if(is.null(source_draws)) {
+    if(!is.null(rng)){
+      noise[[i]]<-noise_draw(nt_curve)
+    }else if(is.null(source_draws)) {
       if(all(abs(noise_covariance)<=1e-8)){
         noise[[i]]<-matrix(0,nt_curve,nd)
       }else if(is.null(measurement_noise_covariance)){
@@ -247,7 +263,7 @@
         length(mask)==nt_curve&&!anyNA(mask),
         "source_draws missingness_mask must match each irregular schedule")
     }else mask<-.etr_functional_simulation_missingness_draw(
-      nt_curve,missing_spec)
+      nt_curve,missing_spec,rng)
     masks[[i]]<-mask
     keep<-!mask
     .etr_assert(sum(keep)>=2L,
@@ -276,8 +292,9 @@
     score_distribution=score_spec$kind,n_components=k,
     truth_grid=as.numeric(truth_grid),
     native_random_engine=if(is.null(source_draws))
-      "base_R_not_NumPy_PCG64" else "externally_retained_source_draws",
+      .etr_functional_simulation_engine_label(random_engine) else "externally_retained_source_draws",
     full_source_contract_certified=FALSE)
+  if(!is.null(rng))provenance$score_distribution_parameters<-score_spec
   observations<-etr_irregular_trajectory_set(
     output_times,output_values,ids,dimension_names,
     metadata=metadata,coordinate_system=coordinate_system,

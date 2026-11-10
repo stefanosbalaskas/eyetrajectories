@@ -10,10 +10,12 @@
 #' @param observation_times Optional explicitly retained irregular source
 #'   schedules (one numeric time vector per curve), overriding only the
 #'   random sampling policy during deterministic review.
+#' @param random_engine Native simulation stream, "base_R" or "numpy".
 #' @return Native simulation observations and complete truth with provenance.
 #' @export
 etr_simulate_functional_scenario<-function(scenario,mean,eigenfunctions,
-    replicate=0L,source_draws=NULL,observation_times=NULL) {
+    replicate=0L,source_draws=NULL,observation_times=NULL,
+    random_engine="base_R") {
   .etr_assert(inherits(scenario,"etr_functional_simulation_scenario"),
     "scenario must be a declared native functional simulation scenario")
   index<-.etr_scenario_integer(replicate,"replicate",0L)
@@ -52,7 +54,7 @@ etr_simulate_functional_scenario<-function(scenario,mean,eigenfunctions,
     score_distribution=scenario$score_distribution,
     score_df=scenario$score_df,
     orthonormal_tolerance=scenario$orthonormal_tolerance,
-    random_state=seed,source_draws=source_draws)
+    random_state=seed,source_draws=source_draws,random_engine=random_engine)
   result$truth$provenance$scenario_name<-scenario$name
   result$truth$provenance$scenario_replicate<-index
   result$truth$provenance$scenario_seed<-seed
@@ -82,12 +84,14 @@ etr_simulate_functional_scenario<-function(scenario,mean,eigenfunctions,
 #' @param observation_times_by_replicate Optional ordered list with one slot
 #'   per replicate; each NULL or a list of per-curve irregular schedules.
 #'   For exact irregular replay, pass the source's pre-missing schedules.
+#' @param random_engine Native simulation stream, "base_R" or "numpy".
 #' @return Native R result with all successful and failed replicates.
 #' @export
 etr_run_functional_recovery_scenarios<-function(
     scenarios,mean,eigenfunctions,estimator,recovery,
     failure_action="raise",source_draws_by_replicate=NULL,
-    observation_times_by_replicate=NULL) {
+    observation_times_by_replicate=NULL,random_engine="base_R") {
+  random_engine<-match.arg(random_engine,c("base_R","numpy"))
   .etr_assert(is.list(scenarios)&&length(scenarios)>0L&&
     all(vapply(scenarios,function(s)
       inherits(s,"etr_functional_simulation_scenario"),logical(1L))),
@@ -109,6 +113,9 @@ etr_run_functional_recovery_scenarios<-function(
   }
   validate_replay(source_draws_by_replicate,
     "source_draws_by_replicate",function(x)is.null(x)||is.list(x))
+  .etr_assert(identical(random_engine,"base_R")||
+    all(vapply(source_draws_by_replicate,is.null,logical(1L))),
+    "source_draws_by_replicate must use random_engine='base_R'")
   validate_replay(observation_times_by_replicate,
     "observation_times_by_replicate",function(x)is.null(x)||is.list(x))
   rows<-list()
@@ -127,7 +134,8 @@ etr_run_functional_recovery_scenarios<-function(
     run<-function() {
       simulation<-tryCatch(etr_simulate_functional_scenario(
         scenario,mean,eigenfunctions,replicate,
-        source_draws=replay_draws,observation_times=replay_times),error=function(e)
+        source_draws=replay_draws,observation_times=replay_times,
+        random_engine=random_engine),error=function(e)
           structure(list(error=e,status="simulation_failed"),
             class="etr_recovery_attempt_error"))
       if(inherits(simulation,"etr_recovery_attempt_error"))return(simulation)
@@ -174,7 +182,7 @@ etr_run_functional_recovery_scenarios<-function(
   structure(list(records=rows,metric_definitions=definitions,
     provenance=list(truth_available_to_estimator=FALSE,
       failure_action=failure_action,redraw_on_failure=FALSE,
-      native_random_engine="base_R_not_NumPy_PCG64",
+      native_random_engine=.etr_functional_simulation_engine_label(random_engine),
       fixed_source_draw_replay=if(is.null(source_draws_by_replicate))FALSE
         else any(!vapply(source_draws_by_replicate,is.null,logical(1L))),
       fixed_irregular_schedule_replay=if(is.null(observation_times_by_replicate))FALSE

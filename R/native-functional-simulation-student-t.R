@@ -3,7 +3,7 @@
 # Student-t applies ONLY to curve scores; participant and trial scores
 # remain Gaussian. Variance correction ensures component eigenvalues
 # remain the intended finite-variance curve score moments.
-# No Python import or NumPy random-stream equivalence.
+# Native draws use base R by default or the supplied PCG64 stream.
 
 .etr_functional_simulation_score_spec <- function(
     score_distribution,score_df) {
@@ -26,19 +26,15 @@
 }
 
 .etr_functional_simulation_sample_curve_scores <- function(
-    n,eigenvalues,spec) {
+    n,eigenvalues,spec,rng=NULL) {
   .etr_assert(is.numeric(n)&&length(n)==1L&&is.finite(n)&&
     n>=1L&&n==floor(n)&&
     is.numeric(eigenvalues)&&length(eigenvalues)>=1L&&
     all(is.finite(eigenvalues))&&all(eigenvalues>0),
     "source curve score dimensions and eigenvalues must be finite and positive")
   k<-length(eigenvalues)
-  if(identical(spec$kind,"normal")) {
-    # Keep this expression and RNG call identical to the previously
-    # qualified native Gaussian path.
-    return(matrix(stats::rnorm(n*k),n,k)*
-      matrix(rep(sqrt(eigenvalues),each=n),n,k))
-  }
+  if(identical(spec$kind,"normal"))
+    return(.etr_functional_simulation_normal_scores(n,eigenvalues,rng))
   .etr_assert(identical(spec$kind,"student_t")&&
     is.numeric(spec$df)&&length(spec$df)==1L&&
     is.finite(spec$df)&&spec$df>2,
@@ -47,6 +43,14 @@
   # Var[t_df] = df/(df-2). Multiply by sqrt((df-2)/df),
   # making Var[curve score component j] = eigenvalues[j].
   scale<-sqrt(eigenvalues*((df-2)/df))
-  matrix(stats::rt(n*k,df=df),nrow=n,ncol=k)*
-    matrix(rep(scale,each=n),nrow=n,ncol=k)
+  draws<-if(is.null(rng))matrix(stats::rt(n*k,df=df),n,k) else {
+    shape<-df/2
+    values<-vapply(seq_len(as.double(n)*k),function(i){
+      numerator<-rng$normal(1L)
+      denominator<-.etr_functional_simulation_numpy_gamma(rng,shape)
+      sqrt(shape)*numerator/sqrt(denominator)
+    },numeric(1L))
+    matrix(values,n,k,byrow=TRUE)
+  }
+  draws*matrix(rep(scale,each=n),n,k)
 }

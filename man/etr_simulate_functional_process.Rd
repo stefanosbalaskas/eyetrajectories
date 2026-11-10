@@ -22,7 +22,7 @@ etr_simulate_functional_process(
   missingness = NULL, phase_variation = NULL,
   score_distribution = "normal", score_df = 5,
   orthonormal_tolerance = 1e-6, random_state = 42L,
-  source_draws = NULL
+  source_draws = NULL, random_engine = "base_R"
 )
 }
 \arguments{
@@ -80,7 +80,13 @@ component's population variance equal to its declared eigenvalue.
 The parameter is not evaluated when \code{score_distribution="normal"}.}
 \item{orthonormal_tolerance}{Positive finite numerical tolerance for
 source quadrature orthonormality.}
-\item{random_state}{Native R random seed; not NumPy PCG64 equivalent.}
+\item{random_state}{Nonnegative integer seed for the selected engine.
+The NumPy engine accepts exactly represented seeds below \eqn{2^{53}}.}
+\item{random_engine}{\code{"base_R"} preserves the legacy native stream.
+\code{"numpy"} uses native PCG64 to replay frozen Python 1.2 seed order
+for Gaussian and Student-t scores, generated schedules, phase, noise and dropout.
+The same option is available to \code{etr_simulate_functional_scenario()}
+and \code{etr_run_functional_recovery_scenarios()}.}
 \item{source_draws}{Optional captured source curve, participant, trial
 and measurement-noise draws for exact paired Python/R value replay.
 When supplied, all four source fields must match declared geometry.
@@ -91,7 +97,7 @@ an optional \code{missingness_mask} field contains one logical vector
 per curve; with declared power-phase variation, an optional
 \code{phase_exponents} field contains one finite positive numeric exponent
 per curve, allowing exact frozen-Python realized-mask and
-realized-warp replay without matching random-number streams.}
+realized-warp replay with \code{random_engine="base_R"}.}
 }
 \value{
 An \code{etr_functional_simulation_result} with
@@ -101,12 +107,14 @@ containing latent values, separated scores, Gaussian noise, named
 covariance, metadata, and provenance.
 }
 \details{
-The preexisting independent Gaussian channel SD path retains its
-native sampling behavior. A supplied PSD covariance activates
-correlated cross-channel Gaussian sampling. Native base-R and NumPy
-random-number streams are different; source comparisons require
-paired retained draws and must not claim identical raw draws for a
-common seed. Dense MCAR and contiguous-block missingness are now available.
+The base-R engine uses its existing symmetric covariance square root.
+The NumPy engine consumes hierarchy scores before schedules and phase,
+then interleaves measurement noise and dropout for each curve. It skips
+noise draws when the entire covariance lies within \eqn{10^{-8}} of zero.
+NumPy-seeded covariance noise uses an SVD factor. Exact replay of its
+realization depends on the signed singular-vector basis returned by the
+local LAPACK backend, especially for tied singular values. Retained
+source draws remain available for cross-backend replay.
 The returned observation values use the native missing-data sentinel NA
 at masked samples, while \code{truth$observed_pre_missing} retains
 the complete noisy signal and \code{truth$missingness_mask} retains
@@ -124,7 +132,8 @@ evaluated at the warped time by the generating functions.
 Curve-level Student-t scores with finite degrees of freedom
 greater than two are implemented and preserve the source
 component variance. Participant and trial effects remain Gaussian.
-Complete Python input/output dataclass types, full source
-coercion/exception domains, NumPy PCG64 streams and independent
-full scientific certification remain unresolved.
+The qualified seeded cases cover finite explicit seeds, the documented
+simulation mechanisms and the resulting native truth fields. Python
+dataclass identity, broader coercion and exception domains, and independent
+scientific certification remain open.
 }

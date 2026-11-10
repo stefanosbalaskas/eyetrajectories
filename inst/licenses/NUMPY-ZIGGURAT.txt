@@ -1,4 +1,4 @@
-NumPy 2.3.5 normal distribution implementation and tables
+NumPy 2.3.5 distribution algorithms and normal tables
 https://github.com/numpy/numpy/blob/v2.3.5/numpy/random/src/distributions/LICENSE.md
 
 ## NumPy
