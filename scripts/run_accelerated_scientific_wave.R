@@ -111,6 +111,7 @@
       "native-bootstrap-inference",
       "native-fixed-multiplier-replay-source",
       "native-miaaft-fixed-permutation-source",
+      "native-miaaft-cross-denominator-audit",
       "native-fpcr-bootstrap-uncertainty",
       "native-fpcr-future-prediction-interval",
       "native-functional-models",

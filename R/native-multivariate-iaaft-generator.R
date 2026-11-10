@@ -24,7 +24,8 @@
   }
   out
 }
-.etr_multivariate_spectrum_errors<-function(surrogate,target_spectrum,pairs){
+.etr_multivariate_spectrum_errors<-function(
+    surrogate,target_spectrum,pairs,denominator_audit=FALSE){
   now<-.etr_multivariate_fft_half(surrogate)
   expected<-Mod(target_spectrum)
   norm<-function(z)sqrt(sum(Mod(z)^2))
@@ -37,7 +38,35 @@
       target_spectrum[-1L,p[[2L]]])
     norm(a-b)/max(norm(b),.Machine$double.eps)
   },numeric(1L))
-  list(spectral=error,cross=cross)
+  out<-list(spectral=error,cross=cross)
+  if(!isTRUE(denominator_audit))return(out)
+  # Diagnostic only: preserve the frozen Python 1.2 error law above.
+  # Near-zero cross-spectral target norms make a ratio numerically
+  # ill-conditioned even when surrogate rank/phase replay agrees.
+  # The 64*eps guard is an explicitly R-side numerical warning, not a
+  # replacement for Python's max(norm(target), eps) denominator and not
+  # a surrogate convergence or inference decision.
+  out$denominator_audit<-do.call(rbind,lapply(seq_along(pairs),function(i){
+    p<-pairs[[i]]
+    a<-now[-1L,p[[1L]]]*Conj(now[-1L,p[[2L]]])
+    b<-target_spectrum[-1L,p[[1L]]]*Conj(
+      target_spectrum[-1L,p[[2L]]])
+    target_norm<-norm(b)
+    error_norm<-norm(a-b)
+    scale<-norm(target_spectrum[-1L,p[[1L]]])*
+      norm(target_spectrum[-1L,p[[2L]]])
+    threshold<-64*.Machine$double.eps*max(1,scale)
+    data.frame(left=as.integer(p[[1L]]-1L),
+      right=as.integer(p[[2L]]-1L),
+      target_cross_spectral_norm=as.numeric(target_norm),
+      cross_spectral_difference_norm=as.numeric(error_norm),
+      source_denominator=as.numeric(max(target_norm,.Machine$double.eps)),
+      independent_channel_norm_product=as.numeric(scale),
+      roundoff_warning_threshold=as.numeric(threshold),
+      near_zero_cross_spectral_target=target_norm<=threshold,
+      relative_error=as.numeric(cross[[i]]))
+  }))
+  out
 }
 .etr_multivariate_unresolved_phases<-function(spectrum,n){
   amplitude<-Mod(spectrum)
