@@ -28,7 +28,7 @@
   ids
 }
 .etr_cv_fold_assignment <- function(x,n_splits,cv_unit,group_column,shuffle,
-                                     random_state) {
+                                     random_state,sparse_source_order=FALSE) {
   n<-length(x$curve_ids)
   if(identical(cv_unit,"curve")) {
     .etr_assert(n_splits<=n,"n_splits cannot exceed number of trajectories")
@@ -67,7 +67,7 @@
   .etr_assert(length(raw)==n && !anyNA(raw),
     "group_column must have one nonmissing group per curve")
   gr<-as.character(raw)
-  labels<-sort(unique(gr))
+  labels<-if(sparse_source_order)sort(unique(gr),method="radix") else sort(unique(gr))
   .etr_assert(n_splits<=length(labels),
     "n_splits cannot exceed number of unique groups")
   sizes<-vapply(labels,function(g)sum(gr==g),integer(1L))
@@ -77,8 +77,13 @@
   # the reversed pass visits indices in descending order, including ties.
   # Preserve the existing native deterministic policy for all other
   # sequences: NumPy quicksort may permute nonadjacent mixed-size ties.
-  order<-if(all(diff(sizes)>=0L))
-    rev(seq_along(labels)) else order(-sizes,labels)
+  order<-if(all(diff(sizes)>=0L)){
+    rev(seq_along(labels))
+  }else if(sparse_source_order&&length(sizes)<=3L){
+    # NumPy's scalar and SIMD paths agree on descending label order
+    # within ties for up to three groups, including mixed group sizes.
+    order(-sizes,-seq_along(labels))
+  }else order(-sizes,seq_along(labels))
   totals<-numeric(n_splits)
   group_folds<-integer(length(labels))
   for(j in order) {

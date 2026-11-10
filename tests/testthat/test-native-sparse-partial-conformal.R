@@ -117,6 +117,10 @@ test_that("mapped sparse prediction workflow uses full native source PACE split 
   expect_s3_class(w,"etr_native_sparse_prediction_workflow")
   expect_identical(w$workflow_contract,"sparse_prediction:v1")
   expect_identical(w$band$calibration$n_calibration_units,4L)
+  expect_identical(etr_workflow_steps_frame(w$steps)$name,
+    c("proper_training.fit","conformal_calibration","target_prediction"))
+  expect_identical(w$decisions$role_assignment$value$calibration,as.list(cal$curve_ids))
+  expect_identical(w$decisions$role_assignment$criterion,"explicit_disjoint_workflow_roles")
   expect_identical(nrow(w$tables$prediction_band),3L)
   expect_identical(nrow(w$tables$calibration_curve_scores),12L)
   expect_false(w$provenance$raw_interpolation_performed)
@@ -124,10 +128,14 @@ test_that("mapped sparse prediction workflow uses full native source PACE split 
   cfg$training$mean_bandwidth<-cfg$training$covariance_bandwidth<-NULL
   cfg$training$bandwidth_selection<-list(mean_bandwidths=c(.5,.6),
     covariance_bandwidths=.85,n_splits=3L,shuffle=FALSE)
+  cfg$training$score_uncertainty<-list()
   selected<-etr_run_sparse_prediction_workflow(proper,cal,target,cfg)
   assignments<-selected$training_workflow$bandwidth_selection$assignments
   expect_setequal(assignments$curve_id,proper$curve_ids)
   expect_identical(selected$steps[[1L]]$name,"proper_training.bandwidth_selection")
+  expect_identical(selected$steps[[3L]]$name,"proper_training.score_uncertainty")
+  expect_identical(selected$decisions$training.mean_bandwidth$source,"audited_selector")
+  expect_true(selected$decisions$training.score_uncertainty_requested$value)
   expect_identical(nrow(selected$tables$prediction_band),3L)
 })
 

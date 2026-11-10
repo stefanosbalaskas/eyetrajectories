@@ -1,176 +1,260 @@
-# Direct frozen Python 1.2 known-truth multi-component FPCA recovery.
-# Source: recovery.py::_population_values, _align_components,
-# evaluate_fpca_recovery at c1cd95ad718327550f7e55393ff38582872f7a94.
-# Pure native R. Does not refit a model, interpolate, or infer significance.
+# Shared recovery geometry from frozen Python 1.2 recovery.py. Components
+# flatten in time-major order so every time weight repeats over channels.
 
-.etr_fpca_recovery_rows <- function(modes,weights,name) {
-  .etr_assert(is.array(modes)&&is.numeric(modes)&&
-    length(dim(modes))==3L&&dim(modes)[1L]>=1L&&
-    length(weights)==dim(modes)[2L]&&
-    all(is.finite(modes)),
-    paste(name,"must contain finite source component arrays"))
-  k<-dim(modes)[1L];nt<-dim(modes)[2L];nd<-dim(modes)[3L]
-  flat<-matrix(0,k,nt*nd)
-  for(j in seq_len(k))
-    flat[j,]<-as.vector(t(matrix(modes[j,,,drop=FALSE],nt,nd)))
-  flat
+.etr_recovery_require_grid <- function(grid, truth_grid, message) {
+  .etr_assert(is.numeric(truth_grid) && is.null(dim(truth_grid)) &&
+    length(truth_grid) >= 2L && all(is.finite(truth_grid)) &&
+    all(diff(truth_grid) > 0), "truth_grid must be finite and strictly increasing")
+  .etr_assert(is.numeric(grid) && is.null(dim(grid)) &&
+    identical(as.numeric(grid), as.numeric(truth_grid)), message)
 }
 
-.etr_fpca_recovery_multi_assignment <- function(similarity){
-  .etr_assert(is.matrix(similarity)&&is.numeric(similarity)&&
-    nrow(similarity)>=1L&&ncol(similarity)>=nrow(similarity)&&
-    all(is.finite(similarity)),
-    "truth contains fewer components than the fitted result or invalid similarity")
-  k<-nrow(similarity);m<-ncol(similarity)
-  # SciPy maximizes absolute weighted cosine in a rectangular k-by-m matrix.
-  # Pad with equal-cost dummy rows; their assignment cannot change the
-  # true k-row objective. Our exact O(m^3) Hungarian source solver then
-  # returns the original k real-row assignments.
-  top<-max(abs(similarity))-abs(similarity)
-  cost<-matrix(max(abs(similarity)),m,m)
-  cost[seq_len(k),]<-top
-  .etr_exact_assignment_hungarian(cost)[seq_len(k)]
+.etr_fpca_recovery_rows <- function(array) {
+  matrix(aperm(array, c(1L, 3L, 2L)), nrow = dim(array)[1L])
 }
 
-.etr_fpca_recovery_multi <- function(result,truth) {
-  .etr_recovery_source_fields(result,c("time","provenance",
-    "dimension_names","scale","mean","components","explained_variance",
-    "scores","weights"),"FPCA fit")
-  .etr_recovery_source_fields(truth,c("truth_grid","dimension_names",
-    "mean","eigenfunctions","eigenvalues","scores",
-    "latent_on_truth_grid"),"FPCA generating truth")
-  tt<-truth$truth_grid
-  .etr_assert(is.numeric(tt)&&is.null(dim(tt))&&length(tt)>=3L&&
-    all(is.finite(tt))&&all(diff(tt)>0),
-    "truth_grid must be finite and strictly increasing")
-  .etr_assert(is.numeric(result$time)&&is.null(dim(result$time))&&
-    identical(as.numeric(result$time),as.numeric(tt)),
-    "known-truth FPCA recovery requires exact source grid")
-  .etr_assert(is.list(result$provenance),
-    "FPCA provenance must be a source-shaped record")
-  fpca<-result$provenance[["fpca",exact=TRUE]]
-  .etr_assert(is.null(fpca)||is.list(fpca),
-    "FPCA fit provenance must be source-shaped")
-  scaling<-if(is.null(fpca))NULL else fpca[["scaling",exact=TRUE]]
-  .etr_assert(is.null(scaling)||identical(scaling,"none"),
-    "known-truth FPCA recovery requires scaling='none'")
-  names_truth<-truth$dimension_names;nd<-length(names_truth);nt<-length(tt)
-  .etr_assert(is.character(names_truth)&&nd>=1L&&!anyNA(names_truth)&&
-    !anyDuplicated(names_truth)&&
-    identical(result$dimension_names,names_truth),
-    "fitted dimension names/order do not match generating truth")
-  .etr_assert(is.numeric(result$scale)&&is.null(dim(result$scale))&&
-    length(result$scale)==nd&&all(is.finite(result$scale))&&
-    all(abs(result$scale-1)<=1e-12),
-    "known-truth FPCA recovery requires unit dimension scales")
-  w<-result$weights
-  .etr_assert(is.numeric(w)&&is.null(dim(w))&&
-    length(w)==nt&&all(is.finite(w))&&all(w>0),
-    "functional quadrature weights must be finite and positive")
-  .etr_assert(is.matrix(result$mean)&&is.numeric(result$mean)&&
-    identical(dim(result$mean),c(nt,nd))&&all(is.finite(result$mean))&&
-    is.matrix(truth$mean)&&is.numeric(truth$mean)&&
-    identical(dim(truth$mean),c(nt,nd))&&all(is.finite(truth$mean)),
-    "source fitted and generating means must match finite time/dimension geometry")
-  est<-result$components;target<-truth$eigenfunctions
-  .etr_assert(is.array(est)&&length(dim(est))==3L&&
-    identical(as.integer(dim(est)[2:3]),c(nt,nd)),
-    "fitted components must match source time/dimension geometry")
-  .etr_assert(is.array(target)&&length(dim(target))==3L&&
-    identical(as.integer(dim(target)[2:3]),c(nt,nd)),
-    "truth components must match source time/dimension geometry")
-  ke<-dim(est)[1L];kt<-dim(target)[1L]
-  .etr_assert(ke>=1L&&kt>=ke,"truth contains fewer components than the fitted result")
-  lambda<-result$explained_variance;truth_lambda<-truth$eigenvalues
-  .etr_assert(is.numeric(lambda)&&length(lambda)==ke&&
-    all(is.finite(lambda))&&is.numeric(truth_lambda)&&
-    length(truth_lambda)==kt&&all(is.finite(truth_lambda))&&
-    all(truth_lambda>0),
-    "fitted and truth eigenvalues must match finite component geometry")
-  ss<-result$scores;ts<-truth$scores
-  .etr_assert(is.matrix(ss)&&is.numeric(ss)&&ncol(ss)==ke&&
-    nrow(ss)>=2L&&all(is.finite(ss)),
-    "estimated source scores must have finite curves-by-components geometry")
-  n<-nrow(ss)
-  .etr_assert(is.matrix(ts)&&is.numeric(ts)&&
-    identical(dim(ts),c(n,kt))&&all(is.finite(ts)),
-    "truth source scores must match all curves/components")
-  latent<-truth$latent_on_truth_grid
-  .etr_assert(is.array(latent)&&is.numeric(latent)&&
-    identical(dim(latent),c(n,nt,nd))&&all(is.finite(latent)),
-    "latent source curves must match reconstruction geometry")
-  # Full population covariance is a dense (time*dimension)^2 object.
-  .etr_assert(as.double(nt)*nd<=2000,
-    "dense covariance recovery above 2000 source coordinates is not supported")
-  flat_w<-rep(w,each=nd)
-  E<-.etr_fpca_recovery_rows(est,w,"estimated")
-  T<-.etr_fpca_recovery_rows(target,w,"truth")
-  en<-sqrt(rowSums(sweep(E^2,2L,flat_w,"*")))
-  tn<-sqrt(rowSums(sweep(T^2,2L,flat_w,"*")))
-  .etr_assert(all(is.finite(c(en,tn)))&&all(en>0)&&all(tn>0),
+.etr_fpca_recovery_normalize <- function(modes, weights) {
+  norms <- sqrt(rowSums(sweep(modes^2, 2L, weights, "*")))
+  .etr_assert(all(is.finite(norms) & norms > 0),
     "functional components contain an invalid norm")
-  E_norm<-E/en;T_norm<-T/tn
-  signed<-sweep(E_norm,2L,flat_w,"*")%*%t(T_norm)
-  assignment<-.etr_fpca_recovery_multi_assignment(signed)
-  sign_match<-ifelse(signed[cbind(seq_len(ke),assignment+1L)]>=0,1,-1)
-  similarity<-abs(signed[cbind(seq_len(ke),assignment+1L)])
-  # NumPy QR and R QR provide the same weighted subspaces; singular
-  # values of the cross-basis Gram matrix are principal cosines.
-  e_weighted<-sweep(t(E_norm),1L,sqrt(flat_w),"*")
-  t_weighted<-sweep(t(T_norm[assignment+1L,,drop=FALSE]),
-    1L,sqrt(flat_w),"*")
-  qe<-qr.Q(qr(e_weighted),complete=FALSE)
-  qt<-qr.Q(qr(t_weighted),complete=FALSE)
-  cosines<-pmax(0,pmin(1,svd(crossprod(qe,qt),nu=0L,nv=0L)$d))
-  values<-list()
-  add<-function(name,value,component=NULL){
-    values[[length(values)+1L]]<<-
-      .etr_fpca_recovery_value(name,value,component)
-  }
-  add("mean_ise",sum(sweep((result$mean-truth$mean)^2,1L,w,"*")))
-  # NumPy time-major C-order matches rows flattened from t(time*channel).
-  cov_est<-crossprod(E,E*lambda)
-  cov_truth<-crossprod(T,T*truth_lambda)
-  add("covariance_ise",sum((cov_est-cov_truth)^2*
-    outer(flat_w,flat_w)))
-  for(j in seq_len(ke)) {
-    original<-assignment[j]+1L
-    add("eigenvalue_relative_error",
-      abs(lambda[j]-truth_lambda[original])/abs(truth_lambda[original]),
-      as.integer(j-1L))
-    add("component_absolute_similarity",similarity[j],
-      as.integer(j-1L))
-    aligned<-sign_match[j]*ss[,j]
-    if(length(aligned)>=2L){
-      correlation<-stats::cor(aligned,ts[,original])
-      # Python may emit NaN for a constant score column; the finite
-      # native scientific subset deliberately fails closed instead.
-      .etr_assert(is.finite(correlation),
-        "source score correlation is undefined on constant scores")
-      add("score_correlation",correlation,as.integer(j-1L))
-      add("score_rmse",sqrt(mean((aligned-ts[,original])^2)),
-        as.integer(j-1L))
+  modes / norms
+}
+
+.etr_fpca_recovery_multi_assignment <- function(similarity) {
+  # Rectangular shortest augmenting paths (Crouse, 2016,
+  # doi:10.1109/TAES.2016.140952), with SciPy's equal-cost sink priority.
+  # Padding the matrix can change the matched modes when costs tie.
+  cost <- -similarity
+  rows <- nrow(cost)
+  columns <- ncol(cost)
+  row_price <- numeric(rows)
+  column_price <- numeric(columns)
+  assigned_column <- integer(rows)
+  assigned_row <- integer(columns)
+  for (start in seq_len(rows)) {
+    distance <- rep(Inf, columns)
+    predecessor <- integer(columns)
+    visited_rows <- logical(rows)
+    visited_columns <- logical(columns)
+    remaining <- rev(seq_len(columns))
+    minimum <- 0
+    row <- start
+    repeat {
+      visited_rows[row] <- TRUE
+      offer <- minimum + cost[row, remaining] - row_price[row] - column_price[remaining]
+      better <- offer < distance[remaining]
+      distance[remaining[better]] <- offer[better]
+      predecessor[remaining[better]] <- row
+      minimum <- min(distance[remaining])
+      nearest <- which(distance[remaining] == minimum)
+      free <- nearest[assigned_row[remaining[nearest]] == 0L]
+      index <- if (length(free)) free[length(free)] else nearest[1L]
+      column <- remaining[index]
+      visited_columns[column] <- TRUE
+      if (assigned_row[column] == 0L) break
+      row <- assigned_row[column]
+      remaining[index] <- remaining[length(remaining)]
+      remaining <- head(remaining, -1L)
+    }
+    row_price[start] <- row_price[start] + minimum
+    visited_rows[start] <- FALSE
+    row_price[visited_rows] <- row_price[visited_rows] +
+      (minimum - distance[assigned_column[visited_rows]])
+    column_price[visited_columns] <- column_price[visited_columns] -
+      (minimum - distance[visited_columns])
+    repeat {
+      row <- predecessor[column]
+      assigned_row[column] <- row
+      previous <- assigned_column[row]
+      assigned_column[row] <- column
+      if (row == start) break
+      column <- previous
     }
   }
-  for(j in seq_len(ke)){
-    add("subspace_principal_cosine",cosines[j],as.integer(j-1L))
-    add("subspace_principal_angle_degrees",
-      acos(cosines[j])*180/pi,as.integer(j-1L))
+  assigned_column
+}
+
+.etr_fpca_recovery_cosines <- function(estimated, truth, weights) {
+  q <- function(rows) qr.Q(qr(t(rows) * sqrt(weights), tol = 0))
+  pmax(0, pmin(1, svd(crossprod(q(estimated), q(truth)), nu = 0L, nv = 0L)$d))
+}
+
+.etr_fpca_recovery_angles <- function(cosines, value, source = NULL) {
+  values <- lapply(seq_along(cosines), function(i) list(
+    value("subspace_principal_cosine", cosines[i], i - 1L, source),
+    value("subspace_principal_angle_degrees", acos(cosines[i]) * 180 / pi,
+      i - 1L, source)))
+  unlist(values, recursive = FALSE)
+}
+
+.etr_fpca_recovery_covariance_ise <- function(estimated, target, eigenvalues,
+    truth_eigenvalues, weights, covariance) {
+  # Evaluate the dense covariance difference in columns of bounded memory.
+  # Subtract before squaring to retain accuracy for almost identical operators.
+  width <- length(weights)
+  target_scaled <- target * truth_eigenvalues
+  estimated_scaled <- estimated * eigenvalues
+  if (!is.null(covariance)) {
+    .etr_assert(is.matrix(covariance) && is.numeric(covariance) &&
+      identical(dim(covariance), c(width, width)) && all(is.finite(covariance)),
+      "sparse covariance must match the observed source grid")
   }
-  curve_ise<-numeric(n)
-  for(i in seq_len(n)){
-    prediction<-result$mean
-    for(j in seq_len(ke))
-      prediction<-prediction+ss[i,j]*matrix(est[j,,,drop=FALSE],
-        nrow=nt,ncol=nd)
-    original<-matrix(latent[i,,,drop=FALSE],nrow=nt,ncol=nd)
-    curve_ise[i]<-sum(sweep((prediction-original)^2,1L,w,"*"))
+  total <- 0
+  block_size <- max(1L, min(256L, floor(2^20 / width)))
+  for (start in seq.int(1L, width, by = block_size)) {
+    columns <- seq.int(start, min(width, start + block_size - 1L))
+    actual <- if (is.null(covariance)) {
+      crossprod(estimated_scaled, estimated[, columns, drop = FALSE])
+    } else covariance[, columns, drop = FALSE]
+    reference <- crossprod(target_scaled, target[, columns, drop = FALSE])
+    total <- total + sum((actual - reference)^2 * outer(weights, weights[columns]))
   }
-  add("reconstruction_ise",mean(curve_ise))
-  structure(list(values=values,provenance=list(
-    estimator="FPCA",multivariate=nd>1L,
-    truth_grid_match="exact",scaling="none",
-    matched_truth_components=as.integer(assignment),
-    alignment_signs=as.numeric(sign_match))),
-    class="etr_functional_recovery_assessment")
+  total
+}
+
+.etr_fpca_recovery_ties <- function(eigenvalues, tolerance) {
+  previous <- head(eigenvalues, -1L)
+  next_value <- tail(eigenvalues, -1L)
+  scale <- pmax(previous, next_value, .Machine$double.xmin)
+  tied <- abs(previous - next_value) <= tolerance * scale
+  groups <- split(seq_along(eigenvalues), cumsum(c(TRUE, !tied)))
+  unname(groups[lengths(groups) > 1L])
+}
+
+.etr_fpca_recovery_procrustes <- function(scores, truth) {
+  finite <- rowSums(!is.finite(scores) | !is.finite(truth)) == 0L
+  if (sum(finite) < max(2L, ncol(scores))) return(NULL)
+  scores <- scores[finite, , drop = FALSE]
+  truth <- truth[finite, , drop = FALSE]
+  rotation <- svd(crossprod(scores, truth))
+  sqrt(mean((scores %*% tcrossprod(rotation$u, rotation$v) - truth)^2))
+}
+
+.etr_fpca_recovery_population <- function(fit, truth, value, covariance = NULL) {
+  nt <- length(truth$truth_grid)
+  nd <- length(truth$dimension_names)
+  weights <- fit$weights
+  .etr_assert(is.numeric(weights) && is.null(dim(weights)) &&
+    length(weights) == nt && all(is.finite(weights) & weights > 0),
+    "functional quadrature weights must be finite and positive")
+  for (mean in list(fit$mean, truth$mean)) {
+    .etr_assert(is.matrix(mean) && is.numeric(mean) &&
+      identical(dim(mean), c(nt, nd)) && all(is.finite(mean)),
+      "source fitted and generating means must match finite time/dimension geometry")
+  }
+  for (modes in list(fit$components, truth$eigenfunctions)) {
+    .etr_assert(is.array(modes) && is.numeric(modes) && length(dim(modes)) == 3L &&
+      dim(modes)[1L] >= 1L && identical(dim(modes)[2:3], c(nt, nd)),
+      "functional components must match source mode by time/dimension geometry")
+  }
+  fitted_k <- dim(fit$components)[1L]
+  truth_k <- dim(truth$eigenfunctions)[1L]
+  .etr_assert(truth_k >= fitted_k, "truth contains fewer components than the fitted result")
+  eigenvalues <- fit$explained_variance
+  truth_eigenvalues <- truth$eigenvalues
+  .etr_assert(is.numeric(eigenvalues) && is.null(dim(eigenvalues)) &&
+    length(eigenvalues) == fitted_k && all(is.finite(eigenvalues)) &&
+    is.numeric(truth_eigenvalues) && is.null(dim(truth_eigenvalues)) &&
+    length(truth_eigenvalues) == truth_k && all(is.finite(truth_eigenvalues) &
+      truth_eigenvalues > 0), "fitted and truth eigenvalues must match finite component geometry")
+  scores <- fit$scores
+  truth_scores <- truth$scores
+  .etr_assert(is.matrix(scores) && is.numeric(scores) && nrow(scores) >= 1L &&
+    ncol(scores) == fitted_k && is.matrix(truth_scores) && is.numeric(truth_scores) &&
+    identical(dim(truth_scores), c(nrow(scores), truth_k)),
+    "fitted and generating scores must match curve/component geometry")
+  latent <- truth$latent_on_truth_grid
+  .etr_assert(is.array(latent) && is.numeric(latent) &&
+    identical(dim(latent), c(nrow(scores), nt, nd)),
+    "latent source curves must match reconstruction geometry")
+
+  flat_weights <- rep(weights, each = nd)
+  estimated <- .etr_fpca_recovery_rows(fit$components)
+  target <- .etr_fpca_recovery_rows(truth$eigenfunctions)
+  normalized <- .etr_fpca_recovery_normalize(estimated, flat_weights)
+  truth_normalized <- .etr_fpca_recovery_normalize(target, flat_weights)
+  signed <- sweep(normalized, 2L, flat_weights, "*") %*% t(truth_normalized)
+  matched <- .etr_fpca_recovery_multi_assignment(abs(signed))
+  matched_signed <- signed[cbind(seq_len(fitted_k), matched)]
+  signs <- ifelse(matched_signed >= 0, 1, -1)
+
+  planar <- is.list(covariance)
+  tie_tolerance <- 1e-8
+  ties <- if (planar) .etr_fpca_recovery_ties(truth_eigenvalues, tie_tolerance) else list()
+  complete_ties <- Filter(function(group) {
+    retained <- group %in% matched
+    .etr_assert(!any(retained) || all(retained),
+      "retained components split a tied truth eigenspace")
+    all(retained)
+  }, ties)
+
+  values <- list(value("mean_ise", sum((fit$mean - truth$mean)^2 * weights)))
+  if (planar) {
+    channels <- list(x = seq.int(1L, ncol(target), by = 2L),
+      y = seq.int(2L, ncol(target), by = 2L))
+    for (block in c("cxx", "cxy", "cyx", "cyy")) {
+      actual <- covariance[[block]]
+      .etr_assert(is.matrix(actual) && is.numeric(actual) &&
+        identical(dim(actual), c(nt, nt)) && all(is.finite(actual)),
+        paste("planar covariance block", block, "must be finite and match truth-grid geometry"))
+      rows <- target[, channels[[substr(block, 2L, 2L)]], drop = FALSE]
+      columns <- target[, channels[[substr(block, 3L, 3L)]], drop = FALSE]
+      reference <- crossprod(rows * truth_eigenvalues, columns)
+      error <- sum((actual - reference)^2 * outer(weights, weights))
+      values[[length(values) + 1L]] <- value("covariance_block_ise", error, source = block)
+    }
+    covariance_ise <- sum(vapply(values[-1L], function(metric) metric$value, numeric(1L)))
+  } else {
+    covariance_ise <- .etr_fpca_recovery_covariance_ise(estimated, target, eigenvalues,
+      truth_eigenvalues, flat_weights, covariance)
+  }
+  values[[length(values) + 1L]] <- value("covariance_ise", covariance_ise)
+
+  tied_components <- unlist(ties, use.names = FALSE)
+  for (i in seq_len(fitted_k)) {
+    truth_index <- matched[i]
+    reference <- truth_eigenvalues[truth_index]
+    values[[length(values) + 1L]] <- value("eigenvalue_relative_error",
+      abs(eigenvalues[i] - reference) / reference, i - 1L)
+    if (truth_index %in% tied_components) next
+    values[[length(values) + 1L]] <- value("component_absolute_similarity",
+      abs(matched_signed[i]), i - 1L)
+    estimate <- signs[i] * scores[, i]
+    reference <- truth_scores[, truth_index]
+    finite <- is.finite(estimate) & is.finite(reference)
+    if (sum(finite) >= 2L) {
+      correlation <- suppressWarnings(stats::cor(estimate[finite], reference[finite]))
+      if (!planar || is.finite(correlation))
+        values[[length(values) + 1L]] <- value("score_correlation", correlation, i - 1L)
+      values[[length(values) + 1L]] <- value("score_rmse",
+        sqrt(mean((estimate[finite] - reference[finite])^2)), i - 1L)
+    }
+  }
+  cosines <- if (fitted_k == 1L) min(1, abs(matched_signed)) else
+    .etr_fpca_recovery_cosines(normalized, truth_normalized[matched, , drop = FALSE],
+      flat_weights)
+  values <- c(values, .etr_fpca_recovery_angles(cosines, value))
+  tied_sources <- lapply(complete_ties, function(group) paste0(
+    "truth_components_", paste(group, collapse = "_")))
+  for (i in seq_along(complete_ties)) {
+    group <- complete_ties[[i]]
+    retained <- which(matched %in% group)
+    source <- tied_sources[[i]]
+    cosines <- .etr_fpca_recovery_cosines(normalized[retained, , drop = FALSE],
+      truth_normalized[group, , drop = FALSE], flat_weights)
+    values <- c(values, .etr_fpca_recovery_angles(cosines, value, source))
+    rmse <- .etr_fpca_recovery_procrustes(scores[, retained, drop = FALSE],
+      truth_scores[, group, drop = FALSE])
+    if (!is.null(rmse)) values[[length(values) + 1L]] <-
+      value("score_subspace_procrustes_rmse", rmse, source = source)
+  }
+  reconstructed <- sweep(scores %*% estimated, 2L, as.vector(t(fit$mean)), "+")
+  curve_ise <- rowSums(sweep((reconstructed - .etr_fpca_recovery_rows(latent))^2,
+    2L, flat_weights, "*"))
+  if (any(is.finite(curve_ise))) values[[length(values) + 1L]] <-
+    value("reconstruction_ise", mean(curve_ise[is.finite(curve_ise)]))
+
+  list(values = values, matched_truth_components = as.integer(matched - 1L),
+    alignment_signs = as.numeric(signs), tie_tolerance = tie_tolerance,
+    ties = ties, tied_sources = tied_sources)
 }

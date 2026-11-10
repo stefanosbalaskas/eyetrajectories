@@ -5,6 +5,7 @@
   stopifnot(identical(et_python_version(),"1.2.0"))
   source("tests/testthat/helper-native-sparse-source-fixture.R",local=TRUE)
   source("tests/testthat/helper-native-sparse-mfpca-fixture.R",local=TRUE)
+  source("scripts/sparse_workflow_source_records.R",local=TRUE)
   reticulate::py_run_string("
 import numpy as np
 from eyetrajectoriespy import IrregularTrajectorySet
@@ -92,7 +93,8 @@ def _etr_sparse_workflow_input(times, values, ids, dimensions, metadata):
     frame_name<-paste0(case$prefix,"_score_frame")
     report_name<-paste0(case$prefix,"_reporting_text")
     fixtures<-c("fixed_bandwidth","retained_score_failure",
-      "selected_seeded_curve","selected_group_with_failed_candidate")
+      "selected_seeded_curve","selected_group_with_failed_candidate",
+      "selected_three_groups_mixed_sizes")
     if(case$prefix=="sparse_fpca")fixtures<-c(fixtures,"selected_diagonal_difference")
     for(fixture in fixtures){
       args<-case$args
@@ -116,6 +118,12 @@ def _etr_sparse_workflow_input(times, values, ids, dimensions, metadata):
             args$measurement_error_variance<-NULL
             args$measurement_error_covariance<-matrix(c(.08,.015,.015,.10),2L)
           }
+        }
+        if(fixture=="selected_three_groups_mixed_sizes"){
+          native_tr$metadata$fold_group<-rep(c("Z","a","z"),c(6L,12L,6L))
+          reference_tr<-source_input(native_tr)
+          selector$resampling_unit<-"group"
+          selector$group_column<-"fold_group"
         }
         if(fixture=="selected_diagonal_difference"){
           native_tr$values<-.etr_seed_scope(224L,function()
@@ -146,6 +154,8 @@ def _etr_sparse_workflow_input(times, values, ids, dimensions, metadata):
         "ScoreUncertaintyConfig"),failure_action="retain_nan")
       cfg<-do.call(reticulate::py_call,c(list(attr(python,case$config)),args))
       source<-reticulate::py_call(attr(python,name),trajectories=reference_tr,config=cfg)
+      .etr_compare_sparse_workflow_records(native,source,function(field,ok)
+        record(name,fixture,field,if(ok)"PASS_SCHEMA"else"DIVERGENT_SCHEMA"))
       source_fit<-attr(source,"fit")
       source_scores<-et_to_r(reticulate::py_call(
         etpy_get_export(frame_name),result=source_fit))

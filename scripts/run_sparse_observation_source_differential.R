@@ -3,6 +3,7 @@
 .etr_sparse_observation_differential<-function(){
   pkgload::load_all(".",quiet=TRUE)
   stopifnot(identical(et_python_version(),"1.2.0"))
+  source("scripts/sparse_workflow_source_records.R",local=TRUE)
   for(file in c("observation-process-fixture","sparse-source-fixture",
       "sparse-mfpca-fixture","sparse-mfpca-async-fixture","sparse-multilevel-source-fixture"))
     source(file.path("tests/testthat",paste0("helper-native-",file,".R")),local=TRUE)
@@ -120,8 +121,25 @@ def _etr_obs_workflow_input(times, values, ids, dimensions, metadata):
     native_process<-do.call(etr_observation_process_data,input)
     reference_process<-source_process(input)
     params<-case$params
+    selection_type<-switch(case$type,
+      SparseFPCAWorkflowConfig="SparseFPCABandwidthSelectionConfig",
+      SparseMFPCAWorkflowConfig="SparseMFPCABandwidthSelectionConfig")
+    if(!is.null(selection_type)){
+      params$mean_bandwidth<-params$covariance_bandwidth<-NULL
+      params$bandwidth_selection<-list(mean_bandwidths=c(.55,.65),
+        covariance_bandwidths=.95,n_splits=3L,shuffle=FALSE)
+      params$score_uncertainty<-list(failure_action="retain_nan")
+    }
     native<-case$runner(tr,c(list(backend="native_covariance",
       observation_diagnostics=opts),params),native_process)
+    if(!is.null(selection_type)){
+      params$bandwidth_selection$covariance_bandwidths<-
+        as.list(params$bandwidth_selection$covariance_bandwidths)
+      params$bandwidth_selection<-do.call(call,
+        c(list(attr(workflows,selection_type)),params$bandwidth_selection))
+      params$score_uncertainty<-do.call(call,
+        c(list(attr(workflows,"ScoreUncertaintyConfig")),params$score_uncertainty))
+    }
     if(!is.null(params$dimensions))params$dimensions<-as.list(params$dimensions)
     if(length(params$measurement_error_variance)>1L)
       params$measurement_error_variance<-as.list(params$measurement_error_variance)
@@ -131,6 +149,10 @@ def _etr_obs_workflow_input(times, values, ids, dimensions, metadata):
       dimensions=as.list(tr$dimension_names),metadata=tr$metadata)
     source<-call(attr(workflows,name),trajectories=py_data,config=cfg,
       observation_process=reference_process)
+    .etr_compare_sparse_workflow_records(native,source,function(field,ok)
+      record(name,field,if(ok)""else"workflow field differs"))
+    record(name,"fit_report",if(identical(native$reports$fit,
+      et_to_r(item(attr(source,"reports"),"fit"))))""else"fit report differs")
     expected<-attr(source,"observation_diagnostics")
     for(key in c("observation_global","observation_time","observation_associations"))
       record(name,key,difference(native$tables[[key]],

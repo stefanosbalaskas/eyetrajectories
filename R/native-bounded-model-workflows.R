@@ -85,10 +85,10 @@ etr_run_functional_mixed_effects_workflow<-function(
     as_frame<-etr_sparse_fpca_score_uncertainty_frame_native
     source_function<-"sparse_fpca_score_uncertainty"
   }
-  result<-do.call(calculate,c(list(fit=fit,trajectories=trajectories),parameters))
-  step<-.etr_source_workflow_step(source_function,parameters)
-  step$name<-"score_uncertainty"
-  list(result=result,step=step,frame=as_frame(result),report=paste0(
+  run<-.etr_sparse_timed_step("score_uncertainty",source_function,parameters,
+    do.call(calculate,c(list(fit=fit,trajectories=trajectories),parameters)))
+  result<-run$result
+  list(result=result,step=run$step,frame=as_frame(result),report=paste0(
     "Conditional PACE score uncertainty uses the full fitted covariance ",
     "evaluated at native observation times and excludes uncertainty in ",
     "the estimated population fit. ",
@@ -119,17 +119,20 @@ etr_run_functional_mixed_effects_workflow<-function(
     observation_process,cfg$observation_diagnostics)
   .etr_assert(inherits(trajectories,"etr_irregular_trajectory_set"),
     "source-model sparse FPCA requires native irregular trajectories")
-  selection<-.etr_sparse_bandwidth_selection(trajectories,cfg,paired=FALSE)
+  selection_run<-.etr_sparse_bandwidth_selection(trajectories,cfg,paired=FALSE)
+  selection<-selection_run$result
   params<-cfg[setdiff(names(cfg),c("preprocessing","score_uncertainty",
     "bandwidth_selection","observation_diagnostics"))]
   params<-.etr_sparse_bandwidth_refit(params,selection)
-  fit<-do.call(etr_fit_sparse_fpca_native,c(
-    list(trajectories=trajectories),params[
-      setdiff(names(params),"backend")]))
+  fit_params<-params[setdiff(names(params),"backend")]
+  fit_run<-.etr_sparse_timed_step("fit","fit_sparse_fpca",
+    c(fit_params,list(mean_smoother="local_linear",
+      covariance_smoother="local_linear",kernel="epanechnikov")),
+    do.call(etr_fit_sparse_fpca_native,c(list(trajectories=trajectories),fit_params)))
+  fit<-fit_run$result
   uncertainty<-.etr_sparse_workflow_uncertainty(
     cfg$score_uncertainty,fit,trajectories)
-  steps<-list(.etr_source_workflow_step(
-    "fit_sparse_fpca_native_full_covariance_PACE",params))
+  steps<-list(fit_run$step)
   reports<-list(fit=etr_sparse_fpca_reporting_text(fit))
   tables<-list(scores=.etr_scientific_frame_metadata(fit,"SFPC",
       preserve_workflow_metadata=TRUE),
@@ -144,6 +147,7 @@ etr_run_functional_mixed_effects_workflow<-function(
   workflow<-structure(list(
     workflow_schema_version=1L,
     workflow_contract="sparse_fpca:native_local_linear_fixed_noise",
+    source_workflow_contract="sparse_fpca:v1",
     config=cfg,fit=fit,score_uncertainty=uncertainty$result,
     steps=steps,
     decisions=c(lapply(params,.etr_source_workflow_decision),list(
@@ -153,6 +157,8 @@ etr_run_functional_mixed_effects_workflow<-function(
       source_python_family="fit_sparse_fpca",
       source_numerical_law="local_linear_epanechnikov_PACE",
       raw_interpolation_performed=FALSE,
+      native_observation_grids_retained=TRUE,
+      automatic_model_selection_performed=FALSE,
       preprocessing_executed=FALSE,
       noise_variance_method=cfg$noise_variance_method,
       automatic_bandwidth_selection_performed=FALSE,
@@ -161,7 +167,7 @@ etr_run_functional_mixed_effects_workflow<-function(
       full_source_contract_certified=FALSE),
     reports=reports,tables=tables),
     class="etr_sparse_fpca_workflow")
-  workflow<-.etr_sparse_bandwidth_workflow(workflow,selection,paired=FALSE)
+  workflow<-.etr_sparse_bandwidth_workflow(workflow,selection_run)
   .etr_sparse_observation_workflow(workflow,observation_process,observation_options)
 }
 

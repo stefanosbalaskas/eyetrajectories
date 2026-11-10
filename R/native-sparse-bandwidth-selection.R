@@ -78,7 +78,7 @@
     policy<-"declared_folds"
   }else if(unit=="group"||!shuffle){
     assignment<-.etr_cv_fold_assignment(x,k,unit,options$group_column,
-      FALSE,NULL)
+      FALSE,NULL,sparse_source_order=TRUE)
     policy<-if(unit=="group")"native_group_size_balanced"else"unshuffled_kfold"
   }else{
     permutation<-.etr_sparse_cv_permutation(n,options$random_state)
@@ -161,8 +161,26 @@
       all(is.finite(values)&values>0),paste(name,"must contain positive finite bandwidths"))
     sort(unique(as.numeric(values)))
   }
-  means<-positive_grid(options$mean_bandwidths,"mean_bandwidths")
-  covariances<-positive_grid(options$covariance_bandwidths,"covariance_bandwidths")
+  options$mean_bandwidths<-positive_grid(options$mean_bandwidths,"mean_bandwidths")
+  options$covariance_bandwidths<-positive_grid(options$covariance_bandwidths,"covariance_bandwidths")
+  model_parameters<-c("evaluation_grid","analysis_support_action","psd_action",
+    "psd_tolerance","mean_min_local_points","covariance_min_local_pairs",
+    if(paired)c("dimensions","measurement_error","measurement_error_variance",
+      "measurement_error_covariance") else c("dimension","noise_bandwidth",
+      "noise_support","noise_variance_method","measurement_error_variance",
+      "positive_eigen_tolerance","noise_min_local_points"))
+  parameters<-c(cfg[model_parameters],options)
+  if(!paired)parameters<-c(parameters,list(mean_smoother="local_linear",
+    covariance_smoother="local_linear",kernel="epanechnikov"))
+  if(is.null(options$fold_assignments))parameters$fold_assignments<-NULL
+  .etr_sparse_timed_step("bandwidth_selection",
+    if(paired)"select_sparse_mfpca_bandwidths"else"select_sparse_fpca_bandwidths",
+    parameters,.etr_sparse_evaluate_bandwidths(x,cfg,paired,options))
+}
+
+.etr_sparse_evaluate_bandwidths <- function(x,cfg,paired,options){
+  means<-options$mean_bandwidths
+  covariances<-options$covariance_bandwidths
   .etr_irregular_validate_samples(x)
   dimensions<-if(paired)cfg$dimensions else cfg$dimension
   .etr_assert(is.character(dimensions)&&length(dimensions)==if(paired)2L else 1L,
@@ -377,14 +395,12 @@
   parameters
 }
 
-.etr_sparse_bandwidth_workflow <- function(workflow,selection,paired){
+.etr_sparse_bandwidth_workflow <- function(workflow,selection_run){
+  selection<-selection_run$result
   workflow["bandwidth_selection"]<-list(selection)
   workflow$provenance$bandwidth_mode<-if(is.null(selection))"fixed"else"audited_selector"
   if(is.null(selection))return(workflow)
-  step<-.etr_source_workflow_step(if(paired)"select_sparse_mfpca_bandwidths"else
-    "select_sparse_fpca_bandwidths",selection$parameters)
-  step$name<-"bandwidth_selection"
-  workflow$steps<-c(list(step),workflow$steps)
+  workflow$steps<-c(list(selection_run$step),workflow$steps)
   values<-selection$selected_bandwidths
   for(key in c("mean_bandwidth","covariance_bandwidth"))
     workflow$decisions[[key]]<-.etr_source_workflow_decision(

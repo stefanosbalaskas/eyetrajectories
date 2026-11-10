@@ -259,6 +259,86 @@ etr_sparse_mfpca_reporting_text <- function(result,digits=3L) {
   if(is.null(x))return("None")
   paste0("'",.etr_source_text_word(x,name),"'")
 }
+
+.etr_sparse_async_workflow_report <- function(fit) {
+  config <- fit$provenance$sparse_mfpca_async
+  dimensions <- .etr_sparse_dimension_repr(fit$dimensions)
+  psd <- fit$covariance_diagnostics
+  status <- fit$score_diagnostics$status_code
+  paste0(
+    "Native asynchronous sparse planar MFPCA was fitted to dimensions ",
+    dimensions[1L], " and ", dimensions[2L], " for ", length(fit$curve_ids),
+    " curve(s), retaining ", fit$n_components, " joint component(s). ",
+    "Coordinate-specific native timestamps were retained without ",
+    "interpolation, nearest-neighbour synchronization, or time binning. ",
+    "Separate coordinate means and direct Cxx/Cxy/Cyy latent covariance ",
+    "surfaces used declared local-linear bandwidths ",
+    .etr_python_json_float(config$mean_bandwidth), " and ",
+    .etr_python_json_float(config$covariance_bandwidth), ". Cxy used asynchronous ",
+    "x-y residual products and excluded ",
+    config$cross_covariance_same_time_pair_count_excluded,
+    " simultaneous cross-product(s) from latent covariance fitting. Cyx ",
+    "was defined as Cxy transpose. The full joint operator used PSD action '",
+    psd$requested_action, "' (applied='", psd$applied_action,
+    "'; relative operator correction=",
+    sprintf("%.3f", psd$relative_operator_correction_frobenius_norm),
+    "). Measurement error used mode '", config$measurement_error_mode,
+    "' with R_epsilon=", .etr_sparse_mfpca_numpy_2x2(fit$measurement_error_covariance, 3L),
+    "; off-diagonal measurement-error covariance was added only for ",
+    "simultaneous x/y observations. Asynchronous joint PACE used the full ",
+    "fitted covariance plus measurement error and ridge=",
+    .etr_python_json_float(config$score_ridge),
+    ", never a rank-K covariance reconstruction. ", sum(status == "ok"),
+    " curve(s) were scored successfully and ", sum(status != "ok"),
+    " retained score-system failure(s) were recorded under failure_action='",
+    config$score_failure_action, "'."
+  )
+}
+
+.etr_sparse_multilevel_workflow_report <- function(fit) {
+  psd <- fit$covariance_diagnostics
+  paste0(
+    "Native sparse multilevel FPCA modeled irregular trials as ",
+    "Y_ij(t)=mu(t)+U_i(t)+V_ij(t)+epsilon_ij(t), with ",
+    length(fit$participant_ids), " participants and ", length(fit$curve_ids),
+    " trials. The grand mean used pooled native observations; total latent ",
+    "covariance used within-trial off-diagonal products and between-participant ",
+    "covariance used same-participant cross-trial products. The within-trial ",
+    "operator was defined as smoothed total minus smoothed between covariance ",
+    "before the declared PSD policy (between=", psd$between$applied_action,
+    ", within=", psd$within$applied_action, "). Measurement-error variance was ",
+    sprintf("%.3g", fit$noise_variance), ". Participant and trial scores were ",
+    "recovered jointly by Gaussian BLUP using the full repaired between/within ",
+    "covariance surfaces at native timestamps, not rank-truncated reconstructions. ",
+    sum(fit$score_diagnostics$status_code != "ok"),
+    " participant score systems failed under the declared policy. ",
+    "The first sparse multilevel tranche assumes exchangeable repeated trials, ",
+    "does not estimate trial-condition fixed functional effects, uses observation/",
+    "raw-pair weighting rather than equal-participant weighting, does not ",
+    "interpolate raw sparse trajectories, and does not propagate population-",
+    "estimation or bandwidth uncertainty."
+  )
+}
+
+.etr_sparse_conformal_workflow_report <- function(band) {
+  calibration <- band$calibration
+  unit <- if (is.null(calibration$group_column)) "curve" else "participant/group"
+  paste0(
+    "A split-conformal simultaneous prediction band was calibrated from ",
+    calibration$n_calibration_units, " exchangeability unit(s) (", unit,
+    ") at alpha=", sprintf("%.3f", calibration$alpha),
+    ". Nonconformity was the maximum standardized absolute future residual ",
+    "over the declared ", length(calibration$prediction_grid),
+    "-point target grid, with critical value ",
+    sprintf("%.3f", calibration$critical_value),
+    ". Calibration responses were required to be actually observed at every ",
+    "target-grid timestamp; no interpolation was used. The resulting coverage ",
+    "interpretation is simultaneous for future observed measurements on that ",
+    "declared finite grid under the exchangeability/grouping contract. ",
+    "No continuous-domain or latent-function coverage claim is made."
+  )
+}
+
 .etr_sparse_univariate_scalar <- function(x,name,zero=TRUE) {
   val<-.etr_source_text_number(x,name,min=if(zero)0 else .Machine$double.eps)
   format(val,scientific=FALSE,trim=TRUE)
