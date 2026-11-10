@@ -125,6 +125,34 @@ class ScientificSourceEvidenceTests(unittest.TestCase):
         self.assertEqual(report["passing_bounded_comparison_cases"], 2)
 
 
+    def test_five_functional_core_witnesses_enter_open_source_ledger_without_certification(self):
+        five = [
+            "functional_trapezoid_weights",
+            "alr_transform", "inverse_alr",
+            "score_distance_matrix", "windowed_rqa_sensitivity",
+        ]
+        cases = [dict(
+            python_name=name,
+            source_fixture="frozen_source_core_fixture",
+            field="source_numeric",
+            outcome="PASS_NUMERIC",
+            r_git_head=HEAD,
+            frozen_python_commit=inventory.FROZEN_PYTHON)
+            for name in five]
+        write_csv(self.reports /
+                  evidence.OPTIONAL_REPORTS["functional_core_native"],
+                  cases)
+        record = evidence.summarize(self.root, HEAD, write=False)
+        self.assertEqual(record["total_observed_comparison_cases"], 8)
+        self.assertEqual(record["passing_bounded_comparison_cases"], 8)
+        self.assertEqual(record["unique_python_functions_with_actual_source_cases"], 8)
+        for name in five:
+            row = next(r for r in record["function_evidence"]
+                       if r["python_name"] == name)
+            self.assertTrue(row["source_gap_still_open"])
+            self.assertTrue(row["developer_finite_domain_oracle_evidence"])
+            self.assertFalse(row["independent_full_contract_certified"])
+
     def test_sparse_async_public_workflow_evidence_is_not_independent_approval(self):
         row = dict(
             python_name="run_sparse_mfpca_async_workflow",

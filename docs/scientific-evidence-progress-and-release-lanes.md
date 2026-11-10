@@ -112,3 +112,22 @@ certificate is introduced. Source `run_sparse_prediction_workflow` has a
 direct exact-role Python 1.2 comparison under the existing
 `ET_RUN_SPARSE_SOURCE_DIFF=true` switch. Its unsigned observed numerical
 cases enter the evidence census without lowering the open gap count.
+
+## Functional core source differential — five additional audited functions
+
+The source-pinned numerical runner `run_functional_core_source_differential.R`
+checks `functional_trapezoid_weights`, `alr_transform`,
+`inverse_alr`, `score_distance_matrix`, and
+`windowed_rqa_sensitivity` against the **frozen Python 1.2 source**.
+Tests include irregular integration grids, normalized weights, clipped
+zero-probability simplex dimensions, multiple reference coordinates,
+sign-invariant score-space Euclidean distances, exact shared RQA window
+centres, sample reuse, descriptive profiles, and rejected invalid
+specifications. Each numerical field produces an exact-head unsigned
+case; mismatches remain fatal at the strict consolidated gate.
+
+This source differential **extends full-domain review evidence** but never
+marks a callable source gap closed, asserts matplotlib/pandas representation
+equivalence, or generates independent certifications. When new native or
+Python source domains are found, extend both the probes and the documented
+input/error contract rather than lowering the gate.

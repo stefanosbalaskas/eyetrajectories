@@ -105,7 +105,9 @@
       "native-sparse-partial-trajectory-prediction",
       "native-sparse-partial-conformal",
       "native-sparse-multilevel-source",
-      "native-sparse-mfpca-async-source"
+      "native-sparse-mfpca-async-source",
+      "native-functional-rqa-recovery",
+      "native-functional-diagnostics"
     ),collapse="|"),reporter="summary",
       stop_on_failure=TRUE,stop_on_warning=TRUE),
     error=function(e){
@@ -177,11 +179,14 @@
         "MULTILEVEL")
       sparse_runner("scripts/run_sparse_mfpca_async_source_differential.R",
         "ASYNC")
+      sparse_runner("scripts/run_functional_core_source_differential.R",
+        "FUNCTIONAL_CORE")
       cat("ACCELERATED_WAVE_SPARSE_FPCA_SOURCE_DIFF_ATTEMPTED=TRUE\n")
       cat("ACCELERATED_WAVE_SPARSE_MFPCA_SOURCE_DIFF_ATTEMPTED=TRUE\n")
       cat("ACCELERATED_WAVE_SPARSE_PREDICTION_SOURCE_DIFF_ATTEMPTED=TRUE\n")
       cat("ACCELERATED_WAVE_SPARSE_MULTILEVEL_SOURCE_DIFF_ATTEMPTED=TRUE\n")
       cat("ACCELERATED_WAVE_SPARSE_ASYNC_SOURCE_DIFF_ATTEMPTED=TRUE\n")
+      cat("ACCELERATED_WAVE_FUNCTIONAL_CORE_SOURCE_DIFF_ATTEMPTED=TRUE\n")
     }
     runpy("scripts/summarize_scientific_source_evidence.py")
     # Refresh the algorithmic work queue *after* recorded frozen-source
