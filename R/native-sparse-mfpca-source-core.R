@@ -246,11 +246,33 @@
   out
 }
 
-.etr_spnm_cov_eval <- function(grid,blocks,time){
+.etr_spnm_cov_eval <- function(grid,blocks,time,order="time_major"){
+  # Frozen Python evaluate_planar_covariance exposes both storage
+  # permutations. Native joint-PACE scoring still defaults to time-major
+  # [x1,y1,...,xm,ym], with a deliberate channel-major diagnostic path.
+  .etr_assert(is.character(order)&&length(order)==1L&&
+    !is.na(order)&&order%in%c("time_major","channel_major"),
+    "order must be 'channel_major' or 'time_major'")
+  .etr_assert(is.numeric(time)&&is.null(dim(time))&&
+    all(is.finite(time)),
+    "times must be a finite one-dimensional numeric vector")
+  if(length(time)&&
+     (min(time)<grid[[1L]]||max(time)>tail(grid,1L)))
+    .etr_spn_fail("native_time_outside_fitted_support",
+      "native observation times fall outside fitted surface support",
+      list(grid_start=as.numeric(grid[[1L]]),
+        grid_end=as.numeric(tail(grid,1L)),
+        target_min=as.numeric(min(time)),
+        target_max=as.numeric(max(time))))
+  # Frozen time-major permutation rejects n_time_points=0, while the
+  # source channel-major covariance retains the valid empty matrix.
+  if(!length(time)&&order=="time_major")
+    .etr_assert(FALSE,"n_time_points must be positive")
   xx<-.etr_spnm_interp(grid,blocks$cxx,time)
   xy<-.etr_spnm_interp(grid,blocks$cxy,time)
   yy<-.etr_spnm_interp(grid,blocks$cyy,time)
   channel_major<-rbind(cbind(xx,xy),cbind(t(xy),yy))
+  if(order=="channel_major")return(channel_major)
   indices<-seq_along(time)
   time_major<-as.vector(rbind(indices,length(time)+indices))
   channel_major[time_major,time_major,drop=FALSE]
