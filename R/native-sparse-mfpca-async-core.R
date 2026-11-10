@@ -80,11 +80,21 @@
 }
 
 .etr_spna_cross_pairs<-function(tx,rx,ty,ry,tolerance){
+  # Frozen Python 1.2 raw_async_planar_covariance_pairs: validate curve
+  # cardinalities and tolerance before constructing within-channel pairs.
+  .etr_assert(is.list(tx)&&is.list(rx)&&is.list(ty)&&is.list(ry)&&
+    length(tx)==length(rx)&&length(tx)==length(ty)&&
+    length(tx)==length(ry),
+    "asynchronous coordinate sequences must have equal curve counts")
+  .etr_assert(is.numeric(tolerance)&&length(tolerance)==1L&&
+    !is.na(tolerance)&&is.finite(tolerance)&&tolerance>=0,
+    "same_time_tolerance must be finite and nonnegative")
   xx<-.etr_spn_pairs(tx,rx)
   yy<-.etr_spn_pairs(ty,ry)
   items<-vector("list",length(tx));candidate<-excluded<-0L
   for(i in seq_along(tx)){
     if(!length(tx[[i]])||!length(ty[[i]]))next
+    # Python loops curve, x index (outer), y index (inner).
     ix<-rep(seq_along(tx[[i]]),each=length(ty[[i]]))
     iy<-rep(seq_along(ty[[i]]),times=length(tx[[i]]))
     candidate<-candidate+length(ix)
@@ -92,21 +102,30 @@
     excluded<-excluded+sum(!keep)
     items[[i]]<-list(s=tx[[i]][ix[keep]],
       t=ty[[i]][iy[keep]],
-      products=rx[[i]][ix[keep]]*ry[[i]][iy[keep]])
+      products=rx[[i]][ix[keep]]*ry[[i]][iy[keep]],
+      curve_index=rep.int(i-1L,sum(keep)))
   }
-  xy<-lapply(c("s","t","products"),function(name)
-    unlist(lapply(items,function(x)x[[name]]),use.names=FALSE))
-  names(xy)<-c("s","t","products")
+  collect<-function(key,mode){
+    v<-unlist(lapply(items,function(x)x[[key]]),use.names=FALSE)
+    if(mode=="integer")as.integer(v) else as.numeric(v)
+  }
+  xy<-list(s=collect("s","numeric"),t=collect("t","numeric"),
+    products=collect("products","numeric"),
+    curve_index=collect("curve_index","integer"),mirrored=FALSE)
   if(length(xy$products)<3L)
     .etr_spn_fail("insufficient_async_cross_covariance_pairs",
-      "less than three cross-coordinate products after same-time exclusion")
+      "fewer than three asynchronous x-y covariance pairs remain after same-time exclusion",
+      list(candidate_cross_pairs=as.integer(candidate),
+        same_time_pairs_excluded=as.integer(excluded),
+        retained_cross_pairs=as.integer(length(xy$products)),
+        same_time_tolerance=as.numeric(tolerance)))
   list(xx=xx,xy=xy,yy=yy,
     pair_counts=c(xx=length(xx$products),
       xy=length(xy$products),yy=length(yy$products)),
     audit=list(cross_candidate_pair_count=as.integer(candidate),
       cross_same_time_pair_count_excluded=as.integer(excluded),
       cross_retained_pair_count=as.integer(length(xy$products)),
-      same_time_tolerance=tolerance))
+      same_time_tolerance=as.numeric(tolerance)))
 }
 
 .etr_spna_scalar_layout<-function(tx,x,ty,y,tolerance){
