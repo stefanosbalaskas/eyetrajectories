@@ -133,7 +133,11 @@ test_that("six adapter mappings retain open typed-Python source gaps",{
   expect_identical(sort(rows$native_r_candidate),
     sort(paste0("etr_",names)))
   expect_true(all(rows$native_implementation_started))
-  expect_true(all(rows$source_contract_gap_unresolved))
+  closed<-rows$python_name%in%
+    c("sparse_fpca_score_frame","sparse_mfpca_score_frame")
+  expect_identical(sum(closed),2L)
+  expect_false(any(rows$source_contract_gap_unresolved[closed]))
+  expect_true(all(rows$source_contract_gap_unresolved[!closed]))
   expect_false(any(rows$one_to_one_native_contract_complete))
   expect_gte(sum(p$is_python_function & p$named_native_candidate),332L)
   expect_gte(sum(p$native_implementation_started),307L)
