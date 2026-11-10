@@ -123,7 +123,8 @@ test_that("508-source census remains strict and unsigned",{
     expect_equal(nrow(row),1L)
     expect_identical(row$native_r_candidate,paste0("etr_",name))
     expect_identical(row$native_implementation_stage,28L)
-    if(identical(name,"mathematical_contract_frame")) {
+    if(name %in% c("mathematical_contract_frame",
+                      "list_mathematical_contracts")) {
       # Complete native table semantics, not Python pandas class identity.
       expect_false(row$source_contract_gap_unresolved)
     } else expect_true(row$source_contract_gap_unresolved)

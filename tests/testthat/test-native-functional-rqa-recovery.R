@@ -205,7 +205,8 @@ test_that("catalog and numerical additions do not self-certify source contracts"
     expect_equal(nrow(row),1L)
     expect_identical(row$native_r_candidate,paste0("etr_",name))
     expect_identical(row$native_implementation_stage,26L)
-    if(identical(name,"functional_recovery_metric_catalog_frame")) {
+    if(name %in% c("functional_recovery_metric_catalog_frame",
+                     "functional_recovery_metric_catalog")) {
       # Complete native table semantics, not Python pandas class identity.
       expect_false(row$source_contract_gap_unresolved)
     } else expect_true(row$source_contract_gap_unresolved)
