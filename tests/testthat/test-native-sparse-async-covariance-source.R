@@ -70,7 +70,15 @@ test_that("async covariance validates support and admits empty/one-channel layou
   expect_equal(failed$details$grid_start,0)
   expect_equal(failed$details$grid_end,3)
   expect_equal(failed$details$target_min,-.1)
-  expect_equal(failed$details$target_max,3.25)
+  # Source validates XX first; the y-only 3.25 violation is not reached.
+  expect_equal(failed$details$target_max,1)
+  y_failure_layout<-.etr_spna_scalar_layout(c(.1,1),c(1,2),
+    c(2.9,3.25),c(5,6),0)
+  y_failure<-tryCatch(.etr_spna_cov_eval(f$grid,f$blocks,
+    y_failure_layout),error=identity)
+  expect_identical(y_failure$code,"native_time_outside_fitted_support")
+  expect_equal(y_failure$details$target_min,2.9)
+  expect_equal(y_failure$details$target_max,3.25)
   layout<-.etr_spna_scalar_layout(f$tx,f$x,f$ty,f$y,0)
   invalid<-layout;invalid$channel[1]<-3L
   expect_error(.etr_spna_cov_eval(f$grid,f$blocks,invalid),
