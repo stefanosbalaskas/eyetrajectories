@@ -65,8 +65,7 @@
   ids<-.etr_scientific_frame_ids(result$curve_ids,"curve_ids")
   n<-length(ids)
   metadata<-result$metadata
-  .etr_assert(is.data.frame(metadata) && nrow(metadata)==n &&
-    (preserve_workflow_metadata||!anyDuplicated(names(metadata))),
+  .etr_assert(is.data.frame(metadata) && nrow(metadata)==n,
     "metadata must be a data frame with one row per curve")
   .etr_assert(is.numeric(result$n_components) &&
     length(result$n_components)==1L &&
@@ -80,18 +79,38 @@
     identical(dim(scores),c(n,k))&&!any(is.infinite(scores)),
     "scores must be a numeric matrix with one row per curve and no infinities")
   output_names<-paste0(prefix,seq_len(k))
-  reserved<-c("curve_id",output_names)
+  reserved<-"curve_id"
+  # Frozen Python sparse.py and sparse_multivariate.py both start with
+  # metadata.reset_index(drop=True).copy(), then insert 'curve_id' at 0.
+  # Pandas raises for a preexisting curve_id column. It does *not* raise
+  # for an existing SFPC/SMFPC column: subsequent label assignment replaces
+  # the value(s) in place, preserving their original position. Pandas also
+  # retains duplicated nonreserved metadata names.
+  .etr_assert(!any(reserved%in%names(metadata)),
+    "metadata must not overwrite curve_id (pandas insert would fail)")
   if(preserve_workflow_metadata){
-    # The native workflow already accepts metadata with arbitrary column
-    # names. Retain colliding fields under a unique name in the score table.
+    # The legacy opt-in workflow uses unique metadata aliases, retained for
+    # callers that explicitly request a no-collision table.
     labels<-names(metadata)
     labels[is.na(labels)|!nzchar(labels)]<-"metadata"
-    names(metadata)<-utils::tail(make.unique(c(reserved,labels)),ncol(metadata))
-  }else .etr_assert(!any(reserved %in% names(metadata)),
-    "metadata must not overwrite curve_id or component score columns")
+    names(metadata)<-utils::tail(make.unique(c(reserved,output_names,labels)),
+      ncol(metadata))
+  }
   output<-data.frame(curve_id=ids,stringsAsFactors=FALSE)
-  for(name in names(metadata))output[[name]]<-metadata[[name]]
-  for(j in seq_len(k))output[[output_names[j]]]<-scores[,j]
+  # data.frame(..., check.names=FALSE) keeps the source metadata order,
+  # duplicate labels and original factor/integer/logical column types.
+  output<-data.frame(output,metadata,check.names=FALSE,
+    stringsAsFactors=FALSE)
+  for(j in seq_len(k)){
+    existing<-which(names(output)==output_names[[j]])
+    if(length(existing)){
+      # A 1D pandas Series assignment broadcasts to every duplicate column
+      # carrying the selected label, not just the first duplicate.
+      for(pos in existing)output[[pos]]<-scores[,j]
+    }else{
+      output[[output_names[[j]]]]<-scores[,j]
+    }
+  }
   rownames(output)<-NULL
   output
 }
