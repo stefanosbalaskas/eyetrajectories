@@ -130,6 +130,10 @@ etr_sparse_fpca_score_frame <- function(result) {
 #' @return A data frame with source curve IDs, metadata and SMFPC scores.
 #' @export
 etr_sparse_mfpca_score_frame <- function(result) {
+  # The frozen sparse_multivariate.py frame is typed, unlike the univariate
+  # sparse.py frame. Map SparseMFPCAResult to the native fitted S3 class.
+  .etr_assert(inherits(result,"etr_sparse_mfpca_source"),
+    "result must be a native sparse MFPCA source result")
   .etr_scientific_frame_metadata(result,"SMFPC")
 }
 
