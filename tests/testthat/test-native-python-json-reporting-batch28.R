@@ -68,7 +68,7 @@ test_that("workflow JSON retains tensor axes and validates mutated audit records
   invalid_step<-list(name="fit",`function`="fit_fpca",status="completed",
     parameters=list(1L),elapsed_seconds=0)
   expect_error(etr_workflow_steps_frame(list(invalid_step)),
-    "step.parameters.*unique nonempty")
+    "step.parameters.*unique character")
   result<-etr_workflow_audit_result("tensor",config=config)
   result$config$tensor[1L,1L,1L]<-Inf
   expect_error(etr_workflow_summary_frame(result),"config.*nonfinite")
