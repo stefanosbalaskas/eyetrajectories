@@ -21,8 +21,7 @@
     if (!is.list(x))
       stop(p, " is not a supported workflow JSON value", call.=FALSE)
     nm <- names(x)
-    if (!is.null(nm) && (anyNA(nm) || any(!nzchar(nm)) ||
-                         anyDuplicated(nm)))
+    if (!is.null(nm) && (anyNA(nm) || anyDuplicated(nm)))
       stop(p, " has invalid mapping keys", call.=FALSE)
     for (i in seq_along(x))
       check(x[[i]], paste0(p,".",if(is.null(nm))i else nm[[i]]))
@@ -74,7 +73,7 @@
   .etr_assert(is.list(decisions) &&
     (length(decisions)==0L ||
        (!is.null(names(decisions)) && !anyNA(names(decisions)) &&
-        all(nzchar(names(decisions))) && !anyDuplicated(names(decisions)))),
+        !anyDuplicated(names(decisions)))),
     "decisions must be a uniquely named list")
   for (rec in decisions) {
     .etr_assert(is.list(rec) && "value" %in% names(rec) &&
