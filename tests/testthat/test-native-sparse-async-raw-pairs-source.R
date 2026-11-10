@@ -28,18 +28,16 @@ test_that("cross-channel raw asynchronous products follow source ordering and in
   expect_true(all(native$yy$mirrored))
 })
 
-test_that("async cross covariance failure retains Python candidate/exclusion evidence",{
+test_that("exactly simultaneous pairs are excluded, not every near-time product",{
   tx<-list(c(0,1,2),c(0,1,2))
   ty<-list(c(0,1,2),c(0,1,2))
   rx<-list(1:3,3:1)
   ry<-list(2:4,4:2)
-  failure<-tryCatch(.etr_spna_cross_pairs(tx,rx,ty,ry,0),
-    error=identity)
-  expect_s3_class(failure,"etr_sparse_native_error")
-  expect_identical(failure$code,"insufficient_async_cross_covariance_pairs")
-  expect_identical(failure$details$candidate_cross_pairs,18L)
-  expect_identical(failure$details$same_time_pairs_excluded,6L)
-  expect_identical(failure$details$retained_cross_pairs,12L)
+  pairs<-.etr_spna_cross_pairs(tx,rx,ty,ry,0)
+  expect_identical(pairs$audit$cross_candidate_pair_count,18L)
+  expect_identical(pairs$audit$cross_same_time_pair_count_excluded,6L)
+  expect_identical(pairs$audit$cross_retained_pair_count,12L)
+  expect_identical(length(pairs$xy$products),12L)
 })
 
 test_that("async cross covariance reports source failure after tolerance exclusions",{
