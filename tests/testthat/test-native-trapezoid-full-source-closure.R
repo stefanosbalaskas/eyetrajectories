@@ -82,11 +82,14 @@ test_that("seeded finite quadrature and normalization satisfy direct source alge
       t<-c(0,cumsum(gap))
       w<-etr_trapezoid_weights(array(t,dim=length(t)),
         python_boundary_mode=TRUE)
+      # Follow the exact source order: NumPy computes diff() from the
+      # rounded cumulative time grid, not from the original ideal gaps.
+      source_dt<-diff(t)
       expected<-numeric(n)
-      expected[1L]<-gap[1L]/2
-      expected[n]<-gap[n-1L]/2
+      expected[1L]<-source_dt[1L]/2
+      expected[n]<-source_dt[n-1L]/2
       if(n>2L)expected[2L:(n-1L)]<-
-        (gap[1L:(n-2L)]+gap[2L:(n-1L)])/2
+        (source_dt[1L:(n-2L)]+source_dt[2L:(n-1L)])/2
       expect_equal(w,expected,tolerance=2e-14)
       expect_equal(sum(w),t[n]-t[1L],tolerance=2e-14)
       normalized<-etr_trapezoid_weights(t,TRUE,TRUE)
