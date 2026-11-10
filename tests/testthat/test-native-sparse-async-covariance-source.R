@@ -33,18 +33,18 @@ test_that("async scalar observation index and source time order are preserved",{
 test_that("source async covariance uses directional XY on real asynchronous times",{
   f<-.etr_async_cov_source_fixture()
   layout<-.etr_spna_scalar_layout(f$tx,f$x,f$ty,f$y,0)
-  c<-.etr_spna_cov_eval(f$grid,f$blocks,layout)
-  expect_identical(dim(c),c(6L,6L))
-  expect_equal(c,t(c),tolerance=1e-15)
-  expect_true(all(is.finite(c)))
+  covariance<-.etr_spna_cov_eval(f$grid,f$blocks,layout)
+  expect_identical(dim(covariance),c(6L,6L))
+  expect_equal(covariance,t(covariance),tolerance=1e-15)
+  expect_true(all(is.finite(covariance)))
   # XY is directional: cross pairing is not obtained by
   # self-symmetrizing Cxy(s,t) or synchronizing observations.
   ix<-which(layout$channel==1L)
   iy<-which(layout$channel==2L)
   source_xy<-outer(layout$time[ix],layout$time[iy],
     function(s,t).1+.09*s-.14*t)
-  expect_equal(c[ix,iy],source_xy,tolerance=1e-14)
-  expect_equal(c[iy,ix],t(source_xy),tolerance=1e-14)
+  expect_equal(covariance[ix,iy],source_xy,tolerance=1e-14)
+  expect_equal(covariance[iy,ix],t(source_xy),tolerance=1e-14)
   expect_gt(max(abs(source_xy-t(source_xy))),.02)
 })
 
