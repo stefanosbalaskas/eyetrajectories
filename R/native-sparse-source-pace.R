@@ -18,8 +18,13 @@
 #' @param n_components Number of positive fitted covariance components.
 #' @param evaluation_grid Finite strictly increasing population grid.
 #' @param mean_bandwidth,covariance_bandwidth Positive local kernel bandwidths.
-#' @param noise_variance_method Exactly "fixed" for this native scope.
+#' @param noise_bandwidth,noise_support Local bandwidth and integration
+#'   interval for diagonal-difference measurement noise.
+#' @param noise_variance_method "diagonal_difference" or "fixed".
+#'   Supplying a measurement-error variance without a method selects
+#'   "fixed" for compatibility with earlier native calls.
 #' @param measurement_error_variance Declared nonnegative observation noise.
+#' @param noise_min_local_points Minimum observations for noise smoothing.
 #' @param analysis_support_action "error" or "restrict" raw samples to grid.
 #' @param psd_action "error" or "project" weighted covariance operator.
 #' @param psd_tolerance,positive_eigen_tolerance Numerical eigen tolerances.
@@ -28,30 +33,39 @@
 #' @param min_score_samples Minimum samples per curve.
 #' @param score_failure_action "error" or "retain_nan".
 #' @param mean_min_local_points,covariance_min_local_pairs Smoothing support.
+#' @param mean_smoother,covariance_smoother Source smoothing names. Both must
+#'   be "local_linear".
+#' @param kernel Source kernel name. Must be "epanechnikov".
 #' @return Source-shaped sparse FPCA list with numerical diagnostics.
 #' @export
 etr_fit_sparse_fpca_native<-function(
     trajectories,dimension,n_components,evaluation_grid,
     mean_bandwidth,covariance_bandwidth,
     noise_bandwidth=NULL,noise_support=NULL,
-    noise_variance_method="fixed",measurement_error_variance=NULL,
+    noise_variance_method=if(is.null(measurement_error_variance))
+      "diagonal_difference" else "fixed",measurement_error_variance=NULL,
     noise_min_local_points=3L,
     analysis_support_action="error",psd_action="error",
     psd_tolerance=1e-8,positive_eigen_tolerance=1e-10,
     score_ridge=0,score_condition_limit=1e12,
     min_score_samples=2L,score_failure_action="error",
-    mean_min_local_points=3L,covariance_min_local_pairs=6L){
+    mean_min_local_points=3L,covariance_min_local_pairs=6L,
+    mean_smoother="local_linear",covariance_smoother="local_linear",
+    kernel="epanechnikov"){
   .etr_irregular_validate_samples(trajectories)
   .etr_assert(is.character(dimension)&&length(dimension)==1L&&
     dimension%in%trajectories$dimension_names,
     "dimension must identify a source irregular channel")
-  .etr_assert(length(trajectories$curve_ids)>=3L,
-    "insufficient_pooled_support: sparse FPCA requires >=3 curves")
+  n_curves<-length(trajectories$curve_ids)
+  if(n_curves<3L)
+    .etr_spn_fail("insufficient_pooled_support",
+      "sparse FPCA requires >=3 curves",list(n_curves=n_curves))
   .etr_assert(is.numeric(n_components)&&length(n_components)==1L&&
     !is.logical(n_components)&&is.finite(n_components)&&
     n_components==floor(n_components)&&n_components>=1L,
     "n_components must be positive integer")
   k<-as.integer(n_components)
+  .etr_sparse_smoothing_settings(mean_smoother,covariance_smoother,kernel)
   .etr_assert(noise_variance_method%in%
     c("fixed","diagonal_difference"),
     "noise_variance_method must be fixed or diagonal_difference")
@@ -101,30 +115,20 @@ etr_fit_sparse_fpca_native<-function(
     "local mean/pair support thresholds must be positive integers")
   grid<-.etr_spn_grid(evaluation_grid)
   t_all<-trajectories$time
-  original_n<-lengths(t_all)
-  start<-min(vapply(t_all,function(z)z[1L],numeric(1L)))
-  stop<-max(vapply(t_all,function(z)tail(z,1L),numeric(1L)))
-  tolerance<-1e-12*max(1,abs(start),abs(stop))
-  .etr_assert(grid[1L]>=start-tolerance&&
-    tail(grid,1L)<=stop+tolerance,
-    "evaluation_grid_outside_pooled_support")
+  .etr_spn_check_grid_support(t_all,grid)
   d<-match(dimension,trajectories$dimension_names)
-  .etr_assert(all(vapply(trajectories$values,
-    function(v)all(is.finite(v[,d])),logical(1L))),
-    "nonfinite_sparse_observation")
   original_y<-lapply(trajectories$values,function(v)as.numeric(v[,d]))
-  mask<-lapply(t_all,function(t)t>=grid[1L]&t<=tail(grid,1L))
-  out_counts<-vapply(mask,function(z)sum(!z),integer(1L))
-  if(analysis_support_action=="error"&&any(out_counts>0L))
-    .etr_spn_fail("observations_outside_analysis_support",
-      "raw sparse observations outside fitted population grid")
-  times<-if(analysis_support_action=="restrict")
-    Map(function(t,z)t[z],t_all,mask)else t_all
-  values<-if(analysis_support_action=="restrict")
-    Map(function(v,z)v[z],original_y,mask)else original_y
-  if(sum(lengths(times))<3L)
-    .etr_spn_fail("insufficient_pooled_support",
-      "fewer than three in-support observations")
+  nonfinite<-vapply(original_y,function(v)sum(!is.finite(v)),integer(1L))
+  if(any(nonfinite>0L)){
+    i<-which(nonfinite>0L)[1L]
+    .etr_spn_fail("nonfinite_sparse_observation",
+      "sparse observations must be finite",
+      list(curve_id=trajectories$curve_ids[i],dimension=dimension,
+        n_nonfinite=nonfinite[i]))
+  }
+  analysis<-.etr_spn_analysis_support(t_all,original_y,grid,analysis_support_action)
+  times<-analysis$times
+  values<-analysis$values
   t_pool<-unlist(times,use.names=FALSE)
   y_pool<-unlist(values,use.names=FALSE)
   mean<-.etr_spn_mean(t_pool,y_pool,grid,mean_bandwidth,
@@ -156,20 +160,11 @@ etr_fit_sparse_fpca_native<-function(
     psd$covariance,eig$eigenvalues,eig$eigenfunctions,
     noise_variance,score_ridge,score_condition_limit,
     as.integer(min_score_samples),score_failure_action)
-  support<-list(
-    analysis_support=range(grid),
-    analysis_support_action=analysis_support_action,
-    outside_observation_count=sum(out_counts),
-    curves_with_outside_observations=sum(out_counts>0L),
-    curves_without_in_support_observations=sum(lengths(times)==0L),
-    outside_counts_by_curve=as.integer(out_counts),
-    original_sample_counts=as.integer(original_n),
-    analysis_sample_counts=as.integer(lengths(times)))
   info<-c(list(
     backend="native",dimension=dimension,n_components=k,
     component_rank_rule="positive_fitted_operator_spectrum",
-    mean_smoother="local_linear",covariance_smoother="local_linear",
-    kernel="epanechnikov",mean_bandwidth=mean_bandwidth,
+    mean_smoother=mean_smoother,covariance_smoother=covariance_smoother,
+    kernel=kernel,mean_bandwidth=mean_bandwidth,
     covariance_bandwidth=covariance_bandwidth,
     noise_bandwidth=noise_bandwidth,
     noise_variance_method=noise_variance_method,
@@ -179,7 +174,7 @@ etr_fit_sparse_fpca_native<-function(
     noise_latent_diagonal_bandwidth=if(is.null(noise))NULL else
       covariance_bandwidth,
     noise_support=if(is.null(noise))NULL else as.numeric(noise_support),
-    evaluation_grid=as.numeric(grid)),support,list(
+    evaluation_grid=as.numeric(grid)),analysis$diagnostics,list(
     psd_action=psd_action,psd_tolerance=psd_tolerance,
     positive_eigen_tolerance=positive_eigen_tolerance,
     score_method="PACE",
@@ -212,6 +207,7 @@ etr_fit_sparse_fpca_native<-function(
     fit_smoothing="local_linear_epanechnikov",
     score_method="PACE",score_smoothing=NULL,
     tolerance=positive_eigen_tolerance,normalize=FALSE,
+    backend_object=NULL,backend_data=NULL,reconstructed_backend=NULL,
     evaluation_grid=grid,mean=mean$values,
     covariance=psd$covariance,eigenfunctions=eig$eigenfunctions,
     noise_variance=noise_variance,
@@ -227,6 +223,14 @@ etr_fit_sparse_fpca_native<-function(
     source_python_full_contract_equivalent=FALSE,
     independent_full_source_certified=FALSE),
     class="etr_sparse_fpca_native")
+}
+
+.etr_sparse_smoothing_settings<-function(mean_smoother,covariance_smoother,kernel){
+  .etr_assert(identical(mean_smoother,"local_linear"),
+    "mean_smoother must be local_linear")
+  .etr_assert(identical(covariance_smoother,"local_linear"),
+    "covariance_smoother must be local_linear")
+  .etr_assert(identical(kernel,"epanechnikov"),"kernel must be epanechnikov")
 }
 
 #' Conditional Gaussian uncertainty for fitted sparse FPCA/PACE scores
@@ -284,6 +288,8 @@ etr_sparse_fpca_score_uncertainty_native<-function(
     method="conditional_gaussian_given_fitted_population",
     covariance_source="full_fitted_covariance_plus_noise_and_declared_score_ridge",
     fitted_covariance_source="SparseFPCAResult.covariance",
+    fitted_noise_source="SparseFPCAResult.noise_variance",
+    eigensystem_source="SparseFPCAResult.eigenvalues_and_eigenfunctions",
     native_observation_times=TRUE,
     raw_sparse_trajectory_interpolation_performed=FALSE,
     score_ridge=info$score_ridge,

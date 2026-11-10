@@ -338,6 +338,7 @@ etr_windowed_rqa_sensitivity <- function(trajectories,metrics,
 #' @param gaussian_multiplier_draws Optional fixed source-aligned matrix of
 #'   Gaussian multiplier draws, one row per replicate and one column per
 #'   independent curve or participant. Allows exact finite-sample replay.
+#' @param random_engine Seeded multiplier RNG: `"numpy"` or `"base_R"`.
 #' @param ... Native fixed-radius windowed-RQA parameters.
 #' @export
 etr_windowed_rqa_functional_mean_band <- function(trajectories,
@@ -347,7 +348,7 @@ etr_windowed_rqa_functional_mean_band <- function(trajectories,
     theiler_window=0L,theiler_window_units="samples",dimensions=NULL,
     min_diagonal_length=2L,min_vertical_length=2L,
     confidence_level=.95,n_multiplier=2000L,random_state=0L,
-    gaussian_multiplier_draws=NULL){
+    gaussian_multiplier_draws=NULL,random_engine="numpy"){
   .etr_assert(identical(unit,"curve")||identical(unit,"participant"),
     "unit must be 'curve' or 'participant'")
   functional<-etr_windowed_rqa_trajectory_set(
@@ -363,7 +364,8 @@ etr_windowed_rqa_functional_mean_band <- function(trajectories,
     functional$trajectories,confidence_level=confidence_level,
     n_multiplier=n_multiplier,unit=unit,
     participant_column=participant_column,random_state=random_state,
-    gaussian_multiplier_draws=gaussian_multiplier_draws)
+    gaussian_multiplier_draws=gaussian_multiplier_draws,
+    random_engine=random_engine)
   structure(list(functional_rqa=functional,band=band,unit=unit,
     participant_column=participant_column,
     provenance=list(operation="windowed_rqa_functional_mean_band",

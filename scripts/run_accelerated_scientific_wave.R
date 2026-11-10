@@ -8,7 +8,9 @@
 #       covariance, eigenfunctions and scores with frozen Python 1.2
 #    ET_RUN_BOOTSTRAP_SOURCE_DIFF=true: additionally run 100 whole-participant
 #       source/native GEE refits per Poisson, grouped binomial and exposure
-#       family; write unsigned scientific comparison evidence separately.
+#       family and compare seeded native resampling with NumPy.
+#    ET_RUN_MIAAFT_PHASE_REPLAY_SOURCE_DIFF=true: trace the periodic witness
+#       and verify explicitly replayed unresolved Fourier phases.
 # Never increments the 508 certification ledger, publishes to CRAN, or
 # claims full Python source equivalence from bounded numerical probes.
 #
@@ -84,6 +86,13 @@
       "native-508-certification-batches",
       "native-all-function-mapping-complete",
       "native-nonfunction-source-gaps",
+      "native-source-trajectory-object",
+      "native-trajectory-provenance",
+      "native-catalog-contract-boundaries",
+      "native-python-portable-(reader|writer)",
+      "native-python-json-reporting-batch28",
+      "native-workflow-source-audit",
+      "native-trapezoid-complex-source",
       "native-source-contract-gaps",
       # Actual scientific estimators, not only mapping and metadata tests.
       "native-wild-bootstrap-projection",
@@ -91,8 +100,12 @@
       "native-multivariate-iaaft-generator",
       "native-multivariate-surrogate-nonlinearity",
       "native-numpy-pcg64",
+      "native-bootstrap-inference",
+      "native-fixed-multiplier-replay-source",
       "native-miaaft-fixed-permutation-source",
       "native-fpcr-bootstrap-uncertainty",
+      "native-fpcr-future-prediction-interval",
+      "native-functional-models",
       "native-fpca-component-envelopes",
       "native-generalized-gee-fit",
       "native-generalized-gee-bootstrap",
@@ -134,6 +147,14 @@
       source("scripts/run_generalized_gee_bootstrap_source_differential.R",
         encoding="UTF-8",local=TRUE)
       cat("ACCELERATED_WAVE_GEE_BOOTSTRAP_SOURCE_DIFF_RECORDED=TRUE\n")
+      source("scripts/run_seeded_resampling_source_differential.R",
+        encoding="UTF-8",local=TRUE)
+      cat("ACCELERATED_WAVE_SEEDED_RESAMPLING_SOURCE_DIFF_RECORDED=TRUE\n")
+    }
+    if(identical(Sys.getenv("ET_RUN_MIAAFT_PHASE_REPLAY_SOURCE_DIFF"),"true")){
+      source("scripts/trace_miaaft_source_witness.R",
+        encoding="UTF-8",local=TRUE)
+      cat("ACCELERATED_WAVE_MIAAFT_PHASE_REPLAY_SOURCE_DIFF_RECORDED=TRUE\n")
     }
     sparse_disagreements<-0L
     sparse_runner_errors<-character()

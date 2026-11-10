@@ -140,7 +140,8 @@ etr_plot_recurrence(recurrence, ...)
 methods, matched observation times. The explicit Python boundary mode
 of \code{etr_trapezoid_weights()} additionally casts a complex atomic
 time vector to its real part, matching NumPy's complex ndarray
-\code{dtype=float} conversion (which discards imaginary components).}
+\code{dtype=float} conversion, and accepts ASCII decimal strings
+with underscores between digits.}
 \item{values}{Numeric 3D array ordered curve, time, dimension. NA is allowed in stored objects.}
 \item{curve_ids}{Unique identifiers for curves.}
 \item{dimension_names}{Unique measurement channel names.}
@@ -175,7 +176,9 @@ truthiness semantics: FALSE, zero, empty string and zero complex keep
 original weights. Nonzero numeric scalars, nonempty strings and, in the
 explicit Python boundary mode, nonzero, infinite or NaN-valued complex
 scalars normalize to unit total. Empty/nonempty lists have container
-truthiness only in source-boundary mode. General Python object
+truthiness in source-boundary mode. Dimensioned atomic flags in that
+mode use the truthiness of their sole element and reject other sizes.
+General Python object
 truthiness remains outside the qualified domain.}
 \item{python_boundary_mode}{For pairwise L2 and DTW, TRUE also
 propagates bounded frozen Python 1.2 numeric coercion and nonfinite
@@ -195,7 +198,11 @@ coordinates remain rejected. FALSE uses native R finite validation.
 Neither value invokes Python, and full source-domain parity is not
 claimed.
 
-If TRUE, enable bounded Python 1.2 TrajectorySet constructor/subset behavior for NaN observations, zero-curve arrays, regular nested numeric-like sequences, complex ndarray-to-real casting, ID-indexed metadata and zero-based/negative subset indices. Default FALSE preserves the native scientific contract. Does not reproduce all NumPy, pandas or dataclass semantics.}
+For trajectory construction and subsetting, TRUE enables NaN observations,
+empty curve and channel axes, rectangular nested mixed numeric-like values,
+mixed scalar label lists, and ID-indexed metadata. Complex arrays cast to
+real with a warning. Subset indices use zero-based and negative indexing
+after coercion. FALSE uses strict native R defaults.}
 \item{metric}{Distance metric for recurrence and cross-recurrence: \code{euclidean} (L2), \code{cityblock} (L1), or \code{chebyshev} (L-infinity). The default is Euclidean.}
 \item{n_components}{Integer component count or, for fitting, a variance fraction strictly between 0 and 1.}
 \item{fit}{Native etr_fpca fit.}

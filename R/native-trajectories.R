@@ -30,8 +30,59 @@
     !anyNA(value) && (!is.numeric(value) || all(is.finite(value)))
 }
 
+# Parse the ASCII float syntax shared by bounded NumPy input paths.
+.etr_numpy_float_text <- function(x, message) {
+  x <- trimws(x, whitespace = "[\\h\\v]")
+  digits <- "[0-9](?:_?[0-9])*"
+  number <- paste0(digits, "(?:\\.(?:", digits, ")?)?|\\.", digits)
+  pattern <- paste0("^[+-]?(?:(?:", number, ")(?:[eE][+-]?", digits,
+    ")?|inf(?:inity)?|nan)$")
+  .etr_assert(all(is.na(x) | grepl(pattern, x, ignore.case = TRUE, perl = TRUE)), message)
+  gsub("_", "", x, fixed = TRUE)
+}
+
 # A bounded R analogue of numpy.asarray(..., dtype=float) on regular
 # curve-by-time-by-channel nested sequences. Do not silently recycle ragged data.
+.etr_trajectory_boundary_double <- function(x, message) {
+  if (is.character(x)) x <- .etr_numpy_float_text(x, message)
+  if (is.complex(x)) {
+    warning(warningCondition("Casting complex values to real discards the imaginary part",
+      class = "etr_trajectory_complex_cast_warning"))
+    x <- Re(x)
+  }
+  suppressWarnings(as.numeric(x))
+}
+
+.etr_trajectory_boundary_scalar <- function(x) {
+  is.atomic(x) && length(x) == 1L && is.null(dim(x)) &&
+    !is.factor(x) && (is.numeric(x) || is.logical(x) || is.character(x))
+}
+
+.etr_trajectory_boundary_labels <- function(x) {
+  if (!is.list(x)) {
+    .etr_assert(is.atomic(x) && !anyNA(x),
+      "curve and dimension IDs must be atomic without missing values")
+    return(as.character(x))
+  }
+  .etr_assert(!is.object(x) && is.null(dim(x)) &&
+    all(vapply(x, function(label) is.null(label) ||
+      (.etr_trajectory_boundary_scalar(label) && !is.na(label) &&
+        (!is.numeric(label) || is.finite(label))), logical(1L))),
+    "curve and dimension IDs must be scalar strings, finite numbers, logicals or NULL")
+  numeric_like <- vapply(x, function(label) is.numeric(label) || is.logical(label),
+    logical(1L))
+  # Python's set treats numerically equal booleans, integers and doubles
+  # as the same identifier before converting the labels to strings.
+  .etr_assert(!anyDuplicated(vapply(x[numeric_like], as.numeric, numeric(1L))),
+    "curve and dimension IDs must be unique before string conversion")
+  vapply(x, function(label) {
+    if (is.null(label)) return("None")
+    if (is.logical(label)) return(if (label) "True" else "False")
+    if (is.double(label)) return(.etr_python_json_float(label))
+    as.character(label)
+  }, character(1L), USE.NAMES = FALSE)
+}
+
 .etr_trajectory_nested_values <- function(values) {
   if (!is.list(values) || is.object(values) || !is.null(dim(values)))
     return(values)
@@ -47,15 +98,21 @@
                 "nested values must be rectangular")
     for (j in seq_len(nt)) {
       cell <- values[[i]][[j]]
-      .etr_assert(is.atomic(cell) && is.null(dim(cell)) &&
-                    !is.factor(cell) && length(cell) == k &&
-                    (is.numeric(cell) || is.logical(cell) || is.character(cell)),
-                  "nested values must have equal numeric-like channels")
-      converted <- suppressWarnings(as.numeric(cell))
-      # NumPy float conversion accepts numeric-text NaN, Inf and -Inf.
-      # Reject malformed strings but preserve numeric missing/overflow.
-      .etr_assert(all(!is.na(converted) | is.nan(converted) | is.na(cell)),
-                  "nested values contain a nonnumeric string")
+      .etr_assert(length(cell) == k && is.null(dim(cell)),
+        "nested values must have equal numeric-like channels")
+      if (is.list(cell) && !is.object(cell)) {
+        converted <- vapply(cell, function(value) {
+          if (is.null(value)) return(NaN)
+          .etr_assert(.etr_trajectory_boundary_scalar(value),
+            "nested values must have equal numeric-like channels")
+          .etr_trajectory_boundary_double(value, "nested values contain a nonnumeric string")
+        }, numeric(1L))
+      } else {
+        .etr_assert(is.atomic(cell) && !is.factor(cell) &&
+          (is.numeric(cell) || is.logical(cell) || is.character(cell)),
+          "nested values must have equal numeric-like channels")
+        converted <- .etr_trajectory_boundary_double(cell, "nested values contain a nonnumeric string")
+      }
       if (k > 0L) out[i, j, ] <- converted
     }
   }
@@ -76,9 +133,8 @@
 #' @param python_boundary_mode When TRUE, enable a bounded Python 1.2
 #'   TrajectorySet constructor/subset domain (NaN, zero curves and zero-based
 #'   indexing) without relaxing the default R scientific contract.
-#'   This includes bounded scalar-sequence, nested-array, and complex
-#'   ndarray coercion plus curve-indexed metadata row names.
-#'   This is not full dataclass or pandas compatibility.
+#'   Accepts bounded mixed scalar sequences, complex-array casts with
+#'   warnings, and curve-indexed metadata row names.
 #' @export
 etr_trajectory_set <- function(time, values, curve_ids = NULL, dimension_names = NULL,
                                metadata = NULL, coordinate_system = "unknown",
@@ -93,21 +149,18 @@ etr_trajectory_set <- function(time, values, curve_ids = NULL, dimension_names =
     # to their real part with a warning. Only these bounded R classes are
     # supported here; strict native validation is unchanged.
     if (is.list(time) && !is.object(time) && is.null(dim(time))) {
-      .etr_assert(all(vapply(time, function(y)
-        is.atomic(y) && length(y) == 1L && is.null(dim(y)) &&
-        !is.factor(y) &&
-        (is.numeric(y) || is.logical(y) || is.character(y)),
-        logical(1L))), "time must be a numeric-like scalar sequence")
+      .etr_assert(all(vapply(time, .etr_trajectory_boundary_scalar, logical(1L))),
+        "time must be a numeric-like scalar sequence")
       time <- vapply(time, function(y)
-        suppressWarnings(as.numeric(y)), numeric(1L), USE.NAMES = FALSE)
+        .etr_trajectory_boundary_double(y, "time must contain numeric-like values"),
+        numeric(1L), USE.NAMES = FALSE)
     }
     .etr_assert(is.atomic(time) && is.null(dim(time)) &&
                   !is.factor(time) &&
                   (is.numeric(time) || is.logical(time) ||
                    is.character(time) || is.complex(time)),
                 "time must be a one-dimensional numeric-like sequence")
-    if (is.complex(time)) time <- Re(time)
-    time <- suppressWarnings(as.numeric(time))
+    time <- .etr_trajectory_boundary_double(time, "time must contain numeric-like values")
     values <- .etr_trajectory_nested_values(values)
     .etr_assert(is.array(values) && length(dim(values)) == 3L &&
                   !is.factor(values) &&
@@ -115,10 +168,8 @@ etr_trajectory_set <- function(time, values, curve_ids = NULL, dimension_names =
                    is.character(values) || is.complex(values)),
                 "values must be a numeric-compatible 3D array")
     shape <- dim(values)
-    if (is.complex(values)) values <- Re(values)
-    converted <- suppressWarnings(as.numeric(values))
-    .etr_assert(all(!is.na(converted) | is.nan(converted) | is.na(values)),
-                "values are not convertible to NumPy float")
+    converted <- .etr_trajectory_boundary_double(values,
+      "values are not convertible to NumPy float")
     values <- array(converted, dim = shape)
     # R's NA missing sentinel has no separate NumPy float counterpart.
     values[is.na(values)] <- NaN
@@ -139,15 +190,11 @@ etr_trajectory_set <- function(time, values, curve_ids = NULL, dimension_names =
   if (!isTRUE(python_boundary_mode))
     .etr_assert(!any(is.infinite(values) | is.nan(values)),
                 "values may contain NA but not NaN or infinity")
-  if (is.null(curve_ids)) curve_ids <- paste0("curve_", seq_len(shape[1]))
-  if (is.null(dimension_names)) dimension_names <- paste0("dim_", seq_len(shape[3]))
+  if (is.null(curve_ids)) curve_ids <- paste0("curve_", seq_len(shape[1]), recycle0 = TRUE)
+  if (is.null(dimension_names)) dimension_names <- paste0("dim_", seq_len(shape[3]), recycle0 = TRUE)
   if (isTRUE(python_boundary_mode)) {
-    # Frozen dataclass converts identifiers with map(str) after uniqueness.
-    .etr_assert(is.atomic(curve_ids) && is.atomic(dimension_names) &&
-                  !anyNA(curve_ids) && !anyNA(dimension_names),
-                "curve and dimension IDs must be atomic without missing values")
-    curve_ids <- as.character(curve_ids)
-    dimension_names <- as.character(dimension_names)
+    curve_ids <- .etr_trajectory_boundary_labels(curve_ids)
+    dimension_names <- .etr_trajectory_boundary_labels(dimension_names)
   }
   .etr_assert(is.character(curve_ids) && length(curve_ids) == shape[1] &&
                 !anyNA(curve_ids) &&
@@ -169,10 +216,11 @@ etr_trajectory_set <- function(time, values, curve_ids = NULL, dimension_names =
   if (isTRUE(python_boundary_mode))
     rownames(metadata) <- curve_ids  # Frozen pandas index is labeled by IDs.
   .etr_assert(is.character(coordinate_system) && length(coordinate_system) == 1L &&
-                !is.na(coordinate_system) && nzchar(coordinate_system),
+                !is.na(coordinate_system) &&
+                (isTRUE(python_boundary_mode) || nzchar(coordinate_system)),
               "coordinate_system must be a single nonempty string")
   .etr_assert(is.character(time_unit) && length(time_unit) == 1L &&
-                !is.na(time_unit) && nzchar(time_unit),
+                !is.na(time_unit) && (isTRUE(python_boundary_mode) || nzchar(time_unit)),
               "time_unit must be a single nonempty string")
   .etr_assert(.etr_provenance_valid(provenance),
               "provenance must be a JSON-like named R list with unique nonempty keys")
@@ -302,21 +350,29 @@ etr_subset <- function(x, curves, python_boundary_mode = FALSE) {
   if (isTRUE(python_boundary_mode)) {
     # Frozen TrajectorySet.subset uses np.asarray(indices, dtype=int)
     # then Python/NumPy zero-based indexing, including negative indices.
-    .etr_assert(is.atomic(curves) && is.null(dim(curves)) &&
-                  (is.numeric(curves) || is.logical(curves) ||
-                   is.character(curves)),
-                "Python indices must be a one-dimensional numeric-like sequence")
-    if (is.character(curves))
-      .etr_assert(all(grepl("^[+-]?[0-9]+$", trimws(curves))),
-                  "Python string indices must be integer literals")
-    if (!is.character(curves))
-      .etr_assert(all(is.finite(curves)),
-                  "Python indices must be finite numeric-like values")
-    idx <- suppressWarnings(as.integer(curves))
+    if (is.complex(curves) && is.null(dim(curves)))
+      curves <- .etr_trajectory_boundary_double(curves, "Python indices must be numeric")
+    .etr_assert(!is.null(curves) && is.null(dim(curves)) &&
+      (is.atomic(curves) || is.list(curves)),
+      "Python indices must be a one-dimensional numeric-like sequence")
+    idx <- vapply(as.list(curves), function(index) {
+      .etr_assert(.etr_trajectory_boundary_scalar(index) && !is.na(index),
+        "Python indices must be finite numeric-like values")
+      if (is.character(index)) {
+        index <- trimws(index, whitespace = "[\\h\\v]")
+        .etr_assert(grepl("^[+-]?[0-9](?:_?[0-9])*$", index, perl = TRUE),
+          "Python string indices must be integer literals")
+        index <- gsub("_", "", index, fixed = TRUE)
+      } else {
+        .etr_assert(is.finite(index), "Python indices must be finite numeric-like values")
+      }
+      suppressWarnings(as.integer(index))
+    }, integer(1L), USE.NAMES = FALSE)
     .etr_assert(all(!is.na(idx)), "Python indices exceed native integer range")
     n <- length(x$curve_ids)
-    .etr_assert(all(idx >= -n & idx < n),
-                "Python curve index out of range")
+    if (!all(idx >= -n & idx < n))
+      stop(errorCondition("Python curve index out of range",
+        class = "etr_trajectory_index_error"))
     pos <- if (length(idx)) ifelse(idx < 0L, idx + n + 1L, idx + 1L) else integer()
     return(etr_trajectory_set(x$time, x$values[pos, , , drop = FALSE],
       x$curve_ids[pos], x$dimension_names,
@@ -346,6 +402,12 @@ etr_subset <- function(x, curves, python_boundary_mode = FALSE) {
 #' @export
 etr_dimension <- function(x, dimension) {
   etr_validate(x)
+  if (isTRUE(attr(x, "python_boundary_mode")) &&
+      is.character(dimension) && length(dimension) == 1L && !is.na(dimension) &&
+      !(dimension %in% x$dimension_names)) {
+    stop(errorCondition(paste("Unknown dimension", sQuote(dimension)),
+      class = "etr_trajectory_key_error", dimension = dimension))
+  }
   if (is.character(dimension)) dimension <- match(dimension, x$dimension_names)
   .etr_assert(length(dimension) == 1L && !is.na(dimension) &&
                 is.numeric(dimension) && dimension %in% seq_along(x$dimension_names),

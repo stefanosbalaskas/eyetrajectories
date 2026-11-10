@@ -31,6 +31,7 @@ etr_sparse_fpca_partial_prediction_frame_native(result)
 }
 \value{
 A source-shaped conditional future object with latent and observed prediction
-covariances, standard errors, native history, and numerical diagnostics.
+covariances, standard errors, native history, the history and prediction
+counts, and numerical diagnostics.
 The frame method returns one row per requested future time.
 }

@@ -1,6 +1,6 @@
 # Python 1.2.0 frozen multivariate_surrogates.py
 # Source SHA c1cd95ad718327550f7e55393ff38582872f7a94
-# Native Fourier/rank constraint port, no NumPy RNG equivalence asserted.
+# Native Fourier/rank constraint port with NumPy-compatible seeded initialization.
 
 .etr_multivariate_positive_integer<-function(x,label){
   .etr_assert(is.numeric(x)&&length(x)==1L&&!is.na(x)&&is.finite(x)&&
@@ -39,13 +39,70 @@
   },numeric(1L))
   list(spectral=error,cross=cross)
 }
+.etr_multivariate_unresolved_phases<-function(spectrum,n){
+  amplitude<-Mod(spectrum)
+  .etr_assert(all(is.finite(amplitude)),
+    "multivariate IAAFT requires finite Fourier amplitudes")
+  # Roundoff envelope scaled by channel amplitude and FFT depth.
+  limit<-8*ceiling(log2(n))*.Machine$double.eps*apply(amplitude,2L,max)
+  unresolved<-sweep(amplitude,2L,limit,"<=")
+  unresolved[1L,]<-FALSE
+  if(n%%2L==0L)unresolved[nrow(unresolved),]<-FALSE
+  unresolved
+}
+.etr_multivariate_validate_phase_replay<-function(replay,b,h,d,max_iterations){
+  if(is.null(replay))return(invisible(NULL))
+  fields<-names(replay)
+  .etr_assert(is.list(replay)&&is.null(dim(replay))&&length(replay)>0L&&
+    !is.null(fields)&&!anyNA(fields)&&!anyDuplicated(fields)&&
+    all(fields%in%c("target","reference")),
+    "phase_replay must be a named list with target and/or reference")
+  valid_phases<-function(x){
+    is.matrix(x)&&is.numeric(x)&&!any(is.nan(x))&&
+      all(is.na(x)|(is.finite(x)&abs(x)<=pi))
+  }
+  if(!is.null(replay$target)){
+    .etr_assert(valid_phases(replay$target)&&
+      identical(dim(replay$target),c(h,d)),
+      "phase_replay target must be an (n_frequency, n_dimensions) matrix of radians or NA")
+  }
+  if(!is.null(replay$reference)){
+    .etr_assert(is.list(replay$reference)&&is.null(dim(replay$reference))&&
+      length(replay$reference)==b,
+      "phase_replay reference must be a list with one entry per surrogate")
+    for(x in replay$reference){
+      .etr_assert(is.null(x)||(valid_phases(x)&&ncol(x)==h&&
+        nrow(x)>0L&&nrow(x)<=max_iterations),
+        "phase_replay reference entries must be NULL or (n_iterations, n_frequency) matrices of radians or NA within max_iterations")
+    }
+  }
+  invisible(NULL)
+}
+.etr_multivariate_apply_phase_replay<-function(phase,replay,unresolved,label){
+  if(is.null(replay))return(phase)
+  supplied<-!is.na(replay)
+  .etr_assert(!any(supplied&!unresolved),paste(label,
+    "can only replace unresolved phases outside DC and Nyquist"))
+  phase[supplied]<-replay[supplied]
+  phase
+}
+.etr_multivariate_rank_match_columns<-function(transformed,sorted_target){
+  n<-nrow(transformed)
+  ranked<-matrix(0,n,ncol(transformed))
+  for(j in seq_len(ncol(transformed))){
+    order<-order(transformed[,j],seq_len(n),method="radix")
+    ranked[order,j]<-sorted_target[,j]
+  }
+  ranked
+}
 .etr_multivariate_iaaft_once<-function(values,reference_index,
-    max_iterations,tolerance,initial_order=NULL){
+    max_iterations,tolerance,initial_order=NULL,
+    spectrum=.etr_multivariate_fft_half(values),target_phase=Arg(spectrum),
+    reference_phases=NULL,observer=NULL){
   n<-nrow(values);d<-ncol(values)
   target<-apply(values,2L,sort)
-  spectrum<-.etr_multivariate_fft_half(values)
   amplitude<-Mod(spectrum)
-  offsets<-sweep(Arg(spectrum),1L,Arg(spectrum[,reference_index]),"-")
+  offsets<-sweep(target_phase,1L,target_phase[,reference_index],"-")
   pairs<-combn(seq_len(d),2L,simplify=FALSE)
   # Caller-supplied and integer-seeded orders share the same FFT path.
   surrogate<-if(is.null(initial_order)) {
@@ -56,27 +113,52 @@
   }
   surrogate<-matrix(surrogate,nrow=n,ncol=d)
   previous<-Inf
+  phases_replayed<-0
   for(i in seq_len(max_iterations)){
     current<-.etr_multivariate_fft_half(surrogate)
     refphase<-Arg(current[,reference_index])
-    adjusted<-amplitude*exp(1i*sweep(offsets,1L,refphase,"+"))
+    if(!is.null(reference_phases)&&i<=nrow(reference_phases)){
+      replay<-reference_phases[i,]
+      if(any(!is.na(replay))){
+        unresolved<-.etr_multivariate_unresolved_phases(
+          current[,reference_index,drop=FALSE],n)
+        refphase<-.etr_multivariate_apply_phase_replay(refphase,replay,
+          unresolved[,1L],sprintf("phase_replay reference iteration %d",i))
+        phases_replayed<-phases_replayed+sum(!is.na(replay))
+      }
+    }
+    desired<-sweep(offsets,1L,refphase,"+")
+    adjusted<-amplitude*exp(1i*desired)
     adjusted[1L,]<-spectrum[1L,]
     if(n%%2L==0L)adjusted[nrow(adjusted),]<-
       spectrum[nrow(adjusted),]
     transformed<-.etr_multivariate_fft_inverse(adjusted,n)
-    ranked<-matrix(0,n,d)
-    for(j in seq_len(d)){
-      order<-order(transformed[,j],seq_len(n),method="radix")
-      ranked[order,j]<-target[,j]
+    .etr_assert(all(is.finite(transformed)),
+      "multivariate IAAFT requires a finite inverse Fourier transform")
+    ranked<-.etr_multivariate_rank_match_columns(transformed,target)
+    if(!is.null(observer)){
+      observer(list(previous=surrogate,spectrum=spectrum,current=current,
+        offsets=offsets,desired=desired,adjusted_spectrum=adjusted,
+        transformed=transformed,ranked=ranked))
     }
     errors<-.etr_multivariate_spectrum_errors(ranked,spectrum,pairs)
     combined<-max(c(errors$spectral,errors$cross))
+    .etr_assert(is.finite(combined),
+      "multivariate IAAFT requires finite spectral errors")
     fixed<-identical(unname(ranked),unname(surrogate))
     surrogate<-ranked
-    if(fixed||abs(previous-combined)<=tolerance)
+    if(fixed||abs(previous-combined)<=tolerance){
+      if(!is.null(reference_phases)&&i<nrow(reference_phases)){
+        unused<-reference_phases[seq.int(i+1L,nrow(reference_phases)),,
+          drop=FALSE]
+        .etr_assert(all(is.na(unused)),
+          "phase_replay reference has supplied phases after convergence")
+      }
       return(list(values=surrogate,iterations=as.integer(i),
         spectral_errors=errors$spectral,
-        cross_spectral_errors=errors$cross))
+        cross_spectral_errors=errors$cross,
+        reference_phases_replayed=phases_replayed))
+    }
     previous<-combined
   }
   stop("multivariate IAAFT did not converge within max_iterations",
@@ -98,12 +180,15 @@
 #'   surrogate-by-dimension column is a permutation of 0:(n_time-1).
 #'   Uses the supplied initialization directly. The declared channel
 #'   order must agree with \code{dimensions}.
+#' @param phase_replay Optional named list with a target phase matrix
+#'   and/or one reference phase matrix per surrogate. Radians can replace
+#'   roundoff-scale Fourier phases and NA retains the native phase.
 #' @return Source-shaped surrogate array and per-dimension/spectral diagnostics.
 #' @export
 etr_generate_multivariate_iaaft_surrogates<-function(
     trajectories,curve,dimensions,reference_dimension,
     n_surrogates=199L,max_iterations=1000L,tolerance=1e-8,
-    random_state=NULL,initial_permutations=NULL){
+    random_state=NULL,initial_permutations=NULL,phase_replay=NULL){
   etr_validate(trajectories,require_complete=TRUE)
   steps<-diff(trajectories$time)
   .etr_assert(all(is.finite(steps))&&max(abs(steps-steps[[1L]]))<=
@@ -132,6 +217,17 @@ etr_generate_multivariate_iaaft_surrogates<-function(
     all(vapply(seq_len(d),function(j)stats::sd(values[,j])>0,
       logical(1L))),
     "multivariate IAAFT requires finite nonconstant selected channels")
+  spectrum<-.etr_multivariate_fft_half(values)
+  reference_index<-match(reference_dimension,dimensions)
+  unresolved<-.etr_multivariate_unresolved_phases(spectrum,nt)
+  .etr_multivariate_validate_phase_replay(phase_replay,b,nrow(spectrum),d,it)
+  target_phase<-.etr_multivariate_apply_phase_replay(
+    Arg(spectrum),phase_replay$target,unresolved,"phase_replay target")
+  target_replayed<-sum(!is.na(phase_replay$target))
+  reference_replayed<-numeric(b)
+  other_channels<-seq_len(d)!=reference_index
+  ambiguous_reference_bins<-which(unresolved[,reference_index]&
+    rowSums(!unresolved[,other_channels,drop=FALSE])>0L)-1L
   if(!is.null(initial_permutations)){
     .etr_assert(is.array(initial_permutations)&&
       length(dim(initial_permutations))==3L&&
@@ -163,8 +259,9 @@ etr_generate_multivariate_iaaft_surrogates<-function(
       vapply(seq_len(d),function(j)rng$permutation(nt)-1L,integer(nt))
     }else NULL
     trial<-tryCatch(.etr_multivariate_iaaft_once(values,
-      match(reference_dimension,dimensions),it,tolerance,
-      initial_order=initial_order),
+      reference_index,it,tolerance,initial_order=initial_order,
+      spectrum=spectrum,target_phase=target_phase,
+      reference_phases=phase_replay$reference[[i]]),
       error=function(e)stop(sprintf(
         "multivariate surrogate %d failed: %s",i-1L,
         conditionMessage(e)),call.=FALSE))
@@ -172,6 +269,7 @@ etr_generate_multivariate_iaaft_surrogates<-function(
     iterations[[i]]<-trial$iterations
     errors[i,]<-trial$spectral_errors
     cross[i,]<-trial$cross_spectral_errors
+    reference_replayed[[i]]<-trial$reference_phases_replayed
   }
   pair_names<-lapply(pairs,function(p)dimensions[p])
   structure(list(
@@ -209,6 +307,9 @@ etr_generate_multivariate_iaaft_surrogates<-function(
         "fixed_numpy_compatible_permutation_replay",
       fixed_initialization_replay=!is.null(initial_permutations),
       seeded_initialization_matches_numpy=!is.null(rng),
+      ambiguous_target_reference_bins_zero_based=ambiguous_reference_bins,
+      target_phases_replayed=target_replayed,
+      reference_phases_replayed=reference_replayed,
       source_python_equivalent_stochastic_draws=FALSE,
       failed_surrogate_policy="raise",
       interpretation_boundary=paste(

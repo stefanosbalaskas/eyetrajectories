@@ -22,6 +22,8 @@ test_that("conditional latent and noisy future uncertainty use full covariance",
   expect_identical(out$curve_id,"target_01")
   expect_identical(out$history_times,c(.11,.23,.35,.47))
   expect_identical(out$prediction_grid,future)
+  expect_identical(out$n_history,4L)
+  expect_identical(out$n_prediction,5L)
   expect_length(out$conditional_mean,5L)
   expect_identical(dim(out$latent_covariance),c(5L,5L))
   expect_identical(dim(out$observed_predictive_covariance),

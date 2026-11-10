@@ -41,10 +41,17 @@ research-only with no external coverage validation.
 \item{\code{etr_fit_sparse_mfpca}}{\emph{fit sparse mfpca} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
 \item{\code{etr_fpca_wild_bootstrap_projection_family_test}}{\emph{fpca wild bootstrap projection family test} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
 \item{\code{etr_functional_mixed_effects_covariance_sensitivity}}{\emph{functional mixed effects covariance sensitivity} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
-\item{\code{etr_scan_wild_bootstrap_fpca_truncations}}{\emph{scan wild bootstrap fpca truncations} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
+\item{\code{etr_scan_wild_bootstrap_fpca_truncations}}{Shares fixed or seeded
+wild draws across each candidate truncation. The multiplier controls are the
+same as for \code{etr_wild_bootstrap_fpca_projection}.}
 \item{\code{etr_simulate_functional_process}}{\emph{simulate functional process} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
 \item{\code{etr_simulate_functional_scenario}}{\emph{simulate functional scenario} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
-\item{\code{etr_wild_bootstrap_fpca_projection}}{\emph{wild bootstrap fpca projection} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
+\item{\code{etr_wild_bootstrap_fpca_projection}}{Wild-bootstrap projection
+with normal or Mammen multipliers. A nonnegative integer seed below
+\eqn{2^{53}} uses NumPy-compatible PCG64 by default. \code{random_engine =
+"base_R"} can replay previous native normal draws. A fixed
+\code{multiplier_draws} matrix takes precedence. \code{random_state = NULL}
+uses the current R RNG stream.}
 }
 }
 \value{Each function returns its own documented native R, scientific-model,

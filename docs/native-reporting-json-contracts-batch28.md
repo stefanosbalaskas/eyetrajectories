@@ -15,7 +15,7 @@ third-party certification. Source pin: `c1cd95ad718327550f7e55393ff38582872f7a94
 serialization without Python at runtime. It distinguishes doubles (`1.0`)
 from integers (`1`), preserves negative zero, one-element arrays, nested mapping
 ordering, Unicode escaping, and default-vs-compact JSON separator policies.
-The source oracle tests 5 workflow identifiers and 3 scenario-replicate regimes
+The source oracle tests 6 workflow identifiers and 3 scenario-replicate regimes
 across all native/source output columns. The R numeric formatting uses a
 shortest-roundtrip algorithm for ordinary floating-point values; extreme
 floating-point formatting and arbitrary Python input protocols remain open.

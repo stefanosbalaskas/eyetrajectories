@@ -53,8 +53,19 @@ test_that("fixed Gaussian draw injection reproduces full observed-grid calibrati
   ordinary<-etr_multiplier_functional_mean_band(x,
     n_multiplier=100L,random_state=11L)
   expect_identical(ordinary$provenance$functional_mean_band$random_engine,
-    "base_R_not_NumPy")
+    "numpy_pcg64")
   expect_false(ordinary$provenance$functional_mean_band$fixed_draw_replay)
+  expect_identical(.Random.seed,original)
+  legacy<-etr_multiplier_functional_mean_band(x,n_multiplier=100L,
+    random_state=11L,random_engine="base_R")
+  legacy_draws<-withr::with_seed(11L,
+    matrix(stats::rnorm(600L),100L,6L,byrow=TRUE))
+  replay<-etr_multiplier_functional_mean_band(x,n_multiplier=100L,
+    gaussian_multiplier_draws=legacy_draws)
+  expect_identical(legacy$max_statistics,replay$max_statistics)
+  expect_identical(legacy$provenance$functional_mean_band$random_engine,
+    "base_R_not_NumPy")
+  expect_identical(.Random.seed,original)
 })
 
 test_that("invalid fixed multiplier arrays cannot silently recycle units", {

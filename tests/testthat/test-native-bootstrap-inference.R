@@ -172,8 +172,9 @@ test_that("pinned Python 1.2 deterministic reference geometry is opt-in",{
   expect_equal(unname(rmean$mean),unname(et_to_r(pymean$mean)),tolerance=1e-10)
   expect_equal(unname(rmean$pointwise_se),
     unname(et_to_r(pymean$pointwise_se)),tolerance=1e-10)
-  # R and NumPy generate different multiplier streams; no assertion
-  # of identical critical values or finite-replicate bands.
+  for(field in c("max_statistics","critical_value","lower","upper"))
+    expect_equal(rmean[[field]],et_to_r(reticulate::py_get_attr(pymean,field)),
+      tolerance=1e-10,ignore_attr=TRUE,info=field)
   pyfit<-reticulate::py_call(etpy_get_export("fit_mfpca"),
     trajectories=pyx,n_components=as.integer(2L))
   rfit<-etr_fit_mfpca(x,n_components=2L)

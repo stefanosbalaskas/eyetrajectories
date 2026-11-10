@@ -59,7 +59,7 @@ test_that("source invalid training and resampling domains fail closed",{
     z$result,z$outcome,residual_indices=x),
     "zero-based integer")
 })
-test_that("R-only independent residual draws preserve seed and caller RNG state",{
+test_that("seeded child draws leave caller RNG intact and NULL uses its stream",{
   z<-.etr_fpcr_future_fixture()
   set.seed(821)
   before<-.Random.seed
@@ -70,12 +70,29 @@ test_that("R-only independent residual draws preserve seed and caller RNG state"
     z$result,z$outcome,random_state=121)
   expect_identical(a$sampled_residuals,b$sampled_residuals)
   expect_identical(a$native_rng_source,
-    "r_native_random_draws_not_numpy_seedsequence")
+    "numpy_seedsequence_spawned_pcg64")
   expect_identical(a$provenance$
     fpca_regression_future_prediction_interval$residual_rng_stream,
-    "r_native_random_stream_not_numpy_seedsequence")
+    "spawned_domain_separated_stream")
+  legacy<-etr_fpca_regression_future_prediction_interval(
+    z$result,z$outcome,random_state=121L,random_engine="base_R")
+  legacy_indices<-withr::with_seed(121L,
+    matrix(sample.int(4L,40L,replace=TRUE),20L,2L))
+  expect_identical(legacy$sampled_residuals,
+    matrix(legacy$centered_residuals[legacy_indices],20L,2L))
+  expect_identical(.Random.seed,before)
+  index<-matrix(sample.int(4L,40L,replace=TRUE),20L,2L)
+  after<-.Random.seed
+  assign(".Random.seed",before,envir=.GlobalEnv)
+  unseeded<-etr_fpca_regression_future_prediction_interval(
+    z$result,z$outcome,random_state=NULL)
+  expect_identical(unseeded$sampled_residuals,
+    matrix(unseeded$centered_residuals[index],20L,2L))
+  expect_identical(.Random.seed,after)
+  expect_identical(unseeded$native_rng_source,
+    "r_native_random_draws_not_numpy_seedsequence")
 })
-test_that("pinned Python 1.2 future-outcome predictive distribution matches fixed draws",{
+test_that("pinned Python 1.2 future prediction matches spawned and retained draws",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("future FPCR outcome source oracle requires pinned Python 1.2")
   expect_identical(et_python_version(),"1.2.0")
@@ -108,8 +125,7 @@ _pi_indices=np.array(
 _pi_provenance=dict(
   _pi_source.provenance['fpca_regression_future_prediction_interval'])
 ")
-  # Direct frozen Python public-source predictive replay with its own
-  # NumPy RNG stream; the native R comparison still uses explicit indices.
+  # Replay the public Python function with its independently spawned stream.
   direct<-reticulate::py_call(
     etpy_get_export("fpca_regression_future_prediction_interval"),
     result=reticulate::py_eval("_pi_result",convert=FALSE),
@@ -129,12 +145,15 @@ _pi_provenance=dict(
   a<-etr_fpca_regression_future_prediction_interval(
     z$result,z$outcome,confidence_level=.9,
     random_state=121,residual_indices=indices)
+  b<-etr_fpca_regression_future_prediction_interval(
+    z$result,z$outcome,confidence_level=.9,random_state=121)
   for(field in c("centered_residuals","sampled_residuals",
     "predictive_draws","lower","median","upper","predictive_se")){
     expected<-reticulate::py_to_r(reticulate::py_eval(
       paste0("_pi_source.",field),convert=FALSE))
     expect_equal(a[[field]],expected,tolerance=1e-12,
       ignore_attr=TRUE,info=field)
+    expect_identical(b[[field]],a[[field]],info=field)
   }
   expected_prov<-reticulate::py_to_r(reticulate::py_eval(
     "_pi_provenance",convert=FALSE))
@@ -148,4 +167,6 @@ _pi_provenance=dict(
     "externally_retained_python_source_indices")
   expect_identical(native_prov$residual_rng_stream,
     "externally_supplied_indices_no_rng_identity_claim")
+  expect_equal(b$provenance$fpca_regression_future_prediction_interval,
+    expected_prov[names(native_prov)])
 })

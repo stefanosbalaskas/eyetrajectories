@@ -245,14 +245,19 @@
                numeric=is.numeric(z) && is.finite(z),
                logical=is.logical(z))
     }
-    if(all(vapply(entries,scalar_type,logical(1L),t="string")))
-      out <- as.character(unlist(entries,use.names=FALSE))
-    else if(all(vapply(entries,scalar_type,logical(1L),t="numeric")))
-      out <- as.numeric(unlist(entries,use.names=FALSE))
-    else if(all(vapply(entries,scalar_type,logical(1L),t="logical")))
-      out <- as.logical(unlist(entries,use.names=FALSE))
+    present <- !vapply(entries,is.null,logical(1L))
+    nonmissing <- entries[present]
+    if(length(entries) && !length(nonmissing))
+      out <- rep(NA,length(entries))
+    else if(all(vapply(nonmissing,scalar_type,logical(1L),t="string")))
+      out <- rep(NA_character_,length(entries))
+    else if(all(vapply(nonmissing,scalar_type,logical(1L),t="numeric")))
+      out <- rep(NA_real_,length(entries))
+    else if(all(vapply(nonmissing,scalar_type,logical(1L),t="logical")))
+      out <- rep(NA,length(entries))
     else stop("heterogeneous or nonscalar portable JSON object array ",
               "requires a higher-level type policy; rejected",call.=FALSE)
+    out[present] <- unlist(nonmissing,use.names=FALSE)
     if(!length(shape)) return(out[[1L]])
     if(length(shape)==1L)return(array(out,dim=as.integer(shape)))
     return(aperm(array(out,dim=rev(as.integer(shape))),
@@ -278,8 +283,9 @@
     .etr_assert(!anyDuplicated(colnames) && all(nzchar(colnames)),
                 "portable DataFrame columns require unique nonempty labels")
     names(v) <- colnames
-    df <- as.data.frame(v,optional=TRUE,stringsAsFactors=FALSE,
-                        check.names=FALSE)
+    df <- if(length(v)) as.data.frame(v,optional=TRUE,stringsAsFactors=FALSE,
+                                    check.names=FALSE) else
+      data.frame(row.names=seq_along(index))
     attr(df,"python_index") <- index
     if(marker=="series")return(df[[1L]])
     return(df)

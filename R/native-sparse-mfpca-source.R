@@ -232,6 +232,7 @@ etr_fit_sparse_mfpca_native<-function(
     metadata=trajectories$metadata,
     coordinate_system=trajectories$coordinate_system,
     time_unit=trajectories$time_unit,n_components=k,
+    n_curves=length(trajectories$curve_ids),
     quadrature_weights=eig$quadrature_weights,
     smoothed_cxx=joint$smoothed$cxx,
     smoothed_cxy=joint$smoothed$cxy,

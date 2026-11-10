@@ -74,17 +74,20 @@
 #' @param n_multiplier Number of Gaussian multiplier draws, at least 100.
 #' @param unit Curve or independent participant units.
 #' @param participant_column Required participant metadata when used.
-#' @param random_state Isolated base-R RNG seed; not NumPy-identical.
+#' @param random_state Nonnegative integer seed below 2^53 for the mean band,
+#'   or NULL for the current R RNG stream.
 #' @param gaussian_multiplier_draws Optional fixed numeric matrix with
 #'   n_multiplier rows and one column per independent inference unit.
 #'   When supplied, no random numbers are generated and random_state is
 #'   not used; this supports exact same-draw Python/R numerical replay.
 #'   It is a native R audit extension, not a frozen Python 1.2 parameter.
+#' @param random_engine Seeded mean-band RNG. Use `"base_R"` to replay
+#'   previous native Gaussian draws, or `"numpy"` for source draws.
 #' @export
 etr_multiplier_functional_mean_band <- function(trajectories,
     confidence_level=.95,n_multiplier=2000L,unit="curve",
     participant_column=NULL,random_state=0L,
-    gaussian_multiplier_draws=NULL) {
+    gaussian_multiplier_draws=NULL,random_engine="numpy") {
   etr_validate(trajectories,require_complete=TRUE)
   .etr_assert(trajectories$coordinate_system!="probability_simplex",
     "simplex responses require an explicit log-ratio transform")
@@ -114,10 +117,9 @@ etr_multiplier_functional_mean_band <- function(trajectories,
   sd_grid<-matrix(apply(unit_vals,c(2L,3L),stats::sd),nt,nd)
   se<-sd_grid/sqrt(nu)
   active<-sd_grid>.Machine$double.eps
-  # Exact common-random-number replays make the stochastic scientific
-  # estimand auditable without pretending base R and NumPy PCG64 have the
-  # same seeded streams. The unit order is the native source curve or
-  # first-observed participant order, never a window-row resample.
+  # Each row uses the source curve order or the first-observed participant
+  # order. Retained multiplier matrices take precedence over the seed.
+  rng<-NULL
   if(!is.null(gaussian_multiplier_draws)) {
     .etr_assert(is.matrix(gaussian_multiplier_draws)&&
       is.numeric(gaussian_multiplier_draws)&&
@@ -125,13 +127,25 @@ etr_multiplier_functional_mean_band <- function(trajectories,
       identical(dim(gaussian_multiplier_draws),c(b,nu))&&
       all(is.finite(gaussian_multiplier_draws)),
       "gaussian_multiplier_draws must be a finite numeric matrix with n_multiplier rows and n_units columns")
+    engine<-"caller_supplied_fixed_Gaussian_matrix"
   }else{
-    restore<-.etr_simulation_rng(random_state)
-    on.exit(restore(),add=TRUE)
+    random_engine<-match.arg(random_engine,c("numpy","base_R"))
+    engine<-"base_R_unseeded"
+    if(!is.null(random_state)){
+      if(random_engine=="numpy"){
+        rng<-.etr_numpy_pcg64(random_state)
+        engine<-"numpy_pcg64"
+      }else{
+        restore<-.etr_simulation_rng(random_state)
+        on.exit(restore(),add=TRUE)
+        engine<-"base_R_not_NumPy"
+      }
+    }
   }
+  draw<-if(is.null(rng))stats::rnorm else rng$normal
   stats<-numeric(b)
   if(any(active))for(i in seq_len(b)){
-    w<-if(is.null(gaussian_multiplier_draws))stats::rnorm(nu)
+    w<-if(is.null(gaussian_multiplier_draws))draw(nu)
       else as.numeric(gaussian_multiplier_draws[i,])
     process<-matrix(0,nt,nd)
     for(t in seq_len(nt))for(d in seq_len(nd))
@@ -162,8 +176,7 @@ etr_multiplier_functional_mean_band <- function(trajectories,
       zero_variance_grid_points=sum(!active),
       simultaneous_domain="observed_time_by_dimension_grid",
       continuous_between_grid_points=FALSE,
-      random_engine=if(is.null(gaussian_multiplier_draws))
-        "base_R_not_NumPy" else "caller_supplied_fixed_Gaussian_matrix",
+      random_engine=engine,
       fixed_draw_replay=!is.null(gaussian_multiplier_draws))))),
     class="etr_functional_mean_band")
 }
@@ -177,6 +190,7 @@ etr_multiplier_functional_mean_band <- function(trajectories,
 #' @param participant_column Required when resampling participants.
 #' @param level Descriptive two-sided percentile level.
 #' @inheritParams etr_multiplier_functional_mean_band
+#' @param random_state Isolated base-R RNG seed for the FPCA score bootstrap.
 #' @export
 etr_bootstrap_fpca_score_uncertainty <- function(trajectories,targets=NULL,
     n_bootstrap=500L,n_components=3L,scaling="none",

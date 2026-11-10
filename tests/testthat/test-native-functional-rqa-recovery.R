@@ -474,7 +474,7 @@ test_that("functional RQA mean band preserves source equal-weight independent-un
     expect_identical(fp$participant_column,participant)
     expect_identical(fp$random_state,123L)
     expect_identical(fp$n_multiplier,100L)
-    expect_identical(fp$random_engine,"base_R_not_NumPy")
+    expect_identical(fp$random_engine,"numpy_pcg64")
     expect_equal(fp$n_units,length(z$band$unit_ids))
     expect_equal(fp$curves_per_unit,z$band$curves_per_unit)
     expect_identical(fp$estimand,if(unit=="participant")
@@ -535,10 +535,12 @@ test_that("frozen Python 1.2 functional RQA band deterministic moments agree",{
       dimensions=as.list(x$dimension_names),
       n_multiplier=as.integer(100L),random_state=as.integer(123L))
     original<-source$band
-    for(field in c("mean","pointwise_se")){
+    for(field in c("mean","pointwise_se","max_statistics","critical_value",
+      "lower","upper")){
+      expected<-et_to_r(reticulate::py_get_attr(original,field))
+      if(field=="max_statistics")expected<-as.numeric(expected)
       expect_equal(unname(native$band[[field]]),
-        unname(et_to_r(reticulate::py_get_attr(original,field))),
-        tolerance=1e-10,info=paste(unit,field))
+        unname(expected),tolerance=1e-10,info=paste(unit,field))
     }
     expect_equal(native$band$time,
       as.numeric(et_to_r(original$time)),tolerance=0)
@@ -554,12 +556,9 @@ test_that("frozen Python 1.2 functional RQA band deterministic moments agree",{
     expect_identical(native$band$provenance$functional_mean_band$estimand,
       as.character(py_provenance$functional_mean_band$estimand))
     expect_identical(native$band$provenance$functional_mean_band$
-      random_engine,"base_R_not_NumPy")
+      random_engine,"numpy_pcg64")
     expect_true(all(is.finite(native$band$max_statistics)))
     expect_true(all(is.finite(et_to_r(original$max_statistics))))
-    # The Gaussian multiplier RNG differs by language. The deterministic
-    # mean and standard-error estimand must agree; realized bootstrap
-    # quantiles need scientific distributional assessment, not false equality.
   }
   expect_false(any(etr_native_parity_catalog()$
     one_to_one_native_contract_complete))

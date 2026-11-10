@@ -44,6 +44,8 @@ OPTIONAL_REPORTS = {
     "sparse_observation_native": "sparse_observation_source_cases_UNSIGNED.csv",
     "functional_core_native": "functional_core_source_cases_UNSIGNED.csv",
     "fpca_known_truth_recovery": "fpca_recovery_source_cases_UNSIGNED.csv",
+    "seeded_resampling_native": "seeded_resampling_source_cases_UNSIGNED.csv",
+    "miaaft_phase_replay": "miaaft_phase_replay_source_cases_UNSIGNED.csv",
 }
 PASS = frozenset({
     "PASS_NUMERIC", "PASS_BOTH_REJECT", "PASS_SCHEMA",

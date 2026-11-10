@@ -1,18 +1,24 @@
 # Source: eyetrajectoriespy 1.2.0 wild_regression.py, immutable
 # commit c1cd95ad718327550f7e55393ff38582872f7a94.
 # Independent R FPCA/least squares/studentization; no Python backend.
-# Seeded Mammen and fixed-multiplier replay follow the frozen source draws.
+# Seeded normal and Mammen multipliers follow the frozen source draws.
 
-.etr_wild_fpcr_multipliers <- function(replicates, curves, multiplier, seed) {
-  .etr_assert(is.null(seed) || (is.numeric(seed) && length(seed) == 1L &&
-    is.finite(seed) && seed == floor(seed) && seed >= 0 && seed <= .Machine$integer.max),
-    "random_state must be NULL or a native nonnegative integer")
+.etr_wild_fpcr_multipliers <- function(replicates, curves, multiplier, seed,
+                                      random_engine = "numpy") {
+  rng <- NULL
+  if (!is.null(seed)) {
+    if (random_engine == "numpy") {
+      rng <- .etr_numpy_pcg64(seed)
+    } else {
+      restore <- .etr_simulation_rng(seed)
+      on.exit(restore(), add = TRUE)
+    }
+  }
   n <- as.double(replicates) * curves
   if (multiplier == "normal") {
-    draw <- function() stats::rnorm(n)
-    values <- if (is.null(seed)) draw() else .etr_seed_scope(as.integer(seed), draw)
+    values <- if (is.null(rng)) stats::rnorm(n) else rng$normal(n)
   } else {
-    u <- if (is.null(seed)) stats::runif(n) else .etr_numpy_pcg64(seed)$uniform(n)
+    u <- if (is.null(rng)) stats::runif(n) else rng$uniform(n)
     sqrt5 <- sqrt(5)
     values <- ifelse(u < (sqrt5 + 1) / (2 * sqrt5), (1 - sqrt5) / 2, (1 + sqrt5) / 2)
   }
@@ -76,10 +82,12 @@
 #' @param multiplier Exact "normal" or "mammen".
 #' @param confidence_level Interval probability in (0,1).
 #' @param independent_unit_column If supplied, metadata IDs must be unique.
-#' @param random_state Integer seed. Seeded Mammen uses NumPy-compatible
-#'   PCG64 draws and normal multipliers use the native R normal generator.
+#' @param random_state Nonnegative integer seed below 2^53 for NumPy-compatible
+#'   PCG64 normal or Mammen draws. NULL uses the current R RNG stream.
 #' @param multiplier_draws Optional finite B-by-n numeric matrix of fixed
 #'   source draws; overrides R RNG and permits numerical oracle replay.
+#' @param random_engine Seeded multiplier RNG. Use `"base_R"` to replay
+#'   previous native normal multipliers, or `"numpy"` for source draws.
 #' @return Native result reusing source schema numerical fields. Full-domain
 #'   source accepted-type and dataclass contracts remain unsigned.
 #' @export
@@ -88,7 +96,7 @@ etr_wild_bootstrap_fpca_projection<-function(
     residual_components=2L,inference_components=3L,
     scaling="none",multiplier="normal",
     confidence_level=.95,independent_unit_column=NULL,
-    random_state=0L,multiplier_draws=NULL){
+    random_state=0L,multiplier_draws=NULL,random_engine="numpy"){
   etr_validate(trajectories,require_complete=TRUE)
   .etr_assert(all(is.finite(trajectories$values)),
     "training trajectories must be complete finite")
@@ -141,7 +149,8 @@ etr_wild_bootstrap_fpca_projection<-function(
     "targets must match training time channel units geometry and be complete finite")
   B<-as.integer(n_bootstrap)
   if(is.null(multiplier_draws)){
-    mult<-.etr_wild_fpcr_multipliers(B,n,multiplier,random_state)
+    random_engine<-match.arg(random_engine,c("numpy","base_R"))
+    mult<-.etr_wild_fpcr_multipliers(B,n,multiplier,random_state,random_engine)
   }else{
     mult<-multiplier_draws
     .etr_assert(is.matrix(mult)&&is.numeric(mult)&&
@@ -212,8 +221,10 @@ etr_wild_bootstrap_fpca_projection<-function(
     component_selection_uncertainty_included=FALSE,
     random_state=random_state,
     fixed_source_multiplier_draws_supplied=!is.null(multiplier_draws),
+    seeded_normal_draws_match_numpy=is.null(multiplier_draws)&&
+      !is.null(random_state)&&random_engine=="numpy"&&multiplier=="normal",
     seeded_mammen_draws_match_numpy=is.null(multiplier_draws)&&
-      !is.null(random_state)&&multiplier=="mammen",
+      !is.null(random_state)&&random_engine=="numpy"&&multiplier=="mammen",
     source_full_contract_certified=FALSE)
   structure(list(reference_fpca=fit,
     target_curve_ids=targets$curve_ids,

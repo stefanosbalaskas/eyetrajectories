@@ -29,7 +29,7 @@ evidence<-list(
   python_version="1.2.0",
   frozen_python_commit="c1cd95ad718327550f7e55393ff38582872f7a94",
   functions_tested=checks,
-  workflow_fixture_count=5L,
+  workflow_fixture_count=6L,
   scenario_replicate_regimes=c(1L,3L,7L),
   all_python_source_field_comparisons_passed=TRUE,
   source_input_runtime_representation_identical=FALSE,

@@ -102,32 +102,33 @@ etr_run_functional_mixed_effects_workflow<-function(
     backend="native_covariance",dimension=NULL,
     n_components=NULL,evaluation_grid=NULL,
     mean_bandwidth=NULL,covariance_bandwidth=NULL,
-    measurement_error_variance=NULL,noise_variance_method="fixed",
+    measurement_error_variance=NULL,noise_variance_method=
+      if(is.null(config$measurement_error_variance))"diagonal_difference"else"fixed",
     noise_bandwidth=NULL,noise_support=NULL,noise_min_local_points=3L,
     analysis_support_action="error",psd_action="error",
     psd_tolerance=1e-8,positive_eigen_tolerance=1e-10,
     score_ridge=0,score_condition_limit=1e12,
     min_score_samples=2L,score_failure_action="error",
     mean_min_local_points=3L,covariance_min_local_pairs=6L,
+    mean_smoother="local_linear",covariance_smoother="local_linear",
+    kernel="epanechnikov",
     score_uncertainty=NULL,bandwidth_selection=NULL,observation_diagnostics=NULL,
     preprocessing=list()),required=c(
-      "backend","dimension","n_components","evaluation_grid",
-      "noise_variance_method"))
+      "backend","dimension","n_components","evaluation_grid"))
   .etr_assert(identical(cfg$backend,"native_covariance"),
     "sparse source workflow requires explicit native_covariance backend")
   observation_options<-.etr_sparse_observation_options(
     observation_process,cfg$observation_diagnostics)
   .etr_assert(inherits(trajectories,"etr_irregular_trajectory_set"),
     "source-model sparse FPCA requires native irregular trajectories")
+  .etr_sparse_smoothing_settings(cfg$mean_smoother,cfg$covariance_smoother,cfg$kernel)
   selection_run<-.etr_sparse_bandwidth_selection(trajectories,cfg,paired=FALSE)
   selection<-selection_run$result
   params<-cfg[setdiff(names(cfg),c("preprocessing","score_uncertainty",
     "bandwidth_selection","observation_diagnostics"))]
   params<-.etr_sparse_bandwidth_refit(params,selection)
   fit_params<-params[setdiff(names(params),"backend")]
-  fit_run<-.etr_sparse_timed_step("fit","fit_sparse_fpca",
-    c(fit_params,list(mean_smoother="local_linear",
-      covariance_smoother="local_linear",kernel="epanechnikov")),
+  fit_run<-.etr_sparse_timed_step("fit","fit_sparse_fpca",fit_params,
     do.call(etr_fit_sparse_fpca_native,c(list(trajectories=trajectories),fit_params)))
   fit<-fit_run$result
   uncertainty<-.etr_sparse_workflow_uncertainty(

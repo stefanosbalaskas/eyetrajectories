@@ -1,4 +1,14 @@
 # Frozen source wild_regression.py numerical fixed multiplier witness.
+test_that("legacy normal multipliers reproduce the previous native seeded stream", {
+  set.seed(81L)
+  before<-.Random.seed
+  actual<-.etr_wild_fpcr_multipliers(20L,5L,"normal",118L,"base_R")
+  expected<-withr::with_seed(118L,
+    matrix(stats::rnorm(100L),20L,5L,byrow=TRUE))
+  expect_identical(actual,expected)
+  expect_identical(.Random.seed,before)
+})
+
 test_that("source frozen Gaussian FPCR wild bootstrap reuses fixed draws",{
   f<-.etr_wild_projection_fixture()
   x<-etr_wild_bootstrap_fpca_projection(f$x,f$y,

@@ -198,7 +198,7 @@
   audit<-do.call(rbind,diagnostics)
   if(failure=="error"&&any(audit$status_code!="ok")){
     i<-which(audit$status_code!="ok")[1L]
-    .etr_spn_fail(audit$status_code[i],
+    .etr_spn_score_fail(audit,i,
       paste("asynchronous PACE failed for",ids[i]))
   }
   list(scores=scores,diagnostics=audit,

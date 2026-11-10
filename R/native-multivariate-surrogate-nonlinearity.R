@@ -1,7 +1,7 @@
 # Python 1.2.0 frozen multivariate_surrogates.py
 # multivariate_surrogate_nonlinearity_test
 # Source SHA c1cd95ad718327550f7e55393ff38582872f7a94
-# Restricted native domain: sample units and R MIAAFT draw stream.
+# Restricted native domain: sample units.
 #' Multivariate Lyapunov nonlinearity test with MIAAFT null surrogates
 #' @param trajectories Native complete regular common-grid trajectories.
 #' @param curve Curve ID or zero-based curve index.
@@ -14,10 +14,11 @@
 #' @param n_surrogates Number of generated multivariate surrogates.
 #' @param alternative greater, less or two-sided.
 #' @param max_iterations,tolerance MIAAFT convergence controls.
-#' @param random_state Scoped R seed, not NumPy-equivalent.
+#' @param random_state Integer seed for NumPy-compatible PCG64 initialization.
 #' @param initial_permutations Optional complete zero-based initial permutation
-#'   array forwarded to the native MIAAFT surrogate generator. Enables fixed
-#'   draw replay of the entire surrogate test without NumPy RNG equivalence.
+#'   array forwarded to the native MIAAFT surrogate generator.
+#' @param phase_replay Optional roundoff-scale Fourier phase controls forwarded
+#'   to the native MIAAFT surrogate generator.
 #' @export
 etr_multivariate_surrogate_nonlinearity_test<-function(
     trajectories,curve,dimensions,reference_dimension,
@@ -27,7 +28,7 @@ etr_multivariate_surrogate_nonlinearity_test<-function(
     max_horizon_units="samples",fit_units="samples",
     n_surrogates=199L,alternative="greater",
     max_iterations=1000L,tolerance=1e-8,random_state=NULL,
-    initial_permutations=NULL){
+    initial_permutations=NULL,phase_replay=NULL){
   .etr_assert(identical(statistic,"largest_lyapunov"),
     "statistic must be largest_lyapunov")
   .etr_assert(is.character(alternative)&&length(alternative)==1L&&
@@ -75,7 +76,7 @@ etr_multivariate_surrogate_nonlinearity_test<-function(
     trajectories,curve,dimensions,reference_dimension,
     n_surrogates=n_surrogates,max_iterations=max_iterations,
     tolerance=tolerance,random_state=random_state,
-    initial_permutations=initial_permutations)
+    initial_permutations=initial_permutations,phase_replay=phase_replay)
   stats<-vapply(seq_len(surrogates$n_surrogates),function(i){
     values<-matrix(surrogates$surrogates[i,,],
       nrow=nt,ncol=nd)
@@ -109,6 +110,9 @@ etr_multivariate_surrogate_nonlinearity_test<-function(
         "two_sided_double_min_plus_one_tails" else "plus_one",
       failed_surrogate_policy="raise",
       fixed_initialization_replay=!is.null(initial_permutations),
+      phase_replay_applied=
+        surrogates$provenance$target_phases_replayed>0L||
+        any(surrogates$provenance$reference_phases_replayed>0L),
       source_python_equivalent_stochastic_draws=FALSE,
       interpretation_boundary=paste(
         "Rejection is evidence against the declared multivariate",
