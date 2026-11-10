@@ -52,9 +52,14 @@
   parts<-lapply(seq_along(times),function(i){
     t<-times[[i]];n<-length(t)
     if(n<2L)return(NULL)
-    idx<-which(row(matrix(0,n,n))!=col(matrix(0,n,n)),
-      arr.ind=TRUE)
-    a<-idx[,1L];b<-idx[,2L]
+    # Frozen _sparse_multivariate.raw_planar_covariance_pairs loops
+    # left index outer, right index inner (Python row-major order).
+    # which(...,arr.ind=TRUE) is column-major in R and permutes the
+    # directional xy products even when the fitted operator is close.
+    left<-rep(seq_len(n),each=n)
+    right<-rep(seq_len(n),times=n)
+    keep<-left!=right
+    a<-left[keep];b<-right[keep]
     list(s=t[a],t=t[b],products=rx[[i]][a]*ry[[i]][b])
   })
   xy<-list(s=unlist(lapply(parts,function(z)z$s),use.names=FALSE),
@@ -69,11 +74,15 @@
 }
 
 .etr_spnm_surface<-function(pairs,grid,h,min_pairs=6L,
-    cross=FALSE){
+    cross=FALSE,block_name=if(cross)"xy" else "xx"){
   n<-length(grid);C<-matrix(NA_real_,n,n)
   count<-matrix(0L,n,n)
   code<-if(cross)"insufficient_cross_covariance_local_support"
     else "insufficient_covariance_local_support"
+  .etr_assert(is.character(block_name)&&length(block_name)==1L&&
+    !is.na(block_name)&&block_name%in%c("xx","xy","yy")&&
+    identical(isTRUE(cross),identical(block_name,"xy")),
+    "block_name must match xx, xy or yy planar smoothing mode")
   for(i in seq_len(n)){
     ds<-pairs$s-grid[i]
     ws<-.etr_spn_kernel(ds/h)
@@ -81,14 +90,22 @@
       dt<-pairs$t-grid[j]
       w<-ws*.etr_spn_kernel(dt/h)
       count[i,j]<-sum(w>0)
+      location<-list(block=block_name,s=as.numeric(grid[i]),
+        t=as.numeric(grid[j]),support_count=as.integer(count[i,j]),
+        bandwidth=as.numeric(h))
       if(count[i,j]<min_pairs)
-        .etr_spn_fail(code,"too few offdiagonal local covariance pairs")
+        .etr_spn_fail(code,
+          "local planar covariance smoothing has too few off-diagonal pairs",
+          c(location,list(required_count=as.integer(min_pairs))))
       C[i,j]<-.etr_spn_local_fit(cbind(1,ds,dt),
-        pairs$products,w,3L,code)
+        pairs$products,w,3L,code,details=location)
     }
   }
-  list(values=if(cross)C else (C+t(C))/2,
-    support_counts=count)
+  # Python smooth_planar_covariance_pairs retains the *raw* fitted
+  # xx/xy/yy surfaces. Auditing and any explicit symmetry enforcement
+  # happen later in audit_repair_planar_covariance. Pre-symmetrizing
+  # xx/yy here conceals asymmetry and changes published smoothed_* data.
+  list(values=C,support_counts=count)
 }
 
 .etr_spnm_operator<-function(blocks,grid,action="error",
