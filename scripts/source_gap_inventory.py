@@ -18,6 +18,23 @@ CLOSED_SEMANTIC_SCOPE = frozenset({
     "functional_recovery_metric_catalog_frame",
     "mathematical_contract_frame",
 })
+
+# Four separately developer-reviewed closures were entered in the historical
+# source ledger before the SHA256 receipt gate existed. Their recorded
+# statuses must not be silently revoked, but must also NEVER be counted as
+# new, independently certified reviews. Permit only these exact old names
+# with their frozen source pin, named tests and explicit resolution wording.
+# Every NEW source closure still requires a hash-pinned six-domain receipt.
+LEGACY_MIGRATED_REVIEW_WITNESSES = {
+    "functional_recovery_metric_catalog":
+        "test-native-zeroarg-catalog-source-semantic-closures.R",
+    "list_mathematical_contracts":
+        "test-native-zeroarg-catalog-source-semantic-closures.R",
+    "sparse_fpca_score_frame":
+        "test-native-sparse-score-frame-collisions.R",
+    "sparse_mfpca_score_frame":
+        "test-native-sparse-score-frame-collisions.R",
+}
 FUNCTION_HEADERS = (
     "python_name", "native_r_candidate", "gap_kind",
     "known_source_difference", "source_witness", "review_resolution",
@@ -107,7 +124,8 @@ def _validate_reviewed_closures(
     for row in catalog:
         name = row["python_name"]
         if (not name or name in seen or name not in historical_names or
-                name in CLOSED_SEMANTIC_SCOPE):
+                name in CLOSED_SEMANTIC_SCOPE or
+                name in LEGACY_MIGRATED_REVIEW_WITNESSES):
             raise SourceGapInventoryError(
                 f"Duplicate/unknown/legacy reviewed closure: {name!r}")
         seen.add(name)
@@ -222,7 +240,8 @@ def read_inventory(root: Path | str | None = None) -> SourceGapCounts:
         if row["unresolved"] == "FALSE"
     }
     reviewable = set(resolved) | resolved_other
-    required = (set(resolved) - CLOSED_SEMANTIC_SCOPE) | resolved_other
+    required = (set(resolved) - CLOSED_SEMANTIC_SCOPE -
+                set(LEGACY_MIGRATED_REVIEW_WITNESSES)) | resolved_other
     reviewed = _validate_reviewed_closures(
         root, funcs + other, reviewable)
     if reviewed != required:
@@ -239,6 +258,20 @@ def read_inventory(root: Path | str | None = None) -> SourceGapCounts:
             FROZEN_PYTHON not in row["source_witness"]):
             raise SourceGapInventoryError(
                 "Missing frozen-source semantic closure evidence")
+    # Retain only the four documented pre-receipt developer reviews.
+    # This is NOT a replacement for new full-source review receipts.
+    for row in funcs:
+        name = row["python_name"]
+        witness = LEGACY_MIGRATED_REVIEW_WITNESSES.get(name)
+        if witness is None or row["unresolved_source_gap"] != "FALSE":
+            continue
+        if (FROZEN_PYTHON not in row["source_witness"] or
+                witness not in row["source_witness"] or
+                not row["review_resolution"].startswith("Resolved ") or
+                "native-language" not in row["review_resolution"] or
+                not row["native_r_candidate"].startswith("etr_")):
+            raise SourceGapInventoryError(
+                f"Legacy pre-receipt developer closure witness changed: {name}")
     return SourceGapCounts(
         historical_callable=len(funcs),
         active_callable=sum(r["unresolved_source_gap"] == "TRUE" for r in funcs),
