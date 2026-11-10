@@ -104,7 +104,7 @@ def _mixed_string_source(dimname, method, slope, predictor, kind):
       bootstrap=list(bootstrap_type=kind,
         bootstrap_coefficient_functions=array(0,c(4L,1L,2L))))
     native<-etr_functional_mixed_effects_reporting_text(fit,band)
-    source<-reticulate::py_call(reticulate::py$_mixed_string_source,
+    source<-reticulate::py_call(reticulate::py[["_mixed_string_source"]],
       case$dim,case$method,case$slope,case$predictor,kind)
     expect_identical(native,as.character(reticulate::py_to_r(source)),
       info=paste(kind,case$dim,case$method))
