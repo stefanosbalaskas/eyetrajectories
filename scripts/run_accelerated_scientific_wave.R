@@ -93,11 +93,13 @@
       "native-python-json-reporting-batch28",
       "native-workflow-configuration",
       "native-workflow-source-audit",
+      "native-workflow-bundle-export",
       "native-trapezoid-complex-source",
       "native-source-contract-gaps",
       # Actual scientific estimators, not only mapping and metadata tests.
       "native-wild-bootstrap-projection",
       "native-wild-bootstrap-truncation-scan",
+      "native-inference-reporting",
       "native-multivariate-iaaft-generator",
       "native-multivariate-surrogate-nonlinearity",
       "native-numpy-pcg64",
@@ -129,6 +131,7 @@
       "native-sparse-multilevel-source",
       "native-sparse-mfpca-async-source",
       "native-functional-rqa-recovery",
+      "native-functional-simulation-seeded",
       "native-recovery-modes",
       "native-functional-diagnostics"
     ),collapse="|"),reporter="summary",

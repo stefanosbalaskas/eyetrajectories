@@ -43,15 +43,18 @@
 #' @param exposure_profiles Positive Poisson exposure vector or matrix, if
 #'   expected-count predictions are requested.
 #' @param prediction_scale Explicit rate, expected_count or probability scale.
+#' @param python_boundary_mode Use pandas-style text conversion for
+#'   Boolean and floating-point profile identifiers.
 #' @return Native prediction-bootstrap record with B-by-profile-by-time arrays.
 #' @export
 etr_bootstrap_generalized_function_on_scalar_predictions <- function(
     bootstrap,profiles,profile_id_column="profile_id",
-    exposure_profiles=NULL,prediction_scale=NULL) {
+    exposure_profiles=NULL,prediction_scale=NULL,python_boundary_mode=FALSE) {
   .etr_gfosr_source_bootstrap(bootstrap)
   prediction<-etr_generalized_function_on_scalar_predict(
     bootstrap$reference,profiles,profile_id_column=profile_id_column,
-    exposure_profiles=exposure_profiles,prediction_scale=prediction_scale)
+    exposure_profiles=exposure_profiles,prediction_scale=prediction_scale,
+    python_boundary_mode=python_boundary_mode)
   design<-prediction$profile_design_matrix
   coefficient_draws<-bootstrap$bootstrap_coefficient_functions
   shape<-dim(coefficient_draws)

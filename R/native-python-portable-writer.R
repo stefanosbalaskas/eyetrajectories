@@ -70,18 +70,27 @@
   list(dtype=dtype,shape=as.list(as.integer(shape)))
 }
 
-.etr_portable_writer_json <- function(x,depth=0L) {
+.etr_portable_writer_mapping <- function(items) {
+  list('__portable_type__'="mapping",
+    entries=lapply(seq_along(items),function(i) list(names(items)[[i]],items[[i]])))
+}
+
+.etr_portable_writer_json <- function(x,depth=0L,add_array=NULL) {
   .etr_assert(depth<=32L,"portable provenance nesting exceeds safe limit")
   if(is.null(x)) return(NULL)
+  if(!is.null(add_array) && is.array(x)) {
+    .etr_assert((is.numeric(x)||is.logical(x)) && all(is.finite(x)),
+      "portable workflow arrays must be finite numeric or logical values")
+    return(add_array(x))
+  }
   if(is.list(x) && !is.object(x)){
     keys <- names(x)
-    if(is.null(keys))
-      return(lapply(x,.etr_portable_writer_json,depth=depth+1L))
-    .etr_assert(!anyNA(keys)&&all(nzchar(keys))&&!anyDuplicated(keys),
-      "portable mapping requires unique nonempty keys")
-    return(list('__portable_type__'="mapping",
-      entries=lapply(seq_along(x),function(i)
-        list(keys[[i]],.etr_portable_writer_json(x[[i]],depth+1L)))))
+    if(!is.null(keys))
+      .etr_assert(!anyNA(keys)&&all(nzchar(keys))&&!anyDuplicated(keys),
+        "portable mapping requires unique nonempty keys")
+    items <- lapply(x,.etr_portable_writer_json,depth=depth+1L,add_array=add_array)
+    if(is.null(keys)) return(items)
+    return(.etr_portable_writer_mapping(items))
   }
   .etr_assert(is.atomic(x)&&is.null(dim(x))&&
     (is.character(x)||is.numeric(x)||is.logical(x))&&
@@ -91,9 +100,9 @@
   lapply(as.list(unname(x)),.etr_portable_writer_json,depth=depth+1L)
 }
 
-.etr_portable_writer_record <- function(type, fields) {
+.etr_portable_writer_record <- function(type, fields, module="eyetrajectoriespy.types") {
   list('__portable_type__'="dataclass",
-    python_type=paste0("eyetrajectoriespy.types.",type),fields=fields)
+    python_type=paste0(module,".",type),fields=fields)
 }
 
 .etr_portable_writer_tuple <- function(values) {
@@ -109,8 +118,8 @@
   .etr_portable_writer_json(provenance)
 }
 
-.etr_portable_writer_metadata <- function(metadata,curve_ids,add_array) {
-  .etr_assert(is.data.frame(metadata) && nrow(metadata)==length(curve_ids) &&
+.etr_portable_writer_dataframe <- function(metadata,index,add_array) {
+  .etr_assert(is.data.frame(metadata) && nrow(metadata)==length(index) &&
     !anyNA(names(metadata)) && all(nzchar(names(metadata))) &&
     !anyDuplicated(names(metadata)) &&
     all(vapply(metadata,function(z)
@@ -120,13 +129,14 @@
     "unsupported metadata column type or labels")
   encode_column <- function(column) {
     if ((is.character(column) || is.logical(column)) && anyNA(column)) {
+      items <- lapply(as.list(unname(column)),function(x) if(is.na(x))NULL else x)
       return(list('__portable_type__'="object_array",
-        shape=list(length(column)),items=as.list(unname(column))))
+        shape=list(length(column)),items=items))
     }
     add_array(column)
   }
   list('__portable_type__'="dataframe",columns=as.list(names(metadata)),
-    index=unname(as.list(curve_ids)),data=unname(lapply(metadata,encode_column)))
+    index=unname(as.list(index)),data=unname(lapply(metadata,encode_column)))
 }
 
 .etr_portable_writer_trajectories <- function(result,add_array,irregular) {
@@ -144,7 +154,7 @@
   .etr_portable_writer_record(type,list(time=time,values=values,
     curve_ids=.etr_portable_writer_tuple(result$curve_ids),
     dimension_names=.etr_portable_writer_tuple(result$dimension_names),
-    metadata=.etr_portable_writer_metadata(result$metadata,result$curve_ids,add_array),
+    metadata=.etr_portable_writer_dataframe(result$metadata,result$curve_ids,add_array),
     coordinate_system=result$coordinate_system,time_unit=result$time_unit,
     provenance=.etr_portable_writer_provenance(result$provenance)))
 }
@@ -246,6 +256,22 @@ etr_export_python_portable_result <- function(result,directory,
     "native writer cannot claim a Python environment snapshot")
   .etr_assert(identical(overwrite,FALSE),
     "native writer does not overwrite existing files")
+  .etr_write_python_portable_result(directory,function(add_array) {
+    if(inherits(result,"etr_trajectory_set")) {
+      .etr_portable_writer_trajectories(result,add_array,irregular=FALSE)
+    } else if(inherits(result,"etr_irregular_trajectory_set")) {
+      .etr_portable_writer_trajectories(result,add_array,irregular=TRUE)
+    } else if(inherits(result,"etr_fpca")) {
+      .etr_portable_writer_fpca(result,add_array)
+    } else {
+      .etr_portable_writer_compositional(result,add_array)
+    }
+  })
+}
+
+.etr_write_python_portable_result <- function(directory,encode_payload,
+    encode_manifest=function(x) jsonlite::toJSON(x,auto_unbox=TRUE,null="null",
+      pretty=TRUE,digits=NA,na="null")) {
   .etr_assert(is.character(directory)&&length(directory)==1L&&
     !is.na(directory)&&nzchar(directory),
     "directory must be a nonempty path")
@@ -268,15 +294,7 @@ etr_export_python_portable_result <- function(result,directory,
     saved <<- c(saved,filename)
     c(list('__portable_type__'="ndarray",key=key),info)
   }
-  payload <- if(inherits(result,"etr_trajectory_set")) {
-    .etr_portable_writer_trajectories(result,add_array,irregular=FALSE)
-  } else if(inherits(result,"etr_irregular_trajectory_set")) {
-    .etr_portable_writer_trajectories(result,add_array,irregular=TRUE)
-  } else if(inherits(result,"etr_fpca")) {
-    .etr_portable_writer_fpca(result,add_array)
-  } else {
-    .etr_portable_writer_compositional(result,add_array)
-  }
+  payload <- encode_payload(add_array)
   unit_names <- intersect(c("time_unit","coordinate_system"),names(payload$fields))
   units <- if(length(unit_names)) payload$fields[unit_names] else
     structure(list(),names=character())
@@ -298,8 +316,7 @@ etr_export_python_portable_result <- function(result,directory,
       serialize=FALSE),
     units=units,
     nonportable_fields=list(),environment=NULL,payload=payload)
-  json <- jsonlite::toJSON(manifest,auto_unbox=TRUE,null="null",
-    pretty=TRUE,digits=NA,na="null")
+  json <- encode_manifest(manifest)
   writeLines(as.character(json),file.path(temp,"manifest.json"),
     useBytes=TRUE)
   if(!dir.exists(directory))

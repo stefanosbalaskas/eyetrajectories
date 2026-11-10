@@ -89,8 +89,8 @@
 #'
 #' @param result Native generalized functional GEE fit.
 #' @param n_bootstrap Number of full GEE refits (>=100).
-#' @param random_state Nonnegative integer for NumPy-compatible PCG64 draws,
-#'   or NULL for unseeded native R draws.
+#' @param random_state Exactly represented nonnegative integer below 2^53
+#'   for NumPy-compatible PCG64 draws, or NULL for unseeded native R draws.
 #' @param failed_replicate_policy Exactly "raise"; no failed rep is replaced.
 #' @param sampled_participant_indices Optional B-by-participant matrix of
 #'   zero-based retained Python source draw indices for exact oracle replay.
@@ -102,37 +102,20 @@ etr_bootstrap_generalized_function_on_scalar_coefficients<-function(
     failed_replicate_policy="raise",sampled_participant_indices=NULL){
   .etr_assert(inherits(result,"etr_generalized_function_on_scalar"),
     "result must be a native generalized functional GEE fit")
-  .etr_assert(is.numeric(n_bootstrap)&&length(n_bootstrap)==1L&&
-    is.finite(n_bootstrap)&&n_bootstrap==floor(n_bootstrap)&&
-    n_bootstrap>=100L,
-    "n_bootstrap must be an integer >=100")
+  controls<-.etr_joint_mixed_boot_controls(n_bootstrap,random_state,100L)
   .etr_assert(identical(failed_replicate_policy,"raise"),
     "failed_replicate_policy must be raise: no silent replacement")
-  .etr_assert(is.null(random_state)||
-    (is.numeric(random_state)&&length(random_state)==1L&&
-    is.finite(random_state)&&random_state==floor(random_state)&&
-    random_state>=0L&&random_state<=.Machine$integer.max),
-    "random_state must be NULL or a supported nonnegative R integer")
-  B<-as.integer(n_bootstrap)
+  B<-controls$n_bootstrap
+  random_state<-controls$random_state
   ids<-result$participant_ids
   np<-length(ids)
   group<-as.character(result$curve_participant_ids)
   .etr_assert(length(group)==nrow(result$observed_functions)&&
     all(group%in%ids)&&np>0L,
     "source participant/curve membership is inconsistent")
-  if(is.null(sampled_participant_indices)){
-    sampled<-if(is.null(random_state))
-      matrix(sample.int(np,B*np,replace=TRUE)-1L,nrow=B,ncol=np) else
-      .etr_numpy_seeded_case_indices(random_state,B,np)
-  }else{
-    sampled<-sampled_participant_indices
-    .etr_assert(is.matrix(sampled)&&is.numeric(sampled)&&
-      identical(dim(sampled),c(B,np))&&
-      all(is.finite(sampled))&&all(sampled==floor(sampled))&&
-      all(sampled>=0L)&all(sampled<np),
-      "sampled_participant_indices must be a finite B-by-participant zero-based index matrix")
-    sampled<-matrix(as.integer(sampled),B,np)
-  }
+  selection<-.etr_joint_mixed_boot_draws(
+    B,np,random_state,sampled_participant_indices)
+  sampled<-selection$indices
   nt<-length(result$time);nco<-length(result$coefficient_names)
   draws<-array(NA_real_,c(B,nco,nt))
   source_audit<-vector("list",B)
@@ -160,11 +143,9 @@ etr_bootstrap_generalized_function_on_scalar_coefficients<-function(
   prov<-result$provenance
   prov$generalized_function_on_scalar_bootstrap<-list(
     method="whole_participant_case_bootstrap_full_gee_refit",
-    n_bootstrap=B,random_state=if(is.null(random_state))NULL else as.integer(random_state),
+    n_bootstrap=B,random_state=random_state,
     source_draws_supplied=!is.null(sampled_participant_indices),
-    native_random_engine=if(!is.null(sampled_participant_indices))
-      "caller_supplied_fixed_indices" else if(is.null(random_state))
-      "base_R_unseeded" else "numpy_pcg64",
+    native_random_engine=selection$engine,
     resampling_unit="participant",
     whole_participant_curve_bundles_resampled=TRUE,
     duplicate_source_participants_receive_distinct_group_ids=TRUE,
@@ -187,7 +168,7 @@ etr_bootstrap_generalized_function_on_scalar_coefficients<-function(
     sampled_participant_indices=sampled,
     sampled_source_participant_ids=source_audit,
     sampled_bootstrap_participant_ids=cluster_audit,
-    random_state=if(is.null(random_state))NULL else as.integer(random_state),
+    random_state=random_state,
     failure_policy="raise",provenance=prov),
     class="etr_generalized_function_on_scalar_bootstrap")
 }

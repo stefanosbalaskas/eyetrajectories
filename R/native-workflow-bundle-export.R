@@ -1,8 +1,4 @@
-# Native R counterpart to the published Python 1.2
-# workflows/_core.py export_workflow_bundle.
-# Source discrepancy: native result/result.rds is NOT Python portable NPZ.
-# This exporter is non-destructive and writes auditable SHA-256 checksums.
-# Neither the Python schema nor arbitrary Python dataclasses are certified.
+# Native R workflow export and a bounded Python 1.2 portable format.
 
 .etr_native_bundle_name<-function(x,kind){
   .etr_assert(is.character(x)&&length(x)==1L&&!is.na(x)&&
@@ -19,28 +15,117 @@
 }
 
 .etr_native_bundle_write_text<-function(value,path){
-  writeLines(value,path,useBytes=TRUE)
+  writeLines(enc2utf8(value),path,useBytes=TRUE)
   invisible(path)
+}
+
+.etr_native_bundle_occupied<-function(directory){
+  link<-Sys.readlink(directory)
+  file.exists(directory)||dir.exists(directory)||(!is.na(link)&&nzchar(link))
+}
+
+.etr_native_bundle_stage<-function(directory){
+  target<-normalizePath(dirname(directory),winslash="/",mustWork=FALSE)
+  if(!dir.exists(target))dir.create(target,recursive=TRUE,showWarnings=FALSE)
+  .etr_assert(dir.exists(target),"cannot create workflow bundle parent")
+  temp<-tempfile("etr_native_workflow_",tmpdir=target)
+  .etr_assert(dir.create(temp),"could not allocate temporary bundle")
+  temp
+}
+
+.etr_native_bundle_publish<-function(temp,directory,portable=FALSE){
+  files<-list.files(temp,recursive=TRUE,all.files=TRUE,include.dirs=FALSE)
+  files<-sort(gsub("\\\\","/",files),method=if(portable)"radix" else "auto")
+  .etr_assert(!("SHA256SUMS"%in%files),"SHA256SUMS must not exist before manifest hashing")
+  sums<-vapply(files,function(rel)
+    digest::digest(file.path(temp,rel),algo="sha256",file=TRUE),character(1L))
+  lines<-paste(sums,files,sep="  ")
+  .etr_native_bundle_write_text(if(portable)lines else c(lines,""),
+    file.path(temp,"SHA256SUMS"))
+  .etr_assert(!.etr_native_bundle_occupied(directory),
+    "bundle destination became occupied during export")
+  .etr_assert(file.rename(temp,directory),"native workflow bundle atomic publication failed")
+  invisible(normalizePath(directory,winslash="/",mustWork=TRUE))
+}
+
+.etr_native_bundle_validate_artifacts<-function(result){
+  for(collection in list(result$reports,result$tables))
+    if(length(collection))
+      .etr_assert(!is.null(names(collection))&&
+        !anyDuplicated(names(collection))&&
+        all(vapply(names(collection),function(nm){
+          tryCatch({.etr_native_bundle_name(nm,"entry");TRUE},
+            error=function(e)FALSE)
+        },logical(1L))),
+        "workflow report/table names must be unique simple filenames")
+  .etr_assert(all(vapply(result$reports,function(x)
+    is.character(x)&&length(x)==1L&&!is.na(x),logical(1L))),
+    "workflow reports must be complete scalar text")
+  .etr_assert(all(vapply(result$tables,is.data.frame,logical(1L))),
+    "workflow tables must be data frames")
+}
+
+.etr_native_bundle_write_artifacts<-function(result,temp,portable=FALSE){
+  filenames<-function(names,suffix,kind){
+    paths<-ifelse(grepl("\\.[^.]+$",names),names,paste0(names,suffix))
+    for(path in paths).etr_native_bundle_name(path,paste(kind,"filename"))
+    .etr_assert(!anyDuplicated(if(portable)tolower(paths) else paths),
+      if(kind=="table")"table filename must be a unique CSV" else
+        "report filename collision after extension normalization")
+    if(portable)
+      .etr_assert(!any(grepl("^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(\\.|$)",
+        paths,ignore.case=TRUE)),"portable artifact uses a reserved filename")
+    paths
+  }
+  report_names<-character()
+  if(length(result$reports)){
+    report_names<-filenames(names(result$reports),".txt","report")
+    dir.create(file.path(temp,"reports"))
+    for(i in seq_along(report_names)){
+      value<-result$reports[[i]]
+      value<-if(portable) sub("(*UCP)[\\s\\x{001C}-\\x{001F}]+$","",enc2utf8(value),perl=TRUE) else
+        paste0(sub("\\s+$","",value),"\n")
+      .etr_native_bundle_write_text(value,file.path(temp,"reports",report_names[[i]]))
+    }
+  }
+  table_names<-character()
+  if(length(result$tables)){
+    table_names<-filenames(names(result$tables),".csv","table")
+    .etr_assert(all(grepl("\\.csv$",table_names,ignore.case=TRUE)),
+      "table filename must be a unique CSV")
+    dir.create(file.path(temp,"tables"))
+    for(i in seq_along(table_names)){
+      path<-file.path(temp,"tables",table_names[[i]])
+      if(portable) .etr_write_python_workflow_csv(result$tables[[i]],path)
+      else utils::write.csv(result$tables[[i]],path,row.names=FALSE,na="")
+    }
+  }
+  sorting<-if(portable)"radix" else "auto"
+  list(reports=sort(report_names,method=sorting),tables=sort(table_names,method=sorting))
 }
 
 #' Export a source-auditable native R scientific workflow bundle
 #'
 #' @description Writes config, steps, decisions, provenance, reports, tables,
-#'   an RDS snapshot and SHA-256 checksums without modifying input results.
-#'   The fitted native R result is NOT the Python JSON/NPZ portable-result
-#'   format, so one-to-one published export certification remains OPEN.
+#'   and SHA-256 checksums without modifying input results.
+#'   The default uses an RDS snapshot. The Python 1.2 format supports native
+#'   dense FPCA workflows with measured elapsed times and writes JSON/NPZ.
 #' @param result Explicit native R workflow with scientific fit and provenance.
 #' @param directory Non-existing output directory; atomic best-effort rename.
 #' @param overwrite Must be FALSE; never delete prior scientific evidence.
+#' @param format Use `"native_r"` for the RDS bundle or `"python_1_2"` for the
+#'   portable FPCA workflow bundle.
 #' @return Normalized directory path invisibly.
 #' @export
-etr_export_workflow_bundle<-function(result,directory,overwrite=FALSE){
+etr_export_workflow_bundle<-function(result,directory,overwrite=FALSE,
+    format=c("native_r","python_1_2")){
+  format<-match.arg(format)
   .etr_assert(identical(overwrite,FALSE),
     "overwrite must be FALSE: native workflow evidence is immutable")
   .etr_assert(is.character(directory)&&length(directory)==1L&&
     !is.na(directory)&&nzchar(trimws(directory)),
     "directory must be a nonempty output path")
-  .etr_assert(!file.exists(directory)&&!dir.exists(directory),
+  .etr_assert(!.etr_native_bundle_occupied(directory),
     "workflow bundle destination already exists")
   .etr_assert(requireNamespace("jsonlite",quietly=TRUE)&&
     requireNamespace("digest",quietly=TRUE),
@@ -58,6 +143,8 @@ etr_export_workflow_bundle<-function(result,directory,overwrite=FALSE){
     length(result$workflow_contract)==1L&&
     !is.na(result$workflow_contract)&&nzchar(result$workflow_contract),
     "workflow schema version and contract are malformed")
+  if(format=="python_1_2")
+    return(.etr_export_python_fpca_workflow_bundle(result,directory))
   .etr_workflow_json(result$config,"config",validate_only=TRUE)
   .etr_workflow_json(result$provenance,"provenance",validate_only=TRUE)
   .etr_assert(length(result$steps)>0L&&
@@ -80,28 +167,9 @@ etr_export_workflow_bundle<-function(result,directory,overwrite=FALSE){
     "decisions must contain named scientific source records")
   for(d in result$decisions)
     .etr_workflow_json(d$value,"decision.value",validate_only=TRUE)
-  for(collection in list(result$reports,result$tables))
-    if(length(collection))
-      .etr_assert(!is.null(names(collection))&&
-        !anyDuplicated(names(collection))&&
-        all(vapply(names(collection),function(nm){
-          tryCatch({.etr_native_bundle_name(nm,"entry");TRUE},
-            error=function(e)FALSE)
-        },logical(1L))),
-        "workflow report/table names must be unique simple filenames")
-  .etr_assert(all(vapply(result$reports,function(x)
-    is.character(x)&&length(x)==1L&&!is.na(x),logical(1L))),
-    "workflow reports must be complete scalar text")
-  .etr_assert(all(vapply(result$tables,is.data.frame,logical(1L))),
-    "workflow tables must be data frames")
-  target<-normalizePath(dirname(directory),winslash="/",mustWork=FALSE)
-  if(!dir.exists(target))dir.create(target,recursive=TRUE,
-    showWarnings=FALSE)
-  .etr_assert(dir.exists(target),"cannot create workflow bundle parent")
-  temp<-tempfile("etr_native_workflow_",tmpdir=target)
-  .etr_assert(dir.create(temp),"could not allocate temporary bundle")
-  published<-FALSE
-  on.exit(if(!published)unlink(temp,recursive=TRUE),add=TRUE)
+  .etr_native_bundle_validate_artifacts(result)
+  temp<-.etr_native_bundle_stage(directory)
+  on.exit(unlink(temp,recursive=TRUE),add=TRUE)
   dir.create(file.path(temp,"result"))
   .etr_native_bundle_write_text(
     .etr_native_bundle_json(result$config,"config"),
@@ -138,62 +206,19 @@ etr_export_workflow_bundle<-function(result,directory,overwrite=FALSE){
   utils::write.csv(decisions,file.path(temp,"decisions.csv"),
     row.names=FALSE,na="")
   saveRDS(result,file.path(temp,"result","result.rds"),version=3L)
-  report_names<-character()
-  if(length(result$reports)){
-    dir.create(file.path(temp,"reports"))
-    for(nm in names(result$reports)){
-      filename<-if(grepl("\\.[^.]+$",nm))nm else paste0(nm,".txt")
-      .etr_native_bundle_name(filename,"report filename")
-      .etr_assert(!filename%in%report_names,
-        "report filename collision after extension normalization")
-      text<-paste0(sub("\\s+$","",result$reports[[nm]]),"\n")
-      .etr_native_bundle_write_text(text,
-        file.path(temp,"reports",filename))
-      report_names<-c(report_names,filename)
-    }
-  }
-  table_names<-character()
-  if(length(result$tables)){
-    dir.create(file.path(temp,"tables"))
-    for(nm in names(result$tables)){
-      filename<-if(grepl("\\.[^.]+$",nm))nm else paste0(nm,".csv")
-      .etr_native_bundle_name(filename,"table filename")
-      .etr_assert(grepl("\\.csv$",filename,ignore.case=TRUE)&&
-        !filename%in%table_names,
-        "table filename must be a unique CSV")
-      utils::write.csv(result$tables[[nm]],
-        file.path(temp,"tables",filename),row.names=FALSE,na="")
-      table_names<-c(table_names,filename)
-    }
-  }
+  artifacts<-.etr_native_bundle_write_artifacts(result,temp)
   manifest<-list(
     schema_version=1L,format="etr_native_r_workflow_bundle_v1",
     workflow_schema_version=result$workflow_schema_version,
     workflow_contract=result$workflow_contract,
     result_type=class(result)[1L],portable_result_directory="result",
     result_encoding="RDS_not_Python_NPZ",
-    reports=sort(report_names),tables=sort(table_names),
+    reports=artifacts$reports,tables=artifacts$tables,
     figure_export_included=FALSE,
     figure_export_status="separate_explicit_native_R_graphics_export",
     full_published_source_contract_certified=FALSE)
   .etr_native_bundle_write_text(
     .etr_native_bundle_json(manifest,"workflow"),
     file.path(temp,"workflow.json"))
-  all<-list.files(temp,recursive=TRUE,all.files=TRUE,
-    include.dirs=FALSE)
-  all<-sort(gsub("\\\\","/",all))
-  .etr_assert(!("SHA256SUMS"%in%all),
-    "SHA256SUMS must not exist before manifest hashing")
-  sums<-vapply(all,function(rel)
-    digest::digest(file.path(temp,rel),algo="sha256",file=TRUE),
-    character(1L))
-  .etr_native_bundle_write_text(
-    paste0(paste0(paste0(sums,"  ",all),collapse="\n"),"\n"),
-    file.path(temp,"SHA256SUMS"))
-  .etr_assert(!file.exists(directory)&&!dir.exists(directory),
-    "bundle destination became occupied during export")
-  .etr_assert(file.rename(temp,directory),
-    "native workflow bundle atomic publication failed")
-  published<-TRUE
-  invisible(normalizePath(directory,winslash="/",mustWork=TRUE))
+  .etr_native_bundle_publish(temp,directory)
 }

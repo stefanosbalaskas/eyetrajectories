@@ -85,6 +85,25 @@ diagnostics are separate result fields. Workflow tables include global,
 time, and association summaries, and the diagnostic record contains the
 remaining audit tables.
 }
+\section{Portable dense FPCA workflow bundles}{
+Call \code{etr_run_fpca_workflow(trajectories, config, measure_time = TRUE)}
+to record elapsed R fit time and warnings. Export that result with
+\code{etr_export_workflow_bundle(result, directory, format = "python_1_2")}.
+The new destination contains the workflow manifest, configuration and
+provenance JSON, audit CSVs, reports and tables, SHA-256 checksums, and a
+complete JSON/NPZ snapshot in \code{result/}. Frozen Python 1.2 can load
+the snapshot with \code{load_portable_result}. The snapshot preserves
+the native fit, measured steps, declarations and audit artifacts.
+Environment metadata identifies the actual R runtime.
+
+The portable mode covers dense FPCA with empty preprocessing, measured
+elapsed times, and primitive data-frame columns. It requires optional
+\pkg{jsonlite}, \pkg{digest}, and \pkg{zip}. Artifact names must be simple
+portable filenames, and the destination must be new. The default
+\code{format = "native_r"} retains the native RDS bundle. Other workflow
+classes and arbitrary Python dataclass and backend objects remain outside
+the portable scope.
+}
 \section{Exported entry points}{
 \describe{
 \item{\code{etr_export_workflow_bundle}}{\emph{export workflow bundle} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
@@ -92,7 +111,7 @@ remaining audit tables.
 \item{\code{etr_run_function_on_scalar_workflow}}{\emph{run function on scalar workflow} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
 \item{\code{etr_run_functional_mixed_effects_workflow}}{\emph{run functional mixed effects workflow} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
 \item{\code{etr_run_functional_recovery_scenarios}}{\emph{run functional recovery scenarios} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
-\item{\code{etr_run_generalized_functional_workflow}}{\emph{run generalized functional workflow} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
+\item{\code{etr_run_generalized_functional_workflow}}{Fits the declared generalized GEE. With \code{python_boundary_mode = TRUE}, uses source-order design, version-one workflow audit fields, measured fit time, resolved input declarations and source-style fit reporting. The default retains the existing native workflow record.}
 \item{\code{etr_run_recurrence_workflow}}{\emph{run recurrence workflow} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
 \item{\code{etr_run_sparse_fpca_workflow}}{\emph{run sparse fpca workflow} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
 \item{\code{etr_run_sparse_mfpca_async_workflow}}{\emph{run sparse mfpca async workflow} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}

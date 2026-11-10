@@ -1,7 +1,7 @@
 # Frozen eyetrajectoriespy 1.2.0: _functional_simulation.py
 # _resolve_phase_variation() and _apply_power_warp(), immutable source
 # c1cd95ad718327550f7e55393ff38582872f7a94.
-# Pure native R: never imports Python or matches NumPy PCG64 streams.
+# Pure native R with optional source-seeded phase draws.
 
 .etr_functional_simulation_phase_spec<-function(phase_variation){
   if(is.null(phase_variation))
@@ -22,7 +22,7 @@
   list(kind="power",sd=sd)
 }
 
-.etr_functional_simulation_phase_draw<-function(spec,n,source_draws=NULL){
+.etr_functional_simulation_phase_draw<-function(spec,n,source_draws=NULL,rng=NULL){
   .etr_assert(is.list(spec)&&
     spec$kind%in%c("power","none")&&
     is.numeric(n)&&length(n)==1L&&n>=1L,
@@ -39,10 +39,9 @@
     return(as.numeric(exponents))
   }
   if(identical(spec$kind,"none"))return(rep.int(1,n))
-  # Python uses exp(rng.normal(0,sd,size=n)). Native R has the same
-  # distribution but a distinct RNG, with external state restored by
-  # the encompassing .etr_simulation_rng() guard.
-  exponents<-exp(stats::rnorm(n,mean=0,sd=spec$sd))
+  draws<-if(is.null(rng))stats::rnorm(n,mean=0,sd=spec$sd) else
+    spec$sd*rng$normal(n)
+  exponents<-exp(draws)
   .etr_assert(all(is.finite(exponents))&&all(exponents>0),
     "generated phase exponents overflowed to nonfinite or zero")
   exponents
