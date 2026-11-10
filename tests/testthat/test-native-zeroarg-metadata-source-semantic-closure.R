@@ -78,7 +78,7 @@ test_that("exact semantic frames clear only their historical source-gap flags",{
     expect_false(row$independent_numeric_parity_pass)
   }
   expect_identical(sum(catalog$is_python_function &
-    catalog$source_contract_gap_unresolved),201L)
+    catalog$source_contract_gap_unresolved),197L)
   expect_identical(sum(catalog$nonfunction_source_gap_unresolved),1L)
   expect_false(any(catalog$one_to_one_native_contract_complete))
 })
