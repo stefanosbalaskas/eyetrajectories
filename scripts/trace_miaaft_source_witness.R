@@ -69,6 +69,28 @@
       native=as.numeric(result$cross_spectral_errors[,2:3]),
       python=as.numeric(source_result$cross_spectral_errors[,2:3])))
   diagnostic$absolute_difference<-abs(diagnostic$native-diagnostic$python)
+  # Diagnose source-normalized cross errors without changing the
+  # surrogate generator, stopping decision, or Monte Carlo p-value.
+  # No backend-sensitive zero-cross relative error is counted as a
+  # passing differential simply because its ratio is ill-conditioned.
+  pair_index<-combn(seq_along(result$dimension_names),2L,
+    simplify=FALSE)
+  reference_spectrum<-.etr_multivariate_fft_half(result$source_values)
+  cross_denominator<-do.call(rbind,lapply(seq_len(result$n_surrogates),
+    function(i){
+      one<-matrix(result$surrogates[i,,,drop=FALSE],
+        nrow=nrow(result$source_values),ncol=ncol(result$source_values))
+      audit<-.etr_multivariate_spectrum_errors(one,reference_spectrum,
+        pair_index,denominator_audit=TRUE)$denominator_audit
+      audit$surrogate_index_zero_based<-as.integer(i-1L)
+      audit$python_relative_error<-as.numeric(
+        source_result$cross_spectral_errors[i,])
+      audit$native_minus_python_relative_error<-
+        audit$relative_error-audit$python_relative_error
+      audit
+    }))
+  stopifnot(nrow(cross_denominator)==
+    result$n_surrogates*length(pair_index))
   dir<-file.path("artifacts","native_batch_numeric_diff",substr(head,1L,12L))
   dir.create(dir,recursive=TRUE,showWarnings=FALSE)
   file<-file.path(dir,"miaaft_phase_replay_source_cases_UNSIGNED.csv")
@@ -78,6 +100,12 @@
     file.path(dir,"miaaft_periodic_iteration_trace.csv"),row.names=FALSE)
   utils::write.csv(diagnostic,file.path(dir,"miaaft_periodic_backend_diagnostics.csv"),
     row.names=FALSE,na="")
+  utils::write.csv(cross_denominator,
+    file.path(dir,"miaaft_periodic_cross_denominator_audit.csv"),
+    row.names=FALSE,na="")
+  cat("MIAAFT_NEAR_ZERO_CROSS_TARGET_PAIRS=",
+    sum(cross_denominator$near_zero_cross_spectral_target),
+    ";CROSS_PAIR_AUDIT_ROWS=",nrow(cross_denominator),"\n",sep="")
   saveRDS(replay,file.path(dir,"miaaft_periodic_phase_replay.rds"))
   cat("MIAAFT_PERIODIC_NUMPY_VERSION=",source_result$numpy_version,
     ";R_DEFAULT_P=",default$p_value,";PYTHON_P=",source_result$p,
