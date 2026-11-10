@@ -5,6 +5,7 @@ on:
     paths:
       - "R/native-sparse-source-pace-core.R"
       - "R/native-sparse-mfpca-source-core.R"
+      - "R/native-sparse-mfpca-source.R"
       - "tests/testthat/test-native-sparse-numpy-rank-boundary.R"
       - "tests/testthat/test-native-sparse-pair-source-order.R"
       - "tests/testthat/test-native-sparse-planar-raw-covariance-audit.R"
