@@ -126,6 +126,8 @@
       "native-joint-structured-full-refit",
       "native-source-(audit|diagnostic)-frames",
       "native-sparse-source-pace",
+      "native-sparse-numpy-rank-boundary",
+      "native-sparse-pair-source-order",
       "native-observation-process",
       "native-sparse-mfpca-source",
       "native-sparse-mfpca-score-uncertainty",

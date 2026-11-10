@@ -94,16 +94,23 @@
   out
 }
 
-.etr_spn_local_fit<-function(design,y,w,required,code){
+.etr_spn_local_fit<-function(design,y,w,required,code,details=list()){
   mask<-w>0
   if(sum(mask)<required)
-    .etr_spn_fail(code,"insufficient positive-weight observations")
+    .etr_spn_fail(code,"insufficient positive-weight observations",details)
   sw<-sqrt(w[mask])
   A<-design[mask,,drop=FALSE]*sw
-  q<-qr(A,tol=1e-12)
-  if(q$rank<ncol(A))
-    .etr_spn_fail(code,"weighted local design is rank deficient")
-  as.numeric(qr.coef(q,y[mask]*sw)[1L])
+  # Frozen Python 1.2 uses NumPy matrix_rank and lstsq, not R's QR
+  # rank tolerance. For tiny time units (e.g. 1e-13 seconds), QR with
+  # tol=1e-12 can reject a full-rank local fit accepted by NumPy.
+  # NumPy's default cutoff is max(m,n) * sigma_max * eps(binary64).
+  decomposition<-svd(A,nu=ncol(A),nv=ncol(A))
+  cutoff<-max(dim(A))*max(decomposition$d)*.Machine$double.eps
+  if(sum(decomposition$d>cutoff)<ncol(A))
+    .etr_spn_fail(code,"weighted local design is rank deficient",details)
+  projected<-as.numeric(crossprod(decomposition$u,y[mask]*sw))
+  coefficients<-decomposition$v%*%(projected/decomposition$d)
+  as.numeric(coefficients[1L])
 }
 
 .etr_spn_mean<-function(t,y,points,h,min_points=3L){
@@ -118,29 +125,68 @@
     support[i]<-sum(w>0)
     if(support[i]<min_points)
       .etr_spn_fail("insufficient_mean_local_support",
-        "local-linear mean support below declared minimum")
+        "local-linear mean support below declared minimum",
+        list(evaluation_point=as.numeric(points[i]),
+          support_count=as.integer(support[i]),
+          required_count=as.integer(min_points),bandwidth=as.numeric(h)))
     v[i]<-.etr_spn_local_fit(cbind(1,delta),y,w,2L,
-      "insufficient_mean_local_support")
+      "insufficient_mean_local_support",
+      list(evaluation_point=as.numeric(points[i]),
+        support_count=as.integer(support[i]),bandwidth=as.numeric(h)))
   }
   list(values=v,support_counts=support)
 }
 
-.etr_spn_pairs<-function(times,residuals){
+.etr_spn_pairs<-function(times,residuals,include_mirror=TRUE){
+  # Keep the exact source order: curve, left index, right index, then
+  # its mirrored counterpart immediately after each forward pair.
+  # upper.tri() in base R uses column-major order, unlike the frozen
+  # Python loops in _sparse_native.raw_offdiagonal_covariance_pairs().
+  if(length(times)!=length(residuals))
+    stop("curve_times and curve_residuals must have equal length",
+      call.=FALSE)
+  if(!is.logical(include_mirror)||length(include_mirror)!=1L||
+      is.na(include_mirror))
+    stop("include_mirror must be scalar logical",call.=FALSE)
   pieces<-lapply(seq_along(times),function(i){
     t<-times[[i]];r<-residuals[[i]]
-    if(length(t)<2L)return(NULL)
-    ix<-which(upper.tri(matrix(FALSE,length(t),length(t))),
-      arr.ind=TRUE)
-    a<-ix[,1L];b<-ix[,2L];v<-r[a]*r[b]
-    list(s=c(t[a],t[b]),t=c(t[b],t[a]),
-      products=c(v,v))
+    if(!is.numeric(t)||!is.numeric(r)||!is.null(dim(t))||
+        !is.null(dim(r))||length(t)!=length(r))
+      stop("each curve time/residual pair must be one-dimensional and aligned",
+        call.=FALSE)
+    if(!all(is.finite(t))||!all(is.finite(r)))
+      stop("curve times and residuals must be finite",call.=FALSE)
+    n<-length(t)
+    count<-if(n<2L)0L else as.integer(n*(n-1)/2L)*
+      if(include_mirror)2L else 1L
+    s<-numeric(count);u<-numeric(count)
+    products<-numeric(count);ix<-integer(count)
+    pos<-0L
+    if(n>=2L)for(left in seq_len(n-1L))
+      for(right in seq.int(left+1L,n)){
+        product<-as.numeric(r[left]*r[right])
+        pos<-pos+1L
+        s[pos]<-t[left];u[pos]<-t[right]
+        products[pos]<-product;ix[pos]<-i-1L
+        if(include_mirror){
+          pos<-pos+1L
+          s[pos]<-t[right];u[pos]<-t[left]
+          products[pos]<-product;ix[pos]<-i-1L
+        }
+      }
+    list(s=s,t=u,products=products,curve_index=ix)
   })
-  out<-lapply(c("s","t","products"),function(field)
-    unlist(lapply(pieces,function(z)z[[field]]),use.names=FALSE))
-  names(out)<-c("s","t","products")
+  collect<-function(key,mode)
+    unlist(lapply(pieces,function(z)z[[key]]),use.names=FALSE)
+  out<-list(s=as.numeric(collect("s","numeric")),
+    t=as.numeric(collect("t","numeric")),
+    products=as.numeric(collect("products","numeric")),
+    curve_index=as.integer(collect("curve_index","integer")),
+    mirrored=include_mirror)
   if(length(out$products)<3L)
     .etr_spn_fail("insufficient_within_curve_covariance_pairs",
-      "fewer than three offdiagonal pairs")
+      "fewer than three offdiagonal pairs",
+      list(n_pairs=as.integer(length(out$products))))
   out
 }
 
@@ -157,9 +203,14 @@
       support[i,j]<-sum(w>0)
       if(support[i,j]<min_pairs)
         .etr_spn_fail("insufficient_covariance_local_support",
-          "insufficient offdiagonal covariance local pairs")
+          "insufficient offdiagonal covariance local pairs",
+          list(s=as.numeric(grid[i]),t=as.numeric(grid[j]),
+            support_count=as.integer(support[i,j]),
+            required_count=as.integer(min_pairs),bandwidth=as.numeric(h)))
       C[i,j]<-.etr_spn_local_fit(cbind(1,ds,dt),
-        pairs$products,w,3L,"insufficient_covariance_local_support")
+        pairs$products,w,3L,"insufficient_covariance_local_support",
+        list(s=as.numeric(grid[i]),t=as.numeric(grid[j]),
+          support_count=as.integer(support[i,j]),bandwidth=as.numeric(h)))
     }
   }
   list(values=(C+t(C))/2,support_counts=support)
@@ -177,10 +228,15 @@
     support[i]<-sum(w>0)
     if(support[i]<min_pairs)
       .etr_spn_fail("insufficient_noise_diagonal_local_support",
-        "rotated covariance-diagonal has too few offdiagonal pairs")
+        "rotated covariance-diagonal has too few offdiagonal pairs",
+        list(evaluation_point=as.numeric(grid[i]),
+          support_count=as.integer(support[i]),
+          required_count=as.integer(min_pairs),bandwidth=as.numeric(h)))
     fitted[i]<-.etr_spn_local_fit(
       cbind(1,delta,perp^2),pairs$products,w,3L,
-      "insufficient_noise_diagonal_local_support")
+      "insufficient_noise_diagonal_local_support",
+      list(evaluation_point=as.numeric(grid[i]),
+        support_count=as.integer(support[i]),bandwidth=as.numeric(h)))
   }
   list(values=fitted,support_counts=support,
     rotation="45_degrees_linear_along_diagonal_quadratic_perpendicular")
