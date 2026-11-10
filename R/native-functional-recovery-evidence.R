@@ -35,14 +35,36 @@
   result<-numeric(0)
   for(i in seq_along(metrics)) {
     key<-trimws(names(metrics)[[i]],whitespace="[\\h\\v]")
-    value<-suppressWarnings(as.numeric(metrics[[i]]))
-    .etr_assert(nzchar(key)&&length(value)==1L&&is.finite(value),
+    value<-.etr_recovery_source_float(metrics[[i]])
+    .etr_assert(nzchar(key),
       "recovery metrics require nonblank names and finite numeric values")
     found<-match(key,names(result))
     if(is.na(found))result<-c(result,stats::setNames(value,key))
     else result[[found]]<-value
   }
   result
+}
+
+
+# Frozen Python float() permits underscore-separated ASCII decimal literals,
+# but only between consecutive digits; as.numeric() does not. Conversely R
+# accepts hexadecimal strings that Python float() rejects. This deliberately
+# matches the explicit ASCII scalar subset, not arbitrary Python object
+# __float__ protocols or Unicode decimal digits.
+.etr_recovery_source_float <- function(value) {
+  error <- "recovery metrics require nonblank names and finite numeric values"
+  if(is.character(value)) {
+    .etr_assert(length(value)==1L&&!is.na(value),error)
+    source <- trimws(value,whitespace="[\\h\\v]")
+    digit <- "[0-9](?:_?[0-9])*"
+    pattern <- paste0("^[+-]?(?:",digit,"(?:\\.(?:",digit,
+      ")?)?|\\.",digit,")(?:[eE][+-]?",digit,")?$")
+    .etr_assert(grepl(pattern,source,perl=TRUE),error)
+    value <- gsub("_","",source,fixed=TRUE)
+  }
+  converted <- suppressWarnings(as.numeric(value))
+  .etr_assert(length(converted)==1L&&is.finite(converted),error)
+  converted
 }
 
 etr_functional_recovery_result <- function(records,metric_definitions=list()) {
