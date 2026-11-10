@@ -100,6 +100,7 @@
       "native-joint-fixed-covariance-bootstrap",
       "native-joint-structured-full-refit",
       "native-sparse-source-pace",
+      "native-observation-process",
       "native-sparse-mfpca-source",
       "native-sparse-mfpca-score-uncertainty",
       "native-sparse-partial-trajectory-prediction",
@@ -181,6 +182,8 @@
         "ASYNC")
       sparse_runner("scripts/run_sparse_workflow_source_differential.R",
         "WORKFLOW")
+      sparse_runner("scripts/run_sparse_observation_source_differential.R",
+        "OBSERVATION")
       sparse_runner("scripts/run_functional_core_source_differential.R",
         "FUNCTIONAL_CORE")
       cat("ACCELERATED_WAVE_SPARSE_FPCA_SOURCE_DIFF_ATTEMPTED=TRUE\n")
@@ -189,6 +192,7 @@
       cat("ACCELERATED_WAVE_SPARSE_MULTILEVEL_SOURCE_DIFF_ATTEMPTED=TRUE\n")
       cat("ACCELERATED_WAVE_SPARSE_ASYNC_SOURCE_DIFF_ATTEMPTED=TRUE\n")
       cat("ACCELERATED_WAVE_SPARSE_WORKFLOW_SOURCE_DIFF_ATTEMPTED=TRUE\n")
+      cat("ACCELERATED_WAVE_SPARSE_OBSERVATION_SOURCE_DIFF_ATTEMPTED=TRUE\n")
       cat("ACCELERATED_WAVE_FUNCTIONAL_CORE_SOURCE_DIFF_ATTEMPTED=TRUE\n")
     }
     runpy("scripts/summarize_scientific_source_evidence.py")

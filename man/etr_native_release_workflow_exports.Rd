@@ -67,6 +67,16 @@ threshold. \code{failure_action="retain"} records failed folds, while
 \code{etr_sparse_bandwidth_selection_error} condition contains the audit in
 \code{bandwidth_selection}. Sparse prediction selects bandwidths using its
 proper-training curves.
+
+The native covariance backends of sparse FPCA, paired and asynchronous
+sparse MFPCA, and sparse multilevel FPCA accept descriptive observation
+diagnostics. Pass a denominator constructed with
+\code{\link{etr_observation_process_data}} as \code{observation_process} and
+an explicit \code{config$observation_diagnostics} list. A list with no
+elements requests the default settings. The fitted model and the candidate
+diagnostics are separate result fields. Workflow tables include global,
+time, and association summaries, and the diagnostic record contains the
+remaining audit tables.
 }
 \section{Exported entry points}{
 \describe{

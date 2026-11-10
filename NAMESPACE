@@ -934,3 +934,8 @@ export(etr_sparse_fpca_conformal_band_frame_native)
 export(etr_fit_sparse_multilevel_fpca_native)
 
 export(etr_fit_sparse_mfpca_async_native)
+
+export(etr_observation_process_data)
+export(etr_diagnose_observation_process)
+export(etr_observation_process_frame)
+export(etr_observation_process_reporting_text)

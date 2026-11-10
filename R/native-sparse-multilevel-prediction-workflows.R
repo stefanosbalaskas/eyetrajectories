@@ -35,7 +35,8 @@
 #' @param config Explicit backend, dimension, participant_column,
 #'   evaluation_grid and n_between/n_within. Interpolation is deliberately
 #'   required and changes the sparse source estimand.
-#' @param observation_process Must be NULL.
+#' @param observation_process Candidate-sample denominator for explicit
+#'   observation diagnostics with the native_covariance backend.
 #' @return Native interpolated-grid two-level descriptive FPCA workflow.
 #'   Not Python irregular multilevel PACE covariance/BLUP inference.
 #' @export
@@ -61,23 +62,22 @@ etr_run_sparse_multilevel_workflow<-function(trajectories,config,
       score_failure_action="error",mean_min_local_points=3L,
       total_covariance_min_local_pairs=6L,
       between_covariance_min_local_pairs=6L,
-      noise_min_local_points=3L,preprocessing=list()),
+      noise_min_local_points=3L,observation_diagnostics=NULL,preprocessing=list()),
       required=c("backend","dimension","participant_column",
         "participant_components","trial_components","evaluation_grid",
         "mean_bandwidth","total_covariance_bandwidth",
         "between_covariance_bandwidth","noise_variance_method"))
-    .etr_assert(is.null(observation_process),
-      "source native multilevel observation diagnostics require separately verified data")
+    observation_options<-.etr_sparse_observation_options(
+      observation_process,cfg$observation_diagnostics)
     .etr_assert(is.list(cfg$preprocessing)&&
       !length(cfg$preprocessing),
       "source native sparse multilevel cannot interpolate raw samples")
+    params<-cfg[setdiff(names(cfg),c("preprocessing","observation_diagnostics"))]
     fit<-do.call(etr_fit_sparse_multilevel_fpca_native,
-      c(list(trajectories=trajectories),
-        cfg[setdiff(names(cfg),c("backend","preprocessing"))]))
-    params<-cfg[setdiff(names(cfg),"preprocessing")]
-    return(structure(list(workflow_schema_version=1L,
+      c(list(trajectories=trajectories),params[setdiff(names(params),"backend")]))
+    workflow<-structure(list(workflow_schema_version=1L,
       workflow_contract="sparse_multilevel:v1",
-      config=cfg,fit=fit,observation_diagnostics=NULL,
+      config=cfg,fit=fit,
       steps=list(.etr_source_workflow_step(
         "fit_sparse_multilevel_fpca_native",params)),
       decisions=lapply(params,.etr_source_workflow_decision),
@@ -98,7 +98,8 @@ etr_run_sparse_multilevel_workflow<-function(trajectories,config,
         participant_scores=fit$participant_scores,
         trial_scores=fit$trial_scores,
         score_diagnostics=fit$score_diagnostics)),
-      class="etr_native_sparse_multilevel_workflow"))
+      class="etr_native_sparse_multilevel_workflow")
+    return(.etr_sparse_observation_workflow(workflow,observation_process,observation_options))
   }
   cfg<-.etr_source_workflow_config(config,list(
     backend=NULL,dimension=NULL,participant_column=NULL,
@@ -184,6 +185,8 @@ etr_run_sparse_prediction_workflow<-function(proper_training,calibration,
       "source sparse prediction requires three native irregular role collections")
     .etr_assert(length(target$curve_ids)==1L,
       "source sparse prediction target must contain exactly one curve")
+    .etr_assert(is.null(cfg$training$observation_diagnostics),
+      "prediction training observation diagnostics require a separately supplied candidate process")
     # Source role assignment is always explicit; no random splitting.
     training<-etr_run_sparse_fpca_workflow(
       proper_training,cfg$training)

@@ -109,18 +109,19 @@ etr_run_functional_mixed_effects_workflow<-function(
     score_ridge=0,score_condition_limit=1e12,
     min_score_samples=2L,score_failure_action="error",
     mean_min_local_points=3L,covariance_min_local_pairs=6L,
-    score_uncertainty=NULL,bandwidth_selection=NULL,
+    score_uncertainty=NULL,bandwidth_selection=NULL,observation_diagnostics=NULL,
     preprocessing=list()),required=c(
       "backend","dimension","n_components","evaluation_grid",
       "noise_variance_method"))
   .etr_assert(identical(cfg$backend,"native_covariance"),
     "sparse source workflow requires explicit native_covariance backend")
-  .etr_assert(is.null(observation_process),
-    "observation_process is not yet supported in native sparse PACE")
+  observation_options<-.etr_sparse_observation_options(
+    observation_process,cfg$observation_diagnostics)
   .etr_assert(inherits(trajectories,"etr_irregular_trajectory_set"),
     "source-model sparse FPCA requires native irregular trajectories")
   selection<-.etr_sparse_bandwidth_selection(trajectories,cfg,paired=FALSE)
-  params<-cfg[setdiff(names(cfg),c("preprocessing","score_uncertainty","bandwidth_selection"))]
+  params<-cfg[setdiff(names(cfg),c("preprocessing","score_uncertainty",
+    "bandwidth_selection","observation_diagnostics"))]
   params<-.etr_sparse_bandwidth_refit(params,selection)
   fit<-do.call(etr_fit_sparse_fpca_native,c(
     list(trajectories=trajectories),params[
@@ -160,7 +161,8 @@ etr_run_functional_mixed_effects_workflow<-function(
       full_source_contract_certified=FALSE),
     reports=reports,tables=tables),
     class="etr_sparse_fpca_workflow")
-  .etr_sparse_bandwidth_workflow(workflow,selection,paired=FALSE)
+  workflow<-.etr_sparse_bandwidth_workflow(workflow,selection,paired=FALSE)
+  .etr_sparse_observation_workflow(workflow,observation_process,observation_options)
 }
 
 #' Explicit fdapace-backed native sparse FPCA workflow (not source PACE)
@@ -175,7 +177,8 @@ etr_run_functional_mixed_effects_workflow<-function(
 #'   The native_covariance backend accepts fixed PACE bandwidths or a
 #'   bandwidth_selection list of candidate grids and cross-validation options.
 #'   It also supports optional conditional score uncertainty.
-#' @param observation_process Must be NULL; no silent observation diagnostics.
+#' @param observation_process Candidate-sample denominator for explicit
+#'   observation diagnostics with the native_covariance backend.
 #' @return Native workflow with fdapace fit and source-difference provenance.
 #' @export
 etr_run_sparse_fpca_workflow<-function(

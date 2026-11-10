@@ -41,6 +41,7 @@ OPTIONAL_REPORTS = {
     "sparse_multilevel_native": "sparse_multilevel_source_cases_UNSIGNED.csv",
     "sparse_mfpca_async_native": "sparse_mfpca_async_source_cases_UNSIGNED.csv",
     "sparse_workflow_native": "sparse_workflow_source_cases_UNSIGNED.csv",
+    "sparse_observation_native": "sparse_observation_source_cases_UNSIGNED.csv",
     "functional_core_native": "functional_core_source_cases_UNSIGNED.csv",
 }
 PASS = frozenset({
