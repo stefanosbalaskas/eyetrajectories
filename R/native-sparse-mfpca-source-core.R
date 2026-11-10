@@ -74,11 +74,14 @@
 }
 
 .etr_spnm_surface<-function(pairs,grid,h,min_pairs=6L,
-    cross=FALSE){
+    cross=FALSE,block_name=if(cross)"xy" else "xx"){
   n<-length(grid);C<-matrix(NA_real_,n,n)
   count<-matrix(0L,n,n)
   code<-if(cross)"insufficient_cross_covariance_local_support"
     else "insufficient_covariance_local_support"
+  .etr_assert(identical(block_name,if(cross)"xy" else block_name) &&
+    block_name%in%c("xx","xy","yy"),
+    "block_name must be xx, xy or yy")
   for(i in seq_len(n)){
     ds<-pairs$s-grid[i]
     ws<-.etr_spn_kernel(ds/h)
@@ -86,10 +89,15 @@
       dt<-pairs$t-grid[j]
       w<-ws*.etr_spn_kernel(dt/h)
       count[i,j]<-sum(w>0)
+      location<-list(block=block_name,s=as.numeric(grid[i]),
+        t=as.numeric(grid[j]),support_count=as.integer(count[i,j]),
+        bandwidth=as.numeric(h))
       if(count[i,j]<min_pairs)
-        .etr_spn_fail(code,"too few offdiagonal local covariance pairs")
+        .etr_spn_fail(code,
+          "local planar covariance smoothing has too few off-diagonal pairs",
+          c(location,list(required_count=as.integer(min_pairs))))
       C[i,j]<-.etr_spn_local_fit(cbind(1,ds,dt),
-        pairs$products,w,3L,code)
+        pairs$products,w,3L,code,details=location)
     }
   }
   # Python smooth_planar_covariance_pairs retains the *raw* fitted
