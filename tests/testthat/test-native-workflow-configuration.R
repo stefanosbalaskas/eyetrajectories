@@ -33,9 +33,9 @@ test_that("explicit native preprocessing plan does not invent steps", {
 
 test_that("native workflow config validation refuses implicit scientific decisions",{
   expect_error(etr_workflow_config_to_dict(list()),"native workflow")
-  expect_error(etr_workflow_config(list(1L)),"unique nonempty")
+  expect_error(etr_workflow_config(list(1L)),"unique character")
   expect_error(etr_workflow_config(structure(list(1L,2L),
-    names=c("a","a"))),"unique nonempty")
+    names=c("a","a"))),"unique character")
   expect_error(etr_workflow_config(list(weight=NaN)),"nonfinite")
   expect_error(etr_preprocessing_step_config("",list(),"effect"),
     "nonempty")
