@@ -247,6 +247,10 @@
         grid_end=as.numeric(tail(grid,1L)),
         target_min=as.numeric(min(time)),
         target_max=as.numeric(max(time))))
+  # Frozen time-major permutation rejects n_time_points=0, while the
+  # source channel-major covariance retains the valid empty matrix.
+  if(!length(time)&&order=="time_major")
+    .etr_assert(FALSE,"n_time_points must be positive")
   xx<-.etr_spnm_interp(grid,blocks$cxx,time)
   xy<-.etr_spnm_interp(grid,blocks$cxy,time)
   yy<-.etr_spnm_interp(grid,blocks$cyy,time)
