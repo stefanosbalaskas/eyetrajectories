@@ -1,4 +1,5 @@
 name: Native sparse PACE NumPy rank and source error parity
+# Source-qualified both planar covariance orders plus raw asymmetry audit.
 
 on:
   pull_request:
