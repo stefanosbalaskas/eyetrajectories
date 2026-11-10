@@ -129,6 +129,7 @@
       "native-sparse-numpy-rank-boundary",
       "native-sparse-pair-source-order",
       "native-sparse-primitive-source-boundaries",
+      "native-sparse-noise-psd-source",
       "native-observation-process",
       "native-sparse-mfpca-source",
       "native-sparse-mfpca-score-uncertainty",
