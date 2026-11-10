@@ -16,9 +16,9 @@ test_that("TrajectorySet class source differences remain explicit, unsigned and 
   expect_true(grepl("zero-based",gaps$known_source_difference,fixed=TRUE))
   api<-etr_native_parity_catalog()
   expect_identical(nrow(api),508L)
-  # Two exhaustive zero-argument table semantic closures leave 201 callable
-  # gaps; Python dataclass vs R data.frame runtime identity remains distinct.
-  expect_equal(sum(api$source_contract_gap_unresolved),201L)
+  # Four exhaustive zero-argument metadata semantic closures leave 199 callable
+  # gaps; Python dataclass/tuple vs native R identity remains distinct.
+  expect_equal(sum(api$source_contract_gap_unresolved),197L)
   expect_identical(sum(api$nonfunction_source_gap_unresolved),1L)
   row<-api[api$python_name=="TrajectorySet"&api$namespace=="root",,
     drop=FALSE]
