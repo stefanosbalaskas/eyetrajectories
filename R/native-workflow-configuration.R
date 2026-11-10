@@ -9,8 +9,8 @@
   nm <- names(x)
   .etr_assert(!length(x) ||
       (!is.null(nm) && length(nm)==length(x) && !anyNA(nm) &&
-        all(nzchar(nm)) && !anyDuplicated(nm)),
-    paste0(what," must have unique nonempty character keys"))
+        !anyDuplicated(nm)),
+    paste0(what," must have unique character keys"))
   .etr_workflow_json(x,what,empty_mapping=TRUE,validate_only=TRUE)
   invisible(TRUE)
 }
