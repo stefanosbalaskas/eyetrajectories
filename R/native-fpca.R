@@ -41,7 +41,12 @@ etr_trapezoid_weights <- function(time, normalize = FALSE,
       suppressWarnings(as.numeric(value))
     }, numeric(1L), USE.NAMES = FALSE)
   }
-  .etr_assert(is.atomic(time) && is.null(dim(time)) &&
+  # A native R array with exactly one dimension is a NumPy 1-D
+  # ndarray analogue; do not reject it merely because dim() is present.
+  # Matrices and higher-rank arrays remain invalid under Python's
+  # "time.ndim != 1" check. Drop the R array class after dtype casting.
+  .etr_assert(is.atomic(time) &&
+                (is.null(dim(time)) || length(dim(time)) == 1L) &&
                 !is.factor(time) &&
                 (is.numeric(time) || is.logical(time) ||
                  is.character(time) ||
