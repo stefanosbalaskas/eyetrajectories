@@ -82,6 +82,37 @@ test_that("Python float ASCII literal semantics are preserved in recovery metric
   }
 })
 
+test_that("heterogeneous recovery mappings normalize without losing source order", {
+  records<-.etr_recovery_source_records_fixture()
+  records[[1L]]$metrics<-stats::setNames(
+    list(TRUE,"1_000",2.5),c(" s ","s","t"))
+  native<-etr_functional_recovery_result(records)
+  expect_identical(native$records[[1L]]$metrics,c(s=1000,t=2.5))
+  expect_identical(names(native$records[[1L]]$metrics),c("s","t"))
+  records[[1L]]$metrics<-list()
+  expect_error(etr_functional_recovery_result(records),
+    "successful records require at least one metric")
+  records[[1L]]$metrics<-list(score=1+1i)
+  expect_error(etr_functional_recovery_result(records),"finite named numeric-like")
+  records[[1L]]$metrics<-list(score=c(1,2))
+  expect_error(etr_functional_recovery_result(records),"finite numeric values")
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Heterogeneous dict oracle requires frozen Python 1.2")
+  expect_identical(et_python_version(),"1.2.0")
+  reticulate::py_run_string("
+from eyetrajectoriespy.simulate import FunctionalRecoveryRecord as _Rec
+_hetero = _Rec(scenario_name='beta',replicate=0,seed=11,
+  metrics={' s ':True,'s':'1_000','t':2.5})
+_hetero_keys = list(_hetero.metrics)
+_hetero_values = list(_hetero.metrics.values())
+")
+  expect_identical(as.character(reticulate::py_to_r(reticulate::py_eval(
+    "_hetero_keys",convert=FALSE))),c("s","t"))
+  expect_equal(as.numeric(reticulate::py_to_r(reticulate::py_eval(
+    "_hetero_values",convert=FALSE))),unname(native$records[[1L]]$metrics),
+    tolerance=0)
+})
+
 test_that("source-normalized records feed three native recovery frames", {
   result<-etr_functional_recovery_result(.etr_recovery_source_records_fixture())
   values<-etr_functional_recovery_frame(result)
