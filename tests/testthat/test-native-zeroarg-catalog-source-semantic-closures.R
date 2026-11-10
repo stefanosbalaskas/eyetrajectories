@@ -13,8 +13,8 @@
   expect_true(is.list(records))
   expect_identical(length(records),n_records)
   expect_identical(length(formals(native_function)),0L)
-  expect_identical(names(records),vapply(records,
-    function(x)as.character(x[[primary_key]]),character(1L)))
+  expect_identical(names(records),unname(vapply(records,
+    function(x)as.character(x[[primary_key]]),character(1L))))
   expect_true(all(vapply(records,function(x)
     is.list(x)&&identical(names(x),fields),logical(1L))))
   expect_true(all(vapply(records,function(x)
