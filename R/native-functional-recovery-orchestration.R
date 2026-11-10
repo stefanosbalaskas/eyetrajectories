@@ -147,10 +147,10 @@ etr_run_functional_recovery_scenarios<-function(
         error=function(e)structure(list(error=e,status="recovery_failed"),
           class="etr_recovery_attempt_error"))
       if(inherits(result,"etr_recovery_attempt_error"))return(result)
-      payload<-tryCatch(.etr_recovery_runner_metrics(result),
-        error=function(e)structure(list(error=e,status="recovery_failed"),
-          class="etr_recovery_attempt_error"))
-      if(inherits(payload,"etr_recovery_attempt_error"))return(payload)
+      # Frozen simulate.py catches recovery callback exceptions only.
+      # Invalid metrics or assessment records are checked after the callback
+      # and must raise even when failure_action="record".
+      payload<-.etr_recovery_runner_metrics(result)
       structure(payload,class="etr_recovery_attempt_success")
     }
     result<-run()
