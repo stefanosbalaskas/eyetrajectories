@@ -12,7 +12,8 @@ etr_generalized_function_on_scalar_reporting_text <- function(result,
     band=NULL) {
   .etr_scientific_frame_fields(result,c("dimension_name","family","link",
     "basis_size"),"result")
-  dimension<-.etr_source_text_word(result$dimension_name,"dimension_name")
+  dimension<-.etr_python_workflow_identifier_repr(
+    .etr_gfosr_predict_scalar(result$dimension_name,"dimension_name"))
   family<-.etr_source_text_word(result$family,"family")
   link<-.etr_source_text_word(result$link,"link")
   .etr_assert(family %in% c("poisson","binomial","gaussian"),
@@ -58,7 +59,7 @@ etr_generalized_function_on_scalar_reporting_text <- function(result,
         "exposure must be a positive finite numeric matrix")
       units<-if(is.null(result$exposure_units) ||
         identical(result$exposure_units,""))"units not declared" else
-          .etr_source_text_word(result$exposure_units,"exposure_units")
+          .etr_gfosr_predict_scalar(result$exposure_units,"exposure_units")
       exposure_text<-paste0(
         " A strictly positive observed exposure was included explicitly (",
         units,"); coefficients therefore describe marginal log rates and ",
@@ -69,8 +70,8 @@ etr_generalized_function_on_scalar_reporting_text <- function(result,
       " No exposure was supplied, so Poisson coefficients describe ",
       "marginal log expected counts rather than rates.")
   }
-  paste0("Marginal generalized function-on-scalar regression modeled '",
-    dimension,"' using a ",family," family with ",link,
+  paste0("Marginal generalized function-on-scalar regression modeled ",
+    dimension," using a ",family," family with ",link,
     " link and ",basis,
     " clamped B-spline basis functions per coefficient. Participants ",
     "were treated as independent clusters and within-participant ",

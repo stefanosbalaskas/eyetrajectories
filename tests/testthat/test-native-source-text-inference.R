@@ -186,4 +186,22 @@ _st_python={
     expect_identical(native[[n]],as.character(et_to_r(direct[[n]])),
       info=paste("direct frozen public source reporter:",n))
   }
+  reticulate::py_run_string("
+_st_special_ids=('treated / \\u03b1', 'observer\\'s\\ncontrol')
+object.__setattr__(_st_predict,'profile_ids',_st_special_ids)
+object.__setattr__(_st_diff,'profile_a',_st_special_ids[0])
+object.__setattr__(_st_diff,'profile_b',_st_special_ids[1])
+")
+  ids<-c("treated / \u03b1","observer's\ncontrol")
+  z$prediction$prediction$profile_ids<-ids
+  z$difference$profile_a<-ids[1L]
+  z$difference$profile_b<-ids[2L]
+  expect_identical(
+    etr_generalized_function_on_scalar_prediction_reporting_text(z$prediction),
+    reticulate::py_eval(
+      "et.generalized_function_on_scalar_prediction_reporting_text(_st_band)"))
+  expect_identical(
+    etr_generalized_function_on_scalar_mean_difference_reporting_text(z$difference),
+    reticulate::py_eval(
+      "et.generalized_function_on_scalar_mean_difference_reporting_text(_st_diff)"))
 })

@@ -17,6 +17,42 @@
   x
 }
 
+# Pandas to_numeric accepts Boolean and decimal text columns. NumPy's
+# separate float conversion for exposure also accepts digit underscores.
+.etr_gfosr_numeric_values <- function(x,name,numpy=FALSE) {
+  if(is.factor(x))x<-as.character(x)
+  if(is.numeric(x)&&!is.complex(x))return(x)
+  if(is.logical(x))return(as.numeric(x))
+  .etr_assert(is.character(x),
+    paste(name,"must be finite numeric or numeric-compatible text"))
+  raw<-trimws(x,whitespace="[ \\t\\r\\n\\f\\v]")
+  digits<-if(numpy)"[0-9](?:_?[0-9])*" else "[0-9]+"
+  decimal<-paste0("^[+-]?(?:",digits,"(?:\\.(?:",digits,")?)?|\\.",
+    digits,")(?:[eE][+-]?",digits,")?$")
+  special<-if(numpy)"^[+-]?(?:inf(?:inity)?|nan)$" else "^[+-]?inf(?:inity)?$"
+  .etr_assert(all(is.na(raw)|grepl(decimal,raw,perl=TRUE)|
+    grepl(special,raw,ignore.case=TRUE,perl=TRUE)|(!numpy&x=="")),
+    paste(name,"must be finite numeric or numeric-compatible text"))
+  if(numpy)raw<-gsub("_","",raw,fixed=TRUE)
+  suppressWarnings(as.numeric(raw))
+}
+
+.etr_gfosr_pandas_labels <- function(x,name) {
+  .etr_assert(is.null(dim(x))&&!anyNA(x)&&
+    (is.character(x)||is.factor(x)||is.logical(x)||
+      (is.numeric(x)&&!is.complex(x))),
+    paste(name,"must be a nonmissing vector of scalar labels"))
+  labels<-as.character(x)
+  if(is.logical(x))labels<-ifelse(x,"True","False")
+  if(is.double(x)&&!is.object(x)){
+    finite<-is.finite(x)
+    labels[finite]<-vapply(x[finite],.etr_python_json_float,character(1L))
+    labels[x==Inf]<-"inf"
+    labels[x==-Inf]<-"-inf"
+  }
+  labels
+}
+
 .etr_gfosr_predict_inverse_link <- function(eta,family) {
   if(family=="binomial") {
     # Stable expit for large positive and negative linear predictors.
@@ -40,16 +76,21 @@
 #' selected, recentered, encoded or resampled. Extrapolations are retained.
 #' @param result Explicit native source-shaped generalized FoSR fit record.
 #' @param profiles Data frame with exactly profile_id_column and declared
-#'   numeric predictors, in their original scale.
+#'   predictors, in their original scale. Numeric text and logical
+#'   predictor values follow the source's numeric conversion.
 #' @param profile_id_column Name of the unique target identifier column.
 #' @param exposure_profiles Positive Poisson target exposure vector or matrix.
 #' @param prediction_scale Source rate, expected_count or probability scale.
+#' @param python_boundary_mode Use pandas-style text conversion for
+#'   Boolean and floating-point profile identifiers.
 #' @return Source-field-ordered native R prediction record. Cross-language
 #'   class and upstream estimator equivalence are not yet certified.
 #' @export
 etr_generalized_function_on_scalar_predict <- function(
     result,profiles,profile_id_column="profile_id",
-    exposure_profiles=NULL,prediction_scale=NULL) {
+    exposure_profiles=NULL,prediction_scale=NULL,python_boundary_mode=FALSE) {
+  .etr_assert(is.logical(python_boundary_mode)&&length(python_boundary_mode)==1L&&
+    !is.na(python_boundary_mode),"python_boundary_mode must be TRUE or FALSE")
   .etr_scientific_frame_fields(result,c("time","family","link",
     "predictor_names","basis","basis_coefficients",
     "parameter_covariance","scalar_design_matrix"),
@@ -77,17 +118,21 @@ etr_generalized_function_on_scalar_predict <- function(
   .etr_assert(length(names(profiles))==length(expected)&&
     setequal(names(profiles),expected),
     "profiles must contain exactly the profile id plus declared predictors")
-  ids<-as.character(profiles[[profile_id_column]])
+  ids<-if(python_boundary_mode)
+    .etr_gfosr_pandas_labels(profiles[[profile_id_column]],"profile identifiers")
+    else as.character(profiles[[profile_id_column]])
   .etr_assert(length(ids)==nrow(profiles)&&!anyNA(ids)&&
     all(nzchar(ids))&&!anyDuplicated(ids),
     "profile identifiers must be nonmissing, unique and nonempty")
   x<-matrix(NA_real_,nrow(profiles),p)
   for(j in seq_len(p)){
     v<-profiles[[predictors[[j]]]]
-    .etr_assert(is.numeric(v)&&!is.factor(v)&&!is.logical(v)&&
-      length(v)==nrow(profiles)&&all(is.finite(v)),
-      paste("profile predictor",predictors[[j]],"must be finite numeric"))
-    x[,j]<-as.numeric(v)
+    label<-paste("profile predictor",predictors[[j]])
+    .etr_assert(is.null(dim(v))&&length(v)==nrow(profiles),
+      paste(label,"must have one finite numeric value per profile"))
+    v<-.etr_gfosr_numeric_values(v,label)
+    .etr_assert(all(is.finite(v)),paste(label,"must be finite numeric"))
+    x[,j]<-v
   }
   n<-length(ids);nt<-length(time)
   basis<-result$basis
@@ -117,16 +162,8 @@ etr_generalized_function_on_scalar_predict <- function(
   target_exposure<-NULL
   target_log_exposure<-NULL
   if(!is.null(exposure_profiles)){
-    if(is.numeric(exposure_profiles)&&is.null(dim(exposure_profiles))&&
-       length(exposure_profiles)==n){
-      target_exposure<-matrix(rep(as.numeric(exposure_profiles),each=nt),
-        nrow=n,byrow=TRUE)
-    }else{
-      target_exposure<-.etr_gfosr_predict_numeric_matrix(
-        exposure_profiles,n,nt,"exposure_profiles")
-    }
-    .etr_assert(all(is.finite(target_exposure))&&all(target_exposure>0),
-      "exposure_profiles must be strictly positive finite values")
+    target_exposure<-.etr_native_generalized_response_array(
+      exposure_profiles,n,nt,"exposure_profiles",positive=TRUE)
     target_log_exposure<-log(target_exposure)
   }
   selected_scale<-NULL

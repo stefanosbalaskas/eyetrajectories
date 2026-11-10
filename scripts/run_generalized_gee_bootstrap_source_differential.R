@@ -1,8 +1,8 @@
 # Author-side frozen Python 1.2 versus native R participant-case GEE
 # bootstrap source differential. Needs 100 independently resampled full GEE
 # fits per scientific family; not part of the quick every-commit gate.
-# Uses the exact NumPy participant index matrix from Python to control
-# initialization; never compares unrelated R and PCG64 random streams.
+# Compares independently generated NumPy and native PCG64 participant
+# index matrices and downstream refits for the same seed.
 # Produces unsigned per-field output/shape/error evidence, not certification.
 #
 # source("scripts/run_generalized_gee_source_differential.R")
@@ -151,6 +151,38 @@
       add(key,"bootstrap",field,
         if(same)"PASS_SCHEMA"else"DIVERGENT_SCHEMA",
         detail=paste0("replicate audit, ",length(a)," native draws"))
+    }
+    if(key=="exposure"){
+      case<-"bootstrap_exact_high_seed"
+      seed<-2^53-1
+      large_seed<-reticulate::py_eval("9007199254740991",convert=FALSE)
+      pn<-safe(function()reticulate::py_call(
+        etpy_get_export(
+          "bootstrap_generalized_function_on_scalar_coefficients"),
+        result=pres,n_bootstrap=100L,random_state=large_seed))
+      rn<-safe(function()
+        etr_bootstrap_generalized_function_on_scalar_coefficients(
+          nres,n_bootstrap=100L,random_state=seed))
+      if(!pn$ok||!rn$ok){
+        add(key,case,"<call>",
+          if(!pn$ok)"SOURCE_EXCEPTION"else"DIVERGENT_ACCEPTANCE",
+          native_error=rn$error,python_error=pn$error)
+      }else{
+        compare(key,case,"sampled_participant_indices",
+          rn$result$sampled_participant_indices,
+          getpy(pn$result,"sampled_participant_indices"),tol=0)
+        compare(key,case,"bootstrap_coefficient_functions",
+          rn$result$bootstrap_coefficient_functions,
+          getpy(pn$result,"bootstrap_coefficient_functions"))
+        audit_seed<-rn$result$provenance$
+          generalized_function_on_scalar_bootstrap$random_state
+        source_seed<-reticulate::py_str(
+          reticulate::py_get_attr(pn$result,"random_state"))
+        same<-identical(rn$result$random_state,seed)&&
+          identical(audit_seed,seed)&&identical(source_seed,"9007199254740991")
+        add(key,case,"random_state",
+          if(same)"PASS_SCHEMA"else"DIVERGENT_SCHEMA")
+      }
     }
     for(spec in list(
        list(name="bootstrap_count_boundary",n_bootstrap=99L),

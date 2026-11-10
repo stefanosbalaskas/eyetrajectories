@@ -14,6 +14,27 @@
   list(fit=fit,profiles=profiles)
 }
 
+test_that("generalized profiles use source numeric column conversion",{
+  z<-.etr_gfosr_predict_fixture("poisson",exposed=TRUE)
+  numeric<-etr_generalized_function_on_scalar_predict(z$fit,z$profiles)
+  text<-data.frame(profile_id=c(1,2,3),treatment=c("0."," 1e0 ","+2"))
+  counts<-etr_generalized_function_on_scalar_predict(z$fit,text,
+    prediction_scale="expected_count",exposure_profiles=c("2_0","3.0","4e0"),
+    python_boundary_mode=TRUE)
+  expect_identical(counts$profile_ids,c("1.0","2.0","3.0"))
+  expect_equal(counts$mean_functions,numeric$mean_functions*c(20,3,4),
+    ignore_attr=TRUE)
+  bool<-data.frame(profile_id=c(FALSE,TRUE),treatment=c(FALSE,TRUE))
+  preds<-etr_generalized_function_on_scalar_predict(z$fit,bool,
+    python_boundary_mode=TRUE)
+  expect_identical(preds$profile_ids,c("False","True"))
+  expect_equal(preds$mean_functions,numeric$mean_functions[1:2,],
+    ignore_attr=TRUE)
+  text$treatment[1L]<-"1_0"
+  expect_error(etr_generalized_function_on_scalar_predict(z$fit,text),
+    "finite numeric")
+})
+
 test_that("fixed binomial profiles use full robust parameter covariance",{
   z<-.etr_gfosr_predict_fixture()
   p<-etr_generalized_function_on_scalar_predict(z$fit,z$profiles)

@@ -7,10 +7,14 @@
 #' @param design Curve-aligned numeric design table.
 #' @param config Named parameters matching the bounded native GEE fit.
 #'   Empty preprocessing required; family/link/basis never auto-selected.
+#' @param python_boundary_mode Use source-order input and the version-one
+#'   workflow audit fields, including measured fit time and source reports.
 #' @return Native fitted workflow with declared source differences.
 #' @export
 etr_run_generalized_functional_workflow<-function(
-    trajectories,design,config){
+    trajectories,design,config,python_boundary_mode=FALSE){
+  .etr_assert(is.logical(python_boundary_mode)&&length(python_boundary_mode)==1L&&
+    !is.na(python_boundary_mode),"python_boundary_mode must be TRUE or FALSE")
   cfg<-.etr_source_workflow_config(config,list(
     predictors=NULL,participant_column=NULL,dimension=NULL,
     family=NULL,binomial_denominator=NULL,exposure=NULL,
@@ -18,16 +22,49 @@ etr_run_generalized_functional_workflow<-function(
     working_correlation="independence",covariance_type="robust",
     maxiter=100L,ctol=1e-8,preprocessing=list()),
     required=c("predictors","participant_column","dimension","family"))
+  if(python_boundary_mode){
+    cfg$family<-tolower(trimws(.etr_gfosr_predict_scalar(cfg$family,"family")))
+    for(name in c("binomial_denominator","exposure")){
+      value<-cfg[[name]]
+      if(!is.null(value)){
+        shape<-dim(value)
+        value<-as.numeric(.etr_gfosr_numeric_values(value,name,numpy=TRUE))
+        if(!is.null(shape))dim(value)<-shape
+        cfg[[name]]<-value
+      }
+    }
+  }
   arguments<-cfg[setdiff(names(cfg),"preprocessing")]
+  start<-proc.time()[["elapsed"]]
   fit<-do.call(etr_fit_generalized_function_on_scalar_regression,
-    c(list(trajectories=trajectories,design=design),arguments))
-  table<-do.call(rbind,lapply(seq_along(fit$coefficient_names),function(i)
-    data.frame(coefficient=fit$coefficient_names[i],time=fit$time,
-      estimate=as.numeric(fit$coefficient_functions[i,]),
-      standard_error=as.numeric(fit$coefficient_standard_errors[i,]),
-      scale="link",family=fit$family,link=fit$link,
-      stringsAsFactors=FALSE)))
-  rownames(table)<-NULL
+    c(list(trajectories=trajectories,design=design,
+      python_boundary_mode=python_boundary_mode),arguments))
+  elapsed<-proc.time()[["elapsed"]]-start
+  table<-etr_generalized_function_on_scalar_coefficient_frame(fit)
+  if(python_boundary_mode){
+    arguments$predictors<-unname(as.list(arguments$predictors))
+    step<-list(name="fit",
+      `function`="fit_generalized_function_on_scalar_regression",
+      status="completed",parameters=arguments,
+      elapsed_seconds=elapsed,warnings=character())
+    values<-arguments[c("predictors","participant_column","dimension","family")]
+    values$binomial_denominator_supplied<-!is.null(cfg$binomial_denominator)
+    values$exposure_supplied<-!is.null(cfg$exposure)
+    values<-c(values,arguments[c("exposure_units","basis_size","spline_degree",
+      "working_correlation","covariance_type")])
+    decisions<-lapply(values,.etr_source_workflow_decision)
+    provenance<-list(input_layout="complete_common_grid",
+      preprocessing_executed=FALSE,automatic_family_selection=FALSE,
+      binomial_denominator_inferred=FALSE,poisson_exposure_inferred=FALSE,
+      automatic_working_correlation_selection=FALSE,
+      automatic_model_selection_performed=FALSE)
+    return(structure(list(workflow_schema_version=1L,
+      workflow_contract="generalized_functional:v1",config=cfg,fit=fit,
+      steps=list(step),decisions=decisions,provenance=provenance,
+      reports=list(fit=etr_generalized_function_on_scalar_reporting_text(fit)),
+      tables=list(coefficients=table)),
+      class=c("etr_generalized_functional_workflow","etr_workflow_audit_result")))
+  }
   source_names<-c("predictors","participant_column","dimension","family",
     "binomial_denominator","exposure","exposure_units","basis_size",
     "spline_degree","working_correlation","covariance_type","maxiter","ctol")

@@ -1,5 +1,41 @@
 # Frozen source: eyetrajectoriespy 1.2.0 generalized_function_on_scalar.py
 # Native R GLM score solver with participant-cluster sandwich covariance.
+test_that("source-order generalized designs and workflow audits are explicit",{
+  f<-.etr_native_gee_fixture()
+  d<-f$design[match(f$x$curve_ids,f$design$curve_id),,drop=FALSE]
+  config<-list(predictors="treatment",participant_column="participant_id",
+    dimension="outcome",family=" PoIsSoN ",basis_size=4L,
+    exposure=rep("2_0",nrow(d)),exposure_units=" person-hours ")
+  ordered<-data.frame(treatment=as.character(d$treatment))
+  w<-etr_run_generalized_functional_workflow(f$x,ordered,config,
+    python_boundary_mode=TRUE)
+  expect_s3_class(w,"etr_workflow_audit_result")
+  expect_identical(w$workflow_contract,"generalized_functional:v1")
+  expect_identical(w$fit$family,"poisson")
+  expect_identical(w$fit$exposure_units,"person-hours")
+  expect_equal(as.numeric(w$fit$exposure),rep(20,length(w$fit$exposure)))
+  expect_identical(w$decisions$exposure_supplied$value,TRUE)
+  expect_true(is.finite(etr_workflow_steps_frame(w$steps)$elapsed_seconds))
+  expect_error(etr_run_generalized_functional_workflow(f$x,ordered,config),
+    "without curve_id")
+  rownames(ordered)<-paste0("row",seq_len(nrow(ordered)))
+  expect_error(etr_run_generalized_functional_workflow(f$x,ordered,config,
+    python_boundary_mode=TRUE),"default row names")
+  expect_error(etr_run_generalized_functional_workflow(f$x,f$design,config,
+    python_boundary_mode=TRUE),"same order")
+})
+
+test_that("grouped counts use the source integer tolerance",{
+  f<-.etr_native_gee_fixture("binomial",grouped=TRUE)
+  fit<-function(den)etr_fit_generalized_function_on_scalar_regression(
+    f$x,f$design,"treatment",participant_column="participant_id",
+    dimension="outcome",family="binomial",basis_size=4L,
+    binomial_denominator=den)
+  within<-f$den+5e-13
+  expect_identical(unname(fit(within)$binomial_denominators),within)
+  expect_error(fit(f$den+2e-12),"integer")
+})
+
 test_that("native Poisson GEE fits real expanded spline and participant sandwich",{
   f<-.etr_native_gee_fixture()
   model<-etr_fit_generalized_function_on_scalar_regression(

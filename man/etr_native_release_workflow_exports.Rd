@@ -92,7 +92,7 @@ remaining audit tables.
 \item{\code{etr_run_function_on_scalar_workflow}}{\emph{run function on scalar workflow} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
 \item{\code{etr_run_functional_mixed_effects_workflow}}{\emph{run functional mixed effects workflow} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
 \item{\code{etr_run_functional_recovery_scenarios}}{\emph{run functional recovery scenarios} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
-\item{\code{etr_run_generalized_functional_workflow}}{\emph{run generalized functional workflow} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
+\item{\code{etr_run_generalized_functional_workflow}}{Fits the declared generalized GEE. With \code{python_boundary_mode = TRUE}, uses source-order design, version-one workflow audit fields, measured fit time, resolved input declarations and source-style fit reporting. The default retains the existing native workflow record.}
 \item{\code{etr_run_recurrence_workflow}}{\emph{run recurrence workflow} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
 \item{\code{etr_run_sparse_fpca_workflow}}{\emph{run sparse fpca workflow} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
 \item{\code{etr_run_sparse_mfpca_async_workflow}}{\emph{run sparse mfpca async workflow} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}

@@ -49,7 +49,7 @@ etr_generalized_function_on_scalar_prediction_reporting_text <- function(result)
     "prediction_scale","reference"),"prediction")
   .etr_scientific_frame_fields(p$reference,c("family","link"),
     "prediction reference")
-  ids<-.etr_source_text_names(p$profile_ids,"profile_ids")
+  ids<-.etr_scientific_frame_ids(p$profile_ids,"profile_ids")
   .etr_scientific_frame_vector(p$extrapolation_flags,length(ids),
     "extrapolation_flags",logical=TRUE)
   scale<-switch(.etr_source_text_word(p$prediction_scale,"prediction_scale"),
@@ -61,8 +61,8 @@ etr_generalized_function_on_scalar_prediction_reporting_text <- function(result)
     "prediction_scale must be probability, rate or expected_count")
   family<-.etr_source_text_word(p$reference$family,"family")
   link<-.etr_source_text_word(p$reference$link,"link")
-  scope<-.etr_source_text_word(result$simultaneous_scope,
-    "simultaneous_scope")
+  scope<-.etr_python_workflow_identifier_repr(
+    .etr_gfosr_predict_scalar(result$simultaneous_scope,"simultaneous_scope"))
   extra<-ids[p$extrapolation_flags]
   extra_text<-if(length(extra)==0L)
     " No declared profile lay outside the observed scalar predictor ranges."
@@ -80,8 +80,8 @@ etr_generalized_function_on_scalar_prediction_reporting_text <- function(result)
     "Simultaneous bands were calibrated on the linear-predictor scale ",
     "using the retained whole-participant coefficient bootstrap and ",
     "then transformed through the strictly monotone inverse link. ",
-    "The simultaneous scope was '",scope,
-    "' over the observed grid; no between-grid coverage is claimed ",
+    "The simultaneous scope was ",scope,
+    " over the observed grid; no between-grid coverage is claimed ",
     "and no profile was selected automatically.",grouped,extra_text)
 }
 
@@ -101,8 +101,10 @@ etr_generalized_function_on_scalar_mean_difference_reporting_text <- function(re
     expected_count_difference="marginal expected-count difference",
     NULL)
   .etr_assert(!is.null(measure),"unsupported contrast_scale")
-  a<-.etr_source_text_word(result$profile_a,"profile_a")
-  b<-.etr_source_text_word(result$profile_b,"profile_b")
+  a<-.etr_python_workflow_identifier_repr(
+    .etr_gfosr_predict_scalar(result$profile_a,"profile_a"))
+  b<-.etr_python_workflow_identifier_repr(
+    .etr_gfosr_predict_scalar(result$profile_b,"profile_b"))
   level<-.etr_source_text_number(result$confidence_level,
     "confidence_level",min=0,max=1)
   .etr_assert(level>0 && level<1,
@@ -116,8 +118,8 @@ etr_generalized_function_on_scalar_mean_difference_reporting_text <- function(re
     paste0(" The untrimmed simultaneous band extended beyond the logical ",
       "[-1, 1] range of a probability difference; bounds were retained ",
       "rather than silently clipped.") else ""
-  paste0("One predeclared ",measure," function was evaluated as '",a,
-    "' minus '",b,"'. The paired whole-participant bootstrap ",
+  paste0("One predeclared ",measure," function was evaluated as ",a,
+    " minus ",b,". The paired whole-participant bootstrap ",
     "coefficient draws were propagated through both fixed profiles, ",
     "preserving their dependence, and an observed-grid maximum ",
     "standardized-deviation band was calibrated at ",

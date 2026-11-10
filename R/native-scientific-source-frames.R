@@ -245,7 +245,9 @@ etr_generalized_function_on_scalar_mean_difference_frame <- function(result) {
   .etr_assert(all(result$standard_error>=0) &&
     all(result$lower<=result$upper),
     "standard_error must be nonnegative and lower may not exceed upper")
-  for(nm in c("profile_a","profile_b","contrast_scale","inference_scale"))
+  for(nm in c("profile_a","profile_b"))
+    .etr_gfosr_predict_scalar(result[[nm]],nm)
+  for(nm in c("contrast_scale","inference_scale"))
     .etr_scientific_frame_string(result[[nm]],nm)
   .etr_scientific_frame_vector(result$critical_value,1L,"critical_value")
   .etr_scientific_frame_vector(
@@ -285,7 +287,7 @@ etr_generalized_function_on_scalar_exposure_frame <- function(result) {
     !is.na(result$exposure_expanded_from_curve),
     "exposure_expanded_from_curve must be boolean")
   if(!is.null(result$exposure_units))
-    .etr_scientific_frame_string(result$exposure_units,"exposure_units")
+    .etr_gfosr_predict_scalar(result$exposure_units,"exposure_units")
   minima<-apply(exposure,1L,min);maxima<-apply(exposure,1L,max)
   varies<-apply(exposure,1L,function(v)any(v!=v[1L]))
   # Base-R data.frame has no Python None scalar column. The nullable source
