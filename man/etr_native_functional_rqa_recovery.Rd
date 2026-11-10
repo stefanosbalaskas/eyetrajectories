@@ -81,7 +81,8 @@ or typed-result-class equivalence.}
 \item{value}{Native semantic recovery value with \code{metric},
 \code{source} and zero-based \code{component} fields.}
 \item{assessment}{Native assessment list with a nonempty \code{values}
-list of semantic recovery values.}
+list of finite recovery values. Built-in and custom metric definitions
+carry direction, units, scope and description.}
 }
 \value{
 \code{etr_windowed_rqa_sensitivity} returns native analyses, design

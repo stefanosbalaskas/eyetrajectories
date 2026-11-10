@@ -72,7 +72,8 @@ etr_functional_recovery_value_key <- function(value) {
 }
 
 #' Turn native semantically annotated recovery values into an auditable table
-#' @param assessment Native list with values of known recovery metrics.
+#' @param assessment Native list with finite values of built-in or custom
+#'   recovery metrics.
 #' @return Native data.frame of source metric, value, component, source and metadata.
 #' @export
 etr_functional_recovery_assessment_frame <- function(assessment) {
@@ -80,31 +81,41 @@ etr_functional_recovery_assessment_frame <- function(assessment) {
     length(assessment$values)>=1L,
     "assessment must have at least one semantic recovery value")
   defs<-etr_functional_recovery_metric_catalog()
+  fields<-c("name","quantity","direction","units","scope","description")
   rows<-lapply(assessment$values,function(z){
     .etr_assert(is.list(z)&&is.list(z$metric)&&
-      is.character(z$metric$name)&&length(z$metric$name)==1L&&
-      z$metric$name%in%names(defs)&&
-      is.numeric(z$value)&&length(z$value)==1L,
-      "assessment values must carry a known metric and numeric scalar")
+      all(fields%in%names(z$metric))&&
+      is.numeric(z$value)&&length(z$value)==1L&&is.finite(z$value),
+      "assessment values must carry metric metadata and a finite numeric scalar")
+    def<-z$metric[fields]
+    .etr_assert(all(vapply(def,function(x)is.character(x)&&
+      length(x)==1L&&!is.na(x)&&nzchar(trimws(x)),logical(1L)))&&
+      def$direction%in%c("lower_is_better","higher_is_better"),
+      "recovery metric metadata must have nonempty text and a valid direction")
+    def<-lapply(def,trimws)
+    registered<-defs[[def$name]]
+    if(!is.null(registered))
+      .etr_assert(identical(z$metric,unclass(registered))||identical(z$metric,registered),
+        "assessment metric metadata must match the published source catalog")
     .etr_assert(is.null(z$source)||
       (is.character(z$source)&&length(z$source)==1L&&
-       !is.na(z$source)),
+       !is.na(z$source)&&nzchar(trimws(z$source))),
       "recovery source must be a single optional text label")
-    def<-defs[[z$metric$name]]
-    .etr_assert(identical(z$metric,unclass(def))||
-      identical(z$metric,def),
-      "assessment metric metadata must match the published source catalog")
     if(!is.null(z$component))etr_functional_recovery_value_key(z)
     data.frame(metric=def$name,value=as.numeric(z$value),
       component=if(is.null(z$component))NA_integer_
         else as.integer(z$component)+1L,
       source=if(is.null(z$source))NA_character_
-        else as.character(z$source),
+        else trimws(z$source),
       quantity=def$quantity,direction=def$direction,units=def$units,
       scope=def$scope,description=def$description,
       stringsAsFactors=FALSE,check.names=FALSE)
   })
-  x<-do.call(rbind,rows);rownames(x)<-NULL;x
+  x<-do.call(rbind,rows)
+  .etr_assert(!anyDuplicated(x[c("metric","component","source")]),
+    "recovery assessment contains duplicate metric labels")
+  rownames(x)<-NULL
+  x
 }
 
 #' Compact known-truth recovery assessment text without estimator retuning
@@ -113,14 +124,14 @@ etr_functional_recovery_assessment_frame <- function(assessment) {
 #' @export
 etr_functional_recovery_reporting_text <- function(assessment) {
   frame<-etr_functional_recovery_assessment_frame(assessment)
-  names<-paste(sort(unique(frame$metric)),collapse=", ")
+  names<-paste(sort(unique(frame$metric),method="radix"),collapse=", ")
   estimator<-if(is.null(assessment$provenance$estimator))
     "unspecified" else assessment$provenance$estimator
   .etr_assert(is.character(estimator)&&length(estimator)==1L&&
     !is.na(estimator),
     "recovery estimator provenance must be a single string")
-  paste0("Known-truth recovery was evaluated after fitting for estimator '",
-    estimator,"'. Recorded metric families: ",names,
+  paste0("Known-truth recovery was evaluated after fitting for estimator ",
+    .etr_python_workflow_identifier_repr(estimator),". Recorded metric families: ",names,
     ". Metric direction, units, scope, and component/source labels are ",
     "retained explicitly. Recovery truth is an evaluation input only ",
     "and is not an estimator-tuning input.")

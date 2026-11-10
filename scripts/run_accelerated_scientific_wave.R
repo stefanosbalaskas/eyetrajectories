@@ -108,6 +108,7 @@
       "native-sparse-multilevel-source",
       "native-sparse-mfpca-async-source",
       "native-functional-rqa-recovery",
+      "native-recovery-modes",
       "native-functional-diagnostics"
     ),collapse="|"),reporter="summary",
       stop_on_failure=TRUE,stop_on_warning=TRUE),
@@ -186,6 +187,8 @@
         "OBSERVATION")
       sparse_runner("scripts/run_functional_core_source_differential.R",
         "FUNCTIONAL_CORE")
+      sparse_runner("scripts/run_fpca_recovery_source_differential.R",
+        "FPCA_RECOVERY")
       cat("ACCELERATED_WAVE_SPARSE_FPCA_SOURCE_DIFF_ATTEMPTED=TRUE\n")
       cat("ACCELERATED_WAVE_SPARSE_MFPCA_SOURCE_DIFF_ATTEMPTED=TRUE\n")
       cat("ACCELERATED_WAVE_SPARSE_PREDICTION_SOURCE_DIFF_ATTEMPTED=TRUE\n")

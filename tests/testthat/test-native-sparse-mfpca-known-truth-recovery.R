@@ -65,7 +65,7 @@ test_that("sparse MFPCA source mode/domain checks fail closed",{
     "source order")
   x<-z$result;x$eigenfunctions<-array(1,c(2,3,2))
   expect_error(etr_evaluate_sparse_mfpca_recovery(x,z$truth),
-    "one fitted bivariate")
+    "truth contains fewer components")
   x<-z$result;x$measurement_error_covariance[1,1]<-.11
   a<-etr_evaluate_sparse_mfpca_recovery(x,z$truth)
   expect_false(a$provenance$measurement_error_truth_supplied)

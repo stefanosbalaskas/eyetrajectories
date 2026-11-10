@@ -4,37 +4,6 @@
 # Computes retained known-truth evaluation, never model fit, simulation,
 # bootstrap or reweighting. Source dataclass identity remains uncertified.
 
-.etr_mixed_recovery_metric <- function(name) {
-  definitions<-switch(name,
-    coefficient_function_ise=list(
-      quantity="functional mixed-effects coefficient function",
-      units="squared signal \u00d7 time",scope="mixed_effects",
-      description="Integrated squared error of a matched coefficient function."),
-    source_variance_function_ise=list(
-      quantity="functional random-effect variance function",
-      units="variance\u00b2 \u00d7 time",scope="mixed_effects",
-      description="Integrated squared error of participant/trial variance functions."),
-    source_integrated_variance_absolute_error=list(
-      quantity="integrated functional random-effect variance",
-      units="signal variance \u00d7 time",scope="mixed_effects",
-      description="Absolute integrated participant/trial variance error."),
-    source_integrated_variance_relative_error=list(
-      quantity="integrated functional random-effect variance",
-      units="relative",scope="mixed_effects",
-      description="Relative integrated participant/trial variance error."),
-    stop("unknown mixed recovery metric",call.=FALSE))
-  list(name=name,quantity=definitions$quantity,
-    direction="lower_is_better",units=definitions$units,
-    scope=definitions$scope,description=definitions$description)
-}
-
-.etr_mixed_recovery_value <- function(name,value,source) {
-  .etr_assert(is.numeric(value)&&length(value)==1L&&
-    is.finite(value),"mixed recovery value must be finite scalar")
-  list(metric=.etr_mixed_recovery_metric(name),value=as.numeric(value),
-    component=NULL,source=source)
-}
-
 .etr_mixed_recovery_variance <- function(basis,covariance,nt,label) {
   .etr_assert(is.matrix(basis)&&is.numeric(basis)&&
     nrow(basis)==nt&&ncol(basis)>=1L&&all(is.finite(basis)),
@@ -122,25 +91,26 @@ etr_evaluate_functional_mixed_effects_recovery <- function(
   }
   weights<-etr_trapezoid_weights(grid)
   mean_difference<-fit_coeff[intercept_index,]-truth$mean[,d]
-  values<-list(.etr_mixed_recovery_value("coefficient_function_ise",
-    sum(mean_difference^2*weights),"intercept"))
+  value<-.etr_recovery_value_factory()
+  values<-list(value("coefficient_function_ise",
+    sum(mean_difference^2*weights),source="intercept"))
   truth_modes<-matrix(eigenfunctions[,,d,drop=FALSE],nrow=nk,ncol=nt)
   assess_source<-function(source,fitted,eigenvalues) {
     declared<-colSums(sweep(truth_modes^2,1L,eigenvalues,"*"))
     .etr_assert(length(fitted)==nt&&all(is.finite(fitted)),
       paste(source,"fitted variance function geometry is invalid"))
     result<-list(
-      .etr_mixed_recovery_value("source_variance_function_ise",
-        sum((fitted-declared)^2*weights),source))
+      value("source_variance_function_ise",
+        sum((fitted-declared)^2*weights),source=source))
     fitted_int<-sum(fitted*weights)
     declared_int<-sum(declared*weights)
     absolute<-abs(fitted_int-declared_int)
-    result[[length(result)+1L]]<-.etr_mixed_recovery_value(
-      "source_integrated_variance_absolute_error",absolute,source)
+    result[[length(result)+1L]]<-value(
+      "source_integrated_variance_absolute_error",absolute,source=source)
     if(declared_int>0) result[[length(result)+1L]]<-
-      .etr_mixed_recovery_value(
+      value(
         "source_integrated_variance_relative_error",
-        absolute/declared_int,source)
+        absolute/declared_int,source=source)
     result
   }
   participant<- .etr_mixed_recovery_variance(result$random_basis,
