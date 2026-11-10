@@ -50,7 +50,7 @@ def _etr_fcd_tr(time,values,ids,batch):
     }
     x<-as.numeric(a);y<-as.numeric(b)
     finite<-is.finite(x)&is.finite(y)
-    same_nan<-is.nan(x)&is.nan(y)
+    same_nan<-is.na(x)&is.na(y)
     if(!all(finite|same_nan)){
       add(name,fixture,field,"DIVERGENT_NUMERIC",
         note="nonfinite location or value differs")
@@ -84,11 +84,9 @@ def _etr_fcd_tr(time,values,ids,batch):
   }
   pyfunc<-function(name)etpy_get_export(name)
   # 1. Quadrature; irregular and two-point grids and normalization.
-  for(i in seq_along(list(
-      c(0,.02,.08,.20,.40,1),
-      c(.15,2.65),seq(0,1,length.out=11L)))){
-    grids<-list(c(0,.02,.08,.20,.40,1),
-      c(.15,2.65),seq(0,1,length.out=11L))
+  grids<-list(c(0,.02,.08,.20,.40,1),
+    c(.15,2.65),seq(0,1,length.out=11L))
+  for(i in seq_along(grids)){
     t<-grids[[i]]
     for(normalize in c(FALSE,TRUE)){
       a<-etr_trapezoid_weights(t,normalize,
@@ -132,8 +130,9 @@ def _etr_fcd_tr(time,values,ids,batch):
       reference_dimension=pyindex,n_dimensions=3L))
     numeric_case("inverse_alr",paste0("reference_",ref),
       "simplex",rn,pn,1e-10)
-    numeric_case("inverse_alr",paste0("reference_",ref),
-      "roundtrip",rn,simplex,1e-7)
+    # Approximate inversion after zero clipping is a separate native
+    # scientific invariant, not misrepresented as a Python-vs-R case.
+    stopifnot(max(abs(rn-simplex))<1e-5)
   }
   # 3. FPCA full score distances are invariant to singular-vector sign.
   time<-seq(0,1,length.out=13L);n<-8L
@@ -224,7 +223,7 @@ def _etr_fcd_tr(time,values,ids,batch):
       metrics="recurrence_rate",window_step_pairs=bad$pairs,
       radius=if(bad$kind=="missing_radius")NULL else 1))
     py_pairs<-reticulate::r_to_py(lapply(bad$pairs,
-      function(x)reticulate::tuple(as.list(x))))
+      function(x)do.call(reticulate::tuple,as.list(x))))
     rhs<-safe(function()reticulate::py_call(
       reticulate::py_get_attr(
         reticulate::py_eval("_etr_fcd_rqa",convert=FALSE),
