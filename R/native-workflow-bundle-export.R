@@ -24,7 +24,7 @@
   file.exists(directory)||dir.exists(directory)||(!is.na(link)&&nzchar(link))
 }
 
-.etr_native_bundle_stage<-function(directory){
+.etr_native_bundle_temp_dir<-function(directory){
   target<-normalizePath(dirname(directory),winslash="/",mustWork=FALSE)
   if(!dir.exists(target))dir.create(target,recursive=TRUE,showWarnings=FALSE)
   .etr_assert(dir.exists(target),"cannot create workflow bundle parent")
@@ -168,7 +168,7 @@ etr_export_workflow_bundle<-function(result,directory,overwrite=FALSE,
   for(d in result$decisions)
     .etr_workflow_json(d$value,"decision.value",validate_only=TRUE)
   .etr_native_bundle_validate_artifacts(result)
-  temp<-.etr_native_bundle_stage(directory)
+  temp<-.etr_native_bundle_temp_dir(directory)
   on.exit(unlink(temp,recursive=TRUE),add=TRUE)
   dir.create(file.path(temp,"result"))
   .etr_native_bundle_write_text(

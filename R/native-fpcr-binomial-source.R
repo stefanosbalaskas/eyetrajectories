@@ -13,12 +13,22 @@
 # Frozen Python 1.2 _validate_outcome uses np.asarray(outcome,dtype=float).
 # R logical vectors correspond to NumPy bools; canonical numeric strings
 # also survive source conversion. Exclude factors and unsupported formats.
-.etr_fpcr_numeric_outcome <- function(outcome,n,family,error_message) {
+.etr_fpcr_numeric_outcome <- function(outcome,n,family,error_message,
+                                      numpy_text=FALSE) {
   .etr_assert((is.numeric(outcome)||is.logical(outcome)||
       is.character(outcome))&&!is.factor(outcome)&&
     is.null(dim(outcome))&&length(outcome)==n,error_message)
-  if(is.character(outcome))
-    outcome<-.etr_numpy_float_text(outcome,error_message)
+  if(is.character(outcome)) {
+    if(numpy_text) {
+      outcome<-.etr_numpy_float_text(outcome,error_message)
+    } else {
+      # The existing CV interface accepts the canonical decimal subset.
+      outcome<-trimws(outcome)
+      decimal<-"^[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)([eE][+-]?[0-9]+)?$"
+      .etr_assert(!anyNA(outcome)&&
+        all(grepl(decimal,outcome,perl=TRUE)),error_message)
+    }
+  }
   numeric_outcome<-suppressWarnings(as.numeric(outcome))
   .etr_assert(all(is.finite(numeric_outcome)),error_message)
   .etr_fpcr_validate_binomial_outcome(numeric_outcome,family)

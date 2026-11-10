@@ -67,7 +67,7 @@
   .etr_workflow_named_fields(result$provenance,"provenance")
   .etr_native_bundle_validate_artifacts(result)
 
-  temp <- .etr_native_bundle_stage(directory)
+  temp <- .etr_native_bundle_temp_dir(directory)
   on.exit(unlink(temp,recursive=TRUE),add=TRUE)
   write_json <- function(value,name) .etr_native_bundle_write_text(
     .etr_workflow_json(value,name,empty_mapping=TRUE),file.path(temp,name))

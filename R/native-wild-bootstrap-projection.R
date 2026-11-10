@@ -117,7 +117,7 @@ etr_wild_bootstrap_fpca_projection<-function(
   nt<-length(trajectories$time)
   nd<-length(trajectories$dimension_names)
   outcome<-.etr_fpcr_numeric_outcome(outcome,n,"gaussian",
-    "outcome must contain finite scalar per training curve")
+    "outcome must contain finite scalar per training curve",numpy_text=TRUE)
   .etr_assert(is.numeric(n_bootstrap)&&length(n_bootstrap)==1L&&
     is.finite(n_bootstrap)&&n_bootstrap==floor(n_bootstrap)&&
     n_bootstrap>=20&&n_bootstrap<=.Machine$integer.max,

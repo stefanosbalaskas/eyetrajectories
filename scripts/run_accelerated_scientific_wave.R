@@ -105,6 +105,8 @@
       "native-numpy-pcg64",
       "native-cv-uncertainty",
       "native-fpcr-(regression|nested)-cross-validation",
+      "native-fpcr-numeric-string-outcomes",
+      "native-private-helper-names",
       "native-bootstrap-inference",
       "native-fixed-multiplier-replay-source",
       "native-miaaft-fixed-permutation-source",

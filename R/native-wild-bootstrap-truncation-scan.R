@@ -67,7 +67,7 @@ etr_scan_wild_bootstrap_fpca_truncations<-function(
   .etr_assert(all(is.finite(trajectories$values)),
     "training trajectories must be complete finite")
   outcome<-.etr_fpcr_numeric_outcome(outcome,n,"gaussian",
-    "outcome must contain finite scalar per training curve")
+    "outcome must contain finite scalar per training curve",numpy_text=TRUE)
   .etr_assert(is.character(scaling)&&length(scaling)==1L&&
     !is.na(scaling)&&scaling%in%c("none","dimension_sd"),
     "scaling must be none or dimension_sd")
