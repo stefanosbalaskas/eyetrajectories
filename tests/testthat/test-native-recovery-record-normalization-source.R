@@ -50,6 +50,38 @@ test_that("source constructor trims, coerces and last-wins duplicate metric keys
     "error type and message")
 })
 
+test_that("Python float ASCII literal semantics are preserved in recovery metrics", {
+  good<-c("1_000"," +1_2.5_0e+1_0 "," .5_0 ","-0_0","1_0.")
+  expected<-c(1000,125000000000,0.5,0,10)
+  for(i in seq_along(good)) {
+    records<-.etr_recovery_source_records_fixture()
+    records[[1L]]$metrics<-stats::setNames(good[[i]],"score")
+    native<-etr_functional_recovery_result(records)
+    expect_equal(unname(native$records[[1L]]$metrics),expected[[i]],
+      tolerance=0,info=good[[i]])
+  }
+  for(bad in c("1__0","1_.0","1._0","1e+_2","0x1p2","0b10",
+               "1,000","NaN","Infinity")) {
+    records<-.etr_recovery_source_records_fixture()
+    records[[1L]]$metrics<-stats::setNames(bad,"score")
+    expect_error(etr_functional_recovery_result(records),
+      "finite numeric values",info=bad)
+  }
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("Frozen Python source float() comparison requires Python oracle")
+  expect_identical(et_python_version(),"1.2.0")
+  for(i in seq_along(good)) {
+    literal<-sprintf("%s",encodeString(good[[i]],quote='"'))
+    python<-reticulate::py_eval(paste0("float(",literal,")"),convert=TRUE)
+    expect_equal(expected[[i]],as.numeric(python),tolerance=0,info=good[[i]])
+  }
+  for(bad in c("1__0","1_.0","1._0","1e+_2","0x1p2","0b10","1,000")) {
+    literal<-encodeString(bad,quote='"')
+    expect_error(reticulate::py_eval(paste0("float(",literal,")"),
+      convert=TRUE),info=bad)
+  }
+})
+
 test_that("source-normalized records feed three native recovery frames", {
   result<-etr_functional_recovery_result(.etr_recovery_source_records_fixture())
   values<-etr_functional_recovery_frame(result)
