@@ -239,6 +239,14 @@
   .etr_assert(is.numeric(time)&&is.null(dim(time))&&
     all(is.finite(time)),
     "times must be a finite one-dimensional numeric vector")
+  if(length(time)&&
+     (min(time)<grid[[1L]]||max(time)>tail(grid,1L)))
+    .etr_spn_fail("native_time_outside_fitted_support",
+      "native observation times fall outside fitted surface support",
+      list(grid_start=as.numeric(grid[[1L]]),
+        grid_end=as.numeric(tail(grid,1L)),
+        target_min=as.numeric(min(time)),
+        target_max=as.numeric(max(time))))
   xx<-.etr_spnm_interp(grid,blocks$cxx,time)
   xy<-.etr_spnm_interp(grid,blocks$cxy,time)
   yy<-.etr_spnm_interp(grid,blocks$cyy,time)
