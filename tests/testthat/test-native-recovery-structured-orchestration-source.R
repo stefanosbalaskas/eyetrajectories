@@ -34,6 +34,36 @@
       measurement_noise_sd=.02,replicates=1L,seed_start=738L))
 }
 
+test_that("callback mapping normalization and failure boundaries follow Python source", {
+  scenario<-.etr_structured_runner_scenarios()[[1L]]
+  scenario$replicates<-1L
+  estimator<-function(observations,scenario) list(fitted=TRUE)
+  plain<-etr_run_functional_recovery_scenarios(
+    list(scenario),.etr_structured_runner_mean,.etr_structured_runner_modes(),
+    estimator=estimator,
+    recovery=function(fitted,truth,scenario)
+      stats::setNames(list("1_000",TRUE),c(" score ","flag")),
+    failure_action="record")
+  expect_identical(plain$records[[1L]]$status,"ok")
+  expect_identical(plain$records[[1L]]$metrics,c(score=1000,flag=1))
+  expect_identical(plain$records[[1L]]$metric_values,list())
+
+  # Python's try/except covers callback invocation, not the constructor
+  # that validates the returned metric mapping.
+  expect_error(etr_run_functional_recovery_scenarios(
+    list(scenario),.etr_structured_runner_mean,.etr_structured_runner_modes(),
+    estimator=estimator,
+    recovery=function(fitted,truth,scenario)list(score="invalid"),
+    failure_action="record"),"finite numeric values")
+  recorded<-etr_run_functional_recovery_scenarios(
+    list(scenario),.etr_structured_runner_mean,.etr_structured_runner_modes(),
+    estimator=estimator,
+    recovery=function(fitted,truth,scenario)stop("callback failure"),
+    failure_action="record")
+  expect_identical(recorded$records[[1L]]$status,"recovery_failed")
+  expect_match(recorded$records[[1L]]$error_message,"callback failure")
+})
+
 test_that("recovery fixture generates source-required n_time-by-one matrices",{
   irregular_times<-c(0,.13,.5,.91,1)
   expect_identical(dim(.etr_structured_runner_mean(irregular_times)),
