@@ -22,6 +22,55 @@
 #' @param metric_definitions Named recovery metric metadata records.
 #' @return Validated native recovery result, preserving failed replicates.
 #' @export
+.etr_recovery_source_metric_mapping <- function(metrics) {
+  # Python 1.2 FunctionalRecoveryRecord.__post_init__ applies
+  # str(key).strip() and float(value) to every mapping entry.
+  # Duplicate keys after stripping overwrite values in first-key order.
+  .etr_assert(((is.atomic(metrics)&&!is.object(metrics)&&
+      typeof(metrics)%in%c("double","integer","logical","character"))||
+      (is.list(metrics)&&!is.object(metrics)))&&
+    is.null(dim(metrics))&&
+    (length(metrics)==0L||!is.null(names(metrics)))&&
+    !anyNA(names(metrics)),
+    "record metrics must be finite named numeric-like values or empty on failure")
+  result<-numeric(0)
+  for(i in seq_along(metrics)) {
+    key<-trimws(names(metrics)[[i]],whitespace="[\\h\\v]")
+    value<-.etr_recovery_source_float(metrics[[i]])
+    .etr_assert(nzchar(key),
+      "recovery metrics require nonblank names and finite numeric values")
+    found<-match(key,names(result))
+    if(is.na(found))result<-c(result,stats::setNames(value,key))
+    else result[[found]]<-value
+  }
+  result
+}
+
+
+# Frozen Python float() permits underscore-separated ASCII decimal literals,
+# but only between consecutive digits; as.numeric() does not. Conversely R
+# accepts hexadecimal strings that Python float() rejects. This deliberately
+# matches the explicit ASCII scalar subset, not arbitrary Python object
+# __float__ protocols or Unicode decimal digits.
+.etr_recovery_source_float <- function(value) {
+  error <- "recovery metrics require nonblank names and finite numeric values"
+  .etr_assert(is.atomic(value)&&!is.object(value)&&is.null(dim(value))&&
+    length(value)==1L&&
+    typeof(value)%in%c("double","integer","logical","character"),error)
+  if(is.character(value)) {
+    .etr_assert(length(value)==1L&&!is.na(value),error)
+    source <- trimws(value,whitespace="[\\h\\v]")
+    digit <- "[0-9](?:_?[0-9])*"
+    pattern <- paste0("^[+-]?(?:",digit,"(?:\\.(?:",digit,
+      ")?)?|\\.",digit,")(?:[eE][+-]?",digit,")?$")
+    .etr_assert(grepl(pattern,source,perl=TRUE),error)
+    value <- gsub("_","",source,fixed=TRUE)
+  }
+  converted <- suppressWarnings(as.numeric(value))
+  .etr_assert(length(converted)==1L&&is.finite(converted),error)
+  converted
+}
+
 etr_functional_recovery_result <- function(records,metric_definitions=list()) {
   .etr_assert(is.list(records)&&length(records)>=1L,
     "records must be a nonempty list of recovery replicates")
@@ -48,12 +97,7 @@ etr_functional_recovery_result <- function(records,metric_definitions=list()) {
     .etr_recovery_exact_integer(r$replicate,"replicate")
     .etr_recovery_exact_integer(r$seed,"seed")
     .etr_assert(r$replicate>=0L,"replicate index must be nonnegative")
-    .etr_assert(is.numeric(r$metrics)&&!is.complex(r$metrics)&&
-      is.null(dim(r$metrics))&&
-      (length(r$metrics)==0L||!is.null(names(r$metrics)))&&
-      !anyNA(names(r$metrics))&&!anyDuplicated(names(r$metrics))&&
-      all(nzchar(names(r$metrics)))&&all(is.finite(r$metrics)),
-      "record metrics must be finite named numeric or empty on failure")
+    r$metrics<-.etr_recovery_source_metric_mapping(r$metrics)
     if(r$status=="ok") {
       .etr_assert(length(r$metrics)>=1L,
         "successful records require at least one metric")
@@ -62,15 +106,24 @@ etr_functional_recovery_result <- function(records,metric_definitions=list()) {
     } else {
       .etr_assert(length(r$metrics)==0L&&
         is.character(r$error_type)&&length(r$error_type)==1L&&
-        !is.na(r$error_type)&&nzchar(r$error_type)&&
+        !is.na(r$error_type)&&
         is.character(r$error_message)&&length(r$error_message)==1L&&
-        !is.na(r$error_message)&&nzchar(r$error_message),
+        !is.na(r$error_message),
         "failed records must have no metrics and explicit errors")
+      r$error_type<-trimws(r$error_type,whitespace="[\\h\\v]")
+      r$error_message<-trimws(r$error_message,whitespace="[\\h\\v]")
+      .etr_assert(nzchar(r$error_type)&&nzchar(r$error_message),
+        "failed records require error type and message after normalization")
     }
     if(length(r$metric_values)>0L) {
       .etr_assert(is.list(r$metric_values),
         "metric_values must be a list of structured recovery values")
-      keys<-character(length(r$metric_values))
+      # FunctionalRecoveryRecord.__post_init__ flattens metric_values
+      # through a Python dict comprehension. Repeated semantic keys keep
+      # the last value without moving the first key position. Assessment
+      # constructors separately reject duplicate triples; do not conflate
+      # these two public source contracts.
+      flattened<-numeric(0)
       for(j in seq_along(r$metric_values)){
         v<-r$metric_values[[j]]
         .etr_assert(is.list(v)&&is.list(v$metric)&&
@@ -78,16 +131,19 @@ etr_functional_recovery_result <- function(records,metric_definitions=list()) {
           is.numeric(v$value)&&!is.complex(v$value)&&length(v$value)==1L&&
           is.finite(v$value),
           "structured metric values require finite metric/value")
-        keys[j]<-etr_functional_recovery_value_key(v)
+        key<-etr_functional_recovery_value_key(v)
+        found<-match(key,names(flattened))
+        if(is.na(found))
+          flattened<-c(flattened,stats::setNames(as.numeric(v$value),key))
+        else flattened[[found]]<-as.numeric(v$value)
       }
-      .etr_assert(!anyDuplicated(keys)&&
-        identical(sort(keys),sort(names(r$metrics)))&&
-        all(vapply(seq_along(keys),function(j)
-          isTRUE(all.equal(as.numeric(r$metrics[[keys[j]]]),
-            as.numeric(r$metric_values[[j]]$value),tolerance=0)),
-          logical(1L))),
+      .etr_assert(identical(sort(names(flattened)),sort(names(r$metrics)))&&
+        all(vapply(names(flattened),function(key)
+          identical(as.numeric(flattened[[key]]),
+            as.numeric(r$metrics[[key]])),logical(1L))),
         "structured metric values must exactly match flattened metrics")
     }
+    records[[i]]<-r
   }
   structure(list(records=records,metric_definitions=metric_definitions),
     class="etr_functional_recovery_result")

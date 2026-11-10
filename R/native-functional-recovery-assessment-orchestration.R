@@ -58,23 +58,36 @@
   }
   .etr_assert(!anyDuplicated(labels),
     "recovery assessment contains duplicate metric labels")
-  # The Python flattened MappingProxyType dictionary cannot retain a
-  # collision; fail closed instead of silently losing recovery evidence.
-  .etr_assert(!anyDuplicated(keys),
-    "recovery assessment flattened metric keys must be unique")
-  names(metrics)<-keys
-  list(metrics=metrics,metric_values=values,
+  # Python FunctionalRecoveryAssessment rejects duplicate semantic triples,
+  # but as_mapping() uses a dict comprehension. Two *different* triples can
+  # have the same flattened key (e.g. metric "a.source_b" versus metric "a"
+  # with source "b"). In that case the last value replaces the first while
+  # the detailed semantic values are retained in their source order.
+  flattened<-numeric(0)
+  for(i in seq_along(keys)){
+    found<-match(keys[[i]],names(flattened))
+    if(is.na(found))
+      flattened<-c(flattened,stats::setNames(metrics[[i]],keys[[i]]))
+    else flattened[[found]]<-metrics[[i]]
+  }
+  list(metrics=flattened,metric_values=values,
     assessment_provenance=provenance,definitions=definitions)
 }
 
 .etr_recovery_runner_metrics <- function(recovered) {
   if(inherits(recovered,"etr_functional_recovery_assessment"))
     return(.etr_recovery_runner_assessment(recovered))
-  .etr_assert(is.numeric(recovered)&&is.null(dim(recovered))&&
-    length(recovered)>0L&&all(is.finite(recovered))&&
-    !is.null(names(recovered))&&!anyNA(names(recovered))&&
-    all(nzchar(names(recovered)))&&!anyDuplicated(names(recovered)),
-    "recovery must return named finite numeric metrics or structured assessment")
-  list(metrics=recovered,metric_values=list(),
+  # Python run_functional_recovery_scenarios passes plain mappings to
+  # FunctionalRecoveryRecord, which coerces names and float-like values.
+  # The native accepted domain is named scalar vectors or heterogeneous
+  # named lists; arbitrary Python Mapping protocols remain out of scope.
+  .etr_assert((is.atomic(recovered)||is.list(recovered))&&
+    !is.object(recovered)&&is.null(dim(recovered))&&
+    length(recovered)>0L&&!is.null(names(recovered)),
+    "recovery must return named finite numeric-like metrics or structured assessment")
+  metrics<-.etr_recovery_source_metric_mapping(recovered)
+  .etr_assert(length(metrics)>0L,
+    "successful records require at least one metric")
+  list(metrics=metrics,metric_values=list(),
     assessment_provenance=list(),definitions=list())
 }
