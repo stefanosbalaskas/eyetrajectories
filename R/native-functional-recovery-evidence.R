@@ -26,11 +26,12 @@
   # Python 1.2 FunctionalRecoveryRecord.__post_init__ applies
   # str(key).strip() and float(value) to every mapping entry.
   # Duplicate keys after stripping overwrite values in first-key order.
-  .etr_assert(is.atomic(metrics)&&!is.object(metrics)&&
+  .etr_assert(((is.atomic(metrics)&&!is.object(metrics)&&
+      typeof(metrics)%in%c("double","integer","logical","character"))||
+      (is.list(metrics)&&!is.object(metrics)))&&
     is.null(dim(metrics))&&
     (length(metrics)==0L||!is.null(names(metrics)))&&
-    !anyNA(names(metrics))&&
-    typeof(metrics)%in%c("double","integer","logical","character"),
+    !anyNA(names(metrics)),
     "record metrics must be finite named numeric-like values or empty on failure")
   result<-numeric(0)
   for(i in seq_along(metrics)) {
@@ -53,6 +54,9 @@
 # __float__ protocols or Unicode decimal digits.
 .etr_recovery_source_float <- function(value) {
   error <- "recovery metrics require nonblank names and finite numeric values"
+  .etr_assert(is.atomic(value)&&!is.object(value)&&is.null(dim(value))&&
+    length(value)==1L&&
+    typeof(value)%in%c("double","integer","logical","character"),error)
   if(is.character(value)) {
     .etr_assert(length(value)==1L&&!is.na(value),error)
     source <- trimws(value,whitespace="[\\h\\v]")
