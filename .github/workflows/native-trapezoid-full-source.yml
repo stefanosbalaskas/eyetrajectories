@@ -9,6 +9,7 @@ on:
       - "inst/extdata/reviewed_source_contract_closures_v1.csv"
       - "docs/source_contract_reviews/**"
       - "scripts/source_gap_inventory.py"
+      - "tests/test_source_gap_inventory.py"
       - ".github/workflows/native-trapezoid-full-source.yml"
   workflow_dispatch:
 permissions:
@@ -47,7 +48,9 @@ jobs:
       - name: Validate source gap counts and hashed author review
         if: runner.os == 'Linux'
         shell: bash
-        run: python scripts/source_gap_inventory.py
+        run: |
+          python scripts/source_gap_inventory.py
+          python -m unittest discover -s tests -p 'test_source_gap_inventory.py'
   frozen-python:
     name: Trapezoid frozen Python 1.2 / ubuntu-latest
     runs-on: ubuntu-latest
@@ -80,4 +83,6 @@ jobs:
           testthat::test_local(".",filter="native-trapezoid-(full-source-closure|complex-source)",
             reporter="summary",stop_on_failure=TRUE,stop_on_warning=TRUE)
           RSCRIPT
-      - run: python scripts/source_gap_inventory.py
+      - run: |
+          python scripts/source_gap_inventory.py
+          python -m unittest discover -s tests -p 'test_source_gap_inventory.py'
