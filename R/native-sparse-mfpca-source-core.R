@@ -79,9 +79,10 @@
   count<-matrix(0L,n,n)
   code<-if(cross)"insufficient_cross_covariance_local_support"
     else "insufficient_covariance_local_support"
-  .etr_assert(identical(block_name,if(cross)"xy" else block_name) &&
-    block_name%in%c("xx","xy","yy"),
-    "block_name must be xx, xy or yy")
+  .etr_assert(is.character(block_name)&&length(block_name)==1L&&
+    !is.na(block_name)&&block_name%in%c("xx","xy","yy")&&
+    identical(isTRUE(cross),identical(block_name,"xy")),
+    "block_name must match xx, xy or yy planar smoothing mode")
   for(i in seq_len(n)){
     ds<-pairs$s-grid[i]
     ws<-.etr_spn_kernel(ds/h)
