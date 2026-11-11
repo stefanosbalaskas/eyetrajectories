@@ -94,6 +94,25 @@ etr_functional_recovery_value_key <- function(value) {
   if(integer)trunc(x) else x
 }
 
+# Python FunctionalRecoveryMetric.__post_init__ and
+# FunctionalRecoveryValue.__post_init__ use str(value).strip() for
+# ordinary semantic text fields and source labels. Do not use R
+# as.character(TRUE) = "TRUE" or erase the .0 of a source float.
+.etr_recovery_source_str <- function(x) {
+  .etr_assert(is.atomic(x) && is.null(dim(x)) && !is.object(x) &&
+    length(x)==1L && !is.na(x) || (is.double(x) && length(x)==1L &&
+    is.nan(x) && is.null(dim(x))),
+    "source recovery text must be an ordinary Python scalar analogue")
+  if(is.character(x))return(.etr_recovery_source_trim(x))
+  if(is.logical(x))return(if(x) "True" else "False")
+  if(is.integer(x))return(as.character(x))
+  .etr_assert(is.double(x) && !is.complex(x),
+    "source recovery text must be an ordinary Python scalar analogue")
+  if(is.nan(x))return("nan")
+  if(is.infinite(x))return(if(x>0) "inf" else "-inf")
+  .etr_python_json_float(x)
+}
+
 #' Turn native semantically annotated recovery values into an auditable table
 #' @param assessment Native list with finite values of built-in or custom
 #'   recovery metrics.
@@ -125,6 +144,11 @@ etr_functional_recovery_assessment_frame <- function(assessment,
     .etr_assert(is.numeric(value)&&!is.complex(value)&&length(value)==1L&&
       is.finite(value),"assessment values must carry a finite numeric scalar")
     def<-z$metric[fields]
+    # Source dataclass constructors normalize each non-direction semantic
+    # field via Python str(...).strip() before the public frame is called.
+    if(python_boundary_mode)
+      for(field in c("name","quantity","units","scope","description"))
+        def[[field]]<-.etr_recovery_source_str(def[[field]])
     .etr_assert(all(vapply(def,function(x)is.character(x)&&
       length(x)==1L&&!is.na(x)&&nzchar(trim(x)),logical(1L)))&&
       def$direction%in%c("lower_is_better","higher_is_better"),
@@ -134,14 +158,18 @@ etr_functional_recovery_assessment_frame <- function(assessment,
     if(!is.null(registered))
       .etr_assert(identical(z$metric,unclass(registered))||identical(z$metric,registered),
         "assessment metric metadata must match the published source catalog")
-    .etr_assert(is.null(z$source)||
-      (is.character(z$source)&&length(z$source)==1L&&
-       !is.na(z$source)&&nzchar(trim(z$source))),
+    # Python source labels are coerced by str(source).strip() at
+    # FunctionalRecoveryValue construction, not limited to str inputs.
+    source_label<-if(python_boundary_mode&&!is.null(z$source))
+      .etr_recovery_source_str(z$source) else z$source
+    .etr_assert(is.null(source_label)||
+      (is.character(source_label)&&length(source_label)==1L&&
+       !is.na(source_label)&&nzchar(trim(source_label))),
       "recovery source must be a single optional text label")
     data.frame(metric=def$name,value=as.numeric(value),
       component=.etr_recovery_component_label(component),
-      source=if(is.null(z$source))NA_character_
-        else trim(z$source),
+      source=if(is.null(source_label))NA_character_
+        else trim(source_label),
       quantity=def$quantity,direction=def$direction,units=def$units,
       scope=def$scope,description=def$description,
       stringsAsFactors=FALSE,check.names=FALSE)
