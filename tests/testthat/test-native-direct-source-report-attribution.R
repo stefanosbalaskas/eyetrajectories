@@ -45,7 +45,16 @@ test_that("twenty additional source reporting exports have direct pinned oracle 
   idx<-match(unlist(expected,use.names=FALSE),catalog$python_name)
   expect_false(anyNA(idx))
   expect_true(all(catalog$is_python_function[idx]))
-  expect_true(all(catalog$source_contract_gap_unresolved[idx]))
+  # Static source attribution is not an independent certification gate.
+  # Complete six-domain source gaps may close with SHA256 reviews without
+  # changing one_to_one_native_contract_complete or independent approval.
+  ledger<-utils::read.csv(system.file("extdata",
+    "native_source_contract_gaps_stage22.csv",package="eyetrajectories"),
+    stringsAsFactors=FALSE)
+  witnesses<-ledger[match(catalog$python_name[idx],ledger$python_name),,drop=FALSE]
+  expect_false(anyNA(witnesses$python_name))
+  expect_identical(as.logical(catalog$source_contract_gap_unresolved[idx]),
+    as.logical(witnesses$unresolved_source_gap))
   expect_false(any(catalog$one_to_one_native_contract_complete[idx]))
 })
 
