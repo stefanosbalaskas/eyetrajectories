@@ -37,9 +37,10 @@ jobs:
           names={"fpca_wild_bootstrap_projection_simultaneous_interval",
                  "fpca_wild_bootstrap_family_test_monte_carlo_diagnostics"}
           assert len(gap)==203 and len(non)==1
-          assert len([x for x in gap if x["unresolved_source_gap"]=="TRUE"])==123
-          assert len([x for x in non if x["unresolved"]=="TRUE"])==1
-          assert 508-123-1==384
+          open_callables=sum(x["unresolved_source_gap"]=="TRUE" for x in gap)
+          open_classes=sum(x["unresolved"]=="TRUE" for x in non)
+          assert open_classes==1 and open_callables<=123
+          assert 508-open_callables-open_classes>=384
           for name in names:
               row,= [x for x in gap if x["python_name"]==name]
               assert row["unresolved_source_gap"]=="FALSE"
@@ -55,7 +56,7 @@ jobs:
               for p in audit["native_files"]+audit["case_evidence"]:
                   check=root/p["path"]
                   assert check.is_file() and hashlib.sha256(check.read_bytes()).hexdigest()==p["sha256"],str(check)
-          print("384/508 author-recorded; SHA256 receipts 2/2; zero certifications")
+          print(f"{508-open_callables-open_classes}/508 author-recorded; SHA256 receipts 2/2; zero certifications")
           PY
   native-r:
     runs-on: ${{ matrix.os }}

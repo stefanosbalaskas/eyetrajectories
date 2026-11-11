@@ -1,0 +1,62 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "fpca_regression_slope_simultaneous_band",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/regression_inference.py::fpca_regression_slope_simultaneous_band",
+  "native_signature": "etr_fpca_regression_slope_simultaneous_band(result,confidence_level=.95,simultaneous_scope='global')",
+  "reviewer_statement": "Developer full-source native semantic comparison of frozen Python 1.2 fpca_regression_slope_simultaneous_band, with actual source-typed cross-language output/provenance differential tests for two source modes. No exact-head CI or independent reviewer endorsement yet.",
+  "native_language_semantic_policy": "Native R scientific list/S3/matrix replaces Python frozen dataclass/NumPy arrays; explicitly comparable mathematical output/provenance fields and declared input-domain behavior, without Python runtime class identity.",
+  "native_files": [
+    {
+      "path": "R/native-fpcr-slope-source-calibration.R",
+      "sha256": "612103032037480151aea41de776e953d4463d08bc756fa9af42b6930bba2cd8"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-family-slope-full-source-20261111.R",
+      "sha256": "1626f8ed14c70067c15cd0058b0d34ead58923ee3e31e6dce015d4dc42755a54",
+      "description": "etr_fpca_regression_slope_simultaneous_band(result,confidence_level=.95,simultaneous_scope='global')"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-family-slope-full-source-20261111.R",
+      "sha256": "1626f8ed14c70067c15cd0058b0d34ead58923ee3e31e6dce015d4dc42755a54",
+      "description": "Finite complete paired-bootstrap time-by-dimension slope arrays with >=2 bootstrap replicates, declared dimension names, valid confidence level and global/dimension maximum scope."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-family-slope-full-source-20261111.R",
+      "sha256": "1626f8ed14c70067c15cd0058b0d34ead58923ee3e31e6dce015d4dc42755a54",
+      "description": "Sample-standard-deviation pointwise SE, null-variance cells, studentized absolute deviations and NumPy higher-order quantiles at global or dimension maxima, entire lower/upper observed-grid band."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-family-slope-full-source-20261111.R",
+      "sha256": "1626f8ed14c70067c15cd0058b0d34ead58923ee3e31e6dce015d4dc42755a54",
+      "description": "Invalid significance/confidence, malformed scientific shapes, degenerate zero-SE discrepancy and unsupported correction/scope are rejected. Exact Python exception class identity is not claimed."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-family-slope-full-source-20261111.R",
+      "sha256": "1626f8ed14c70067c15cd0058b0d34ead58923ee3e31e6dce015d4dc42755a54",
+      "description": "Complete source result including original regression record, numeric band arrays, max statistics, scope, and nested provenance, using native R S3 numeric representation."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-family-slope-full-source-20261111.R",
+      "sha256": "1626f8ed14c70067c15cd0058b0d34ead58923ee3e31e6dce015d4dc42755a54",
+      "description": "Observed-grid maximum-studentized bootstrap slope uncertainty; no between-grid continuous coverage or operator-scaled FPCR significance guarantee."
+    }
+  ],
+  "independent_review_status": "Provisional author reviewed and hash-pinned; exact-head CI and independent scientific certification remain outstanding.",
+  "language_specific_limits": [
+    "Python dataclass identity, NumPy object internals and exact Python exceptions differ from R native scientific data records",
+    "Coverage is explicitly limited to source-compatible scientific numeric/metadata domains and does not certify all arbitrary Python objects",
+    "Developer-side source comparisons do not constitute independent certification or CRAN qualification"
+  ]
+}

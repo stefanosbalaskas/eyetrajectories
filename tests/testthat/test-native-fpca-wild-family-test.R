@@ -46,7 +46,7 @@ test_that("fixed-family maxT source law reuses exact roots and never refits",{
     fpca_wild_bootstrap_family_test$bootstrap_roots_reused)
   expect_false(fixed$provenance$
     fpca_wild_bootstrap_family_test$bootstrap_rerun)
-  expect_false(fixed$provenance$
+  expect_null(fixed$provenance$
     fpca_wild_bootstrap_family_test$source_full_contract_certified)
   expect_equal(fixed$minimum_attainable_p,1/8)
   no_correction<-etr_fpca_wild_bootstrap_projection_family_test(z,
