@@ -16,8 +16,8 @@ test_that("complete 41-contract key and 88-alias lookup source domain is stable"
   seen<-character()
   for(i in seq_along(contracts)){
     record<-contracts[[i]]
-    expect_identical(names(record),c("key","title","equations",
-      "assumptions","public_api","site_anchor","scope"))
+    expect_identical(names(record),c("key","title","public_api",
+      "equations","site_anchor","scope"))
     expect_true(is.character(record$key)&&length(record$key)==1L)
     expect_identical(.etr_source_mathematical_lookup(record$key),record)
     for(api in record$public_api){
