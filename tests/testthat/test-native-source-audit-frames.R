@@ -113,7 +113,13 @@ test_that("six source frames are mapped with explicit noncertified boundaries",{
     expect_equal(nrow(row),1L)
     expect_identical(row$native_r_candidate,paste0("etr_",nm))
     expect_true(row$native_implementation_started)
-    expect_true(row$source_contract_gap_unresolved)
+    gap_ledger<-utils::read.csv(system.file("extdata",
+      "native_source_contract_gaps_stage22.csv",
+      package="eyetrajectories"),stringsAsFactors=FALSE)
+    ledger_row<-gap_ledger[gap_ledger$python_name==nm,,drop=FALSE]
+    expect_equal(nrow(ledger_row),1L)
+    expect_identical(row$source_contract_gap_unresolved,
+      ledger_row$unresolved_source_gap)
     expect_false(row$one_to_one_native_contract_complete)
   }
   expect_gte(sum(catalog$is_python_function&
