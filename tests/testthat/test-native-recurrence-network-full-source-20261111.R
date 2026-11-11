@@ -35,6 +35,7 @@
 }
 
 test_that("source topology preserves canonical fields, triangle counting and components",{
+  skip_if_not_installed("Matrix")
   for(storage in c("dense","sparse")){
     rec<-.etr_net_source_fixture("triangle",storage)
     x<-etr_recurrence_network(rec,python_boundary_mode=TRUE)
@@ -77,6 +78,7 @@ test_that("source topology preserves canonical fields, triangle counting and com
 })
 
 test_that("source disconnected and empty graphs retain NaN transitivity",{
+  skip_if_not_installed("Matrix")
   for(case in c("independent","empty")){
     source<-.etr_net_source_fixture(case)
     x<-etr_recurrence_network(source,python_boundary_mode=TRUE)
@@ -98,6 +100,7 @@ test_that("source disconnected and empty graphs retain NaN transitivity",{
 })
 
 test_that("source graph preserves only exact matched time axes with optional metadata",{
+  skip_if_not_installed("Matrix")
   source<-.etr_net_source_fixture("triangle",storage="sparse",
     null_unit=TRUE)
   # Python's source validator compares the axes for equality, not monotonicity.
@@ -112,6 +115,7 @@ test_that("source graph preserves only exact matched time axes with optional met
 })
 
 test_that("invalid source network kind, geometry, Theiler, and topology fail closed",{
+  skip_if_not_installed("Matrix")
   source<-.etr_net_source_fixture()
   bad<-source;bad$kind<-"cross"
   expect_error(etr_recurrence_network(bad,python_boundary_mode=TRUE),
