@@ -1,0 +1,118 @@
+name: Native wild family and FPCR slope full source
+on:
+  pull_request:
+    paths:
+      - "R/native-fpca-wild-family-test.R"
+      - "R/native-fpcr-slope-source-calibration.R"
+      - "tests/testthat/test-native-family-slope-full-source-20261111.R"
+      - "tests/testthat/test-native-fpca-wild-family-test.R"
+      - "tests/testthat/test-native-fpcr-slope-source-calibration.R"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/reviewed_source_contract_closures_v1.csv"
+      - "docs/source_contract_reviews/fpca_wild_bootstrap_projection_family_test.json"
+      - "docs/source_contract_reviews/fpca_regression_slope_simultaneous_band.json"
+      - ".github/workflows/native-family-slope-full-source-20261111.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit-receipts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify frozen source receipts and live census
+        shell: bash
+        run: |
+          python - <<'PY'
+          import csv,hashlib,json
+          from pathlib import Path
+          root=Path(".")
+          ledger=list(csv.DictReader((root/"inst/extdata/native_source_contract_gaps_stage22.csv").open(encoding="utf-8",newline="")))
+          classes=list(csv.DictReader((root/"inst/extdata/native_nonfunction_source_gaps_v1.csv").open(encoding="utf-8",newline="")))
+          registry=list(csv.DictReader((root/"inst/extdata/reviewed_source_contract_closures_v1.csv").open(encoding="utf-8",newline="")))
+          names=("fpca_wild_bootstrap_projection_family_test",
+                 "fpca_regression_slope_simultaneous_band")
+          assert len(ledger)==203 and len(classes)==1
+          callable_open=sum(row["unresolved_source_gap"]=="TRUE" for row in ledger)
+          class_open=sum(row["unresolved"]=="TRUE" for row in classes)
+          assert callable_open==121 and class_open==1
+          assert 508-callable_open-class_open==386
+          for name in names:
+              row,=[x for x in ledger if x["python_name"]==name]
+              assert row["unresolved_source_gap"]=="FALSE"
+              entry,=[x for x in registry if x["python_name"]==name]
+              file=root/entry["review_record_path"]
+              raw=file.read_bytes()
+              assert hashlib.sha256(raw).hexdigest()==entry["review_record_sha256"]
+              record=json.loads(raw)
+              assert record["python_name"]==name
+              assert record["independently_certified"] is False
+              assert len(record["case_evidence"])==6
+              for item in record["native_files"]+record["case_evidence"]:
+                  target=root/item["path"]
+                  assert target.is_file()
+                  assert hashlib.sha256(target.read_bytes()).hexdigest()==item["sha256"],str(target)
+          print("386/508 author-recorded, 121 callable gaps, 1 class gap, 0 independently certified")
+          PY
+  native-r:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Pure native source inference plus legacy regression
+        shell: bash
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          before<-reticulate::py_available(initialize=FALSE)
+          testthat::test_local(".",filter="native-family-slope-full-source-20261111|native-fpca-wild-family-test|native-fpcr-slope-source-calibration",reporter="summary",stop_on_failure=TRUE)
+          stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))
+          RSCRIPT
+  frozen-python:
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        id: py
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Full typed Python 1.2 maxT family and slope-band oracle
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.py.outputs.python-path }}
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          stopifnot(identical(et_python_version(),"1.2.0"))
+          testthat::test_local(".",filter="native-family-slope-full-source-20261111|native-fpca-wild-family-test|native-fpcr-slope-source-calibration",reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
