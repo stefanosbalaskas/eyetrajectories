@@ -1,0 +1,68 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "multivariate_iaaft_diagnostics_frame",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/multivariate_surrogates.py::multivariate_iaaft_diagnostics_frame",
+  "native_signature": "etr_multivariate_iaaft_diagnostics_frame(result)",
+  "reviewer_statement": "Developer-side source-scientific semantic review for multivariate_iaaft_diagnostics_frame against frozen eyetrajectoriespy==1.2.0. Eight complete typed Python and checked native R dataframe output comparisons across both diagnostic functions and four source-record variants, including optional full-refit covariance diagnostics, positive infinite condition numbers and the otherwise missed zero-record pandas schema. Source-domain invalid input tests included. Exact-head CI has not passed, and independent certification is not claimed.",
+  "native_language_semantic_policy": "Python typed dataclass scientific results map to explicit verified native R record shapes; Python pandas.DataFrame to R data.frame with source-ordered columns and values, including empty 0x0 frames. No Python is called by the native R implementation. Python error-class identity remains a separate language-specific boundary.",
+  "native_files": [
+    {
+      "path": "R/native-source-diagnostic-frames.R",
+      "sha256": "04838206dcf361c33931c828f05b07b86f46df0ab3a382cde583586b83b75e52"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-two-diagnostic-full-source-20261111.R",
+      "sha256": "b712b0a99ee54078fa4ae8fb59160232ef7acda55ee4a1ebc36fbc83b63764e7",
+      "description": "Frozen Python 1.2 src/eyetrajectoriespy/multivariate_surrogates.py typed result export signature and native R record semantic adapter."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-two-diagnostic-full-source-20261111.R",
+      "sha256": "b712b0a99ee54078fa4ae8fb59160232ef7acda55ee4a1ebc36fbc83b63764e7",
+      "description": "Four scientific typed cases (base 3 replicates, extended random/trial covariance and residual dependence, single replicate, zero replicates) including source empty pandas DataFrame([]) with zero columns."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-two-diagnostic-full-source-20261111.R",
+      "sha256": "b712b0a99ee54078fa4ae8fb59160232ef7acda55ee4a1ebc36fbc83b63764e7",
+      "description": "Eight complete typed Python 1.2 scientific source frame comparisons for two functions x four variants, checking every column, every numeric or logical value, 0-based index, full extended/optional covariance schema and source zero-row output."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-two-diagnostic-full-source-20261111.R",
+      "sha256": "b712b0a99ee54078fa4ae8fb59160232ef7acda55ee4a1ebc36fbc83b63764e7",
+      "description": "Native R rejects invalid numbers and dimensions, malformed 3D covariance and bootstrap coefficient arrays, non-finite spectra and convergence counts, invalid warning types. Python condition class identity not claimed."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-two-diagnostic-full-source-20261111.R",
+      "sha256": "b712b0a99ee54078fa4ae8fb59160232ef7acda55ee4a1ebc36fbc83b63764e7",
+      "description": "Source pandas DataFrame column ordering and 0-based replicate identifiers mapped to native R data.frame; complete zero-row records return data.frame() with no columns rather than predeclared empty columns."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-two-diagnostic-full-source-20261111.R",
+      "sha256": "b712b0a99ee54078fa4ae8fb59160232ef7acda55ee4a1ebc36fbc83b63764e7",
+      "description": "Per-surrogate multivariate iterative amplitude-adjusted Fourier surrogate convergence and absolute relative marginal/cross-spectrum deviations; source 0-based surrogate indexing and exact Python pandas zero-surrogate empty-frame schema."
+    }
+  ],
+  "extra_source_evidence": [
+    {
+      "path": "tests/testthat/test-native-source-diagnostic-frames.R",
+      "sha256": "2d21c26da6dfa1226cfd05c500a1a4bdf4c64bba8a824c43c847524a5a97bbd9"
+    }
+  ],
+  "independent_review_status": "Author-reviewed source domain recorded, frozen Python 1.2 and cross-platform CI pending; no independent certification.",
+  "language_specific_limits": [
+    "Python typed dataclass and pandas object identity differs from native R scientific list/data.frame identity",
+    "Full estimator and randomization numerical equivalence are not conferred by validated diagnostic table framing",
+    "Python noninteger and ill-formed scientific object coercion beyond declared typed result domain remains bounded; exception classes cannot be identical"
+  ]
+}
