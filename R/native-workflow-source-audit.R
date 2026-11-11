@@ -180,6 +180,14 @@ etr_workflow_audit_result <- function(workflow_contract,steps=list(),
   if (length(value)!=1L || is.object(value) || !is.null(dim(value)) ||
       !(is.numeric(value) || is.logical(value) || is.character(value)) ||
       is.na(value)) return(NA_integer_)
+  # R as.integer("1.9") truncates, whereas Python int("1.9") rejects.
+  # Accept only source decimal integer syntax for the string case.
+  if (is.character(value)) {
+    trimmed <- trimws(value)
+    if (!grepl("^[+-]?[0-9]+(?:_[0-9]+)*$",trimmed,perl=TRUE))
+      return(NA_integer_)
+    value <- gsub("_","",trimmed,fixed=TRUE)
+  }
   suppressWarnings(as.integer(value))
 }
 
