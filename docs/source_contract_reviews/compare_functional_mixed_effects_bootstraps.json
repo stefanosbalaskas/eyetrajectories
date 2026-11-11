@@ -1,0 +1,62 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "compare_functional_mixed_effects_bootstraps",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/functional_mixed_effects_full_refit.py::compare_functional_mixed_effects_bootstraps",
+  "native_signature": "etr_compare_functional_mixed_effects_bootstraps(fixed_covariance_bootstrap,full_refit_bootstrap,confidence_level=.95,simultaneous_scope='coefficient')",
+  "reviewer_statement": "Developer-scoped six-domain source review of the source-scientific numerical contract, full input and return scientific schema, exceptional domains and inferential interpretation. Direct frozen Python 1.2 source-typed differential tests are committed but exact-head runner results and independent certification are not yet available.",
+  "native_language_semantic_policy": "Source scientific data and estimand represented by native R checked lists/data.frames/matrices, not Python frozen dataclass or pandas runtime identity. In bootstrap width comparison shared source fit is established by native R structural fitted-record equality, not Python object pointer identity.",
+  "native_files": [
+    {
+      "path": "R/native-mixed-bootstrap-width-comparison.R",
+      "sha256": "b45f255043ef83c1dca0b2bd7f6af8b9283396ac0f5066c0ed42ac3bcf690a05"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-mixed-width-full-source-20261111.R",
+      "sha256": "ad50411b442cd3249af6c21107696c4f38cb99fab81ca3e5d7afb53880fb2ba7",
+      "description": "Two source-typed conditional covariance vs full covariance-refit mixed-effects bootstrap results, same scientific fitted reference, coefficient/family confidence-band scope."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-mixed-width-full-source-20261111.R",
+      "sha256": "ad50411b442cd3249af6c21107696c4f38cb99fab81ca3e5d7afb53880fb2ba7",
+      "description": "Complete non-square 5-by-3-coefficient-by-4-time retained bootstrap arrays for both covariance contracts, shared source reference estimator values and predeclared calibration scope."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-mixed-width-full-source-20261111.R",
+      "sha256": "ad50411b442cd3249af6c21107696c4f38cb99fab81ca3e5d7afb53880fb2ba7",
+      "description": "Source simultaneous-band width per coefficient/time, separate fixed covariance and refit widths, exact division when fixed width positive, +Inf on zero-width fixed bands, same NumPy higher calibration law."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-mixed-width-full-source-20261111.R",
+      "sha256": "ad50411b442cd3249af6c21107696c4f38cb99fab81ca3e5d7afb53880fb2ba7",
+      "description": "Incorrect fixed/full-refit bootstrap contract, mismatched reference fitted content, invalid confidence or scope rejected before reporting."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-mixed-width-full-source-20261111.R",
+      "sha256": "ad50411b442cd3249af6c21107696c4f38cb99fab81ca3e5d7afb53880fb2ba7",
+      "description": "Complete source pandas seven-column coefficient-major and time-minor table mapped to R native data.frame, including confidence and scope with per-cell width ratio."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-mixed-width-full-source-20261111.R",
+      "sha256": "ad50411b442cd3249af6c21107696c4f38cb99fab81ca3e5d7afb53880fb2ba7",
+      "description": "Descriptive effect of covariance refitting on observed-grid coefficient uncertainty; no model refit here, no model selection/ranking and no implied continuous-grid coverage."
+    }
+  ],
+  "independent_review_status": "Provisional author-reviewed only; exact-head CI and independent certification pending.",
+  "language_specific_limits": [
+    "Python frozen dataclass and pandas class identity and Python exception class identities are not native R contracts.",
+    "R shared-source reference checks compare complete reference fit scientific content; Python's same-object pointer identity has no direct requirement in R scientific list APIs.",
+    "No downstream native upstream model fitting or CRAN qualification is certified by these postfit scientific function comparisons."
+  ]
+}

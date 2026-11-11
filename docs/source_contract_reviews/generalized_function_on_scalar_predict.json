@@ -1,0 +1,62 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "generalized_function_on_scalar_predict",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py::generalized_function_on_scalar_predict",
+  "native_signature": "etr_generalized_function_on_scalar_predict(result,profiles,profile_id_column='profile_id',exposure_profiles=NULL,prediction_scale=NULL,python_boundary_mode=FALSE)",
+  "reviewer_statement": "Developer-scoped six-domain source review of the source-scientific numerical contract, full input and return scientific schema, exceptional domains and inferential interpretation. Direct frozen Python 1.2 source-typed differential tests are committed but exact-head runner results and independent certification are not yet available.",
+  "native_language_semantic_policy": "Source scientific data and estimand represented by native R checked lists/data.frames/matrices, not Python frozen dataclass or pandas runtime identity. In bootstrap width comparison shared source fit is established by native R structural fitted-record equality, not Python object pointer identity.",
+  "native_files": [
+    {
+      "path": "R/native-generalized-fosr-prediction.R",
+      "sha256": "92f98b482cdfc074976060e2d1f49764061ec403e9d236709b2af9eb1c61fd0a"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-generalized-profile-fpcr-future-full-source-20261111.R",
+      "sha256": "1bc5fb0f5f64313781d78ab650e650e29d617d7f53517e549b565881d11e3117",
+      "description": "Frozen Python typed generalized FoSR result, fixed profile DataFrame and optional target exposure and prediction-scale inputs; native R validated scientific fit and data.frame analogue."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-generalized-profile-fpcr-future-full-source-20261111.R",
+      "sha256": "1bc5fb0f5f64313781d78ab650e650e29d617d7f53517e549b565881d11e3117",
+      "description": "Finite observed-grid basis and GEE robust covariance with two scalar predictor columns, distinct fixed profile names, binomial and Poisson families, unexposed counts, exposed rates and explicit target-exposure counts."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-generalized-profile-fpcr-future-full-source-20261111.R",
+      "sha256": "1bc5fb0f5f64313781d78ab650e650e29d617d7f53517e549b565881d11e3117",
+      "description": "Complete source expanded scalar-by-basis design and robust quadratic covariance prediction, inverse logit/Poisson response and marginal delta SE, exposure offsets, exact predictor minima/maxima and extrapolation flags."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-generalized-profile-fpcr-future-full-source-20261111.R",
+      "sha256": "1bc5fb0f5f64313781d78ab650e650e29d617d7f53517e549b565881d11e3117",
+      "description": "Missing/duplicated profile IDs or columns, invalid predictor numbers, malformed basis/coefficient/covariance arrays, forbidden scale, absent or invalid exposure and source overflow fail closed."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-generalized-profile-fpcr-future-full-source-20261111.R",
+      "sha256": "1bc5fb0f5f64313781d78ab650e650e29d617d7f53517e549b565881d11e3117",
+      "description": "All source profile IDs, design/predictor arrays, linear and mean response predictions/SE, exposure/rate/count optional fields and full source metadata/provenance; Python frozen dataclass is a native R scientific list."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-generalized-profile-fpcr-future-full-source-20261111.R",
+      "sha256": "1bc5fb0f5f64313781d78ab650e650e29d617d7f53517e549b565881d11e3117",
+      "description": "Fixed predeclared analyst target marginal/population-averaged response predictions on the observed grid with robust GEE parameter covariance; no automatic target selection or simultaneous inferential coverage."
+    }
+  ],
+  "independent_review_status": "Provisional author-reviewed only; exact-head CI and independent certification pending.",
+  "language_specific_limits": [
+    "Python frozen dataclass and pandas class identity and Python exception class identities are not native R contracts.",
+    "R shared-source reference checks compare complete reference fit scientific content; Python's same-object pointer identity has no direct requirement in R scientific list APIs.",
+    "No downstream native upstream model fitting or CRAN qualification is certified by these postfit scientific function comparisons."
+  ]
+}
