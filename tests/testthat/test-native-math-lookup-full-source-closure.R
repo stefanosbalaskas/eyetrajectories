@@ -26,7 +26,7 @@ test_that("complete 41-contract key and 88-alias lookup source domain is stable"
     }
   }
   expect_identical(length(seen),88L)
-  expect_identical(seen,frame$function)
+  expect_identical(seen,frame[["function"]])
   expect_identical(length(unique(seen)),88L)
   expect_identical(.etr_source_mathematical_lookup(
     name="fit_sparse_mfpca")$key,"sparse-mfpca-joint-pace")
