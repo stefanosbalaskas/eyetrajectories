@@ -255,7 +255,7 @@ etr_sparse_mfpca_reporting_text <- function(result,digits=3L) {
     " curve(s) were scored successfully and ",failed,
     " retained score-system failure(s) were recorded under failure_action=",
     .etr_python_workflow_identifier_repr(failure),
-    ". Raw sparse trajectories were not pre-interpolated; 
+    ". Raw sparse trajectories were not pre-interpolated; ",
     "population functions were evaluated at retained native times.")
 }
 
