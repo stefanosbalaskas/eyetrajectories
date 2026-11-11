@@ -17,7 +17,11 @@
         mean(is.na(status) | status != "ok"))
     }
     if ("condition_number" %in% names(diagnostics)) {
-      condition <- suppressWarnings(as.numeric(as.character(diagnostics$condition_number)))
+      # pandas.to_numeric() treats a Boolean condition-number column as
+      # numeric 1/0; converting it to character first loses both values.
+      column <- diagnostics$condition_number
+      condition <- if(is.logical(column)) as.numeric(column) else
+        suppressWarnings(as.numeric(as.character(column)))
       condition <- condition[is.finite(condition)]
       if (length(condition)) values <- c(values, list(
         value("score_condition_number_median", stats::median(condition)),
@@ -35,6 +39,9 @@
       .etr_assert(is.na(correction) || !is.na(parsed) || is.nan(parsed),
         "relative_operator_correction_frobenius_norm must be numeric")
       correction <- parsed
+    } else if(is.logical(correction)){
+      # Python float(True) and float(False) are 1.0 and 0.0.
+      correction <- as.numeric(correction)
     }
   }
   if (!is.null(correction) && is.finite(correction)) {
