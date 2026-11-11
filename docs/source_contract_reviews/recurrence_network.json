@@ -1,0 +1,67 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "recurrence_network",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/recurrence_networks.py::recurrence_network; src/eyetrajectoriespy/nonlinear_types.py::RecurrenceResult/RecurrenceNetworkResult",
+  "native_signature": "etr_recurrence_network(recurrence,adjacency_storage=c('dense','sparse'),python_boundary_mode=TRUE)",
+  "reviewer_statement": "Provisional developer-reviewed source scientific graph law, source-result metadata and validated postfit input domain. Direct frozen Python 1.2 typed SciPy CSR comparisons cover triangles, disconnected and zero-edge graphs with invalid-domain negative cases. Exact-head CI has not completed; no independent review is claimed.",
+  "native_language_semantic_policy": "SciPy CSR and Python frozen dataclasses are represented by native Matrix sparse S3 scientific records, not Python object identities. The existing R API retains its default legacy output.",
+  "native_files": [
+    {
+      "path": "R/native-recurrence-network-source.R",
+      "sha256": "4599ba46c0cecabf048e3371fe811460042ff1d11763e941deffb7b743e8f238"
+    },
+    {
+      "path": "R/native-nonlinear-recurrence.R",
+      "sha256": "f59a354220b99bb58a52ad93eefd0cb0c4d96a7376270c76f3c57e6715449e0b"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-recurrence-network-full-source-20261111.R",
+      "sha256": "7893d29585e11dbaf4c851f8187117ed31d64d5d09f317b3b56ea59a8952369a",
+      "description": "Postfit Python 1.2 nonlinear_types.RecurrenceResult auto-recurrence source record and canonical RecurrenceNetworkResult fields; native R source mode accepts the corresponding complete scientific list and returns the source-field ordered S3 record."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-recurrence-network-full-source-20261111.R",
+      "sha256": "7893d29585e11dbaf4c851f8187117ed31d64d5d09f317b3b56ea59a8952369a",
+      "description": "Seven-state dense and sparse symmetric binary recurrence graphs with declared time_a/time_b, Theiler=1, unweighted edges, irregular or repeated matched axes and optional null time unit; R Matrix sparse canonicalization preserves exact source edge geometry."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-recurrence-network-full-source-20261111.R",
+      "sha256": "7893d29585e11dbaf4c851f8187117ed31d64d5d09f317b3b56ea59a8952369a",
+      "description": "SciPy-compatible undirected degree, normalized degree, triangle counts, zero-degree clustering, connected components in ascending root order, transitivity with NaN no-triple convention, density and largest/isolated component fractions; direct typed frozen Python differential comparisons."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-recurrence-network-full-source-20261111.R",
+      "sha256": "7893d29585e11dbaf4c851f8187117ed31d64d5d09f317b3b56ea59a8952369a",
+      "description": "Source mode rejects cross-recurrence, mismatched time grids, negative Theiler, diagonal edges, within-Theiler edges, asymmetric adjacency, too few nodes and incomplete scientific records."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-recurrence-network-full-source-20261111.R",
+      "sha256": "7893d29585e11dbaf4c851f8187117ed31d64d5d09f317b3b56ea59a8952369a",
+      "description": "Exactly fifteen canonical source result fields with a source-shaped native sparse adjacency, complete retained RecurrenceResult scientific source record, original key names/values in source network provenance, source-ordered component IDs and compatible node/summary frame helpers."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-recurrence-network-full-source-20261111.R",
+      "sha256": "7893d29585e11dbaf4c851f8187117ed31d64d5d09f317b3b56ea59a8952369a",
+      "description": "Topology induced by the analyst-supplied auto-recurrence relation after declared threshold and Theiler filtering; no new radius selection, weighting, community analysis, resampling, model fitting or dimension inference."
+    }
+  ],
+  "independent_review_status": "Author-reviewed source-pinned evidence only; frozen-Python exact-head CI and independent certification outstanding.",
+  "language_specific_limits": [
+    "R Matrix sparse adjacency replaces SciPy CSR and the Python dataclass class identity, preserving source graph topology and result numerical arrays.",
+    "A 100,000-node native sparse-network resource guard remains; Python sparse graph allocation depends on host resources.",
+    "R validates complete scientific record values; exact arbitrary Python exception class and runtime object coercion are not native R semantics.",
+    "R legacy aliases remain in default mode; canonical Python result schema requires python_boundary_mode=TRUE."
+  ]
+}
