@@ -1,0 +1,110 @@
+name: Native wild truncation selector full Python 1.2 source
+on:
+  pull_request:
+    paths:
+      - "R/native-wild-source-inference.R"
+      - "tests/testthat/test-native-wild-truncation-selector-full-source-20261111.R"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/reviewed_source_contract_closures_v1.csv"
+      - "docs/source_contract_reviews/select_fpca_wild_bootstrap_truncation.json"
+      - ".github/workflows/native-wild-truncation-selector-full-source-20261111.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-receipts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify SHA256 review receipts and current 508 export census
+        shell: bash
+        run: |
+          python - <<'PY'
+          import csv,hashlib,json
+          from pathlib import Path
+          base=Path(".")
+          ledger=list(csv.DictReader((base/"inst/extdata/native_source_contract_gaps_stage22.csv").open(encoding="utf-8",newline="")))
+          classes=list(csv.DictReader((base/"inst/extdata/native_nonfunction_source_gaps_v1.csv").open(encoding="utf-8",newline="")))
+          registry=list(csv.DictReader((base/"inst/extdata/reviewed_source_contract_closures_v1.csv").open(encoding="utf-8",newline="")))
+          name="select_fpca_wild_bootstrap_truncation"
+          assert len(ledger)==203 and len(classes)==1
+          callable_open=sum(x["unresolved_source_gap"]=="TRUE" for x in ledger)
+          noncallable_open=sum(x["unresolved"]=="TRUE" for x in classes)
+          assert callable_open<=120 and noncallable_open==1, (callable_open,noncallable_open)
+          assert 508-callable_open-noncallable_open>=387
+          row,=[x for x in ledger if x["python_name"]==name]
+          assert row["unresolved_source_gap"]=="FALSE"
+          entry,=[x for x in registry if x["python_name"]==name]
+          raw=(base/entry["review_record_path"]).read_bytes()
+          assert hashlib.sha256(raw).hexdigest()==entry["review_record_sha256"]
+          review=json.loads(raw)
+          assert review["python_name"]==name and review["independently_certified"] is False
+          assert {x["kind"] for x in review["case_evidence"]}=={
+              "source_signature","accepted_input_domain","numerical_outputs",
+              "exception_semantics","returned_schema","scientific_estimand"}
+          for item in review["native_files"]+review["case_evidence"]:
+              f=base/item["path"]
+              assert hashlib.sha256(f.read_bytes()).hexdigest()==item["sha256"],str(f)
+          print(f"{508-callable_open-noncallable_open}/508 provisional author-reviewed; "
+                f"{callable_open} callable gaps; {noncallable_open} noncallable gap")
+          PY
+  native-r:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Native source law and overflow boundary tests
+        shell: bash
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          testthat::test_local(".",filter="native-wild-truncation-selector-full-source-20261111|native-wild-truncation-audit-full-source-pair",reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
+  frozen-python:
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        id: py
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Direct frozen typed Python source comparisons
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.py.outputs.python-path }}
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          stopifnot(identical(et_python_version(),"1.2.0"))
+          testthat::test_local(".",filter="native-wild-truncation-selector-full-source-20261111",reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
