@@ -65,9 +65,21 @@ etr_preprocessing_plan <- function(steps=list()) {
 }
 
 .etr_workflow_config_jsonable <- function(x) {
-  if (inherits(x,"etr_workflow_config") ||
-      inherits(x,"etr_preprocessing_step_config") ||
-      inherits(x,"etr_preprocessing_plan")) {
+  if (inherits(x,"etr_preprocessing_step_config")) {
+    .etr_assert(identical(names(unclass(x)),
+      c("function","parameters","scientific_effect")),
+      "preprocessing step must preserve its declared source schema")
+    # Python freezes validated dataclasses. A native R S3 list can be
+    # mutated after construction; recheck its scientific declaration.
+    x <- unclass(etr_preprocessing_step_config(
+      function_name=x[["function"]],parameters=x[["parameters"]],
+      scientific_effect=x[["scientific_effect"]]))
+  } else if (inherits(x,"etr_preprocessing_plan")) {
+    .etr_assert(identical(names(unclass(x)),"steps"),
+      "preprocessing plan must contain source steps only")
+    x <- unclass(etr_preprocessing_plan(x[["steps"]]))
+  } else if (inherits(x,"etr_workflow_config")) {
+    .etr_workflow_named_fields(unclass(x),"config")
     x <- unclass(x)
   } else if (is.object(x) && !is.list(x)) {
     stop("unsupported workflow config object",call.=FALSE)
