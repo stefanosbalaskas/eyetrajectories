@@ -20,9 +20,12 @@ test_that("trapezoid weights coerce heterogeneous Python scalar sequences", {
     "numeric scalars")
   expect_error(etr_trapezoid_weights(list("0",c(1,2),3)),
     "numeric scalars")
-  expect_true(etr_native_parity_catalog()$source_contract_gap_unresolved[
-    etr_native_parity_catalog()$python_name==
-      "functional_trapezoid_weights"])
+  # The source-domain discrepancy was closed by six-category
+  # SHA-verified author review, not independent certification.
+  row<-etr_native_parity_catalog()
+  row<-row[row$python_name=="functional_trapezoid_weights",]
+  expect_false(row$source_contract_gap_unresolved)
+  expect_false(row$one_to_one_native_contract_complete)
 })
 
 .etr_source_mixed_distance_fixture<-function() {
