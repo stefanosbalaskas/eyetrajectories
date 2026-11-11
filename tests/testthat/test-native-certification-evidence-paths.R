@@ -44,7 +44,15 @@ test_that("new frozen inference source witnesses cannot self-approve",{
   expect_equal(nrow(actual),5L)
   expect_true(all(actual$native_mapping_present))
   expect_true(all(actual$native_implementation_started))
-  expect_true(all(actual$published_source_difference_open))
+  # Source gaps close via the audited 508-export ledger; an unresolved
+  # independent reviewer approval remains mandatory even when source closes.
+  ledger<-utils::read.csv(system.file("extdata",
+    "native_source_contract_gaps_stage22.csv",
+    package="eyetrajectories"),stringsAsFactors=FALSE)
+  witness<-ledger[match(actual$python_name,ledger$python_name),,drop=FALSE]
+  expect_false(anyNA(witness$python_name))
+  expect_identical(as.logical(actual$published_source_difference_open),
+    as.logical(witness$unresolved_source_gap))
   expect_false(any(actual$fully_certified))
   expect_true(all(grepl("independent_review_approval_missing",
     actual$all_unresolved_requirements,fixed=TRUE)))
