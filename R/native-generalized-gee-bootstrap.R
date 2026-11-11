@@ -195,6 +195,27 @@ etr_bootstrap_generalized_function_on_scalar_coefficients<-function(
       native_random_engine<-selection$engine
     prov$generalized_function_on_scalar_bootstrap$
       full_source_contract_certified<-FALSE
+    # Preserve the original legacy R key ordering byte-for-byte at the
+    # source-record boundary; only strict mode has the Python key order.
+    legacy_names<-c("method","n_bootstrap","random_state",
+      "source_draws_supplied","native_random_engine","resampling_unit",
+      "whole_participant_curve_bundles_resampled",
+      "duplicate_source_participants_receive_distinct_group_ids",
+      "family_refit","link_refit","working_correlation_refit",
+      "basis_refit","basis_selected_automatically",
+      "failed_replicate_policy","failed_replicates_redrawn",
+      "exposure_observed_and_fixed",
+      "exposure_resampled_with_response_bundle",
+      "exposure_measurement_uncertainty",
+      "binomial_denominator_resampled_with_response_bundle",
+      "binomial_denominator_measurement_uncertainty",
+      "binomial_denominator_observed_and_fixed",
+      "full_source_contract_certified")
+    .etr_assert(setequal(names(prov$
+      generalized_function_on_scalar_bootstrap),legacy_names),
+      "legacy GEE bootstrap provenance keys changed unexpectedly")
+    prov$generalized_function_on_scalar_bootstrap<-
+      prov$generalized_function_on_scalar_bootstrap[legacy_names]
   }else{
     source_names<-c("method","n_bootstrap","random_state",
       "resampling_unit","whole_participant_curve_bundles_resampled",
