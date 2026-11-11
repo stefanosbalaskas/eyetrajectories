@@ -261,7 +261,7 @@ etr_functional_recovery_failure_frame <- function(result) {
 #' @param python_boundary_mode Use frozen NumPy double reductions and interpolation.
 #' @return Source-aligned groupwise metrics; no pass/fail thresholds inferred.
 #' @export
-etr_functional_recovery_summary_frame <- function(result,python_boundary_mode=FALSE) {
+etr_functional_recovery_summary_frame <- function(result,python_boundary_mode=TRUE) {
   .etr_assert(is.logical(python_boundary_mode)&&length(python_boundary_mode)==1L&&
     !is.na(python_boundary_mode),"python_boundary_mode must be TRUE or FALSE")
   value<-etr_functional_recovery_frame(result)
