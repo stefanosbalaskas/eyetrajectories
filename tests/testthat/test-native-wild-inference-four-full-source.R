@@ -118,6 +118,7 @@ test_that("four typed frozen Python 1.2 inference result frames agree with nativ
     "    return v",
     "_etr_inf_projection=_etr_source_inference_obj(et.FPCAWildBootstrapProjectionResult,",
     "    target_curve_ids=('curveβ','c-02','curve3'),",
+    "    bootstrap_projections=np.zeros((4,3)),",
     "    reference_projection=np.array([1.,2.,3.]),",
     "    reference_se=np.array([.2,.3,.4]),",
     "    pseudo_truth_projection=np.array([.9,1.8,2.7]),",
