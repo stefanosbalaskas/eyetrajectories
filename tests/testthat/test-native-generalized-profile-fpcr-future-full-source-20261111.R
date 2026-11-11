@@ -64,7 +64,7 @@ test_that("fixed profiles use multivariate source design and all marginal scales
           "linear_predictor_count","provenance"))
         expect_identical(dim(p$profile_design_matrix),c(4L,3L))
         expect_equal(unname(p$profile_design_matrix),
-          cbind(rep(1,4),f$profiles$treatment,f$profiles$promotion),
+          unname(cbind(rep(1,4),f$profiles$treatment,f$profiles$promotion)),
           tolerance=0)
         expect_identical(dim(p$linear_predictor_functions),c(4L,4L))
         expect_identical(p$profile_ids,as.character(f$profiles$profile_id))
@@ -242,6 +242,9 @@ _pi_forecasts={seed:et.fpca_regression_future_prediction_interval(
       got<-actual$provenance$
         generalized_function_on_scalar_prediction[[field]]
       target<-pyp$generalized_function_on_scalar_prediction[[field]]
+      if(field%in%c("profile_ids","predictors","predictor_minima",
+          "predictor_maxima","extrapolation_flags"))
+        target<-unlist(target,use.names=FALSE)
       expect_equal(got,target,tolerance=3e-11,ignore_attr=TRUE,
         info=paste("source predictor provenance",key,field))
     }
