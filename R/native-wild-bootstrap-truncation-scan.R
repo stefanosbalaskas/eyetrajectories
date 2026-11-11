@@ -18,13 +18,25 @@
 #' @param random_engine Seeded multiplier RNG. Use `"base_R"` to replay
 #'   previous native normal multipliers, or `"numpy"` for source draws.
 #' @return Native source-shape scan record, without automatic h selection.
+#' @param python_boundary_mode If TRUE, return the exact frozen Python 1.2
+#'   scientific scan provenance (without native audit extensions), accepting
+#'   only NumPy PCG64 native multiplier draws, not caller-supplied draws.
 #' @export
 etr_scan_wild_bootstrap_fpca_truncations<-function(
     trajectories,outcome,candidate_components,targets=NULL,
     n_bootstrap=1000L,residual_components=2L,
     scaling="none",multiplier="normal",confidence_level=.95,
     independent_unit_column=NULL,random_state=0L,multiplier_draws=NULL,
-    random_engine="numpy"){
+    random_engine="numpy",python_boundary_mode=FALSE){
+  .etr_assert(is.logical(python_boundary_mode)&&
+    length(python_boundary_mode)==1L&&!is.na(python_boundary_mode),
+    "python_boundary_mode must be TRUE or FALSE")
+  if(isTRUE(python_boundary_mode)){
+    .etr_assert(is.null(multiplier_draws),
+      "Python source mode does not accept fixed multiplier_draws")
+    .etr_assert(identical(random_engine,"numpy"),
+      "Python source mode requires the NumPy PCG64 random engine")
+  }
   .etr_assert(is.numeric(candidate_components)&&
     length(candidate_components)>=2L&&
     all(is.finite(candidate_components))&&
@@ -170,6 +182,14 @@ etr_scan_wild_bootstrap_fpca_truncations<-function(
     seeded_mammen_draws_match_numpy=is.null(multiplier_draws)&&
       !is.null(random_state)&&random_engine=="numpy"&&multiplier=="mammen",
     source_full_contract_certified=FALSE)
+  if(isTRUE(python_boundary_mode)){
+    provenance$fpca_wild_bootstrap_truncation_scan<-
+      provenance$fpca_wild_bootstrap_truncation_scan[
+        setdiff(names(provenance$fpca_wild_bootstrap_truncation_scan),
+          c("seeded_normal_draws_match_numpy",
+            "seeded_mammen_draws_match_numpy",
+            "source_full_contract_certified"))]
+  }
   structure(list(reference_fpca=fit,
     target_curve_ids=targets$curve_ids,
     candidate_components=as.integer(candidate_components),
