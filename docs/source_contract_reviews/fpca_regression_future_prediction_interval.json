@@ -1,0 +1,68 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "fpca_regression_future_prediction_interval",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/regression_inference.py::fpca_regression_future_prediction_interval; src/eyetrajectoriespy/types.py::FPCARegressionPredictionIntervalResult",
+  "native_signature": "etr_fpca_regression_future_prediction_interval(result,outcome,confidence_level=.95,residual_method='empirical_centered',random_state=0L,residual_indices=NULL,random_engine='numpy',python_boundary_mode=TRUE)",
+  "reviewer_statement": "Provisional developer scientific source-contract review with direct frozen Python 1.2 typed production bootstrap to predictive interval differential comparisons across curve and participant resampling and two deterministic SeedSequence streams. New tests and six domain evidence pinned by SHA256; exact-head GitHub Actions and independent certification remain pending.",
+  "native_language_semantic_policy": "Native R typed FPCR uncertainty S3 scientific record replaces the Python frozen dataclass. Seeded NumPy PCG64 spawned child indices and all statistical quantities are compared; unseeded OS entropy realizations and Python runtime exception/model classes are explicitly not claimed.",
+  "native_files": [
+    {
+      "path": "R/native-fpcr-future-prediction-interval.R",
+      "sha256": "baadfa8f2b4c2a37b0de8d46f6bb940c71989b9a610686ff7fec73de0f4eedb2"
+    },
+    {
+      "path": "R/native-fpcr-bootstrap-uncertainty.R",
+      "sha256": "445e75d2255d8b84313f045341e0eaf5f93552899bfec3c92646c37265c00bb0"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-fpcr-future-full-source-20261111.R",
+      "sha256": "853cab25c55c75e27e06854a2290e6bfb3ba24d0635e92c0dc51e59fb306c432",
+      "description": "Frozen Python 1.2 regression_inference.py fpca_regression_future_prediction_interval: source-typed Gaussian FPCARegressionUncertaintyResult, matched finite training response, marginal confidence mass, empirical_centered residual method and NumPy SeedSequence random state. New native source mode enforces source-scientific result type and excludes native-only index replay and base-R engine."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-fpcr-future-full-source-20261111.R",
+      "sha256": "853cab25c55c75e27e06854a2290e6bfb3ba24d0635e92c0dc51e59fb306c432",
+      "description": "Actual independent Gaussian FPCR refits with 14 functional training curves, 15 time samples, seven groups with two curves each, 20 paired curve or whole-participant bootstrap refits, training target curves, retained FPC count one, normal numeric responses and seeded reproducible NumPy residual draws 0 and 121."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-fpcr-future-full-source-20261111.R",
+      "sha256": "853cab25c55c75e27e06854a2290e6bfb3ba24d0635e92c0dc51e59fb306c432",
+      "description": "Fit-level centered full-reference residual distribution, single SeedSequence spawned PCG64 independent stream, row-major bounded random residual indices and targetwise addition to paired conditional-mean bootstrap predictions, NumPy-linear marginal predictive quantiles and ddof=1 sample predictive standard error; direct frozen typed Python 1.2 scientific comparison covers seven numerical array/vector fields."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-fpcr-future-full-source-20261111.R",
+      "sha256": "853cab25c55c75e27e06854a2290e6bfb3ba24d0635e92c0dc51e59fb306c432",
+      "description": "Source mode rejects untyped result S3 record, non-Gaussian reference, invalid confidence, unsupported residual method, inconsistent response and fitted lengths, non-finite data, invalid prediction matrix or target grid, native-only source-index replay and base R seed engine. Exact Python exception classes are not native R constructs."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-fpcr-future-full-source-20261111.R",
+      "sha256": "853cab25c55c75e27e06854a2290e6bfb3ba24d0635e92c0dc51e59fb306c432",
+      "description": "Twelve canonical ordered FPCARegressionPredictionIntervalResult source-scientific fields retaining the original source-compatible input, full centered and sampled residual matrices, additive predictive draws, lower/median/upper, predictive_se, confidence_level, residual_method, random_state and complete source provenance. Native-only RNG audit field is retained in legacy/default mode only."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-fpcr-future-full-source-20261111.R",
+      "sha256": "853cab25c55c75e27e06854a2290e6bfb3ba24d0635e92c0dc51e59fb306c432",
+      "description": "Marginal per-fixed-target future noisy-response interval based on conditional-mean bootstrap resampling plus independent centered empirical full-fit Gaussian residuals under exchangeable-error assumption. Not heteroscedastic-robust, simultaneous, or joint target distribution inference."
+    }
+  ],
+  "independent_review_status": "Provisional source-pinned author-reviewed science; no independent certificate and no current exact-head green CI.",
+  "language_specific_limits": [
+    "Python FPCARegressionUncertaintyResult and FPCARegressionPredictionIntervalResult frozen dataclasses are represented by native R S3 scientific records; runtime identity differs.",
+    "random_state=NULL uses an R ambient stream rather than NumPy OS-generated SeedSequence entropy, so a specific unseeded sample path is not identically reproducible.",
+    "Native R requires numeric response while Python permits additional float-coercible inputs; no promise of identical Python exception classes or arbitrary object coercion.",
+    "Native seeded PCG64 implementation is bounded by exactly representable numeric integer seeds; arbitrary 128-bit Python SeedSequence seeds are beyond the native input domain.",
+    "Native-only fixed source residual indices and legacy R random engine remain supported by default, but are forbidden in strict source mode."
+  ]
+}

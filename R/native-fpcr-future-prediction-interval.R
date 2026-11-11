@@ -22,11 +22,28 @@
 #' @param random_engine Seeded residual RNG. Use `"base_R"` for the
 #'   previous native residual draws, or `"numpy"` for source draws.
 #' @return Source-shaped predictive draws, quantiles, sample SD and metadata.
+#' @param python_boundary_mode TRUE requires a native source-scientific
+#'   FPCARegressionUncertaintyResult analogue and returns exactly the twelve
+#'   Python FPCARegressionPredictionIntervalResult scientific fields with
+#'   source provenance. Native fixed residual replay and base-R generator
+#'   remain available only when FALSE (the default).
 #' @export
 etr_fpca_regression_future_prediction_interval<-function(
     result,outcome,confidence_level=.95,
     residual_method="empirical_centered",random_state=0L,
-    residual_indices=NULL,random_engine="numpy"){
+    residual_indices=NULL,random_engine="numpy",
+    python_boundary_mode=FALSE){
+  .etr_assert(is.logical(python_boundary_mode)&&
+    length(python_boundary_mode)==1L&&!is.na(python_boundary_mode),
+    "python_boundary_mode must be TRUE or FALSE")
+  if(isTRUE(python_boundary_mode)){
+    .etr_assert(inherits(result,"etr_fpcr_bootstrap_uncertainty"),
+      "source mode requires a native FPCARegressionUncertaintyResult analogue")
+    .etr_assert(is.null(residual_indices),
+      "Python source mode does not accept fixed residual_indices")
+    .etr_assert(identical(random_engine,"numpy"),
+      "Python source mode requires the NumPy SeedSequence engine")
+  }
   .etr_recovery_source_fields(result,c("reference_regression",
     "bootstrap_slopes","bootstrap_mean_predictions",
     "target_curve_ids","target_source","provenance"),
@@ -130,7 +147,7 @@ etr_fpca_regression_future_prediction_interval<-function(
     n_bootstrap=B,n_training_residuals=n,
     target_source=result$target_source,
     random_state=random_state)
-  structure(list(
+  result_record<-structure(list(
     regression_uncertainty=result,
     centered_residuals=centered,
     sampled_residuals=sampled,
@@ -143,4 +160,7 @@ etr_fpca_regression_future_prediction_interval<-function(
     native_rng_source=rng_source,
     provenance=prov),
     class="etr_fpcr_future_prediction_interval")
+  if(isTRUE(python_boundary_mode))
+    result_record$native_rng_source<-NULL
+  result_record
 }
