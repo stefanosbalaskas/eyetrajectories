@@ -1,0 +1,67 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "bootstrap_fpca_component_envelopes",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/stability.py::bootstrap_fpca_component_envelopes; src/eyetrajectoriespy/types.py::FPCAComponentEnvelopeResult",
+  "native_signature": "etr_bootstrap_fpca_component_envelopes(trajectories,n_bootstrap=200L,n_components=3L,scaling='none',resample_unit='curve',participant_column=NULL,level=.95,random_state=0L,bootstrap_unit_indices=NULL,python_boundary_mode=TRUE)",
+  "reviewer_statement": "Author-source-scientific review of matched FPCA bootstrap numerical estimands, seeded resampling and exactly nine source result fields. Newly added source-boundary cases with full typed frozen Python 1.2 numerical oracle for three seeds, two FPCA dimensions and both resampling modes. Cross-platform exact-head CI pending, no independent scientific certification.",
+  "native_language_semantic_policy": "Native R class and nested native FPCA representation replace Python dataclass and fitted Python model objects. Source numerical arrays, fields and provenance are matched in explicit mode; unseeded stochastic calls produce independent entropy-dependent draws, not bitwise identical cross-run samples. Native-only fixed index replay is rejected in strict source mode.",
+  "native_files": [
+    {
+      "path": "R/native-fpca-component-envelopes.R",
+      "sha256": "399dd4b64e267f4d36501643089b5e2320af035d0e9e983cdf92efffe6abe6b5"
+    },
+    {
+      "path": "R/native-fpca-stability.R",
+      "sha256": "7fa394962da8b78cbc7c66a6c9516ce6ac00c9652ce06db0af93ecf8717cc27c"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-fpca-envelopes-full-source-20261111.R",
+      "sha256": "dd04bfd905db4ddb0a6bb84d72ff689e59d6f010ce6271bc3e964aa1a1141ef6",
+      "description": "Frozen Python 1.2 stability.py bootstrap_fpca_component_envelopes with retained FPC count, bootstrap count, curve versus participant resampling unit, optional participant metadata column, scaling, level, random_state and validated TrajectorySet; native R python_boundary_mode selects exact nine-field outer scientific return."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-fpca-envelopes-full-source-20261111.R",
+      "sha256": "dd04bfd905db4ddb0a6bb84d72ff689e59d6f010ce6271bc3e964aa1a1141ef6",
+      "description": "Complete finite one- and two-channel trajectory sets, 12 curves, 19 observed grid times, six repeated-participant groups, independent curve resampling and whole-participant resampling, 1 and 2 retained components, B=2 or 5; NumPy PCG64 seeds 0, 7 and 41."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-fpca-envelopes-full-source-20261111.R",
+      "sha256": "dd04bfd905db4ddb0a6bb84d72ff689e59d6f010ce6271bc3e964aa1a1141ef6",
+      "description": "Both single-channel and multivariate FPCA refits on each resampled training set, exact NumPy PCG64 draw chronology, functional maximum-absolute-component assignment and sign alignment, source NumPy linear pointwise quantiles and signed-similarity absolute values, source reference fitted eigenvalue spectrum."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-fpca-envelopes-full-source-20261111.R",
+      "sha256": "dd04bfd905db4ddb0a6bb84d72ff689e59d6f010ce6271bc3e964aa1a1141ef6",
+      "description": "Reject fewer than two bootstrap replicates, nonpositive or invalid FPC count, unsupported resample unit, missing participant_column, incomplete trajectories, invalid confidence level, invalid Python boundary mode or native-only externally fixed bootstrap draws in strict source mode."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-fpca-envelopes-full-source-20261111.R",
+      "sha256": "dd04bfd905db4ddb0a6bb84d72ff689e59d6f010ce6271bc3e964aa1a1141ef6",
+      "description": "Python FPCAComponentEnvelopeResult canonical ordered outer fields: reference, lower, median, upper, similarities, level, resampling_unit, random_state, provenance. Source provenance has exactly method, n_bootstrap, n_components, scaling, participant_column and coverage_claim; no R-only audit provenance in explicit source mode."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-fpca-envelopes-full-source-20261111.R",
+      "sha256": "dd04bfd905db4ddb0a6bb84d72ff689e59d6f010ce6271bc3e964aa1a1141ef6",
+      "description": "Descriptive pointwise envelopes of reference-aligned bootstrap FPCA loading functions and corresponding component similarities; fixed component dimensionality, not pointwise/simultaneous confidence coverage and no inference about eigenfunction truth."
+    }
+  ],
+  "independent_review_status": "Author-reviewed, six source contract domains with digest-pinned tests; no independently certified contracts and exact-head R/Python CI pending.",
+  "language_specific_limits": [
+    "R's nested fitted FPCA reference object and Python's FPCAResult are scientifically corresponding but not the same runtime class or model backend object.",
+    "Unseeded random_state=NULL generates nonreplayable samples from each language's available entropy stream; no exact realized sample equality is claimed.",
+    "Native R demands retained FPC count strictly below number of curves, whereas Python performs a looser explicit pre-check and may fail later during FPCA fitting near full rank.",
+    "R default mode retains its extensive audit provenance and native fixed-index replay; canonical Python outer output requires python_boundary_mode=TRUE."
+  ]
+}

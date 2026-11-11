@@ -1,0 +1,68 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "bootstrap_fpca_regression_uncertainty",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/regression_inference.py::bootstrap_fpca_regression_uncertainty; src/eyetrajectoriespy/types.py::FPCARegressionUncertaintyResult",
+  "native_signature": "etr_bootstrap_fpca_regression_uncertainty(trajectories,outcome,targets=NULL,n_bootstrap=500L,n_components=3L,scaling='none',resample_unit='curve',participant_column=NULL,level=.95,random_state=0L,bootstrap_indices=NULL,python_boundary_mode=TRUE)",
+  "reviewer_statement": "Provisional source-scientific six-domain author review; direct frozen Python 1.2 typed numerical source oracle over two NumPy RNG seeds, curve and participant whole-unit paired resampling and external fixed target conditional mean. CI not yet executed to green, no independent scientific certification.",
+  "native_language_semantic_policy": "Native R FPCA / stats::lm and source Gaussian FPCR/OLS represent equivalent mathematical estimands. R scientific lists replace Python frozen dataclass, pandas Series and statsmodels model object identity. Native-only explicit resampling indices are excluded from source boundary.",
+  "native_files": [
+    {
+      "path": "R/native-fpcr-bootstrap-uncertainty.R",
+      "sha256": "445e75d2255d8b84313f045341e0eaf5f93552899bfec3c92646c37265c00bb0"
+    },
+    {
+      "path": "R/native-scalar-on-fpca-source.R",
+      "sha256": "58aa2d0ba46d6f80ce8de6f9d84f7855967ec94c867e4e81a9c3d95808abae8f"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-fpcr-bootstrap-full-source-20261111.R",
+      "sha256": "19ed51ee62690a1d4d3c4b13799ffdb257b192150d4649b1e717735d9510b166",
+      "description": "Frozen Python 1.2 regression_inference.py Gaussian paired-bootstrap uncertainty signature: complete TrajectorySet, numeric scalar outcome, optional fixed target TrajectorySet, bootstrap replicate count, retained FPCA components, scaling, curve or participant sampling, confidence mass and integer/default RNG seed. Native R explicit source mode accepts corresponding inputs and excludes external fixed bootstrap indices."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-fpcr-bootstrap-full-source-20261111.R",
+      "sha256": "19ed51ee62690a1d4d3c4b13799ffdb257b192150d4649b1e717735d9510b166",
+      "description": "Fourteen complete scalar-aligned training trajectories, 15 sample times, 7 participants with two curves each; whole-curve or paired whole-participant bootstrap, fixed source seed 7 and 23, Gaussian scalar response, one retained FPC, 20 bootstrap refits, training curves and three external targets."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-fpcr-bootstrap-full-source-20261111.R",
+      "sha256": "19ed51ee62690a1d4d3c4b13799ffdb257b192150d4649b1e717735d9510b166",
+      "description": "Exactly matched source Gaussian FPCA-plus-OLS regression refits and original-coordinate slope reconstruction; reference slope and scalar intercept, all paired-bootstrap slope arrays, pointwise slope quantiles and standard errors, target conditional mean prediction matrices, prediction percentile quantiles and standard errors; never future-outcome intervals or slope simultaneous bands."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-fpcr-bootstrap-full-source-20261111.R",
+      "sha256": "19ed51ee62690a1d4d3c4b13799ffdb257b192150d4649b1e717735d9510b166",
+      "description": "Finite scalar one-per-curve outcome, count >=20, retained component <= source theoretical nonzero rank, exactly aligned targets, declared independent resampling unit, no incomplete participant metadata, valid confidence mass and seed; strict Python mode fails on native-only supplied index replay or invalid source mode."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-fpcr-bootstrap-full-source-20261111.R",
+      "sha256": "19ed51ee62690a1d4d3c4b13799ffdb257b192150d4649b1e717735d9510b166",
+      "description": "Exact 25-field FPCARegressionUncertaintyResult outer source order with reference FPCA scientific record, six-field nested FunctionalRegressionResult scientific record (R lm analogue of statsmodels), all bootstrap numerical fields, full fixed-target metadata and original-source provenance; native-only sampled index audit removed in source mode."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-fpcr-bootstrap-full-source-20261111.R",
+      "sha256": "19ed51ee62690a1d4d3c4b13799ffdb257b192150d4649b1e717735d9510b166",
+      "description": "Paired nonparametric refit bootstrap of fixed FPC-component Gaussian scalar-on-function model, reconstructing scientific functional slope and fixed-target conditional mean. No component-count reselection, operator-scaled test, heteroscedastic future-outcome interval or simultaneous coverage claim."
+    }
+  ],
+  "independent_review_status": "Provisional author-reviewed, SHA256-pinned source science; exact-head CI and independent source domain certification pending.",
+  "language_specific_limits": [
+    "Python statsmodels OLS wrapper and R stats::lm wrapper differ in their runtime object identity and floating-point solver details; fitted numerical estimands are compared within 1e-6 tolerance.",
+    "Python pandas Series and tuple are R named numeric vectors and integer/character arrays, respectively; source ordered scientific fields retained, runtime classes differ.",
+    "Python float-coercible text outcome is outside the R source mode's finite numeric-outcome domain, while unsupported Python scalar object coercion remains an input difference.",
+    "Unseeded random_state=NULL uses each language's independent entropy stream and cannot reproduce identical realized sample indices; seeded NumPy PCG64 source draws are compared.",
+    "Existing R-specific fixed bootstrap indices and sampled-row audit are retained in default mode but explicitly rejected/removed in source mode."
+  ]
+}

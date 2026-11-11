@@ -103,12 +103,21 @@
 #'   unequal original group sizes are allowed.
 #' @return Source-shaped Gaussian FPCR reference and bootstrap fields,
 #'   source-invariant estimands, explicit RNG and coverage provenance.
+#' @param python_boundary_mode If TRUE, emit exactly the source FPCARegressionUncertaintyResult
+#'   outer fields and nested Gaussian regression scientific record, omitting
+#'   R-only fixed-index replay fields and retaining source provenance. The
+#'   underlying native R lm remains an R model, never a Python statsmodels object.
 #' @export
 etr_bootstrap_fpca_regression_uncertainty <- function(
     trajectories,outcome,targets=NULL,n_bootstrap=500L,
     n_components=3L,scaling="none",resample_unit="curve",
     participant_column=NULL,level=.95,random_state=0L,
-    bootstrap_indices=NULL) {
+    bootstrap_indices=NULL,python_boundary_mode=FALSE) {
+  .etr_assert(is.logical(python_boundary_mode)&&
+    length(python_boundary_mode)==1L&&!is.na(python_boundary_mode),
+    "python_boundary_mode must be a nonmissing logical scalar")
+  .etr_assert(!isTRUE(python_boundary_mode)||is.null(bootstrap_indices),
+    "Python source mode does not accept caller-supplied bootstrap indices")
   etr_validate(trajectories,require_complete=TRUE)
   n<-length(trajectories$curve_ids)
   .etr_assert(is.numeric(outcome)&&is.null(dim(outcome))&&
@@ -234,7 +243,35 @@ etr_bootstrap_fpca_regression_uncertainty <- function(
       "externally_fixed_source_participant_indices" else
       "externally_fixed_source_curve_indices",
     source_schema_equivalent=FALSE)
-  structure(list(reference_fpca=reference$fpca,
+  if(isTRUE(python_boundary_mode)) {
+    # The Python FunctionalRegressionResult scientific fields are retained
+    # in source order. The native lm is a model analogue, never a
+    # Python statsmodels results wrapper.
+    source_fit<-reference$fit
+    reference_regression<-source_fit[c("model","component_indices",
+      "coefficients","predictions","family","provenance")]
+    reference_regression$provenance<-list(
+      method="scalar_on_function_via_fpca_scores",
+      n_components=k,family="gaussian",covariates=list())
+    provenance<-trajectories$provenance
+    provenance$fpca_regression_uncertainty<-list(
+      method="paired_nonparametric_bootstrap_full_fpcr_refit",
+      family="gaussian",n_bootstrap=b,n_components=k,
+      component_count_fixed=TRUE,
+      component_selection_uncertainty_included=FALSE,
+      scaling=scaling,resample_unit=resample_unit,
+      participant_column=if(resample_unit=="participant")
+        participant_column else NULL,
+      level=level,slope_interval="pointwise_percentile_bootstrap",
+      prediction_interval="fixed_target_conditional_mean_percentile_bootstrap",
+      future_outcome_prediction_interval=FALSE,
+      target_source=target_source,target_curves_fixed=TRUE,
+      fpc_label_matching_required=FALSE,
+      fpc_label_invariance_reason=
+        "slope_and_mean_prediction_reconstructed_from_each_complete_refit",
+      operator_scaled_fpcr_test=FALSE,random_state=random_state)
+  }
+  result<-structure(list(reference_fpca=reference$fpca,
     reference_regression=reference_regression,
     reference_slope=reference$slope,
     bootstrap_slopes=bslope,
@@ -259,4 +296,7 @@ etr_bootstrap_fpca_regression_uncertainty <- function(
     sampled_source_curve_indices=indices_used,
     provenance=provenance),
     class="etr_fpcr_bootstrap_uncertainty")
+  if(isTRUE(python_boundary_mode))
+    result$sampled_source_curve_indices<-NULL
+  result
 }
