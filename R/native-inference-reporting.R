@@ -148,11 +148,13 @@ etr_fpca_regression_uncertainty_reporting_text <- function(result,digits=3L) {
   .etr_assert(identical(result$resampling_unit,"participant") ||
     identical(result$resampling_unit,"curve"),
     "resampling_unit must be participant or curve")
-  scaling<-.etr_inference_report_word(result$scaling,"scaling")
+  .etr_assert(is.character(result$scaling) && length(result$scaling)==1L &&
+    !is.na(result$scaling), "scaling must be a source character label")
+  scaling<-.etr_fpca_source_py_repr(result$scaling)
   paste0("Gaussian scalar-on-function FPCR uncertainty was evaluated with ",
     b," paired ",result$resampling_unit,"-level bootstrap refits. ",
     "FPCA/MFPCA and the score regression were refitted in every replicate ",
-    "using ",k," fixed component(s) and scaling='",scaling,"'. ",
+    "using ",k," fixed component(s) and scaling=",scaling,". ",
     "Pointwise ",sprintf("%.1f",100*level),
     "% percentile envelopes were formed for the reconstructed functional ",
     "slope in the original trajectory units (median grid-point width=",

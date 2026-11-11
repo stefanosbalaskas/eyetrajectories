@@ -1,0 +1,68 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "fpca_regression_future_prediction_reporting_text",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/reporting.py::fpca_regression_future_prediction_reporting_text",
+  "native_signature": "etr_fpca_regression_future_prediction_reporting_text(result,digits=3L)",
+  "reviewer_statement": "Author-side full-source scientific manuscript reporting review: fpca_regression_future_prediction_reporting_text is compared against published eyetrajectoriespy 1.2.0 using typed Python data classes, two representative scientific variants, complete exact source text, digits 0/3/5 and invalid native-domain checks. The Python runtime class and exception identities remain language-specific and exact-head CI plus independent certification are still required.",
+  "native_language_semantic_policy": "Python typed scientific results map to checked native R records and pandas summaries map to data.frame. The Python str return maps to R scalar character. The native function is Python-free and scientific estimands and caveats are preserved.",
+  "native_files": [
+    {
+      "path": "R/native-inference-reporting.R",
+      "sha256": "568f107ccb65029cadbb5d486edf44425433b83516c1071976abd1245f7326f4"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-fpcr-five-reporting-full-source.R",
+      "sha256": "f848b8a44b1120920e64eb0f3b3489c40b2c30c0ba1fb815c93e94a7a27ff243",
+      "description": "Exact Python reporting.py typed dataclass, keyword-only digit precision and native scientific record text signature."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-fpcr-five-reporting-full-source.R",
+      "sha256": "f848b8a44b1120920e64eb0f3b3489c40b2c30c0ba1fb815c93e94a7a27ff243",
+      "description": "Two scientific variants for participant/curve bootstrap, future predictions, simultaneous grid, nested CV and matched envelope."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-fpcr-five-reporting-full-source.R",
+      "sha256": "f848b8a44b1120920e64eb0f3b3489c40b2c30c0ba1fb815c93e94a7a27ff243",
+      "description": "5 typed scientific reports × 2 variants × 3 precision settings = 30 expected complete exact-character frozen Python 1.2 comparisons."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-fpcr-five-reporting-full-source.R",
+      "sha256": "f848b8a44b1120920e64eb0f3b3489c40b2c30c0ba1fb815c93e94a7a27ff243",
+      "description": "Malformed R domain shapes, nonfinite values, mismatched dimension names, invalid resampling-unit tags and precision trigger native conditions."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-fpcr-five-reporting-full-source.R",
+      "sha256": "f848b8a44b1120920e64eb0f3b3489c40b2c30c0ba1fb815c93e94a7a27ff243",
+      "description": "One exact source ordered complete English manuscript string including numeric fields, scientific warnings and source fixed sentence order."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-fpcr-five-reporting-full-source.R",
+      "sha256": "f848b8a44b1120920e64eb0f3b3489c40b2c30c0ba1fb815c93e94a7a27ff243",
+      "description": "Gaussian FPCR empirical residual future-noisy-outcome marginal prediction intervals, exchangeability limitations, not simultaneous or heteroscedasticity robust."
+    }
+  ],
+  "extra_source_evidence": [
+    {
+      "path": "tests/testthat/test-native-inference-reporting.R",
+      "sha256": "f5fff3dfa949d8ada7b81211a5a139a7f382d2cbd23e9991fc6b74f876ed927a"
+    }
+  ],
+  "independent_review_status": "Developer full-source semantic review only; cross-platform R and typed Python CI pending, no independent certifications.",
+  "language_specific_limits": [
+    "Typed Python dataclasses and pandas objects have native R semantic analogues rather than identical runtime types",
+    "R scientific errors do not reuse Python TypeError/ValueError identity",
+    "Underlying estimator and RNG numerical domains are separate from source manuscript text output"
+  ]
+}
