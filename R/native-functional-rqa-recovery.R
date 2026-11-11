@@ -394,11 +394,10 @@ etr_windowed_rqa_sensitivity <- function(trajectories,metrics,
             correlation=cor)
         }
     }
-  pairwise<-if(length(pairwise))do.call(rbind,pairwise) else data.frame(
-    specification_a=character(),specification_b=character(),
-    curve_id=character(),metric=character(),n_common_centers=integer(),
-    rmse=double(),mean_absolute_difference=double(),
-    max_absolute_difference=double(),correlation=double())
+  # Frozen Python _pairwise_exact_center_comparison returns
+  # pandas.DataFrame([]), which has zero rows AND zero columns when a
+  # single specification produces no pairwise comparisons.
+  pairwise<-if(length(pairwise))do.call(rbind,pairwise) else data.frame()
   rownames(pairwise)<-NULL
   structure(list(analyses=analyses,design_table=design,
     summary_table=summary,pairwise_table=pairwise,metrics=metrics,

@@ -1,0 +1,69 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "windowed_rqa_sensitivity",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/functional_rqa.py::windowed_rqa_sensitivity",
+  "native_signature": "etr_windowed_rqa_sensitivity(trajectories,...)",
+  "reviewer_statement": "Author-side frozen Python 1.2 scientific source parity review of windowed_rqa_sensitivity. Existing extensive direct differential evidence in tests/testthat/test-native-functional-rqa-recovery.R remains. New full-frame/derived-curve/seeded-band source fixture proposes four complete source RQA sensitivity configurations and three unit/metadata band configurations, covering zero-column empty pairwise returns and source wrapper provenance. Exact-head CI and independent certification are not established.",
+  "native_language_semantic_policy": "Python dataclass result tuples, pandas tables, NumPy arrays and scientific provenance maps are represented by native R S3/list, data.frame and atomic/matrix/array fields with retained source mathematical semantics. PCG64 parity is assessed through seeded source comparisons and no Python is invoked in native R.",
+  "native_files": [
+    {
+      "path": "R/native-functional-rqa-recovery.R",
+      "sha256": "1fd0358e4c4adbb424262fc2895608a00369a9573f02326909b91c2ad3b1a463"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-two-rqa-source-contracts-20261111.R",
+      "sha256": "5c720bc18bf192061fc5e8d30860fdd48604ed0367a6c01631d6eabfa008c71f",
+      "description": "Frozen published eyetrajectoriespy==1.2.0 src/eyetrajectoriespy/functional_rqa.py::windowed_rqa_sensitivity; source typed windowed RQA results and native R semantic list counterpart."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-two-rqa-source-contracts-20261111.R",
+      "sha256": "5c720bc18bf192061fc5e8d30860fdd48604ed0367a6c01631d6eabfa008c71f",
+      "description": "Four scientifically distinct sensitivity source inputs (single sample specification, two sample specifications with multiple RQA metrics, physical-time windows with multi-channel selected dimension, target-density resolution), and three unit-level seeded band inputs (curve, participant and retained caller participant column under curve unit)."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-two-rqa-source-contracts-20261111.R",
+      "sha256": "5c720bc18bf192061fc5e8d30860fdd48604ed0367a6c01631d6eabfa008c71f",
+      "description": "Full source design, descriptive summary and pairwise tables including the 0x0 single-specification empty pairwise pandas frame; entire derived functional RQA values and time grids, provenance, curve/participant band means, standard errors, 100-draw seeded PCG64 maximum statistics, critical values, bounds, per-unit counts and unique unit identities."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-two-rqa-source-contracts-20261111.R",
+      "sha256": "5c720bc18bf192061fc5e8d30860fdd48604ed0367a6c01631d6eabfa008c71f",
+      "description": "Native R rejects Boolean, malformed and duplicate resolved window-step specifications, ambiguous radius vs target-rate contracts, wrong inference unit, unsupported independent-block claims; original source type/exception identities remain language-specific."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-two-rqa-source-contracts-20261111.R",
+      "sha256": "5c720bc18bf192061fc5e8d30860fdd48604ed0367a6c01631d6eabfa008c71f",
+      "description": "Python WindowedRQASensitivityResult and WindowedRQAMeanBandResult dataclasses map to ordered native R S3 source result lists; three source-ordered data.frame schemas (with 0x0 empty pairwise condition) plus full functional trajectory grid and nested inference-band provenance."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-two-rqa-source-contracts-20261111.R",
+      "sha256": "5c720bc18bf192061fc5e8d30860fdd48604ed0367a6c01631d6eabfa008c71f",
+      "description": "Multi-configuration windowed recurrence-quantification analysis of declared sliding-window specifications, exact shared temporal centres, sample-reuse diagnostics, descriptive curve/metric summaries and no automatic specification selection or row-wise independence claims."
+    }
+  ],
+  "extra_source_evidence": [
+    {
+      "path": "tests/testthat/test-native-functional-rqa-recovery.R",
+      "sha256": "1e1b2cf76d6c7e7273ef51967a23143e7dc582ca943fe50284bed3c7dcab7111"
+    }
+  ],
+  "independent_review_status": "Provisional author full-source semantic review only; frozen Python 1.2 and Linux/macOS/Windows exact-head CI pending; zero independent certifications.",
+  "language_specific_limits": [
+    "Python immutable dataclass class/tuple/pandas index identity and exact Python exception classes are not native R runtime identities",
+    "Temporal sliding-window dependence is not removed by duplicate-sample reuse accounting; mean-band inference depends on independent curve or participant units",
+    "NumPy/random generator compatibility for arbitrary seeds and all platforms requires full exact-head CI and additional certification beyond seeded 100-draw tests",
+    "No RQA automatic specification selection, false independent-window resampling or mathematical inferential guarantee is claimed"
+  ]
+}
