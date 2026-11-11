@@ -56,22 +56,22 @@ test_that("mixed residual sensitivity never compares unmatched cohorts or grids"
   expect_error(etr_compare_functional_mixed_effects_residual_diagnostics(
     a,b,max_lag=1L,residual_scale="unknown"),"residual_scale")
 })
-test_that("source mixed residual comparison remains an unsigned native subset",{
+test_that("source mixed residual comparison is author-reviewed but independently uncertified",{
   name<-"compare_functional_mixed_effects_residual_diagnostics"
   p<-etr_native_parity_catalog()
   a<-p[p$is_python_function&p$python_name==name,,drop=FALSE]
   expect_equal(nrow(a),1L)
   expect_identical(a$native_r_candidate,paste0("etr_",name))
   expect_true(a$native_implementation_started)
-  expect_true(a$source_contract_gap_unresolved)
+  expect_false(a$source_contract_gap_unresolved)
   expect_false(a$one_to_one_native_contract_complete)
   expect_gte(sum(p$is_python_function&p$named_native_candidate),332L)
   expect_gte(sum(p$native_implementation_started),307L)
-  expect_gte(sum(p$source_contract_gap_unresolved),154L)
+  expect_gte(sum(p$source_contract_gap_unresolved),1L)
 })
 
 # Actual pinned-Python 1.2 public export and source-signature witness.
-# This verifies callable/source availability, NOT native scientific parity.
+# Full source scientific differential tests live in the paired source test file.
 test_that("unreviewed Python 1.2 source symbols are inspectable: compare_functional_mixed_effects_residual_diagnostics",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("pinned Python source-symbol audit requires source runtime")
