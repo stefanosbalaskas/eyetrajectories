@@ -59,12 +59,11 @@ test_that("variance decomposition source includes only declared functional trial
     expect_true(all(is.finite(native$value)))
     expect_identical(native$time,rep(fit$time,case$n/4L))
     expect_true(all(native$value[native$component=="residual_variance"]==.08))
-    if(case$trial=="functional_intercept"&& !is.null(case$trial))
+    if(identical(case$trial,"functional_intercept"))
       expect_true("trial_variance"%in%native$component)
     else expect_false("trial_variance"%in%native$component)
     if(case$slope){
-      expect_true("participant_intercept_slope_cross_covariance"%
-        in%native$component)
+      expect_true("participant_intercept_slope_cross_covariance" %in% native$component)
       expect_true(any(native$value[
         native$component=="participant_intercept_slope_cross_covariance"]<0))
     }
