@@ -1,0 +1,72 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "functional_trial_random_effect_frame",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/functional_mixed_effects_nested.py::functional_trial_random_effect_frame",
+  "native_signature": "etr_functional_trial_random_effect_frame(result)",
+  "reviewer_statement": "Developer-side six-domain full native-language semantic review of frozen Python 1.2 typed participant/trial random-effect frame sources. Direct source dataclass and pandas cell-by-cell fixtures and matching native R schema; exact error boundary and nullable predictor. The dataclass/pandas class identities cannot be preserved across native R, and arbitrary Python custom object protocols are outside this mapping. Not independently certified and exact-head CI pending.",
+  "native_language_semantic_policy": "Source Python FunctionalMixedEffectsResult typed record is represented by a validated native R source-shaped list or fitted native S3 model; pandas output by R data.frame. The scientific conditional effect estimand, units, source order, provenance and values are preserved. Cross-language class identity and exception class identity are not claimed.",
+  "native_files": [
+    {
+      "path": "R/native-source-audit-frames.R",
+      "sha256": "b55a7c3268103b8485719cd0bddd0df6117360525f1063a18901b538d1f8ad50"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-mixed-random-trial-full-source-pair.R",
+      "sha256": "f9c6795108f434a07db61cfcf33d1999e5f01bbab7841838c944f3d5396266e7",
+      "description": "Source typed FunctionalMixedEffectsResult and native R record counterparts, with intercept/slope selector and trial intercept prerequisite"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-mixed-random-trial-full-source-pair.R",
+      "sha256": "f9c6795108f434a07db61cfcf33d1999e5f01bbab7841838c944f3d5396266e7",
+      "description": "Participant and trial functions on observed finite time grids, native source IDs, nullable optional random-slope predictor, no hidden group averaging"
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-mixed-random-trial-full-source-pair.R",
+      "sha256": "f9c6795108f434a07db61cfcf33d1999e5f01bbab7841838c944f3d5396266e7",
+      "description": "Per-participant and per-trial conditional random-effect values and zero-based trial curve indices matched source cell-by-cell"
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-mixed-random-trial-full-source-pair.R",
+      "sha256": "f9c6795108f434a07db61cfcf33d1999e5f01bbab7841838c944f3d5396266e7",
+      "description": "Reject absent random functional slope, invalid effect selection, missing trial intercept, nonfinite random-effect matrix and invalid native geometry"
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-mixed-random-trial-full-source-pair.R",
+      "sha256": "f9c6795108f434a07db61cfcf33d1999e5f01bbab7841838c944f3d5396266e7",
+      "description": "Exactly six participant columns and eight nested-trial columns, correct source-major ordering and nullable predictor"
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-mixed-random-trial-full-source-pair.R",
+      "sha256": "f9c6795108f434a07db61cfcf33d1999e5f01bbab7841838c944f3d5396266e7",
+      "description": "Fitted conditional participant and trial functional random effects (BLUPs); no new model estimation, smoothing or imputation"
+    }
+  ],
+  "extra_source_evidence": [
+    {
+      "path": "tests/testthat/test-native-joint-mixed-source-frames.R",
+      "sha256": "c238f57c06b9f69ccb2098adde31351de7b376f7d9cac780f6aa249586a4bb14"
+    },
+    {
+      "path": "R/native-nested-source-trial-effect-frame.R",
+      "sha256": "651d9fbbf3eb72c29bb1868454a0868f0d42b260c2e9a5e0eb473c263c04e413"
+    }
+  ],
+  "independent_review_status": "developer-reviewed only; independent review and exact-head multi-OS frozen Python qualification pending",
+  "language_specific_limits": [
+    "Python typed dataclass is represented by native list/S3 with validation",
+    "Python pandas DataFrame is represented by native R data.frame",
+    "Semantic error conditions do not imply identical Python exception class identity"
+  ]
+}
