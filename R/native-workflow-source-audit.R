@@ -260,6 +260,18 @@ etr_workflow_summary_frame <- function(result) {
   paste0(quote,paste(chars,collapse=""),quote)
 }
 
+# Python workflow_reporting_text interpolates the raw schema-version
+# value, whereas workflow_summary_frame coerces it with int(). Preserve the
+# source distinction for native scalar representations, especially floats
+# (1.0 versus 1) and booleans (True versus TRUE).
+.etr_workflow_source_version_text <- function(x) {
+  if(is.logical(x)) return(if(x) "True" else "False")
+  if(is.integer(x)) return(as.character(x))
+  if(is.double(x)) return(.etr_python_json_float(x))
+  if(is.character(x)) return(x)
+  stop("unsupported workflow schema-version text",call.=FALSE)
+}
+
 #' Compact native workflow provenance reporting text
 #' @param result Native workflow audit record.
 #' @return Descriptive text without automated scientific approval.
@@ -268,7 +280,8 @@ etr_workflow_reporting_text <- function(result) {
   z <- etr_workflow_summary_frame(result)
   quoted <- .etr_python_workflow_identifier_repr(result$workflow_contract)
   paste0("Workflow ",quoted," used schema ",
-    z$workflow_schema_version," and retained ",z$step_count,
+    .etr_workflow_source_version_text(result$workflow_schema_version),
+    " and retained ",z$step_count,
     " ordered steps (",z$completed_steps," completed, ",z$failed_steps,
     " failed, ",z$skipped_steps," skipped). It retained ",
     z$decision_count," scientific decisions (",z$analyst_decisions,
