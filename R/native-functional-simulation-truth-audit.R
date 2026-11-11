@@ -146,7 +146,7 @@ etr_functional_simulation_reporting_text <- function(result,digits=3L) {
     else pr$missingness_kind
   pyrepr<-function(v){
     if(is.null(v))return("None")
-    if(is.character(v))return(paste0("'",v,"'"))
+    if(is.character(v))return(.etr_python_workflow_identifier_repr(v))
     if(is.logical(v))return(if(v)"True" else "False")
     if(is.numeric(v)&&length(v)==1L&&is.finite(v)&&v==floor(v))
       return(sprintf("%.0f",if(v==0)0 else v))
