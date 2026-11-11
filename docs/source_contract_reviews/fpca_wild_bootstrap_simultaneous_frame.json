@@ -19,37 +19,37 @@
     {
       "kind": "source_signature",
       "path": "tests/testthat/test-native-wild-inference-four-full-source.R",
-      "sha256": "e149e572dcc474ca1d0c27186fcc4f31b57264b5df1ba0241bc1388aa73f2662",
+      "sha256": "e36851103d93558a78b6ef3b964697197276f0886fd804459309b25217ded422",
       "description": "Frozen Python 1.2 typed scientific frame source accepts explicit result dataclass; native R accepts scientific source-shaped list or fit analogue; no Python class identity equivalence"
     },
     {
       "kind": "accepted_input_domain",
       "path": "tests/testthat/test-native-wild-inference-four-full-source.R",
-      "sha256": "e149e572dcc474ca1d0c27186fcc4f31b57264b5df1ba0241bc1388aa73f2662",
+      "sha256": "e36851103d93558a78b6ef3b964697197276f0886fd804459309b25217ded422",
       "description": "One or more finite precomputed wild-bootstrap fixed-target projection arrays, optional family results, logical reject or decision-stability flags and valid finite probability or threshold fields"
     },
     {
       "kind": "numerical_outputs",
       "path": "tests/testthat/test-native-wild-inference-four-full-source.R",
-      "sha256": "e149e572dcc474ca1d0c27186fcc4f31b57264b5df1ba0241bc1388aa73f2662",
+      "sha256": "e36851103d93558a78b6ef3b964697197276f0886fd804459309b25217ded422",
       "description": "Pinned three-target Unicode fixture compares every result column cell-by-cell against frozen Python 1.2 actual typed result dataclasses and pandas output, supplementing existing two-target direct Python oracle"
     },
     {
       "kind": "exception_semantics",
       "path": "tests/testthat/test-native-wild-inference-four-full-source.R",
-      "sha256": "e149e572dcc474ca1d0c27186fcc4f31b57264b5df1ba0241bc1388aa73f2662",
+      "sha256": "e36851103d93558a78b6ef3b964697197276f0886fd804459309b25217ded422",
       "description": "Native R fails closed on nonfinite or negative scientific uncertainty, invalid target/matrix dimensions, invalid probability values and incomplete logical decision flags; Python exception types are not equivalent R classes"
     },
     {
       "kind": "returned_schema",
       "path": "tests/testthat/test-native-wild-inference-four-full-source.R",
-      "sha256": "e149e572dcc474ca1d0c27186fcc4f31b57264b5df1ba0241bc1388aa73f2662",
+      "sha256": "e36851103d93558a78b6ef3b964697197276f0886fd804459309b25217ded422",
       "description": "nine ordered source columns; Pinned exact source column order and row ordering; native R preserves numerical fields and derives the source's published stable_reject, stable_non_reject and monte_carlo_sensitive precision status labels"
     },
     {
       "kind": "scientific_estimand",
       "path": "tests/testthat/test-native-wild-inference-four-full-source.R",
-      "sha256": "e149e572dcc474ca1d0c27186fcc4f31b57264b5df1ba0241bc1388aa73f2662",
+      "sha256": "e36851103d93558a78b6ef3b964697197276f0886fd804459309b25217ded422",
       "description": "Precomputed targetwise versus familywise wild-bootstrap critical values and simultaneous interval limits; no new resampling"
     }
   ],
