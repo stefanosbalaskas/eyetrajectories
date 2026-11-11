@@ -469,11 +469,8 @@ etr_windowed_rqa_functional_mean_band <- function(trajectories,
       functional_mean_band_provenance=if(is.null(band$provenance))
         list() else band$provenance,
       resampling_unit=unit,
-      # Frozen Python 1.2 retains the caller's participant_column in the
-      # wrapper provenance even when unit="curve" (the multiplier
-      # implementation may ignore it for curve-level inference).
-      # Do not silently discard this user-supplied audit provenance.
-      participant_column=participant_column,
+      participant_column=if(identical(unit,"participant"))
+        participant_column else NULL,
       window_rows_resampled_as_independent=FALSE,
       whole_function_resampling_contract=TRUE,
       within_function_temporal_dependence_preserved=TRUE,
