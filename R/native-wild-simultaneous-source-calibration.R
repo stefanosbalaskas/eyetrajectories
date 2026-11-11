@@ -57,8 +57,18 @@ etr_fpca_wild_bootstrap_projection_simultaneous_interval <- function(
   upper<-center+critical*se
   source_provenance<-result$provenance
   if(is.null(source_provenance))source_provenance<-list()
-  .etr_assert(is.list(source_provenance)&&!is.data.frame(source_provenance),
-    "provenance must be a scientific list")
+  .etr_assert(is.list(source_provenance)&&!is.data.frame(source_provenance)&&
+    (!length(source_provenance)||
+      (!is.null(names(source_provenance))&&
+        !anyNA(names(source_provenance))&&
+        all(nzchar(names(source_provenance))))),
+    "provenance must be a named scientific record")
+  base_settings<-source_provenance[["fpca_wild_bootstrap_projection"]]
+  if(is.null(base_settings))base_settings<-list()
+  .etr_assert(is.list(base_settings)&&!is.data.frame(base_settings),
+    "fpca_wild_bootstrap_projection provenance must be a record")
+  # Frozen wild_simultaneous.py retains source fitting and multiplier
+  # provenance in addition to the post-calibrated uncertainty bounds.
   metadata<-list(
     method="postcalibrated_max_abs_studentized_root",
     family="gaussian",
@@ -66,6 +76,11 @@ etr_fpca_wild_bootstrap_projection_simultaneous_interval <- function(
     confidence_level=level,n_targets=n,
     family_definition="all_fixed_targets_in_base_projection_result",
     bootstrap_roots_reused=TRUE,bootstrap_rerun=FALSE,
+    studentization=base_settings[["studentization"]],
+    multiplier=result$multiplier,
+    residual_components_k=result$residual_components,
+    pseudo_truth_components_g=result$residual_components,
+    inference_components_h=result$inference_components,
     simultaneous_across_targets=TRUE,
     future_outcome_prediction_interval=FALSE,
     clustered_wild_bootstrap=FALSE,
