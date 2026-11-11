@@ -103,6 +103,10 @@ etr_expand_functional_simulation_scenarios_b29 <- function(base,factors,
     seed_policy=c("shared","disjoint")) {
   .etr_assert(inherits(base,"etr_functional_simulation_scenario"),
     "base must be a native functional simulation scenario")
+  # Python's frozen dataclass cannot be edited after construction. Native
+  # R lists can: replay the complete constructor before factor expansion
+  # so an invalid edited base never silently leaks to every experiment.
+  base <- do.call(etr_functional_simulation_scenario,unclass(base))
   seed_policy <- match.arg(seed_policy)
   .etr_assert(is.list(factors) && length(factors)>0L &&
     !is.null(names(factors)) && !anyNA(names(factors)) &&
