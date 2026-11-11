@@ -63,7 +63,7 @@ test_that("trial BLUP frame preserves zero-based curve index and nested source p
   expect_equal(actual$time,rep(c(0,.5,1),2L),tolerance=0)
   expect_identical(unique(actual$effect),"trial_functional_intercept")
   expect_equal(actual$value,c(.11,.12,.13,.21,.22,.23),tolerance=0)
-  z$trial$trial_random_effect<-NULL
+  z$trial$trial_random_effect<-"none"
   expect_error(etr_functional_trial_random_effect_frame(
     z$trial),"trial functional random intercept")
   z$trial$trial_random_effect<-"functional_intercept"
