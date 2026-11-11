@@ -101,6 +101,13 @@ test_that("strict native GEE source record has 47 scientific fields and 58 hones
       strict$parameter_covariance,tolerance=0)
     expect_identical(attr(strict,"native_audit")$native_solver,
       "native_irls_gee_score_sandwich")
+    # The strict source-scientific representation must remain usable by
+    # native full-refit workflows without silently switching GEE solvers.
+    replay<-.etr_gfosr_bootstrap_fixed_basis_refit(strict,
+      seq_along(strict$curve_participant_ids),
+      strict$curve_participant_ids)
+    expect_equal(unname(replay),unname(strict$coefficient_functions),
+      tolerance=1e-7)
     legacy<-do.call(etr_fit_generalized_function_on_scalar_regression,
       c(f$args,list(python_boundary_mode=TRUE)))
     expect_true(is.null(legacy$model))
