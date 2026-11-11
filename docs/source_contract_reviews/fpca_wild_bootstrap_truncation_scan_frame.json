@@ -1,0 +1,69 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "fpca_wild_bootstrap_truncation_scan_frame",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/wild_selection.py::fpca_wild_bootstrap_truncation_scan_frame",
+  "native_signature": "etr_fpca_wild_bootstrap_truncation_scan_frame(result)",
+  "reviewer_statement": "Developer-side full six-domain source-semantic audit, pinned to frozen Python 1.2. Native R frames contain all source scientific values, columns, row order and selection missingness across multiple typed source records, with direct pandas differential tests and rejection-domain checks. Frozen Python dataclass and pandas class identities, arbitrary invalid duck-typed Python inputs and Python exception class identities are not native R concepts. Exact-head cross-platform qualification and independent review are separate.",
+  "native_language_semantic_policy": "Published Python frozen dataclass to native R checked source-shaped list/S3 analogue; pandas DataFrame to R data.frame; pd.Int64 nullable selections to R integer with NA. Only already-computed source values are represented, no new statistical estimator, inference or selection.",
+  "native_files": [
+    {
+      "path": "R/native-source-audit-frames.R",
+      "sha256": "b55a7c3268103b8485719cd0bddd0df6117360525f1063a18901b538d1f8ad50"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-wild-truncation-audit-full-source-pair.R",
+      "sha256": "3de24252990c30a8430013864b767db946e0afa9fb086c9406027db6c864defa",
+      "description": "Source frozen Python FPCAWildBootstrapTruncationScanResult and FPCAWildBootstrapTruncationSelectionResult typed frames mapped to validated R record analogues; source parameter and column signatures"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-wild-truncation-audit-full-source-pair.R",
+      "sha256": "3de24252990c30a8430013864b767db946e0afa9fb086c9406027db6c864defa",
+      "description": "Finite candidate-by-target scan matrices; explicitly predeclared positive candidate component indices and nonempty unique target names; one or more valid selected/missing indices"
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-wild-truncation-audit-full-source-pair.R",
+      "sha256": "3de24252990c30a8430013864b767db946e0afa9fb086c9406027db6c864defa",
+      "description": "Direct frozen Python 1.2 typed dataclass/pandas cellwise comparison across four candidate values, three Unicode-aware target labels, nine scan columns and six selection columns"
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-wild-truncation-audit-full-source-pair.R",
+      "sha256": "3de24252990c30a8430013864b767db946e0afa9fb086c9406027db6c864defa",
+      "description": "Native R rejects duplicate candidate components, matrix dimensional mismatch and nonfinite scientific matrices, missing/invalid selected integer components and invalid target identifiers; source Python TypeError/ValueError class identity not claimed"
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-wild-truncation-audit-full-source-pair.R",
+      "sha256": "3de24252990c30a8430013864b767db946e0afa9fb086c9406027db6c864defa",
+      "description": "Nine scan columns in candidate-major row order; six selection columns in source target order including pandas nullable Int64 values represented by native R NA_integer_"
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-wild-truncation-audit-full-source-pair.R",
+      "sha256": "3de24252990c30a8430013864b767db946e0afa9fb086c9406027db6c864defa",
+      "description": "Descriptive wild-bootstrap inference-truncation audit projections, standard errors, critical values, interval limits, centers, widths and prespecified stabilized-volatility selection summaries; no selection or statistical refitting occurs in frames"
+    }
+  ],
+  "extra_source_evidence": [
+    {
+      "path": "tests/testthat/test-native-source-audit-frames.R",
+      "sha256": "a42b13656051b8068a1dd757128730f21baef27e460bbf855eed4efee8705c9e"
+    }
+  ],
+  "independent_review_status": "Developer reviewed only; separate reviewer source certification pending; exact-head all-OS and Python CI pending",
+  "language_specific_limits": [
+    "Source typed Python dataclass class differs from native R list/S3 record",
+    "Python pandas nullable Int64 column is represented by base R integer NA",
+    "Python TypeError and ValueError identities are not R condition class identities",
+    "Arbitrary manually constructed inconsistent Python dataclass instances are not accepted native R scientific-domain records"
+  ]
+}

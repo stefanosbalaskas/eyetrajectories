@@ -61,6 +61,14 @@ test_that("two root wild exports and two subpackage workflows retain separate at
   expect_true(all(api$is_python_function[i]))
   expect_true(all(api$named_native_candidate[i]))
   expect_true(all(api$native_implementation_started[i]))
-  expect_true(all(api$source_contract_gap_unresolved[i]))
+  # Independent certification remains closed, but source gaps may close
+  # only by documented, SHA256-reviewed native semantic contracts.
+  ledger<-utils::read.csv(system.file("extdata",
+    "native_source_contract_gaps_stage22.csv",
+    package="eyetrajectories"),stringsAsFactors=FALSE)
+  witnesses<-ledger[match(exports,ledger$python_name),,drop=FALSE]
+  expect_false(anyNA(witnesses$python_name))
+  expect_identical(as.logical(api$source_contract_gap_unresolved[i]),
+    as.logical(witnesses$unresolved_source_gap))
   expect_false(any(api$one_to_one_native_contract_complete[i]))
 })
