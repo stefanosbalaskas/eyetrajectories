@@ -62,12 +62,19 @@ etr_get_mathematical_contract <- function(..., name, python_boundary_mode=FALSE)
   if(python_boundary_mode) {
     supplied<-match.call(expand.dots=FALSE)[["..."]]
     if(missing(name)) {
-      if(length(supplied)!=1L||any(nzchar(names(supplied)))||
-          identical(supplied[[1L]],quote(expr=)))
-        type_error("supply one positional argument or the exact argument name")
+      if(length(supplied)==0L)
+        type_error("get_mathematical_contract() missing 1 required positional argument: 'name'")
+      if(any(nzchar(names(supplied)))) {
+        keyword<-names(supplied)[which(nzchar(names(supplied)))[1L]]
+        type_error(paste0("get_mathematical_contract() got an unexpected keyword argument '",keyword,"'"))
+      }
+      if(length(supplied)>1L)
+        type_error(sprintf("get_mathematical_contract() takes 1 positional argument but %d were given",length(supplied)))
+      if(identical(supplied[[1L]],quote(expr=)))
+        type_error("get_mathematical_contract() missing 1 required positional argument: 'name'")
       name<-..1
     } else if(length(supplied)){
-      type_error("supply one positional argument or the exact argument name")
+      type_error("get_mathematical_contract() got multiple values for argument 'name'")
     }
     # The frozen wrapper tests equality against the sparse joint contract
     # before requiring a string. NumPy uses the array truth-value rules here.
@@ -80,7 +87,7 @@ etr_get_mathematical_contract <- function(..., name, python_boundary_mode=FALSE)
       name<-name[[1L]]
       if(!is.character(name)||length(name)!=1L||!name%in%
           c("sparse-mfpca-joint-pace","fit_sparse_mfpca"))
-        type_error("name must be a single string")
+        type_error("name must be a string")
     }
   } else if(missing(name)){
     # Retain ordinary R name matching for existing native calls.
@@ -89,7 +96,8 @@ etr_get_mathematical_contract <- function(..., name, python_boundary_mode=FALSE)
     stop("unused argument in mathematical contract lookup",call.=FALSE)
   }
   if(!is.character(name)||length(name)!=1L||is.na(name))
-    type_error("name must be a single string")
+    type_error(if(python_boundary_mode) "name must be a string" else
+      "name must be a single string")
   contracts<-etr_list_mathematical_contracts()
   if(name%in%names(contracts))return(contracts[[name]])
   found<-which(vapply(contracts,function(x)name%in%x$public_api,
