@@ -6,9 +6,18 @@
 #' @param trajectories Complete native common-grid trajectories.
 #' @param config Named list with curve, dimensions, embedding_dimension, delay,
 #'   radius, and optional metric, Theiler window and RQA line lengths.
+#' @param python_boundary_mode If TRUE, represent all nested frozen Python
+#'   1.2 W4 source-scientific fields, decisions, reports, provenance and
+#'   14 RQA result metrics in canonical order. Native R matrix/list classes
+#'   and measured wall-clock durations remain distinct from Python runtime
+#'   objects and timings. FALSE preserves the existing native record.
 #' @return Audited native R recurrence workflow, not a Python dataclass.
 #' @export
-etr_run_recurrence_workflow <- function(trajectories,config){
+etr_run_recurrence_workflow <- function(trajectories,config,
+    python_boundary_mode=FALSE){
+  .etr_assert(is.logical(python_boundary_mode)&&
+    length(python_boundary_mode)==1L&&!is.na(python_boundary_mode),
+    "python_boundary_mode must be TRUE or FALSE")
   etr_validate(trajectories,require_complete=TRUE)
   cfg<-.etr_source_workflow_config(config,list(
     curve=NULL,dimensions=NULL,embedding_dimension=NULL,delay=NULL,
@@ -106,7 +115,7 @@ etr_run_recurrence_workflow <- function(trajectories,config){
     embedding$delay_samples,"derived")
   decisions$resolved_theiler_window_samples<-.etr_source_workflow_decision(
     recurrence$theiler,"derived")
-  structure(list(workflow_schema_version=1L,
+  out<-structure(list(workflow_schema_version=1L,
     workflow_contract="recurrence:v1",config=cfg,
     embedding=embedding,recurrence=recurrence,metrics=metrics,
     steps=steps,decisions=decisions,
@@ -126,4 +135,7 @@ etr_run_recurrence_workflow <- function(trajectories,config){
     reports=list(rqa=etr_rqa_reporting_text(recurrence,metrics)),
     tables=list(rqa_metrics=frame)),
     class="etr_recurrence_workflow")
+  if(isTRUE(python_boundary_mode))
+    out<-.etr_recurrence_workflow_python_boundary(out)
+  out
 }

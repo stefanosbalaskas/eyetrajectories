@@ -1,0 +1,119 @@
+name: Native recurrence W4 full frozen Python 1.2 scientific source
+on:
+  pull_request:
+    paths:
+      - "R/native-recurrence-workflow.R"
+      - "R/native-recurrence-workflow-source-boundary.R"
+      - "R/native-recurrence.R"
+      - "R/native-nonlinear-reporting.R"
+      - "R/native-nonlinear-recurrence.R"
+      - "tests/testthat/test-native-recurrence-workflow-full-source-20261111.R"
+      - "tests/testthat/test-native-recurrence-workflow.R"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/reviewed_source_contract_closures_v1.csv"
+      - "docs/source_contract_reviews/run_recurrence_workflow.json"
+      - ".github/workflows/native-recurrence-workflow-full-source-20261111.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-review-receipt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Verify 407/508 reviewed ledger and six-domain SHA256 contract evidence
+        shell: bash
+        run: |
+          python - <<'PY'
+          import csv,hashlib,json
+          from pathlib import Path
+          root=Path(".")
+          gap=list(csv.DictReader((root/"inst/extdata/native_source_contract_gaps_stage22.csv").open(encoding="utf-8",newline="")))
+          classgap=list(csv.DictReader((root/"inst/extdata/native_nonfunction_source_gaps_v1.csv").open(encoding="utf-8",newline="")))
+          registry=list(csv.DictReader((root/"inst/extdata/reviewed_source_contract_closures_v1.csv").open(encoding="utf-8",newline="")))
+          assert len(gap)==203 and len(classgap)==1
+          left=sum(x["unresolved_source_gap"]=="TRUE" for x in gap)
+          missing_class=sum(x["unresolved"]=="TRUE" for x in classgap)
+          assert left<=100 and missing_class==1,(left,missing_class)
+          assert 508-left-missing_class>=407
+          name="run_recurrence_workflow"
+          row,=(x for x in gap if x["python_name"]==name)
+          assert row["unresolved_source_gap"]=="FALSE"
+          receipt,=(x for x in registry if x["python_name"]==name)
+          assert receipt["independently_certified"]=="FALSE"
+          content=(root/receipt["review_record_path"]).read_bytes()
+          assert hashlib.sha256(content).hexdigest()==receipt["review_record_sha256"]
+          review=json.loads(content)
+          assert review["python_name"]==name
+          assert review["independently_certified"] is False
+          assert review["frozen_python_commit"]=="c1cd95ad718327550f7e55393ff38582872f7a94"
+          assert {x["kind"] for x in review["case_evidence"]}=={
+            "source_signature","accepted_input_domain","numerical_outputs",
+            "exception_semantics","returned_schema","scientific_estimand"}
+          for entry in review["native_files"]+review["case_evidence"]:
+              item=root/entry["path"]
+              assert hashlib.sha256(item.read_bytes()).hexdigest()==entry["sha256"],item
+          print(f"{508-left-missing_class}/508 provisional source-scientific "
+                f"author reviews; callable gaps={left}; noncallable={missing_class}; "
+                "independent certifications=0")
+          PY
+  native-r:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Native full source W4 and regression tests
+        shell: bash
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          testthat::test_local(".",filter="native-recurrence-workflow-full-source-20261111|native-recurrence-workflow",reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
+  frozen-python-1-2:
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        id: python
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Direct typed frozen Python 1.2 W4 recurrence, RQA and workflow provenance
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          stopifnot(identical(et_python_version(),"1.2.0"))
+          testthat::test_local(".",filter="native-recurrence-workflow-full-source-20261111|native-recurrence-workflow",reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
