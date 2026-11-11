@@ -19,37 +19,37 @@
     {
       "kind": "source_signature",
       "path": "tests/testthat/test-native-mixed-random-trial-full-source-pair.R",
-      "sha256": "f9c6795108f434a07db61cfcf33d1999e5f01bbab7841838c944f3d5396266e7",
+      "sha256": "cb13207c02c3598181baf8968fb10a816bc3b92f4018baddc53afb1951d8e8e1",
       "description": "Source typed FunctionalMixedEffectsResult and native R record counterparts, with intercept/slope selector and trial intercept prerequisite"
     },
     {
       "kind": "accepted_input_domain",
       "path": "tests/testthat/test-native-mixed-random-trial-full-source-pair.R",
-      "sha256": "f9c6795108f434a07db61cfcf33d1999e5f01bbab7841838c944f3d5396266e7",
+      "sha256": "cb13207c02c3598181baf8968fb10a816bc3b92f4018baddc53afb1951d8e8e1",
       "description": "Participant and trial functions on observed finite time grids, native source IDs, nullable optional random-slope predictor, no hidden group averaging"
     },
     {
       "kind": "numerical_outputs",
       "path": "tests/testthat/test-native-mixed-random-trial-full-source-pair.R",
-      "sha256": "f9c6795108f434a07db61cfcf33d1999e5f01bbab7841838c944f3d5396266e7",
+      "sha256": "cb13207c02c3598181baf8968fb10a816bc3b92f4018baddc53afb1951d8e8e1",
       "description": "Per-participant and per-trial conditional random-effect values and zero-based trial curve indices matched source cell-by-cell"
     },
     {
       "kind": "exception_semantics",
       "path": "tests/testthat/test-native-mixed-random-trial-full-source-pair.R",
-      "sha256": "f9c6795108f434a07db61cfcf33d1999e5f01bbab7841838c944f3d5396266e7",
+      "sha256": "cb13207c02c3598181baf8968fb10a816bc3b92f4018baddc53afb1951d8e8e1",
       "description": "Reject absent random functional slope, invalid effect selection, missing trial intercept, nonfinite random-effect matrix and invalid native geometry"
     },
     {
       "kind": "returned_schema",
       "path": "tests/testthat/test-native-mixed-random-trial-full-source-pair.R",
-      "sha256": "f9c6795108f434a07db61cfcf33d1999e5f01bbab7841838c944f3d5396266e7",
+      "sha256": "cb13207c02c3598181baf8968fb10a816bc3b92f4018baddc53afb1951d8e8e1",
       "description": "Exactly six participant columns and eight nested-trial columns, correct source-major ordering and nullable predictor"
     },
     {
       "kind": "scientific_estimand",
       "path": "tests/testthat/test-native-mixed-random-trial-full-source-pair.R",
-      "sha256": "f9c6795108f434a07db61cfcf33d1999e5f01bbab7841838c944f3d5396266e7",
+      "sha256": "cb13207c02c3598181baf8968fb10a816bc3b92f4018baddc53afb1951d8e8e1",
       "description": "Fitted conditional participant and trial functional random effects (BLUPs); no new model estimation, smoothing or imputation"
     }
   ],
