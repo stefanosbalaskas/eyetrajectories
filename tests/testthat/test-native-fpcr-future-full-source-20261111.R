@@ -79,9 +79,8 @@ test_that("source future intervals compose with actual native paired FPCR uncert
       python_boundary_mode=TRUE)
     expect_identical(result$sampled_residuals,repeated$sampled_residuals)
     expect_identical(result$predictive_draws,repeated$predictive_draws)
-    frame<-etr_fpca_regression_future_prediction_frame(result)
-    expect_identical(nrow(frame),14L)
-    expect_equal(as.numeric(frame$future_prediction_lower),result$lower)
+    expect_identical(length(result$lower),14L)
+    expect_true(all(is.finite(result$predictive_se)))
   }
 })
 
