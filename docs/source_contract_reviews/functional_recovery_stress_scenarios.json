@@ -1,0 +1,73 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "functional_recovery_stress_scenarios",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/recovery_scenarios.py::functional_recovery_stress_scenarios",
+  "native_signature": "etr_functional_recovery_stress_scenarios(...)",
+  "reviewer_statement": "Developer-side frozen Python 1.2 scientific design-source semantic review for functional_recovery_stress_scenarios. Four full 23/26-column original-source frame comparisons across qualification and stress constructors plus a nontrivial Greek/Unicode correlated-noise scenario and zero-row case are proposed for exact-head CI. Complete field ordering, JSON, seed handling, invalid-source-record checks, and noninferential scientific labels audited. This is NOT a Python type identity equivalence or independent certification.",
+  "native_language_semantic_policy": "Python frozen FunctionalSimulationScenario dataclasses map to revalidated native R S3 scientific declarations; Python tuple maps to ordered native R list and pandas DataFrame maps to R data.frame, retaining exact scientific values and source column names/order. The native implementation is Python-free and no RNG, estimator or uncertainty calculation is invoked.",
+  "native_files": [
+    {
+      "path": "R/native-functional-recovery-stress-design.R",
+      "sha256": "e29bc338c7f36e0eae2098bc6ee703d1c84534d0b0c56373f25b1b0ddcbb25f3"
+    },
+    {
+      "path": "R/native-functional-scenario-design.R",
+      "sha256": "4d82c5b1a1225df4c5161fd018b0d35974a4319ca7f062e0a34634d3a3af867d"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-four-recovery-scenario-full-source-20261111.R",
+      "sha256": "5475b68f37499a145905ef978ef6c8c4900d4140ed0c7e238e69a5ea9c204033",
+      "description": "Original frozen Python src/eyetrajectoriespy/recovery_scenarios.py export and scientific constructor parameters; complete native R semantic response mapping."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-four-recovery-scenario-full-source-20261111.R",
+      "sha256": "5475b68f37499a145905ef978ef6c8c4900d4140ed0c7e238e69a5ea9c204033",
+      "description": "Four independently parameterized qualification/stress replicate and seed pairs, source standard defaults, custom Unicode/Greek multichannel correlated-noise scenario, empty scenario tuple, and native mutated-record invalidation."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-four-recovery-scenario-full-source-20261111.R",
+      "sha256": "5475b68f37499a145905ef978ef6c8c4900d4140ed0c7e238e69a5ea9c204033",
+      "description": "Four parameter configurations × full four-qualification-row frame, full fourteen-stress-row frame, and eighteen-row/26-column combined recovery catalogue, comparing every value and exact JSON field, plus one Unicode multichannel custom frame and zero-row frame."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-four-recovery-scenario-full-source-20261111.R",
+      "sha256": "5475b68f37499a145905ef978ef6c8c4900d4140ed0c7e238e69a5ea9c204033",
+      "description": "Native R rejects nonpositive replicates, invalid scenario seed ranges, mutated invalid truth grid, component order, malformed participant eigenvalues or scenario names; Python exception classes and arbitrary Python integer widths remain distinct."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-four-recovery-scenario-full-source-20261111.R",
+      "sha256": "5475b68f37499a145905ef978ef6c8c4900d4140ed0c7e238e69a5ea9c204033",
+      "description": "One R source-ordered 23-column scenario frame, four-element or fourteen-element ordered native S3 declaration list semantically corresponding to Python dataclass tuples, or exact 26-column combined recovery catalogue, including source zero-by-zero schema."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-four-recovery-scenario-full-source-20261111.R",
+      "sha256": "5475b68f37499a145905ef978ef6c8c4900d4140ed0c7e238e69a5ea9c204033",
+      "description": "The 14 explicitly noninferential recovery stress declarations including sparse timing, noise estimation, near-tied FPCA eigenspaces, heavy tails, hierarchical covariance, phase, missingness, and correlated multichannel noise."
+    }
+  ],
+  "extra_source_evidence": [
+    {
+      "path": "tests/testthat/test-native-functional-recovery-stress-design.R",
+      "sha256": "aa9c95d9c25da9a56e8652f17bc0137a8f55362b12a67bc14443488194b997ef"
+    }
+  ],
+  "independent_review_status": "Developer source-semantic review only; exact-head frozen Python 1.2 and Linux/Windows/macOS CI pending; 0 independent certifications.",
+  "language_specific_limits": [
+    "Python frozen dataclass and tuple object identities map to validated, ordered native R S3/list scientific record representations",
+    "Python pandas index, object column dtype and TypeError/ValueError runtime identity are not native R type identities",
+    "Native R scenario seed range is bounded by representable R integer domain rather than arbitrary Python integers",
+    "These functions merely declare and audit experimental designs, not simulate draws or certify estimator recovery"
+  ]
+}
