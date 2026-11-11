@@ -30,7 +30,10 @@ test_that("ALR and inverse have source algebra and normalization in every refere
 })
 
 test_that("zeros clip to epsilon and inverse returns clipped composition",{
-  x<-array(c(0,0,1,.2,.8,0,.4,.6,0),c(1L,3L,3L))
+  x<-array(0,c(1L,3L,3L))
+  x[1L,1L,]<-c(0,0,1)
+  x[1L,2L,]<-c(.2,.8,0)
+  x[1L,3L,]<-c(.4,.6,0)
   for(eps in c(1e-8,1e-4,.01,.1)){
     for(ref in c(0L,1L,-1L)){
       z<-etr_alr_transform(x,ref,epsilon=eps,
@@ -45,12 +48,16 @@ test_that("zeros clip to epsilon and inverse returns clipped composition",{
 })
 
 test_that("shared float64 coercion preserves source shape and nonfinite casts",{
-  x<-array(c(.3,.4,.3,.2,.3,.5),c(1L,2L,3L))
+  x<-array(0,c(1L,2L,3L))
+  x[1L,1L,]<-c(.3,.4,.3)
+  x[1L,2L,]<-c(.2,.3,.5)
   ch<-array(as.character(x),dim=dim(x))
   expect_equal(etr_alr_transform(ch,0L,python_boundary_mode=TRUE),
     etr_alr_transform(x,0L,python_boundary_mode=TRUE),
     tolerance=0)
-  flag<-array(c(TRUE,FALSE,FALSE,FALSE,TRUE,FALSE),c(1L,2L,3L))
+  flag<-array(FALSE,c(1L,2L,3L))
+  flag[1L,1L,]<-c(TRUE,FALSE,FALSE)
+  flag[1L,2L,]<-c(FALSE,TRUE,FALSE)
   out<-etr_alr_transform(flag,0L,python_boundary_mode=TRUE)
   expect_identical(dim(out),c(1L,2L,2L))
   cx<-array(complex(real=as.vector(x),
