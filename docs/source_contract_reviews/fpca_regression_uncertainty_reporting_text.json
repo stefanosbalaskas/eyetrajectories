@@ -56,7 +56,7 @@
   "extra_source_evidence": [
     {
       "path": "tests/testthat/test-native-inference-reporting.R",
-      "sha256": "f5fff3dfa949d8ada7b81211a5a139a7f382d2cbd23e9991fc6b74f876ed927a"
+      "sha256": "87a15616b0765467258f100b5a960379fb359484f764713803ad15c766e6a2bc"
     }
   ],
   "independent_review_status": "Developer full-source semantic review only; cross-platform R and typed Python CI pending, no independent certifications.",
