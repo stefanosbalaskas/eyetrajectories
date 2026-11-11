@@ -212,12 +212,25 @@
 #' @param phase_replay Optional named list with a target phase matrix
 #'   and/or one reference phase matrix per surrogate. Radians can replace
 #'   roundoff-scale Fourier phases and NA retains the native phase.
+#' @param python_boundary_mode When TRUE, require the frozen Python 1.2
+#'   public generator interface (no fixed permutation or Fourier phase
+#'   replay), retaining its original 14 scientific fields and source
+#'   provenance without native-only audit flags. FALSE retains the
+#'   extended native R research interface.
 #' @return Source-shaped surrogate array and per-dimension/spectral diagnostics.
 #' @export
 etr_generate_multivariate_iaaft_surrogates<-function(
     trajectories,curve,dimensions,reference_dimension,
     n_surrogates=199L,max_iterations=1000L,tolerance=1e-8,
-    random_state=NULL,initial_permutations=NULL,phase_replay=NULL){
+    random_state=NULL,initial_permutations=NULL,phase_replay=NULL,
+    python_boundary_mode=FALSE){
+  .etr_assert(is.logical(python_boundary_mode)&&
+    length(python_boundary_mode)==1L&&!is.na(python_boundary_mode),
+    "python_boundary_mode must be TRUE or FALSE")
+  if(isTRUE(python_boundary_mode)){
+    .etr_assert(is.null(initial_permutations)&&is.null(phase_replay),
+      "Python source mode rejects native-only initial_permutations and phase_replay")
+  }
   etr_validate(trajectories,require_complete=TRUE)
   steps<-diff(trajectories$time)
   .etr_assert(all(is.finite(steps))&&max(abs(steps-steps[[1L]]))<=
@@ -301,7 +314,7 @@ etr_generate_multivariate_iaaft_surrogates<-function(
     reference_replayed[[i]]<-trial$reference_phases_replayed
   }
   pair_names<-lapply(pairs,function(p)dimensions[p])
-  structure(list(
+  result<-structure(list(
     surrogates=surrogates,source_values=values,
     curve_id=trajectories$curve_ids[[ci]],
     dimension_names=dimensions,reference_dimension=reference_dimension,
@@ -347,4 +360,23 @@ etr_generate_multivariate_iaaft_surrogates<-function(
         "auto/cross-spectral structure; they do not preserve nonlinear",
         "cross-dependence by construction"))),
     class="etr_multivariate_iaaft")
+  if(isTRUE(python_boundary_mode)){
+    # The unseeded Python API draws OS entropy while native R uses its
+    # ambient RNG. The estimand is unchanged but these realizations are
+    # not identical. Source mode never claims identical unseeded paths.
+    p<-result$provenance
+    p$interpretation_boundary<-paste(
+      "surrogates target a multivariate linear-stochastic null",
+      "with retained marginal distributions and approximate",
+      "auto/cross-spectral structure; they do not preserve nonlinear",
+      "cross-dependence by construction")
+    native_audit<-c("random_engine","initialization_source",
+      "fixed_initialization_replay",
+      "seeded_initialization_matches_numpy",
+      "ambiguous_target_reference_bins_zero_based",
+      "target_phases_replayed","reference_phases_replayed",
+      "source_python_equivalent_stochastic_draws")
+    result$provenance<-p[setdiff(names(p),native_audit)]
+  }
+  result
 }
