@@ -9,10 +9,20 @@
 #'   Empty preprocessing required; family/link/basis never auto-selected.
 #' @param python_boundary_mode Use source-order input and the version-one
 #'   workflow audit fields, including measured fit time and source reports.
+#' @param strict_source_record If TRUE, use the canonical native scientific
+#'   result fields for the nested GEE fit and a source-shaped empty
+#'   preprocessing plan; requires python_boundary_mode=TRUE.
 #' @return Native fitted workflow with declared source differences.
 #' @export
 etr_run_generalized_functional_workflow<-function(
-    trajectories,design,config,python_boundary_mode=FALSE){
+    trajectories,design,config,python_boundary_mode=FALSE,
+    strict_source_record=FALSE){
+  .etr_assert(is.logical(strict_source_record)&&
+    length(strict_source_record)==1L&&!is.na(strict_source_record),
+    "strict_source_record must be TRUE or FALSE")
+  if(isTRUE(strict_source_record))
+    .etr_assert(identical(python_boundary_mode,TRUE),
+      "strict_source_record requires python_boundary_mode=TRUE")
   .etr_assert(is.logical(python_boundary_mode)&&length(python_boundary_mode)==1L&&
     !is.na(python_boundary_mode),"python_boundary_mode must be TRUE or FALSE")
   cfg<-.etr_source_workflow_config(config,list(
@@ -38,10 +48,13 @@ etr_run_generalized_functional_workflow<-function(
   start<-proc.time()[["elapsed"]]
   fit<-do.call(etr_fit_generalized_function_on_scalar_regression,
     c(list(trajectories=trajectories,design=design,
-      python_boundary_mode=python_boundary_mode),arguments))
+      python_boundary_mode=python_boundary_mode,
+      strict_source_record=strict_source_record),arguments))
   elapsed<-proc.time()[["elapsed"]]-start
   table<-etr_generalized_function_on_scalar_coefficient_frame(fit)
   if(python_boundary_mode){
+    if(isTRUE(strict_source_record))
+      cfg$preprocessing<-list(steps=list())
     arguments$predictors<-unname(as.list(arguments$predictors))
     step<-list(name="fit",
       `function`="fit_generalized_function_on_scalar_regression",

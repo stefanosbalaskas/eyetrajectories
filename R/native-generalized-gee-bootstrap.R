@@ -18,7 +18,9 @@
   expanded<-do.call(cbind,lapply(seq_len(p),function(j)
     basis[rows,,drop=FALSE]*rep(X[,j],each=nt)))
   source_mode<-identical(result$provenance$native_solver,
-    "native_irls_gee_score_sandwich")
+    "native_irls_gee_score_sandwich")||
+    identical(attr(result,"native_audit")$native_solver,
+      "native_irls_gee_score_sandwich")
   .etr_assert(.etr_gfosr_design_rank(expanded,source_mode)==p*K,
     "resampled generalized GEE spline design is rank deficient")
   den<-if(is.null(result$binomial_denominators))NULL else

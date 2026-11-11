@@ -68,6 +68,11 @@
 #' @param python_boundary_mode Require curve IDs in trajectory order, or
 #'   a data frame with default row names when curve_id is omitted. Apply
 #'   pandas-style text conversion and the source GEE rank and score rules.
+#' @param strict_source_record If TRUE, requires python_boundary_mode and
+#'   returns the 47 canonical scientific source fields and 58 ordered
+#'   source-provenance keys with an actual native GEE scientific model record.
+#'   The backend is honestly labelled native R rather than falsely claiming
+#'   statsmodels execution. Runtime model identity therefore differs.
 #' @return Native GEE model record and audited source scientific quantities.
 #' @export
 etr_fit_generalized_function_on_scalar_regression<-function(
@@ -75,7 +80,13 @@ etr_fit_generalized_function_on_scalar_regression<-function(
     binomial_denominator=NULL,exposure=NULL,exposure_units=NULL,
     basis_size=5L,spline_degree=3L,working_correlation="independence",
     covariance_type="robust",maxiter=100L,ctol=1e-8,
-    python_boundary_mode=FALSE){
+    python_boundary_mode=FALSE,strict_source_record=FALSE){
+  .etr_assert(is.logical(strict_source_record)&&
+    length(strict_source_record)==1L&&!is.na(strict_source_record),
+    "strict_source_record must be a nonmissing logical scalar")
+  if(isTRUE(strict_source_record))
+    .etr_assert(identical(python_boundary_mode,TRUE),
+      "strict_source_record requires python_boundary_mode=TRUE")
   etr_validate(trajectories,require_complete=TRUE)
   .etr_assert(all(is.finite(trajectories$values))&&
     trajectories$coordinate_system!="probability_simplex",
@@ -285,7 +296,7 @@ etr_fit_generalized_function_on_scalar_regression<-function(
     prov$gee_score_iterations<-fit$gee_iterations
     prov$gee_score_norm<-fit$score_norm
   }
-  structure(list(
+  result<-structure(list(
     coefficient_functions=coef_fun,
     coefficient_standard_errors=se,
     basis_coefficients=bcoef,parameter_covariance=covariance,
@@ -321,4 +332,8 @@ etr_fit_generalized_function_on_scalar_regression<-function(
     binomial_denominator_expanded_from_curve=
       !is.null(den)&&is.null(dim(binomial_denominator)),
     provenance=prov),class="etr_generalized_function_on_scalar")
+  if(isTRUE(strict_source_record))
+    result<-.etr_generalized_gee_source_scientific_record(
+      result,trajectories)
+  result
 }

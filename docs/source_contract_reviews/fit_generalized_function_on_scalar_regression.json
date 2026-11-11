@@ -1,0 +1,76 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "fit_generalized_function_on_scalar_regression",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/generalized_function_on_scalar.py::fit_generalized_function_on_scalar_regression/_fit_gee_arrays; types.py::GeneralizedFunctionOnScalarResult",
+  "native_signature": "etr_fit_generalized_function_on_scalar_regression(trajectories,design,predictors,participant_column,dimension,family,binomial_denominator=NULL,exposure=NULL,exposure_units=NULL,basis_size=5L,spline_degree=3L,working_correlation='independence',covariance_type='robust',maxiter=100L,ctol=1e-8,python_boundary_mode=TRUE,strict_source_record=TRUE)",
+  "reviewer_statement": "Provisional source-scientific review of 47-field genuine native R GEE source analogue and 58-field provenance, actual frozen source numerical tests across Poisson/exposure/binomial and full model fit; backend runtime identity excluded and independently verified CI pending.",
+  "native_language_semantic_policy": "A real native R GEE Fisher-score and sandwich fit is computed and the model backend is truthfully labelled 'native_R_source_score_GEE', not statsmodels.GEE; this representation difference is deliberate. The scientific point estimates and uncertainty are compared to the frozen Python Statsmodels source. Source result contract excludes Python backend object/exception identity and independent runtime elapsed times.",
+  "native_files": [
+    {
+      "path": "R/native-generalized-gee-fit.R",
+      "sha256": "8aa5ca57aa715c05cab03e17a4d068ed6c5b98ebc38cdf5c8b999b78e7fbbc6d"
+    },
+    {
+      "path": "R/native-generalized-gee-source-scientific-record.R",
+      "sha256": "2bf1ca1b94381bb67e371556a184a628f7ac0197ddf9133df0533d33ab5ed3e1"
+    },
+    {
+      "path": "R/native-generalized-gee-bootstrap.R",
+      "sha256": "d41ae88bfc40c1209c091cbdccb3c88ec4685d38d4510a6671dfcc2e562c93b8"
+    },
+    {
+      "path": "R/native-generalized-gee-solver.R",
+      "sha256": "c6c8f4f75c2a0993e7c08fa48d8111032e0b66457190f9ea620bd1bbc14d76ad"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-generalized-gee-fit-workflow-full-source-20261112.R",
+      "sha256": "1e2d1c5394ce33adb5e62482504ffd0a5a2b4957e0acf99b6ca2140bd7729514",
+      "description": "Pinned Python 1.2 generalized_function_on_scalar.py and workflows/_dense_regression.py: explicit Gaussian-free marginal Poisson/log or binomial/logit participant-clustered GEE, clamped B-spline coefficients, fixed declared basis, independence working correlation, robust sandwich, optional observed fixed exposure/grouped trials, exact aligned numeric design and no model/response automatic selection."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-generalized-gee-fit-workflow-full-source-20261112.R",
+      "sha256": "1e2d1c5394ce33adb5e62482504ffd0a5a2b4957e0acf99b6ca2140bd7729514",
+      "description": "Thirty-six source curves from twelve participants with three trials each, seven equally spaced observed times, explicitly declared numeric treatment. Four source families/modes: Poisson count, Poisson count with fixed curve exposure, grouped integer-success binomial with explicit denominators, and Bernoulli 0/1; four-knot clamped cubic B-splines with eight expanded parameters and 12 independent clusters."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-generalized-gee-fit-workflow-full-source-20261112.R",
+      "sha256": "1e2d1c5394ce33adb5e62482504ffd0a5a2b4957e0acf99b6ca2140bd7729514",
+      "description": "Frozen actual Python 1.2 Statsmodels GEE coefficient functions, robust sandwich SE, basis coefficients, covariance, B-spline values and knots, link predictors, fitted means, response properties and observed denominator/exposure fields are compared in four declared designs. Source provenance 58-key semantics compare fieldwise except executed-backend label and backend warning text. Native strict model remains usable for whole-participant full refits without solver fallback."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-generalized-gee-fit-workflow-full-source-20261112.R",
+      "sha256": "1e2d1c5394ce33adb5e62482504ffd0a5a2b4957e0acf99b6ca2140bd7729514",
+      "description": "Strict source record requires python_boundary_mode=TRUE and a valid boolean strict flag, explicit source-ordered design with unique curve IDs, finite complete responses and predictors, full rank expanded B-spline design and more independent clusters than model parameters, valid family, positive exposure and grouped denominator constraints, working independence and robust sandwich, and declared GEE convergence. Python exception classes and opaque objects are not native R runtime constructs."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-generalized-gee-fit-workflow-full-source-20261112.R",
+      "sha256": "1e2d1c5394ce33adb5e62482504ffd0a5a2b4957e0acf99b6ca2140bd7729514",
+      "description": "Complete 47 ordered scientific GeneralizedFunctionOnScalarResult fields and 58 ordered nested source provenance semantics, with native R model field comprising genuinely fitted coefficient parameters, parameter covariance, scale, link and convergence; not a fabricated statsmodels object. A source-conforming outer workflow returns nine canonical fields with preprocessing steps explicitly empty, source step naming, decisions, reports and coefficient table. Native backend audit remains in an R attribute for downstream refits."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-generalized-gee-fit-workflow-full-source-20261112.R",
+      "sha256": "1e2d1c5394ce33adb5e62482504ffd0a5a2b4957e0acf99b6ca2140bd7729514",
+      "description": "Independent-participant marginal generalized functional regression with working-independence GEE and cluster-robust sandwich coefficient inference; Poisson log expected counts or observed-exposure-adjusted rates, Bernoulli/grouped binomial marginal log-odds, source-fit covariance, no latent random-effects interpretation, automatic family choice or smoothing penalty. Native source score equations are tested against frozen Statsmodels rather than asserting the same software ran."
+    }
+  ],
+  "independent_review_status": "Provisional author source-scientific review, no confirmed exact-head green CI and no independent certification.",
+  "language_specific_limits": [
+    "Original Python Statsmodels GEEResults object is replaced by a genuine native R score/sandwich scientific model, not by Python object identity; the provenance backend string deliberately reports native_R_source_score_GEE.",
+    "Python frozen dataclass, pandas table and warnings/exceptions are not native R class identities, so return shapes are source-scientific rather than byte-identical runtime objects.",
+    "Exact source physical model fields (coefficient functions, sandwich uncertainty, link means and declared exposure/denominator outcomes) are tested for supported family domains; arbitrary ill-conditioned convergence and dynamic Python coercions remain unreviewed.",
+    "The model's native convergence audit is preserved as an R attribute for whole-participant refits; this is an R-only representation outside the Python dataclass surface.",
+    "Source workflow elapsed_seconds are genuinely measured R timings and cannot be asserted equal to Python wall-clock timings."
+  ]
+}
