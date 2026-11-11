@@ -111,7 +111,10 @@ def _recovery_pair_oracle():
         provenance={'estimator':{
             'method':'FPCA','resample':[False,2]}})
     frame=_frame(assessment)
-    return frame.to_dict(orient='list'),_text(assessment)
+    record={key:[('<NULL>' if __import__('pandas').isna(v)
+                  else v) for v in frame[key].tolist()]
+            for key in frame.columns}
+    return record,_text(assessment)
 def _recovery_invalid_oracle():
     out=[]
     try: _FA(values=())
@@ -133,13 +136,16 @@ def _recovery_invalid_oracle():
   for(col in names(actual)){
     target<-unlist(source_cols[[col]],use.names=FALSE)
     if(col=="component") {
-      expect_equal(actual[[col]][!is.na(actual[[col]])],
-        as.numeric(target[!is.na(target)]),tolerance=0)
-      expect_identical(is.na(actual[[col]]),is.na(target))
+      valid<-target!="<NULL>"
+      expect_equal(actual[[col]][valid],
+        as.numeric(target[valid]),tolerance=0)
+      expect_identical(is.na(actual[[col]]),!valid)
     } else if(col=="value"){
       expect_equal(actual[[col]],as.numeric(target),tolerance=0)
     } else {
-      expect_identical(actual[[col]],as.character(target))
+      native_text<-ifelse(is.na(actual[[col]]),"<NULL>",
+        as.character(actual[[col]]))
+      expect_identical(native_text,as.character(target))
     }
   }
   expect_identical(etr_functional_recovery_reporting_text(native,TRUE),
