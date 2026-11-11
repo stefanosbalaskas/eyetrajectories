@@ -52,17 +52,31 @@
   }
 }
 .etr_rqa_two_provenance_compare<-function(native,python,label){
+  # Native R source audit records may retain *additional* independently
+  # documented RNG identifiers. Require every published Python source
+  # provenance field and value; don't mistake those R-only extras for
+  # Python output fields. Mapping order is not an estimand.
+  if(is.list(native)&&is.null(names(native))&&length(native)&&
+      all(vapply(native,function(x)is.atomic(x)&&length(x)==1L,
+        logical(1L))))native<-unlist(native,use.names=FALSE)
+  if(is.list(python)&&is.null(names(python))&&length(python)&&
+      all(vapply(python,function(x)is.atomic(x)&&length(x)==1L,
+        logical(1L))))python<-unlist(python,use.names=FALSE)
   if(is.list(native)&&is.list(python)){
     nx<-names(native);ny<-names(python)
     if(!length(native)&&!length(python))return(invisible(NULL))
-    if(is.null(nx)&&length(ny)==0L)ny<-NULL
-    expect_identical(nx,ny,info=paste(label,"provenance names"))
-    expect_identical(length(native),length(python),
-      info=paste(label,"provenance length"))
-    for(i in seq_along(native)){
-      key<-if(!is.null(nx))nx[[i]] else as.character(i)
-      .etr_rqa_two_provenance_compare(native[[i]],python[[i]],
-        paste(label,key))
+    if(!is.null(ny)){
+      expect_true(all(ny%in%nx),
+        info=paste(label,"all original source provenance keys"))
+      for(key in ny)
+        .etr_rqa_two_provenance_compare(native[[key]],python[[key]],
+          paste(label,key))
+    }else{
+      expect_identical(length(native),length(python),
+        info=paste(label,"source provenance sequence length"))
+      for(i in seq_along(python))
+        .etr_rqa_two_provenance_compare(native[[i]],python[[i]],
+          paste(label,i))
     }
   }else if(is.null(native))expect_null(python,info=label)
   else if(is.numeric(native)&&is.numeric(python)){
@@ -94,16 +108,19 @@ test_that("single RQA source specification produces the pandas 0x0 pairwise tabl
     window_step_pairs=list(c(TRUE,2L)),radius=.75),"numeric")
 })
 
-test_that("curve-level RQA band preserves source caller participant provenance",{
+test_that("RQA source rejects participant-column metadata for curve inference",{
   x<-.etr_rqa_two_fixture()
-  z<-etr_windowed_rqa_functional_mean_band(x,
+  expect_error(etr_windowed_rqa_functional_mean_band(x,
     metrics="recurrence_rate",window=5L,step=2L,
     unit="curve",participant_column="participant",radius=.75,
-    n_multiplier=100L,random_state=123L)
-  expect_identical(z$provenance$participant_column,"participant")
-  expect_identical(z$unit,"curve")
+    n_multiplier=100L,random_state=123L),
+    "participant_column must be NULL")
+  z<-etr_windowed_rqa_functional_mean_band(x,
+    metrics="recurrence_rate",window=5L,step=2L,
+    unit="curve",radius=.75,n_multiplier=100L,random_state=123L)
+  expect_null(z$provenance$participant_column)
   expect_identical(z$band$unit,"curve")
-  expect_equal(length(z$band$unit_ids),6L)
+  expect_identical(length(z$band$unit_ids),6L)
   expect_false(z$provenance$window_rows_resampled_as_independent)
   expect_true(z$provenance$whole_function_resampling_contract)
 })
@@ -180,7 +197,7 @@ test_that("frozen Python 1.2 RQA mean bands match complete independent-unit infe
   x<-.etr_rqa_two_fixture()
   pyx<-.etr_rqa_two_py_trajectory(x)
   for(unit in c("curve","participant")){
-    for(column in if(unit=="curve")list(NULL,"participant") else
+    for(column in if(unit=="curve")list(NULL) else
       list("participant")){
       label<-paste(unit,if(is.null(column))"none" else column)
       kwargs<-list(trajectories=pyx,
@@ -206,9 +223,15 @@ test_that("frozen Python 1.2 RQA mean bands match complete independent-unit infe
       expect_identical(ours$band$unit_ids,
         as.character(et_to_r(source$band$unit_ids)),
         info=paste(label,"inference units"))
+      py_band_provenance<-et_to_r(source$band$provenance)
       expect_equal(ours$band$curves_per_unit,
-        as.integer(et_to_r(source$band$curves_per_unit)),
+        as.integer(unlist(py_band_provenance$functional_mean_band$
+          curves_per_unit)),
         tolerance=0,info=paste(label,"curve/participant blocks"))
+      expect_identical(ours$band$provenance$functional_mean_band$
+        random_engine,"numpy_pcg64")
+      expect_false(ours$band$provenance$functional_mean_band$
+        fixed_draw_replay)
       expect_equal(unname(ours$functional_rqa$trajectories$values),
         unname(et_to_r(source$functional_rqa$trajectories$values)),
         tolerance=1e-10,info=paste(label,"derived outcome"))
