@@ -119,7 +119,7 @@
       source$provenance$recurrence_rate_denominator,
     local_clustering_degree_lt_2=0,
     transitivity_undefined_when_no_connected_triples=TRUE,
-    triangle_count=native$triangles,
+    triangle_count=native$provenance$triangle_count,
     dense_adjacency_materialized=FALSE,
     automatic_threshold_selection=FALSE,
     automatic_community_detection=FALSE,
