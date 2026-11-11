@@ -56,7 +56,7 @@
   "extra_source_evidence": [
     {
       "path": "tests/testthat/test-native-inference-reporting-extensions.R",
-      "sha256": "fd9e55c60c0f4771219efc885b34c267c3df9c5ac0ec4b9c65dfff8ad609d2ed"
+      "sha256": "da09cc0ec0c635a49769b8ed54300e44ff1d8ed31ec04e290861f86207bbf04d"
     }
   ],
   "independent_review_status": "Developer full-source text review recorded, not independently certified; Linux/Windows/macOS and typed frozen Python exact-head CI pending.",
