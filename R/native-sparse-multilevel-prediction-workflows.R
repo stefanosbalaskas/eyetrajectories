@@ -39,9 +39,18 @@
 #'   observation diagnostics with the native_covariance backend.
 #' @return Native interpolated-grid two-level descriptive FPCA workflow.
 #'   Not Python irregular multilevel PACE covariance/BLUP inference.
+#' @param strict_source_record If TRUE, return the ordered frozen Python 1.2
+#'   W2 multilevel scientific workflow fields, genuine covariance/BLUP fit
+#'   and recorded model decisions. No Python runtime type identity is claimed.
 #' @export
 etr_run_sparse_multilevel_workflow<-function(trajectories,config,
-    observation_process=NULL){
+    observation_process=NULL,strict_source_record=FALSE){
+  .etr_assert(is.logical(strict_source_record)&&
+    length(strict_source_record)==1L&&!is.na(strict_source_record),
+    "strict_source_record must be a nonmissing logical scalar")
+  if(isTRUE(strict_source_record))
+    .etr_assert(is.list(config)&&identical(config$backend,"native_covariance"),
+      "strict multilevel W2 requires native_covariance estimator")
   if(is.list(config)&&!is.data.frame(config)&&
       identical(config$backend,"native_covariance")){
     cfg<-.etr_source_workflow_config(config,list(
@@ -104,7 +113,11 @@ etr_run_sparse_multilevel_workflow<-function(trajectories,config,
         trial_scores=fit$trial_scores,
         score_diagnostics=fit$score_diagnostics)),
       class="etr_native_sparse_multilevel_workflow")
-    return(.etr_sparse_observation_workflow(workflow,observation_process,observation_options))
+    workflow<-.etr_sparse_observation_workflow(workflow,
+      observation_process,observation_options)
+    if(isTRUE(strict_source_record))
+      return(.etr_sparse_multilevel_w2_source_record(workflow,cfg))
+    return(workflow)
   }
   cfg<-.etr_source_workflow_config(config,list(
     backend=NULL,dimension=NULL,participant_column=NULL,
@@ -170,9 +183,27 @@ etr_run_sparse_multilevel_workflow<-function(trajectories,config,
 #'   two future times, and an optional alpha with default 0.05.
 #' @return Native baseline split conformal prediction workflow with recorded
 #'   curve-wise scores and target observed-time bounds.
+#' @param strict_source_record If TRUE, emit the frozen Python 1.2 W2
+#'   scientific result with its source-shaped nested sparse FPCA training
+#'   workflow and explicit disjoint-role decisions; Python dataclass identity
+#'   is not duplicated in R.
 #' @export
 etr_run_sparse_prediction_workflow<-function(proper_training,calibration,
-    target,config){
+    target,config,strict_source_record=FALSE){
+  .etr_assert(is.logical(strict_source_record)&&
+    length(strict_source_record)==1L&&!is.na(strict_source_record),
+    "strict_source_record must be a nonmissing logical scalar")
+  if(isTRUE(strict_source_record)){
+    .etr_assert(is.list(config)&&
+      identical(config$backend,"native_sparse_partial_conformal"),
+      "strict sparse prediction W2 requires native_sparse_partial_conformal")
+    .etr_assert(is.list(config$training)&&
+      identical(config$training$backend,"native_covariance"),
+      "strict sparse prediction W2 requires real native covariance/PACE training")
+    if(!is.null(config$training$bandwidth_selection))
+      .etr_sparse_fpca_w2_source_bandwidth_config(
+        config$training$bandwidth_selection)
+  }
   if(is.list(config)&&!is.data.frame(config)&&
       identical(config$backend,"native_sparse_partial_conformal")){
     cfg<-.etr_source_workflow_config(config,list(
@@ -217,7 +248,8 @@ etr_run_sparse_prediction_workflow<-function(proper_training,calibration,
       is.finite(ridge)&&ridge>=0),"history_ridge must be finite and non-negative")
     # Source role assignment is always explicit; no random splitting.
     training<-etr_run_sparse_fpca_workflow(
-      proper_training,cfg$training)
+      proper_training,cfg$training,
+      strict_source_record=strict_source_record)
     calibration_params<-cfg[c("history_cutoff","prediction_grid","alpha",
       "group_column","min_history_observations","condition_limit","history_ridge")]
     calibration_run<-.etr_sparse_timed_step("conformal_calibration",
@@ -246,7 +278,7 @@ etr_run_sparse_prediction_workflow<-function(proper_training,calibration,
       step$name<-paste0("proper_training.",step$name)
       step
     })
-    return(structure(list(
+    workflow<-structure(list(
       workflow_schema_version=1L,
       workflow_contract="sparse_prediction:v1",
       config=cfg,training_workflow=training,
@@ -271,7 +303,11 @@ etr_run_sparse_prediction_workflow<-function(proper_training,calibration,
         training_scores=training$tables$scores,
         calibration_curve_scores=cal$curve_scores,
         prediction_band=frame)),
-      class="etr_native_sparse_prediction_workflow"))
+      class="etr_native_sparse_prediction_workflow")
+    if(isTRUE(strict_source_record))
+      return(.etr_sparse_prediction_w2_source_record(workflow,cfg,
+        proper_training,calibration,target))
+    return(workflow)
   }
   cfg<-.etr_source_workflow_config(config,list(
     backend=NULL,dimension=NULL,evaluation_grid=NULL,alpha=.1,
