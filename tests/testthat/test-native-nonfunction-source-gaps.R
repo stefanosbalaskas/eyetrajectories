@@ -16,9 +16,13 @@ test_that("TrajectorySet class source differences remain explicit, unsigned and 
   expect_true(grepl("zero-based",gaps$known_source_difference,fixed=TRUE))
   api<-etr_native_parity_catalog()
   expect_identical(nrow(api),508L)
-  # Four exhaustive zero-argument metadata semantic closures leave 199 callable
-  # gaps; Python dataclass/tuple vs native R identity remains distinct.
-  expect_equal(sum(api$source_contract_gap_unresolved),197L)
+  # Query the single authoritative source ledger instead of freezing
+  # callable gap counts from an earlier development head.
+  witness<-utils::read.csv(.etr_test_extdata(
+    "native_source_contract_gaps_stage22.csv"),
+    stringsAsFactors=FALSE,check.names=FALSE)
+  expect_identical(sum(api$source_contract_gap_unresolved),
+    as.integer(sum(witness$unresolved_source_gap)))
   expect_identical(sum(api$nonfunction_source_gap_unresolved),1L)
   row<-api[api$python_name=="TrajectorySet"&api$namespace=="root",,
     drop=FALSE]

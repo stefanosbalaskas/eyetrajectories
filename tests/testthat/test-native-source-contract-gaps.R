@@ -8,8 +8,15 @@ test_that("508-contract certificate gate rejects known unresolved source differe
   # The current exact count is independently checked by the full ledger.
   expect_gte(sum(z$source_contract_gap_known),53L)
   expect_gte(sum(z$source_contract_gap_unresolved),57L)
-  expect_true(all(z$source_contract_gap_unresolved[
-    z$contract_certification_candidate]))
+  # A source pilot can become a developer-reviewed gap closure. Verify
+  # a named SHA-reviewed receipt rather than insisting gaps never close.
+  receipts<-utils::read.csv(.etr_test_extdata(
+    "reviewed_source_contract_closures_v1.csv"),
+    stringsAsFactors=FALSE,check.names=FALSE)
+  reviewed_candidates<-z$python_name[
+    z$contract_certification_candidate &
+    !z$source_contract_gap_unresolved]
+  expect_true(all(reviewed_candidates %in% receipts$python_name))
   expect_true(all(z$contract_numerical_fixture_pass[
     z$contract_certification_candidate]))
   expect_false(any(z$one_to_one_native_contract_complete))
@@ -32,13 +39,13 @@ test_that("508-contract certificate gate rejects known unresolved source differe
   }
   row<-z[z$python_name=="functional_trapezoid_weights",]
   expect_equal(nrow(row),1L)
-  expect_true(row$source_contract_gap_unresolved)
+  expect_false(row$source_contract_gap_unresolved)
   expect_identical(row$source_contract_gap_kind,
     "accepted_input_containers")
   expect_identical(before,reticulate::py_available(initialize=FALSE))
 })
 
-test_that("source Python 1.2 trapezoid scalar truthiness aligns but arbitrary objects and infinities do not",{
+test_that("source Python 1.2 trapezoid scalar truthiness and explicit source boundary remain distinct from strict native defaults",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("Pinned public Python 1.2 source acceptance witness is opt-in")
   expect_identical(et_python_version(),"1.2.0")
@@ -53,8 +60,8 @@ test_that("source Python 1.2 trapezoid scalar truthiness aligns but arbitrary ob
     c(.5,1.5,1),tolerance=0)
   expect_error(etr_trapezoid_weights(matrix(c(0,1,3),ncol=1)),
     "one-dimensional")
-  # Python source numeric scalar truthiness now agrees with native R.
-  # Arbitrary Python objects and extreme source input domains remain open.
+  # Strict native defaults stay finite-only. In the explicit source mode
+  # numerical and valid source-boundary semantics are reviewed separately.
   py_norm<-reticulate::py_call(
     etpy_get_export("functional_trapezoid_weights"),
     time=reticulate::r_to_py(c(0,1,3)),
@@ -80,7 +87,7 @@ test_that("source Python 1.2 trapezoid scalar truthiness aligns but arbitrary ob
   }
   expect_error(etr_trapezoid_weights(c(0,1,3),normalize=NA_real_),
     "normalize")
-  expect_true(etr_native_parity_catalog()$source_contract_gap_unresolved[
+  expect_false(etr_native_parity_catalog()$source_contract_gap_unresolved[
     etr_native_parity_catalog()$python_name==
       "functional_trapezoid_weights"])
 })

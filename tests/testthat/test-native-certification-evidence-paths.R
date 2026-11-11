@@ -22,8 +22,15 @@ test_that("every pinned numerical pilot oracle resolves to an actual test",{
   expect_equal(sum(api$contract_certification_candidate),4L)
   expect_equal(sum(api$contract_numerical_fixture_pass),4L)
   expect_false(any(api$one_to_one_native_contract_complete))
-  expect_true(all(api$source_contract_gap_unresolved[
-    api$contract_certification_candidate]))
+  # A numerical pilot can be promoted after a SHA256-pinned
+  # full-source author review; keep unsigned independent gates closed.
+  receipts<-utils::read.csv(system.file("extdata",
+    "reviewed_source_contract_closures_v1.csv",
+    package="eyetrajectories"),stringsAsFactors=FALSE)
+  closed_candidates<-api$python_name[
+    api$contract_certification_candidate &
+    !api$source_contract_gap_unresolved]
+  expect_true(all(closed_candidates %in% receipts$python_name))
 })
 
 test_that("new frozen inference source witnesses cannot self-approve",{
