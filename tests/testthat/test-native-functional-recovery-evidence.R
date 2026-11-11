@@ -156,8 +156,8 @@ test_that("recovery summary can replay NumPy overflow without changing native ar
   records<-lapply(c(-1e308,1e308),function(x)
     list(scenario_name="overflow",replicate=0L,seed=1L,status="ok",metrics=c(m=x)))
   result<-etr_functional_recovery_result(records)
-  native<-etr_functional_recovery_summary_frame(result)
-  source<-etr_functional_recovery_summary_frame(result,python_boundary_mode=TRUE)
+  native<-etr_functional_recovery_summary_frame(result,python_boundary_mode=FALSE)
+  source<-etr_functional_recovery_summary_frame(result)
   expect_identical(native$median,0)
   expect_identical(source$mean,0)
   expect_identical(source$sd,Inf)
@@ -165,6 +165,22 @@ test_that("recovery summary can replay NumPy overflow without changing native ar
     c(Inf,Inf,-Inf,-Inf,-Inf))
   expect_error(etr_functional_recovery_summary_frame(result,python_boundary_mode=NA),
     "must be TRUE or FALSE")
+})
+
+test_that("recovery source-frame gap flags follow the current ledger",{
+  z<-etr_native_parity_catalog()
+  ledger<-utils::read.csv(system.file("extdata",
+    "native_source_contract_gaps_stage22.csv",package="eyetrajectories"),
+    stringsAsFactors=FALSE,check.names=FALSE)
+  for(n in c("functional_recovery_frame",
+    "functional_recovery_failure_frame",
+    "functional_recovery_summary_frame")){
+    row<-z[z$python_name==n&z$is_python_function,,drop=FALSE]
+    source<-ledger[ledger$python_name==n,,drop=FALSE]
+    expect_identical(nrow(source),1L)
+    expect_identical(as.logical(row$source_contract_gap_unresolved),
+      as.logical(source$unresolved_source_gap))
+  }
 })
 
 test_that("recovery public function names are stable and fail closed",{
@@ -178,7 +194,15 @@ test_that("recovery public function names are stable and fail closed",{
     expect_equal(nrow(row),1L)
     expect_identical(row$native_r_candidate,paste0("etr_",n))
     expect_true(row$native_implementation_started)
-    expect_true(row$source_contract_gap_unresolved)
+    if(n %in% c("functional_recovery_frame",
+        "functional_recovery_failure_frame",
+        "functional_recovery_summary_frame")){
+      source<-utils::read.csv(system.file("extdata",
+        "native_source_contract_gaps_stage22.csv",package="eyetrajectories"),
+        stringsAsFactors=FALSE)
+      expect_identical(as.logical(row$source_contract_gap_unresolved),
+        as.logical(source$unresolved_source_gap[source$python_name==n]))
+    }else expect_true(row$source_contract_gap_unresolved)
     expect_false(row$one_to_one_native_contract_complete)
   }
   expect_equal(nrow(z),508L)
