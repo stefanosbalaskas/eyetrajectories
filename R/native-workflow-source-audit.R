@@ -173,9 +173,20 @@ etr_workflow_audit_result <- function(workflow_contract,steps=list(),
     class="etr_workflow_audit_result")
 }
 
+# Python workflows/_core.py validates int(workflow_schema_version), not
+# Python integer object identity. Preserve that source boundary for ordinary
+# R scalar analogues (for example 1.9 -> 1, TRUE -> 1 and "1" -> 1).
+.etr_workflow_source_schema_version <- function(value) {
+  if (length(value)!=1L || is.object(value) || !is.null(dim(value)) ||
+      !(is.numeric(value) || is.logical(value) || is.character(value)) ||
+      is.na(value)) return(NA_integer_)
+  suppressWarnings(as.integer(value))
+}
+
 .etr_workflow_check_result <- function(result) {
   .etr_assert(inherits(result,"etr_workflow_audit_result") &&
-    identical(result$workflow_schema_version,1L),
+    identical(.etr_workflow_source_schema_version(
+      result$workflow_schema_version),1L),
     "result must have the native workflow audit schema version 1")
   .etr_assert(is.character(result$workflow_contract) &&
     length(result$workflow_contract)==1L &&
@@ -200,7 +211,8 @@ etr_workflow_summary_frame <- function(result) {
   statuses <- vapply(result$steps,function(s)s$status,character(1L))
   sources <- vapply(result$decisions,function(d)d$source,character(1L))
   data.frame(
-    workflow_schema_version=1L,
+    workflow_schema_version=.etr_workflow_source_schema_version(
+      result$workflow_schema_version),
     workflow_contract=result$workflow_contract,
     step_count=length(result$steps),
     completed_steps=sum(statuses=="completed"),
