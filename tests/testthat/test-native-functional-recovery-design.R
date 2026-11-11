@@ -42,7 +42,13 @@ test_that("recovery designs are traceable and remain uncertified",{
   expect_identical(row$native_r_candidate,
     "etr_functional_recovery_qualification_scenarios")
   expect_true(row$native_implementation_started)
-  expect_true(row$source_contract_gap_unresolved)
+  ledger<-utils::read.csv(system.file("extdata",
+    "native_source_contract_gaps_stage22.csv",package="eyetrajectories"),
+    stringsAsFactors=FALSE)
+  status<-ledger[ledger$python_name=="functional_recovery_qualification_scenarios",
+    ,drop=FALSE]
+  expect_identical(as.logical(row$source_contract_gap_unresolved),
+    as.logical(status$unresolved_source_gap))
   expect_false(row$one_to_one_native_contract_complete)
   expect_equal(nrow(etr_functional_simulation_scenario_frame(
     etr_functional_recovery_qualification_scenarios())),4L)
