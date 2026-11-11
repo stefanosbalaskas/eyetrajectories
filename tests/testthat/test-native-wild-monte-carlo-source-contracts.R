@@ -128,11 +128,19 @@ test_that("three new source functions remain independently uncertified",{
   expect_identical(sort(x$native_r_candidate),
     sort(paste0("etr_",names)))
   expect_true(all(x$native_implementation_started))
-  expect_true(all(x$source_contract_gap_unresolved))
+  expect_false(x$source_contract_gap_unresolved[
+    x$python_name=="fpca_wild_bootstrap_family_test_monte_carlo_diagnostics"])
+  expect_true(all(x$source_contract_gap_unresolved[
+    x$python_name!="fpca_wild_bootstrap_family_test_monte_carlo_diagnostics"]))
   expect_false(any(x$one_to_one_native_contract_complete))
   expect_gte(sum(p$is_python_function & p$named_native_candidate),327L)
   expect_gte(sum(p$native_implementation_started),302L)
-  expect_gte(sum(p$source_contract_gap_unresolved),149L)
+  gap_rows <- utils::read.csv(.etr_test_extdata(
+    "native_source_contract_gaps_stage22.csv"))
+  class_rows <- utils::read.csv(.etr_test_extdata(
+    "native_nonfunction_source_gaps_v1.csv"))
+  expect_equal(sum(p$source_contract_gap_unresolved),
+    sum(gap_rows$unresolved_source_gap)+sum(class_rows$unresolved))
 })
 test_that("direct frozen Python 1.2 exact binomial and plot coordinates agree",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
