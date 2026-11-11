@@ -1,0 +1,118 @@
+name: Native fixed-profile bootstrap and mixed variance source pair
+on:
+  pull_request:
+    paths:
+      - "R/native-functional-mixed-moments.R"
+      - "R/native-generalized-fosr-bootstrap-source.R"
+      - "tests/testthat/test-native-bootstrap-variance-source-pair-20261111.R"
+      - "tests/testthat/test-native-mixed-variance-decomposition-source.R"
+      - "tests/testthat/test-native-generalized-fosr-bootstrap-source.R"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/reviewed_source_contract_closures_v1.csv"
+      - "docs/source_contract_reviews/bootstrap_generalized_function_on_scalar_predictions.json"
+      - "docs/source_contract_reviews/functional_mixed_effects_variance_decomposition.json"
+      - ".github/workflows/native-bootstrap-variance-source-pair-20261111.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: SHA256-pinned evidence and exact authoritative census
+        shell: bash
+        run: |
+          python - <<'PY'
+          import csv,hashlib,json
+          from pathlib import Path
+          root=Path(".")
+          ledger=list(csv.DictReader((root/"inst/extdata/native_source_contract_gaps_stage22.csv").open(encoding="utf-8",newline="")))
+          nonfunctions=list(csv.DictReader((root/"inst/extdata/native_nonfunction_source_gaps_v1.csv").open(encoding="utf-8",newline="")))
+          reviews=list(csv.DictReader((root/"inst/extdata/reviewed_source_contract_closures_v1.csv").open(encoding="utf-8",newline="")))
+          names=("bootstrap_generalized_function_on_scalar_predictions",
+                 "functional_mixed_effects_variance_decomposition")
+          assert len(ledger)==203 and len(nonfunctions)==1
+          callable_gaps=sum(r["unresolved_source_gap"]=="TRUE" for r in ledger)
+          noncallable_gaps=sum(r["unresolved"]=="TRUE" for r in nonfunctions)
+          assert callable_gaps<=114 and noncallable_gaps==1
+          assert 508-callable_gaps-noncallable_gaps>=393
+          for name in names:
+              record,=[r for r in ledger if r["python_name"]==name]
+              review,=[r for r in reviews if r["python_name"]==name]
+              assert record["unresolved_source_gap"]=="FALSE"
+              assert review["independently_certified"]=="FALSE"
+              text=(root/review["review_record_path"]).read_bytes()
+              assert hashlib.sha256(text).hexdigest()==review["review_record_sha256"]
+              item=json.loads(text)
+              assert item["python_name"]==name
+              assert item["frozen_python_commit"]=="c1cd95ad718327550f7e55393ff38582872f7a94"
+              assert item["independently_certified"] is False
+              assert {x["kind"] for x in item["case_evidence"]}=={
+                  "source_signature","accepted_input_domain","numerical_outputs",
+                  "exception_semantics","returned_schema","scientific_estimand"}
+              for evidence in item["case_evidence"]+item["native_files"]:
+                  hash=hashlib.sha256((root/evidence["path"]).read_bytes()).hexdigest()
+                  assert hash==evidence["sha256"],evidence["path"]
+          print(f"393+ author-review contracts; callable gaps {callable_gaps}, noncallable {noncallable_gaps}; no independent certifications")
+          PY
+  native-r:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Native paired profile bootstrap and mixed variance source tests
+        shell: bash
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          testthat::test_local(".",filter="native-bootstrap-variance-source-pair-20261111|native-mixed-variance-decomposition-source|native-generalized-fosr-bootstrap-source",reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
+  frozen-python:
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        id: py
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Full typed source bootstrap and pandas variance table differential
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.py.outputs.python-path }}
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          stopifnot(identical(et_python_version(),"1.2.0"))
+          testthat::test_local(".",filter="native-bootstrap-variance-source-pair-20261111|native-mixed-variance-decomposition-source|native-generalized-fosr-bootstrap-source",reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
