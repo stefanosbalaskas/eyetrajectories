@@ -52,6 +52,10 @@ etr_evaluate_hierarchy_truth_recovery <- function(truth) {
       paste(source,"declared eigenvalues must be finite numeric vector"))
     scores<-.etr_recovery_source_matrix(x$scores,length(target),
       paste(source,"scores"))
+    # Python np.var(..., axis=0, ddof=0) returns an empty vector when
+    # the validated scientific score source has zero retained components.
+    # An empty source must contribute no recovery metrics, not an error.
+    if(!length(target))next
     estimate<-colMeans(sweep(scores,2L,colMeans(scores),"-")^2)
     for(k in seq_along(target)){
       err<-abs(as.numeric(estimate[k])-as.numeric(target[k]))
@@ -64,8 +68,8 @@ etr_evaluate_hierarchy_truth_recovery <- function(truth) {
           component=as.integer(k-1L),source=source)
     }
   }
-  .etr_assert(length(values)>=1L,
-    "recovery assessment must contain at least one value")
+  # The Python source returns FunctionalRecoveryAssessment(values=())
+  # for a zero-component truth and retains its provenance unchanged.
   structure(list(values=values,provenance=list(
     estimator="none",purpose="simulation_source_variance_audit",ddof=0L)),
     class="etr_functional_recovery_assessment")
