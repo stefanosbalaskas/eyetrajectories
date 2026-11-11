@@ -122,8 +122,15 @@ test_that("two typed Python 1.2 FunctionalMixedEffectsResult BLUP frames match n
     expect_identical(nrow(source),nrow(native),info=pair$name)
     for(nm in names(source)){
       observed<-source[[nm]]
-      expect_equal(unname(native[[nm]]),unname(observed),tolerance=0,
-        info=paste(pair$name,nm))
+      if(all(is.na(observed))) {
+        expect_true(all(is.na(native[[nm]])),info=paste(pair$name,nm))
+      } else if(is.numeric(observed) && is.numeric(native[[nm]])) {
+        expect_equal(as.numeric(native[[nm]]),as.numeric(observed),
+          tolerance=0,info=paste(pair$name,nm))
+      } else {
+        expect_identical(as.character(native[[nm]]),as.character(observed),
+          info=paste(pair$name,nm))
+      }
     }
   }
   expect_false(any(etr_native_parity_catalog()$
