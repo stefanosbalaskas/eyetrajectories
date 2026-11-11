@@ -75,7 +75,12 @@ test_that("new stress source contracts remain blocked from full certification",{
     expect_equal(nrow(row),1L)
     expect_identical(row$native_r_candidate,paste0("etr_",name))
     expect_true(row$native_implementation_started)
-    expect_true(row$source_contract_gap_unresolved)
+    ledger<-utils::read.csv(system.file("extdata",
+      "native_source_contract_gaps_stage22.csv",package="eyetrajectories"),
+      stringsAsFactors=FALSE)
+    status<-ledger[ledger$python_name==name,,drop=FALSE]
+    expect_identical(as.logical(row$source_contract_gap_unresolved),
+      as.logical(status$unresolved_source_gap))
     expect_false(row$one_to_one_native_contract_complete)
   }
   expect_gte(sum(z$is_python_function & z$named_native_candidate),380L)
