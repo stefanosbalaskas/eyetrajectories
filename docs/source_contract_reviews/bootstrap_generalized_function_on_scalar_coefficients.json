@@ -1,0 +1,71 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "bootstrap_generalized_function_on_scalar_coefficients",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/generalized_function_on_scalar.py::bootstrap_generalized_function_on_scalar_coefficients; types.py::GeneralizedFunctionOnScalarBootstrapResult",
+  "native_signature": "etr_bootstrap_generalized_function_on_scalar_coefficients(result,n_bootstrap=1000L,random_state=0L,failed_replicate_policy='raise',sampled_participant_indices=NULL,strict_source_record=TRUE)",
+  "reviewer_statement": "Provisional developer source-scientific review only. Native participant-level fixed-basis GEE is recomputed for every draw with 19 canonical source bootstrap provenance keys. Direct Python 1.2 comparison tests are committed but exact-head CI success and independent review are not established.",
+  "native_language_semantic_policy": "Native R participant-clustered GEE score/sandwich is explicitly retained as a genuine R estimator; returned scientific arrays and source-provenance keys are compared with frozen Python statsmodels GEE. A native R object is not a Python dataclass and its executed score/sandwich backend is native_R_source_score_GEE, not a Python statsmodels fit.",
+  "native_files": [
+    {
+      "path": "R/native-generalized-gee-bootstrap.R",
+      "sha256": "aca33fa121b021c8b33923cc732c79587ab95ad93a43457abd647c240222ffc8"
+    },
+    {
+      "path": "R/native-generalized-gee-solver.R",
+      "sha256": "c6c8f4f75c2a0993e7c08fa48d8111032e0b66457190f9ea620bd1bbc14d76ad"
+    },
+    {
+      "path": "R/native-generalized-gee-source-scientific-record.R",
+      "sha256": "2bf1ca1b94381bb67e371556a184a628f7ac0197ddf9133df0533d33ab5ed3e1"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-generalized-gee-bootstrap-full-source-20261112.R",
+      "sha256": "bf84db42107e73c1405cf752811911ee8588e34700e7b0a2ae4b82057d905707",
+      "description": "Frozen Python 1.2 generalized_function_on_scalar.py typed case bootstrap: n_bootstrap >= 100, integer/NULL NumPy seed, raise-only failure policy, participant-level sampling, one complete fixed-basis GEE score/sandwich refit per draw, no redraw or automatic model selection."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-generalized-gee-bootstrap-full-source-20261112.R",
+      "sha256": "bf84db42107e73c1405cf752811911ee8588e34700e7b0a2ae4b82057d905707",
+      "description": "Native strict source GEE scientific fit with 36 curves, 12 participant clusters and 7 observed times; Bernoulli 0/1, grouped binomial integer counts and denominators, Poisson counts and fixed exposure. Legacy R mode preserved, custom sampled indices remain an R-only extension."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-generalized-gee-bootstrap-full-source-20261112.R",
+      "sha256": "bf84db42107e73c1405cf752811911ee8588e34700e7b0a2ae4b82057d905707",
+      "description": "Opt-in 100-refit frozen Python direct public export reproduces NumPy PCG64 participant indices and B-by-coefficient-by-time refitted coefficient functions for four declared generalized families/exposure cases. Strict mode uses same fixed basis and real R GEE cluster score/sandwich, not retained coefficient projections."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-generalized-gee-bootstrap-full-source-20261112.R",
+      "sha256": "bf84db42107e73c1405cf752811911ee8588e34700e7b0a2ae4b82057d905707",
+      "description": "Strict source record rejects non-boolean flag, legacy reference without canonical native model/score audit, fewer than 100 refits, negative seed and policy other than raise; each failed participant refit produces an explicit non-redraw failure. Python RuntimeError and R condition class differ."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-generalized-gee-bootstrap-full-source-20261112.R",
+      "sha256": "bf84db42107e73c1405cf752811911ee8588e34700e7b0a2ae4b82057d905707",
+      "description": "Eight canonical scientific result fields and exactly 19 ordered nested source-bootstrap provenance keys without R-only draw engine, supplied-draw flag or certification claim; audit arrays have source sample order, source original participant IDs, and unique bootstrap group IDs."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-generalized-gee-bootstrap-full-source-20261112.R",
+      "sha256": "bf84db42107e73c1405cf752811911ee8588e34700e7b0a2ae4b82057d905707",
+      "description": "Whole-participant case bootstrap of the population-averaged GEE log-link/logit spline coefficient functions with original participant trial bundles, observed exposure/denominators preserved and basis fixed. Distinct copied participants are relabelled as independent clusters. No variance component or arbitrary response-family estimation."
+    }
+  ],
+  "independent_review_status": "No confirmed three-OS native R or exact frozen Python source CI pass at commit; independent scientific certification not conducted.",
+  "language_specific_limits": [
+    "Python GeneralizedFunctionOnScalarBootstrapResult dataclass, statsmodels fitted-model Python object and Python exception classes are not native R runtime identity.",
+    "Unseeded NumPy random_state=None streams cannot be made identically random to unseeded R streams; seeded NumPy PCG64 streams and explicit index matrices are the tested contracts.",
+    "Broader ill-conditioned convergence, non-integer Python seed objects and uncommon NumPy input coercions require further independent testing.",
+    "Source reviews and hash attestations are developer-prepared; no independent certificate and no CRAN release claim."
+  ]
+}
