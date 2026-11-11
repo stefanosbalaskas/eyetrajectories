@@ -1,0 +1,62 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "select_fpca_wild_bootstrap_truncation",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/wild_selection.py::select_fpca_wild_bootstrap_truncation",
+  "native_signature": "etr_select_fpca_wild_bootstrap_truncation(scan,width_threshold,center_threshold,stability_run,on_failure='error')",
+  "reviewer_statement": "Developer-side six-domain scientific source comparison of the Python 1.2 stabilized-volatility selector, its input/error policy, first qualifying r+1 stable transitions, target-specific null selections, output schema and provenance. Exact typed Python differential tests have been committed but GitHub Actions execution and independent certification are not yet confirmed.",
+  "native_language_semantic_policy": "Native R validated scientific list/matrix representation of Python's frozen scan/selection dataclasses and NumPy arrays; finite source-produced matrices and source-matched numeric/Boolean fields, without Python runtime object identity.",
+  "native_files": [
+    {
+      "path": "R/native-wild-source-inference.R",
+      "sha256": "1f97b80b6bc4a484101745e8c1229bfa6cb43c1c00b525bfd9411cc3e1092b6e"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-wild-truncation-selector-full-source-20261111.R",
+      "sha256": "3bf1f21506a556dca2e94ca63286a99a1f57f47b258d4b3591e6bdea5a8f86b5",
+      "description": "Frozen wild_selection.py selector with required positive width and center thresholds, integer stability run and explicit error/warn/ignore policy; native source-shaped scan input."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-wild-truncation-selector-full-source-20261111.R",
+      "sha256": "3bf1f21506a556dca2e94ca63286a99a1f57f47b258d4b3591e6bdea5a8f86b5",
+      "description": "Consecutive candidate-component and complete target matrices produced by the source wild-bootstrap scanner; positive scalar and decimal-text thresholds, and source target-specific selection."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-wild-truncation-selector-full-source-20261111.R",
+      "sha256": "3bf1f21506a556dca2e94ca63286a99a1f57f47b258d4b3591e6bdea5a8f86b5",
+      "description": "Exact successive absolute width and center changes, inclusive threshold comparisons, r+1 runs, first stable candidate index, and NaN retention for targets with no valid stable run."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-wild-truncation-selector-full-source-20261111.R",
+      "sha256": "3bf1f21506a556dca2e94ca63286a99a1f57f47b258d4b3591e6bdea5a8f86b5",
+      "description": "Zero, nonfinite and invalid thresholds, invalid stability counts, absent consecutive runs, malformed matrices and invalid failure options. Too-large R stability counts fail cleanly before 32-bit overflow."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-wild-truncation-selector-full-source-20261111.R",
+      "sha256": "3bf1f21506a556dca2e94ca63286a99a1f57f47b258d4b3591e6bdea5a8f86b5",
+      "description": "Complete frozen typed Python selection result fields, all shape-stable Boolean and numeric matrices, original scan record, zero-based indices, missing selection values, and full nested provenance."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-wild-truncation-selector-full-source-20261111.R",
+      "sha256": "3bf1f21506a556dca2e94ca63286a99a1f57f47b258d4b3591e6bdea5a8f86b5",
+      "description": "Targetwise earliest stabilized-volatility inference truncation selected without a largest-h fallback, no re-fitting and no bootstrap draws; width/center thresholds in original outcome units."
+    }
+  ],
+  "independent_review_status": "Author-reviewed source evidence committed; exact-head CI pending; 0 independent scientific certifications.",
+  "language_specific_limits": [
+    "Native R records cannot be literal Python dataclass objects or return Python exception classes.",
+    "Native source-shaped scientific scan results are compared; arbitrary hand-constructed malformed Python objects are not interchangeable with valid source scan results.",
+    "Provisional author review does not establish external certification or CRAN qualification."
+  ]
+}
