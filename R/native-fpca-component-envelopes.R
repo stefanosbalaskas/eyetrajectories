@@ -47,11 +47,22 @@
 #'   in their first-observed order. Bypasses base R RNG for source replay.
 #' @return Reference FPCA, pointwise descriptive lower, median and upper
 #'   surfaces, matched component similarity and scientific provenance.
+#' @param python_boundary_mode If TRUE, emit precisely the frozen Python
+#'   FPCAComponentEnvelopeResult scientific source fields and provenance,
+#'   with the native FPCA source-representation as the reference (not a
+#'   Python object). Default FALSE retains native R audit extensions.
 #' @export
 etr_bootstrap_fpca_component_envelopes <- function(
     trajectories,n_bootstrap=200L,n_components=3L,scaling="none",
     resample_unit="curve",participant_column=NULL,level=.95,
-    random_state=0L,bootstrap_unit_indices=NULL) {
+    random_state=0L,bootstrap_unit_indices=NULL,
+    python_boundary_mode=FALSE) {
+  .etr_assert(is.logical(python_boundary_mode)&&
+    length(python_boundary_mode)==1L&&!is.na(python_boundary_mode),
+    "python_boundary_mode must be a nonmissing logical scalar")
+  .etr_assert(!isTRUE(python_boundary_mode) ||
+    is.null(bootstrap_unit_indices),
+    "Python source mode does not accept caller-supplied bootstrap indices")
   etr_validate(trajectories,require_complete=TRUE)
   .etr_assert(is.numeric(n_bootstrap)&&length(n_bootstrap)==1L&&
     !is.na(n_bootstrap)&&is.finite(n_bootstrap)&&
@@ -102,6 +113,17 @@ etr_bootstrap_fpca_component_envelopes <- function(
     }
   }
   q<-.etr_fpca_envelope_quantiles(samples,level)
+  if(isTRUE(python_boundary_mode))
+    return(structure(list(reference=reference,
+      lower=q$lower,median=q$median,upper=q$upper,
+      similarities=similarity,level=level,
+      resampling_unit=resample_unit,random_state=random_state,
+      provenance=list(
+        method="matched_sign_aligned_bootstrap_pointwise_envelope",
+        n_bootstrap=b,n_components=k,scaling=scaling,
+        participant_column=participant_column,
+        coverage_claim="descriptive_pointwise_only")),
+      class="etr_fpca_component_envelope"))
   structure(list(reference=reference,
     lower=q$lower,median=q$median,upper=q$upper,
     similarities=similarity,level=level,
