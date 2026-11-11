@@ -97,10 +97,8 @@
   config<-.etr_sparse_fpca_w2_source_config(cfg)
   selection<-native$bandwidth_selection
   selected<-!is.null(selection)
-  mean_bw<-if(selected)as.numeric(selection$selected_bandwidths[
-    ["mean_bandwidth"]]) else cfg$mean_bandwidth
-  cov_bw<-if(selected)as.numeric(selection$selected_bandwidths[
-    ["covariance_bandwidth"]]) else cfg$covariance_bandwidth
+  mean_bw<-if(selected)as.numeric(selection$selected_bandwidths[["mean_bandwidth"]]) else cfg$mean_bandwidth
+  cov_bw<-if(selected)as.numeric(selection$selected_bandwidths[["covariance_bandwidth"]]) else cfg$covariance_bandwidth
   .etr_assert(is.numeric(mean_bw)&&length(mean_bw)==1L&&
     is.finite(mean_bw)&&mean_bw>0&&
     is.numeric(cov_bw)&&length(cov_bw)==1L&&
