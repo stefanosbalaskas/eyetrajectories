@@ -1,0 +1,69 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "evaluate_registration_recovery",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/recovery.py::evaluate_registration_recovery",
+  "native_signature": "etr_evaluate_registration_recovery(result, truth)",
+  "reviewer_statement": "Developer-side source-semantic parity review against frozen Python 1.2. The native implementation now handles zero-component source truth assessment. A direct typed Python 1.2 oracle is committed for four distinct scientific truth records and both related evaluator contracts; full nine-column metric row payloads and provenance are compared for nonempty records. No exact-head CI success or independent certification has yet been observed.",
+  "native_language_semantic_policy": "Python FunctionalRecoveryAssessment and FunctionalRecoveryValue dataclasses map to ordered, validated native R scientific lists and registered metric metadata; source numerical estimands, zero-based component identity, 0-denominator/zero-eigen semantics and provenance are preserved. Native R code does not call Python.",
+  "native_files": [
+    {
+      "path": "R/native-recovery-source-evaluators.R",
+      "sha256": "9cf7b9d4f78d0b35ec0c1015d0180fae5c5b8a5250dabcafe93b4ab5dfa693f5"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-two-recovery-evaluators-full-source-20261111.R",
+      "sha256": "124a98fb05ec644c57988b8bdfc2deb2316704dad2032420d39bc12b547ebe10",
+      "description": "Frozen eyetrajectoriespy==1.2.0 src/eyetrajectoriespy/recovery.py native scientific record export and typed source objects"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-two-recovery-evaluators-full-source-20261111.R",
+      "sha256": "124a98fb05ec644c57988b8bdfc2deb2316704dad2032420d39bc12b547ebe10",
+      "description": "Four frozen Python source-shaped truth records: baseline, three-curve nonuniform time grid/multicomponent hierarchy, zero declared eigenvalues, and zero-retained-component truth; plus perturbed registration and malformed native input tests."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-two-recovery-evaluators-full-source-20261111.R",
+      "sha256": "124a98fb05ec644c57988b8bdfc2deb2316704dad2032420d39bc12b547ebe10",
+      "description": "Eight paired source evaluator outputs from four scientific cases: full typed Python results and native R semantic metric records, all available nine-column metric rows and registered metadata, metrics order and 0-based component labels, provenance; empty result compared at native value level."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-two-recovery-evaluators-full-source-20261111.R",
+      "sha256": "124a98fb05ec644c57988b8bdfc2deb2316704dad2032420d39bc12b547ebe10",
+      "description": "Native R rejects malformed score source geometry, nonfinite truth values, mismatched fitted and truth grids, mismatched warp dimensions, and nonmonotone generating warps. Python TypeError/ValueError condition identity is language specific."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-two-recovery-evaluators-full-source-20261111.R",
+      "sha256": "124a98fb05ec644c57988b8bdfc2deb2316704dad2032420d39bc12b547ebe10",
+      "description": "Python FunctionalRecoveryAssessment immutable dataclass values tuple and provenance Mapping map to native R validated `etr_functional_recovery_assessment` list and provenance. Nonempty output maps to source-ordered nine-column metric data.frame."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-two-recovery-evaluators-full-source-20261111.R",
+      "sha256": "124a98fb05ec644c57988b8bdfc2deb2316704dad2032420d39bc12b547ebe10",
+      "description": "Known-truth inverse-phase-warp registration recovery using original source time grid, np.interp-equivalent inverse warp geometry, trapezoid-weighted integrated squared error averaged over curves, and global maximum absolute deviation."
+    }
+  ],
+  "extra_source_evidence": [
+    {
+      "path": "tests/testthat/test-native-recovery-source-evaluators.R",
+      "sha256": "27b717ce66de4096c6af268ab333bae13b4d4e2f115542a069a1f0ac57ddce80"
+    }
+  ],
+  "independent_review_status": "Developer-reviewed full source semantics, exact-head three-OS R and frozen Python 1.2 comparison CI pending; zero independent certification.",
+  "language_specific_limits": [
+    "Python dataclass and tuple runtime identity, arbitrary invalid source class inputs and Python exception classes differ from native R scientific result records",
+    "Python NumPy floating-point BLAS/platform exact bit identity is not promised; numerical comparisons use 1e-12 tolerance",
+    "Empty Python assessment has no values and does not pass the separate native assessment_frame converter's currently positive-value requirement; only the evaluator output is reviewed in that source corner",
+    "This review does not certify registration estimation, simulated draws, or downstream inferential recovery"
+  ]
+}
