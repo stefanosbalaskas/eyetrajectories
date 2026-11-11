@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/reviewed_source_contract_closures_v1.csv"
+      - "scripts/build_508_certification_review_batches.R"
       - "tests/testthat/test-native-zeroarg-catalog-source-semantic-closures.R"
       - "tests/testthat/test-native-catalog-contract-boundaries.R"
       - "tests/testthat/test-native-functional-rqa-recovery.R"
