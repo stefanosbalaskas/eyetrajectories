@@ -1,0 +1,68 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "functional_simulation_truth_frame",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/reporting.py::functional_simulation_truth_frame",
+  "native_signature": "etr_functional_simulation_truth_frame(result)",
+  "reviewer_statement": "Developer-side semantic source review for functional_simulation_truth_frame based on frozen eyetrajectoriespy 1.2.0 public reporting.py and typed simulation/truth objects, three independent scientific record configurations, full curve-level frame contents, twelve full-string report comparisons over four precision settings, and explicit malformed native record domains. Exact-head CI and external certification are pending. Python dataclass and pandas class identity are not claimed in R.",
+  "native_language_semantic_policy": "Python dataclasses map to validated native scientific list records, pandas data.frame maps to source-ordered native R data.frame and Python str to native R character scalar. Python repr for supplied provenance labels and source scientific wording is reproduced with no Python called at native runtime.",
+  "native_files": [
+    {
+      "path": "R/native-functional-simulation-truth-audit.R",
+      "sha256": "918a9dd771b33fcc0d9d8caef18fe2866132147156060cce864d412abfb8d2cf"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-functional-simulation-source-pair-20261111.R",
+      "sha256": "72cfc7c02654f32147cdc20cba08e5674bd58b7ece1513d0318f3d9737e644b4",
+      "description": "Frozen Python 1.2 typed FunctionalSimulationResult and FunctionalSimulationTruth scientific records vs native R checked source-shaped result."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-functional-simulation-source-pair-20261111.R",
+      "sha256": "72cfc7c02654f32147cdc20cba08e5674bd58b7ece1513d0318f3d9737e644b4",
+      "description": "Three source-shaped cases: participant-grouped dense process, student-t irregular Unicode/apostrophe provenance with large representable seed, and without participant grouping or optional provenance fields."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-functional-simulation-source-pair-20261111.R",
+      "sha256": "72cfc7c02654f32147cdc20cba08e5674bd58b7ece1513d0318f3d9737e644b4",
+      "description": "Three full Python pandas frame shape, column order and all values; twelve exact full-string Python report comparisons over three scientific cases and digits 1,3,6,11, with fixed original truth geometry."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-functional-simulation-source-pair-20261111.R",
+      "sha256": "72cfc7c02654f32147cdc20cba08e5674bd58b7ece1513d0318f3d9737e644b4",
+      "description": "Native R rejects incomplete masks or time lengths, malformed phase grids, nonfinite eigen spectrum/covariance, and invalid report precision; Python exception identity remains language specific."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-functional-simulation-source-pair-20261111.R",
+      "sha256": "72cfc7c02654f32147cdc20cba08e5674bd58b7ece1513d0318f3d9737e644b4",
+      "description": "Source schema includes one pandas-equivalent R data.frame with source ordered columns and numerical scalars, or exact source R string for manuscript reporting (not arbitrary Python objects)."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-functional-simulation-source-pair-20261111.R",
+      "sha256": "72cfc7c02654f32147cdc20cba08e5674bd58b7ece1513d0318f3d9737e644b4",
+      "description": "Exact realized functional simulation truth audit frame at each curve, including ordered participant/trial metadata, score sources, pre/post missingness sample counts and maximum observed-grid phase warp."
+    }
+  ],
+  "extra_source_evidence": [
+    {
+      "path": "tests/testthat/test-native-functional-simulation-truth-audit.R",
+      "sha256": "8b1e9596be37413b1dc0f427a997841141f708ad79c41934b997e195f4c8f662"
+    }
+  ],
+  "independent_review_status": "Developer full scientific source-record review only, differential CI and independent certification pending.",
+  "language_specific_limits": [
+    "Python pandas index/dtype and dataclass runtime class identities are represented semantically in R, not bytewise identical",
+    "Python TypeError and ValueError classes cannot be identical to native R conditions",
+    "Scientific randomized simulation and model estimation are independent contracts from the two reporting/audit exports"
+  ]
+}
