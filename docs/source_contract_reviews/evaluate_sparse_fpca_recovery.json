@@ -23,37 +23,37 @@
     {
       "kind": "source_signature",
       "path": "tests/testthat/test-native-three-fpca-recovery-source-20261111.R",
-      "sha256": "835e23f17cf3a00c00c57a48de62cfa46dd656774a31a576c750e92fdd436dd1",
+      "sha256": "2d1cce986d97f75989259cd847e2b9804ede37646d1b4621719602a8ddcb2121",
       "description": "Frozen published eyetrajectoriespy==1.2.0 recovery.py::evaluate_sparse_fpca_recovery taking typed fit and FunctionalSimulationTruth; native scientific records mapped without importing Python."
     },
     {
       "kind": "accepted_input_domain",
       "path": "tests/testthat/test-native-three-fpca-recovery-source-20261111.R",
-      "sha256": "835e23f17cf3a00c00c57a48de62cfa46dd656774a31a576c750e92fdd436dd1",
+      "sha256": "2d1cce986d97f75989259cd847e2b9804ede37646d1b4621719602a8ddcb2121",
       "description": "Five related typed full-source records: baseline numeric score-condition diagnostic, pandas Boolean diagnostic with float(True) PSD correction, status-only diagnostics, empty score diagnostics, and zero declared measurement-noise. Prior multi-component and tied-eigenspace source oracles retained."
     },
     {
       "kind": "numerical_outputs",
       "path": "tests/testthat/test-native-three-fpca-recovery-source-20261111.R",
-      "sha256": "835e23f17cf3a00c00c57a48de62cfa46dd656774a31a576c750e92fdd436dd1",
+      "sha256": "2d1cce986d97f75989259cd847e2b9804ede37646d1b4621719602a8ddcb2121",
       "description": "Fifteen complete Python 1.2 and native R data.frame source comparisons covering three linked evaluator exports over five scientific records: all nine semantic metric columns, exact row order and missingness, absolute/relative metrics, provenance, alignment, covariance blocks, and numerical angular precision qualification."
     },
     {
       "kind": "exception_semantics",
       "path": "tests/testthat/test-native-three-fpca-recovery-source-20261111.R",
-      "sha256": "835e23f17cf3a00c00c57a48de62cfa46dd656774a31a576c750e92fdd436dd1",
+      "sha256": "2d1cce986d97f75989259cd847e2b9804ede37646d1b4621719602a8ddcb2121",
       "description": "Native source scientific records reject invalid fitted truth grid, scaling/geometry, absent sparse dimensions, invalid covariance operator shape and wrong declared quadrature; Python dataclass class identity, NumPy warning identity and arbitrary malformed runtime objects are not claimed."
     },
     {
       "kind": "returned_schema",
       "path": "tests/testthat/test-native-three-fpca-recovery-source-20261111.R",
-      "sha256": "835e23f17cf3a00c00c57a48de62cfa46dd656774a31a576c750e92fdd436dd1",
+      "sha256": "2d1cce986d97f75989259cd847e2b9804ede37646d1b4621719602a8ddcb2121",
       "description": "Python FunctionalRecoveryAssessment metric tuple and provenance map correspond to native R scientific value records, reconstructible into exact nine-column assessment data.frame; source component numbers and alignment provenance maintained."
     },
     {
       "kind": "scientific_estimand",
       "path": "tests/testthat/test-native-three-fpca-recovery-source-20261111.R",
-      "sha256": "835e23f17cf3a00c00c57a48de62cfa46dd656774a31a576c750e92fdd436dd1",
+      "sha256": "2d1cce986d97f75989259cd847e2b9804ede37646d1b4621719602a8ddcb2121",
       "description": "Univariate sparse PACE known-truth recovery with estimated covariance rather than mode-only covariance, diagnostics with pandas Boolean and numeric conversions, zero true measurement-noise boundary, PSD repair, score failures and optional noise metric."
     }
   ],
