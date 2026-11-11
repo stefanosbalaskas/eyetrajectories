@@ -52,10 +52,18 @@ test_that("source workflow summary preserves 12 ordered columns across all statu
 })
 
 test_that("source int(schema_version) boundary tolerates Python scalar analogues",{
-  for(version in list(1L,1.0,1.9,TRUE,"1"," 1 ")){
-    x<-.etr_workflow_summary_pair_fixture(0L,version=version)
+  cases<-list(
+    list(value=1L,report="1"),
+    list(value=1.0,report="1.0"),
+    list(value=1.9,report="1.9"),
+    list(value=TRUE,report="True"),
+    list(value="1",report="1"),
+    list(value=" 1 ",report=" 1 "))
+  for(case in cases){
+    x<-.etr_workflow_summary_pair_fixture(0L,version=case$value)
     expect_identical(etr_workflow_summary_frame(x)$workflow_schema_version,1L)
-    expect_match(etr_workflow_reporting_text(x),"used schema 1",fixed=TRUE)
+    expect_match(etr_workflow_reporting_text(x),
+      paste0("used schema ",case$report," and retained"),fixed=TRUE)
   }
   for(version in list(0L,2L,2.0,FALSE,NA_integer_,NaN,Inf,
                      "1.9","two",integer(),c(1L,1L),list(1L))){
