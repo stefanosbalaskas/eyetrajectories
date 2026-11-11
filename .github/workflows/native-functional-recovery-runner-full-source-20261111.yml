@@ -1,0 +1,118 @@
+name: Native functional recovery runner frozen Python 1.2 source
+on:
+  pull_request:
+    paths:
+      - "R/native-functional-recovery-orchestration.R"
+      - "R/native-functional-recovery-assessment-orchestration.R"
+      - "R/native-functional-simulation-source-boundary.R"
+      - "tests/testthat/test-native-functional-recovery-runner-full-source-20261111.R"
+      - "tests/testthat/test-native-functional-recovery-orchestration.R"
+      - "tests/testthat/test-native-functional-simulation-seeded.R"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/reviewed_source_contract_closures_v1.csv"
+      - "docs/source_contract_reviews/run_functional_recovery_scenarios.json"
+      - ".github/workflows/native-functional-recovery-runner-full-source-20261111.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  six-domain-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check SHA256 source receipts and 406 of 508 author-reviewed
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import csv,hashlib,json
+          root=Path(".")
+          gaps=list(csv.DictReader((root/"inst/extdata/native_source_contract_gaps_stage22.csv").open(encoding="utf-8",newline="")))
+          classes=list(csv.DictReader((root/"inst/extdata/native_nonfunction_source_gaps_v1.csv").open(encoding="utf-8",newline="")))
+          receipts=list(csv.DictReader((root/"inst/extdata/reviewed_source_contract_closures_v1.csv").open(encoding="utf-8",newline="")))
+          assert len(gaps)==203 and len(classes)==1
+          open_callable=sum(x["unresolved_source_gap"]=="TRUE" for x in gaps)
+          open_classes=sum(x["unresolved"]=="TRUE" for x in classes)
+          assert open_callable<=101 and open_classes==1,(open_callable,open_classes)
+          assert 508-open_callable-open_classes>=406
+          name="run_functional_recovery_scenarios"
+          row,=(x for x in gaps if x["python_name"]==name)
+          assert row["unresolved_source_gap"]=="FALSE"
+          receipt,=(x for x in receipts if x["python_name"]==name)
+          assert receipt["independently_certified"]=="FALSE"
+          raw=(root/receipt["review_record_path"]).read_bytes()
+          assert hashlib.sha256(raw).hexdigest()==receipt["review_record_sha256"]
+          review=json.loads(raw)
+          assert review["python_name"]==name
+          assert review["independently_certified"] is False
+          assert review["frozen_python_commit"]=="c1cd95ad718327550f7e55393ff38582872f7a94"
+          assert {x["kind"] for x in review["case_evidence"]}=={
+            "source_signature","accepted_input_domain","numerical_outputs",
+            "exception_semantics","returned_schema","scientific_estimand"}
+          for x in review["native_files"]+review["case_evidence"]:
+              p=root/x["path"]
+              assert hashlib.sha256(p.read_bytes()).hexdigest()==x["sha256"],p
+          print(f"{508-open_callable-open_classes}/508 provisional; "
+                f"{open_callable} callable gaps + {open_classes} noncallable; "
+                "no independent certifications")
+          PY
+  native-r:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Native scientific recovery source result and old behavior regressions
+        shell: bash
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          testthat::test_local(".",filter="native-functional-recovery-runner-full-source-20261111|native-functional-recovery-orchestration|native-functional-simulation-process-scenario-full-source-20261111",reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
+  frozen-python:
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        id: py
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Frozen Python real recovery mapping, structured assessments and failure oracle
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.py.outputs.python-path }}
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          stopifnot(identical(et_python_version(),"1.2.0"))
+          testthat::test_local(".",filter="native-functional-recovery-runner-full-source-20261111|native-functional-recovery-orchestration|native-functional-simulation-process-scenario-full-source-20261111",reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
