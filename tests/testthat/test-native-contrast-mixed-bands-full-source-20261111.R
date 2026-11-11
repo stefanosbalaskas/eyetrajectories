@@ -26,16 +26,19 @@
   means <- if(family=="binomial") p else if(count) rate*exposure else rate
   draws_rate <- if(family=="poisson")draws else NULL
   draws_count <- if(count)
-    sweep(draws,c(2L,3L),exposure,"*") else NULL
+    sweep(draws,c(2L,3L),exposure,"*") else
+      if(family=="poisson"&&!exposed)draws else NULL
   draws_mean <- if(count) draws_count else draws
   fit <- list(time=time,family=family,
     exposure=if(exposed)exposure else NULL)
   prediction <- list(reference=fit,profile_ids=labels,
     mean_functions=means,
     rate_functions=if(family=="poisson"&&exposed)rate else NULL,
-    expected_count_functions=if(count)rate*exposure else NULL,
+    expected_count_functions=if(count)rate*exposure else
+      if(family=="poisson"&&!exposed)rate else NULL,
     extrapolation_flags=c(FALSE,TRUE,FALSE),
-    prediction_scale=if(count)"expected_count" else "response")
+    prediction_scale=if(count||(family=="poisson"&&!exposed))
+      "expected_count" else if(family=="poisson")"rate" else "probability")
   list(prediction=prediction,
     bootstrap_mean_functions=draws_mean,
     bootstrap_rate_functions=if(exposed)draws_rate else NULL,
@@ -217,19 +220,22 @@ for _key,_family,_exposed,_count,_scale in (
     _mean=(_src_prob if _family=='binomial'
            else _src_rate*_src_exposure if _count else _src_rate)
     _rate=_src_rate if _family=='poisson' and _exposed else None
-    _count_base=_src_rate*_src_exposure if _count else None
+    _count_base=(_src_rate*_src_exposure if _count else
+                 _src_rate if _family=='poisson' and not _exposed else None)
     _pred=_src_obj(et.GeneralizedFunctionOnScalarPredictionResult,
         reference=_fit,profile_ids=('untreated','treated','stretch'),
         mean_functions=_mean,rate_functions=_rate,
         expected_count_functions=_count_base,
         extrapolation_flags=np.array([False,True,False]),
-        prediction_scale='expected_count' if _count else 'response')
+        prediction_scale=('expected_count' if _count or (_family=='poisson' and not _exposed)
+                          else 'rate' if _family=='poisson' else 'probability'))
     _boot=_src_obj(et.GeneralizedFunctionOnScalarPredictionBootstrapResult,
         prediction=_pred,
         bootstrap_mean_functions=_draws*_src_exposure if _count else _draws,
         bootstrap_rate_functions=_draws if _exposed else None,
         bootstrap_expected_count_functions=(
-            _draws*_src_exposure if _count else None),
+            _draws*_src_exposure if _count else
+            _draws if _family=='poisson' and not _exposed else None),
         provenance={'study':'two-full-inference-source'})
     _src_contrasts[_key]=et.generalized_function_on_scalar_mean_difference_band(
         _boot,profile_a='treated',profile_b='untreated',
