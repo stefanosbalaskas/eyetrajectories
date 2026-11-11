@@ -236,10 +236,15 @@ etr_run_sparse_fpca_workflow<-function(
   .etr_assert(is.logical(strict_source_record)&&
     length(strict_source_record)==1L&&!is.na(strict_source_record),
     "strict_source_record must be TRUE or FALSE")
-  if(isTRUE(strict_source_record))
+  if(isTRUE(strict_source_record)){
     .etr_assert(is.list(config)&&
       identical(config$backend,"native_covariance"),
       "strict_source_record requires native_covariance source estimator")
+    # Fail before a potentially expensive model fit on R-only CV options.
+    if(!is.null(config$bandwidth_selection))
+      .etr_sparse_fpca_w2_source_bandwidth_config(
+        config$bandwidth_selection)
+  }
   if(is.list(config)&&!is.data.frame(config)&&
       identical(config$backend,"native_covariance"))
     return(.etr_run_sparse_fpca_source_native_workflow(
