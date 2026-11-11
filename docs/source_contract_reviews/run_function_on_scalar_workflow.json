@@ -1,0 +1,72 @@
+{
+  "audit_version": "source-contract-v1",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "independent_review_status": "Provisional six-domain developer source-scientific review. Pinned frozen Python 1.2 differential tests committed; exact-head CI and independent science certification have not passed.",
+  "native_language_semantic_policy": "The estimator, scientific tensors, and timing records are calculated natively in R; R scientific records replace Python frozen dataclasses. Component score signs are unidentifiable under FPCA. Python sklearn and pandas object identities and wall-clock timings are not asserted identical.",
+  "language_specific_limits": [
+    "R S3 scientific workflow/model structures are source-semantic analogues, not Python frozen dataclasses or sklearn model object identities.",
+    "Source workflow steps record actual measured R elapsed_seconds, which cannot be identical to separately run Python wall-clock measurements.",
+    "Sklearn FPCA components and scores are valid under arbitrary component sign, so component signs are tested using score Gram invariants and retained eigenspectra.",
+    "Native numeric data.frames and character vectors do not implement pandas DataFrame or Python tuple runtime identity; source column names, sequence and numerical values are compared.",
+    "Arbitrary Python dynamic input coercions, exception classes and sklearn object payloads are not claimed as equivalent."
+  ],
+  "python_name": "run_function_on_scalar_workflow",
+  "source_location": "src/eyetrajectoriespy/workflows/_dense_regression.py::run_function_on_scalar_workflow; function_on_scalar.py::fit_function_on_scalar_regression/function_on_scalar_coefficient_frame; reporting.py::function_on_scalar_reporting_text",
+  "native_signature": "etr_run_function_on_scalar_workflow(trajectories,design,config,python_boundary_mode=TRUE)",
+  "reviewer_statement": "Provisional author-reviewed source-scientific W3 functional regression result: actual observed-grid fit and elapsed step, nine source workflow fields, full coefficient tables and exact manuscript reporting. No independent certification.",
+  "native_files": [
+    {
+      "path": "R/native-source-workflows.R",
+      "sha256": "79e07941b43d9e904f53441b7e2a87a4f39a918653a45b4017fc0c210b3cc506"
+    },
+    {
+      "path": "R/native-w3-dense-workflow-source-boundary.R",
+      "sha256": "1cf128327fda22020293896d34a9f8222531bdad2d9c7e8d5fe42f9bec54876d"
+    },
+    {
+      "path": "R/native-functional-regression.R",
+      "sha256": "42c27b33f3fb41c63ff42199962f69606ecfd7b7e6525e1117d4a0288f654d36"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-w3-dense-workflows-full-source-20261111.R",
+      "sha256": "ef2ff1e383e73a925e4a439a25dc18b567d4999cd83a674d1762f739899dac0e",
+      "description": "Frozen Python W3 workflows/_dense_regression.py: requires explicit source config with empty preprocessing plan, complete common-grid TrajectorySet, declared source parameters, a real timed fit step, explicit analyst/derived decisions and no silent model selection or processing."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-w3-dense-workflows-full-source-20261111.R",
+      "sha256": "ef2ff1e383e73a925e4a439a25dc18b567d4999cd83a674d1762f739899dac0e",
+      "description": "Sixteen complete multichannel trajectories observed at 15 times with named source curve IDs. FPCA 1/2 integer components and .85 proportion, unscaled/dimension_sd; FOS HC1 ordinary least squares with declared single predictor under independent curve or equal-weight repeated-curve participant units, both channels or a selected channel, participant predictors constant within unit."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-w3-dense-workflows-full-source-20261111.R",
+      "sha256": "ef2ff1e383e73a925e4a439a25dc18b567d4999cd83a674d1762f739899dac0e",
+      "description": "Native observed-grid FOS HC1 OLS coefficient functions and pointwise HC1 sandwich SE, dimension-selective long tables and participant-average inference. Pinned Python tests compare these numerical outputs, source result schemas, exact reporting text, table column order and scientific provenance in curve/participant domains."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-w3-dense-workflows-full-source-20261111.R",
+      "sha256": "ef2ff1e383e73a925e4a439a25dc18b567d4999cd83a674d1762f739899dac0e",
+      "description": "Strict source mode requires a valid scalar boolean and exactly declared complete-grid configuration, source-compatible integer or fraction count, permitted scaling, named predictors and unit metadata. Rejects nonempty preprocessing, malformed predictors, unsupported model units and inconsistent participant grouping; arbitrary Python exception types are not reproduced."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-w3-dense-workflows-full-source-20261111.R",
+      "sha256": "ef2ff1e383e73a925e4a439a25dc18b567d4999cd83a674d1762f739899dac0e",
+      "description": "Nine exact ordered W3 source-scientific workflow result fields, complete source config including empty preprocessing, true source-named elapsed fit step, analyst/derived decision values and criteria, original workflow provenance, exact reporting prose and source-schema tidy scientific tables. Nested R model classes remain scientific S3 analogues."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-w3-dense-workflows-full-source-20261111.R",
+      "sha256": "ef2ff1e383e73a925e4a439a25dc18b567d4999cd83a674d1762f739899dac0e",
+      "description": "FPCA: declared quadrature-weighted dense common-grid principal components without hidden preprocessing, retaining specified components/variance or scaling. FOS: pointwise multichannel Gaussian functional OLS with HC1 errors across independent curve/participant means and no smoothing or mixed-effects substitution."
+    }
+  ]
+}
