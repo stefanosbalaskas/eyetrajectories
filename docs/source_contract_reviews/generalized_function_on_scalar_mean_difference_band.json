@@ -1,0 +1,62 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "generalized_function_on_scalar_mean_difference_band",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py::generalized_function_on_scalar_mean_difference_band",
+  "native_signature": "etr_generalized_function_on_scalar_mean_difference_band(bootstrap,profile_a,profile_b,confidence_level=.95,contrast_scale=NULL)",
+  "reviewer_statement": "Developer-reviewed scientific source-semantic parity for the Python 1.2 mathematical result and return schema. Existing source comparisons plus new typed Python 1.2 whole-field/provenance tests for five contrast scales or both mixed covariance types with two inference scopes, invalid-domain tests and non-square arrays. Exact-head CI runs have not completed, and no independent external certification is claimed.",
+  "native_language_semantic_policy": "Published source scientific numeric and provenance contract represented with native R scientific lists/matrices/arrays. Python frozen dataclass identity, exception classes, and arbitrary Python object introspection are not native R types.",
+  "native_files": [
+    {
+      "path": "R/native-generalized-fosr-contrast-source.R",
+      "sha256": "dc3d30316d355e115a28b25ec795cea81c0bb6a973592356471802d522caa858"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-contrast-mixed-bands-full-source-20261111.R",
+      "sha256": "d0d2227b4fbb4ddc3097c39496b63bf364ca4d5ef0ccd909a559fcbff5567940",
+      "description": "Predeclared profile pair, one selected contrast scale, strict nominal level, typed prediction bootstrap source and source-shaped R scientific record."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-contrast-mixed-bands-full-source-20261111.R",
+      "sha256": "d0d2227b4fbb4ddc3097c39496b63bf364ca4d5ef0ccd909a559fcbff5567940",
+      "description": "Complete finite fixed profile predictions and retained participant bootstrap arrays for binomial probability, Poisson count, exposure-adjusted rate difference, log rate ratio, and count contrast; nontarget profiles and time order retained."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-contrast-mixed-bands-full-source-20261111.R",
+      "sha256": "d0d2227b4fbb4ddc3097c39496b63bf364ca4d5ef0ccd909a559fcbff5567940",
+      "description": "Exact fixed pair difference/ratio estimate and bootstrap samples, ddof=1 pointwise bootstrap SE, NumPy higher max-studentized quantile, rate-ratio log-scale exponentiated limits, source physical-bound warning."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-contrast-mixed-bands-full-source-20261111.R",
+      "sha256": "d0d2227b4fbb4ddc3097c39496b63bf364ca4d5ef0ccd909a559fcbff5567940",
+      "description": "Absent or duplicate target IDs, forbidden contrast type, missing target exposures, invalid confidence, nonfinite or insufficient bootstrap draws and nonpositive ratio denominator fail closed."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-contrast-mixed-bands-full-source-20261111.R",
+      "sha256": "d0d2227b4fbb4ddc3097c39496b63bf364ca4d5ef0ccd909a559fcbff5567940",
+      "description": "All source named fields, source time order, bootstrap array and contrast shape, extrapolation, physical bounds, scale and complete nested provenance. R list replaces frozen Python dataclass."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-contrast-mixed-bands-full-source-20261111.R",
+      "sha256": "d0d2227b4fbb4ddc3097c39496b63bf364ca4d5ef0ccd909a559fcbff5567940",
+      "description": "One a-priori profile contrast on the observed grid only, with un-clipped probability difference bounds, no familywise multiple-contrast correction and no automatic pair selection."
+    }
+  ],
+  "independent_review_status": "Author-reviewed, source-pinned evidence only; exact-head CI and independent review outstanding.",
+  "language_specific_limits": [
+    "R scientific records are analogous to Python typed dataclass results but cannot satisfy Python isinstance/identity semantics.",
+    "Source-produced finite observed-grid scientific arrays and errors are compared, rather than accepting arbitrary unvalidated Python objects.",
+    "Author-reported scientific parity is separate from exact-head CI, independent certification and release qualification."
+  ]
+}
