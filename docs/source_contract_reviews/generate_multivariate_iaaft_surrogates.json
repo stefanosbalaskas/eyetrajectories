@@ -1,0 +1,68 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "generate_multivariate_iaaft_surrogates",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/multivariate_surrogates.py::generate_multivariate_iaaft_surrogates, _multivariate_iaaft_one and _spectrum_errors; nonlinear_types.py::MultivariateIAAFTResult",
+  "native_signature": "etr_generate_multivariate_iaaft_surrogates(trajectories,curve,dimensions,reference_dimension,n_surrogates=199L,max_iterations=1000L,tolerance=1e-8,random_state=NULL,initial_permutations=NULL,phase_replay=NULL,python_boundary_mode=TRUE)",
+  "reviewer_statement": "Source provenance and full 14-field scientific record are author reviewed, pinned Python numerical differential tests cover PCG64 and Fourier rank iteration plus source-marginal constraints. Very low-amplitude Fourier phase bins require explicit roundoff qualification; exact-head CI and independent certification pending.",
+  "native_language_semantic_policy": "Statistical scientific R S3 source record, not identical Python frozen dataclass. Seeded PCG64 initial draw stream is compared; unseeded OS-entropy paths only share the stochastic null distribution. Approximate cross-spectra are reported rather than represented as exactly preserved.",
+  "native_files": [
+    {
+      "path": "R/native-multivariate-iaaft-generator.R",
+      "sha256": "39a31d749a67906e550058d18caf874a12a66f13663dcdc1b7d6dbee0435c89b"
+    },
+    {
+      "path": "R/native-divergence.R",
+      "sha256": "cacbdcedadbdbe45c759bfccda645b5d778d675e9c6032408243744ec8b94247"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-miaaft-pair-full-source-20261111.R",
+      "sha256": "1da4befa26f521af6c414962c3ba5f59b49dc2c8f5bf2b8ba6e6f1ed7b3d3b3e",
+      "description": "Frozen Python 1.2 multivariate_surrogates.py public signature with explicit two-or-more dimensions and reference channel, independent NumPy PCG64 surrogate initial permutations, finite common time grid and nonconstant selected channels. Source mode accepts only original source parameters; native-only fixed permutation and Fourier phase replay rejected; legacy R extension remains unchanged."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-miaaft-pair-full-source-20261111.R",
+      "sha256": "1da4befa26f521af6c414962c3ba5f59b49dc2c8f5bf2b8ba6e6f1ed7b3d3b3e",
+      "description": "Complete 23-/32-time 3-channel broadband common-grid curves with even/odd rFFT, nonconstant channel marginals, two independently randomized surrogates under seeds 17 and 89, nonlinear 96-point three-channel source with Rosenstein LLE, full three-way alternatives and source physical time-unit parameters. No imputation or silently altered null."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-miaaft-pair-full-source-20261111.R",
+      "sha256": "1da4befa26f521af6c414962c3ba5f59b49dc2c8f5bf2b8ba6e6f1ed7b3d3b3e",
+      "description": "Direct typed frozen Python 1.2 public generator numerical comparison over even/odd 23-/32-time, reordered three-channel source curves and PCG64 seeds 17,89; all surrogate curves, original marginal ranks, convergence iterations and separate spectral/cross-spectral relative errors. Existing fixed NumPy permutation replay and phase-ambiguity diagnostics retained and tested separately, not treated as public Python APIs."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-miaaft-pair-full-source-20261111.R",
+      "sha256": "1da4befa26f521af6c414962c3ba5f59b49dc2c8f5bf2b8ba6e6f1ed7b3d3b3e",
+      "description": "Reject invalid strict boolean flag, ambiguous selected reference, duplicate/missing channels, nonfinite/constant data, malformed FFT convergence controls, nonconvergent iteration with clear failed surrogate identity, and native-only fixed permutations/phase replay. Native R does not inherit Python exception types or arbitrary Python dynamic coercions."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-miaaft-pair-full-source-20261111.R",
+      "sha256": "1da4befa26f521af6c414962c3ba5f59b49dc2c8f5bf2b8ba6e6f1ed7b3d3b3e",
+      "description": "Exact fourteen ordered source scientific surrogate result fields and original source provenance without R-only replay and RNG audit flags, or seven ordered nonlinearity result fields with complete source nested surrogate and exact ten-field null-test provenance. R S3 arrays and structures replace Python scientific frozen dataclasses."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-miaaft-pair-full-source-20261111.R",
+      "sha256": "1da4befa26f521af6c414962c3ba5f59b49dc2c8f5bf2b8ba6e6f1ed7b3d3b3e",
+      "description": "Reference-anchored multivariate iterative amplitude-adjusted Fourier transform null surrogates with exact per-channel empirical rank distributions and approximate auto/cross-spectrum constraints, explicit error diagnostics; Rosenstein largest Lyapunov statistic compared with surrogate null using plus-one one-/two-sided Monte Carlo tail p-values. Rejection is not proof of deterministic chaos."
+    }
+  ],
+  "independent_review_status": "Provisional source-scientific author review only; no independent scientific certification and no exact-head CI pass.",
+  "language_specific_limits": [
+    "R S3 native scientific records are not Python frozen dataclasses and native R exceptions do not inherit Python exception classes.",
+    "NumPy random_state=NULL obtains entropy and differs in realized draws from native ambient R RNG, while the stochastic surrogate null remains defined; deterministic NumPy PCG64 seed paths are source compared.",
+    "Near-zero target Fourier phases create machine-precision sensitivity; such unresolved bins are audited but source public API does not expose fixed replay for equivalence claims.",
+    "Exact per-channel empirical marginal distributions and approximate auto/cross-spectral fit are the scientific properties, not a guarantee of bitwise FFT identity across NumPy and base R.",
+    "Explicit native fixed initial permutations and Fourier-phase replay are out-of-source extensions and are rejected in strict source mode."
+  ]
+}
