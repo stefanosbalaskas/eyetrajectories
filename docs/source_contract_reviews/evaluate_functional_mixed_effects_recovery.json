@@ -19,37 +19,37 @@
     {
       "kind": "source_signature",
       "path": "tests/testthat/test-native-mixed-recovery-multidomain-source-20261111.R",
-      "sha256": "b408567911d6293012500f4a07e2cfefa260ed52dd808cd1585e3215104c5fd3",
+      "sha256": "71bcf8233a0d38f25eae6f9153dbeee5c9c4a03167412f7c35303b534bcca95f",
       "description": "Frozen eyetrajectoriespy 1.2 recovery.py::evaluate_functional_mixed_effects_recovery typed FunctionalMixedEffectsResult, FunctionSimulationTruth and explicit intercept_name, native R exact-grid fixed-intercept/variance source records."
     },
     {
       "kind": "accepted_input_domain",
       "path": "tests/testthat/test-native-mixed-recovery-multidomain-source-20261111.R",
-      "sha256": "b408567911d6293012500f4a07e2cfefa260ed52dd808cd1585e3215104c5fd3",
+      "sha256": "71bcf8233a0d38f25eae6f9153dbeee5c9c4a03167412f7c35303b534bcca95f",
       "description": "Five typed source configurations: participant random intercept only, nested trial random intercept, exactly zero participant variance, two-channel/2-mode selected response with alternate coefficient-name position, and Unicode/apostrophe fixed intercept identity."
     },
     {
       "kind": "numerical_outputs",
       "path": "tests/testthat/test-native-mixed-recovery-multidomain-source-20261111.R",
-      "sha256": "b408567911d6293012500f4a07e2cfefa260ed52dd808cd1585e3215104c5fd3",
+      "sha256": "71bcf8233a0d38f25eae6f9153dbeee5c9c4a03167412f7c35303b534bcca95f",
       "description": "Five complete direct Python 1.2 source vs native R recovery assessment frames with every registered nine-column scientific metric value, metadata and provenance; prior direct Python one-channel and nested trial source oracle tests retained."
     },
     {
       "kind": "exception_semantics",
       "path": "tests/testthat/test-native-mixed-recovery-multidomain-source-20261111.R",
-      "sha256": "b408567911d6293012500f4a07e2cfefa260ed52dd808cd1585e3215104c5fd3",
+      "sha256": "71bcf8233a0d38f25eae6f9153dbeee5c9c4a03167412f7c35303b534bcca95f",
       "description": "Native R rejects unsupported random slopes, absent fixed intercept, missing trial source variance fit against declared truth, fitted truth-grid mismatch and invalid spline basis covariance geometry; Python runtime dataclass/TypeError class identities are not claimed."
     },
     {
       "kind": "returned_schema",
       "path": "tests/testthat/test-native-mixed-recovery-multidomain-source-20261111.R",
-      "sha256": "b408567911d6293012500f4a07e2cfefa260ed52dd808cd1585e3215104c5fd3",
+      "sha256": "71bcf8233a0d38f25eae6f9153dbeee5c9c4a03167412f7c35303b534bcca95f",
       "description": "Frozen Python FunctionalRecoveryAssessment ordered metric tuple and fixed provenance map correspond to source-ordered native R recovery assessment/registered value list; nine-column source comparison includes metric labels and nullable component/source fields."
     },
     {
       "kind": "scientific_estimand",
       "path": "tests/testthat/test-native-mixed-recovery-multidomain-source-20261111.R",
-      "sha256": "b408567911d6293012500f4a07e2cfefa260ed52dd808cd1585e3215104c5fd3",
+      "sha256": "71bcf8233a0d38f25eae6f9153dbeee5c9c4a03167412f7c35303b534bcca95f",
       "description": "Time-domain fixed-intercept integrated squared error, participant/trial functional variance trajectory squared error, integrated variance absolute and conditional relative error; fitted spline covariance matrices are not compared directly to generating KL eigenvalues or iid scalar residual variance."
     }
   ],
