@@ -9,6 +9,16 @@
   as.integer(digits)
 }
 .etr_format_report_decimal <- function(x,digits) sprintf(paste0("%.",digits,"f"),x)
+
+# Match Python repr() of supported scalar provenance labels, including
+# apostrophes, double quotes, escapes and non-ASCII scientific descriptions.
+.etr_fpca_source_py_repr <- function(x) {
+  .etr_assert(is.character(x) && length(x)==1L && !is.na(x),
+    "provenance label must be one nonmissing text value")
+  quote<-if(grepl("'",x,fixed=TRUE) && !grepl('"',x,fixed=TRUE))
+    '"' else "'"
+  encodeString(x,quote=quote)
+}
 .etr_fpca_matched_similarities <- function(result,kind) {
   .etr_assert(inherits(result,kind)&&
     is.matrix(result$similarities)&&
@@ -51,7 +61,7 @@ etr_fpca_score_uncertainty_reporting_text <- function(result,digits=3L) {
     "scaling must be single text value")
   paste0("FPC score sensitivity to basis estimation was evaluated with ",
     nrow(sims)," ",result$resampling_unit,"-level bootstrap refits ",
-    "(scaling='",scaling,"') for ",nrow(result$median)," fixed ",
+    "(scaling=",.etr_fpca_source_py_repr(scaling),") for ",nrow(result$median)," fixed ",
     result$target_source," target trajectory/trajectories. Bootstrap ",
     "components were matched and sign-aligned to the full-sample ",
     "reference (median absolute similarities: ",
@@ -123,7 +133,7 @@ etr_functional_mean_band_reporting_text <- function(result,digits=3L) {
     !is.na(estimand),"estimand must be one text label")
   paste0("The functional mean was estimated from ",
     length(result$unit_ids)," ",result$unit,
-    "-level inference units using estimand='",estimand,"'. A ",
+    "-level inference units using estimand=",.etr_fpca_source_py_repr(estimand),". A ",
     .etr_format_report_decimal(100*result$confidence_level,1L),
     "% simultaneous observed-grid band was calibrated with a ",
     "studentized Gaussian multiplier maximum using ",nmult,
