@@ -191,9 +191,23 @@ etr_fit_sparse_mfpca<-function(trajectories,dimensions=c("x","y"),
 #'   supports optional conditional score uncertainty.
 #' @param observation_process Candidate-sample denominator for explicit
 #'   observation diagnostics with the native_covariance backend.
+#' @param strict_source_record If TRUE, emit canonical frozen Python 1.2
+#'   W2 source-scientific workflow fields and decisions; use only genuine
+#'   native covariance/PACE backend. Python dataclass identity is excluded.
 #' @export
 etr_run_sparse_mfpca_workflow<-function(trajectories,config,
-    observation_process=NULL){
+    observation_process=NULL,strict_source_record=FALSE){
+  .etr_assert(is.logical(strict_source_record)&&
+    length(strict_source_record)==1L&&!is.na(strict_source_record),
+    "strict_source_record must be TRUE or FALSE")
+  if(isTRUE(strict_source_record)){
+    .etr_assert(is.list(config)&&
+      identical(config$backend,"native_covariance"),
+      "strict paired W2 workflow requires native_covariance backend")
+    if(!is.null(config$bandwidth_selection))
+      .etr_sparse_fpca_w2_source_bandwidth_config(
+        config$bandwidth_selection)
+  }
   source_mode<-is.list(config)&&!is.data.frame(config)&&
     identical(config$backend,"native_covariance")
   if(source_mode){
@@ -260,7 +274,11 @@ etr_run_sparse_mfpca_workflow<-function(trajectories,config,
       reports=reports,tables=tables),
       class="etr_native_sparse_mfpca_workflow")
     workflow<-.etr_sparse_bandwidth_workflow(workflow,selection_run)
-    return(.etr_sparse_observation_workflow(workflow,observation_process,observation_options))
+    workflow<-.etr_sparse_observation_workflow(workflow,
+      observation_process,observation_options)
+    if(isTRUE(strict_source_record))
+      return(.etr_sparse_mfpca_w2_paired_record(workflow,cfg))
+    return(workflow)
   }
   cfg<-.etr_source_workflow_config(config,list(
     dimensions=c("x","y"),backend=NULL,n_components=2L,
@@ -282,9 +300,18 @@ etr_run_sparse_mfpca_workflow<-function(trajectories,config,
 #' @param config Explicit backend and component controls with empty plan.
 #' @param observation_process Candidate-sample denominator for explicit
 #'   observation diagnostics with the native_covariance backend.
+#' @param strict_source_record Emit the 10-field frozen Python W2 async
+#'   source-scientific workflow record, without Python dataclass identity.
 #' @export
 etr_run_sparse_mfpca_async_workflow<-function(trajectories,config,
-    observation_process=NULL){
+    observation_process=NULL,strict_source_record=FALSE){
+  .etr_assert(is.logical(strict_source_record)&&
+    length(strict_source_record)==1L&&!is.na(strict_source_record),
+    "strict_source_record must be TRUE or FALSE")
+  if(isTRUE(strict_source_record))
+    .etr_assert(is.list(config)&&
+      identical(config$backend,"native_covariance"),
+      "strict asynchronous W2 workflow requires native_covariance backend")
   if(is.list(config)&&!is.data.frame(config)&&
       identical(config$backend,"native_covariance")){
     cfg<-.etr_source_workflow_config(config,list(
@@ -342,7 +369,11 @@ etr_run_sparse_mfpca_async_workflow<-function(trajectories,config,
       tables=list(scores=.etr_scientific_frame_metadata(fit,"ASMFPC",
         preserve_workflow_metadata=TRUE)))
     workflow<-structure(evidence,class="etr_native_sparse_mfpca_workflow")
-    return(.etr_sparse_observation_workflow(workflow,observation_process,observation_options))
+    workflow<-.etr_sparse_observation_workflow(workflow,
+      observation_process,observation_options)
+    if(isTRUE(strict_source_record))
+      return(.etr_sparse_mfpca_w2_async_record(workflow,cfg))
+    return(workflow)
   }
   cfg<-.etr_source_workflow_config(config,list(
     dimensions=c("x","y"),backend=NULL,n_components=2L,
