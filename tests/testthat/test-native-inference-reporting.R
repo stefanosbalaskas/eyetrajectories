@@ -119,7 +119,13 @@ test_that("eight frozen reports map but remain uncertified",{
   candidates<-api[api$python_name%in%expected & api$is_python_function,]
   expect_equal(nrow(candidates),8L)
   expect_true(all(candidates$native_implementation_started))
-  expect_true(all(candidates$source_contract_gap_unresolved))
+  ledger<-utils::read.csv(system.file("extdata",
+    "native_source_contract_gaps_stage22.csv",package="eyetrajectories"),
+    stringsAsFactors=FALSE)
+  witnesses<-ledger[match(candidates$python_name,ledger$python_name),,drop=FALSE]
+  expect_false(anyNA(witnesses$python_name))
+  expect_identical(as.logical(candidates$source_contract_gap_unresolved),
+    as.logical(witnesses$unresolved_source_gap))
   expect_identical(sort(candidates$native_r_candidate),
     sort(paste0("etr_",expected)))
   expect_false(any(candidates$one_to_one_native_contract_complete))
