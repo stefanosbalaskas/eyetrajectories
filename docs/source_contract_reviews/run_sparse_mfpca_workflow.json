@@ -1,0 +1,68 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "run_sparse_mfpca_workflow",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_SCIENTIFIC_CONTRACT_REVIEW_ON_DECLARED_DOMAIN",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/workflows/_sparse_mfpca.py::run_sparse_mfpca_workflow",
+  "native_signature": "etr_run_sparse_mfpca_workflow(trajectories,config,observation_process=NULL,strict_source_record=TRUE)",
+  "reviewer_statement": "Provisional source-scientific developer review of real native R paired sparse multivariate joint-covariance/PACE workflow; direct frozen 1.2 scientific numerical and schema tests are committed but exact-head CI has not passed or been witnessed, and independent certification has not occurred.",
+  "native_language_semantic_policy": "Underlying native R estimator is genuinely R-native and is not a Python dataclass; canonical workflow schema and measured steps, decisions and scientific numerical tables are reproduced on declared source domain. Non-source R alternative estimators are rejected in strict mode; ordinary native defaults unchanged.",
+  "native_files": [
+    {
+      "path": "R/native-sparse-joint-score-workflows.R",
+      "sha256": "4ddcdd094146a4dca8708e621319ea148c40a680e805dddaa3fc51f34f927719"
+    },
+    {
+      "path": "R/native-sparse-mfpca-w2-source-workflow-record.R",
+      "sha256": "9972e1feeda4c7511a0b158c97b49f6ed41ca295b2b25d39749711deed131224"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Frozen Python 1.2 src/eyetrajectoriespy/workflows/_sparse_mfpca.py::run_sparse_mfpca_workflow, 12-field Python SparseMFPCAWorkflowResult analogue with 22 ordered config fields, seven decisions, four source provenance fields, true measured R steps, source score tables, optional selected bandwidths, conditional score uncertainty and observation-process diagnostics.",
+      "path": "tests/testthat/test-native-sparse-mfpca-paired-async-w2-source-20261112.R",
+      "sha256": "6c585e984bb7c97932c8085dd917b1b4a4bfa255d2b5de20e57be99bb89d00fd"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Paired finite irregular planar samples on named x/y channels, 1+ FPC components, native_covariance source backend only, finite analysis grid, analyst-fixed or audited selected bandwidths, explicit PSD and score conditioning, diagonal/fixed-matrix measurement noise; optional genuine source posterior score uncertainty and observation-process diagnostics. Strict grouped selectors require explicit NumPy tie profile and no R-only supplied fold assignments.",
+      "path": "tests/testthat/test-native-sparse-mfpca-paired-async-w2-source-20261112.R",
+      "sha256": "6c585e984bb7c97932c8085dd917b1b4a4bfa255d2b5de20e57be99bb89d00fd"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Direct frozen Python 1.2 workflow comparison uses the actual public workflow constructor with paired 24-curve two-component data, posterior uncertainty, fixed bandwidths, measurement noise, score tables, mean/eigenvalue/eigenfunction/scores, covariance blocks, step and provenance. Earlier direct paired fit and source-selection tests cover diagonal/correlated noise, groups and score covariance; new CI not yet proven green.",
+      "path": "tests/testthat/test-native-sparse-mfpca-paired-async-w2-source-20261112.R",
+      "sha256": "6c585e984bb7c97932c8085dd917b1b4a4bfa255d2b5de20e57be99bb89d00fd"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Reject R-only fdapace alternative, invalid strict flag, supplied selection fold indices, unsupported score configuration, impossible PSD/covariance support, invalid measurement-error covariance. Source-specific typed errors and Python class identity not claimed; low-support, rank and NumPy GroupKFold ties remain qualified domains.",
+      "path": "tests/testthat/test-native-sparse-mfpca-paired-async-w2-source-20261112.R",
+      "sha256": "6c585e984bb7c97932c8085dd917b1b4a4bfa255d2b5de20e57be99bb89d00fd"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "12-field Python SparseMFPCAWorkflowResult analogue with 22 ordered config fields, seven decisions, four source provenance fields, true measured R steps, source score tables, optional selected bandwidths, conditional score uncertainty and observation-process diagnostics.",
+      "path": "tests/testthat/test-native-sparse-mfpca-paired-async-w2-source-20261112.R",
+      "sha256": "6c585e984bb7c97932c8085dd917b1b4a4bfa255d2b5de20e57be99bb89d00fd"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Paired sparse planar x/y joint covariance PACE from original coincident observation grids. Local mean and covariance smoothing, cross-channel covariance and channel-specific or correlated measurement errors retained, no original observations interpolated to a synthetic common grid. Model selection only through declared audited selector.",
+      "path": "tests/testthat/test-native-sparse-mfpca-paired-async-w2-source-20261112.R",
+      "sha256": "6c585e984bb7c97932c8085dd917b1b4a4bfa255d2b5de20e57be99bb89d00fd"
+    }
+  ],
+  "independent_review_status": "Developer provisional six-domain source scientific review only. CI tests pending/not observed green. No external independent certification.",
+  "language_specific_limits": [
+    "Python dataclass identities, numpy ndarray/pandas runtime types, warnings and Python exceptions do not have identical native R runtime equivalents.",
+    "R and Python independent measured elapsed_seconds naturally differ; provenance/step structure is source-scientific.",
+    "Unseeded/grouped NumPy tie-order behavior outside documented profiles remains unverified.",
+    "No guarantee of bitwise equal reports or all optional observation-process strings and tables beyond tested source domains.",
+    "Frozen Python 1.2 pinned source tests are committed but not verified passing on this exact head; independent review and CRAN qualification remain pending."
+  ]
+}
