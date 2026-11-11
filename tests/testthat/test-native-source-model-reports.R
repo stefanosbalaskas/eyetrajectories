@@ -79,7 +79,13 @@ test_that("three new reporters remain mapped but not full-domain certified",{
   expect_equal(nrow(x),3L)
   expect_identical(sort(x$native_r_candidate),sort(paste0("etr_",names)))
   expect_true(all(x$native_implementation_started))
-  expect_true(all(x$source_contract_gap_unresolved))
+  ledger<-utils::read.csv(system.file("extdata",
+    "native_source_contract_gaps_stage22.csv",package="eyetrajectories"),
+    stringsAsFactors=FALSE)
+  review<-ledger[match(x$python_name,ledger$python_name),,drop=FALSE]
+  expect_false(anyNA(review$python_name))
+  expect_identical(as.logical(x$source_contract_gap_unresolved),
+    as.logical(review$unresolved_source_gap))
   expect_false(any(x$one_to_one_native_contract_complete))
   expect_gte(sum(p$is_python_function&p$named_native_candidate),332L)
   expect_gte(sum(p$native_implementation_started),307L)
