@@ -189,8 +189,7 @@ def _w2_mfpca_input(times,values,ids,group_column,groups):
       values=reticulate::r_to_py(x$values),
       ids=reticulate::r_to_py(as.list(x$curve_ids)),
       group_column=group,
-      groups=reticulate::r_to_py(as.list(
-        as.character(x$metadata[[group]]))))
+      groups=reticulate::r_to_py(as.list(x$metadata[[group]])))
     pycfg<-cfg[names(cfg)!="backend"]
     pycfg$dimensions<-reticulate::tuple("x","y")
     pycfg$evaluation_grid<-reticulate::r_to_py(
