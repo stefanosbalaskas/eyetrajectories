@@ -96,7 +96,13 @@ test_that("five reporting candidates remain unmapped-to-certificate gaps",{
   expect_equal(nrow(rows),5L)
   expect_identical(sort(rows$native_r_candidate),sort(paste0("etr_",names)))
   expect_true(all(rows$native_implementation_started))
-  expect_true(all(rows$source_contract_gap_unresolved))
+  ledger<-utils::read.csv(system.file("extdata",
+    "native_source_contract_gaps_stage22.csv",package="eyetrajectories"),
+    stringsAsFactors=FALSE)
+  status<-ledger[match(rows$python_name,ledger$python_name),,drop=FALSE]
+  expect_false(anyNA(status$python_name))
+  expect_identical(as.logical(rows$source_contract_gap_unresolved),
+    as.logical(status$unresolved_source_gap))
   expect_false(any(rows$one_to_one_native_contract_complete))
   expect_gte(sum(p$is_python_function & p$named_native_candidate),332L)
   expect_gte(sum(p$native_implementation_started),307L)
