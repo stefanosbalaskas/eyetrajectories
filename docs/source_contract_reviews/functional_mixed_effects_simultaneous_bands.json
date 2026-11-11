@@ -1,0 +1,62 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "functional_mixed_effects_simultaneous_bands",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/functional_mixed_effects_inference.py::functional_mixed_effects_simultaneous_bands",
+  "native_signature": "etr_functional_mixed_effects_simultaneous_bands(bootstrap,confidence_level=.95,simultaneous_scope='coefficient')",
+  "reviewer_statement": "Developer-reviewed scientific source-semantic parity for the Python 1.2 mathematical result and return schema. Existing source comparisons plus new typed Python 1.2 whole-field/provenance tests for five contrast scales or both mixed covariance types with two inference scopes, invalid-domain tests and non-square arrays. Exact-head CI runs have not completed, and no independent external certification is claimed.",
+  "native_language_semantic_policy": "Published source scientific numeric and provenance contract represented with native R scientific lists/matrices/arrays. Python frozen dataclass identity, exception classes, and arbitrary Python object introspection are not native R types.",
+  "native_files": [
+    {
+      "path": "R/native-mixed-coefficient-bands-source.R",
+      "sha256": "6447d52cf785a93a69e5dd516e7f1f473d242528fe5d347daf80f321668f0a67"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-contrast-mixed-bands-full-source-20261111.R",
+      "sha256": "d0d2227b4fbb4ddc3097c39496b63bf364ca4d5ef0ccd909a559fcbff5567940",
+      "description": "Frozen Python typed FunctionalMixedEffectsBootstrapResult or FunctionalMixedEffectsFullRefitBootstrapResult and native R explicit bootstrap_type scientific equivalents."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-contrast-mixed-bands-full-source-20261111.R",
+      "sha256": "d0d2227b4fbb4ddc3097c39496b63bf364ca4d5ef0ccd909a559fcbff5567940",
+      "description": "Retained finite bootstrap coefficient arrays and bootstrap mean/standard error observed-grid matrices for both conditional-covariance and full-refit source subclasses; coefficient versus family scope."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-contrast-mixed-bands-full-source-20261111.R",
+      "sha256": "d0d2227b4fbb4ddc3097c39496b63bf364ca4d5ef0ccd909a559fcbff5567940",
+      "description": "Whole-participant bootstrap-centered maximum absolute studentized deviations, NumPy higher quantile, coefficient/family critical values, observed-grid estimate-centered lower/upper bands and retained pointwise standard errors."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-contrast-mixed-bands-full-source-20261111.R",
+      "sha256": "d0d2227b4fbb4ddc3097c39496b63bf364ca4d5ef0ccd909a559fcbff5567940",
+      "description": "Unknown typed bootstrap kind, malformed B-by-coefficient-by-time dimensions, zero/nonfinite bootstrap standard errors, invalid scope and invalid confidence are rejected; source exception class identity unavailable in R."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-contrast-mixed-bands-full-source-20261111.R",
+      "sha256": "d0d2227b4fbb4ddc3097c39496b63bf364ca4d5ef0ccd909a559fcbff5567940",
+      "description": "All source band names, reference and bootstrap nesting, non-square matrix and max-statistic shapes, source per-coefficient/family selected domain and complete variance-refit provenance."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-contrast-mixed-bands-full-source-20261111.R",
+      "sha256": "d0d2227b4fbb4ddc3097c39496b63bf364ca4d5ef0ccd909a559fcbff5567940",
+      "description": "Participant cluster bootstrap observed-grid simultaneous coefficient inference; bootstrap distribution centered on bootstrap mean, final limits centered on reference estimate, no continuous between-grid coverage claim."
+    }
+  ],
+  "independent_review_status": "Author-reviewed, source-pinned evidence only; exact-head CI and independent review outstanding.",
+  "language_specific_limits": [
+    "R scientific records are analogous to Python typed dataclass results but cannot satisfy Python isinstance/identity semantics.",
+    "Source-produced finite observed-grid scientific arrays and errors are compared, rather than accepting arbitrary unvalidated Python objects.",
+    "Author-reported scientific parity is separate from exact-head CI, independent certification and release qualification."
+  ]
+}
