@@ -1,0 +1,69 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "fpca_wild_bootstrap_monte_carlo_reporting_text",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/reporting.py::fpca_wild_bootstrap_monte_carlo_reporting_text",
+  "native_signature": "etr_fpca_wild_bootstrap_monte_carlo_reporting_text(result,digits=3L)",
+  "reviewer_statement": "Developer-side scientific full-source semantic review of the published Python 1.2 manuscript reporting text. A shared 30-string frozen Python typed dataclass oracle covers five reporting exports, two variants and three precision settings. Native R must preserve complete text, scientific disclaimers and correct numerical formatting. Python typed class and exception identity are not native R types; independent review and exact-head qualification pending.",
+  "native_language_semantic_policy": "The Python 1.2 result dataclass is represented by a validated native R scientific record; the Python str return is native R character of length one, without invoking a Python engine. Full textual equality is independently tested per source-typed reference fixture and formatting setting.",
+  "native_files": [
+    {
+      "path": "R/native-inference-reporting.R",
+      "sha256": "3cc9e620a8f0f844ed1a333c2dca599812b1e99e341e453ce6836f13f0f6fc25"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-wild-five-reporting-text-full-source.R",
+      "sha256": "061cd531ee21e2602681553ffb9b3903f3786d83534198e1841853965de04421",
+      "description": "Python source function requires typed published scientific dataclass plus keyword-only digits; native R accepts checked source-shaped record and integer digits, returning one manuscript string."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-wild-five-reporting-text-full-source.R",
+      "sha256": "061cd531ee21e2602681553ffb9b3903f3786d83534198e1841853965de04421",
+      "description": "Two complete source-domain cases with no or declared independent grouping, family plus-one versus empirical adjustment, selected versus no selected h, and digits 0,3,5."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-wild-five-reporting-text-full-source.R",
+      "sha256": "061cd531ee21e2602681553ffb9b3903f3786d83534198e1841853965de04421",
+      "description": "30 full-character exact frozen Python 1.2 versus native R manuscript reporting strings, including formatting percentages, medians, inference component counts, thresholds and bootstrap counts."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-wild-five-reporting-text-full-source.R",
+      "sha256": "061cd531ee21e2602681553ffb9b3903f3786d83534198e1841853965de04421",
+      "description": "Native R rejects invalid numerical science fields, negative digits, incomplete family flags, improper confidence bounds, and nonconsecutive truncation grid. Python exception-class identity remains language-specific."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-wild-five-reporting-text-full-source.R",
+      "sha256": "061cd531ee21e2602681553ffb9b3903f3786d83534198e1841853965de04421",
+      "description": "Exactly one complete plain-text reporting string, preserving scientific caveats, quotation of multiplier/independent-unit names and published sentence order."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-wild-five-reporting-text-full-source.R",
+      "sha256": "061cd531ee21e2602681553ffb9b3903f3786d83534198e1841853965de04421",
+      "description": "Clopper-Pearson finite-bootstrap Monte Carlo precision and decision sensitivity; does not change scientific test decisions; Only textual scientific reporting of already computed wild-bootstrap results; no new bootstrap draws, null-test changes, false precision, new estimator or external Python runtime dependency."
+    }
+  ],
+  "extra_source_evidence": [
+    {
+      "path": "tests/testthat/test-native-inference-reporting.R",
+      "sha256": "91dfe524fc72aa657247609a2dfb82cdcadf01e08ebd8f4e347482aee92fad71"
+    }
+  ],
+  "independent_review_status": "Developer semantic source review only; exact-head 3-OS R and frozen Python 1.2 CI plus independent audit pending",
+  "language_specific_limits": [
+    "Frozen Python dataclass is native R checked list/S3, not class-identical",
+    "Python str return maps to native R scalar character, not identical runtime class",
+    "Python TypeError/ValueError conditions have native R semantic error counterparts only",
+    "Arbitrary malformed Python object graphs are not accepted native R scientific records"
+  ]
+}
