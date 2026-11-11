@@ -1,0 +1,72 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "workflow_steps_frame",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/workflows/_core.py::workflow_steps_frame",
+  "native_signature": "etr_workflow_steps_frame(steps)",
+  "reviewer_statement": "Developer-side six-domain native-language full-source semantic review against frozen Python 1.2. Typed WorkflowStepRecord and WorkflowDecisionRecord, complete source table columns, representative accepted/error boundaries, and direct pandas differential output evidence. R lists/data.frames and Python dataclass/pandas objects have different runtime identities; exception class identities and arbitrary Python protocols are not claimed. Independent certification is not obtained.",
+  "native_language_semantic_policy": "Native R ordered list records and named decision list are explicitly validated semantic analogues of source frozen Python dataclasses and mapping protocol. Named R lists represent Python JSON mapping and unnamed lists sequences; source Boolean elapsed_seconds is converted to float. R data.frame is the Python pandas semantic counterpart; class identity and arbitrary Python custom object protocols are not a native R objective.",
+  "native_files": [
+    {
+      "path": "R/native-workflow-source-audit.R",
+      "sha256": "4c96c996f62a0c0f94740c71b3736b01058c39c7256f931651224f679982f589"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-workflow-audit-frames-full-source-pair.R",
+      "sha256": "7527a1f95c7e6a44f021eabe48f6dc7c78e5eb9953a1ff8999df8465c9ed95dc",
+      "description": "Source Python accepts Sequence[WorkflowStepRecord] or Mapping[str,WorkflowDecisionRecord]; R native validated list equivalents and exact output signatures"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-workflow-audit-frames-full-source-pair.R",
+      "sha256": "7527a1f95c7e6a44f021eabe48f6dc7c78e5eb9953a1ff8999df8465c9ed95dc",
+      "description": "Empty and populated ordered records; Python Boolean elapsed seconds; recursive Unicode and ndarray JSON; null, numeric, bool and empty mapping values"
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-workflow-audit-frames-full-source-pair.R",
+      "sha256": "7527a1f95c7e6a44f021eabe48f6dc7c78e5eb9953a1ff8999df8465c9ed95dc",
+      "description": "Direct frozen Python 1.2 typed dataclass/pandas comparison across empty, mixed step statuses/decision sources, Boolean elapsed seconds and NumPy 2D tensor axes"
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-workflow-source-audit.R",
+      "sha256": "006085deaa7f0c64b1265aecd33f74e06b76e76cd6b0fc62fd57bfbd65cfa3f6",
+      "description": "Reject nonfinite/negative/NA step time, unknown statuses and decision sources, duplicated mapping keys, missing audited selector criteria, invalid numerical values"
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-workflow-audit-frames-full-source-pair.R",
+      "sha256": "7527a1f95c7e6a44f021eabe48f6dc7c78e5eb9953a1ff8999df8465c9ed95dc",
+      "description": "Exact eight ordered steps table fields and four decision fields, row counts, sorted JSON, warnings and missing criterion semantics"
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-workflow-audit-frames-full-source-pair.R",
+      "sha256": "7527a1f95c7e6a44f021eabe48f6dc7c78e5eb9953a1ff8999df8465c9ed95dc",
+      "description": "Only descriptive audit records and decisions; no estimation, automatic preprocessing or scientific model selection; native S3 analogue remains separate from Python class identity"
+    }
+  ],
+  "extra_source_evidence": [
+    {
+      "path": "tests/testthat/test-native-workflow-audit-frames-full-source-pair.R",
+      "sha256": "7527a1f95c7e6a44f021eabe48f6dc7c78e5eb9953a1ff8999df8465c9ed95dc"
+    },
+    {
+      "path": "tests/testthat/test-native-workflow-source-audit.R",
+      "sha256": "006085deaa7f0c64b1265aecd33f74e06b76e76cd6b0fc62fd57bfbd65cfa3f6"
+    }
+  ],
+  "independent_review_status": "developer-reviewed only; independent reviewer and cross-platform latest-head CI pending",
+  "language_specific_limits": [
+    "Python pandas/dataclass identities are not identical to R data.frame/list types",
+    "Python TypeError and ValueError map to native R conditions with semantic boundaries",
+    "Arbitrary Python mapping, NumPy object-array and user-defined protocols are not native R representations"
+  ]
+}

@@ -57,7 +57,8 @@
       !is.na(step$status) && step$status %in%
         c("completed","failed","skipped") &&
       is.list(step$parameters) &&
-      is.numeric(step$elapsed_seconds) &&
+      # np.isfinite(True) and float(True) are accepted by Python 1.2.
+      (is.numeric(step$elapsed_seconds) || is.logical(step$elapsed_seconds)) &&
       length(step$elapsed_seconds)==1L &&
       !is.na(step$elapsed_seconds) &&
       is.finite(step$elapsed_seconds) && step$elapsed_seconds>=0 &&
