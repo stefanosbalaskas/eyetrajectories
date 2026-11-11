@@ -1,0 +1,67 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "run_sparse_prediction_workflow",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_SCIENTIFIC_CONTRACT_REVIEW_ON_DECLARED_DOMAIN",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/workflows/_sparse_prediction.py::run_sparse_prediction_workflow",
+  "native_signature": "etr_run_sparse_prediction_workflow(proper_training,calibration,target,config,strict_source_record=TRUE)",
+  "reviewer_statement": "Developer-scoped provisional scientific source-record review, based on implemented native R covariance and sparse prediction primitives, preexisting frozen Python 1.2 numerical differential tests and newly committed direct W2 workflow checks. No passing exact-head CI or independent review has been confirmed.",
+  "native_language_semantic_policy": "Native R scientific estimators are never replaced with reticulate or a Python runtime object; canonical source workflow field order, native measured steps, scientific decisions, provenance, reports and tables are emitted by opt-in mode only. Legacy native R outputs remain available by default.",
+  "native_files": [
+    {
+      "path": "R/native-sparse-multilevel-prediction-workflows.R",
+      "sha256": "b57c6feffc8269ee15ccbf2c9da21a0a70d4cda41df908d7296079d2515ebd30"
+    },
+    {
+      "path": "R/native-sparse-multilevel-prediction-w2-source-record.R",
+      "sha256": "ae6dc8158d3b96b2459584681a1fe731d94a5542218d12ff449ffc871a4ff711"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Frozen Python 1.2 src/eyetrajectoriespy/workflows/_sparse_prediction.py::run_sparse_prediction_workflow. Frozen Python 1.2 W2 11 outer scientific result fields, nine configuration fields with nested strict 27-field sparse FPCA training source configuration, 12 decisions (seven prefixed training plus five explicit role/calibration decisions), seven provenance fields, three or more measured steps, three source scientific tables and two reports.",
+      "path": "tests/testthat/test-native-sparse-multilevel-prediction-w2-source-20261112.R",
+      "sha256": "cedf1d70f4939460d8fdb4cc958ec87ef5ecacc04752b6741c87740da4a0a5e1"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Three explicitly supplied irregular disjoint roles: proper sparse FPCA/PACE training, calibration and single target curve; finite ordered future grid, strictly (0,1) alpha, optional group calibration and controls for past-time conditioning. Strict requires real native_covariance source PACE training and rejects interpolated mean-curve baseline or R-only fixed selector fold assignments.",
+      "path": "tests/testthat/test-native-sparse-multilevel-prediction-w2-source-20261112.R",
+      "sha256": "cedf1d70f4939460d8fdb4cc958ec87ef5ecacc04752b6741c87740da4a0a5e1"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Existing frozen Python 1.2 source numerical comparisons cover calibrated nonconformity scores, grouped critical value, conditional future PACE means and observed predictive scales, lower/upper split-conformal bounds and published band frame. New direct Python 1.2 W2 workflow test compares actual source multilevel/nested training schema, 11-field result, decision/provenance, critical values, unit scores, future bands, tables, steps and science. CI queued/not proven green.",
+      "path": "tests/testthat/test-native-sparse-multilevel-prediction-w2-source-20261112.R",
+      "sha256": "cedf1d70f4939460d8fdb4cc958ec87ef5ecacc04752b6741c87740da4a0a5e1"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Reject native mean-curve distinct estimator, malformed source flag, R-only selected-fold injection, future outcomes missing at declared measurement times, finite-sample alpha/calibration insufficiency and training/calibration/target role/group overlap. Does not impersonate Python exception/runtime classes; explicit split roles mandatory.",
+      "path": "tests/testthat/test-native-sparse-multilevel-prediction-w2-source-20261112.R",
+      "sha256": "cedf1d70f4939460d8fdb4cc958ec87ef5ecacc04752b6741c87740da4a0a5e1"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Frozen Python 1.2 W2 11 outer scientific result fields, nine configuration fields with nested strict 27-field sparse FPCA training source configuration, 12 decisions (seven prefixed training plus five explicit role/calibration decisions), seven provenance fields, three or more measured steps, three source scientific tables and two reports.",
+      "path": "tests/testthat/test-native-sparse-multilevel-prediction-w2-source-20261112.R",
+      "sha256": "cedf1d70f4939460d8fdb4cc958ec87ef5ecacc04752b6741c87740da4a0a5e1"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Training-only irregular sparse PACE conditional Gaussian future prediction, held-out independent calibration of standardized maximum observed future error on a prespecified finite future grid, optional participant/group max aggregation and conformal quantile; not continuous-time latent-function coverage or random role splitting.",
+      "path": "tests/testthat/test-native-sparse-multilevel-prediction-w2-source-20261112.R",
+      "sha256": "cedf1d70f4939460d8fdb4cc958ec87ef5ecacc04752b6741c87740da4a0a5e1"
+    }
+  ],
+  "independent_review_status": "Provisional author-reviewed source-scientific domain; exact-head CI not observed passing, no independently certified contract.",
+  "language_specific_limits": [
+    "Python dataclass/sklearn runtime object identity, pandas and numpy representations and Python exceptions are not literally native R objects.",
+    "Measured step elapsed_seconds genuinely differ between independent Python/R runs.",
+    "Extreme ill-conditioning, omitted group metadata and untested source numerical boundary cases require further direct differential coverage.",
+    "New workflow comparisons have been committed but not confirmed passing; no certification, integration merge or CRAN readiness is claimed."
+  ]
+}
