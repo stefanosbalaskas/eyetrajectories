@@ -1,0 +1,167 @@
+# W2 native sparse multilevel and future conformal source-scientific
+# workflow envelopes. Frozen Python eyetrajectoriespy==1.2.0 source at
+# c1cd95ad718327550f7e55393ff38582872f7a94:
+# workflows/_sparse_multilevel.py, workflows/_sparse_prediction.py.
+# Native fits and their classes remain R; Python dataclasses are not copied.
+
+.etr_sparse_multilevel_w2_config<-function(cfg){
+  .etr_assert(is.list(cfg)&&identical(cfg$backend,"native_covariance"),
+    "W2 multilevel source must use native irregular hierarchical BLUP")
+  list(
+    dimension=cfg$dimension,
+    participant_column=cfg$participant_column,
+    participant_components=cfg$participant_components,
+    trial_components=cfg$trial_components,
+    evaluation_grid=as.numeric(cfg$evaluation_grid),
+    mean_bandwidth=cfg$mean_bandwidth,
+    total_covariance_bandwidth=cfg$total_covariance_bandwidth,
+    between_covariance_bandwidth=cfg$between_covariance_bandwidth,
+    noise_bandwidth=cfg$noise_bandwidth,
+    noise_support=cfg$noise_support,
+    analysis_support_action=cfg$analysis_support_action,
+    weighting=cfg$weighting,
+    mean_smoother=cfg$mean_smoother,
+    covariance_smoother=cfg$covariance_smoother,
+    kernel=cfg$kernel,
+    noise_variance_method=cfg$noise_variance_method,
+    measurement_error_variance=cfg$measurement_error_variance,
+    psd_action=cfg$psd_action,
+    psd_tolerance=cfg$psd_tolerance,
+    positive_eigen_tolerance=cfg$positive_eigen_tolerance,
+    score_ridge=cfg$score_ridge,
+    score_condition_limit=cfg$score_condition_limit,
+    min_participant_score_samples=cfg$min_participant_score_samples,
+    score_failure_action=cfg$score_failure_action,
+    mean_min_local_points=cfg$mean_min_local_points,
+    total_covariance_min_local_pairs=cfg$total_covariance_min_local_pairs,
+    between_covariance_min_local_pairs=cfg$between_covariance_min_local_pairs,
+    noise_min_local_points=cfg$noise_min_local_points,
+    observation_diagnostics=.etr_sparse_mfpca_w2_observation_config(
+      cfg$observation_diagnostics),
+    preprocessing=list(steps=list()))
+}
+
+.etr_sparse_multilevel_w2_source_record<-function(workflow,cfg){
+  .etr_assert(inherits(workflow,"etr_native_sparse_multilevel_workflow")&&
+    inherits(workflow$fit,"etr_sparse_multilevel_fpca_source"),
+    "W2 multilevel requires a fitted native sparse hierarchical BLUP model")
+  decisions<-list(
+    participant_components=.etr_source_workflow_decision(
+      cfg$participant_components),
+    trial_components=.etr_source_workflow_decision(cfg$trial_components),
+    mean_bandwidth=.etr_source_workflow_decision(cfg$mean_bandwidth),
+    total_covariance_bandwidth=.etr_source_workflow_decision(
+      cfg$total_covariance_bandwidth),
+    between_covariance_bandwidth=.etr_source_workflow_decision(
+      cfg$between_covariance_bandwidth),
+    weighting=.etr_source_workflow_decision(cfg$weighting),
+    psd_action=.etr_source_workflow_decision(cfg$psd_action),
+    observation_diagnostics_requested=.etr_source_workflow_decision(
+      !is.null(cfg$observation_diagnostics)))
+  reports<-list(fit=workflow$reports$fit)
+  tables<-list(
+    participant_scores=workflow$tables$participant_scores,
+    trial_scores=workflow$tables$trial_scores,
+    score_diagnostics=workflow$tables$score_diagnostics)
+  if(!is.null(workflow$observation_diagnostics)){
+    reports$observation_diagnostics<-workflow$reports$observation_diagnostics
+    tables$observation_global<-workflow$tables$observation_global
+    tables$observation_time<-workflow$tables$observation_time
+    tables$observation_associations<-workflow$tables$observation_associations
+  }
+  result<-structure(list(
+    workflow_schema_version=1L,
+    workflow_contract="sparse_multilevel:v1",
+    config=.etr_sparse_multilevel_w2_config(cfg),
+    fit=workflow$fit,
+    observation_diagnostics=workflow$observation_diagnostics,
+    steps=lapply(workflow$steps,.etr_sparse_fpca_w2_source_step),
+    decisions=decisions,
+    provenance=list(
+      raw_interpolation_performed=FALSE,
+      native_observation_grids_retained=TRUE,
+      bandwidth_mode="fixed",
+      bandwidth_selector_available=FALSE,
+      automatic_model_selection_performed=FALSE),
+    reports=reports,tables=tables),
+    class=c("etr_sparse_multilevel_w2_source_workflow",
+      "etr_native_sparse_multilevel_workflow"))
+  .etr_assert(identical(names(result),c(
+    "workflow_schema_version","workflow_contract","config","fit",
+    "observation_diagnostics","steps","decisions","provenance",
+    "reports","tables")),
+    "sparse multilevel W2 scientific result schema is noncanonical")
+  result
+}
+
+.etr_sparse_prediction_w2_config<-function(cfg,training){
+  .etr_assert(identical(cfg$backend,"native_sparse_partial_conformal")&&
+    inherits(training,"etr_sparse_fpca_source_workflow"),
+    "W2 prediction requires real source-scientific sparse PACE training")
+  list(
+    training=training$config,
+    history_cutoff=cfg$history_cutoff,
+    prediction_grid=as.numeric(cfg$prediction_grid),
+    alpha=cfg$alpha,
+    group_column=cfg$group_column,
+    min_history_observations=cfg$min_history_observations,
+    condition_limit=cfg$condition_limit,
+    history_ridge=cfg$history_ridge,
+    preprocessing=list(steps=list()))
+}
+
+.etr_sparse_prediction_w2_source_record<-function(workflow,cfg,
+    proper_training,calibration,target){
+  .etr_assert(inherits(workflow,"etr_native_sparse_prediction_workflow")&&
+    inherits(workflow$training_workflow,
+      "etr_sparse_fpca_source_workflow")&&
+    inherits(workflow$calibration,
+      "etr_sparse_fpca_partial_conformal_calibration_native"),
+    "W2 sparse prediction requires real source training and conformal fit")
+  training<-workflow$training_workflow
+  decisions<-training$decisions
+  names(decisions)<-paste0("training.",names(decisions))
+  decisions<-c(decisions,list(
+    history_cutoff=.etr_source_workflow_decision(cfg$history_cutoff),
+    prediction_grid=.etr_source_workflow_decision(
+      as.numeric(cfg$prediction_grid)),
+    alpha=.etr_source_workflow_decision(cfg$alpha),
+    group_column=.etr_source_workflow_decision(cfg$group_column),
+    role_assignment=.etr_source_workflow_decision(
+      list(proper_training=as.list(as.character(proper_training$curve_ids)),
+        calibration=as.list(as.character(calibration$curve_ids)),
+        target=as.list(as.character(target$curve_ids))),
+      criterion="explicit_disjoint_workflow_roles")))
+  result<-structure(list(
+    workflow_schema_version=1L,
+    workflow_contract="sparse_prediction:v1",
+    config=.etr_sparse_prediction_w2_config(cfg,training),
+    training_workflow=training,
+    calibration=workflow$calibration,band=workflow$band,
+    steps=lapply(workflow$steps,.etr_sparse_fpca_w2_source_step),
+    decisions=decisions,
+    provenance=list(
+      raw_interpolation_performed=FALSE,
+      random_role_split_performed=FALSE,
+      proper_training_role_explicit=TRUE,
+      calibration_role_explicit=TRUE,
+      target_role_explicit=TRUE,
+      coverage_scope=
+        "future_observed_measurements_on_declared_finite_grid",
+      automatic_model_selection_performed=FALSE),
+    reports=list(
+      training_fit=workflow$reports$training_fit,
+      prediction_band=workflow$reports$prediction_band),
+    tables=list(
+      training_scores=workflow$tables$training_scores,
+      calibration_curve_scores=workflow$tables$calibration_curve_scores,
+      prediction_band=workflow$tables$prediction_band)),
+    class=c("etr_sparse_prediction_w2_source_workflow",
+      "etr_native_sparse_prediction_workflow"))
+  .etr_assert(identical(names(result),c(
+    "workflow_schema_version","workflow_contract","config",
+    "training_workflow","calibration","band","steps",
+    "decisions","provenance","reports","tables")),
+    "sparse prediction W2 scientific result schema is noncanonical")
+  result
+}
