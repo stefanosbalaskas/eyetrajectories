@@ -1,0 +1,68 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "multivariate_iaaft_reporting_text",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/nonlinear_reporting.py::multivariate_iaaft_reporting_text",
+  "native_signature": "etr_multivariate_iaaft_reporting_text(result)",
+  "reviewer_statement": "Author-side scientific source-semantic contract review for multivariate_iaaft_reporting_text, with twenty complete typed frozen eyetrajectoriespy 1.2.0 to native R manuscript text comparisons shared over five functions and four case variants, explicit source domain rejection tests, exact source punctuation and scientific limitations. Full Python object and error-class identity is not native R, and exact-head qualification and independent review are still pending.",
+  "native_language_semantic_policy": "Frozen Python dataclass science results map to validated native R scientific records; source Python str maps to a single native R character string. No Python engine at native runtime and no estimator refit is introduced.",
+  "native_files": [
+    {
+      "path": "R/native-source-text-inference.R",
+      "sha256": "e3bc04fa378f6d4fe8e4be4a3e7e5a1e149ae52dfe624b07fcaddc94f5ca92ba"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-five-source-reporting-full-source.R",
+      "sha256": "6d0aff4ce49d7e2032d15fde7f12846a51b8dbb6008add3f521e37bc3a4e5c12",
+      "description": "Exact frozen Python 1.2 source function using typed scientific result and native R function returning scalar source text"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-five-source-reporting-full-source.R",
+      "sha256": "6d0aff4ce49d7e2032d15fde7f12846a51b8dbb6008add3f521e37bc3a4e5c12",
+      "description": "Four scientific scenarios covering marginal prediction scales and grouped denominators, contrasts, covariance success/failure mappings and spectral-reference domains"
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-five-source-reporting-full-source.R",
+      "sha256": "6d0aff4ce49d7e2032d15fde7f12846a51b8dbb6008add3f521e37bc3a4e5c12",
+      "description": "Twenty typed Python-to-native R complete exact-string witnesses for five source reporters and four scientific cases including Unicode provenance and null/random-state metadata"
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-five-source-reporting-full-source.R",
+      "sha256": "6d0aff4ce49d7e2032d15fde7f12846a51b8dbb6008add3f521e37bc3a4e5c12",
+      "description": "Native R rejects invalid response/contrast scales, invalid physical confidence levels, duplicate dimension labels, nonfinite surrogate statistics and malformed provenance"
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-five-source-reporting-full-source.R",
+      "sha256": "6d0aff4ce49d7e2032d15fde7f12846a51b8dbb6008add3f521e37bc3a4e5c12",
+      "description": "One full Python-ordered manuscript character scalar, including source repr quoting, numeric precision, p-values, strict scientific caveats and no side effects"
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-five-source-reporting-full-source.R",
+      "sha256": "6d0aff4ce49d7e2032d15fde7f12846a51b8dbb6008add3f521e37bc3a4e5c12",
+      "description": "Multivariate IAAFT phase reference and final marginal, spectral and cross-spectral preservation diagnostics"
+    }
+  ],
+  "extra_source_evidence": [
+    {
+      "path": "tests/testthat/test-native-source-text-inference.R",
+      "sha256": "4d64832d833a123bfc1dd05fb4ec1444921d8e7b3cbdd219627cc92e9e0ddf3d"
+    }
+  ],
+  "independent_review_status": "Developer source-semantic review only; exact-head Linux/Windows/macOS and Python 1.2 oracle CI pending; independent certification remains zero.",
+  "language_specific_limits": [
+    "Python dataclass/NumPy/pandas runtime types have checked native R scientific semantic analogues, not identical objects",
+    "Python TypeError and ValueError identity cannot be equated to native R conditions",
+    "Full estimator, randomization and Matplotlib backend contracts are separate from manuscript reporting text"
+  ]
+}

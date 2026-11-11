@@ -137,7 +137,7 @@ etr_generalized_function_on_scalar_mean_difference_reporting_text <- function(re
 etr_functional_mixed_effects_covariance_sensitivity_reporting_text <- function(result) {
   .etr_scientific_frame_fields(result,c("reference_label","fits",
     "failures","provenance"))
-  reference<-.etr_source_text_word(result$reference_label,"reference_label")
+  reference<-.etr_gfosr_predict_scalar(result$reference_label,"reference_label")
   .etr_assert(is.list(result$fits) && is.list(result$failures),
     "fits and failures must be named mappings")
   .etr_scientific_frame_fields(result$provenance,
@@ -145,10 +145,11 @@ etr_functional_mixed_effects_covariance_sensitivity_reporting_text <- function(r
   inner<-result$provenance$functional_mixed_effects_covariance_sensitivity
   .etr_scientific_frame_fields(inner,c("information_criterion_mode"),
     "covariance provenance")
-  mode<-.etr_source_text_word(inner$information_criterion_mode,
+  mode<-.etr_gfosr_predict_scalar(inner$information_criterion_mode,
     "information_criterion_mode")
   paste0("Covariance structures were compared as a predeclared sensitivity ",
-    "analysis against reference '",reference,"'. ",
+    "analysis against reference ",
+    .etr_python_workflow_identifier_repr(reference),". ",
     length(result$fits)," declared structure(s) converged and ",
     length(result$failures),
     " failed structure(s) were retained explicitly rather than omitted. ",
@@ -160,8 +161,8 @@ etr_functional_mixed_effects_covariance_sensitivity_reporting_text <- function(r
     "diagnostics, log likelihood, AIC, and BIC were reported descriptively. ",
     "No covariance structure was ranked or automatically selected and no ",
     "likelihood-ratio p-values were computed. Information criteria used ",
-    "the recorded convention '",mode,
-    "'; BIC used the explicit observation count n_curves \u00d7 n_time.")
+    "the recorded convention ",.etr_python_workflow_identifier_repr(mode),
+    "; BIC used the explicit observation count n_curves \u00d7 n_time.")
 }
 
 .etr_multivariate_source_report_check <- function(result) {
@@ -169,10 +170,10 @@ etr_functional_mixed_effects_covariance_sensitivity_reporting_text <- function(r
     "dimension_names","reference_dimension","spectral_errors",
     "cross_spectral_errors","random_state"),"surrogate_result")
   ns<-.etr_source_text_int(result$n_surrogates,"n_surrogates",min=1L)
-  dims<-.etr_source_text_names(result$dimension_names,"dimension_names")
+  dims<-.etr_scientific_frame_ids(result$dimension_names,"dimension_names")
   .etr_assert(length(dims)>=2L,
     "multivariate analysis requires at least two dimensions")
-  reference<-.etr_source_text_word(result$reference_dimension,
+  reference<-.etr_gfosr_predict_scalar(result$reference_dimension,
     "reference_dimension")
   .etr_assert(reference%in%dims,
     "reference_dimension must be a declared dimension")
@@ -195,8 +196,9 @@ etr_functional_mixed_effects_covariance_sensitivity_reporting_text <- function(r
 etr_multivariate_iaaft_reporting_text <- function(result) {
   v<-.etr_multivariate_source_report_check(result)
   paste0(v$n," multivariate IAAFT surrogates were generated for dimensions ",
-    paste(v$dims,collapse=", ")," using '",v$reference,
-    "' as the explicitly declared phase-reference dimension. Empirical ",
+    paste(v$dims,collapse=", ")," using ",
+    .etr_python_workflow_identifier_repr(v$reference),
+    " as the explicitly declared phase-reference dimension. Empirical ",
     "marginal distributions were restored exactly by rank remapping after ",
     "each Fourier adjustment, while per-dimension Fourier amplitudes and ",
     "inter-dimension phase differences were targeted jointly. Final ",
@@ -226,8 +228,9 @@ etr_multivariate_surrogate_nonlinearity_reporting_text <- function(result) {
   state_text<-if(is.null(state))"None" else as.character(state)
   paste0("Multivariate nonlinearity was assessed with ",
     v$n," cross-spectrum-aware MIAAFT surrogates for dimensions ",
-    paste(v$dims,collapse=", ")," using '",v$reference,
-    "' as the declared phase reference. The statistic was ",
+    paste(v$dims,collapse=", ")," using ",
+    .etr_python_workflow_identifier_repr(v$reference),
+    " as the declared phase reference. The statistic was ",
     gsub("_"," ",statistic,fixed=TRUE)," with a ",alternative,
     " alternative and a plus-one Monte Carlo p-value (p=",
     sprintf("%.4g",p),"; random_state=",state_text,
