@@ -105,7 +105,7 @@ etr_function_on_scalar_reporting_text <- function(result,band=NULL) {
       is.list(band$bootstrap)&&
       is.array(band$bootstrap$bootstrap_coefficients)&&
       length(dim(band$bootstrap$bootstrap_coefficients))==4L&&
-      dim(band$bootstrap$bootstrap_coefficients)[1L]>=100L&&
+      dim(band$bootstrap$bootstrap_coefficients)[1L]>=1L&&
       is.character(band$bootstrap$multiplier)&&
       length(band$bootstrap$multiplier)==1L,
       "band.reference and bootstrap metadata must match source FOS model")
@@ -224,31 +224,79 @@ etr_plot_conformal_fpca_anomaly <- function(result,max_targets=50L,...) {
 }
 
 #' Source-aligned marginal anomaly reporting from native conformal scores
-#' @param result Native split-conformal FPCA result with calibration scores.
-#' @param n_components Number of original training FPCA components (explicit).
-#' @param digits Printed decimal places.
+#' @param result Native conformal result, either the source-field semantic
+#'   record or an older native split-conformal calibration/test score record.
+#' @param n_components Optional fitted FPCA component count; source-field
+#'   records carry this themselves. Older native records must supply it.
+#' @param digits Printed decimal places (native supported domain 0 to 12).
 #' @return Conservative statement with explicit marginal interpretation.
 #' @export
 etr_conformal_fpca_anomaly_reporting_text <- function(result,
-    n_components,digits=3L) {
-  a<-.etr_conformal_review(result)
+    n_components=NULL,digits=3L) {
+  .etr_assert(is.list(result),"result must be a native conformal record")
+  source_record<-all(c("calibration_scores","target_scores",
+    "review_flags","n_components","nonconformity")%in%names(result))
+  if(source_record){
+    .etr_assert(is.numeric(result$calibration_scores)&&
+      length(result$calibration_scores)>=1L&&
+      all(is.finite(result$calibration_scores))&&
+      is.numeric(result$target_scores)&&
+      length(result$target_scores)>=1L&&
+      all(is.finite(result$target_scores)),
+      "source conformal calibration_scores and target_scores must be finite")
+    .etr_assert(is.logical(result$review_flags)&&
+      length(result$review_flags)==length(result$target_scores)&&
+      !anyNA(result$review_flags),
+      "source conformal review_flags must align with targets")
+    .etr_assert(is.numeric(result$alpha)&&length(result$alpha)==1L&&
+      is.finite(result$alpha)&&result$alpha>0&&result$alpha<1,
+      "source conformal alpha must be strictly between zero and one")
+    .etr_assert(is.character(result$nonconformity)&&
+      length(result$nonconformity)==1L&&
+      !is.na(result$nonconformity)&&nzchar(result$nonconformity),
+      "source conformal nonconformity must be declared")
+    covariance<-result$mahalanobis_covariance
+    .etr_assert(is.null(covariance)||
+      (is.character(covariance)&&length(covariance)==1L&&
+      !is.na(covariance)&&nzchar(covariance)),
+      "source conformal mahalanobis_covariance must be declared or NULL")
+    if(!is.null(n_components))
+      .etr_assert(identical(as.integer(n_components),
+        as.integer(result$n_components)),
+        "n_components override disagrees with the fitted source result")
+    n_components<-result$n_components
+    a<-list(alpha=result$alpha,flags=result$review_flags,
+      n_calibration=length(result$calibration_scores),
+      n_targets=length(result$target_scores),
+      nonconformity=result$nonconformity,covariance=covariance)
+  } else {
+    # Backward-compatible source-semantic projection for native screens
+    # that predate the original Python result's stored FPCA metadata.
+    a<-.etr_conformal_review(result)
+    if(is.null(n_components))n_components<-result$n_components
+    a$n_targets<-length(a$p_values)
+    a$nonconformity<-"integrated_reconstruction_error"
+    a$covariance<-NULL
+  }
   .etr_assert(is.numeric(n_components)&&length(n_components)==1L&&
     !is.logical(n_components)&&is.finite(n_components)&&
-    n_components==as.integer(n_components)&&n_components>=1L,
-    "n_components must be explicitly supplied from the frozen source FPCA fit")
+    n_components==floor(n_components)&&n_components>=1L,
+    "n_components must be explicitly supplied or retained by the source FPCA fit")
   .etr_assert(is.numeric(digits)&&length(digits)==1L&&
-    is.finite(digits)&&digits==as.integer(digits)&&
+    !is.logical(digits)&&is.finite(digits)&&digits==floor(digits)&&
     digits>=0L&&digits<=12L,"digits must be an integer between 0 and 12")
   fmt<-function(x)sprintf(paste0("%.",as.integer(digits),"f"),x)
+  covariance_text<-if(is.null(a$covariance))"" else
+    paste0(" using ",a$covariance," score covariance")
   paste0(
     "Split-conformal functional anomaly review fitted an FPCA reference with ",
     as.integer(n_components)," component(s) on the proper-training set and used ",
     a$n_calibration," calibration trajectory(ies). Nonconformity was ",
-    "integrated_reconstruction_error",
+    a$nonconformity,covariance_text,
     ". Marginal conformal p-values used the ",
     "conservative greater-than-or-equal tie rule; the minimum attainable ",
     "p-value was ",fmt(1/(a$n_calibration+1)),". At alpha=",
-    fmt(a$alpha),", ",sum(a$flags)," of ",length(a$p_values),
+    fmt(a$alpha),", ",sum(a$flags)," of ",a$n_targets,
     " target trajectory(ies) were flagged for review. Flags are not automatic ",
     "exclusions. The marginal conformal interpretation requires curve-level ",
     "exchangeability of inlier trajectories. No calibration-conditional ",

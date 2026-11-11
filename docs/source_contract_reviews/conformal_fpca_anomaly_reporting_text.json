@@ -1,0 +1,69 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "conformal_fpca_anomaly_reporting_text",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/reporting.py::conformal_fpca_anomaly_reporting_text",
+  "native_signature": "etr_conformal_fpca_anomaly_reporting_text(result,...)",
+  "reviewer_statement": "Author-side full source report-string semantic review against published eyetrajectoriespy==1.2.0 at c1cd95ad718327550f7e55393ff38582872f7a94. FOS band minimum was relaxed for source reporter semantics; conformal source record component metadata and covariance clause restored. 32 complete typed Python 1.2 exact-source string comparisons and native malformed-record boundaries are committed. CI has not yet demonstrated these comparisons pass; this does not qualify full estimation or independent certification.",
+  "native_language_semantic_policy": "Python frozen result dataclasses and identity-matched band are represented by checked native R scientific list/S3 records; source report strings retain full order, population-level inference, exact band clauses, component count and conformal covariance details. No reticulate in native implementation; Python runtime instance identity and exceptions remain language-specific.",
+  "native_files": [
+    {
+      "path": "R/native-functional-inference-visuals.R",
+      "sha256": "773b986dbcff8ff8baf3014bbe96aa0f475b944330decf94cc6395199e9082ce"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-two-fos-conformal-reporters-20261111.R",
+      "sha256": "68333bfb2b70142dca4bf5546f340259a4c2c6fee7ffba6b1901ab2078969112",
+      "description": "Published frozen Python src/eyetrajectoriespy/reporting.py::conformal_fpca_anomaly_reporting_text type and keyword contract. Native R supports source-equivalent semantic records, not Python runtime object identity."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-two-fos-conformal-reporters-20261111.R",
+      "sha256": "68333bfb2b70142dca4bf5546f340259a4c2c6fee7ffba6b1901ab2078969112",
+      "description": "FOS curve, participant and Unicode source-model variants with and without 1- and 100-replicate bands; conformal reconstruction RMSE and empirical/robust Mahalanobis covariance variants, 0/1/3/6/12 decimal precision and legacy missing-metadata rejection."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-two-fos-conformal-reporters-20261111.R",
+      "sha256": "68333bfb2b70142dca4bf5546f340259a4c2c6fee7ffba6b1901ab2078969112",
+      "description": "32 complete proposed typed Python 1.2 source-report exact-string comparisons (12 FOS + 20 conformal), including count and percentage formatting, conservatively tied flags, minimum attainable marginal p-values, ordered source narrative and covariance method annotations."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-two-fos-conformal-reporters-20261111.R",
+      "sha256": "68333bfb2b70142dca4bf5546f340259a4c2c6fee7ffba6b1901ab2078969112",
+      "description": "Native source-semantic validation rejects missing FOS identity-aligned band reference, zero bootstrap draws, source conformal flag/target length mismatch, invalid alpha, invalid source component metadata and decimal limits; Python TypeError class identity and arbitrary precision are distinct."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-two-fos-conformal-reporters-20261111.R",
+      "sha256": "68333bfb2b70142dca4bf5546f340259a4c2c6fee7ffba6b1901ab2078969112",
+      "description": "Exactly one full source manuscript-oriented character scalar per input; no plots or inferred estimator selection. Native report text follows published Python 1.2 fixed clauses and metadata order."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-two-fos-conformal-reporters-20261111.R",
+      "sha256": "68333bfb2b70142dca4bf5546f340259a4c2c6fee7ffba6b1901ab2078969112",
+      "description": "Native reporting accepts the source conformal record with retained n_components, proper-training FPCA component provenance, score_mahalanobis/robust/empirical covariance metadata, conservative greater-or-equal marginal flags and source precision; older native calibration/test records with explicitly supplied n_components remain supported."
+    }
+  ],
+  "extra_source_evidence": [
+    {
+      "path": "tests/testthat/test-native-functional-inference-visuals.R",
+      "sha256": "d5bb58310ca577f5eaea88b1f7b9bd61497e6bfc4ef5d7b858035cad135844c2"
+    }
+  ],
+  "independent_review_status": "Provisional developer source contract reviewed; exact-head Python 1.2 and three-OS CI pending; zero independent certifications.",
+  "language_specific_limits": [
+    "Native checked R result lists/S3 classes do not assert Python dataclass instance identity and class-specific exceptions",
+    "FOS reporting text does not certify the underlying OLS/HC1 numerical estimator or bootstrap random draw backend",
+    "Conformal source-semantic report supports 0–12 decimal places natively and does not certify fitting or calibration randomness",
+    "Legacy native conformal screen lacks source FPCA component provenance, which must be explicitly supplied; new source-style records carry it intrinsically"
+  ]
+}
