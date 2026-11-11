@@ -1,12 +1,15 @@
-name: Native dense sparse and joint FPCA recovery Python 1.2 source
+name: Native dense sparse joint and mixed recovery Python 1.2 source
 on:
   pull_request:
     paths:
       - "R/native-sparse-known-truth-recovery.R"
       - "R/native-fpca-known-truth-recovery.R"
       - "R/native-sparse-mfpca-known-truth-recovery.R"
+      - "R/native-mixed-known-truth-recovery.R"
       - "R/native-fpca-multicomponent-recovery.R"
       - "tests/testthat/test-native-three-fpca-recovery-source-20261111.R"
+      - "tests/testthat/test-native-mixed-recovery-multidomain-source-20261111.R"
+      - "tests/testthat/test-native-mixed-known-truth-recovery.R"
       - "tests/testthat/test-native-fpca-known-truth-recovery.R"
       - "tests/testthat/test-native-fpca-multicomponent-recovery-source.R"
       - "tests/testthat/test-native-sparse-known-truth-recovery.R"
@@ -48,7 +51,9 @@ jobs:
               "native-fpca-known-truth-recovery",
               "native-fpca-multicomponent-recovery-source",
               "native-sparse-known-truth-recovery",
-              "native-sparse-mfpca-known-truth-recovery"))
+              "native-sparse-mfpca-known-truth-recovery",
+              "native-mixed-recovery-multidomain-source-20261111",
+              "native-mixed-known-truth-recovery"))
             testthat::test_local(".",filter=test,reporter="summary",
               stop_on_failure=TRUE,stop_on_warning=TRUE)
           RSCRIPT
@@ -90,7 +95,9 @@ jobs:
               "native-fpca-known-truth-recovery",
               "native-fpca-multicomponent-recovery-source",
               "native-sparse-known-truth-recovery",
-              "native-sparse-mfpca-known-truth-recovery"))
+              "native-sparse-mfpca-known-truth-recovery",
+              "native-mixed-recovery-multidomain-source-20261111",
+              "native-mixed-known-truth-recovery"))
             testthat::test_local(".",filter=test,reporter="summary",
               stop_on_failure=TRUE,stop_on_warning=TRUE)
           RSCRIPT
