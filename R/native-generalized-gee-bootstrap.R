@@ -1,3 +1,7 @@
+# Native scientific source-record contract: frozen Python 1.2
+# generalized_function_on_scalar.py::bootstrap_generalized_function_on_scalar_coefficients
+# Optional strict_source_record=TRUE preserves the 19 ordered source-provenance
+# fields; legacy R-specific draw diagnostics remain the default.
 # Refits the exact canonical independence-GEE score equations on the
 # original fixed clamped B-spline basis, preserving participant clusters.
 # Unlike the public fit, no TrajectorySet, metadata, or basis is rebuilt for
@@ -103,14 +107,30 @@
 #' @param failed_replicate_policy Exactly "raise"; no failed rep is replaced.
 #' @param sampled_participant_indices Optional B-by-participant matrix of
 #'   zero-based retained Python source draw indices for exact oracle replay.
+#' @param strict_source_record Return the exact source-scientific 19-field
+#'   bootstrap provenance (without R-only draw diagnostics). Requires a
+#'   source-oriented strict GEE fit; default preserves legacy R audits.
 #' @return Native bootstrap with coefficient functions and complete source
 #'   participant and new cluster-ID audit per replicate.
 #' @export
 etr_bootstrap_generalized_function_on_scalar_coefficients<-function(
     result,n_bootstrap=1000L,random_state=0L,
-    failed_replicate_policy="raise",sampled_participant_indices=NULL){
+    failed_replicate_policy="raise",sampled_participant_indices=NULL,
+    strict_source_record=FALSE){
   .etr_assert(inherits(result,"etr_generalized_function_on_scalar"),
     "result must be a native generalized functional GEE fit")
+  .etr_assert(is.logical(strict_source_record)&&
+    length(strict_source_record)==1L&&!is.na(strict_source_record),
+    "strict_source_record must be TRUE or FALSE")
+  if(isTRUE(strict_source_record)){
+    .etr_assert(inherits(result$model,"etr_native_gee_scientific_model")&&
+      identical(result$provenance$
+        generalized_function_on_scalar_regression$backend,
+        "native_R_source_score_GEE")&&
+      identical(attr(result,"native_audit")$native_solver,
+        "native_irls_gee_score_sandwich"),
+      "strict_source_record requires a strict native source GEE reference")
+  }
   controls<-.etr_joint_mixed_boot_controls(n_bootstrap,random_state,100L)
   .etr_assert(identical(failed_replicate_policy,"raise"),
     "failed_replicate_policy must be raise: no silent replacement")
@@ -153,8 +173,6 @@ etr_bootstrap_generalized_function_on_scalar_coefficients<-function(
   prov$generalized_function_on_scalar_bootstrap<-list(
     method="whole_participant_case_bootstrap_full_gee_refit",
     n_bootstrap=B,random_state=random_state,
-    source_draws_supplied=!is.null(sampled_participant_indices),
-    native_random_engine=selection$engine,
     resampling_unit="participant",
     whole_participant_curve_bundles_resampled=TRUE,
     duplicate_source_participants_receive_distinct_group_ids=TRUE,
@@ -165,12 +183,35 @@ etr_bootstrap_generalized_function_on_scalar_coefficients<-function(
     exposure_observed_and_fixed=!is.null(result$exposure),
     exposure_resampled_with_response_bundle=!is.null(result$exposure),
     exposure_measurement_uncertainty=FALSE,
-    binomial_denominator_resampled_with_response_bundle=
-      !is.null(result$binomial_denominators),
-    binomial_denominator_measurement_uncertainty=FALSE,
     binomial_denominator_observed_and_fixed=
       !is.null(result$binomial_denominators),
-    full_source_contract_certified=FALSE)
+    binomial_denominator_resampled_with_response_bundle=
+      !is.null(result$binomial_denominators),
+    binomial_denominator_measurement_uncertainty=FALSE)
+  if(!isTRUE(strict_source_record)){
+    prov$generalized_function_on_scalar_bootstrap$
+      source_draws_supplied<-!is.null(sampled_participant_indices)
+    prov$generalized_function_on_scalar_bootstrap$
+      native_random_engine<-selection$engine
+    prov$generalized_function_on_scalar_bootstrap$
+      full_source_contract_certified<-FALSE
+  }else{
+    source_names<-c("method","n_bootstrap","random_state",
+      "resampling_unit","whole_participant_curve_bundles_resampled",
+      "duplicate_source_participants_receive_distinct_group_ids",
+      "family_refit","link_refit","working_correlation_refit",
+      "basis_refit","basis_selected_automatically",
+      "failed_replicate_policy","failed_replicates_redrawn",
+      "exposure_observed_and_fixed",
+      "exposure_resampled_with_response_bundle",
+      "exposure_measurement_uncertainty",
+      "binomial_denominator_observed_and_fixed",
+      "binomial_denominator_resampled_with_response_bundle",
+      "binomial_denominator_measurement_uncertainty")
+    .etr_assert(identical(names(prov$
+      generalized_function_on_scalar_bootstrap),source_names),
+      "strict GEE bootstrap provenance must match frozen source ordering")
+  }
   structure(list(
     reference=result,
     bootstrap_coefficient_functions=draws,
