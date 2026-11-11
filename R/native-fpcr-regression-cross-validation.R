@@ -41,6 +41,11 @@
 #'   finite text/underscore numeric covariate columns. Default FALSE, since
 #'   frozen Python 1.2 statsmodels rejects object-typed pandas covariates.
 #'   This opt-in feature is NOT strict Python input-domain equivalence.
+#' @param strict_source_record If TRUE, emit canonical frozen Python 1.2
+#'   scientific provenance only and reject R-only explicit folds and text
+#'   coercion. Shuffled folds require the native NumPy-compatible engine,
+#'   while group CV requires an explicit NumPy group-sort profile. The
+#'   default retains the expanded native R diagnostic provenance.
 #' @export
 etr_cross_validate_fpca_regression<-function(
     trajectories,outcome,candidate_components=c(1L,2L,3L,4L,5L),
@@ -48,7 +53,22 @@ etr_cross_validate_fpca_regression<-function(
     scaling="none",cv_unit="curve",group_column=NULL,
     shuffle=FALSE,random_state=0L,fold_assignments=NULL,
     coerce_numeric_text_covariates=FALSE,random_engine="base_R",
-    group_tie_order="native"){
+    group_tie_order="native",strict_source_record=FALSE){
+  .etr_assert(is.logical(strict_source_record)&&
+    length(strict_source_record)==1L&&!is.na(strict_source_record),
+    "strict_source_record must be a single TRUE or FALSE")
+  if(isTRUE(strict_source_record)){
+    .etr_assert(is.null(fold_assignments),
+      "strict_source_record cannot import R-only fold_assignments")
+    .etr_assert(identical(coerce_numeric_text_covariates,FALSE),
+      "strict_source_record cannot enable R-only text covariate coercion")
+    if(identical(cv_unit,"curve")&&isTRUE(shuffle))
+      .etr_assert(identical(random_engine,"numpy"),
+        "strict_source_record shuffled curve CV requires random_engine='numpy'")
+    if(identical(cv_unit,"group"))
+      .etr_assert(group_tie_order%in%c("numpy_simd","numpy_scalar"),
+        "strict_source_record group CV requires an explicit NumPy tie-order profile")
+  }
   etr_validate(trajectories,require_complete=TRUE)
   .etr_fpcr_validate_family(family)
 
@@ -176,7 +196,7 @@ etr_cross_validate_fpca_regression<-function(
     obj<-get(frame);rownames(obj)<-NULL
     assign(frame,obj)
   }
-  structure(list(
+  result<-structure(list(
     fold_losses=fold_losses,assignments=assignments,
     predictions=predictions,component_counts=components,
     family=family,loss=resolved_loss,cv_unit=cv_unit,
@@ -205,4 +225,13 @@ etr_cross_validate_fpca_regression<-function(
         "Grouped folds prevent train/test leakage but do not by themselves",
         "model within-group residual dependence or equalize group weights."))),
     class="etr_fpcr_regression_cv")
+  if(isTRUE(strict_source_record)){
+    source_fields<-c("method","fit_fpca_inside_fold","fit_regression_inside_fold","group_leakage_prevented","covariates","scientific_warning")
+    .etr_assert(all(source_fields%in%names(result$provenance)),
+      "strict FPCR CV source provenance fields are incomplete")
+    result$provenance<-result$provenance[source_fields]
+    .etr_assert(identical(names(result$provenance),source_fields),
+      "strict FPCR CV source provenance order is invalid")
+  }
+  result
 }
