@@ -119,8 +119,7 @@ etr_fpca_wild_bootstrap_projection_family_test<-function(
     strong_fwer_for_arbitrary_subset_nulls_claimed=FALSE,
     subset_pivotality_assumed_by_package=FALSE,
     future_outcome_test=FALSE,clustered_wild_bootstrap=FALSE,
-    component_selection_uncertainty_included=FALSE,
-    source_full_contract_certified=FALSE)
+    component_selection_uncertainty_included=FALSE)
   structure(list(
     projection_result=result,
     null_values=null,
