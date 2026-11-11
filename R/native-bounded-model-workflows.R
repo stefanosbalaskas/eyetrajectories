@@ -133,7 +133,7 @@ etr_run_functional_mixed_effects_workflow<-function(
 }
 
 .etr_run_sparse_fpca_source_native_workflow<-function(
-    trajectories,config,observation_process=NULL){
+    trajectories,config,observation_process=NULL,strict_source_record=FALSE){
   cfg<-.etr_source_workflow_config(config,list(
     backend="native_covariance",dimension=NULL,
     n_components=NULL,evaluation_grid=NULL,
@@ -204,7 +204,11 @@ etr_run_functional_mixed_effects_workflow<-function(
     reports=reports,tables=tables),
     class="etr_sparse_fpca_workflow")
   workflow<-.etr_sparse_bandwidth_workflow(workflow,selection_run)
-  .etr_sparse_observation_workflow(workflow,observation_process,observation_options)
+  workflow<-.etr_sparse_observation_workflow(workflow,
+    observation_process,observation_options)
+  if(isTRUE(strict_source_record))
+    return(.etr_sparse_fpca_source_workflow_record(workflow,cfg))
+  workflow
 }
 
 #' Explicit fdapace-backed native sparse FPCA workflow (not source PACE)
@@ -221,14 +225,30 @@ etr_run_functional_mixed_effects_workflow<-function(
 #'   It also supports optional conditional score uncertainty.
 #' @param observation_process Candidate-sample denominator for explicit
 #'   observation diagnostics with the native_covariance backend.
+#' @param strict_source_record Opt into the 12-field frozen Python 1.2
+#'   W2 sparse-workflow scientific record, native-source model only.
+#'   Canonical workflow decisions, timed steps, tables and provenance are
+#'   emitted; Python dataclass/backend identity remains language-specific.
 #' @return Native workflow with fdapace fit and source-difference provenance.
 #' @export
 etr_run_sparse_fpca_workflow<-function(
-    trajectories,config,observation_process=NULL){
+    trajectories,config,observation_process=NULL,strict_source_record=FALSE){
+  .etr_assert(is.logical(strict_source_record)&&
+    length(strict_source_record)==1L&&!is.na(strict_source_record),
+    "strict_source_record must be TRUE or FALSE")
+  if(isTRUE(strict_source_record)){
+    .etr_assert(is.list(config)&&
+      identical(config$backend,"native_covariance"),
+      "strict_source_record requires native_covariance source estimator")
+    # Fail before a potentially expensive model fit on R-only CV options.
+    if(!is.null(config$bandwidth_selection))
+      .etr_sparse_fpca_w2_source_bandwidth_config(
+        config$bandwidth_selection)
+  }
   if(is.list(config)&&!is.data.frame(config)&&
       identical(config$backend,"native_covariance"))
     return(.etr_run_sparse_fpca_source_native_workflow(
-      trajectories,config,observation_process))
+      trajectories,config,observation_process,strict_source_record))
   cfg<-.etr_source_workflow_config(config,
     list(dimension=NULL,backend=NULL,max_components=3L,fve=.95,
       options=list(),preprocessing=list()),
