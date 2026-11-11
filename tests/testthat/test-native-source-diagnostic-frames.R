@@ -110,7 +110,7 @@ test_that("new diagnostics plots write base graphics and retain geometry",{
     z$nonlinearity,bins=1L),"bins")
 })
 
-test_that("two numeric diagnostics tables remain unsigned native counterparts",{
+test_that("two diagnostic science tables match the authoritative source-gap ledger",{
   names<-c("multivariate_iaaft_diagnostics_frame",
     "functional_mixed_effects_variance_bootstrap_frame",
     "plot_multivariate_iaaft_diagnostics",
@@ -120,11 +120,18 @@ test_that("two numeric diagnostics tables remain unsigned native counterparts",{
   expect_equal(nrow(rows),4L)
   expect_identical(sort(rows$native_r_candidate),sort(paste0("etr_",names)))
   expect_true(all(rows$native_implementation_started))
-  expect_true(all(rows$source_contract_gap_unresolved))
+  ledger<-utils::read.csv(system.file("extdata",
+    "native_source_contract_gaps_stage22.csv",package="eyetrajectories"),
+    stringsAsFactors=FALSE,check.names=FALSE)
+  source<-ledger[match(rows$python_name,ledger$python_name),,drop=FALSE]
+  expect_false(anyNA(source$python_name))
+  expect_identical(as.logical(rows$source_contract_gap_unresolved),
+    as.logical(source$unresolved_source_gap))
   expect_false(any(rows$one_to_one_native_contract_complete))
   expect_gte(sum(p$is_python_function&p$named_native_candidate),332L)
   expect_gte(sum(p$native_implementation_started),307L)
-  expect_gte(sum(p$source_contract_gap_unresolved),154L)
+  expect_identical(sum(p$source_contract_gap_unresolved),
+    sum(ledger$unresolved_source_gap))
 })
 
 test_that("two diagnostic frames exactly match frozen Python 1.2 data tables",{
