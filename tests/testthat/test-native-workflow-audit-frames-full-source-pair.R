@@ -137,9 +137,9 @@ test_that("frozen Python 1.2 typed workflow frames match every native cell",{
     native<-.etr_source_workflow_frames_fixture(case)
     source<-reticulate::py_call(reticulate::py$etr_frames_source_output,case)
     pairs<-list(
-      list(name="steps",a=as.data.frame(et_to_r(source[[1L]]),
+      list(name="steps",a=as.data.frame(et_to_r(source[[0L]]),
         check.names=FALSE),b=etr_workflow_steps_frame(native$steps)),
-      list(name="decisions",a=as.data.frame(et_to_r(source[[2L]]),
+      list(name="decisions",a=as.data.frame(et_to_r(source[[1L]]),
         check.names=FALSE),b=etr_workflow_decisions_frame(native$decisions)))
     for(pair in pairs) {
       expect_identical(names(pair$a),names(pair$b),
