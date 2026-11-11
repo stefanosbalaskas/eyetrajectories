@@ -1,0 +1,68 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "fpca_component_band_reporting_text",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/reporting.py::fpca_component_band_reporting_text",
+  "native_signature": "etr_fpca_component_band_reporting_text(result,digits=2L)",
+  "reviewer_statement": "Developer review of source-supported native-language semantics for fpca_component_band_reporting_text; 32 direct full-string comparisons use actual frozen Python 1.2 typed result objects, 2 provenance/scope variants and 4 precision values across 4 exports. The related R scientific result is checked for required fields. Python dataclass/error class identities remain language-specific, and exact-head CI and external certification are not yet complete.",
+  "native_language_semantic_policy": "Python typed frozen scientific dataclasses map to checked native R S3 scientific records. The returned Python str maps to a single native R character value. Published scientific descriptions, precision, component medians, interval caveats and source repr of apostrophe/Unicode provenance labels are compared without a Python dependency in native R.",
+  "native_files": [
+    {
+      "path": "R/native-fpca-bootstrap-source.R",
+      "sha256": "98f49e774ea1864d071345f9c51b62fd7eeb8d7c43b672523f6c6bb1e8be1448"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-fpca-four-reporting-full-source.R",
+      "sha256": "421d466e70800a1ac8923acba760f4efb23a03a13cae00471bf2c214f5c5f267",
+      "description": "Exact frozen reporting.py function and typed Python dataclass access; matching R exported signature and precision argument."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-fpca-four-reporting-full-source.R",
+      "sha256": "421d466e70800a1ac8923acba760f4efb23a03a13cae00471bf2c214f5c5f267",
+      "description": "Two native-valid complete result metadata cases including family and component scope, optional near-tie gap screening and Python repr for apostrophe and Unicode labels."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-fpca-four-reporting-full-source.R",
+      "sha256": "421d466e70800a1ac8923acba760f4efb23a03a13cae00471bf2c214f5c5f267",
+      "description": "32 frozen Python 1.2 typed source outputs agree exactly character-for-character with the native R reporting strings at digits 0,2,3,5."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-fpca-four-reporting-full-source.R",
+      "sha256": "421d466e70800a1ac8923acba760f4efb23a03a13cae00471bf2c214f5c5f267",
+      "description": "Native R rejects absent or inconsistent scientific result matrices, invalid confidence and scope, nonfinite similarities and invalid digit precision; Python exception class identity is not claimed."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-fpca-four-reporting-full-source.R",
+      "sha256": "421d466e70800a1ac8923acba760f4efb23a03a13cae00471bf2c214f5c5f267",
+      "description": "Exactly one ordered plain-text manuscript string per scientific result; no fitted estimator or graphics side effects."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-fpca-four-reporting-full-source.R",
+      "sha256": "421d466e70800a1ac8923acba760f4efb23a03a13cae00471bf2c214f5c5f267",
+      "description": "matched sign-aligned FPC functions with studentized observed-grid simultaneous bands and optional eigengap screen"
+    }
+  ],
+  "extra_source_evidence": [
+    {
+      "path": "tests/testthat/test-native-fpca-bootstrap-source.R",
+      "sha256": "8f2e390c0ad3529f188e929c362fa5032e3a05e6db886d2f969cd5130c3a910f"
+    }
+  ],
+  "independent_review_status": "Developer source-semantic review only. Exact-head Linux Windows macOS and pinned Python 1.2 CI pending; independent reviewer certification remains zero.",
+  "language_specific_limits": [
+    "Python runtime dataclasses map to checked native R S3 records; not object-identity equivalent",
+    "Python exceptions map to native R errors but not Python exception class identity",
+    "Result constructors and resampling algorithms are not revalidated by this reporting-text closure"
+  ]
+}
