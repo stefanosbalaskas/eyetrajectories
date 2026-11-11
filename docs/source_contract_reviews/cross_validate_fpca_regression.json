@@ -1,0 +1,68 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "cross_validate_fpca_regression",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_SCIENTIFIC_CONTRACT_REVIEW_ON_DECLARED_DOMAIN",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/prediction.py::cross_validate_fpca_regression",
+  "native_signature": "etr_cross_validate_fpca_regression(trajectories,outcome,candidate_components,family,loss,covariates,n_splits,scaling,cv_unit,group_column,shuffle,random_state,fold_assignments,coerce_numeric_text_covariates,random_engine,group_tie_order,strict_source_record=TRUE)",
+  "reviewer_statement": "Developer-scoped scientific source contract review of paired direct Python 1.2 numeric fold/results tests, canonical provenance, grouped and shuffled source policies. Source-equivalent Python Statsmodels object and arbitrary input/exception domains are not claimed; exact-head CI and independent certification remain pending.",
+  "native_language_semantic_policy": "Real native R FPCA+OLS/binomial GLM fitted inside training folds; NumPy RandomState curve shuffle and declared GroupKFold NumPy sort policy, source-shaped tables and six ordered scientific provenance keys. Native R fitted object class and backend do not pretend Python statsmodels/NumPy execution occurred. Default native R returns original extended diagnostics.",
+  "native_files": [
+    {
+      "path": "R/native-fpcr-regression-cross-validation.R",
+      "sha256": "931426190fcd0b197e13edef31b244a29593539e83a4716e39bddcb9ac4812f3"
+    },
+    {
+      "path": "R/native-fpcr-nested-cross-validation.R",
+      "sha256": "e4a06888e9a7dc81e53bdf73745b2a7b924295aa83272e7515435762772099fc"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-fpcr-two-cv-strict-source-20261112.R",
+      "sha256": "786375b52869e5fa1d2975d4ea7ee0e85bc85fccd18f7e86e359496cd8496ec4",
+      "description": "Frozen eyetrajectoriespy Python 1.2 prediction.py::cross_validate_fpca_regression with explicit 1-2 FPC candidate counts, train-only FPCA, Gaussian OLS or Bernoulli statsmodels-GLM scientific equivalent, complete held-out prediction and fold assessments. Supports declared curve shuffle and grouped CV."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-fpcr-two-cv-strict-source-20261112.R",
+      "sha256": "786375b52869e5fa1d2975d4ea7ee0e85bc85fccd18f7e86e359496cd8496ec4",
+      "description": "Complete common-grid trajectories, numeric aligned optional scalar covariates, candidate FPC counts, explicit Gaussian or 0/1 binomial response, explicit curve KFold / group GroupKFold, source-compatible shuffled MT19937 and declared NumPy tie-order profile. R-only explicit fold assignments/text parsing are excluded in strict mode."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-fpcr-two-cv-strict-source-20261112.R",
+      "sha256": "786375b52869e5fa1d2975d4ea7ee0e85bc85fccd18f7e86e359496cd8496ec4",
+      "description": "Frozen Python 1.2 public-export direct tests compare expected fold assignments, Gaussian or binomial held-out probabilities, fold losses, nested component selection and outer predictions with numeric tolerance 1e-5 on independent inputs. Python 1.2 oracle tests are committed but not yet confirmed green in exact-head CI."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-fpcr-two-cv-strict-source-20261112.R",
+      "sha256": "786375b52869e5fa1d2975d4ea7ee0e85bc85fccd18f7e86e359496cd8496ec4",
+      "description": "Strict mode rejects malformed strict flag, R-only supplied fold indices, R-only optional pandas numeric-text coercions, native base-R shuffled RNG, missing group tie-order profile. Underlying source-compatible validations reject malformed group columns, candidate support, invalid binomial outcomes and underdetermined folds, but Python exception class identity is excluded."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-fpcr-two-cv-strict-source-20261112.R",
+      "sha256": "786375b52869e5fa1d2975d4ea7ee0e85bc85fccd18f7e86e359496cd8496ec4",
+      "description": "Canonical 12-field scientific FPCARegressionCVResult analogue with fold_losses, assignments, predictions and exactly six frozen Python provenance fields (method, fit_fpca_inside_fold, fit_regression_inside_fold, group_leakage_prevented, covariates, scientific_warning)."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-fpcr-two-cv-strict-source-20261112.R",
+      "sha256": "786375b52869e5fa1d2975d4ea7ee0e85bc85fccd18f7e86e359496cd8496ec4",
+      "description": "Train-only unsupervised FPCA and held-out scalar response predictions/risks from KFold/GroupKFold; no held-out outcomes used in fitting, binomial link logit and Gaussian OLS, with group leakage prevention where requested."
+    }
+  ],
+  "independent_review_status": "Provisional developer review only; CI tests not confirmed passing and no independent certificate.",
+  "language_specific_limits": [
+    "Native R and Python dataclass/NumPy object runtime identity and exception/warning classes differ.",
+    "Binomial source uses Statsmodels GLM while native R uses stats::glm.fit, so full-domain IRLS boundary and extreme separation behavior remain unverified.",
+    "GroupKFold tie order depends on NumPy build; larger tied cohorts need further qualification. Strict mode requires an explicit documented NumPy tie-order policy.",
+    "Optional R-specific explicit fold assignments and numeric-text covariate parsing are not frozen Python public-call inputs; strict mode forbids them.",
+    "Source tests and six-domain receipt are developer-prepared, not an independent certification; no R CMD check or CRAN claim."
+  ]
+}
