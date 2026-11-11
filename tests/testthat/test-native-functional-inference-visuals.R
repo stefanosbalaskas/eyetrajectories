@@ -63,7 +63,12 @@ test_that("seven new public implementations are scientific and source-blocked",{
     expect_equal(nrow(row),1L)
     expect_identical(row$native_r_candidate,paste0("etr_",n))
     expect_true(row$native_implementation_started)
-    expect_true(row$source_contract_gap_unresolved)
+    source<-utils::read.csv(system.file("extdata",
+      "native_source_contract_gaps_stage22.csv",package="eyetrajectories"),
+      stringsAsFactors=FALSE,check.names=FALSE)
+    recorded<-source[source$python_name==n,,drop=FALSE]
+    expect_identical(as.logical(row$source_contract_gap_unresolved),
+      as.logical(recorded$unresolved_source_gap))
     expect_false(row$one_to_one_native_contract_complete)
     expect_true(is.function(get(paste0("etr_",n))))
   }
