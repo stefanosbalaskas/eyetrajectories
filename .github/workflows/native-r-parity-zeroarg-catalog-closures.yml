@@ -1,0 +1,99 @@
+name: Native 508-export zero-argument catalog source closures
+
+on:
+  pull_request:
+    paths:
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "tests/testthat/test-native-zeroarg-catalog-source-semantic-closures.R"
+      - "tests/testthat/test-native-catalog-contract-boundaries.R"
+      - "tests/testthat/test-native-functional-rqa-recovery.R"
+      - "tests/testthat/test-native-508-certification-batches.R"
+      - "tests/testthat/test-native-nonfunction-source-gaps.R"
+      - "tests/testthat/test-native-zeroarg-metadata-source-semantic-closure.R"
+      - "tests/testthat/test-native-math-contracts-diagnostics.R"
+      - "docs/native-zeroarg-catalog-semantic-closure-evidence.md"
+      - ".github/workflows/native-r-parity-zeroarg-catalog-closures.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native-r:
+    name: Exhaustive zeroarg source catalog R / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Test two catalog closures, existing source catalog and 508 census
+        shell: bash
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          old <- reticulate::py_available(initialize=FALSE)
+          testthat::test_local(".",
+            filter="native-(zeroarg-catalog-source-semantic-closures|catalog-contract-boundaries|zeroarg-metadata-source-semantic-closure|math-contracts-diagnostics|functional-rqa-recovery|508-certification-batches|nonfunction-source-gaps|source-contract-gaps)",
+            reporter="summary",stop_on_failure=TRUE,stop_on_warning=TRUE)
+          stopifnot(identical(old,reticulate::py_available(initialize=FALSE)))
+          api <- etr_native_parity_catalog()
+          ledger <- utils::read.csv(
+            "inst/extdata/native_source_contract_gaps_stage22.csv",
+            stringsAsFactors=FALSE,check.names=FALSE)
+          stopifnot(
+            nrow(api)==508L,
+            sum(api$is_python_function)==380L,
+            sum(api$is_python_function & api$source_contract_gap_unresolved)==
+              sum(ledger$unresolved_source_gap),
+            sum(api$nonfunction_source_gap_unresolved)==1L,
+            !any(api$one_to_one_native_contract_complete)
+          )
+          RSCRIPT
+
+  python-oracle:
+    name: Exhaustive 41 and 27 pinned Python record oracles / ubuntu-latest
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - id: py
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0" "numpy==2.3.5"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Verify all 68 frozen catalog records with R
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.py.outputs.python-path }}
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          stopifnot(identical(et_python_version(),"1.2.0"))
+          testthat::test_local(".",
+            filter="native-(zeroarg-catalog-source-semantic-closures|catalog-contract-boundaries|zeroarg-metadata-source-semantic-closure|math-contracts-diagnostics|functional-rqa-recovery|508-certification-batches|nonfunction-source-gaps)",
+            reporter="summary",stop_on_failure=TRUE,stop_on_warning=TRUE)
+          RSCRIPT

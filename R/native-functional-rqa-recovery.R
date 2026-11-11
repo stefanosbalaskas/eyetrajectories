@@ -63,64 +63,171 @@ etr_functional_recovery_value_key <- function(value) {
     key<-paste0(key,".source_",value$source)
   }
   if(!is.null(value$component)){
-    c<-value$component
-    .etr_assert(is.numeric(c)&&length(c)==1L&&is.finite(c)&&
-      c==as.integer(c)&&c>=0,"component must be a zero-based integer")
-    key<-paste0(key,".component_",as.integer(c)+1L)
+    component<-.etr_recovery_component_label(value$component)
+    key<-paste0(key,".component_",sprintf("%.0f",component))
   }
   key
 }
 
+# Whitespace recognized by Python str.strip() for source text fields.
+.etr_recovery_source_trim <- function(x) {
+  whitespace<-paste0("[\\x{0009}-\\x{000D}\\x{001C}-\\x{0020}",
+    "\\x{0085}\\x{00A0}\\x{1680}\\x{2000}-\\x{200A}\\x{2028}\\x{2029}",
+    "\\x{202F}\\x{205F}\\x{3000}]")
+  x<-sub(paste0("(*UTF)^",whitespace,"+"),"",enc2utf8(x),perl=TRUE)
+  sub(paste0("(*UTF)",whitespace,"+\\z"),"",x,perl=TRUE)
+}
+
+.etr_recovery_source_number <- function(x,integer=FALSE) {
+  .etr_assert(is.null(dim(x))&&length(x)==1L&&!is.na(x)&&
+    (is.numeric(x)||is.logical(x)||is.character(x))&&!is.complex(x),
+    "source recovery value or component must be one numeric scalar")
+  if(is.character(x)){
+    x<-.etr_recovery_source_trim(x)
+    if(integer)
+      .etr_assert(grepl("^[+-]?[0-9](?:_?[0-9])*$",x,perl=TRUE),
+        "source component must contain an integer literal")
+    x<-.etr_numpy_float_text(x,"source recovery value must be numeric")
+  }
+  x<-suppressWarnings(as.numeric(x))
+  .etr_assert(is.finite(x),"source recovery values must be finite")
+  if(integer)trunc(x) else x
+}
+
+# Python FunctionalRecoveryMetric.__post_init__ and
+# FunctionalRecoveryValue.__post_init__ use str(value).strip() for
+# ordinary semantic text fields and source labels. Do not use R
+# as.character(TRUE) = "TRUE" or erase the .0 of a source float.
+.etr_recovery_source_str <- function(x) {
+  .etr_assert(is.atomic(x) && is.null(dim(x)) && !is.object(x) &&
+    length(x)==1L && !is.na(x) || (is.double(x) && length(x)==1L &&
+    is.nan(x) && is.null(dim(x))),
+    "source recovery text must be an ordinary Python scalar analogue")
+  if(is.character(x))return(.etr_recovery_source_trim(x))
+  if(is.logical(x))return(if(x) "True" else "False")
+  if(is.integer(x))return(as.character(x))
+  .etr_assert(is.double(x) && !is.complex(x),
+    "source recovery text must be an ordinary Python scalar analogue")
+  if(is.nan(x))return("nan")
+  if(is.infinite(x))return(if(x>0) "inf" else "-inf")
+  .etr_python_json_float(x)
+}
+
 #' Turn native semantically annotated recovery values into an auditable table
-#' @param assessment Native list with values of known recovery metrics.
+#' @param assessment Native list with finite values of built-in or custom
+#'   recovery metrics.
+#' @param python_boundary_mode Use the mapped Python scalar, text and metric
+#'   metadata conventions.
 #' @return Native data.frame of source metric, value, component, source and metadata.
 #' @export
-etr_functional_recovery_assessment_frame <- function(assessment) {
+etr_functional_recovery_assessment_frame <- function(assessment,
+    python_boundary_mode=FALSE) {
+  .etr_assert(is.logical(python_boundary_mode)&&length(python_boundary_mode)==1L&&
+    !is.na(python_boundary_mode),"python_boundary_mode must be TRUE or FALSE")
   .etr_assert(is.list(assessment)&&is.list(assessment$values)&&
     length(assessment$values)>=1L,
     "assessment must have at least one semantic recovery value")
-  defs<-etr_functional_recovery_metric_catalog()
+  defs<-if(!python_boundary_mode)etr_functional_recovery_metric_catalog()
+  trim<-if(python_boundary_mode).etr_recovery_source_trim else trimws
+  fields<-c("name","quantity","direction","units","scope","description")
   rows<-lapply(assessment$values,function(z){
     .etr_assert(is.list(z)&&is.list(z$metric)&&
-      is.character(z$metric$name)&&length(z$metric$name)==1L&&
-      z$metric$name%in%names(defs)&&
-      is.numeric(z$value)&&length(z$value)==1L,
-      "assessment values must carry a known metric and numeric scalar")
-    .etr_assert(is.null(z$source)||
-      (is.character(z$source)&&length(z$source)==1L&&
-       !is.na(z$source)),
+      all(fields%in%names(z$metric)),
+      "assessment values must carry metric metadata and a finite numeric scalar")
+    value<-z$value
+    component<-z$component
+    if(python_boundary_mode){
+      value<-.etr_recovery_source_number(value)
+      if(!is.null(component))
+        component<-.etr_recovery_source_number(component,integer=TRUE)
+    }
+    .etr_assert(is.numeric(value)&&!is.complex(value)&&length(value)==1L&&
+      is.finite(value),"assessment values must carry a finite numeric scalar")
+    def<-z$metric[fields]
+    # Source dataclass constructors normalize each non-direction semantic
+    # field via Python str(...).strip() before the public frame is called.
+    if(python_boundary_mode)
+      for(field in c("name","quantity","units","scope","description"))
+        def[[field]]<-.etr_recovery_source_str(def[[field]])
+    .etr_assert(all(vapply(def,function(x)is.character(x)&&
+      length(x)==1L&&!is.na(x)&&nzchar(trim(x)),logical(1L)))&&
+      def$direction%in%c("lower_is_better","higher_is_better"),
+      "recovery metric metadata must have nonempty text and a valid direction")
+    def<-lapply(def,trim)
+    registered<-defs[[def$name]]
+    if(!is.null(registered))
+      .etr_assert(identical(z$metric,unclass(registered))||identical(z$metric,registered),
+        "assessment metric metadata must match the published source catalog")
+    # Python source labels are coerced by str(source).strip() at
+    # FunctionalRecoveryValue construction, not limited to str inputs.
+    source_label<-if(python_boundary_mode&&!is.null(z$source))
+      .etr_recovery_source_str(z$source) else z$source
+    .etr_assert(is.null(source_label)||
+      (is.character(source_label)&&length(source_label)==1L&&
+       !is.na(source_label)&&nzchar(trim(source_label))),
       "recovery source must be a single optional text label")
-    def<-defs[[z$metric$name]]
-    .etr_assert(identical(z$metric,unclass(def))||
-      identical(z$metric,def),
-      "assessment metric metadata must match the published source catalog")
-    if(!is.null(z$component))etr_functional_recovery_value_key(z)
-    data.frame(metric=def$name,value=as.numeric(z$value),
-      component=if(is.null(z$component))NA_integer_
-        else as.integer(z$component)+1L,
-      source=if(is.null(z$source))NA_character_
-        else as.character(z$source),
+    data.frame(metric=def$name,value=as.numeric(value),
+      component=.etr_recovery_component_label(component),
+      source=if(is.null(source_label))NA_character_
+        else trim(source_label),
       quantity=def$quantity,direction=def$direction,units=def$units,
       scope=def$scope,description=def$description,
       stringsAsFactors=FALSE,check.names=FALSE)
   })
-  x<-do.call(rbind,rows);rownames(x)<-NULL;x
+  x<-do.call(rbind,rows)
+  .etr_assert(!anyDuplicated(x[c("metric","component","source")]),
+    "recovery assessment contains duplicate metric labels")
+  rownames(x)<-NULL
+  x
+}
+
+.etr_recovery_estimator_repr <- function(x) {
+  if(is.null(x))return("None")
+  .etr_assert(!is.object(x)&&is.null(dim(x)),
+    "recovery estimator provenance must use plain source-mapped values")
+  if(is.list(x)){
+    values<-vapply(x,.etr_recovery_estimator_repr,character(1L))
+    if(is.null(names(x)))return(paste0("[",paste(values,collapse=", "),"]"))
+    keys<-vapply(names(x),.etr_python_workflow_identifier_repr,character(1L))
+    .etr_assert(!anyDuplicated(keys),"recovery estimator mapping keys must be unique")
+    return(paste0("{",paste(paste0(keys,": ",values),collapse=", "),"}"))
+  }
+  .etr_assert(length(x)==1L&&(!is.na(x)||is.nan(x)),
+    "recovery estimator provenance must be a scalar, list, mapping or NULL")
+  if(is.character(x))return(.etr_python_workflow_identifier_repr(x))
+  if(is.logical(x))return(if(x)"True" else "False")
+  if(is.integer(x))return(as.character(x))
+  .etr_assert(is.double(x),"unsupported recovery estimator provenance value")
+  if(is.nan(x))return("nan")
+  if(is.infinite(x))return(if(x>0)"inf" else "-inf")
+  .etr_python_json_float(x)
 }
 
 #' Compact known-truth recovery assessment text without estimator retuning
 #' @param assessment Native semantic recovery assessment with provenance.
+#' @param python_boundary_mode Accept the mapped source estimator representations
+#'   in addition to native string identifiers.
 #' @return A deterministic manuscript-oriented source-aligned description.
 #' @export
-etr_functional_recovery_reporting_text <- function(assessment) {
-  frame<-etr_functional_recovery_assessment_frame(assessment)
-  names<-paste(sort(unique(frame$metric)),collapse=", ")
-  estimator<-if(is.null(assessment$provenance$estimator))
-    "unspecified" else assessment$provenance$estimator
-  .etr_assert(is.character(estimator)&&length(estimator)==1L&&
-    !is.na(estimator),
-    "recovery estimator provenance must be a single string")
-  paste0("Known-truth recovery was evaluated after fitting for estimator '",
-    estimator,"'. Recorded metric families: ",names,
+etr_functional_recovery_reporting_text <- function(assessment,
+    python_boundary_mode=FALSE) {
+  frame<-etr_functional_recovery_assessment_frame(assessment,python_boundary_mode)
+  names<-paste(sort(unique(enc2utf8(frame$metric)),method="radix"),collapse=", ")
+  provenance<-assessment$provenance
+  if(python_boundary_mode){
+    .etr_assert(is.null(provenance)||is.list(provenance),
+      "recovery provenance must be a mapping")
+    estimator<-if("estimator"%in%names(provenance))provenance[["estimator"]]
+      else "unspecified"
+    label<-.etr_recovery_estimator_repr(estimator)
+  }else{
+    estimator<-if(is.null(provenance$estimator))"unspecified" else provenance$estimator
+    .etr_assert(is.character(estimator)&&length(estimator)==1L&&!is.na(estimator),
+      "recovery estimator provenance must be a single string")
+    label<-.etr_python_workflow_identifier_repr(estimator)
+  }
+  paste0("Known-truth recovery was evaluated after fitting for estimator ",
+    label,". Recorded metric families: ",names,
     ". Metric direction, units, scope, and component/source labels are ",
     "retained explicitly. Recovery truth is an evaluation input only ",
     "and is not an estimator-tuning input.")
@@ -327,6 +434,7 @@ etr_windowed_rqa_sensitivity <- function(trajectories,metrics,
 #' @param gaussian_multiplier_draws Optional fixed source-aligned matrix of
 #'   Gaussian multiplier draws, one row per replicate and one column per
 #'   independent curve or participant. Allows exact finite-sample replay.
+#' @param random_engine Seeded multiplier RNG: `"numpy"` or `"base_R"`.
 #' @param ... Native fixed-radius windowed-RQA parameters.
 #' @export
 etr_windowed_rqa_functional_mean_band <- function(trajectories,
@@ -336,7 +444,7 @@ etr_windowed_rqa_functional_mean_band <- function(trajectories,
     theiler_window=0L,theiler_window_units="samples",dimensions=NULL,
     min_diagonal_length=2L,min_vertical_length=2L,
     confidence_level=.95,n_multiplier=2000L,random_state=0L,
-    gaussian_multiplier_draws=NULL){
+    gaussian_multiplier_draws=NULL,random_engine="numpy"){
   .etr_assert(identical(unit,"curve")||identical(unit,"participant"),
     "unit must be 'curve' or 'participant'")
   functional<-etr_windowed_rqa_trajectory_set(
@@ -352,7 +460,8 @@ etr_windowed_rqa_functional_mean_band <- function(trajectories,
     functional$trajectories,confidence_level=confidence_level,
     n_multiplier=n_multiplier,unit=unit,
     participant_column=participant_column,random_state=random_state,
-    gaussian_multiplier_draws=gaussian_multiplier_draws)
+    gaussian_multiplier_draws=gaussian_multiplier_draws,
+    random_engine=random_engine)
   structure(list(functional_rqa=functional,band=band,unit=unit,
     participant_column=participant_column,
     provenance=list(operation="windowed_rqa_functional_mean_band",

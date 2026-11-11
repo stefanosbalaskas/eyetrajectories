@@ -121,13 +121,20 @@ test_that("workflow integration stays uncertified until independent full review"
   expect_gte(sum(z$is_python_function & z$named_native_candidate),337L)
   expect_gte(sum(z$native_implementation_started),313L)
   expect_gte(sum(z$source_contract_gap_unresolved),160L)
+  reviewed <- utils::read.csv(
+    system.file("extdata","native_source_contract_gaps_stage22.csv",
+      package="eyetrajectories"),
+    stringsAsFactors=FALSE,check.names=FALSE)
   for(name in c("workflow_steps_frame","workflow_decisions_frame",
                 "workflow_summary_frame","workflow_reporting_text")){
     row <- z[z$python_name==name & z$is_python_function,,drop=FALSE]
     expect_equal(nrow(row),1L)
     expect_true(row$native_implementation_started)
     expect_true(row$source_contract_gap_known)
-    expect_true(row$source_contract_gap_unresolved)
+    recorded <- reviewed[reviewed$python_name==name,,drop=FALSE]
+    expect_equal(nrow(recorded),1L)
+    expect_identical(row$source_contract_gap_unresolved,
+      recorded$unresolved_source_gap)
     expect_false(row$one_to_one_native_contract_complete)
   }
   queue <- etr_native_source_contract_review_queue()
@@ -212,6 +219,9 @@ test_that("workflow source repr escapes both quote styles and ASCII controls",{
     quoted<-eyetrajectories:::.etr_python_workflow_identifier_repr(x)
     expect_true(startsWith(rendered,paste0("Workflow ",quoted," used schema 1")))
   }
+  unicode <- "name\u00a0\u200b\ue000\U0001fffe \U0001f642"
+  expect_identical(eyetrajectories:::.etr_python_workflow_identifier_repr(unicode),
+    "'name\\xa0\\u200b\\ue000\\U0001fffe \U0001f642'")
 })
 
 test_that("pinned Python repr source quote oracle is opt in",{
@@ -221,7 +231,9 @@ test_that("pinned Python repr source quote oracle is opt in",{
   py_repr<-reticulate::py_eval("repr",convert=FALSE)
   values<-c("plain","contains'quote",'contains"quote',
     "both'\"quotes", "back\\slash", "line\nbreak", "tab\tfield",
-    "carriage\rreturn", "alpha-α", "brace{thing}")
+    "carriage\rreturn", "alpha-α", "brace{thing}", "combining-a\u0301",
+    "spaces \u00a0\u2028\u2029", "format-\u200b\u00ad",
+    "private-\ue000", "noncharacter-\U0001fffe", "emoji-\U0001f642")
   for(x in values){
     py<-as.character(et_to_r(reticulate::py_call(py_repr,x)))
     nr<-eyetrajectories:::.etr_python_workflow_identifier_repr(x)

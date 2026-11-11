@@ -44,6 +44,7 @@ test_that("native split conformal uses exact finite-grid futures and group maxim
     fit,calibration,history_cutoff=.5,
     prediction_grid=future,alpha=.30,group_column="batch")
   expect_identical(grouped$n_calibration_units,4L)
+  expect_identical(grouped$n_calibration_curves,12L)
   expect_identical(grouped$calibration_unit_ids,
     paste0("cal_g",seq_len(4L)))
   want<-vapply(seq_len(4L),function(i)
@@ -79,6 +80,11 @@ test_that("native grouped conformal rejects role leakage and nonexistent future 
     alpha=.2),"calibration_future_grid_observation_missing")
   expect_error(conformal(fit,calibration,.50,c(.60,.72,.84),
     alpha=.01),"insufficient_calibration_units_for_alpha")
+  failure<-tryCatch(conformal(fit,calibration,.50,c(.60,.72,.84),
+    alpha=.01),error=identity)
+  expect_s3_class(failure,"etr_sparse_native_error")
+  expect_identical(failure$details$required_order_statistic,13L)
+  expect_equal(failure$details$minimum_supported_alpha,1/13)
   overlap<-calibration
   overlap$curve_ids[1L]<-fit$curve_ids[1L]
   expect_error(conformal(fit,overlap,.50,c(.60,.72,.84),
@@ -117,6 +123,10 @@ test_that("mapped sparse prediction workflow uses full native source PACE split 
   expect_s3_class(w,"etr_native_sparse_prediction_workflow")
   expect_identical(w$workflow_contract,"sparse_prediction:v1")
   expect_identical(w$band$calibration$n_calibration_units,4L)
+  expect_identical(etr_workflow_steps_frame(w$steps)$name,
+    c("proper_training.fit","conformal_calibration","target_prediction"))
+  expect_identical(w$decisions$role_assignment$value$calibration,as.list(cal$curve_ids))
+  expect_identical(w$decisions$role_assignment$criterion,"explicit_disjoint_workflow_roles")
   expect_identical(nrow(w$tables$prediction_band),3L)
   expect_identical(nrow(w$tables$calibration_curve_scores),12L)
   expect_false(w$provenance$raw_interpolation_performed)
@@ -124,10 +134,14 @@ test_that("mapped sparse prediction workflow uses full native source PACE split 
   cfg$training$mean_bandwidth<-cfg$training$covariance_bandwidth<-NULL
   cfg$training$bandwidth_selection<-list(mean_bandwidths=c(.5,.6),
     covariance_bandwidths=.85,n_splits=3L,shuffle=FALSE)
+  cfg$training$score_uncertainty<-list()
   selected<-etr_run_sparse_prediction_workflow(proper,cal,target,cfg)
   assignments<-selected$training_workflow$bandwidth_selection$assignments
   expect_setequal(assignments$curve_id,proper$curve_ids)
   expect_identical(selected$steps[[1L]]$name,"proper_training.bandwidth_selection")
+  expect_identical(selected$steps[[3L]]$name,"proper_training.score_uncertainty")
+  expect_identical(selected$decisions$training.mean_bandwidth$source,"audited_selector")
+  expect_true(selected$decisions$training.score_uncertainty_requested$value)
   expect_identical(nrow(selected$tables$prediction_band),3L)
 })
 

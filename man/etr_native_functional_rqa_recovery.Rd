@@ -30,12 +30,12 @@ etr_windowed_rqa_functional_mean_band(trajectories, metrics,
   dimensions = NULL, min_diagonal_length = 2L,
   min_vertical_length = 2L, confidence_level = 0.95,
   n_multiplier = 2000L, random_state = 0L,
-  gaussian_multiplier_draws = NULL)
+  gaussian_multiplier_draws = NULL, random_engine = "numpy")
 etr_functional_recovery_metric_catalog()
 etr_functional_recovery_metric_catalog_frame()
 etr_functional_recovery_value_key(value)
-etr_functional_recovery_assessment_frame(assessment)
-etr_functional_recovery_reporting_text(assessment)
+etr_functional_recovery_assessment_frame(assessment, python_boundary_mode = FALSE)
+etr_functional_recovery_reporting_text(assessment, python_boundary_mode = FALSE)
 }
 \arguments{
 \item{trajectories}{Complete native functional trajectories, with
@@ -72,16 +72,25 @@ windowed RQA metrics. The mean-band wrapper requires complete values.}
 \item{participant_column}{Source metadata column grouping repeated trials
 by participant when \code{unit="participant"}.}
 \item{confidence_level,n_multiplier,random_state}{Gaussian multiplier
-simultaneous mean-band calibration settings. R/NumPy RNGs differ.}
+simultaneous mean-band calibration settings. A nonnegative integer seed below
+\eqn{2^{53}} selects a reproducible stream. \code{NULL} uses the current R
+RNG stream.}
+\item{random_engine}{Use \code{"numpy"} for source-seeded Gaussian draws or
+\code{"base_R"} to reproduce previous native seeded mean bands.}
 \item{gaussian_multiplier_draws}{Optional finite source-aligned numeric
 matrix with one row per Gaussian multiplier replicate and one column per
 independent curve or participant. This explicit native extension enables
-same-draw numerical replay with frozen Python 1.2, without claiming RNG-stream
-or typed-result-class equivalence.}
+same-draw numerical replay with frozen Python 1.2 and takes precedence
+over the seed.}
 \item{value}{Native semantic recovery value with \code{metric},
 \code{source} and zero-based \code{component} fields.}
 \item{assessment}{Native assessment list with a nonempty \code{values}
-list of semantic recovery values.}
+list of finite recovery values. Built-in and custom metric definitions
+carry direction, units, scope and description.}
+\item{python_boundary_mode}{Use source text stripping, numeric scalar
+coercion, and same-name custom metric metadata for mapped records.
+Reporting accepts an explicit \code{NULL} estimator or a plain
+R scalar, list or named mapping with source-compatible representation.}
 }
 \value{
 \code{etr_windowed_rqa_sensitivity} returns native analyses, design

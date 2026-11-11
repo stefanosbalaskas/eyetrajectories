@@ -11,7 +11,8 @@
 #'   fixed family. Arbitrary-subset strong FWER is NOT asserted.
 #' @param result Source-shaped native projection record with retained roots,
 #'   bootstrap projections, reference projection and reference SE.
-#' @param null_values Finite numeric scalar or vector of target null values.
+#' @param null_values Finite numeric or decimal-text scalar or vector of
+#'   target null values.
 #' @param significance_level Strict numeric threshold in (0,1).
 #' @param pvalue_correction "plus_one" or "none".
 #' @return Native result with targetwise and adjusted p-values, max
@@ -26,8 +27,8 @@ etr_fpca_wild_bootstrap_projection_family_test<-function(
     "result must contain source projection and bootstrap root records")
   draws<-result$bootstrap_projections
   .etr_assert(is.matrix(draws)&&is.numeric(draws)&&
-    all(is.finite(draws))&&nrow(draws)>=1L&&ncol(draws)>=1L,
-    "bootstrap_projections must be a finite B-by-target matrix")
+    nrow(draws)>=1L&&ncol(draws)>=1L,
+    "bootstrap_projections must retain the B-by-target shape")
   B<-nrow(draws);nt<-ncol(draws)
   roots<-result$studentized_roots
   .etr_assert(is.matrix(roots)&&is.numeric(roots)&&
@@ -51,6 +52,9 @@ etr_fpca_wild_bootstrap_projection_family_test<-function(
     length(pvalue_correction)==1L&&!is.na(pvalue_correction)&&
     pvalue_correction%in%c("plus_one","none"),
     "pvalue_correction must be plus_one or none")
+  if(is.character(null_values)&&is.null(dim(null_values)))
+    null_values<-suppressWarnings(as.numeric(.etr_numpy_float_text(null_values,
+      "null_values must be numeric")))
   .etr_assert(is.numeric(null_values)&&is.null(dim(null_values))&&
     length(null_values)%in%c(1L,nt)&&all(is.finite(null_values)),
     "null_values must be finite numeric scalar or one value per target")

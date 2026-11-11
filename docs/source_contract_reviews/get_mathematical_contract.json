@@ -1,0 +1,65 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "get_mathematical_contract",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_locations": [
+    "src/eyetrajectoriespy/mathematical_contracts.py::get_mathematical_contract",
+    "src/eyetrajectoriespy/_mathematical_contracts_base.py::get_mathematical_contract"
+  ],
+  "native_signature": "etr_get_mathematical_contract(..., name, python_boundary_mode=TRUE)",
+  "reviewer_statement": "Author full-source, six-domain native-language semantic review of the frozen Python 1.2 registered mathematical contract lookup. The finite frozen registry consists of 41 exact contract keys and 88 public function aliases. Source-record field names, order, UTF-8 content, and deterministic returned key and metadata were replayed against frozen Python. Python default and keyword call-binding errors, missing/duplicate arguments, unsupported input types, unknown key quoting, NumPy special-size truthiness and the sparse-MFPCA first-lookup branch are matched by explicit Python boundary mode. Native R list and structured conditions are documented language representations instead of live frozen dataclass or Python exception objects. A dedicated expanded direct oracle is scheduled for CI; no unexecuted result is represented as passed, and independent certification is explicitly false. Arbitrary user-defined Python equality objects and Python runtime class identity are out of the native scientific semantic scope.",
+  "native_files": [
+    {
+      "path": "R/native-math-contracts-diagnostics.R",
+      "sha256": "f7433dbceb718c39963916839763b575e739129e3247b4319e160043689b1e17"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-math-lookup-full-source-closure.R",
+      "sha256": "13412dbcbf2428d9b1ebce5482291b26d5776775de18543f67f46d5c5a1e3563",
+      "description": "Required name positional/keyword; Python one-argument call binder, missing/unexpected/duplicate name and too many arguments; native opt-in mode explicitly declared."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-math-lookup-full-source-closure.R",
+      "sha256": "13412dbcbf2428d9b1ebce5482291b26d5776775de18543f67f46d5c5a1e3563",
+      "description": "Exhaustive 41 literal keys, 88 function aliases; malformed scalar and multi-element array shapes, scalar NumPy string wrappers, sparse first-branch comparison; invalid type domain."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-catalog-contract-boundaries.R",
+      "sha256": "54f13840ca3926efa227276745feb270e61d218700d56eab782d6438953725ec",
+      "description": "Metadata-only deterministic operation; no estimator or floating arithmetic. Exact six-field registered source values, lengths and record order compared to frozen Python, with 88-row lookup registry."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-math-lookup-full-source-closure.R",
+      "sha256": "13412dbcbf2428d9b1ebce5482291b26d5776775de18543f67f46d5c5a1e3563",
+      "description": "Python TypeError and KeyError accept/reject class mapping and structured native errors; unexpected/missing/duplicate arguments, invalid names, array ambiguity and Unicode/escaped unknown key repr."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-catalog-contract-boundaries.R",
+      "sha256": "54f13840ca3926efa227276745feb270e61d218700d56eab782d6438953725ec",
+      "description": "Frozen Python MathematicalContract returned as native R etr_mathematical_contract record with identical source fields/values; does not claim Python dataclass class identity."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-catalog-contract-boundaries.R",
+      "sha256": "54f13840ca3926efa227276745feb270e61d218700d56eab782d6438953725ec",
+      "description": "The frozen scientific meaning is finite immutable mathematical metadata, with all 41 keys and 88 aliases resolved and returned consistently; supplemental source registry CSV pinned separately for deterministic provenance."
+    }
+  ],
+  "outstanding_independent_review": true,
+  "scheduled_exact_head_source_oracle": "Native mathematical lookup frozen Python 1.2 full source",
+  "source_identity_note": "The six review categories pin author evidence files and do not constitute signed external certification.",
+  "source_registry_snapshot": {
+    "path": "inst/extdata/native_mathematical_contract_frame_py120.csv",
+    "sha256": "05e55c0db3c1250a7369306665067130f75417f97d020f1cbee5b7a8798d34ca"
+  }
+}

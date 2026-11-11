@@ -93,7 +93,8 @@ etr_functional_simulation_reporting_text(result, digits = 3L)
 \value{
 \code{etr_workflow_config()}, \code{etr_preprocessing_step_config()} and
 \code{etr_preprocessing_plan()} return native S3 configuration records.
-\code{etr_workflow_config_to_dict()} returns an R list.
+\code{etr_workflow_config_to_dict()} returns an R list. Numeric and logical
+arrays become nested lists in axis order, including singleton and empty axes.
 \code{etr_functional_simulation_scenario()} returns a native S3 scenario.
 \code{etr_functional_simulation_scenario_frame()} returns a data frame.
 The two scenario expansion functions return ordered lists of native scenarios.

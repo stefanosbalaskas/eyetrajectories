@@ -295,7 +295,12 @@ for r in _rcv.assignments.itertuples(index=False):
   actual<-etr_cross_validate_fpca_reconstruction(x,
     candidate_components=1L,n_splits=3L,shuffle=TRUE,
     random_state=19L,fold_assignments=fold)
+  seeded<-etr_cross_validate_fpca_reconstruction(x,
+    candidate_components=1L,n_splits=3L,shuffle=TRUE,
+    random_state=19L,random_engine="numpy")
+  expect_identical(seeded$provenance$random_engine,"numpy_randomstate_mt19937")
   for(field in c("fold_errors","assignments")){
+    expect_identical(seeded[[field]],actual[[field]])
     expected<-reticulate::py_to_r(reticulate::py_get_attr(
       reticulate::py_eval("_rcv",convert=FALSE),field))
     expect_identical(names(actual[[field]]),names(expected))

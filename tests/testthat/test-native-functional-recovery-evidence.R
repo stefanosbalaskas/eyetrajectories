@@ -125,6 +125,48 @@ test_that("recovery all-failed source keeps failures and empty typed summary",{
   expect_equal(ncol(summary),19L)
 })
 
+test_that("recovery evidence retains wide identifiers and source grouping order",{
+  result<-.etr_test_recovery_fixture()
+  records<-result$records
+  records[[1L]]$scenario_name<-"\u00e9"
+  records[[1L]]$replicate<-2^31+1
+  records[[1L]]$seed<-2^53-1
+  records[[1L]]$metric_values[[1L]]$component<-2^53-1
+  names(records[[1L]]$metrics)<-
+    "mean_integrated_error.source_curve.component_9007199254740992"
+  records[[4L]]$scenario_name<-"Z"
+  result<-etr_functional_recovery_result(records,result$metric_definitions)
+  values<-etr_functional_recovery_frame(result)
+  expect_identical(values$scenario,c("\u00e9","alpha","Z"))
+  expect_identical(values$replicate[1L],2^31+1)
+  expect_identical(values$seed[1L],2^53-1)
+  expect_identical(values$component[1L],2^53)
+  scenarios<-c("Z","alpha","beta","\u00e9")
+  expect_identical(etr_functional_recovery_failure_frame(result)$scenario,scenarios)
+  expect_identical(etr_functional_recovery_summary_frame(result)$scenario,
+    scenarios[-3L])
+  records[[3L]]$error_message<-NA_character_
+  expect_error(etr_functional_recovery_result(records),"explicit errors")
+  records[[3L]]$error_message<-"failed"
+  records[[1L]]$seed<-2^53
+  expect_error(etr_functional_recovery_result(records),"exactly represented")
+})
+
+test_that("recovery summary can replay NumPy overflow without changing native arithmetic",{
+  records<-lapply(c(-1e308,1e308),function(x)
+    list(scenario_name="overflow",replicate=0L,seed=1L,status="ok",metrics=c(m=x)))
+  result<-etr_functional_recovery_result(records)
+  native<-etr_functional_recovery_summary_frame(result)
+  source<-etr_functional_recovery_summary_frame(result,python_boundary_mode=TRUE)
+  expect_identical(native$median,0)
+  expect_identical(source$mean,0)
+  expect_identical(source$sd,Inf)
+  expect_identical(unname(unlist(source[c("q05","q25","median","q75","q95")])),
+    c(Inf,Inf,-Inf,-Inf,-Inf))
+  expect_error(etr_functional_recovery_summary_frame(result,python_boundary_mode=NA),
+    "must be TRUE or FALSE")
+})
+
 test_that("recovery public function names are stable and fail closed",{
   z<-etr_native_parity_catalog()
   fn<-c("functional_recovery_frame",

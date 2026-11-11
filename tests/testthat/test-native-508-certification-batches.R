@@ -59,13 +59,22 @@ test_that("508-export review fast lane preserves every uncertified export",{
   expect_identical(sum(z$queue$native_nonfunction_source_gap_open),1L)
   # Author-side semantic closure can change the active flag, never erase
   # historical frozen Python/R difference witnesses or approve contracts.
-  expect_identical(sum(z$queue$kind=="function" &
-    z$queue$source_gap_open),201L)
-  expect_identical(sum(z$queue$source_gap_open),202L)
   closed<-c("functional_recovery_metric_catalog_frame",
-    "mathematical_contract_frame")
+    "mathematical_contract_frame",
+    "list_mathematical_contracts",
+    "functional_recovery_metric_catalog",
+    "sparse_fpca_score_frame",
+    "sparse_mfpca_score_frame")
+  gap<-utils::read.csv(file.path(root,"inst","extdata",
+    "native_source_contract_gaps_stage22.csv"),
+    stringsAsFactors=FALSE,check.names=FALSE)
+  expect_setequal(gap$python_name[!gap$unresolved_source_gap],closed)
+  expect_identical(sum(z$queue$kind=="function" &
+    z$queue$source_gap_open),sum(gap$unresolved_source_gap))
+  expect_identical(sum(z$queue$source_gap_open),
+    sum(gap$unresolved_source_gap)+1L)
   semantic<-z$queue[z$queue$python_name%in%closed,,drop=FALSE]
-  expect_identical(nrow(semantic),2L)
+  expect_identical(nrow(semantic),length(closed))
   expect_false(any(semantic$source_gap_open))
   expect_true(all(nzchar(semantic$documented_source_difference)))
   expect_true(all(nzchar(semantic$documented_python_source_witness)))

@@ -70,6 +70,26 @@ test_that("native recovery assessment preserves metric semantics and ordering",{
   expect_match(prose,"not an estimator-tuning input")
 })
 
+test_that("mapped recovery assessment accepts source normalization and estimator values",{
+  definition<-etr_functional_recovery_metric_catalog()[["mean_ise"]]
+  definition$description<-"\u2003Custom meaning\u00a0"
+  definition$direction<-"higher_is_better"
+  assessment<-list(values=list(list(metric=definition,value=" 1_2.5 ",
+    component="2_147_483_648",source="\u2003x\u00a0")),
+    provenance=list(estimator=NULL))
+  expect_error(etr_functional_recovery_assessment_frame(assessment),"numeric scalar")
+  out<-etr_functional_recovery_assessment_frame(assessment,python_boundary_mode=TRUE)
+  expect_identical(out$value,12.5)
+  expect_identical(out$component,2147483649)
+  expect_identical(out$description,"Custom meaning")
+  expect_identical(out$source,"x")
+  expect_match(etr_functional_recovery_reporting_text(assessment,
+    python_boundary_mode=TRUE),"for estimator None.",fixed=TRUE)
+  assessment$values[[1L]]$component<-"1.0"
+  expect_error(etr_functional_recovery_assessment_frame(assessment,
+    python_boundary_mode=TRUE),"integer literal")
+})
+
 test_that("windowed-RQA sensitivity reports exact source reuse and centers",{
   x<-.etr_test_functional_rqa_fixture()
   a<-etr_windowed_rqa_sensitivity(x,metrics="recurrence_rate",
@@ -180,15 +200,19 @@ test_that("catalog and numerical additions do not self-certify source contracts"
     "functional_recovery_metric_catalog_frame",
     "functional_recovery_reporting_text",
     "functional_recovery_assessment_frame")
+  ledger<-utils::read.csv(.etr_test_extdata(
+    "native_source_contract_gaps_stage22.csv"),
+    stringsAsFactors=FALSE,check.names=FALSE)
   for(name in new){
     row<-z[z$python_name==name&z$is_python_function,,drop=FALSE]
     expect_equal(nrow(row),1L)
     expect_identical(row$native_r_candidate,paste0("etr_",name))
     expect_identical(row$native_implementation_stage,26L)
-    if(identical(name,"functional_recovery_metric_catalog_frame")) {
-      # Complete native table semantics, not Python pandas class identity.
-      expect_false(row$source_contract_gap_unresolved)
-    } else expect_true(row$source_contract_gap_unresolved)
+    idx<-match(name,ledger$python_name)
+    expect_false(is.na(idx))
+    expect_identical(row$source_contract_gap_unresolved,
+      as.logical(ledger$unresolved_source_gap[[idx]]))
+    # Source-semantic author review is not independent certification.
     expect_false(row$one_to_one_native_contract_complete)
   }
   expect_equal(nrow(z),508L)
@@ -474,7 +498,7 @@ test_that("functional RQA mean band preserves source equal-weight independent-un
     expect_identical(fp$participant_column,participant)
     expect_identical(fp$random_state,123L)
     expect_identical(fp$n_multiplier,100L)
-    expect_identical(fp$random_engine,"base_R_not_NumPy")
+    expect_identical(fp$random_engine,"numpy_pcg64")
     expect_equal(fp$n_units,length(z$band$unit_ids))
     expect_equal(fp$curves_per_unit,z$band$curves_per_unit)
     expect_identical(fp$estimand,if(unit=="participant")
@@ -535,10 +559,12 @@ test_that("frozen Python 1.2 functional RQA band deterministic moments agree",{
       dimensions=as.list(x$dimension_names),
       n_multiplier=as.integer(100L),random_state=as.integer(123L))
     original<-source$band
-    for(field in c("mean","pointwise_se")){
+    for(field in c("mean","pointwise_se","max_statistics","critical_value",
+      "lower","upper")){
+      expected<-et_to_r(reticulate::py_get_attr(original,field))
+      if(field=="max_statistics")expected<-as.numeric(expected)
       expect_equal(unname(native$band[[field]]),
-        unname(et_to_r(reticulate::py_get_attr(original,field))),
-        tolerance=1e-10,info=paste(unit,field))
+        unname(expected),tolerance=1e-10,info=paste(unit,field))
     }
     expect_equal(native$band$time,
       as.numeric(et_to_r(original$time)),tolerance=0)
@@ -554,12 +580,9 @@ test_that("frozen Python 1.2 functional RQA band deterministic moments agree",{
     expect_identical(native$band$provenance$functional_mean_band$estimand,
       as.character(py_provenance$functional_mean_band$estimand))
     expect_identical(native$band$provenance$functional_mean_band$
-      random_engine,"base_R_not_NumPy")
+      random_engine,"numpy_pcg64")
     expect_true(all(is.finite(native$band$max_statistics)))
     expect_true(all(is.finite(et_to_r(original$max_statistics))))
-    # The Gaussian multiplier RNG differs by language. The deterministic
-    # mean and standard-error estimand must agree; realized bootstrap
-    # quantiles need scientific distributional assessment, not false equality.
   }
   expect_false(any(etr_native_parity_catalog()$
     one_to_one_native_contract_complete))

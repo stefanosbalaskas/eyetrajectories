@@ -80,6 +80,27 @@ class SourceGapInventoryTests(unittest.TestCase):
         self.assertIn(result.active_nonfunction, (0, 1))
         self.assertEqual(result.no_recorded_gap_exports + result.open_total, 508)
 
+    def test_pre_receipt_legacy_closure_rejects_missing_frozen_witness(self):
+        self._replace_row(
+            "sparse_fpca_score_frame",
+            {"unresolved_source_gap": "FALSE",
+             "source_witness": "unverified native-only example"})
+        with self.assertRaisesRegex(
+                ledger.SourceGapInventoryError,
+                "Legacy pre-receipt developer closure witness"):
+            ledger.read_inventory(self.root)
+
+    def test_pre_receipt_exception_cannot_extend_to_new_export(self):
+        self._replace_row(
+            "functional_trapezoid_weights",
+            {"unresolved_source_gap": "FALSE",
+             "source_witness": (
+                 "Frozen Python " + ledger.FROZEN_PYTHON +
+                 " tests/testthat/test-native-trapezoid-full-source-closure.R")})
+        with self.assertRaisesRegex(
+                ledger.SourceGapInventoryError, "Unreviewed/forged"):
+            ledger.read_inventory(self.root)
+
     def test_forged_new_close_must_fail(self):
         self._replace_row("alr_transform",
                           {"unresolved_source_gap": "FALSE"})

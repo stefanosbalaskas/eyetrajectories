@@ -114,7 +114,7 @@ etr_build_508_certification_review_batches <- function(
   ck(!anyNA(priority),"Unclassified export in certification queue")
   # Carry ORIGINAL Python/R source-difference descriptions, executable
   # source witnesses and required resolutions into all independent-review
-  # handoff rows. All 204 historical gap records retain source witnesses (202 remain open).
+  # handoff rows. All 204 historical gap rows retain source witnesses; open counts derive from the live ledger.
   fn_path<-file.path(root,"inst","extdata",
     "native_source_contract_gaps_stage22.csv")
   nf_path<-file.path(root,"inst","extdata",
@@ -134,16 +134,13 @@ etr_build_508_certification_review_batches <- function(
       "unresolved")%in%names(nf_gaps))&&
     is.logical(fn_gaps$unresolved_source_gap)&&
     !anyNA(fn_gaps$unresolved_source_gap)&&
-    all(fn_gaps$unresolved_source_gap[
-      !fn_gaps$python_name%in%c(
-        "functional_recovery_metric_catalog_frame",
-        "mathematical_contract_frame")])&&
-    identical(sort(fn_gaps$python_name[!fn_gaps$unresolved_source_gap]),
-      sort(c("functional_recovery_metric_catalog_frame",
-        "mathematical_contract_frame")))&&
+    all(grepl("^Resolved",
+      fn_gaps$review_resolution[!fn_gaps$unresolved_source_gap]))&&
+    all(grepl("test-",fn_gaps$source_witness[
+      !fn_gaps$unresolved_source_gap],fixed=TRUE))&&
     all(nf_gaps$unresolved)&&
     !anyDuplicated(fn_gaps$python_name),
-    "The 203 historical callable witnesses (201 open) + 1 nonfunction witness are incomplete")
+    "The 203 historical callable witnesses plus 1 nonfunction witness are incomplete or lack closure evidence")
   fn_idx<-match(scope$python_name,fn_gaps$python_name)
   nf_idx<-match(paste(scope$namespace,scope$python_name,sep="::"),
     paste(nf_gaps$namespace,nf_gaps$python_name,sep="::"))

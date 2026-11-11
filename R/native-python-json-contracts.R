@@ -12,7 +12,7 @@
   # values, including supplementary-plane pairs, as JSON Unicode escapes.
   points<-utf8ToInt(enc2utf8(raw))
   paste0(vapply(points,function(p){
-    if(p<=127L)return(intToUtf8(p))
+    if(p<=126L)return(intToUtf8(p))
     if(p<=65535L)return(sprintf("\\u%04x",p))
     z<-p-65536L
     paste0(sprintf("\\u%04x",55296L+z%/%1024L),
@@ -60,6 +60,21 @@
   shortest
 }
 
+# Reconstruct NumPy's nested tolist() ordering from R's column-major storage.
+.etr_python_json_array_to_list <- function(x) {
+  .etr_assert((is.numeric(x)||is.logical(x))&&!is.complex(x),
+    "source JSON array must be numeric or logical")
+  shape<-dim(x)
+  values<-as.vector(x)
+  strides<-cumprod(c(1,utils::head(shape,-1L)))
+  dimension<-function(axis,start){
+    if(axis>length(shape))return(values[[start]])
+    lapply(seq_len(shape[[axis]]),function(i)
+      dimension(axis+1L,start+(i-1)*strides[[axis]]))
+  }
+  dimension(1L,1)
+}
+
 .etr_python_json_encode <- function(value,compact=TRUE,force_array=FALSE,
                                     empty_mapping=FALSE) {
   .etr_assert(is.logical(compact)&&length(compact)==1L&&!is.na(compact),
@@ -70,13 +85,7 @@
     if(is.null(x))return("null")
     if(is.factor(x)||is.data.frame(x)||is.complex(x))
       stop("source JSON requires explicit supported scalar, vector or mapping types",call.=FALSE)
-    if(is.matrix(x)){
-      .etr_assert(is.numeric(x)||is.logical(x),
-        "source JSON matrix must be numeric or logical")
-      rows<-lapply(seq_len(nrow(x)),function(i)as.vector(x[i,,drop=TRUE]))
-      return(paste0("[",paste(vapply(rows,function(y)encode(y,array=TRUE),
-        character(1L)),collapse=sep),"]"))
-    }
+    if(is.array(x))return(encode(.etr_python_json_array_to_list(x)))
     if(is.list(x)){
       nm<-names(x)
       if(!is.null(nm)){

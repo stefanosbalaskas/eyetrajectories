@@ -21,6 +21,7 @@ test_that("native joint sparse PACE conditional uncertainty is PSD and source-sh
       -1e-9)
     expect_equal(diag(C),result$standard_errors[i,]^2,
       tolerance=1e-10,ignore_attr=TRUE)
+    expect_equal(result$correlations[i,,],stats::cov2cor(C),tolerance=1e-10)
   }
   expect_true(all(result$diagnostics$status_code=="ok"))
   expect_true(all(result$diagnostics$fit_score_status=="ok"))
@@ -102,7 +103,7 @@ def _etr_spnm_post_input(times,values,ids):
   pyresult<-reticulate::py_call(reticulate::py_get_attr(
     module,"sparse_mfpca_score_uncertainty"),
     fit=pyfit,trajectories=trpy)
-  for(field in c("covariance","standard_errors")){
+  for(field in c("covariance","standard_errors","correlations")){
     expect_equal(unname(native[[field]]),
       unname(et_to_r(reticulate::py_get_attr(pyresult,field))),
       tolerance=3e-6,ignore_attr=TRUE,

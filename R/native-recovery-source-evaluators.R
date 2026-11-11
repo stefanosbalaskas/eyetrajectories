@@ -9,42 +9,21 @@
     paste(name,"requires explicit fields:",paste(required,collapse=", ")))
   invisible(TRUE)
 }
+.etr_recovery_value_factory <- function() {
+  catalog <- lapply(etr_functional_recovery_metric_catalog(), unclass)
+  function(name, value, component = NULL, source = NULL) {
+    .etr_assert(is.numeric(value) && length(value) == 1L && is.finite(value),
+      paste(name, "must be a finite recovery value"))
+    list(metric = catalog[[name]], value = as.numeric(value),
+      component = component, source = source)
+  }
+}
 .etr_recovery_source_matrix <- function(x,ncols,name) {
   .etr_assert(is.matrix(x)&&is.numeric(x)&&
     nrow(x)>=1L&&ncol(x)==ncols&&all(is.finite(x)),
     paste(name,"must be a finite matrix with expected columns and observations"))
   x
 }
-.etr_recovery_source_metric <- function(name) {
-  defs<-switch(name,
-    phase_warp_ise=list(
-      quantity="registration inverse phase warp",units="time\u00b2 \u00d7 time",
-      scope="registration",
-      description="Mean integrated squared error of recovered inverse phase warps."),
-    phase_warp_max_absolute_error=list(
-      quantity="registration inverse phase warp",units="time",
-      scope="registration",
-      description="Maximum absolute recovered inverse-warp error across curves/time."),
-    source_variance_absolute_error=list(
-      quantity="hierarchical score-source variance",units="score variance",
-      scope="hierarchy",
-      description="Absolute realized-versus-declared score-source variance error."),
-    source_variance_relative_error=list(
-      quantity="hierarchical score-source variance",units="relative",
-      scope="hierarchy",
-      description="Absolute score-source variance error divided by declared variance."),
-    stop("unknown source metric",call.=FALSE))
-  # Match the published Python FunctionalRecoveryMetric field ordering.
-  list(name=name,quantity=defs$quantity,direction="lower_is_better",
-    units=defs$units,scope=defs$scope,description=defs$description)
-}
-.etr_recovery_source_value <- function(name,value,component=NULL,source=NULL) {
-  .etr_assert(is.numeric(value)&&length(value)==1L&&is.finite(value),
-    "recovery metric must be a finite numeric scalar")
-  list(metric=.etr_recovery_source_metric(name),value=as.numeric(value),
-    component=component,source=source)
-}
-
 #' Evaluate known simulator hierarchy score-source variances
 #'
 #' Compares each realized curve, participant and trial score variance
@@ -64,6 +43,7 @@ etr_evaluate_hierarchy_truth_recovery <- function(truth) {
       target=truth$participant_eigenvalues),
     trial=list(scores=truth$trial_scores,target=truth$trial_eigenvalues))
   values<-list()
+  value<-.etr_recovery_value_factory()
   for(source in names(sources)){
     x<-sources[[source]]
     target<-x$target
@@ -75,11 +55,11 @@ etr_evaluate_hierarchy_truth_recovery <- function(truth) {
     estimate<-colMeans(sweep(scores,2L,colMeans(scores),"-")^2)
     for(k in seq_along(target)){
       err<-abs(as.numeric(estimate[k])-as.numeric(target[k]))
-      values[[length(values)+1L]]<-.etr_recovery_source_value(
+      values[[length(values)+1L]]<-value(
         "source_variance_absolute_error",err,component=as.integer(k-1L),
         source=source)
       if(target[k]>0)
-        values[[length(values)+1L]]<-.etr_recovery_source_value(
+        values[[length(values)+1L]]<-value(
           "source_variance_relative_error",err/as.numeric(target[k]),
           component=as.integer(k-1L),source=source)
     }
@@ -109,10 +89,7 @@ etr_evaluate_registration_recovery <- function(result,truth) {
   .etr_recovery_source_fields(truth,
     c("truth_grid","phase_warps_on_truth_grid"),"truth")
   grid<-truth$truth_grid
-  .etr_assert(is.numeric(grid)&&is.null(dim(grid))&&
-    length(grid)>=3L&&all(is.finite(grid))&&all(diff(grid)>0),
-    "truth grid must be finite and strictly increasing with at least 3 points")
-  .etr_assert(identical(as.numeric(result$original$time),as.numeric(grid)),
+  .etr_recovery_require_grid(result$original$time,grid,
     "recovery evaluation requires the fitted grid to equal truth.truth_grid exactly")
   estimate<-result$warping_functions
   generated<-truth$phase_warps_on_truth_grid
@@ -123,19 +100,26 @@ etr_evaluate_registration_recovery <- function(result,truth) {
   .etr_assert(is.matrix(estimate)&&is.numeric(estimate)&&
     identical(dim(estimate),dim(generated))&&all(is.finite(estimate)),
     "registration warps and generating phase warps must have identical curve/time geometry")
-  .etr_assert(all(apply(generated,1L,function(x)all(diff(x)>0))),
-    "generating phase warps must be strictly increasing to invert")
-  inverse<-t(vapply(seq_len(nrow(generated)),function(i)
-    stats::approx(x=generated[i,],y=grid,xout=grid,
-      method="linear",rule=2,ties="ordered")$y,
-    numeric(length(grid))))
+  inverse<-t(vapply(seq_len(nrow(generated)),function(i){
+    knots<-generated[i,]
+    .etr_assert(all(diff(knots)>=0),"generating phase warps must be nondecreasing to invert")
+    # NumPy interpolation starts from the last knot at or below the
+    # query and clamps the outer intervals to the supplied endpoints.
+    left<-findInterval(grid,knots)
+    values<-grid[pmax(1L,left)]
+    inside<-which(left>0L&left<length(grid))
+    lo<-left[inside]
+    hi<-lo+1L
+    values[inside]<-grid[lo]+(grid[hi]-grid[lo])/(knots[hi]-knots[lo])*
+      (grid[inside]-knots[lo])
+    values
+  },numeric(length(grid))))
   difference<-estimate-inverse
   weights<-etr_trapezoid_weights(grid)
   curve_ise<-rowSums(sweep(difference^2,2L,weights,"*"))
-  values<-list(
-    .etr_recovery_source_value("phase_warp_ise",mean(curve_ise)),
-    .etr_recovery_source_value("phase_warp_max_absolute_error",
-      max(abs(difference))))
+  value<-.etr_recovery_value_factory()
+  values<-list(value("phase_warp_ise",mean(curve_ise)),
+    value("phase_warp_max_absolute_error",max(abs(difference))))
   structure(list(values=values,provenance=list(
     estimator="landmark_registration",truth_grid_match="exact",
     truth_target="inverse_phase_warp",

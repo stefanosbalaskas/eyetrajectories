@@ -17,7 +17,7 @@
 etr_fit_function_on_scalar_regression(trajectories, design, predictors,
   dimensions = NULL, participant_column = NULL, unit = "curve")
 etr_bootstrap_function_on_scalar_coefficients(result, n_bootstrap = 1000L,
-  multiplier = "rademacher", random_state = 0L)
+  multiplier = "rademacher", random_state = 0L, random_engine = "numpy")
 etr_function_on_scalar_simultaneous_bands(bootstrap, confidence_level = 0.95,
   simultaneous_scope = "coefficient")
 etr_function_on_scalar_coefficient_frame(result, band = NULL)
@@ -49,7 +49,11 @@ etr_fit_local_return_map(crossings, reference, neighborhood_radius = NULL,
 \item{result}{Native fitted function-on-scalar result or declared spectral stability fit.}
 \item{n_bootstrap}{Wild bootstrap replicate count at least 100.}
 \item{multiplier}{Rademacher or normal whole-curve weights.}
-\item{random_state}{Base-R random seed, isolated and restored; NumPy streams differ.}
+\item{random_state}{For coefficient bootstrap, a nonnegative integer seed
+below \eqn{2^{53}}, or \code{NULL} for the current R RNG stream. The native
+simulation methods use isolated base-R seeds.}
+\item{random_engine}{Use \code{"numpy"} for NumPy-compatible seeded
+bootstrap weights, or \code{"base_R"} to reproduce previous native weights.}
 \item{bootstrap}{Native fixed-design functional wild bootstrap result.}
 \item{confidence_level}{Band coverage nominal fraction in (0,1).}
 \item{simultaneous_scope}{Coefficient-specific or all-coefficient family maximum.}
@@ -87,4 +91,6 @@ etr_fit_local_return_map(crossings, reference, neighborhood_radius = NULL,
 \item{section_dimension}{Explicit Poincare section dimension.}\item{section_value}{Finite section threshold.}\item{direction}{Positive, negative or both orientations.}\item{state_dimensions}{Declared non-section functional state dimensions.}\item{crossings}{Native Poincare crossing results.}\item{reference}{Local return-map mean, median or explicit reference vector.}\item{neighborhood_radius}{Positive local radius, exclusive with n_neighbors.}\item{n_neighbors}{Number of locally selected transitions, exclusive with radius.}
 }
 \value{A native fit, diagnostic or band result, trajectory collection, or structured coefficient data frame according to the invoked method.}
-\details{The base-R pseudorandom generator does not reproduce NumPy random sequences. Simultaneous bands are observed-grid approximations only. FNN is exact brute force with a size cap and explicit tie differences. Time-unit embedding delays remain unsupported. No public source-contract certification or release is implied.}
+\details{Simultaneous bands operate over the observed grid. FNN is exact
+brute force with a size cap and explicit tie differences. Embedding delays
+are measured in samples.}

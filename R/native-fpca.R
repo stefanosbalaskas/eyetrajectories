@@ -7,7 +7,8 @@
 #'   semantics (FALSE, 0 and the empty string are false; nonempty strings
 #'   and nonzero finite numeric scalars are true). In explicit Python
 #'   boundary mode, nonzero, infinite and NaN-valued complex scalar flags
-#'   follow Python bool(complex); empty/nonempty lists use container truthiness.
+#'   follow Python bool(complex); lists use container truthiness and a
+#'   dimensioned atomic array must contain exactly one element.
 #' @param python_boundary_mode When TRUE, reproduce inspected Python 1.2
 #'   edge behavior for infinite strictly increasing grid endpoints and
 #'   NaN/Inf scalar and complex normalization flags, including casting
@@ -34,16 +35,25 @@ etr_trapezoid_weights <- function(time, normalize = FALSE,
     # constructing the homogeneous array. R's unlist() first promotes
     # mixed (character, logical, numeric) values to character, turning
     # TRUE into "TRUE" and then NA. Preserve NumPy's elementwise coercion.
-    time <- vapply(time, function(value)
-      suppressWarnings(as.numeric(value)), numeric(1L),
-      USE.NAMES = FALSE)
+    time <- vapply(time, function(value) {
+      if (isTRUE(python_boundary_mode) && is.character(value))
+        value <- .etr_numpy_float_text(value, "time must contain numeric strings")
+      suppressWarnings(as.numeric(value))
+    }, numeric(1L), USE.NAMES = FALSE)
   }
-  .etr_assert(is.atomic(time) && is.null(dim(time)) &&
+  # A native R array with exactly one dimension is a NumPy 1-D
+  # ndarray analogue; do not reject it merely because dim() is present.
+  # Matrices and higher-rank arrays remain invalid under Python's
+  # "time.ndim != 1" check. Drop the R array class after dtype casting.
+  .etr_assert(is.atomic(time) &&
+                (is.null(dim(time)) || length(dim(time)) == 1L) &&
                 !is.factor(time) &&
                 (is.numeric(time) || is.logical(time) ||
                  is.character(time) ||
                  (isTRUE(python_boundary_mode)&&is.complex(time))),
               "time must be a one-dimensional numeric sequence")
+  if (isTRUE(python_boundary_mode) && is.character(time))
+    time <- .etr_numpy_float_text(time, "time must contain numeric strings")
   time <- suppressWarnings(as.numeric(time))
   d <- diff(time); n <- length(time)
   if(isTRUE(python_boundary_mode)) {
@@ -69,6 +79,12 @@ etr_trapezoid_weights <- function(time, normalize = FALSE,
   # truthiness. R NULL is the explicit native counterpart only in
   # python_boundary_mode; the strict native flag contract is unchanged.
   if(isTRUE(python_boundary_mode) && is.null(normalize)) return(w)
+  if (isTRUE(python_boundary_mode) && is.atomic(normalize) &&
+      !is.null(dim(normalize))) {
+    .etr_assert(length(normalize) == 1L,
+      "normalize array truth value is ambiguous without exactly one element")
+    normalize <- as.vector(normalize)
+  }
   list_flag <- is.list(normalize) && !is.data.frame(normalize) &&
     is.null(dim(normalize))
   if(list_flag) {

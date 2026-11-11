@@ -27,8 +27,10 @@ etr_fpca_wild_bootstrap_monte_carlo_diagnostic_frame(result)
 \item{scan}{Explicit R record of an already computed wild-bootstrap
 truncation scan with candidate components, target curve IDs and
 candidate-by-target center, width and interval-bound matrices.}
-\item{width_threshold}{Strictly positive width transition threshold.}
-\item{center_threshold}{Strictly positive center transition threshold.}
+\item{width_threshold}{Strictly positive width transition threshold,
+including a finite decimal-text scalar.}
+\item{center_threshold}{Strictly positive center transition threshold,
+including a finite decimal-text scalar.}
 \item{stability_run}{Nonnegative whole-number r, requiring r+1
 successive stable candidate transitions.}
 \item{on_failure}{Whether targets with no qualifying run trigger

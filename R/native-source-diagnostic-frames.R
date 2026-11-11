@@ -9,10 +9,10 @@
     paste(name,"must be finite n_surrogates-by-dimension numeric matrix"))
   invisible(TRUE)
 }
-.etr_diagnostic_number <- function(x,n,name,positive=FALSE) {
+.etr_diagnostic_number <- function(x,n,name,allow_positive_infinity=FALSE) {
   .etr_assert(is.numeric(x)&&is.null(dim(x))&&length(x)==n&&
-    all(is.finite(x))&&(!positive||all(x>0)),
-    paste(name,"must be finite numeric vector of required length"))
+    all(is.finite(x)|(allow_positive_infinity&x==Inf)),
+    paste(name,"must be a numeric vector of required length with valid values"))
   invisible(TRUE)
 }
 .etr_diagnostic_flag <- function(x,n,name) {
@@ -87,7 +87,7 @@ etr_functional_mixed_effects_variance_bootstrap_frame <- function(bootstrap) {
     "log_likelihoods")
   .etr_diagnostic_number(
     bootstrap$random_effect_covariance_condition_numbers,n,
-    "random_effect_covariance_condition_numbers")
+    "random_effect_covariance_condition_numbers",allow_positive_infinity=TRUE)
   for(name in c("random_effect_boundary_flags",
     "random_effect_singular_flags","random_slope_boundary_flags",
     "convergence_flags"))
@@ -125,9 +125,10 @@ etr_functional_mixed_effects_variance_bootstrap_frame <- function(bootstrap) {
       bootstrap$random_intercept_covariances),
     stringsAsFactors=FALSE)
   if(!is.null(bootstrap$residual_correlation_parameters)){
-    for(name in c("residual_correlation_parameters",
-      "residual_correlation_condition_numbers"))
-      .etr_diagnostic_number(bootstrap[[name]],n,name)
+    .etr_diagnostic_number(bootstrap$residual_correlation_parameters,n,
+      "residual_correlation_parameters")
+    .etr_diagnostic_number(bootstrap$residual_correlation_condition_numbers,n,
+      "residual_correlation_condition_numbers",allow_positive_infinity=TRUE)
     for(name in c("residual_correlation_boundary_flags",
       "residual_correlation_independence_flags"))
       .etr_diagnostic_flag(bootstrap[[name]],n,name)
@@ -152,7 +153,7 @@ etr_functional_mixed_effects_variance_bootstrap_frame <- function(bootstrap) {
       "trial covariance eigenvalue dimension must match covariance")
     .etr_diagnostic_number(
       bootstrap$trial_random_effect_covariance_condition_numbers,n,
-      "trial_random_effect_covariance_condition_numbers")
+      "trial_random_effect_covariance_condition_numbers",allow_positive_infinity=TRUE)
     for(name in c("trial_random_effect_boundary_flags",
       "trial_random_effect_singular_flags"))
       .etr_diagnostic_flag(bootstrap[[name]],n,name)

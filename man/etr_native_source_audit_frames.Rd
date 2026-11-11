@@ -39,6 +39,10 @@ including \code{functional_mixed_effects.py},
 row ordering, zero-based source/bootstrap indices, and missing selection
 components are retained. Python dataclass and pandas return types are
 not reproduced and remain an explicit unresolved source-contract gap.
+For full-refit trial audits, pass the generated native refit object
+directly or provide the equivalent four-identifier rows per replicate.
+Repeated draws of a source participant receive distinct bootstrap
+participant and trial identifiers.
 For the participant random-effect and nested-trial effect frames, callers
 may now also pass the corresponding native joint B-spline Gaussian mixed
 fit records directly. Their fitted random-effect functions are adapted

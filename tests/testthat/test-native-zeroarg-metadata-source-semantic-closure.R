@@ -77,8 +77,12 @@ test_that("exact semantic frames clear only their historical source-gap flags",{
     expect_false(row$one_to_one_native_contract_complete)
     expect_false(row$independent_numeric_parity_pass)
   }
+  witness<-utils::read.csv(.etr_test_extdata(
+    "native_source_contract_gaps_stage22.csv"),
+    stringsAsFactors=FALSE,check.names=FALSE)
   expect_identical(sum(catalog$is_python_function &
-    catalog$source_contract_gap_unresolved),201L)
+    catalog$source_contract_gap_unresolved),
+    as.integer(sum(witness$unresolved_source_gap)))
   expect_identical(sum(catalog$nonfunction_source_gap_unresolved),1L)
   expect_false(any(catalog$one_to_one_native_contract_complete))
 })

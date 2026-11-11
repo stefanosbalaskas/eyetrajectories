@@ -73,7 +73,7 @@ etr_fit_sparse_mfpca_async_native<-function(
       !is.logical(z)&&is.finite(z)&&z==floor(z)&&z>=1L,
       "minimum scalar observations / smoothing support must be positive integers")
   }
-  .etr_assert(mean_min_local_points>=3L&&
+  .etr_assert(mean_min_local_points>=2L&&
     covariance_min_local_pairs>=3L,
     "local-linear smoothing requires sufficient mean and covariance support")
   grid<-.etr_spn_grid(evaluation_grid)
@@ -172,6 +172,7 @@ etr_fit_sparse_mfpca_async_native<-function(
     coordinate_system=trajectories$coordinate_system,
     time_unit=trajectories$time_unit,
     n_components=as.integer(n_components),
+    n_curves=length(trajectories$curve_ids),
     quadrature_weights=eig$quadrature_weights,
     smoothed_cxx=operator$smoothed$cxx,
     smoothed_cxy=operator$smoothed$cxy,

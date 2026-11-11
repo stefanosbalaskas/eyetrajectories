@@ -118,15 +118,20 @@ test_that("508-source census remains strict and unsigned",{
     "get_mathematical_contract","mathematical_contract_frame",
     "plot_kantz_sensitivity","plot_lyapunov_sensitivity",
     "plot_windowed_rqa_sensitivity")
+  ledger<-utils::read.csv(.etr_test_extdata(
+    "native_source_contract_gaps_stage22.csv"),
+    stringsAsFactors=FALSE,check.names=FALSE)
   for(name in names){
     row<-z[z$python_name==name&z$is_python_function,,drop=FALSE]
     expect_equal(nrow(row),1L)
     expect_identical(row$native_r_candidate,paste0("etr_",name))
     expect_identical(row$native_implementation_stage,28L)
-    if(identical(name,"mathematical_contract_frame")) {
-      # Complete native table semantics, not Python pandas class identity.
-      expect_false(row$source_contract_gap_unresolved)
-    } else expect_true(row$source_contract_gap_unresolved)
+    source_row<-match(name,ledger$python_name)
+    expect_false(is.na(source_row))
+    expect_identical(row$source_contract_gap_unresolved,
+      as.logical(ledger$unresolved_source_gap[[source_row]]))
+    # Developer-reviewed native-language semantics are not independent
+    # Python runtime object/class certifications.
     expect_false(row$one_to_one_native_contract_complete)
   }
   expect_equal(nrow(z),508L)

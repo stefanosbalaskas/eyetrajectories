@@ -1,0 +1,67 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "functional_trapezoid_weights",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/fpca.py::functional_trapezoid_weights",
+  "source_signature": "functional_trapezoid_weights(time: ndarray, *, normalize: bool=False) -> ndarray",
+  "native_signature": "etr_trapezoid_weights(time, normalize=FALSE, python_boundary_mode=TRUE)",
+  "native_language_semantic_policy": "One-dimensional Python NumPy float64 array is represented by a one-dimensional native R double vector. Python ValueError maps to native R error conditions. The explicit extra python_boundary_mode selects frozen-source nonfinite and dtype coercions while ordinary native R defaults stay strictly finite.",
+  "reviewer_statement": "Author-side six-domain review of deterministic native trapezoid rule against frozen Python 1.2 source: required and optional argument mapping, standard one-dimensional numeric and representable scalar-container casts, nonfinite and invalid time grids, normalization truthiness, exception accept-reject boundaries, output shape and float64 values, and scientific integral weight estimand. Direct frozen Python numerical oracles and deterministic randomized algebra fixtures passed. This is native-language mathematical/accepted-domain semantic equivalence, NOT Python ndarray identity, arbitrary Python extension-object protocols, Python warning or exception class identity, independent reviewer approval, or CRAN release readiness.",
+  "native_files": [
+    {
+      "path": "R/native-fpca.R",
+      "sha256": "3b0141a304e6237c817789baa14a3fe9c0715d4dfb8713718aa25dff7e4fae30"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-trapezoid-full-source-closure.R",
+      "sha256": "5aef52f0793550960c22c025455582e68e78a5089b88becf76ee01ae2a9650cf",
+      "description": "Required time and default false normalization; opt-in source boundary mode and two-point minimum."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-trapezoid-full-source-closure.R",
+      "sha256": "5aef52f0793550960c22c025455582e68e78a5089b88becf76ee01ae2a9650cf",
+      "description": "Native 1-D ndarray analogues, floats, integers, Booleans, numeric text, mixed scalar list and complex ndarray-to-real casting; scalar and one-element normalization arrays."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-trapezoid-full-source-closure.R",
+      "sha256": "5aef52f0793550960c22c025455582e68e78a5089b88becf76ee01ae2a9650cf",
+      "description": "180 seeded strictly increasing finite grids, source NumPy direct differentials, nonfinite propagation, normalized and unnormalized weights."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-trapezoid-full-source-closure.R",
+      "sha256": "5aef52f0793550960c22c025455582e68e78a5089b88becf76ee01ae2a9650cf",
+      "description": "Rejected empty, scalar, matrix, higher-rank, repeated/decreasing/NaN grids and ambiguous multi-element array flags; Python ValueError to R error mapping."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-trapezoid-full-source-closure.R",
+      "sha256": "5aef52f0793550960c22c025455582e68e78a5089b88becf76ee01ae2a9650cf",
+      "description": "One dimensional numeric vector of float64 trapezoid weights preserving grid order and allowed nonfinite outputs; native R representation of source NumPy ndarray."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-trapezoid-complex-source.R",
+      "sha256": "7b4c1feadfe82e539a47f943053a0640771fe3bc0b92534aafa7b81684270567",
+      "description": "Exact trapezoidal quadrature, denominator normalization, and complex NumPy casting, with no interpolation or resampling."
+    }
+  ],
+  "regression_evidence": {
+    "path": "tests/testthat/test-native-core.R",
+    "sha256": "349c33adb980c4f184f54f0056a640f7663512865396c6a817ca151946f4d37b"
+  },
+  "known_language_specific_limits": [
+    "R native numeric vector is not a Python ndarray object",
+    "Python custom __array__ and __bool__ user object protocols are not native R coercion methods",
+    "Native R condition and warning classes are not Python exception and NumPy warning classes"
+  ],
+  "independently_signed_review": false
+}

@@ -58,7 +58,7 @@ etr_with_values <- function(x,values=x$values,time=NULL,
 #' @export
 etr_trajectory_snapshot <- function(x) {
   etr_validate(x)
-  structure(list(
+  snapshot <- list(
     format="eyetrajectories-native-r-trajectory-snapshot",
     schema_version=1L,
     package="eyetrajectories",
@@ -71,7 +71,9 @@ etr_trajectory_snapshot <- function(x) {
     time_unit=x$time_unit,
     provenance=etr_trajectory_provenance(x),
     shape=as.integer(dim(x$values))
-  ),class="etr_trajectory_snapshot")
+  )
+  if (isTRUE(attr(x, "python_boundary_mode"))) snapshot$python_boundary_mode <- TRUE
+  structure(snapshot, class="etr_trajectory_snapshot")
 }
 
 #' Restore a validated native R trajectory snapshot
@@ -96,9 +98,11 @@ etr_restore_trajectory_snapshot <- function(snapshot) {
   .etr_assert(is.array(snapshot$values) &&
     identical(as.integer(dim(snapshot$values)),snapshot$shape),
     "snapshot array shape does not match manifest")
+  boundary <- snapshot[["python_boundary_mode", exact = TRUE]]
+  if (is.null(boundary)) boundary <- FALSE
   etr_trajectory_set(
     snapshot$time,snapshot$values,snapshot$curve_ids,
     snapshot$dimension_names,snapshot$metadata,
     snapshot$coordinate_system,snapshot$time_unit,
-    provenance=snapshot$provenance)
+    provenance=snapshot$provenance, python_boundary_mode=boundary)
 }

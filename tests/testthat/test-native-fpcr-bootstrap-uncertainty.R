@@ -128,6 +128,22 @@ _fpcr_published_reference={
     expect_equal(replay,original,tolerance=1e-12,
       ignore_attr=TRUE,info=paste("replayed source FPCR refit",field))
   }
+  for(unit in c("curve","participant")){
+    group<-if(unit=="participant")"subject"else NULL
+    seeded<-etr_bootstrap_fpca_regression_uncertainty(z$x,z$y,
+      n_bootstrap=20L,n_components=1L,random_state=7L,
+      resample_unit=unit,participant_column=group)
+    source_seeded<-reticulate::py_call(
+      etpy_get_export("bootstrap_fpca_regression_uncertainty"),
+      trajectories=reticulate::py_eval("tr",convert=FALSE),
+      outcome=reticulate::py_eval("y",convert=FALSE),
+      n_bootstrap=20L,n_components=1L,random_state=7L,
+      resample_unit=unit,participant_column=group)
+    for(field in c("bootstrap_slopes","bootstrap_mean_predictions"))
+      expect_equal(seeded[[field]],
+        et_to_r(reticulate::py_get_attr(source_seeded,field)),
+        tolerance=1e-6,ignore_attr=TRUE,info=paste(unit,field))
+  }
   oracle<-reticulate::py_to_r(reticulate::py_eval(
     "_fpcr_published_reference",convert=FALSE))
   expect_equal(unname(native$reference_slope),unname(oracle$slope),
@@ -431,8 +447,9 @@ assert np.allclose(_f15_pi.sampled_residuals,
   ridx<-reticulate::py_to_r(reticulate::py_eval(
     "_f15_ridx",convert=FALSE))
   local_pi<-etr_fpca_regression_future_prediction_interval(
-    local_boot,z$y,confidence_level=.9,random_state=17L,
-    residual_indices=ridx)
+    local_boot,z$y,confidence_level=.9,random_state=17L)
+  expect_identical(local_pi$sampled_residuals,
+    matrix(local_pi$centered_residuals[ridx+1],nrow(ridx),ncol(ridx)))
   py_pi<-reticulate::py_eval("_f15_pi",convert=FALSE)
   for(field in c("centered_residuals","sampled_residuals",
     "predictive_draws","lower","median","upper","predictive_se")){

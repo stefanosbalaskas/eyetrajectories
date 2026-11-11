@@ -33,6 +33,7 @@ test_that("native sparse PACE fits a local covariance and conditions on full ope
   expect_equal(f$covariance,t(f$covariance),tolerance=1e-10)
   expect_true(all(is.finite(f$scores)))
   expect_true(all(is.finite(f$eigenvalues)))
+  expect_true(all(c("backend_object","backend_data","reconstructed_backend")%in%names(f)))
   expect_true(all(f$eigenvalues>0))
   expect_true(all(is.finite(f$mean)))
   expect_true(all(f$mean_support_counts>=3L))
@@ -46,6 +47,7 @@ test_that("native sparse PACE fits a local covariance and conditions on full ope
   u<-etr_sparse_fpca_score_uncertainty_native(f,x)
   expect_identical(dim(u$covariance),c(24L,1L,1L))
   expect_identical(dim(u$standard_errors),c(24L,1L))
+  expect_identical(u$correlations,array(1,c(24L,1L,1L)))
   expect_true(all(is.finite(u$standard_errors)))
   expect_true(all(u$standard_errors>=0))
   expect_true(all(u$covariance>= -1e-9))
@@ -81,6 +83,43 @@ test_that("source sparse FPCA guards unsupported estimators and source support",
     "curve IDs")
   expect_error(etr_sparse_fpca_score_uncertainty_native(f,x,
     condition_limit=1),"condition_limit")
+  other<-x;other$coordinate_system<-"pixels"
+  expect_error(etr_sparse_fpca_score_uncertainty_native(f,other),"coordinate_system")
+  other<-x;other$time_unit<-"ms"
+  expect_error(etr_sparse_fpca_score_uncertainty_native(f,other),"time_unit")
+  changed<-f;changed$covariance<-f$covariance[-1L,-1L]
+  expect_error(etr_sparse_fpca_score_uncertainty_native(changed,x),"covariance shape")
+  changed<-f;changed$eigenvalues[1L]<- -1
+  expect_error(etr_sparse_fpca_score_uncertainty_native(changed,x),"non-negative")
+  failure<-tryCatch(etr_sparse_fpca_score_uncertainty_native(f,x,
+    condition_limit=1.01),error=identity)
+  expect_s3_class(failure,"etr_sparse_native_error")
+  retained<-etr_sparse_fpca_score_uncertainty_native(f,x,
+    condition_limit="1.01",failure_action="retain_nan")
+  expect_true(all(is.nan(retained$correlations)))
+  expect_identical(failure$details$all_curve_diagnostics,
+    lapply(seq_len(nrow(retained$diagnostics)),function(i)
+      as.list(retained$diagnostics[i,,drop=FALSE])))
+})
+
+test_that("sparse FPCA source controls and score-failure audits survive the workflow",{
+  x<-.etr_spn_source_fixture()
+  cfg<-list(backend="native_covariance",dimension="signal",n_components=1L,
+    evaluation_grid=seq(.08,.92,length.out=9L),mean_bandwidth=.5,
+    covariance_bandwidth=.85,analysis_support_action="restrict",psd_action="project",
+    measurement_error_variance=.07,mean_smoother="local_linear",
+    covariance_smoother="local_linear",kernel="epanechnikov",min_score_samples=9L)
+  failed<-tryCatch(etr_run_sparse_fpca_workflow(x,cfg),error=identity)
+  expect_s3_class(failed,"etr_sparse_native_error")
+  expect_identical(failed$code,"curve_too_sparse_for_score_system")
+  expect_identical(failed$details$curve_id,x$curve_ids[1L])
+  cfg$score_failure_action<-"retain_nan"
+  retained<-etr_run_sparse_fpca_workflow(x,cfg)
+  expect_identical(retained$fit$noise_variance,.07)
+  expect_identical(retained$steps[[1L]]$parameters$kernel,"epanechnikov")
+  audit<-retained$fit$score_diagnostics
+  expect_identical(failed$details$all_curve_diagnostics,
+    lapply(seq_len(nrow(audit)),function(i)as.list(audit[i,,drop=FALSE])))
 })
 
 test_that("native sparse source PACE and score uncertainty match pinned Python arrays",{
@@ -132,7 +171,7 @@ def _etr_spn_build_irregular(times, values, ids):
       reticulate::py_eval("_etr_spn_module",convert=FALSE),
       "sparse_fpca_score_uncertainty"),
     fit=pyfit,trajectories=py)
-  for(field in c("covariance","standard_errors")){
+  for(field in c("covariance","standard_errors","correlations")){
     expect_equal(unname(nrposterior[[field]]),
       unname(get(pyposterior,field)),tolerance=2e-6,
       ignore_attr=TRUE,info=paste("source sparse posterior",field))
@@ -202,6 +241,28 @@ test_that("source-model sparse workflow uses actual custom native PACE",{
 
 
 
+test_that("sparse workflow phases retain warnings and propagate errors",{
+  seen<-character()
+  run<-withCallingHandlers(
+    .etr_sparse_timed_step("fit","fit_sparse_fpca",list(n_components=1L),{
+      warning("first diagnostic",call.=FALSE)
+      warning("second diagnostic",call.=FALSE)
+      42L
+    }),
+    warning=function(condition){
+      seen<<-c(seen,conditionMessage(condition))
+      invokeRestart("muffleWarning")
+    })
+  expect_identical(run$result,42L)
+  expect_identical(run$step$warnings,c("first diagnostic","second diagnostic"))
+  expect_identical(run$step$warnings,seen)
+  audit<-etr_workflow_steps_frame(list(run$step))
+  expect_identical(audit$warning_count,2L)
+  expect_true(is.finite(audit$elapsed_seconds)&&audit$elapsed_seconds>=0)
+  expect_error(.etr_sparse_timed_step("fit","fit_sparse_fpca",list(),
+    stop("failed estimator")), "failed estimator")
+})
+
 test_that("sparse FPCA bandwidth selection retains failed candidates and audits the refit",{
   x<-.etr_spn_source_fixture()
   cfg<-list(backend="native_covariance",dimension="signal",n_components=1L,
@@ -236,6 +297,15 @@ test_that("sparse FPCA bandwidth selection retains failed candidates and audits 
   expect_true(all(condition$bandwidth_selection$fold_results$status_code=="validation_failure"))
   expect_true(all(condition$bandwidth_selection$curve_losses$failure_code==
     "predictive_covariance_ill_conditioned"))
+  bad<-cfg;bad$mean_smoother<-"local_constant"
+  condition<-expect_error(etr_run_sparse_fpca_workflow(x,bad),
+    class="etr_sparse_bandwidth_selection_error")
+  audit<-condition$bandwidth_selection
+  expect_true(all(audit$fold_results$status_code=="fit_failure"))
+  expect_true(all(audit$fold_results$failure_code=="ValueError"))
+  expect_identical(audit$provenance$mean_smoother,"local_constant")
+  bad$bandwidth_selection$failure_action<-"error"
+  expect_error(etr_run_sparse_fpca_workflow(x,bad),"mean_smoother must be 'local_linear'")
 })
 
 test_that("rotated covariance diagonal and noise estimate match frozen numerical primitives",{

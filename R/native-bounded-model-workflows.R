@@ -68,6 +68,39 @@ etr_run_functional_mixed_effects_workflow<-function(
 }
 
 # Native source-model workflow lane. Legacy fdapace remains separate.
+.etr_sparse_uncertainty_report <- function(result) {
+  n_curves<-length(result$curve_ids)
+  failed<-sum(result$diagnostics$status_code!="ok")
+  if(inherits(result,"etr_sparse_mfpca_score_uncertainty_native")){
+    finite<-result$standard_errors[is.finite(result$standard_errors)]
+    median_se<-if(length(finite))sprintf("%.3f",stats::median(finite))else"nan"
+    return(paste0("Conditional joint-PACE score uncertainty was computed for ",
+      n_curves," curve(s) and ",result$n_components," retained joint component(s) ",
+      "using the full fitted planar covariance, declared measurement-error covariance, ",
+      "native observation times, and the fitted score ridge. ",n_curves-failed,
+      " curve(s) were solved and ",failed," failure(s) were retained under the declared ",
+      "failure policy; the median finite conditional score SE was ",median_se,
+      ". These covariances condition on the fitted joint population objects and do ",
+      "not include uncertainty from estimating the mean, covariance, eigensystem, ",
+      "measurement-error specification, or smoothing bandwidths."))
+  }
+  ridge<-result$provenance$score_ridge
+  ridge_text<-if(ridge>0)paste0(" The fitted PACE score ridge (",sprintf("%g",ridge),
+    ") was inherited as numerical regularization of the score system and was not ",
+    "interpreted as additional measurement-error variance.")else
+      " No score ridge was added to the conditional system."
+  failure_text<-if(failed)paste0(" ",failed," of ",n_curves,
+    " curve-level uncertainty systems failed the declared numerical diagnostics and ",
+    "were retained explicitly rather than silently dropped.")else
+      " All curve-level conditional uncertainty systems passed the declared numerical diagnostics."
+  paste0("Conditional PACE score uncertainty was computed for ",n_curves,
+    " curves and ",result$n_components," retained component(s) using the full fitted ",
+    "covariance evaluated at native observation times. The covariance is conditional ",
+    "on the fitted mean, covariance surface, eigensystem, and measurement-error variance ",
+    "and therefore excludes population-estimation uncertainty, including uncertainty ",
+    "from estimating smoothing bandwidths and the noise variance.",ridge_text,failure_text)
+}
+
 .etr_sparse_workflow_uncertainty <- function(request, fit, trajectories) {
   if(is.null(request))return(NULL)
   parameters<-list(condition_limit=NULL,failure_action="error")
@@ -76,6 +109,13 @@ etr_run_functional_mixed_effects_workflow<-function(
     !anyDuplicated(names(request))&&all(names(request)%in%names(parameters)),
     "score_uncertainty must be a named list with condition_limit and/or failure_action")
   parameters[names(request)]<-request
+  if(!is.null(parameters$condition_limit)){
+    limit<-parameters$condition_limit
+    message<-"condition_limit must be finite and greater than 1"
+    .etr_assert(.etr_trajectory_boundary_scalar(limit),message)
+    parameters$condition_limit<-.etr_trajectory_boundary_double(limit,message)
+    .etr_assert(is.finite(parameters$condition_limit)&&parameters$condition_limit>1,message)
+  }
   if(inherits(fit,"etr_sparse_mfpca_source")){
     calculate<-etr_sparse_mfpca_score_uncertainty_native
     as_frame<-etr_sparse_mfpca_score_uncertainty_frame_native
@@ -85,15 +125,11 @@ etr_run_functional_mixed_effects_workflow<-function(
     as_frame<-etr_sparse_fpca_score_uncertainty_frame_native
     source_function<-"sparse_fpca_score_uncertainty"
   }
-  result<-do.call(calculate,c(list(fit=fit,trajectories=trajectories),parameters))
-  step<-.etr_source_workflow_step(source_function,parameters)
-  step$name<-"score_uncertainty"
-  list(result=result,step=step,frame=as_frame(result),report=paste0(
-    "Conditional PACE score uncertainty uses the full fitted covariance ",
-    "evaluated at native observation times and excludes uncertainty in ",
-    "the estimated population fit. ",
-    sum(result$diagnostics$status_code=="ok")," of ",
-    length(result$curve_ids)," curve-level systems passed."))
+  run<-.etr_sparse_timed_step("score_uncertainty",source_function,parameters,
+    do.call(calculate,c(list(fit=fit,trajectories=trajectories),parameters)))
+  result<-run$result
+  list(result=result,step=run$step,frame=as_frame(result),
+    report=.etr_sparse_uncertainty_report(result))
 }
 
 .etr_run_sparse_fpca_source_native_workflow<-function(
@@ -102,34 +138,37 @@ etr_run_functional_mixed_effects_workflow<-function(
     backend="native_covariance",dimension=NULL,
     n_components=NULL,evaluation_grid=NULL,
     mean_bandwidth=NULL,covariance_bandwidth=NULL,
-    measurement_error_variance=NULL,noise_variance_method="fixed",
+    measurement_error_variance=NULL,noise_variance_method=
+      if(is.null(config$measurement_error_variance))"diagonal_difference"else"fixed",
     noise_bandwidth=NULL,noise_support=NULL,noise_min_local_points=3L,
     analysis_support_action="error",psd_action="error",
     psd_tolerance=1e-8,positive_eigen_tolerance=1e-10,
     score_ridge=0,score_condition_limit=1e12,
     min_score_samples=2L,score_failure_action="error",
     mean_min_local_points=3L,covariance_min_local_pairs=6L,
+    mean_smoother="local_linear",covariance_smoother="local_linear",
+    kernel="epanechnikov",
     score_uncertainty=NULL,bandwidth_selection=NULL,observation_diagnostics=NULL,
     preprocessing=list()),required=c(
-      "backend","dimension","n_components","evaluation_grid",
-      "noise_variance_method"))
+      "backend","dimension","n_components","evaluation_grid"))
   .etr_assert(identical(cfg$backend,"native_covariance"),
     "sparse source workflow requires explicit native_covariance backend")
   observation_options<-.etr_sparse_observation_options(
     observation_process,cfg$observation_diagnostics)
   .etr_assert(inherits(trajectories,"etr_irregular_trajectory_set"),
     "source-model sparse FPCA requires native irregular trajectories")
-  selection<-.etr_sparse_bandwidth_selection(trajectories,cfg,paired=FALSE)
+  selection_run<-.etr_sparse_bandwidth_selection(trajectories,cfg,paired=FALSE)
+  selection<-selection_run$result
   params<-cfg[setdiff(names(cfg),c("preprocessing","score_uncertainty",
     "bandwidth_selection","observation_diagnostics"))]
   params<-.etr_sparse_bandwidth_refit(params,selection)
-  fit<-do.call(etr_fit_sparse_fpca_native,c(
-    list(trajectories=trajectories),params[
-      setdiff(names(params),"backend")]))
+  fit_params<-params[setdiff(names(params),"backend")]
+  fit_run<-.etr_sparse_timed_step("fit","fit_sparse_fpca",fit_params,
+    do.call(etr_fit_sparse_fpca_native,c(list(trajectories=trajectories),fit_params)))
+  fit<-fit_run$result
   uncertainty<-.etr_sparse_workflow_uncertainty(
     cfg$score_uncertainty,fit,trajectories)
-  steps<-list(.etr_source_workflow_step(
-    "fit_sparse_fpca_native_full_covariance_PACE",params))
+  steps<-list(fit_run$step)
   reports<-list(fit=etr_sparse_fpca_reporting_text(fit))
   tables<-list(scores=.etr_scientific_frame_metadata(fit,"SFPC",
       preserve_workflow_metadata=TRUE),
@@ -144,6 +183,7 @@ etr_run_functional_mixed_effects_workflow<-function(
   workflow<-structure(list(
     workflow_schema_version=1L,
     workflow_contract="sparse_fpca:native_local_linear_fixed_noise",
+    source_workflow_contract="sparse_fpca:v1",
     config=cfg,fit=fit,score_uncertainty=uncertainty$result,
     steps=steps,
     decisions=c(lapply(params,.etr_source_workflow_decision),list(
@@ -153,6 +193,8 @@ etr_run_functional_mixed_effects_workflow<-function(
       source_python_family="fit_sparse_fpca",
       source_numerical_law="local_linear_epanechnikov_PACE",
       raw_interpolation_performed=FALSE,
+      native_observation_grids_retained=TRUE,
+      automatic_model_selection_performed=FALSE,
       preprocessing_executed=FALSE,
       noise_variance_method=cfg$noise_variance_method,
       automatic_bandwidth_selection_performed=FALSE,
@@ -161,7 +203,7 @@ etr_run_functional_mixed_effects_workflow<-function(
       full_source_contract_certified=FALSE),
     reports=reports,tables=tables),
     class="etr_sparse_fpca_workflow")
-  workflow<-.etr_sparse_bandwidth_workflow(workflow,selection,paired=FALSE)
+  workflow<-.etr_sparse_bandwidth_workflow(workflow,selection_run)
   .etr_sparse_observation_workflow(workflow,observation_process,observation_options)
 }
 

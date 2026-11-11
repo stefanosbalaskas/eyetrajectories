@@ -1,6 +1,5 @@
 # Native R writer for the frozen Python 1.2 JSON + NPZ portable schema.
-# A bounded interoperable TrajectorySet snapshot, not a Python dataclass
-# exporter or a claim of full source-contract parity.
+# Explicit native trajectory and FPCA mappings into portable snapshots.
 
 .etr_portable_writer_npy <- function(path, x) {
   .etr_assert(is.atomic(x) && !is.factor(x) &&
@@ -16,12 +15,16 @@
     all(shape>=0L), "unsupported portable array shape")
   order <- if(length(shape)>1L) as.vector(aperm(array(x,dim=shape),
     rev(seq_along(shape)))) else as.vector(x)
+  integer_array <- is.integer(x) && !anyNA(x)
   if(is.character(x)){
+    order <- enc2utf8(order)
     width <- max(1L,vapply(order,function(z)length(utf8ToInt(z)),
       integer(1L)),na.rm=TRUE)
     descr <- paste0("<U",width)
   } else if(is.logical(x)) {
     descr <- "|b1"
+  } else if(integer_array) {
+    descr <- "<i4"
   } else {
     descr <- "<f8"
   }
@@ -50,33 +53,44 @@
     }
   } else if(is.logical(x)){
     writeBin(as.raw(as.integer(order)),con)
+  } else if(integer_array){
+    writeBin(order,con,size=4L,endian="little")
   } else {
-    .etr_assert(!any(is.infinite(order) | is.nan(order)),
-      "portable numeric arrays must not contain infinity or NaN")
     writeBin(as.double(order),con,size=8L,endian="little")
   }
   dtype <- if(is.character(x)) {
-    paste0("str",width)
+    descr
   } else if(is.logical(x)) {
     "bool"
+  } else if(integer_array) {
+    "int32"
   } else {
     "float64"
   }
   list(dtype=dtype,shape=as.list(as.integer(shape)))
 }
 
-.etr_portable_writer_json <- function(x,depth=0L) {
+.etr_portable_writer_mapping <- function(items) {
+  list('__portable_type__'="mapping",
+    entries=lapply(seq_along(items),function(i) list(names(items)[[i]],items[[i]])))
+}
+
+.etr_portable_writer_json <- function(x,depth=0L,add_array=NULL) {
   .etr_assert(depth<=32L,"portable provenance nesting exceeds safe limit")
   if(is.null(x)) return(NULL)
+  if(!is.null(add_array) && is.array(x)) {
+    .etr_assert((is.numeric(x)||is.logical(x)) && all(is.finite(x)),
+      "portable workflow arrays must be finite numeric or logical values")
+    return(add_array(x))
+  }
   if(is.list(x) && !is.object(x)){
     keys <- names(x)
-    if(is.null(keys))
-      return(lapply(x,.etr_portable_writer_json,depth=depth+1L))
-    .etr_assert(!anyNA(keys)&&all(nzchar(keys))&&!anyDuplicated(keys),
-      "portable mapping requires unique nonempty keys")
-    return(list('__portable_type__'="mapping",
-      entries=lapply(seq_along(x),function(i)
-        list(keys[[i]],.etr_portable_writer_json(x[[i]],depth+1L)))))
+    if(!is.null(keys))
+      .etr_assert(!anyNA(keys)&&all(nzchar(keys))&&!anyDuplicated(keys),
+        "portable mapping requires unique nonempty keys")
+    items <- lapply(x,.etr_portable_writer_json,depth=depth+1L,add_array=add_array)
+    if(is.null(keys)) return(items)
+    return(.etr_portable_writer_mapping(items))
   }
   .etr_assert(is.atomic(x)&&is.null(dim(x))&&
     (is.character(x)||is.numeric(x)||is.logical(x))&&
@@ -86,13 +100,143 @@
   lapply(as.list(unname(x)),.etr_portable_writer_json,depth=depth+1L)
 }
 
-#' Export native trajectories in a Python 1.2 readable portable container
+.etr_portable_writer_record <- function(type, fields, module="eyetrajectoriespy.types") {
+  list('__portable_type__'="dataclass",
+    python_type=paste0(module,".",type),fields=fields)
+}
+
+.etr_portable_writer_tuple <- function(values) {
+  list('__portable_type__'="tuple",items=unname(as.list(values)))
+}
+
+.etr_portable_writer_provenance <- function(provenance) {
+  if(is.null(provenance)) provenance <- list()
+  .etr_assert(.etr_provenance_valid(provenance),
+    "portable provenance must be a JSON-like named list")
+  if(!length(provenance))
+    return(list('__portable_type__'="mapping",entries=list()))
+  .etr_portable_writer_json(provenance)
+}
+
+.etr_portable_writer_dataframe <- function(metadata,index,add_array) {
+  .etr_assert(is.data.frame(metadata) && nrow(metadata)==length(index) &&
+    !anyNA(names(metadata)) && all(nzchar(names(metadata))) &&
+    !anyDuplicated(names(metadata)) &&
+    all(vapply(metadata,function(z)
+      is.null(dim(z)) && !is.factor(z) &&
+        (is.numeric(z)||is.character(z)||is.logical(z)),
+      logical(1L))),
+    "unsupported metadata column type or labels")
+  encode_column <- function(column) {
+    if ((is.character(column) || is.logical(column)) && anyNA(column)) {
+      items <- lapply(as.list(unname(column)),function(x) if(is.na(x))NULL else x)
+      return(list('__portable_type__'="object_array",
+        shape=list(length(column)),items=items))
+    }
+    add_array(column)
+  }
+  list('__portable_type__'="dataframe",columns=as.list(names(metadata)),
+    index=unname(as.list(index)),data=unname(lapply(metadata,encode_column)))
+}
+
+.etr_portable_writer_trajectories <- function(result,add_array,irregular) {
+  if(irregular) {
+    .etr_irregular_validate_samples(result)
+    time <- .etr_portable_writer_tuple(lapply(result$time,add_array))
+    values <- .etr_portable_writer_tuple(lapply(result$values,add_array))
+    type <- "IrregularTrajectorySet"
+  } else {
+    etr_validate(result)
+    time <- add_array(result$time)
+    values <- add_array(result$values)
+    type <- "TrajectorySet"
+  }
+  .etr_portable_writer_record(type,list(time=time,values=values,
+    curve_ids=.etr_portable_writer_tuple(result$curve_ids),
+    dimension_names=.etr_portable_writer_tuple(result$dimension_names),
+    metadata=.etr_portable_writer_dataframe(result$metadata,result$curve_ids,add_array),
+    coordinate_system=result$coordinate_system,time_unit=result$time_unit,
+    provenance=.etr_portable_writer_provenance(result$provenance)))
+}
+
+.etr_portable_writer_fpca <- function(result,add_array) {
+  .etr_assert(inherits(result,"etr_fpca") && is.list(result),
+    "expected a native dense etr_fpca fit")
+  n <- length(result$curve_ids)
+  nt <- length(result$time)
+  nd <- length(result$dimension_names)
+  k <- result$n_components
+  .etr_assert(is.numeric(k) && length(k)==1L && is.finite(k) &&
+    k==floor(k) && k>=1 && k<=min(n,nt*nd) && nt>=2L && nd>=1L && n>=2L,
+    "native FPCA component count or fit dimensions are invalid")
+  k <- as.integer(k)
+  for(field in c("curve_ids","dimension_names")) {
+    ids <- result[[field]]
+    .etr_assert(is.character(ids) && !anyNA(ids) && !anyDuplicated(ids),
+      paste("invalid native FPCA",field))
+  }
+  for(field in c("coordinate_system","time_unit")) {
+    unit <- result[[field]]
+    .etr_assert(is.character(unit) && length(unit)==1L && !is.na(unit),
+      paste("invalid native FPCA",field))
+  }
+  shapes <- list(mean=c(nt,nd),components=c(k,nt,nd),scores=c(n,k),
+    explained_variance=k,explained_variance_ratio=k,time=nt,
+    weights=nt,scale=nd)
+  for(field in names(shapes)) {
+    x <- result[[field]]
+    shape <- if(is.null(dim(x))) length(x) else dim(x)
+    .etr_assert(is.numeric(x) && identical(shape,shapes[[field]]) &&
+      all(is.finite(x)),paste("invalid native FPCA array",field))
+  }
+  .etr_assert(all(diff(result$time)>0) && all(result$weights>0) &&
+    all(result$scale>0) && all(result$explained_variance>=0) &&
+    all(result$explained_variance_ratio>=0),"invalid native FPCA spectrum or grid")
+  .etr_assert(is.numeric(result$total_variance) &&
+    length(result$total_variance)==1L && is.finite(result$total_variance) &&
+    result$total_variance>0 && length(result$scaling)==1L &&
+    is.character(result$scaling) && result$scaling %in% c("none","dimension_sd") &&
+    is.null(result$model),"invalid native FPCA fit audit or backend object")
+  .etr_assert(is.null(result$provenance) || .etr_provenance_valid(result$provenance),
+    "portable provenance must be a JSON-like named list")
+  provenance <- c(result$provenance,list(native_r_fpca=list(
+    n_components=k,scaling=result$scaling,total_variance=result$total_variance)))
+  .etr_portable_writer_record("FPCAResult",c(
+    lapply(result[names(shapes)[1:6]],add_array),
+    list(dimension_names=.etr_portable_writer_tuple(result$dimension_names),
+      coordinate_system=result$coordinate_system,time_unit=result$time_unit,
+      curve_ids=.etr_portable_writer_tuple(result$curve_ids),
+      weights=add_array(result$weights),scale=add_array(result$scale),
+      provenance=.etr_portable_writer_provenance(provenance),model=NULL)))
+}
+
+.etr_portable_writer_compositional <- function(result,add_array) {
+  dimensions <- result$original_dimension_names
+  reference <- result$reference_dimension
+  epsilon <- result$epsilon
+  .etr_assert(inherits(result$fpca,"etr_fpca") && is.list(result$fpca) &&
+    is.character(dimensions) && length(dimensions)>=3L &&
+    !anyNA(dimensions) && !anyDuplicated(dimensions) &&
+    length(dimensions)==length(result$fpca$dimension_names)+1L &&
+    is.numeric(reference) && length(reference)==1L && is.finite(reference) &&
+    reference==floor(reference) && reference>=0 && reference<length(dimensions) &&
+    is.numeric(epsilon) && length(epsilon)==1L && is.finite(epsilon) && epsilon>0,
+    "invalid native compositional FPCA dimensions or transform parameters")
+  .etr_portable_writer_record("CompositionalFPCAResult",list(
+    fpca=.etr_portable_writer_fpca(result$fpca,add_array),
+    reference_dimension=as.integer(reference),
+    original_dimension_names=.etr_portable_writer_tuple(dimensions),
+    epsilon=epsilon,provenance=.etr_portable_writer_provenance(result$provenance)))
+}
+
+#' Export native trajectories or FPCA in a Python 1.2 readable container
 #'
 #' @description Writes JSON and unpickled NumPy arrays using the frozen
-#'   Python 1.2 portable schema. Native export supports only common-grid
-#'   trajectory results and numeric, character, or logical metadata; it
-#'   explicitly rejects unsupported scopes instead of claiming full parity.
-#' @param result An etr_trajectory_set; other result classes are unsupported.
+#'   Python 1.2 portable schema. Native export supports common-grid and
+#'   irregular trajectories, dense FPCA/MFPCA and compositional FPCA.
+#'   Missing character and logical metadata cells use JSON null.
+#' @param result An etr_trajectory_set, etr_irregular_trajectory_set,
+#'   etr_fpca, or etr_compositional_fpca.
 #' @param directory New or empty destination directory.
 #' @param include_environment Must be FALSE: an R environment is not a
 #'   Python software environment and cannot impersonate one.
@@ -104,13 +248,30 @@ etr_export_python_portable_result <- function(result,directory,
   .etr_portable_require("jsonlite")
   .etr_portable_require("digest")
   .etr_portable_require("zip")
-  .etr_assert(inherits(result,"etr_trajectory_set"),
-    "native portable writer supports etr_trajectory_set only")
-  etr_validate(result)
+  .etr_assert(is.list(result) && inherits(result,c("etr_trajectory_set",
+    "etr_irregular_trajectory_set","etr_fpca","etr_compositional_fpca")),
+    paste("native portable writer supports etr_trajectory_set,",
+      "etr_irregular_trajectory_set, etr_fpca and etr_compositional_fpca"))
   .etr_assert(identical(include_environment,FALSE),
     "native writer cannot claim a Python environment snapshot")
   .etr_assert(identical(overwrite,FALSE),
     "native writer does not overwrite existing files")
+  .etr_write_python_portable_result(directory,function(add_array) {
+    if(inherits(result,"etr_trajectory_set")) {
+      .etr_portable_writer_trajectories(result,add_array,irregular=FALSE)
+    } else if(inherits(result,"etr_irregular_trajectory_set")) {
+      .etr_portable_writer_trajectories(result,add_array,irregular=TRUE)
+    } else if(inherits(result,"etr_fpca")) {
+      .etr_portable_writer_fpca(result,add_array)
+    } else {
+      .etr_portable_writer_compositional(result,add_array)
+    }
+  })
+}
+
+.etr_write_python_portable_result <- function(directory,encode_payload,
+    encode_manifest=function(x) jsonlite::toJSON(x,auto_unbox=TRUE,null="null",
+      pretty=TRUE,digits=NA,na="null")) {
   .etr_assert(is.character(directory)&&length(directory)==1L&&
     !is.na(directory)&&nzchar(directory),
     "directory must be a nonempty path")
@@ -120,12 +281,6 @@ etr_export_python_portable_result <- function(result,directory,
   } else {
     .etr_assert(!file.exists(directory),"portable destination is a file")
   }
-  .etr_assert(is.data.frame(result$metadata) &&
-    all(vapply(result$metadata,function(z)
-      (is.numeric(z)||is.character(z)||is.logical(z))&&
-      !is.factor(z)&&(!is.character(z)||!anyNA(z))&&
-      (!is.logical(z)||!anyNA(z)),logical(1L))),
-    "unsupported metadata column type or missing categorical metadata")
   temp <- tempfile("etr_portable_writer_")
   dir.create(temp,recursive=TRUE)
   on.exit(unlink(temp,recursive=TRUE),add=TRUE)
@@ -139,26 +294,10 @@ etr_export_python_portable_result <- function(result,directory,
     saved <<- c(saved,filename)
     c(list('__portable_type__'="ndarray",key=key),info)
   }
-  md <- result$metadata
-  payload <- list(
-    '__portable_type__'="dataclass",
-    python_type="eyetrajectoriespy.types.TrajectorySet",
-    fields=list(
-      time=add_array(result$time),
-      values=add_array(result$values),
-      curve_ids=list('__portable_type__'="tuple",
-        items=as.list(result$curve_ids)),
-      dimension_names=list('__portable_type__'="tuple",
-        items=as.list(result$dimension_names)),
-      metadata=list('__portable_type__'="dataframe",
-        columns=as.list(names(md)),
-        index=as.list(result$curve_ids),
-        data=lapply(md,add_array)),
-      coordinate_system=result$coordinate_system,
-      time_unit=result$time_unit,
-      provenance=if(!length(result$provenance))
-        list('__portable_type__'='mapping',entries=list())
-      else .etr_portable_writer_json(result$provenance)))
+  payload <- encode_payload(add_array)
+  unit_names <- intersect(c("time_unit","coordinate_system"),names(payload$fields))
+  units <- if(length(unit_names)) payload$fields[unit_names] else
+    structure(list(),names=character())
   archive <- file.path(temp,"arrays.npz")
   zip::zipr(zipfile=archive,files=saved,root=temp,compression_level=6L)
   .etr_assert(file.exists(archive),"portable NPZ archive was not created")
@@ -167,7 +306,7 @@ etr_export_python_portable_result <- function(result,directory,
     format="eyetrajectoriespy-portable-scientific-result",
     source_package_version=paste0("R-native-eyetrajectories-",
       as.character(getNamespaceVersion("eyetrajectories"))),
-    result_type="eyetrajectoriespy.types.TrajectorySet",
+    result_type=payload$python_type,
     portable_scope=paste(
       "Scientific arrays, identifiers, specifications, units, diagnostics",
       "and provenance. Backend-native/opaque objects are not promised",
@@ -175,21 +314,32 @@ etr_export_python_portable_result <- function(result,directory,
     arrays_file="arrays.npz",
     arrays_sha256=digest::digest(archive,algo="sha256",file=TRUE,
       serialize=FALSE),
-    units=list(time_unit=result$time_unit,
-      coordinate_system=result$coordinate_system),
+    units=units,
     nonportable_fields=list(),environment=NULL,payload=payload)
-  json <- jsonlite::toJSON(manifest,auto_unbox=TRUE,null="null",
-    pretty=TRUE,digits=NA,na="null")
+  json <- encode_manifest(manifest)
   writeLines(as.character(json),file.path(temp,"manifest.json"),
     useBytes=TRUE)
-  if(!dir.exists(directory))dir.create(directory,recursive=TRUE)
+  if(!dir.exists(directory))
+    dir.create(directory,recursive=TRUE,showWarnings=FALSE)
   .etr_assert(dir.exists(directory),"could not create portable destination")
-  .etr_assert(file.copy(file.path(temp,"arrays.npz"),
-    file.path(directory,"arrays.npz"),overwrite=FALSE),
+  # Claim the empty destination before staging either file. Publish the
+  # manifest last so readers only find it after the complete archive.
+  stage <- file.path(directory,".etr-portable-write")
+  .etr_assert(dir.create(stage,showWarnings=FALSE),
+    "could not stage portable result in destination")
+  on.exit(unlink(stage,recursive=TRUE),add=TRUE)
+  .etr_assert(identical(list.files(directory,all.files=TRUE,no..=TRUE),
+    basename(stage)),"portable destination directory is not empty")
+  files <- c("arrays.npz","manifest.json")
+  .etr_assert(all(file.copy(file.path(temp,files),stage,overwrite=FALSE)),
+    "could not stage portable archive and manifest")
+  target <- file.path(directory,files)
+  .etr_assert(!any(file.exists(target)) &&
+    file.rename(file.path(stage,files[[1L]]),target[[1L]]),
     "could not write portable archive")
-  if(!file.copy(file.path(temp,"manifest.json"),
-      file.path(directory,"manifest.json"),overwrite=FALSE)){
-    unlink(file.path(directory,"arrays.npz"))
+  if(file.exists(target[[2L]]) ||
+      !file.rename(file.path(stage,files[[2L]]),target[[2L]])){
+    unlink(target[[1L]])
     stop("could not write portable manifest",call.=FALSE)
   }
   invisible(normalizePath(directory,winslash="/",mustWork=TRUE))

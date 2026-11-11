@@ -199,10 +199,16 @@ assert sorted(set(_ofolds))==[0,1,2]
     "explicit_zero_based_source_replay")
   expect_identical(local$provenance$inner_fold_source,
     "explicit_zero_based_source_replay")
+  seeded<-etr_nested_cross_validate_fpca_regression(z$x,z$y,
+    candidate_components=c(1L,2L),outer_splits=3L,inner_splits=2L,
+    shuffle=TRUE,random_state=19L,selection_rule="minimum",
+    random_engine="numpy")
+  expect_identical(seeded$provenance$random_engine,"numpy_randomstate_mt19937")
   for(field in c("outer_folds","inner_summaries","predictions")){
     expected<-reticulate::py_to_r(reticulate::py_get_attr(
       reticulate::py_eval("_ncv",convert=FALSE),field))
     actual<-local[[field]]
+    expect_identical(seeded[[field]],actual)
     expect_identical(names(actual),names(expected))
     for(col in names(expected)){
       if(is.numeric(actual[[col]]))

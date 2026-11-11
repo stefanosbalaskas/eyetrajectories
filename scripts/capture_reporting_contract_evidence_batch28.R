@@ -12,12 +12,13 @@ withr::with_envvar(c(ET_RUN_PYTHON_TESTS="true"),{
   testthat::test_local(".",filter="native-python-json-reporting-batch28",
     reporter="summary",stop_on_failure=TRUE,stop_on_warning=TRUE)
 })
-checks<-c("workflow_steps_frame","workflow_decisions_frame",
+checks<-c("workflow_config_to_dict","workflow_steps_frame","workflow_decisions_frame",
   "workflow_summary_frame","workflow_reporting_text",
   "functional_simulation_scenario_frame",
   "functional_recovery_scenario_catalog_frame")
 source_files<-c("R/native-python-json-contracts.R",
   "R/native-workflow-source-audit.R",
+  "R/native-workflow-configuration.R",
   "R/native-functional-scenario-design.R",
   "tests/testthat/test-native-python-json-reporting-batch28.R",
   "scripts/capture_reporting_contract_evidence_batch28.R")
@@ -29,7 +30,7 @@ evidence<-list(
   python_version="1.2.0",
   frozen_python_commit="c1cd95ad718327550f7e55393ff38582872f7a94",
   functions_tested=checks,
-  workflow_fixture_count=5L,
+  workflow_fixture_count=6L,
   scenario_replicate_regimes=c(1L,3L,7L),
   all_python_source_field_comparisons_passed=TRUE,
   source_input_runtime_representation_identical=FALSE,
@@ -40,5 +41,6 @@ evidence<-list(
 out<-"artifacts/native_full_contract_evidence/reporting_batch28_source_replay.json"
 dir.create(dirname(out),recursive=TRUE,showWarnings=FALSE)
 jsonlite::write_json(evidence,out,pretty=TRUE,auto_unbox=TRUE,null="null")
-cat("BATCH28_REPORTING_SOURCE_REPLAY_PASS=6;NO_NEW_CLOSURES;INDEPENDENT=0\n")
+cat("BATCH28_REPORTING_SOURCE_REPLAY_PASS=",length(checks),
+  ";NO_NEW_CLOSURES;INDEPENDENT=0\n",sep="")
 cat("BATCH28_EVIDENCE_FILE=",out,"\n",sep="")

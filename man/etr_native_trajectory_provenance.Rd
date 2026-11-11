@@ -48,7 +48,8 @@ one-row-per-curve metadata are retained.
 \code{etr_trajectory_snapshot()} returns an
 \code{etr_trajectory_snapshot} S3 list with the exact R numeric array,
 time vector, IDs, metadata and factors, coordinate/time units, provenance,
-format label, schema version and array shape.
+format label, schema version and array shape. Snapshots record an explicit
+Python boundary mode when the original trajectory uses it.
 
 \code{etr_restore_trajectory_snapshot()} validates the snapshot and
 reconstructs a native \code{etr_trajectory_set}.

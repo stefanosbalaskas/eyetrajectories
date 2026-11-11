@@ -26,20 +26,12 @@
       identical(result[["residual_correlation",exact=TRUE]],"iid"))&&
     identical(result$backend,"nlme::lme"),
     "native joint full-refit supports only iid participant random-intercept likelihood; serial, slope and nested-trial variants require separate source-qualified refitters")
-  .etr_assert(is.numeric(n_bootstrap)&&length(n_bootstrap)==1L&&
-    !is.logical(n_bootstrap)&&is.finite(n_bootstrap)&&
-    n_bootstrap==floor(n_bootstrap)&&n_bootstrap>=20L&&
-    n_bootstrap<=.Machine$integer.max,
-    "n_bootstrap must be an integer >=20 for full-refit diagnostics")
-  .etr_assert(is.null(random_state)||
-    (is.numeric(random_state)&&length(random_state)==1L&&
-    !is.logical(random_state)&&is.finite(random_state)&&
-    random_state==floor(random_state)&&
-    random_state>=0L&&random_state<=.Machine$integer.max),
-    "random_state must be NULL or a supported nonnegative integer")
+  controls<-.etr_joint_mixed_boot_controls(n_bootstrap,random_state,20L)
+  B<-controls$n_bootstrap
+  random_state<-controls$random_state
   ids<-as.character(result$participant_ids)
   members<-as.character(result$curve_participant_ids)
-  N<-length(ids);B<-as.integer(n_bootstrap)
+  N<-length(ids)
   n<-nrow(result$observed_functions);nt<-length(result$time)
   nf<-ncol(result$fixed_basis);nr<-ncol(result$random_basis)
   p<-nrow(result$fixed_basis_coefficients)
@@ -60,21 +52,8 @@
     which(members==id))
   .etr_assert(all(lengths(original_participants)>0L),
     "every source participant must contribute a curve bundle")
-  if(is.null(sampled_participant_indices)){
-    make_indices<-function()
-      matrix(sample.int(N,B*N,replace=TRUE)-1L,nrow=B,ncol=N)
-    sampled<-if(is.null(random_state))make_indices()else
-      .etr_seed_scope(as.integer(random_state),make_indices)
-  }else{
-    sampled<-sampled_participant_indices
-    .etr_assert(is.matrix(sampled)&&is.numeric(sampled)&&
-      identical(dim(sampled),c(B,N))&&
-      all(is.finite(sampled))&&
-      all(sampled==floor(sampled))&&
-      all(sampled>=0L)&&all(sampled<N),
-      "sampled_participant_indices must be finite zero-based B-by-participant indices")
-    sampled<-matrix(as.integer(sampled),nrow=B,ncol=N)
-  }
+  draws<-.etr_joint_mixed_boot_draws(B,N,random_state,sampled_participant_indices)
+  sampled<-draws$indices
   beta<-array(NA_real_,c(B,p,nf))
   coeff<-array(NA_real_,c(B,p,nt))
   covs<-array(NA_real_,c(B,nr,nr))
@@ -91,25 +70,19 @@
   .etr_assert(length(predictor_names)==p-1L,
     "reference fitted coefficient names do not match the scalar design")
   for(b in seq_len(B)){
-    sampled_source<-sampled[b,]+1L
-    rows<-unlist(original_participants[sampled_source],use.names=FALSE)
-    occurrences<-lengths(original_participants[sampled_source])
-    labels<-sprintf("bootstrap_%04d_draw_%04d",
-      b-1L,seq_len(N)-1L)
-    new_curve_ids<-sprintf("b%04d_curve_%05d",
-      b-1L,seq_along(rows)-1L)
-    audits[[b]]<-ids[sampled_source]
-    bootstrap_ids[[b]]<-labels
+    bundle<-.etr_joint_refit_draw_bundle(original_participants,ids,sampled[b,],b-1L)
+    rows<-bundle$rows
+    audits[[b]]<-bundle$source_ids
+    bootstrap_ids[[b]]<-bundle$participant_ids
     source_y<-result$observed_functions[rows,,drop=FALSE]
     dat<-etr_trajectory_set(result$time,
       array(as.numeric(source_y),dim=c(length(rows),nt,1L)),
-      new_curve_ids,as.character(result$dimension_name),
-      metadata=data.frame(.etr_bootstrap_pid=
-        rep(labels,times=occurrences)),
+      bundle$curve_ids,as.character(result$dimension_name),
+      metadata=data.frame(.etr_bootstrap_pid=bundle$membership),
       coordinate_system=if(is.null(result$coordinate_system))
         "unknown" else result$coordinate_system,
       time_unit=result$time_unit)
-    design<-data.frame(curve_id=new_curve_ids,
+    design<-data.frame(curve_id=bundle$curve_ids,
       stringsAsFactors=FALSE)
     if(length(predictor_names))for(j in seq_along(predictor_names))
       design[[predictor_names[[j]]]]<-
@@ -137,15 +110,12 @@
     beta[b,,]<-fit$fixed_basis_coefficients
     coeff[b,,]<-fit$fixed_coefficient_functions
     covs[b,,]<-fit$random_effect_covariance
-    eigenvalues<-eigen(fit$random_effect_covariance,
-      symmetric=TRUE,only.values=TRUE)$values
-    eig[b,]<-eigenvalues
-    condition[b]<-if(min(abs(eigenvalues))>0)
-      max(abs(eigenvalues))/min(abs(eigenvalues)) else Inf
-    boundary[b]<-min(eigenvalues)<=
-      1e-7*max(1,max(abs(eigenvalues)))
-    singular[b]<-min(abs(eigenvalues))<=
-      1e-10*max(1,max(abs(eigenvalues)))
+    covariance<-.etr_nested_source_covariance_diagnostics(
+      fit$random_effect_covariance)
+    eig[b,]<-covariance$eigenvalues
+    condition[b]<-covariance$condition_number
+    boundary[b]<-covariance$boundary
+    singular[b]<-covariance$singular
     variance[b]<-fit$residual_variance
     loglik[b]<-as.numeric(stats::logLik(fit$fitted_model))
     warnings[[b]]<-unique(backend_messages)
@@ -159,8 +129,8 @@
   prov$functional_mixed_effects_full_refit_bootstrap<-list(
     method="participant_cluster_case_bootstrap_full_ml_reml_refit",
     n_bootstrap=B,
-    random_state=if(is.null(random_state))NULL else
-      as.integer(random_state),
+    random_state=random_state,
+    native_rng=draws$engine,
     participant_groups_duplicated_as_independent_draws=TRUE,
     whole_trial_bundles_resampled=TRUE,
     fixed_basis_refit=FALSE,
@@ -203,8 +173,7 @@
     residual_correlation_boundary_flags=NULL,
     residual_correlation_independence_flags=NULL,
     residual_correlation_condition_numbers=NULL,
-    random_state=if(is.null(random_state))NULL else
-      as.integer(random_state),
+    random_state=random_state,
     bootstrap_type="full_refit",
     failure_policy="raise",
     variance_components_refit=TRUE,

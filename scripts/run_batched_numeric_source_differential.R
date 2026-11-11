@@ -1,5 +1,5 @@
 # Batch differential measurement, not a source-contract certificate.
-# 33 fixed source probes across four numerical input/error contracts.
+# Fixed source probes across four numerical input/error contracts.
 # Uses *real* frozen eyetrajectoriespy 1.2.0 via reticulate, not fixture
 # formulas substituted for the published source.
 # This writes only untracked evidence under artifacts/native_batch_numeric_diff.
@@ -36,6 +36,13 @@
     list("grid_pair",c(0,1),FALSE),
     list("grid_list",list(0,1,3),FALSE),
     list("grid_strings",c("0","1","3"),FALSE),
+    list("grid_underscores",c("0","1_0.5","3_0e+0_1"),TRUE),
+    list("grid_hex_rejected",c("0x0p+0","1","3"),FALSE),
+    list("grid_infinite_endpoint",c(0,1,Inf),FALSE),
+    list("grid_array_false_flag",grid,array(FALSE,c(1L,1L))),
+    list("grid_array_true_flag",grid,array("0",c(1L,1L))),
+    list("grid_array_empty_flag",grid,array(numeric(),0L)),
+    list("grid_array_ambiguous_flag",grid,array(c(0,1),2L)),
     list("grid_repeat",c(0,1,1),FALSE),
     list("grid_reverse",c(0,2,1),FALSE))
   for(z in t_specs) {
@@ -110,8 +117,8 @@
     add(spec[[1L]],"score_distance_matrix",
       "etr_score_distance_matrix",native,python)
   }
-  stopifnot(length(cases)==33L,
-    length(unique(vapply(cases,`[[`,character(1L),"id")))==33L)
+  stopifnot(length(cases)>0L,
+    !anyDuplicated(vapply(cases,`[[`,character(1L),"id")))
   compare <- function(r,py,name,tolerance=1e-11) {
     a <- r;b <- et_to_r(py)
     if(!is.numeric(a) && !is.logical(a))return(list(

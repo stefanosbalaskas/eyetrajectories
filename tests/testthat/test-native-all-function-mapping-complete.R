@@ -43,14 +43,26 @@ test_that("all newly mapped scientific alternatives remain explicitly uncertifie
   gap<-utils::read.csv(gap_path,stringsAsFactors=FALSE,
     check.names=FALSE)
   expect_true(all(recent%in%gap$python_name))
-  # Preserve all historical witnesses, including exactly two developer-
-  # closed zero-argument semantic tables; none of the recent numerical
-  # alternatives may silently inherit that narrow resolution.
+  # Preserve historical witnesses and explicitly review all four complete
+  # zero-argument native metadata semantic closures. No estimator or
+  # plotting alternative inherits this finite-domain resolution.
   expect_identical(nrow(gap),203L)
-  expect_identical(sum(gap$unresolved_source_gap),201L)
-  expect_identical(sort(gap$python_name[!gap$unresolved_source_gap]),
-    sort(c("functional_recovery_metric_catalog_frame",
-      "mathematical_contract_frame")))
+  # Six immutable pre-receipt semantic closures remain historical.
+  # Additional developer-reviewed closures require a SHA-reviewed receipt;
+  # never freeze the active count in an implementation regression test.
+  legacy<-c("functional_recovery_metric_catalog",
+    "functional_recovery_metric_catalog_frame",
+    "list_mathematical_contracts","mathematical_contract_frame",
+    "sparse_fpca_score_frame","sparse_mfpca_score_frame")
+  receipts<-utils::read.csv(.etr_test_extdata(
+    "reviewed_source_contract_closures_v1.csv"),
+    stringsAsFactors=FALSE,check.names=FALSE)
+  closed<-gap$python_name[!gap$unresolved_source_gap]
+  expect_true(all(legacy %in% closed))
+  expect_identical(sort(closed),
+    sort(unique(c(legacy,receipts$python_name))))
+  expect_identical(as.integer(sum(gap$unresolved_source_gap)),
+    as.integer(nrow(gap)-length(closed)))
   expect_true(all(gap$unresolved_source_gap[match(recent,gap$python_name)]))
   expect_identical(length(unique(gap$python_name)),nrow(gap))
 })

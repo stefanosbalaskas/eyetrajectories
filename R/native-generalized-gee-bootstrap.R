@@ -17,7 +17,9 @@
   rows<-rep(seq_len(nt),times=n)
   expanded<-do.call(cbind,lapply(seq_len(p),function(j)
     basis[rows,,drop=FALSE]*rep(X[,j],each=nt)))
-  .etr_assert(qr(expanded)$rank==p*K,
+  source_mode<-identical(result$provenance$native_solver,
+    "native_irls_gee_score_sandwich")
+  .etr_assert(.etr_gfosr_design_rank(expanded,source_mode)==p*K,
     "resampled generalized GEE spline design is rank deficient")
   den<-if(is.null(result$binomial_denominators))NULL else
     result$binomial_denominators[indices,,drop=FALSE]
@@ -47,6 +49,11 @@
   offset<-if(is.null(exposure))rep(0,n*nt) else
     as.vector(t(log(exposure)))
   response<-as.vector(t(observed))
+  if(source_mode){
+    fit<-.etr_gfosr_source_gee_fit(expanded,response,w,offset,
+      rep(groups,each=nt),result$family,result$maxiter,result$ctol)
+    return(matrix(fit$beta,nrow=p,ncol=K,byrow=TRUE)%*%t(basis))
+  }
   fit<-suppressWarnings(stats::glm.fit(x=expanded,y=response,
     weights=w,offset=offset,family=family_object,
     control=stats::glm.control(epsilon=result$ctol,
@@ -83,13 +90,14 @@
 
 # Frozen Python 1.2 generalized_function_on_scalar.py participant-case bootstrap.
 # Full GEE fits are repeated for each participant-resampled replicate.
-# Source RNG is NumPy PCG64; optional fixed indices replay the source draws.
+# Seeded participant draws follow NumPy PCG64.
 
 #' Whole-participant case bootstrap of native generalized functional GEE
 #'
 #' @param result Native generalized functional GEE fit.
 #' @param n_bootstrap Number of full GEE refits (>=100).
-#' @param random_state Native base-R seed; not NumPy PCG64 equivalent.
+#' @param random_state Exactly represented nonnegative integer below 2^53
+#'   for NumPy-compatible PCG64 draws, or NULL for unseeded native R draws.
 #' @param failed_replicate_policy Exactly "raise"; no failed rep is replaced.
 #' @param sampled_participant_indices Optional B-by-participant matrix of
 #'   zero-based retained Python source draw indices for exact oracle replay.
@@ -101,38 +109,20 @@ etr_bootstrap_generalized_function_on_scalar_coefficients<-function(
     failed_replicate_policy="raise",sampled_participant_indices=NULL){
   .etr_assert(inherits(result,"etr_generalized_function_on_scalar"),
     "result must be a native generalized functional GEE fit")
-  .etr_assert(is.numeric(n_bootstrap)&&length(n_bootstrap)==1L&&
-    is.finite(n_bootstrap)&&n_bootstrap==floor(n_bootstrap)&&
-    n_bootstrap>=100L,
-    "n_bootstrap must be an integer >=100")
+  controls<-.etr_joint_mixed_boot_controls(n_bootstrap,random_state,100L)
   .etr_assert(identical(failed_replicate_policy,"raise"),
     "failed_replicate_policy must be raise: no silent replacement")
-  .etr_assert(is.null(random_state)||
-    (is.numeric(random_state)&&length(random_state)==1L&&
-    is.finite(random_state)&&random_state==floor(random_state)&&
-    random_state>=0L&&random_state<=.Machine$integer.max),
-    "random_state must be NULL or a supported nonnegative R integer")
-  B<-as.integer(n_bootstrap)
+  B<-controls$n_bootstrap
+  random_state<-controls$random_state
   ids<-result$participant_ids
   np<-length(ids)
   group<-as.character(result$curve_participant_ids)
   .etr_assert(length(group)==nrow(result$observed_functions)&&
     all(group%in%ids)&&np>0L,
     "source participant/curve membership is inconsistent")
-  if(is.null(sampled_participant_indices)){
-    draw_indices<-function()
-      matrix(sample.int(np,B*np,replace=TRUE)-1L,nrow=B,ncol=np)
-    sampled<-if(is.null(random_state))draw_indices() else
-      .etr_seed_scope(as.integer(random_state),draw_indices)
-  }else{
-    sampled<-sampled_participant_indices
-    .etr_assert(is.matrix(sampled)&&is.numeric(sampled)&&
-      identical(dim(sampled),c(B,np))&&
-      all(is.finite(sampled))&&all(sampled==floor(sampled))&&
-      all(sampled>=0L)&all(sampled<np),
-      "sampled_participant_indices must be a finite B-by-participant zero-based index matrix")
-    sampled<-matrix(as.integer(sampled),B,np)
-  }
+  selection<-.etr_joint_mixed_boot_draws(
+    B,np,random_state,sampled_participant_indices)
+  sampled<-selection$indices
   nt<-length(result$time);nco<-length(result$coefficient_names)
   draws<-array(NA_real_,c(B,nco,nt))
   source_audit<-vector("list",B)
@@ -160,9 +150,9 @@ etr_bootstrap_generalized_function_on_scalar_coefficients<-function(
   prov<-result$provenance
   prov$generalized_function_on_scalar_bootstrap<-list(
     method="whole_participant_case_bootstrap_full_gee_refit",
-    n_bootstrap=B,random_state=if(is.null(random_state))NULL else as.integer(random_state),
+    n_bootstrap=B,random_state=random_state,
     source_draws_supplied=!is.null(sampled_participant_indices),
-    native_random_engine="base_R_not_NumPy_PCG64",
+    native_random_engine=selection$engine,
     resampling_unit="participant",
     whole_participant_curve_bundles_resampled=TRUE,
     duplicate_source_participants_receive_distinct_group_ids=TRUE,
@@ -185,7 +175,7 @@ etr_bootstrap_generalized_function_on_scalar_coefficients<-function(
     sampled_participant_indices=sampled,
     sampled_source_participant_ids=source_audit,
     sampled_bootstrap_participant_ids=cluster_audit,
-    random_state=if(is.null(random_state))NULL else as.integer(random_state),
+    random_state=random_state,
     failure_policy="raise",provenance=prov),
     class="etr_generalized_function_on_scalar_bootstrap")
 }

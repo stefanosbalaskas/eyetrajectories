@@ -250,8 +250,15 @@ test_that("Python array complex casting is opt-in for TrajectorySet", {
     dim=c(2L,3L,1L))
   expect_error(etr_trajectory_set(c(0,1,2),vals,c("a","b"),"x"),
     "numeric 3D array")
-  native <- etr_trajectory_set(c(0+4i,1+4i,2+4i),vals,
-    c("a","b"),"x",python_boundary_mode=TRUE)
+  casts <- character()
+  native <- withCallingHandlers(
+    etr_trajectory_set(c(0+4i,1+4i,2+4i),vals,
+      c("a","b"),"x",python_boundary_mode=TRUE),
+    etr_trajectory_complex_cast_warning = function(warning) {
+      casts <<- c(casts, conditionMessage(warning))
+      invokeRestart("muffleWarning")
+    })
+  expect_length(casts, 2L)
   expect_equal(native$values,Re(vals),tolerance=0)
   expect_equal(native$time,c(0,1,2),tolerance=0)
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
@@ -355,4 +362,84 @@ test_that("pinned Python 1.2 TrajectorySet empty pandas frame oracle", {
   expect_identical(dim(native$metadata),c(2L,0L))
   expect_true(reticulate::py_to_r(py_x$metadata$empty))
   expect_false(any(etr_native_parity_catalog()$one_to_one_native_contract_complete))
+})
+
+test_that("Python boundary normalizes mixed scalar arrays and typed label lists", {
+  times <- list("0", TRUE, " 2_0e-1 ")
+  values <- list(
+    list(list("1_000.5", TRUE), list(2L, NULL), list("3", "-Infinity")),
+    list(list("0.5", FALSE), list(4L, "1_0"), list(5.5, "NaN"))
+  )
+  curve_ids <- list(7L, FALSE)
+  channels <- list("x", 2.5)
+  x <- etr_trajectory_set(times, values, curve_ids, channels,
+    metadata = data.frame(group = c("A", "B")), coordinate_system = "",
+    time_unit = "", python_boundary_mode = TRUE)
+  expect_identical(x$time, c(0, 1, 2))
+  expect_identical(x$curve_ids, c("7", "False"))
+  expect_identical(x$dimension_names, c("x", "2.5"))
+  expect_identical(rownames(x$metadata), x$curve_ids)
+  expect_identical(x$values[1L, 1L, ], c(1000.5, 1))
+  expect_true(is.nan(x$values[1L, 2L, 2L]))
+  expect_identical(x$values[1L, 3L, 2L], -Inf)
+  expect_identical(x$coordinate_system, "")
+  expect_identical(x$time_unit, "")
+  expect_error(etr_trajectory_set(times, values, list(TRUE, 1L),
+    channels, python_boundary_mode = TRUE), "unique before string conversion")
+  expect_error(etr_trajectory_set(times, values, list(7L, "7"),
+    channels, python_boundary_mode = TRUE), "unique")
+  broken <- values
+  broken[[1L]][[1L]][[1L]] <- "0x1"
+  expect_error(etr_trajectory_set(times, broken, curve_ids, channels,
+    python_boundary_mode = TRUE), "nonnumeric string")
+  selected <- etr_subset(x, list(TRUE, "0_0"), python_boundary_mode = TRUE)
+  expect_identical(selected$curve_ids, c("False", "7"))
+  expect_identical(selected$metadata$group, c("B", "A"))
+  expect_error(etr_subset(x, list("2"), python_boundary_mode = TRUE),
+    class = "etr_trajectory_index_error")
+  expect_error(etr_dimension(x, "unlisted"), class = "etr_trajectory_key_error")
+
+  if (!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"), "true"))
+    skip("Pinned Python 1.2 mixed scalar TrajectorySet oracle is opt-in")
+  ctor <- etpy_get_export("TrajectorySet", .namespace = "root")
+  make <- function(values, ids = curve_ids) reticulate::py_call(ctor,
+    time = reticulate::r_to_py(times), values = reticulate::r_to_py(values),
+    curve_ids = reticulate::r_to_py(ids),
+    dimension_names = reticulate::r_to_py(channels),
+    metadata = reticulate::r_to_py(data.frame(group = c("A", "B"))),
+    coordinate_system = "", time_unit = "")
+  reference <- make(values)
+  expect_equal(et_to_r(reference$values), x$values, tolerance = 0)
+  expect_identical(as.character(et_to_r(reference$curve_ids)), x$curve_ids)
+  expect_identical(as.character(et_to_r(reference$dimension_names)), x$dimension_names)
+  expect_identical(et_to_r(reference$time_unit), x$time_unit)
+  expect_identical(et_to_r(reference$coordinate_system), x$coordinate_system)
+  py_selected <- reference$subset(reticulate::r_to_py(list(TRUE, "0_0")))
+  expect_equal(et_to_r(py_selected$values), selected$values, tolerance = 0)
+  expect_identical(as.character(et_to_r(py_selected$curve_ids)), selected$curve_ids)
+  expect_equal(et_to_r(reference$dimension("x")), unname(etr_dimension(x, "x")), tolerance = 0)
+  expect_error(reference$dimension("unlisted"), "KeyError")
+  expect_error(make(broken), "ValueError")
+  expect_error(make(values, list(TRUE, 1L)), "unique")
+})
+
+test_that("native snapshots preserve explicit Python trajectory boundaries", {
+  values <- array(c(1, NaN, Inf), c(1L, 3L, 1L))
+  x <- etr_trajectory_set(0:2, values, "a", "x",
+    metadata = data.frame(group = "A"), python_boundary_mode = TRUE)
+  snap <- etr_trajectory_snapshot(x)
+  expect_true(snap$python_boundary_mode)
+  file <- tempfile(fileext = ".rds")
+  on.exit(unlink(file))
+  saveRDS(snap, file)
+  expect_identical(etr_restore_trajectory_snapshot(readRDS(file)), x)
+  zero <- etr_trajectory_set(0:2, array(numeric(), c(0L, 3L, 0L)),
+    python_boundary_mode = TRUE)
+  expect_identical(zero$curve_ids, character())
+  expect_identical(zero$dimension_names, character())
+  expect_identical(etr_restore_trajectory_snapshot(etr_trajectory_snapshot(zero)), zero)
+  native <- etr_trajectory_set(0:2, array(1:3, c(1L, 3L, 1L)), "a", "x")
+  legacy <- etr_trajectory_snapshot(native)
+  expect_false("python_boundary_mode" %in% names(legacy))
+  expect_identical(etr_restore_trajectory_snapshot(legacy), native)
 })

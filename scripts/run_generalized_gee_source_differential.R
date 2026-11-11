@@ -36,6 +36,13 @@ for _key,_values in (('poisson',_poisson),('grouped',_group),('exposure',_poisso
 _wave_gee_profiles=pd.DataFrame({
  'profile_id':['control','treated','extrapolated'],
  'treatment':[0.,1.,2.]})
+_wave_gee_profile_text=pd.DataFrame({
+ 'profile_id':[1.,2.,3.], 'treatment':['0.',' 1e0 ','+2']})
+_wave_gee_profile_bool=pd.DataFrame({
+ 'profile_id':[False,True], 'treatment':[False,True]})
+_wave_gee_design_text=pd.DataFrame({
+ 'treatment':_design['treatment'].map(lambda x:f' {x:.1e} ')})
+_wave_gee_text_exposure=['2_0']*n
 ")
   cases<-list()
   add<-function(name,fixture,field,status,max_abs=NA_real_,
@@ -67,6 +74,15 @@ _wave_gee_profiles=pd.DataFrame({
       return(invisible(NULL))
     }
     b<-conversion$value
+    if(is.character(native)){
+      if(is.list(b)&&all(vapply(b,function(x)
+        is.character(x)&&length(x)==1L,logical(1L))))
+        b<-unlist(b,use.names=FALSE)
+      matched<-is.character(b)&&identical(unname(native),unname(b))
+      add(name,fixture,field,if(matched)"PASS_SCHEMA" else "DIVERGENT_SCHEMA",
+        detail="source/native character content and order")
+      return(invisible(NULL))
+    }
     if(is.null(native)||is.null(b)){
       add(name,fixture,field,
         if(is.null(native)&&is.null(b))
@@ -80,6 +96,9 @@ _wave_gee_profiles=pd.DataFrame({
         detail="numeric source field type not retained")
       return(invisible(NULL))
     }
+    # A native vector represents a one-dimensional source ndarray.
+    if(is.null(dim(native))&&identical(dim(b),as.integer(length(native))))
+      dim(b)<-NULL
     if(!identical(dim(native),dim(b))||
        length(native)!=length(b)){
       add(name,fixture,field,"DIVERGENT_SCHEMA",
@@ -243,6 +262,140 @@ _wave_gee_profiles=pd.DataFrame({
         nr$value[[field]],reticulate::py_get_attr(pr$value,field))
     }
   }
+  # Real frozen workflow execution with ordered design rows, decimal
+  # predictor text and the separate NumPy float conversion of exposure.
+  f<-.etr_native_gee_fixture()
+  order<-match(f$x$curve_ids,f$design$curve_id)
+  text_design<-data.frame(treatment=sprintf(" %.1e ",f$design$treatment[order]))
+  native_cfg<-list(predictors="treatment",participant_column="participant_id",
+    dimension="outcome",family=" POISSON ",basis_size=4L,spline_degree=3L,
+    exposure=rep("2_0",length(order)),exposure_units=" person / hours ")
+  py_cfg<-reticulate::py_call(etpy_get_export(
+    "GeneralizedFunctionalWorkflowConfig",.namespace="workflows"),
+    predictors=reticulate::py_eval("['treatment']",convert=FALSE),
+    participant_column=native_cfg$participant_column,dimension=native_cfg$dimension,
+    family=native_cfg$family,basis_size=native_cfg$basis_size,
+    spline_degree=native_cfg$spline_degree,exposure=reticulate::py_eval(
+      "_wave_gee_text_exposure",convert=FALSE),exposure_units=native_cfg$exposure_units)
+  wn<-take(function()etr_run_generalized_functional_workflow(
+    f$x,text_design,native_cfg,python_boundary_mode=TRUE))
+  wp<-take(function()reticulate::py_call(etpy_get_export(
+    "run_generalized_functional_workflow",.namespace="workflows"),
+    trajectories=pyitem("poisson","trajectories"),
+    design=reticulate::py_eval("_wave_gee_design_text",convert=FALSE),config=py_cfg))
+  wname<-"run_generalized_functional_workflow"
+  wcase<-"source_order_text_exposure"
+  if(!wn$ok||!wp$ok){
+    add(wname,wcase,"<call>",if(!wp$ok)"SOURCE_EXCEPTION" else
+      "DIVERGENT_ACCEPTANCE",r_error=wn$error,py_error=wp$error)
+  }else{
+    native_w<-wn$value;python_w<-wp$value
+    pfit<-reticulate::py_get_attr(python_w,"fit")
+    for(field in c(fit_fields,"scalar_design_matrix","exposure",
+      "linear_predictor_count","exposure_units","family"))
+      compare("fit_generalized_function_on_scalar_regression",wcase,field,
+        native_w$fit[[field]],reticulate::py_get_attr(pfit,field))
+    compare(wname,wcase,"workflow_contract",native_w$workflow_contract,
+      reticulate::py_get_attr(python_w,"workflow_contract"))
+    compare(wname,wcase,"workflow_schema_version",native_w$workflow_schema_version,
+      reticulate::py_get_attr(python_w,"workflow_schema_version"),tol=0)
+    compare(wname,wcase,"fit_report",native_w$reports$fit,
+      reticulate::py_get_item(reticulate::py_get_attr(python_w,"reports"),"fit"))
+    for(frame in c("workflow_steps_frame","workflow_decisions_frame",
+      "workflow_summary_frame")){
+      native_frame<-switch(frame,
+        workflow_steps_frame=etr_workflow_steps_frame(native_w$steps),
+        workflow_decisions_frame=etr_workflow_decisions_frame(native_w$decisions),
+        workflow_summary_frame=etr_workflow_summary_frame(native_w))
+      target<-switch(frame,workflow_steps_frame=reticulate::py_get_attr(python_w,"steps"),
+        workflow_decisions_frame=reticulate::py_get_attr(python_w,"decisions"),
+        workflow_summary_frame=python_w)
+      py_frame<-et_to_r(reticulate::py_call(etpy_get_export(frame,
+        .namespace="workflows"),target))
+      if(!identical(names(native_frame),names(py_frame))){
+        add(wname,wcase,frame,"DIVERGENT_SCHEMA",detail="ordered frame columns differ")
+        next
+      }
+      for(field in setdiff(names(native_frame),c("elapsed_seconds","criterion")))
+        compare(wname,wcase,paste(frame,field,sep="."),
+          native_frame[[field]],py_frame[[field]],tol=0)
+    }
+  }
+  for(kind in c("text","bool")){
+    if(is.null(fitted[["exposure"]]))next
+    np<-if(kind=="text")data.frame(profile_id=c(1,2,3),
+      treatment=c("0."," 1e0 ","+2")) else
+        data.frame(profile_id=c(FALSE,TRUE),treatment=c(FALSE,TRUE))
+    ne<-if(kind=="text")c("2_0","3.0","4e0") else c(TRUE,TRUE)
+    pe<-reticulate::r_to_py(as.list(ne))
+    nr<-take(function()etr_generalized_function_on_scalar_predict(
+      fitted[["exposure"]],np,exposure_profiles=ne,
+      prediction_scale="expected_count",python_boundary_mode=TRUE))
+    pr<-take(function()reticulate::py_call(etpy_get_export(
+      "generalized_function_on_scalar_predict"),
+      result=source_fitted[["exposure"]],profiles=reticulate::py_eval(
+        paste0("_wave_gee_profile_",kind),convert=FALSE),
+      exposure_profiles=pe,prediction_scale="expected_count"))
+    name<-"generalized_function_on_scalar_predict"
+    label<-paste("coerced_profiles",kind,sep="_")
+    if(!nr$ok||!pr$ok){
+      add(name,label,"<call>",if(!pr$ok)"SOURCE_EXCEPTION" else
+        "DIVERGENT_ACCEPTANCE",r_error=nr$error,py_error=pr$error)
+    }else{
+      for(field in c(pred_fields,"profile_ids","profile_design_matrix",
+        "predictor_values","exposure_profiles","prediction_scale","extrapolation_flags"))
+        compare(name,label,field,nr$value[[field]],
+          reticulate::py_get_attr(pr$value,field),
+          tol=if(field=="extrapolation_flags")0 else 5e-4)
+    }
+  }
+  fit_name<-"fit_generalized_function_on_scalar_regression"
+  boundary_rejections<-c(
+    score_too_large="GEE did not converge",
+    subthreshold_rank="scalar design matrix",
+    rank_deficient="scalar design matrix",
+    zero_counts="first guess on the deviance")
+  for(key in c("one_update","weighted_grouped","separated",
+    "nearly_rank_deficient","numeric_curve_id",names(boundary_rejections))){
+    label<-paste0("source_gee_",key)
+    args<-.etr_native_gee_boundary_case(key)
+    n<-take(function()do.call(etr_fit_generalized_function_on_scalar_regression,args))
+    p<-take(function().etr_python_gee_boundary_call(args))
+    if(key%in%names(boundary_rejections)){
+      phrase<-boundary_rejections[[key]]
+      matched<-!n$ok&&!p$ok&&grepl(phrase,n$error,fixed=TRUE)&&
+        grepl(phrase,p$error,fixed=TRUE)
+      add(fit_name,label,"<call>",
+        if(matched)"PASS_BOTH_REJECT" else "DIVERGENT_ACCEPTANCE",
+        detail=paste("expected rejection at",phrase),
+        r_error=n$error,py_error=p$error)
+      next
+    }
+    if(!n$ok||!p$ok){
+      add(fit_name,label,"<call>","DIVERGENT_ACCEPTANCE",
+        r_error=n$error,py_error=p$error)
+      next
+    }
+    for(field in c(fit_fields,"basis_coefficients","basis_knots",
+      "observed_functions","scalar_design_matrix","linear_predictor_functions",
+      "linear_predictor_rate","linear_predictor_count","log_exposure",
+      "exposure","rate_functions","binomial_successes","binomial_denominators",
+      "binomial_observed_proportions","binomial_expected_successes",
+      "binomial_denominator_expanded_from_curve","exposure_expanded_from_curve",
+      "scale","maxiter","ctol","converged","family","link","exposure_units"))
+      compare(fit_name,label,field,n$value[[field]],
+        reticulate::py_get_attr(p$value,field),tol=1e-9)
+    warnings<-as.character(unlist(et_to_r(
+      reticulate::py_get_attr(p$value,"backend_warnings")),use.names=FALSE))
+    compare(fit_name,label,"backend_warnings",n$value$backend_warnings,warnings)
+    model<-reticulate::py_get_attr(p$value,"model")
+    updates<-reticulate::py_len(reticulate::py_get_item(
+      reticulate::py_get_attr(model,"fit_history"),"params"))
+    compare(fit_name,label,"gee_score_iterations",
+      n$value$provenance$gee_score_iterations,updates,tol=0)
+    compare(fit_name,label,"gee_score_norm",n$value$provenance$gee_score_norm,
+      reticulate::py_get_attr(model,"score_norm"),tol=1e-11)
+  }
   # Explicit negative domain pairs, with both exception messages retained.
   if(!is.null(fitted[["poisson"]])){
     for(spec in list(
@@ -287,7 +440,7 @@ _wave_gee_profiles=pd.DataFrame({
     "c1cd95ad718327550f7e55393ff38582872f7a94"
   report$r_git_head<-head[[1L]]
   utils::write.csv(report,output,row.names=FALSE,na="")
-  divergences<-sum(grepl("^(DIVERGENT|INVALID_FIXTURE)",report$outcome))
+  divergences<-sum(grepl("^(DIVERGENT|INVALID_FIXTURE|SOURCE_EXCEPTION)",report$outcome))
   cat("GENERALIZED_GEE_SOURCE_CASES=",nrow(report),
     ";DIFFERENCES=",divergences,
     ";FUNCTIONS=",length(unique(report$python_name)),"\n",sep="")

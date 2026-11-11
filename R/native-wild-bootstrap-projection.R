@@ -1,17 +1,47 @@
 # Source: eyetrajectoriespy 1.2.0 wild_regression.py, immutable
 # commit c1cd95ad718327550f7e55393ff38582872f7a94.
 # Independent R FPCA/least squares/studentization; no Python backend.
-# Optional fixed multiplier matrix replays frozen-source draws. R RNG
-# does NOT reproduce NumPy PCG64 without supplied multipliers.
+# Seeded normal and Mammen multipliers follow the frozen source draws.
+
+.etr_wild_fpcr_multipliers <- function(replicates, curves, multiplier, seed,
+                                      random_engine = "numpy") {
+  rng <- NULL
+  if (!is.null(seed)) {
+    if (random_engine == "numpy") {
+      rng <- .etr_numpy_pcg64(seed)
+    } else {
+      restore <- .etr_simulation_rng(seed)
+      on.exit(restore(), add = TRUE)
+    }
+  }
+  n <- as.double(replicates) * curves
+  if (multiplier == "normal") {
+    values <- if (is.null(rng)) stats::rnorm(n) else rng$normal(n)
+  } else {
+    u <- if (is.null(rng)) stats::runif(n) else rng$uniform(n)
+    sqrt5 <- sqrt(5)
+    values <- ifelse(u < (sqrt5 + 1) / (2 * sqrt5), (1 - sqrt5) / 2, (1 + sqrt5) / 2)
+  }
+  matrix(values, nrow = replicates, ncol = curves, byrow = TRUE)
+}
+
+.etr_wild_fpcr_require_rank<-function(x,required,what){
+  singular_values<-svd(x,nu=0L,nv=0L)$d
+  tolerance<-singular_values[1L]*max(dim(x))*.Machine$double.eps
+  rank<-sum(singular_values>tolerance)
+  if(rank<required)
+    stop(errorCondition(paste0(what," is rank deficient (rank=",rank,
+      ", required=",required,")"),class="etr_wild_fpcr_rank_error",
+      rank=rank,required_rank=required))
+}
 
 .etr_wild_fpcr_prepared_fit<-function(scores,k){
   # Factorize the identical, fixed FPCA design once for every bootstrap.
   # Reusing the pivoted QR changes neither the model nor the least-squares
   # coefficient estimates; it avoids thousands of redundant factorizations.
   design<-cbind(1,scores[,seq_len(k),drop=FALSE])
-  decomp<-qr(design)
-  .etr_assert(decomp$rank==k+1L,
-    "FPCR score regression is rank deficient")
+  .etr_wild_fpcr_require_rank(design,k+1L,"FPCR score regression")
+  decomp<-qr(design,tol=0)
   function(y){
     .etr_assert(is.numeric(y)&&length(y)==nrow(design)&&
       all(is.finite(y)),"FPCR response must be finite per score row")
@@ -26,24 +56,28 @@
   .etr_wild_fpcr_prepared_fit(scores,k)(y)
 }
 
-.etr_wild_fpcr_hetero_se<-function(scores,residual,targets){
+.etr_wild_fpcr_prepared_se<-function(scores,targets){
   n<-nrow(scores);h<-ncol(scores)
   .etr_assert(is.matrix(scores)&&is.numeric(scores)&&
-    length(residual)==n&&is.matrix(targets)&&ncol(targets)==h,
+    n>=2L&&is.matrix(targets)&&ncol(targets)==h,
     "heteroscedastic FPCR score geometry is incompatible")
   gamma<-crossprod(scores)/n
-  .etr_assert(qr(gamma)$rank==h,"score covariance is rank deficient")
-  products<-scores*as.numeric(residual)
-  centered<-sweep(products,2L,colMeans(products),"-")
-  lambda<-crossprod(centered)/(n-1L)
-  direction<-targets%*%solve(gamma)
-  variance<-rowSums((direction%*%lambda)*direction)
-  tolerance<-100*.Machine$double.eps*max(1,abs(variance))
-  .etr_assert(!any(variance< -tolerance),
-    "heteroscedastic projection variance is materially negative")
-  se<-sqrt(pmax(variance,0)/n)
-  .etr_assert(all(is.finite(se)),"nonfinite heteroscedastic SE")
-  se
+  .etr_wild_fpcr_require_rank(gamma,h,"score covariance")
+  direction<-targets%*%t(solve(gamma,tol=0))
+  function(residual){
+    .etr_assert(length(residual)==n,
+      "residual vector is incompatible with score rows")
+    products<-scores*as.numeric(residual)
+    centered<-sweep(products,2L,colMeans(products),"-")
+    lambda<-crossprod(centered)/(n-1L)
+    variance<-rowSums((direction%*%lambda)*direction)
+    tolerance<-100*.Machine$double.eps*max(1,abs(variance))
+    .etr_assert(!any(variance< -tolerance),
+      "heteroscedastic projection variance is materially negative")
+    se<-sqrt(pmax(variance,0)/n)
+    .etr_assert(all(is.finite(se)),"nonfinite heteroscedastic SE")
+    se
+  }
 }
 
 #' Native wild bootstrap of fixed-target centered FPCR projections
@@ -53,7 +87,7 @@
 #'   inferential projection, bootstrap-refitted heteroscedastic scaling,
 #'   NumPy "higher" targetwise bootstrap criticals. Independent curves only.
 #' @param trajectories Complete native common-grid training trajectories.
-#' @param outcome Finite scalar response per curve.
+#' @param outcome Finite numeric, logical or decimal-text response per curve.
 #' @param targets Optional compatible target trajectories.
 #' @param n_bootstrap Number of multiplier replicates, at least 20.
 #' @param residual_components, inference_components Predeclared k and h.
@@ -61,9 +95,12 @@
 #' @param multiplier Exact "normal" or "mammen".
 #' @param confidence_level Interval probability in (0,1).
 #' @param independent_unit_column If supplied, metadata IDs must be unique.
-#' @param random_state Native R seed. Not a NumPy-equivalent random stream.
+#' @param random_state Nonnegative integer seed below 2^53 for NumPy-compatible
+#'   PCG64 normal or Mammen draws. NULL uses the current R RNG stream.
 #' @param multiplier_draws Optional finite B-by-n numeric matrix of fixed
 #'   source draws; overrides R RNG and permits numerical oracle replay.
+#' @param random_engine Seeded multiplier RNG. Use `"base_R"` to replay
+#'   previous native normal multipliers, or `"numpy"` for source draws.
 #' @return Native result reusing source schema numerical fields. Full-domain
 #'   source accepted-type and dataclass contracts remain unsigned.
 #' @export
@@ -72,16 +109,15 @@ etr_wild_bootstrap_fpca_projection<-function(
     residual_components=2L,inference_components=3L,
     scaling="none",multiplier="normal",
     confidence_level=.95,independent_unit_column=NULL,
-    random_state=0L,multiplier_draws=NULL){
+    random_state=0L,multiplier_draws=NULL,random_engine="numpy"){
   etr_validate(trajectories,require_complete=TRUE)
   .etr_assert(all(is.finite(trajectories$values)),
     "training trajectories must be complete finite")
   n<-length(trajectories$curve_ids)
   nt<-length(trajectories$time)
   nd<-length(trajectories$dimension_names)
-  .etr_assert(is.numeric(outcome)&&is.null(dim(outcome))&&
-    length(outcome)==n&&all(is.finite(outcome)),
-    "outcome must contain finite scalar per training curve")
+  outcome<-.etr_fpcr_numeric_outcome(outcome,n,"gaussian",
+    "outcome must contain finite scalar per training curve",numpy_text=TRUE)
   .etr_assert(is.numeric(n_bootstrap)&&length(n_bootstrap)==1L&&
     is.finite(n_bootstrap)&&n_bootstrap==floor(n_bootstrap)&&
     n_bootstrap>=20&&n_bootstrap<=.Machine$integer.max,
@@ -125,28 +161,8 @@ etr_wild_bootstrap_fpca_projection<-function(
     "targets must match training time channel units geometry and be complete finite")
   B<-as.integer(n_bootstrap)
   if(is.null(multiplier_draws)){
-    .etr_assert(is.null(random_state)||
-      (is.numeric(random_state)&&length(random_state)==1L&&
-      is.finite(random_state)&&random_state==floor(random_state)&&
-      random_state>=0&&random_state<=.Machine$integer.max),
-      "random_state must be NULL or a native nonnegative integer")
-    draw_mult<-function(){
-      if(multiplier=="normal"){
-        matrix(stats::rnorm(B*n),nrow=B,ncol=n,byrow=TRUE)
-      }else{
-        sq<-sqrt(5)
-        negative<-(1-sq)/2
-        positive<-(1+sq)/2
-        pneg<-(sq+1)/(2*sq)
-        u<-matrix(stats::runif(B*n),B,n,byrow=TRUE)
-        ifelse(u<pneg,negative,positive)
-      }
-    }
-    # NULL mirrors Python's accepted unseeded domain. Native R uses its
-    # current RNG stream, not NumPy PCG64; seeded calls restore R RNG.
-    mult<-if(is.null(random_state))draw_mult() else
-      .etr_seed_scope(as.integer(random_state),draw_mult)
-    mult<-matrix(mult,nrow=B,ncol=n)
+    random_engine<-match.arg(random_engine,c("numpy","base_R"))
+    mult<-.etr_wild_fpcr_multipliers(B,n,multiplier,random_state,random_engine)
   }else{
     mult<-multiplier_draws
     .etr_assert(is.matrix(mult)&&is.numeric(mult)&&
@@ -165,7 +181,8 @@ etr_wild_bootstrap_fpca_projection<-function(
   tk<-target_scores[,seq_len(k),drop=FALSE]
   pseudo_truth<-as.vector(tk%*%fk$beta[-1L])
   reference<-as.vector(target_scores%*%fh$beta[-1L])
-  reference_se<-.etr_wild_fpcr_hetero_se(scores,fk$residual,target_scores)
+  infer_se<-.etr_wild_fpcr_prepared_se(scores,target_scores)
+  reference_se<-infer_se(fk$residual)
   nq<-nrow(target_scores)
   projections<-matrix(0,B,nq)
   ses<-matrix(0,B,nq)
@@ -176,7 +193,7 @@ etr_wild_bootstrap_fpca_projection<-function(
     hs<-fit_h(pseudo_y)
     ks<-fit_k(pseudo_y)
     ps<-as.vector(target_scores%*%hs$beta[-1L])
-    ss<-.etr_wild_fpcr_hetero_se(scores,ks$residual,target_scores)
+    ss<-infer_se(ks$residual)
     root<-ps-pseudo_truth
     stat<-numeric(nq)
     positive<-ss>.Machine$double.eps*max(1,ss)
@@ -217,6 +234,10 @@ etr_wild_bootstrap_fpca_projection<-function(
     component_selection_uncertainty_included=FALSE,
     random_state=random_state,
     fixed_source_multiplier_draws_supplied=!is.null(multiplier_draws),
+    seeded_normal_draws_match_numpy=is.null(multiplier_draws)&&
+      !is.null(random_state)&&random_engine=="numpy"&&multiplier=="normal",
+    seeded_mammen_draws_match_numpy=is.null(multiplier_draws)&&
+      !is.null(random_state)&&random_engine=="numpy"&&multiplier=="mammen",
     source_full_contract_certified=FALSE)
   structure(list(reference_fpca=fit,
     target_curve_ids=targets$curve_ids,

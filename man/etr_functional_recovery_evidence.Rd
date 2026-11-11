@@ -16,14 +16,16 @@ or infer scientific qualification cutoffs.
 etr_functional_recovery_result(records, metric_definitions = list())
 etr_functional_recovery_frame(result)
 etr_functional_recovery_failure_frame(result)
-etr_functional_recovery_summary_frame(result)
+etr_functional_recovery_summary_frame(result, python_boundary_mode = FALSE)
 etr_plot_functional_recovery_summary(summary, metric,
   statistic = "median", ...)
 }
 \arguments{
 \item{records}{Nonempty list of explicit scenario replicate records:
 scenario_name, replicate (zero-based), seed, status and a named numeric
-metrics vector. Successful records require nonempty finite metrics;
+metrics vector. Replicate and seed integers with magnitude below
+\eqn{2^{53}} are retained exactly, including values outside R's integer
+storage range. Successful records require nonempty finite metrics;
 failed records require no metric values and explicit error_type and
 error_message. Optional structured metric_values carry metric metadata,
 source and zero-based component.}
@@ -31,6 +33,9 @@ source and zero-based component.}
 metric metadata records, with name, quantity, direction, units and scope.}
 \item{result}{Native functional recovery result produced by the
 constructor; not a Python dataclass.}
+\item{python_boundary_mode}{Use the frozen NumPy double-precision
+pairwise reductions and linear interpolation arithmetic for the
+group summary. The default uses R's native arithmetic.}
 \item{summary}{Native descriptive functional recovery summary data frame.}
 \item{metric}{Exact recovery metric name in the summary.}
 \item{statistic}{Numeric recovery summary field; median displays
@@ -54,6 +59,11 @@ imputed. Failure Monte Carlo standard error is
 quantiles, median, IQR and standard error of the mean. Source
 component labels are reported one-based even though structured
 scientific source values use zero-based component indices.
+Scenario names and grouped metric keys sort by UTF-8 code point.
+The explicit Python arithmetic mode preserves source numeric outcomes
+for cancellation or overflow at extreme finite inputs, including
+nonfinite computed summaries. Python runtime warning behavior is outside
+this numerical replay mode.
 
 Monte Carlo summaries are descriptive and impose no automatic
 qualification, calibrated coverage, or causal interpretation.

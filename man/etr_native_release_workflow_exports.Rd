@@ -56,17 +56,27 @@ covariance_bandwidths=c(0.8, 1), n_splits=5L)} in place of the two fixed
 bandwidth arguments. The workflow refits each candidate within each training
 fold, ranks eligible candidates by mean held-out Gaussian predictive loss,
 then refits the selected model. The selection result contains assignments,
-curve losses, fold outcomes and candidate summaries.
+curve losses, fold outcomes, candidate summaries, and the selector
+provenance and reporting text.
 Use \code{resampling_unit="group"} with \code{group_column} to keep entire
 groups in one fold. Supply zero-based \code{fold_assignments} in input-curve
 order to replay an external split. Seeded curve shuffles use the legacy
-NumPy permutation law. Native grouped tie ordering may differ from NumPy.
+NumPy permutation law. For grouped selectors,
+\code{group_tie_order="numpy_simd"} or \code{"numpy_scalar"} replays the
+chosen NumPy 2.3.5 tie ordering. See
+\code{\link{etr_cross_validate_fpca_reconstruction}} for supported domains.
 By default every fold must be valid. \code{min_valid_folds} changes this
 threshold. \code{failure_action="retain"} records failed folds, while
 \code{"error"} stops at the first failure. If no candidate is eligible, the
 \code{etr_sparse_bandwidth_selection_error} condition contains the audit in
 \code{bandwidth_selection}. Sparse prediction selects bandwidths using its
 proper-training curves.
+
+The \code{native_sparse_partial_conformal} prediction workflow takes a PACE
+training configuration, a finite history cutoff, and at least two future
+times. Its default \code{alpha} is \code{0.05}. The target forecast uses
+finite observations through the cutoff. Calibration also requires one
+finite response at each declared future timestamp.
 
 The native covariance backends of sparse FPCA, paired and asynchronous
 sparse MFPCA, and sparse multilevel FPCA accept descriptive observation
@@ -78,6 +88,25 @@ diagnostics are separate result fields. Workflow tables include global,
 time, and association summaries, and the diagnostic record contains the
 remaining audit tables.
 }
+\section{Portable dense FPCA workflow bundles}{
+Call \code{etr_run_fpca_workflow(trajectories, config, measure_time = TRUE)}
+to record elapsed R fit time and warnings. Export that result with
+\code{etr_export_workflow_bundle(result, directory, format = "python_1_2")}.
+The new destination contains the workflow manifest, configuration and
+provenance JSON, audit CSVs, reports and tables, SHA-256 checksums, and a
+complete JSON/NPZ snapshot in \code{result/}. Frozen Python 1.2 can load
+the snapshot with \code{load_portable_result}. The snapshot preserves
+the native fit, measured steps, declarations and audit artifacts.
+Environment metadata identifies the actual R runtime.
+
+The portable mode covers dense FPCA with empty preprocessing, measured
+elapsed times, and primitive data-frame columns. It requires optional
+\pkg{jsonlite}, \pkg{digest}, and \pkg{zip}. Artifact names must be simple
+portable filenames, and the destination must be new. The default
+\code{format = "native_r"} retains the native RDS bundle. Other workflow
+classes and arbitrary Python dataclass and backend objects remain outside
+the portable scope.
+}
 \section{Exported entry points}{
 \describe{
 \item{\code{etr_export_workflow_bundle}}{\emph{export workflow bundle} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
@@ -85,7 +114,7 @@ remaining audit tables.
 \item{\code{etr_run_function_on_scalar_workflow}}{\emph{run function on scalar workflow} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
 \item{\code{etr_run_functional_mixed_effects_workflow}}{\emph{run functional mixed effects workflow} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
 \item{\code{etr_run_functional_recovery_scenarios}}{\emph{run functional recovery scenarios} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
-\item{\code{etr_run_generalized_functional_workflow}}{\emph{run generalized functional workflow} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
+\item{\code{etr_run_generalized_functional_workflow}}{Fits the declared generalized GEE. With \code{python_boundary_mode = TRUE}, uses source-order design, version-one workflow audit fields, measured fit time, resolved input declarations and source-style fit reporting. The default retains the existing native workflow record.}
 \item{\code{etr_run_recurrence_workflow}}{\emph{run recurrence workflow} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
 \item{\code{etr_run_sparse_fpca_workflow}}{\emph{run sparse fpca workflow} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
 \item{\code{etr_run_sparse_mfpca_async_workflow}}{\emph{run sparse mfpca async workflow} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}

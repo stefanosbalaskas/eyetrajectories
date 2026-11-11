@@ -228,3 +228,40 @@ _report_strings=dict(
       info=paste("direct Python 1.2 public source callable",n))
   }
 })
+test_that("fitted native FPCR inference results feed their reporting exports",{
+  z<-.etr_wild_projection_fixture()
+  x<-z$x
+  unit<-"Analyst's unit"
+  x$metadata[[unit]]<-x$curve_ids
+  projection<-etr_wild_bootstrap_fpca_projection(x,z$y*0,
+    n_bootstrap=20L,independent_unit_column=unit)
+  expect_match(etr_fpca_wild_bootstrap_projection_reporting_text(projection),
+    'unique values of "Analyst\'s unit"',fixed=TRUE)
+  simultaneous<-etr_fpca_wild_bootstrap_projection_simultaneous_interval(projection)
+  frame<-etr_fpca_wild_bootstrap_simultaneous_frame(simultaneous)
+  expect_true(all(frame$familywise_critical_value==0))
+  expect_identical(frame$simultaneous_lower,frame$simultaneous_upper)
+  expect_match(etr_fpca_wild_bootstrap_simultaneous_reporting_text(simultaneous),
+    "reused the 20")
+  family<-etr_fpca_wild_bootstrap_projection_family_test(projection,"0_0.0")
+  expect_match(etr_fpca_wild_bootstrap_family_test_reporting_text(family),
+    "from 20 heteroscedastic")
+  mc<-etr_fpca_wild_bootstrap_family_test_monte_carlo_diagnostics(family)
+  expect_match(etr_fpca_wild_bootstrap_monte_carlo_reporting_text(mc),
+    "same 20 retained")
+  bad<-projection
+  bad$n_bootstrap<-19L
+  expect_error(etr_fpca_wild_bootstrap_projection_reporting_text(bad),
+    "n_bootstrap must match")
+  uncertainty<-etr_bootstrap_fpca_regression_uncertainty(x,z$y,
+    n_bootstrap=20L,n_components=2L,random_state=21L)
+  expect_match(etr_fpca_regression_uncertainty_reporting_text(uncertainty),
+    "20 paired curve-level")
+  future<-etr_fpca_regression_future_prediction_interval(uncertainty,z$y)
+  expect_match(etr_fpca_regression_future_prediction_reporting_text(future),
+    "reused 20 paired")
+  slope<-etr_fpca_regression_slope_simultaneous_band(uncertainty,
+    simultaneous_scope="dimension")
+  expect_match(etr_fpca_regression_slope_band_reporting_text(slope),
+    "a separate maximum over observed time")
+})

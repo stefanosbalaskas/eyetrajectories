@@ -11,12 +11,16 @@ recovery assessments with component/source labels and metric definitions.
 etr_run_functional_recovery_scenarios(
   scenarios, mean, eigenfunctions, estimator, recovery,
   failure_action = "raise", source_draws_by_replicate = NULL,
-  observation_times_by_replicate = NULL
+  observation_times_by_replicate = NULL, random_engine = "base_R"
 )
 }
 \arguments{
 \item{source_draws_by_replicate}{Ordered records of retained source draws per replicate.}
 \item{observation_times_by_replicate}{Ordered fixed irregular schedules per replicate.}
+\item{random_engine}{\code{"base_R"} preserves the existing native draws.
+\code{"numpy"} uses the source-seeded PCG64 mode of
+\code{etr_simulate_functional_process()} for each scenario seed. Fixed
+source draws require \code{"base_R"}.}
 \item{scenarios}{Nonempty list of declared native
 \code{etr_functional_simulation_scenario} records.}
 \item{mean}{Callable generating the functional population mean.}
@@ -54,8 +58,7 @@ flattened metric keys and stable definitions across replicates.
 A conflicting definition for the same metric name is an error
 even when \code{failure_action="record"}.
 
-This is an independent native R scientific workflow. It does not
-produce Python frozen dataclass objects or establish one-to-one
-full-domain source equivalence, identical NumPy PCG64 streams, or
-independent scientific certification.
+The result uses native R records. Seed replay is qualified for the
+documented simulation subdomain. Full Python type, callback, and
+exception contracts and independent scientific certification remain open.
 }

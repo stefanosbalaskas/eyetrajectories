@@ -7,12 +7,13 @@
             requireNamespace("reticulate",quietly=TRUE))
   pkgload::load_all(".",quiet=TRUE)
   stopifnot(identical(et_python_version(),"1.2.0"))
+  source("scripts/sparse_workflow_source_records.R",local=TRUE)
   source("tests/testthat/helper-native-sparse-mfpca-fixture.R",
     local=TRUE,encoding="UTF-8")
   tr<-.etr_spnm_fixture()
   args<-.etr_spnm_args()
-  native_call<-function(parameters)do.call(etr_fit_sparse_mfpca,c(
-    list(trajectories=tr,backend="native_covariance"),parameters))
+  native_call<-function(parameters,data=tr)do.call(etr_fit_sparse_mfpca,c(
+    list(trajectories=data,backend="native_covariance"),parameters))
   native<-native_call(args)
   reticulate::py_run_string("
 import numpy as np
@@ -24,11 +25,12 @@ def _etr_spnm_diff_input(times, values, ids):
       curve_ids=tuple(str(x) for x in ids),
       dimension_names=('x','y'),coordinate_system='degrees',time_unit='s')
 ")
-  pytr<-reticulate::py_call(
+  source_input<-function(data)reticulate::py_call(
     reticulate::py_eval("_etr_spnm_diff_input",convert=FALSE),
-    times=reticulate::r_to_py(tr$time),
-    values=reticulate::r_to_py(tr$values),
-    ids=reticulate::r_to_py(tr$curve_ids))
+    times=reticulate::r_to_py(data$time),
+    values=reticulate::r_to_py(data$values),
+    ids=reticulate::r_to_py(data$curve_ids))
+  pytr<-source_input(tr)
   pyargs<-args
   pyargs$dimensions<-reticulate::tuple("x","y")
   pyargs$measurement_error_variance<-reticulate::tuple(.08,.10)
@@ -108,6 +110,57 @@ def _etr_spnm_diff_input(times, values, ids):
       "PASS_BOTH_REJECT"else"DIVERGENT_ACCEPTANCE",
       note="both rejected; exception-class parity not yet established",
       native_exception=left$error,python_exception=right$error)
+  }
+  record("diagonal_noise","n_curves",
+    if(identical(native$n_curves,get(pyfit,"n_curves")))
+      "PASS_SCHEMA"else"DIVERGENT_SCHEMA")
+  for(field in c("score_diagnostics","covariance_diagnostics","covariance_pair_counts",
+      "fit_method","score_method")){
+    record("diagonal_noise",field,
+      if(.etr_sparse_source_record_equal(native[[field]],get(pyfit,field)))
+        "PASS_SCHEMA"else"DIVERGENT_SCHEMA")
+  }
+  provenance<-native$provenance
+  provenance$sparse_mfpca$outside_counts_by_curve<-NULL
+  record("diagonal_noise","provenance",
+    if(.etr_sparse_source_record_equal(provenance,get(pyfit,"provenance")))
+      "PASS_SCHEMA"else"DIVERGENT_SCHEMA",
+    note="R also retains per-curve outside-support counts")
+  changed<-list(min_score_time_points=9L)
+  .etr_sparse_source_error_contract(
+    function()native_call(modifyList(args,changed)),
+    function()do.call(reticulate::py_call,c(list(public,trajectories=pytr),
+      modifyList(pyargs,changed))),
+    function(field,ok)record("paired_failed_score",field,
+      if(ok)"PASS_SCHEMA"else"DIVERGENT_SCHEMA"))
+  single_missing<-both_missing<-tr
+  single_missing$values[[1L]][c(1L,3L),1L]<-NA_real_
+  both_missing$values[[2L]][2L,]<-NA_real_
+  short<-etr_irregular_trajectory_set(tr$time[1:2],tr$values[1:2],
+    tr$curve_ids[1:2],tr$dimension_names,tr$metadata[1:2,,drop=FALSE],
+    tr$coordinate_system,tr$time_unit)
+  boundaries<-list(
+    unpaired_samples=list(data=single_missing),
+    jointly_missing_sample=list(data=both_missing),
+    insufficient_curves=list(data=short),
+    outside_pooled_grid=list(params=list(evaluation_grid=c(0,.5,1))),
+    outside_support=list(params=list(analysis_support_action="error")),
+    insufficient_analysis_support=list(params=list(evaluation_grid=c(.04,.07,.10))),
+    non_psd_operator=list(params=list(psd_action="error")),
+    insufficient_component_rank=list(params=list(n_components=100L)))
+  for(fixture in names(boundaries)){
+    case<-boundaries[[fixture]]
+    new<-if(is.null(case$params))list()else case$params
+    data<-if(is.null(case$data))tr else case$data
+    source_data<-if(is.null(case$data))pytr else source_input(data)
+    native_parameters<-modifyList(args,new)
+    source_parameters<-modifyList(pyargs,new)
+    .etr_sparse_source_error_contract(
+      function()native_call(native_parameters,data),
+      function()do.call(reticulate::py_call,c(list(public,trajectories=source_data),
+        source_parameters)),
+      function(field,ok)record(fixture,field,
+        if(ok)"PASS_SCHEMA"else"DIVERGENT_SCHEMA"))
   }
   output<-do.call(rbind,cases)
   sha<-system2("git",c("rev-parse","HEAD"),stdout=TRUE)

@@ -9,6 +9,8 @@
     if (is.null(x)) return(invisible(TRUE))
     if (is.data.frame(x) || is.factor(x) || is.complex(x))
       stop(p, " is not a supported workflow JSON value", call.=FALSE)
+    if (is.array(x) && !is.numeric(x) && !is.logical(x))
+      stop(p, " must be a numeric or logical array", call.=FALSE)
     if (is.atomic(x)) {
       if (!is.numeric(x) && !is.character(x) && !is.logical(x))
         stop(p, " has unsupported atomic type", call.=FALSE)
@@ -19,8 +21,7 @@
     if (!is.list(x))
       stop(p, " is not a supported workflow JSON value", call.=FALSE)
     nm <- names(x)
-    if (!is.null(nm) && (anyNA(nm) || any(!nzchar(nm)) ||
-                         anyDuplicated(nm)))
+    if (!is.null(nm) && (anyNA(nm) || anyDuplicated(nm)))
       stop(p, " has invalid mapping keys", call.=FALSE)
     for (i in seq_along(x))
       check(x[[i]], paste0(p,".",if(is.null(nm))i else nm[[i]]))
@@ -56,15 +57,15 @@
       !is.na(step$status) && step$status %in%
         c("completed","failed","skipped") &&
       is.list(step$parameters) &&
-      is.numeric(step$elapsed_seconds) &&
+      # np.isfinite(True) and float(True) are accepted by Python 1.2.
+      (is.numeric(step$elapsed_seconds) || is.logical(step$elapsed_seconds)) &&
       length(step$elapsed_seconds)==1L &&
       !is.na(step$elapsed_seconds) &&
       is.finite(step$elapsed_seconds) && step$elapsed_seconds>=0 &&
       (is.null(step$warnings) ||
         (is.character(step$warnings) && !anyNA(step$warnings))),
       "each step requires a name, function, status, parameters, time and warnings")
-    .etr_workflow_json(step$parameters,"step.parameters",empty_mapping=TRUE,
-      validate_only=TRUE)
+    .etr_workflow_named_fields(step$parameters,"step.parameters")
   }
   invisible(TRUE)
 }
@@ -73,7 +74,7 @@
   .etr_assert(is.list(decisions) &&
     (length(decisions)==0L ||
        (!is.null(names(decisions)) && !anyNA(names(decisions)) &&
-        all(nzchar(names(decisions))) && !anyDuplicated(names(decisions)))),
+        !anyDuplicated(names(decisions)))),
     "decisions must be a uniquely named list")
   for (rec in decisions) {
     .etr_assert(is.list(rec) && "value" %in% names(rec) &&
@@ -173,9 +174,28 @@ etr_workflow_audit_result <- function(workflow_contract,steps=list(),
     class="etr_workflow_audit_result")
 }
 
+# Python workflows/_core.py validates int(workflow_schema_version), not
+# Python integer object identity. Preserve that source boundary for ordinary
+# R scalar analogues (for example 1.9 -> 1, TRUE -> 1 and "1" -> 1).
+.etr_workflow_source_schema_version <- function(value) {
+  if (length(value)!=1L || is.object(value) || !is.null(dim(value)) ||
+      !(is.numeric(value) || is.logical(value) || is.character(value)) ||
+      is.na(value)) return(NA_integer_)
+  # R as.integer("1.9") truncates, whereas Python int("1.9") rejects.
+  # Accept only source decimal integer syntax for the string case.
+  if (is.character(value)) {
+    trimmed <- trimws(value)
+    if (!grepl("^[+-]?[0-9]+(?:_[0-9]+)*$",trimmed,perl=TRUE))
+      return(NA_integer_)
+    value <- gsub("_","",trimmed,fixed=TRUE)
+  }
+  suppressWarnings(as.integer(value))
+}
+
 .etr_workflow_check_result <- function(result) {
   .etr_assert(inherits(result,"etr_workflow_audit_result") &&
-    identical(result$workflow_schema_version,1L),
+    identical(.etr_workflow_source_schema_version(
+      result$workflow_schema_version),1L),
     "result must have the native workflow audit schema version 1")
   .etr_assert(is.character(result$workflow_contract) &&
     length(result$workflow_contract)==1L &&
@@ -183,6 +203,11 @@ etr_workflow_audit_result <- function(workflow_contract,steps=list(),
     nzchar(result$workflow_contract),"workflow_contract must be nonempty")
   .etr_workflow_validate_steps(result$steps)
   .etr_workflow_validate_decisions(result$decisions)
+  .etr_assert(is.list(result$config)&&is.list(result$provenance),
+    "result config and provenance must be native JSON-compatible lists")
+  .etr_workflow_json(result$config,"config",empty_mapping=TRUE,validate_only=TRUE)
+  .etr_workflow_json(result$provenance,"provenance",empty_mapping=TRUE,
+    validate_only=TRUE)
   invisible(TRUE)
 }
 
@@ -195,7 +220,8 @@ etr_workflow_summary_frame <- function(result) {
   statuses <- vapply(result$steps,function(s)s$status,character(1L))
   sources <- vapply(result$decisions,function(d)d$source,character(1L))
   data.frame(
-    workflow_schema_version=1L,
+    workflow_schema_version=.etr_workflow_source_schema_version(
+      result$workflow_schema_version),
     workflow_contract=result$workflow_contract,
     step_count=length(result$steps),
     completed_steps=sum(statuses=="completed"),
@@ -211,27 +237,40 @@ etr_workflow_summary_frame <- function(result) {
     stringsAsFactors=FALSE)
 }
 
-# Python 1.2 f"{workflow_contract!r}" quotes and escapes source identifiers.
-# Avoid Python/reticulate at native runtime. The deliberately bounded source
-# domain is printable Unicode and ASCII/C1 control codes. Other nonprintable
-# Unicode categories remain subject to independent semantic review.
+# CPython repr escapes Other and Separator categories except ASCII space.
+# PCRE and CPython may use different Unicode data for recent code points.
 .etr_python_workflow_identifier_repr <- function(x) {
   .etr_assert(is.character(x)&&length(x)==1L&&!is.na(x),
     "workflow identifier must be one string")
   quote <- if(grepl("'",x,fixed=TRUE)&&!grepl('"',x,fixed=TRUE)) '"' else "'"
   points <- utf8ToInt(enc2utf8(x))
-  chars <- vapply(points,function(p){
+  characters <- intToUtf8(points,multiple=TRUE)
+  escape <- (points != 32L) & grepl("[\\p{C}\\p{Z}]",characters,perl=TRUE)
+  chars <- vapply(seq_along(points),function(i){
+    p <- points[[i]]
     if(p==92L) return("\\\\")
     if(p==utf8ToInt(quote)) return(paste0("\\",quote))
     if(p==10L) return("\\n")
     if(p==13L) return("\\r")
     if(p==9L) return("\\t")
-    if(p<32L||p==127L||(p>=128L&&p<=159L))
-      return(sprintf("\\x%02x",p))
-    if(p %in% c(0x2028L,0x2029L))return(sprintf("\\u%04x",p))
-    intToUtf8(p)
+    if(!escape[[i]]) return(characters[[i]])
+    if(p<=0xffL) return(sprintf("\\x%02x",p))
+    if(p<=0xffffL) return(sprintf("\\u%04x",p))
+    sprintf("\\U%08x",p)
   },character(1L),USE.NAMES=FALSE)
   paste0(quote,paste(chars,collapse=""),quote)
+}
+
+# Python workflow_reporting_text interpolates the raw schema-version
+# value, whereas workflow_summary_frame coerces it with int(). Preserve the
+# source distinction for native scalar representations, especially floats
+# (1.0 versus 1) and booleans (True versus TRUE).
+.etr_workflow_source_version_text <- function(x) {
+  if(is.logical(x)) return(if(x) "True" else "False")
+  if(is.integer(x)) return(as.character(x))
+  if(is.double(x)) return(.etr_python_json_float(x))
+  if(is.character(x)) return(x)
+  stop("unsupported workflow schema-version text",call.=FALSE)
 }
 
 #' Compact native workflow provenance reporting text
@@ -239,11 +278,11 @@ etr_workflow_summary_frame <- function(result) {
 #' @return Descriptive text without automated scientific approval.
 #' @export
 etr_workflow_reporting_text <- function(result) {
-  .etr_workflow_check_result(result)
   z <- etr_workflow_summary_frame(result)
   quoted <- .etr_python_workflow_identifier_repr(result$workflow_contract)
   paste0("Workflow ",quoted," used schema ",
-    z$workflow_schema_version," and retained ",z$step_count,
+    .etr_workflow_source_version_text(result$workflow_schema_version),
+    " and retained ",z$step_count,
     " ordered steps (",z$completed_steps," completed, ",z$failed_steps,
     " failed, ",z$skipped_steps," skipped). It retained ",
     z$decision_count," scientific decisions (",z$analyst_decisions,

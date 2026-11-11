@@ -12,15 +12,19 @@
 #' @param scaling, multiplier Explicit FPCA scaling and wild law.
 #' @param confidence_level Fixed coverage probability.
 #' @param independent_unit_column Optional unique independent curve ID field.
-#' @param random_state Native R seed, not NumPy PCG64.
+#' @param random_state Nonnegative integer seed below 2^53 for NumPy-compatible
+#'   PCG64 normal or Mammen draws. NULL uses the current R RNG stream.
 #' @param multiplier_draws Optional B-by-n frozen source multiplier matrix.
+#' @param random_engine Seeded multiplier RNG. Use `"base_R"` to replay
+#'   previous native normal multipliers, or `"numpy"` for source draws.
 #' @return Native source-shape scan record, without automatic h selection.
 #' @export
 etr_scan_wild_bootstrap_fpca_truncations<-function(
     trajectories,outcome,candidate_components,targets=NULL,
     n_bootstrap=1000L,residual_components=2L,
     scaling="none",multiplier="normal",confidence_level=.95,
-    independent_unit_column=NULL,random_state=0L,multiplier_draws=NULL){
+    independent_unit_column=NULL,random_state=0L,multiplier_draws=NULL,
+    random_engine="numpy"){
   .etr_assert(is.numeric(candidate_components)&&
     length(candidate_components)>=2L&&
     all(is.finite(candidate_components))&&
@@ -47,26 +51,8 @@ etr_scan_wild_bootstrap_fpca_truncations<-function(
     !is.na(multiplier)&&multiplier%in%c("normal","mammen"),
     "multiplier must be normal or mammen")
   if(is.null(multiplier_draws)){
-    .etr_assert(is.null(random_state)||
-      (is.numeric(random_state)&&length(random_state)==1L&&
-      is.finite(random_state)&&random_state==floor(random_state)&&
-      random_state>=0&&random_state<=.Machine$integer.max),
-      "random_state must be NULL or a native nonnegative integer")
-    draw_mult<-function(){
-      if(multiplier=="normal"){
-        matrix(stats::rnorm(B*n),B,n,byrow=TRUE)
-      }else{
-        sq<-sqrt(5)
-        pneg<-(sq+1)/(2*sq)
-        uu<-matrix(stats::runif(B*n),B,n,byrow=TRUE)
-        ifelse(uu<pneg,(1-sq)/2,(1+sq)/2)
-      }
-    }
-    # NULL mirrors Python's accepted unseeded domain. Native R uses its
-    # current RNG stream, not NumPy PCG64; seeded calls restore R RNG.
-    mult<-if(is.null(random_state))draw_mult() else
-      .etr_seed_scope(as.integer(random_state),draw_mult)
-    mult<-matrix(mult,B,n)
+    random_engine<-match.arg(random_engine,c("numpy","base_R"))
+    mult<-.etr_wild_fpcr_multipliers(B,n,multiplier,random_state,random_engine)
   }else{
     mult<-multiplier_draws
     .etr_assert(is.matrix(mult)&&is.numeric(mult)&&
@@ -80,9 +66,8 @@ etr_scan_wild_bootstrap_fpca_truncations<-function(
   etr_validate(trajectories,require_complete=TRUE)
   .etr_assert(all(is.finite(trajectories$values)),
     "training trajectories must be complete finite")
-  .etr_assert(is.numeric(outcome)&&is.null(dim(outcome))&&
-    length(outcome)==n&&all(is.finite(outcome)),
-    "outcome must contain finite scalar per training curve")
+  outcome<-.etr_fpcr_numeric_outcome(outcome,n,"gaussian",
+    "outcome must contain finite scalar per training curve",numpy_text=TRUE)
   .etr_assert(is.character(scaling)&&length(scaling)==1L&&
     !is.na(scaling)&&scaling%in%c("none","dimension_sd"),
     "scaling must be none or dimension_sd")
@@ -141,13 +126,14 @@ etr_scan_wild_bootstrap_fpca_truncations<-function(
     fit_h<-.etr_wild_fpcr_prepared_fit(scores,h)
     f_h<-fit_h(outcome)
     ref<-as.vector(target_h%*%f_h$beta[-1L])
-    se<-.etr_wild_fpcr_hetero_se(score_h,fk$residual,target_h)
+    infer_se<-.etr_wild_fpcr_prepared_se(score_h,target_h)
+    se<-infer_se(fk$residual)
     projections[j,]<-ref;ses[j,]<-se
     tolerance<-100*.Machine$double.eps*max(1,abs(ref))
     for(i in seq_len(B)){
       fs<-fit_h(pseudo_y[i,])
       ps<-as.vector(target_h%*%fs$beta[-1L])
-      ss<-.etr_wild_fpcr_hetero_se(score_h,residual_k[i,],target_h)
+      ss<-infer_se(residual_k[i,])
       delta<-ps-pseudo_truth
       pos<-ss>.Machine$double.eps*max(1,ss)
       .etr_assert(!any(!pos&abs(delta)>tolerance),
@@ -179,6 +165,10 @@ etr_scan_wild_bootstrap_fpca_truncations<-function(
     independence_assumption="independent_curve_rows",
     independent_unit_column=independent_unit_column,
     simultaneous_across_targets=FALSE,random_state=random_state,
+    seeded_normal_draws_match_numpy=is.null(multiplier_draws)&&
+      !is.null(random_state)&&random_engine=="numpy"&&multiplier=="normal",
+    seeded_mammen_draws_match_numpy=is.null(multiplier_draws)&&
+      !is.null(random_state)&&random_engine=="numpy"&&multiplier=="mammen",
     source_full_contract_certified=FALSE)
   structure(list(reference_fpca=fit,
     target_curve_ids=targets$curve_ids,

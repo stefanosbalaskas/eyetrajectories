@@ -8,7 +8,9 @@
 #       covariance, eigenfunctions and scores with frozen Python 1.2
 #    ET_RUN_BOOTSTRAP_SOURCE_DIFF=true: additionally run 100 whole-participant
 #       source/native GEE refits per Poisson, grouped binomial and exposure
-#       family; write unsigned scientific comparison evidence separately.
+#       family and compare seeded native resampling with NumPy.
+#    ET_RUN_MIAAFT_PHASE_REPLAY_SOURCE_DIFF=true: trace the periodic witness
+#       and verify explicitly replayed unresolved Fourier phases.
 # Never increments the 508 certification ledger, publishes to CRAN, or
 # claims full Python source equivalence from bounded numerical probes.
 #
@@ -84,12 +86,36 @@
       "native-508-certification-batches",
       "native-all-function-mapping-complete",
       "native-nonfunction-source-gaps",
+      "native-source-trajectory-object",
+      "native-trajectory-provenance",
+      "native-catalog-contract-boundaries",
+      "native-python-portable-(reader|writer)",
+      "native-python-json-reporting-batch28",
+      "native-workflow-configuration",
+      "native-workflow-source-audit",
+      "native-workflow-bundle-export",
+      "native-trapezoid-complex-source",
       "native-source-contract-gaps",
       # Actual scientific estimators, not only mapping and metadata tests.
       "native-wild-bootstrap-projection",
       "native-wild-bootstrap-truncation-scan",
+      "native-inference-reporting",
       "native-multivariate-iaaft-generator",
       "native-multivariate-surrogate-nonlinearity",
+      "native-numpy-pcg64",
+      "native-cv-uncertainty",
+      "native-fpcr-(regression|nested)-cross-validation",
+      "native-fpcr-grouped-source-folds",
+      "native-fpcr-numeric-string-outcomes",
+      "native-private-helper-names",
+      "native-bootstrap-inference",
+      "native-fixed-multiplier-replay-source",
+      "native-miaaft-fixed-permutation-source",
+      "native-miaaft-cross-denominator-audit",
+      "native-fpcr-bootstrap-uncertainty",
+      "native-fpcr-future-prediction-interval",
+      "native-functional-models",
+      "native-fpca-component-envelopes",
       "native-generalized-gee-fit",
       "native-generalized-gee-bootstrap",
       "native-generalized-fosr-prediction",
@@ -99,7 +125,12 @@
       "native-joint-likelihood-covariance-sensitivity",
       "native-joint-fixed-covariance-bootstrap",
       "native-joint-structured-full-refit",
+      "native-source-(audit|diagnostic)-frames",
       "native-sparse-source-pace",
+      "native-sparse-numpy-rank-boundary",
+      "native-sparse-pair-source-order",
+      "native-sparse-primitive-source-boundaries",
+      "native-sparse-noise-psd-source",
       "native-observation-process",
       "native-sparse-mfpca-source",
       "native-sparse-mfpca-score-uncertainty",
@@ -108,6 +139,10 @@
       "native-sparse-multilevel-source",
       "native-sparse-mfpca-async-source",
       "native-functional-rqa-recovery",
+      "native-rqa-physical-target-whole-source",
+      "native-source-windowed-rqa-time-units",
+      "native-functional-simulation-seeded",
+      "native-recovery-modes",
       "native-functional-diagnostics"
     ),collapse="|"),reporter="summary",
       stop_on_failure=TRUE,stop_on_warning=TRUE),
@@ -129,6 +164,19 @@
       source("scripts/run_generalized_gee_bootstrap_source_differential.R",
         encoding="UTF-8",local=TRUE)
       cat("ACCELERATED_WAVE_GEE_BOOTSTRAP_SOURCE_DIFF_RECORDED=TRUE\n")
+      source("scripts/run_seeded_resampling_source_differential.R",
+        encoding="UTF-8",local=TRUE)
+      cat("ACCELERATED_WAVE_SEEDED_RESAMPLING_SOURCE_DIFF_RECORDED=TRUE\n")
+    }
+    if(identical(Sys.getenv("ET_RUN_MIAAFT_PHASE_REPLAY_SOURCE_DIFF"),"true")){
+      source("scripts/trace_miaaft_source_witness.R",
+        encoding="UTF-8",local=TRUE)
+      cat("ACCELERATED_WAVE_MIAAFT_PHASE_REPLAY_SOURCE_DIFF_RECORDED=TRUE\n")
+    }
+    if(identical(Sys.getenv("ET_RUN_GROUPED_FOLD_SORT_SOURCE_DIFF"),"true")){
+      source("scripts/run_grouped_fold_sort_differential.R",
+        encoding="UTF-8",local=TRUE)
+      cat("ACCELERATED_WAVE_GROUPED_FOLD_SORT_SOURCE_DIFF_RECORDED=TRUE\n")
     }
     sparse_disagreements<-0L
     sparse_runner_errors<-character()
@@ -186,6 +234,8 @@
         "OBSERVATION")
       sparse_runner("scripts/run_functional_core_source_differential.R",
         "FUNCTIONAL_CORE")
+      sparse_runner("scripts/run_fpca_recovery_source_differential.R",
+        "FPCA_RECOVERY")
       cat("ACCELERATED_WAVE_SPARSE_FPCA_SOURCE_DIFF_ATTEMPTED=TRUE\n")
       cat("ACCELERATED_WAVE_SPARSE_MFPCA_SOURCE_DIFF_ATTEMPTED=TRUE\n")
       cat("ACCELERATED_WAVE_SPARSE_PREDICTION_SOURCE_DIFF_ATTEMPTED=TRUE\n")

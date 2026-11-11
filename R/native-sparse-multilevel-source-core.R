@@ -136,9 +136,9 @@
   audit<-do.call(rbind,diagnostics)
   if(failure_action=="error"&&any(audit$status_code!="ok")){
     i<-which(audit$status_code!="ok")[1L]
-    .etr_spn_fail(audit$status_code[i],
+    .etr_spn_score_fail(audit,i,
       paste0("multilevel score system failed for participant ",
-        ids[i]))
+        ids[i]),include_curve_audit=FALSE)
   }
   list(participant_ids=ids,curve_ids=as.character(curve_ids),
     participant_scores=scores_p,trial_scores=scores_t,

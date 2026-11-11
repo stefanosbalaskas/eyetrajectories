@@ -1,8 +1,8 @@
 # Author-side frozen Python 1.2 versus native R participant-case GEE
 # bootstrap source differential. Needs 100 independently resampled full GEE
 # fits per scientific family; not part of the quick every-commit gate.
-# Uses the exact NumPy participant index matrix from Python to control
-# initialization; never compares unrelated R and PCG64 random streams.
+# Compares independently generated NumPy and native PCG64 participant
+# index matrices and downstream refits for the same seed.
 # Produces unsigned per-field output/shape/error evidence, not certification.
 #
 # source("scripts/run_generalized_gee_source_differential.R")
@@ -13,8 +13,7 @@
     requireNamespace("pkgload",quietly=TRUE))
   pkgload::load_all(".",quiet=TRUE)
   stopifnot(identical(et_python_version(),"1.2.0"))
-  # Initialize the same matched input fixtures as the already verified
-  # 48-case GEE differential whenever this script is invoked standalone.
+  # Initialize the matched input fixtures when invoked standalone.
   prepared<-tryCatch(reticulate::py_eval(
     "'_wave_gee_cases' in globals()",convert=TRUE),
     error=function(e)FALSE)
@@ -67,34 +66,39 @@
         "DIVERGENT_NUMERIC",delta,
       detail=paste0("relative absolute tolerance=",tol))
   }
-  for(key in c("poisson","grouped","exposure")){
-    family<-if(key=="grouped")"binomial" else "poisson"
-    fixture<-.etr_native_gee_fixture(family,grouped=key=="grouped")
-    args<-list(trajectories=fixture$x,design=fixture$design,
-      predictors="treatment",participant_column="participant_id",
-      dimension="outcome",family=family,basis_size=4L,
-      spline_degree=3L)
-    pyargs<-list(trajectories=pyitem(key,"trajectories"),
-      design=pyitem(key,"design"),
-      predictors=reticulate::py_eval("['treatment']",convert=FALSE),
-      participant_column="participant_id",dimension="outcome",
-      family=family,basis_size=4L,spline_degree=3L)
-    if(key=="grouped"){
-      args$binomial_denominator<-fixture$den
-      pyargs$binomial_denominator<-pyitem(key,"den")
-    }
-    if(key=="exposure"){
-      args$exposure<-rep(2.5,36L)
-      pyargs$exposure<-pyitem(key,"exposure")
+  for(key in c("poisson","grouped","exposure","source_conditioned")){
+    if(key=="source_conditioned"){
+      args<-.etr_native_gee_boundary_case("nearly_rank_deficient")
+      pr<-safe(function().etr_python_gee_boundary_call(args))
+    }else{
+      family<-if(key=="grouped")"binomial" else "poisson"
+      fixture<-.etr_native_gee_fixture(family,grouped=key=="grouped")
+      args<-list(trajectories=fixture$x,design=fixture$design,
+        predictors="treatment",participant_column="participant_id",
+        dimension="outcome",family=family,basis_size=4L,
+        spline_degree=3L)
+      pyargs<-list(trajectories=pyitem(key,"trajectories"),
+        design=pyitem(key,"design"),
+        predictors=reticulate::py_eval("['treatment']",convert=FALSE),
+        participant_column="participant_id",dimension="outcome",
+        family=family,basis_size=4L,spline_degree=3L)
+      if(key=="grouped"){
+        args$binomial_denominator<-fixture$den
+        pyargs$binomial_denominator<-pyitem(key,"den")
+      }
+      if(key=="exposure"){
+        args$exposure<-rep(2.5,36L)
+        pyargs$exposure<-pyitem(key,"exposure")
+      }
+      pr<-safe(function()do.call(reticulate::py_call,
+        c(list(etpy_get_export(
+          "fit_generalized_function_on_scalar_regression")),pyargs)))
     }
     # Full source and native fits, no saved objects or fitted-value
     # substitution. Exact input equality was asserted by the preceding
     # generalized source-runner when this object was initialized.
     nr<-safe(function()do.call(
       etr_fit_generalized_function_on_scalar_regression,args))
-    pr<-safe(function()do.call(reticulate::py_call,
-      c(list(etpy_get_export(
-        "fit_generalized_function_on_scalar_regression")),pyargs)))
     if(!nr$ok||!pr$ok){
       add(key,"reference_fit","<call>",
         if(nr$ok==pr$ok)"PASS_BOTH_REJECT"else
@@ -103,8 +107,8 @@
       next
     }
     nres<-nr$result;pres<-pr$result
-    # Public pinned Python 1.2 performs 100 whole-participant full GEE
-    # refits. Native R receives its exact realized indices. No RNG bridge.
+    # Each runtime performs 100 whole-participant refits from the same
+    # integer seed. Compare the independently generated index matrices.
     ps<-safe(function()reticulate::py_call(
       etpy_get_export(
         "bootstrap_generalized_function_on_scalar_coefficients"),
@@ -123,19 +127,22 @@
     }
     ns<-safe(function()
       etr_bootstrap_generalized_function_on_scalar_coefficients(
-        nres,n_bootstrap=100L,random_state=20261109L,
-        sampled_participant_indices=sampled$result))
+        nres,n_bootstrap=100L,random_state=20261109L))
     if(!ns$ok){
       add(key,"bootstrap","<call>","DIVERGENT_ACCEPTANCE",
         native_error=ns$error)
       next
     }
     native<-ns$result;python<-ps$result
+    add(key,"bootstrap","native_pcg64",
+      if(identical(native$provenance$generalized_function_on_scalar_bootstrap$
+        native_random_engine,"numpy_pcg64"))"PASS_SCHEMA"else"DIVERGENT_SCHEMA")
     compare(key,"bootstrap","sampled_participant_indices",
       native$sampled_participant_indices,sampled$result,tol=0)
     compare(key,"bootstrap","bootstrap_coefficient_functions",
       native$bootstrap_coefficient_functions,
-      getpy(python,"bootstrap_coefficient_functions"))
+      getpy(python,"bootstrap_coefficient_functions"),
+      tol=if(key=="source_conditioned")1e-9 else 1e-4)
     # Preserve exact identities and new cluster names, including duplicate
     # participant draws that must be assigned distinct group IDs.
     for(field in c("sampled_source_participant_ids",
@@ -150,6 +157,39 @@
         if(same)"PASS_SCHEMA"else"DIVERGENT_SCHEMA",
         detail=paste0("replicate audit, ",length(a)," native draws"))
     }
+    if(key=="exposure"){
+      case<-"bootstrap_exact_high_seed"
+      seed<-2^53-1
+      large_seed<-reticulate::py_eval("9007199254740991",convert=FALSE)
+      pn<-safe(function()reticulate::py_call(
+        etpy_get_export(
+          "bootstrap_generalized_function_on_scalar_coefficients"),
+        result=pres,n_bootstrap=100L,random_state=large_seed))
+      rn<-safe(function()
+        etr_bootstrap_generalized_function_on_scalar_coefficients(
+          nres,n_bootstrap=100L,random_state=seed))
+      if(!pn$ok||!rn$ok){
+        add(key,case,"<call>",
+          if(!pn$ok)"SOURCE_EXCEPTION"else"DIVERGENT_ACCEPTANCE",
+          native_error=rn$error,python_error=pn$error)
+      }else{
+        compare(key,case,"sampled_participant_indices",
+          rn$result$sampled_participant_indices,
+          getpy(pn$result,"sampled_participant_indices"),tol=0)
+        compare(key,case,"bootstrap_coefficient_functions",
+          rn$result$bootstrap_coefficient_functions,
+          getpy(pn$result,"bootstrap_coefficient_functions"))
+        audit_seed<-rn$result$provenance$
+          generalized_function_on_scalar_bootstrap$random_state
+        source_seed<-reticulate::py_str(
+          reticulate::py_get_attr(pn$result,"random_state"))
+        same<-identical(rn$result$random_state,seed)&&
+          identical(audit_seed,seed)&&identical(source_seed,"9007199254740991")
+        add(key,case,"random_state",
+          if(same)"PASS_SCHEMA"else"DIVERGENT_SCHEMA")
+      }
+    }
+    if(key=="source_conditioned")next
     for(spec in list(
        list(name="bootstrap_count_boundary",n_bootstrap=99L),
        list(name="no_silent_redraw",n_bootstrap=100L,

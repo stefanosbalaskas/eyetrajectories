@@ -4,14 +4,87 @@
 # off-diagonal covariance, weighted operator PSD, full-covariance PACE.
 # No fdapace, reticulate, or R/Python full-contract certification.
 
-.etr_spn_fail<-function(code,message)
-  stop(paste0(code,": ",message),call.=FALSE)
+.etr_spn_fail<-function(code,message,details=list()){
+  stop(structure(list(message=paste0(code,": ",message),call=NULL,
+    code=code,details=details),
+    class=c("etr_sparse_native_error","simpleError","error","condition")))
+}
+
+.etr_spn_score_fail<-function(audit,index,message,include_curve_audit=TRUE){
+  details<-as.list(audit[index,,drop=FALSE])
+  if(include_curve_audit)
+    details$all_curve_diagnostics<-lapply(seq_len(nrow(audit)),
+      function(i)as.list(audit[i,,drop=FALSE]))
+  .etr_spn_fail(audit$status_code[index],message,details)
+}
 
 .etr_spn_grid<-function(x){
   .etr_assert(is.numeric(x)&&is.null(dim(x))&&length(x)>=3L&&
     all(is.finite(x))&&all(diff(x)>0),
     "evaluation_grid must be finite strictly increasing with >=3 points")
   x
+}
+
+.etr_spn_uncertainty_grid<-function(x){
+  .etr_assert(is.numeric(x)&&is.null(dim(x))&&length(x)>=2L&&
+    all(is.finite(x))&&all(diff(x)>0),"fit evaluation grid is invalid")
+  x
+}
+
+.etr_spn_score_correlations<-function(covariance,standard_errors){
+  out<-array(NaN,dim(covariance))
+  k<-ncol(standard_errors)
+  for(i in seq_len(nrow(standard_errors))){
+    P<-matrix(covariance[i,,],k,k)
+    if(!all(is.finite(P)))next
+    scale<-outer(standard_errors[i,],standard_errors[i,])
+    correlation<-matrix(NaN,k,k)
+    use<-scale>0
+    correlation[use]<-P[use]/scale[use]
+    diag(correlation)<-1
+    out[i,,]<-correlation
+  }
+  out
+}
+
+.etr_spn_check_grid_support<-function(times,grid){
+  start<-min(vapply(times,function(t)t[1L],numeric(1L)))
+  end<-max(vapply(times,function(t)tail(t,1L),numeric(1L)))
+  tolerance<-1e-12*max(1,abs(start),abs(end))
+  if(grid[1L]<start-tolerance||tail(grid,1L)>end+tolerance)
+    .etr_spn_fail("evaluation_grid_outside_pooled_support",
+      "evaluation_grid must lie within pooled observation support",
+      list(pooled_start=start,pooled_end=end,
+        grid_start=grid[1L],grid_end=tail(grid,1L)))
+}
+
+.etr_spn_analysis_support<-function(times,values,grid,action){
+  support<-range(grid)
+  keep<-lapply(times,function(t)t>=support[1L]&t<=support[2L])
+  counts<-vapply(keep,sum,integer(1L))
+  outside<-lengths(times)-counts
+  diagnostics<-list(analysis_support=support,analysis_support_action=action,
+    outside_observation_count=sum(outside),
+    curves_with_outside_observations=sum(outside>0L),
+    curves_without_in_support_observations=sum(counts==0L),
+    outside_counts_by_curve=as.integer(outside),
+    original_sample_counts=as.integer(lengths(times)),
+    analysis_sample_counts=as.integer(counts))
+  if(action=="error"&&any(outside>0L))
+    .etr_spn_fail("observations_outside_analysis_support",
+      "raw sparse observations outside fitted population grid",
+      diagnostics[c("analysis_support","outside_observation_count",
+        "curves_with_outside_observations","outside_counts_by_curve")])
+  if(sum(counts)<3L)
+    .etr_spn_fail("insufficient_pooled_support",
+      "fewer than three in-support observations",
+      list(analysis_support=support,in_support_observation_count=sum(counts),
+        in_support_counts_by_curve=as.integer(counts)))
+  if(action=="restrict"){
+    times<-Map(function(t,m)t[m],times,keep)
+    values<-Map(function(y,m)y[m],values,keep)
+  }
+  list(times=times,values=values,diagnostics=diagnostics)
 }
 
 .etr_spn_kernel<-function(u){
@@ -21,16 +94,23 @@
   out
 }
 
-.etr_spn_local_fit<-function(design,y,w,required,code){
+.etr_spn_local_fit<-function(design,y,w,required,code,details=list()){
   mask<-w>0
   if(sum(mask)<required)
-    .etr_spn_fail(code,"insufficient positive-weight observations")
+    .etr_spn_fail(code,"insufficient positive-weight observations",details)
   sw<-sqrt(w[mask])
   A<-design[mask,,drop=FALSE]*sw
-  q<-qr(A,tol=1e-12)
-  if(q$rank<ncol(A))
-    .etr_spn_fail(code,"weighted local design is rank deficient")
-  as.numeric(qr.coef(q,y[mask]*sw)[1L])
+  # Frozen Python 1.2 uses NumPy matrix_rank and lstsq, not R's QR
+  # rank tolerance. For tiny time units (e.g. 1e-13 seconds), QR with
+  # tol=1e-12 can reject a full-rank local fit accepted by NumPy.
+  # NumPy's default cutoff is max(m,n) * sigma_max * eps(binary64).
+  decomposition<-svd(A,nu=ncol(A),nv=ncol(A))
+  cutoff<-max(dim(A))*max(decomposition$d)*.Machine$double.eps
+  if(sum(decomposition$d>cutoff)<ncol(A))
+    .etr_spn_fail(code,"weighted local design is rank deficient",details)
+  projected<-as.numeric(crossprod(decomposition$u,y[mask]*sw))
+  coefficients<-decomposition$v%*%(projected/decomposition$d)
+  as.numeric(coefficients[1L])
 }
 
 .etr_spn_mean<-function(t,y,points,h,min_points=3L){
@@ -45,29 +125,68 @@
     support[i]<-sum(w>0)
     if(support[i]<min_points)
       .etr_spn_fail("insufficient_mean_local_support",
-        "local-linear mean support below declared minimum")
+        "local-linear mean support below declared minimum",
+        list(evaluation_point=as.numeric(points[i]),
+          support_count=as.integer(support[i]),
+          required_count=as.integer(min_points),bandwidth=as.numeric(h)))
     v[i]<-.etr_spn_local_fit(cbind(1,delta),y,w,2L,
-      "insufficient_mean_local_support")
+      "insufficient_mean_local_support",
+      list(evaluation_point=as.numeric(points[i]),
+        support_count=as.integer(support[i]),bandwidth=as.numeric(h)))
   }
   list(values=v,support_counts=support)
 }
 
-.etr_spn_pairs<-function(times,residuals){
+.etr_spn_pairs<-function(times,residuals,include_mirror=TRUE){
+  # Keep the exact source order: curve, left index, right index, then
+  # its mirrored counterpart immediately after each forward pair.
+  # upper.tri() in base R uses column-major order, unlike the frozen
+  # Python loops in _sparse_native.raw_offdiagonal_covariance_pairs().
+  if(length(times)!=length(residuals))
+    stop("curve_times and curve_residuals must have equal length",
+      call.=FALSE)
+  if(!is.logical(include_mirror)||length(include_mirror)!=1L||
+      is.na(include_mirror))
+    stop("include_mirror must be scalar logical",call.=FALSE)
   pieces<-lapply(seq_along(times),function(i){
     t<-times[[i]];r<-residuals[[i]]
-    if(length(t)<2L)return(NULL)
-    ix<-which(upper.tri(matrix(FALSE,length(t),length(t))),
-      arr.ind=TRUE)
-    a<-ix[,1L];b<-ix[,2L];v<-r[a]*r[b]
-    list(s=c(t[a],t[b]),t=c(t[b],t[a]),
-      products=c(v,v))
+    if(!is.numeric(t)||!is.numeric(r)||!is.null(dim(t))||
+        !is.null(dim(r))||length(t)!=length(r))
+      stop("each curve time/residual pair must be one-dimensional and aligned",
+        call.=FALSE)
+    if(!all(is.finite(t))||!all(is.finite(r)))
+      stop("curve times and residuals must be finite",call.=FALSE)
+    n<-length(t)
+    count<-if(n<2L)0L else as.integer(n*(n-1)/2L)*
+      if(include_mirror)2L else 1L
+    s<-numeric(count);u<-numeric(count)
+    products<-numeric(count);ix<-integer(count)
+    pos<-0L
+    if(n>=2L)for(left in seq_len(n-1L))
+      for(right in seq.int(left+1L,n)){
+        product<-as.numeric(r[left]*r[right])
+        pos<-pos+1L
+        s[pos]<-t[left];u[pos]<-t[right]
+        products[pos]<-product;ix[pos]<-i-1L
+        if(include_mirror){
+          pos<-pos+1L
+          s[pos]<-t[right];u[pos]<-t[left]
+          products[pos]<-product;ix[pos]<-i-1L
+        }
+      }
+    list(s=s,t=u,products=products,curve_index=ix)
   })
-  out<-lapply(c("s","t","products"),function(field)
-    unlist(lapply(pieces,function(z)z[[field]]),use.names=FALSE))
-  names(out)<-c("s","t","products")
+  collect<-function(key,mode)
+    unlist(lapply(pieces,function(z)z[[key]]),use.names=FALSE)
+  out<-list(s=as.numeric(collect("s","numeric")),
+    t=as.numeric(collect("t","numeric")),
+    products=as.numeric(collect("products","numeric")),
+    curve_index=as.integer(collect("curve_index","integer")),
+    mirrored=include_mirror)
   if(length(out$products)<3L)
     .etr_spn_fail("insufficient_within_curve_covariance_pairs",
-      "fewer than three offdiagonal pairs")
+      "fewer than three offdiagonal pairs",
+      list(n_pairs=as.integer(length(out$products))))
   out
 }
 
@@ -84,9 +203,14 @@
       support[i,j]<-sum(w>0)
       if(support[i,j]<min_pairs)
         .etr_spn_fail("insufficient_covariance_local_support",
-          "insufficient offdiagonal covariance local pairs")
+          "insufficient offdiagonal covariance local pairs",
+          list(s=as.numeric(grid[i]),t=as.numeric(grid[j]),
+            support_count=as.integer(support[i,j]),
+            required_count=as.integer(min_pairs),bandwidth=as.numeric(h)))
       C[i,j]<-.etr_spn_local_fit(cbind(1,ds,dt),
-        pairs$products,w,3L,"insufficient_covariance_local_support")
+        pairs$products,w,3L,"insufficient_covariance_local_support",
+        list(s=as.numeric(grid[i]),t=as.numeric(grid[j]),
+          support_count=as.integer(support[i,j]),bandwidth=as.numeric(h)))
     }
   }
   list(values=(C+t(C))/2,support_counts=support)
@@ -104,10 +228,15 @@
     support[i]<-sum(w>0)
     if(support[i]<min_pairs)
       .etr_spn_fail("insufficient_noise_diagonal_local_support",
-        "rotated covariance-diagonal has too few offdiagonal pairs")
+        "rotated covariance-diagonal has too few offdiagonal pairs",
+        list(evaluation_point=as.numeric(grid[i]),
+          support_count=as.integer(support[i]),
+          required_count=as.integer(min_pairs),bandwidth=as.numeric(h)))
     fitted[i]<-.etr_spn_local_fit(
       cbind(1,delta,perp^2),pairs$products,w,3L,
-      "insufficient_noise_diagonal_local_support")
+      "insufficient_noise_diagonal_local_support",
+      list(evaluation_point=as.numeric(grid[i]),
+        support_count=as.integer(support[i]),bandwidth=as.numeric(h)))
   }
   list(values=fitted,support_counts=support,
     rotation="45_degrees_linear_along_diagonal_quadratic_perpendicular")
@@ -125,6 +254,14 @@
     noise_support[1L]>=grid[1L]&&
     noise_support[2L]<=tail(grid,1L),
     "noise_support must be finite interval inside evaluation grid")
+  .etr_spn_uncertainty_grid(grid)
+  .etr_assert(length(times)==length(residuals),
+    "observation_times and residuals must have equal length")
+  .etr_assert(is.numeric(latent_diagonal)&&
+    is.null(dim(latent_diagonal))&&
+    length(latent_diagonal)==length(grid)&&
+    all(is.finite(latent_diagonal)),
+    "latent_diagonal must be a finite value per evaluation-grid point")
   t_pool<-unlist(times,use.names=FALSE)
   squared<-unlist(lapply(residuals,function(z)z^2),use.names=FALSE)
   raw<-.etr_spn_mean(t_pool,squared,grid,noise_bandwidth,
@@ -133,7 +270,9 @@
   mask<-grid>=noise_support[1L]&grid<=noise_support[2L]
   if(sum(mask)<2L)
     .etr_spn_fail("insufficient_noise_support",
-      "fewer than two evaluation points on noise support")
+      "fewer than two evaluation points on noise support",
+      list(noise_support=as.numeric(noise_support),
+        n_grid_points=as.integer(sum(mask))))
   w<-.etr_spn_weights(grid[mask])
   variance<-sum(w*delta[mask])/sum(w)
   # Frozen primitive retains an invalid estimate and status; the public
@@ -143,7 +282,9 @@
     latent_diagonal=latent_diagonal,
     diagonal_difference=delta,support_mask=mask,
     status_code=if(is.finite(variance)&&variance>0)
-      "ok" else "noise_variance_invalid")
+      "ok" else "noise_variance_invalid",
+    bandwidth=as.numeric(noise_bandwidth),
+    support_interval=as.numeric(noise_support))
 }
 
 .etr_spn_weights<-function(grid){
@@ -156,7 +297,15 @@
 }
 
 .etr_spn_psd<-function(C,grid,action="error",tolerance=1e-8){
-  .etr_assert(action%in%c("error","project"),
+  .etr_spn_uncertainty_grid(grid)
+  .etr_assert(is.numeric(C)&&
+    identical(dim(C),c(length(grid),length(grid))),
+    sprintf("covariance must have shape (%d, %d)",
+      length(grid),length(grid)))
+  .etr_assert(all(is.finite(C)),
+    "covariance must contain only finite values")
+  .etr_assert(is.character(action)&&length(action)==1L&&!is.na(action)&&
+    action%in%c("error","project"),
     "psd_action must be error or project")
   .etr_assert(is.numeric(tolerance)&&length(tolerance)==1L&&
     is.finite(tolerance)&&tolerance>=0,
@@ -168,7 +317,11 @@
   neg<-e$values<0;substantial<-e$values < -tolerance
   if(action=="error"&&any(substantial))
     .etr_spn_fail("covariance_psd_failure",
-      "fitted weighted covariance has substantial negative eigenvalues")
+      "fitted weighted covariance has substantial negative eigenvalues",
+      list(most_negative_eigenvalue=as.numeric(min(e$values)),
+        negative_eigenvalue_count=as.integer(sum(neg)),
+        substantial_negative_eigenvalue_count=as.integer(sum(substantial)),
+        tolerance=as.numeric(tolerance)))
   applied<-"none";R<-C
   if(any(neg)){
     applied<-if(action=="project")"project"else
@@ -191,12 +344,28 @@
 }
 
 .etr_spn_eigensystem<-function(C,grid,k,tolerance=1e-10){
+  .etr_spn_uncertainty_grid(grid)
+  n<-length(grid)
+  .etr_assert(is.numeric(C)&&identical(dim(C),c(n,n)),
+    sprintf("covariance must have shape (%d, %d)",n,n))
+  .etr_assert(all(is.finite(C)),
+    "covariance must contain only finite values")
+  .etr_assert(is.numeric(k)&&!is.logical(k)&&length(k)==1L&&
+    is.finite(k)&&k==floor(k)&&k>=1L,
+    "n_components must be a positive integer")
+  .etr_assert(is.numeric(tolerance)&&length(tolerance)==1L&&
+    is.finite(tolerance)&&tolerance>=0,
+    "positive_tolerance must be finite non-negative")
+  k<-as.integer(k)
   w<-.etr_spn_weights(grid);sw<-sqrt(w)
   D<-outer(sw,sw)*((C+t(C))/2)
   ev<-eigen(D,symmetric=TRUE)
   if(sum(ev$values>tolerance)<k)
     .etr_spn_fail("insufficient_positive_components",
-      "operator has fewer positive components than requested")
+      "operator has fewer positive components than requested",
+      list(requested_components=as.integer(k),
+        positive_components=as.integer(sum(ev$values>tolerance)),
+        positive_tolerance=as.numeric(tolerance)))
   lambda<-ev$values[seq_len(k)]
   phi<-t(sweep(ev$vectors[,seq_len(k),drop=FALSE],1L,sw,"/"))
   for(j in seq_len(k))if(phi[j,which.max(abs(phi[j,]))]<0)
@@ -204,16 +373,35 @@
   list(eigenvalues=lambda,eigenfunctions=phi,quadrature_weights=w)
 }
 
+.etr_spn_interp_inputs<-function(grid,t){
+  # The frozen Python interpolation primitives accept >=2 grid points
+  # (fitting itself still requires >=3 points). Preserve that distinction.
+  .etr_spn_uncertainty_grid(grid)
+  .etr_assert(is.numeric(t)&&is.null(dim(t))&&all(is.finite(t)),
+    "times must be a finite one-dimensional array")
+  if(any(t<grid[1L])||any(t>tail(grid,1L)))
+    .etr_spn_fail("native_time_outside_fitted_support",
+      "native observation times fall outside fitted population support",
+      list(grid_start=as.numeric(grid[1L]),
+        grid_end=as.numeric(tail(grid,1L)),
+        target_min=as.numeric(min(t)),
+        target_max=as.numeric(max(t))))
+  invisible(NULL)
+}
+
 .etr_spn_eval<-function(grid,v,t){
-  .etr_assert(all(t>=grid[1L])&&all(t<=tail(grid,1L)),
-    "native_time_outside_fitted_support")
-  stats::approx(grid,v,xout=t,rule=1,ties="ordered")$y
+  .etr_spn_interp_inputs(grid,t)
+  .etr_assert(is.numeric(v)&&is.null(dim(v))&&length(v)==length(grid),
+    "fitted_values must have one value per evaluation-grid point")
+  stats::approx(grid,v,xout=t,rule=1,ties="ordered",
+    na.rm=FALSE)$y
 }
 
 .etr_spn_cov_eval<-function(grid,C,t){
+  .etr_spn_interp_inputs(grid,t)
   n<-length(grid);m<-length(t)
-  .etr_assert(all(t>=grid[1L])&&all(t<=grid[n]),
-    "native_time_outside_fitted_support")
+  .etr_assert(is.numeric(C)&&identical(dim(C),c(n,n)),
+    sprintf("fitted_covariance must have shape (%d, %d)",n,n))
   a<-pmin(findInterval(t,grid,all.inside=TRUE),n-1L)
   u<-(t-grid[a])/(grid[a+1L]-grid[a])
   V<-matrix(0,m,m)
@@ -252,7 +440,7 @@
         for(j in seq_len(k))Phi[,j]<-.etr_spn_eval(grid,phi[j,],t)
         if(posterior){
           rhs<-Phi%*%prior
-          M<-solve(Sigma,rhs)
+          M<-solve(Sigma,rhs,tol=0)
           residual<-sqrt(sum((Sigma%*%M-rhs)^2))/
             max(1,sqrt(sum(rhs^2)))
           P<-prior-crossprod(rhs,M);P<-(P+t(P))/2
@@ -281,17 +469,24 @@
       condition_number=cond,minimum_eigenvalue=mine,
       maximum_eigenvalue=maxe,score_ridge=ridge,
       condition_limit=limit,stringsAsFactors=FALSE)
-    if(posterior)row<-transform(row,
-      posterior_minimum_eigenvalue=post_min,
-      posterior_psd_repair_applied=repaired,
-      solve_relative_residual=residual)
+    if(posterior){
+      row$posterior_minimum_eigenvalue<-post_min
+      row$posterior_psd_repair_applied<-repaired
+      row$solve_relative_residual<-residual
+      row<-row[c("curve_id","n_samples","status_code","solve_status",
+        "condition_number","minimum_eigenvalue","maximum_eigenvalue",
+        "posterior_minimum_eigenvalue","posterior_psd_repair_applied",
+        "solve_relative_residual","score_ridge","condition_limit")]
+    }
     diagnostics[[i]]<-row
   }
   diagnostic<-do.call(rbind,diagnostics)
   if(failure_action=="error"&&any(diagnostic$status_code!="ok")){
     i<-which(diagnostic$status_code!="ok")[1L]
-    .etr_spn_fail(diagnostic$status_code[i],
-      paste("PACE system failed for curve",ids[i]))
+    message<-if(posterior)paste("conditional PACE uncertainty system failed for curve",
+      .etr_python_workflow_identifier_repr(ids[i])) else
+      paste("PACE system failed for curve",ids[i])
+    .etr_spn_score_fail(diagnostic,i,message)
   }
   list(scores=scores,covariance=posterior_cov,
     standard_errors=standard_errors,diagnostics=diagnostic)

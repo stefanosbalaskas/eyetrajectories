@@ -1,0 +1,127 @@
+# Reproduce the identical-input periodic MIAAFT witness against Python 1.2.
+# Run from the package root with the pinned Python source environment active.
+.etr_trace_miaaft_source_witness<-function(){
+  stopifnot(file.exists("DESCRIPTION"),
+    requireNamespace("pkgload",quietly=TRUE),
+    requireNamespace("reticulate",quietly=TRUE))
+  pkgload::load_all(".",quiet=TRUE)
+  stopifnot(identical(et_python_version(),"1.2.0"))
+  source("tests/testthat/helper-native-miaaft-periodic.R",local=TRUE)
+  head<-system2("git",c("rev-parse","HEAD"),stdout=TRUE)
+  dirty<-system2("git",c("status","--porcelain","--untracked-files=no"),
+    stdout=TRUE)
+  stopifnot(length(head)==1L,nchar(head)==40L,!length(dirty))
+  frozen<-"c1cd95ad718327550f7e55393ff38582872f7a94"
+  fixture<-.etr_multivariate_lle_fixture()
+  source_result<-.etr_miaaft_python_trace(fixture)
+  replay<-.etr_miaaft_phase_replay_from_trace(source_result)
+  default<-.etr_multivariate_lle_call(fixture,"two-sided")
+  native<-.etr_multivariate_lle_call(fixture,"two-sided",phase_replay=replay)
+  plain_trace<-.etr_miaaft_native_trace(fixture,source_result)
+  replay_trace<-.etr_miaaft_native_trace(fixture,source_result,replay)
+  result<-native$surrogate_result
+  generator<-"generate_multivariate_iaaft_surrogates"
+  test<-"multivariate_surrogate_nonlinearity_test"
+  compare<-function(name,field,r,py,tolerance=0){
+    same_shape<-identical(dim(r),dim(py))&&length(r)==length(py)
+    error<-if(same_shape)max(Mod(r-py)) else Inf
+    data.frame(python_name=name,
+      native_r_candidate=paste0("etr_",name),
+      scientific_family="reference_anchored_multivariate_IAAFT",
+      source_fixture="periodic_96x3_seed_17_roundoff_phase_replay",
+      field=field,max_abs_error=error,absolute_tolerance=tolerance,
+      outcome=if(is.finite(error)&&error<=tolerance)
+        "PASS_NUMERIC" else "DIVERGENT_NUMERIC",
+      frozen_python_commit=frozen,r_git_head=head,
+      independently_certified=FALSE)
+  }
+  frame<-do.call(rbind,list(
+    compare(generator,"surrogates",result$surrogates,source_result$surrogates),
+    compare(generator,"convergence_iterations",result$convergence_iterations,
+      as.integer(source_result$iterations)),
+    compare(generator,"spectral_errors",result$spectral_errors,
+      source_result$spectral_errors,1e-10),
+    compare(generator,"cross_spectral_errors_x_y",result$cross_spectral_errors[,1L],
+      source_result$cross_spectral_errors[,1L],1e-10),
+    compare(generator,"trace_steps",nrow(replay_trace),
+      length(source_result$snapshots)),
+    compare(generator,"trace_previous",replay_trace$max_abs_previous,
+      numeric(nrow(replay_trace))),
+    compare(generator,"trace_inverse_fft",replay_trace$max_abs_transformed,
+      numeric(nrow(replay_trace)),1e-10),
+    compare(generator,"trace_stable_ranks",replay_trace$different_rank_positions,
+      numeric(nrow(replay_trace))),
+    compare(generator,"trace_rank_remapping",replay_trace$max_abs_ranked,
+      numeric(nrow(replay_trace))),
+    compare(test,"observed_statistic",native$observed_statistic,
+      source_result$observed,1e-10),
+    compare(test,"surrogate_statistics",native$surrogate_statistics,
+      as.numeric(source_result$stats),1e-10),
+    compare(test,"p_value",native$p_value,source_result$p)
+  ))
+  # The unmodified baseline and ill-conditioned relative errors remain
+  # visible, separately from the explicitly scoped phase-replay checks.
+  diagnostic<-rbind(
+    data.frame(field="default_p_value",surrogate=NA_integer_,
+      native=default$p_value,python=source_result$p),
+    data.frame(field=rep(c("replayed_cross_spectral_error_x_z",
+      "replayed_cross_spectral_error_y_z"),each=3L),surrogate=rep(1:3,2L),
+      native=as.numeric(result$cross_spectral_errors[,2:3]),
+      python=as.numeric(source_result$cross_spectral_errors[,2:3])))
+  diagnostic$absolute_difference<-abs(diagnostic$native-diagnostic$python)
+  # Diagnose source-normalized cross errors without changing the
+  # surrogate generator, stopping decision, or Monte Carlo p-value.
+  # No backend-sensitive zero-cross relative error is counted as a
+  # passing differential simply because its ratio is ill-conditioned.
+  pair_index<-combn(seq_along(result$dimension_names),2L,
+    simplify=FALSE)
+  reference_spectrum<-.etr_multivariate_fft_half(result$source_values)
+  cross_denominator<-do.call(rbind,lapply(seq_len(result$n_surrogates),
+    function(i){
+      one<-matrix(result$surrogates[i,,,drop=FALSE],
+        nrow=nrow(result$source_values),ncol=ncol(result$source_values))
+      audit<-.etr_multivariate_spectrum_errors(one,reference_spectrum,
+        pair_index,denominator_audit=TRUE)$denominator_audit
+      audit$surrogate_index_zero_based<-as.integer(i-1L)
+      audit$python_relative_error<-as.numeric(
+        source_result$cross_spectral_errors[i,])
+      audit$native_minus_python_relative_error<-
+        audit$relative_error-audit$python_relative_error
+      audit
+    }))
+  stopifnot(nrow(cross_denominator)==
+    result$n_surrogates*length(pair_index))
+  dir<-file.path("artifacts","native_batch_numeric_diff",substr(head,1L,12L))
+  dir.create(dir,recursive=TRUE,showWarnings=FALSE)
+  file<-file.path(dir,"miaaft_phase_replay_source_cases_UNSIGNED.csv")
+  utils::write.csv(frame,file,row.names=FALSE,na="")
+  utils::write.csv(rbind(
+    cbind(phase_replay=FALSE,plain_trace),cbind(phase_replay=TRUE,replay_trace)),
+    file.path(dir,"miaaft_periodic_iteration_trace.csv"),row.names=FALSE)
+  utils::write.csv(diagnostic,file.path(dir,"miaaft_periodic_backend_diagnostics.csv"),
+    row.names=FALSE,na="")
+  utils::write.csv(cross_denominator,
+    file.path(dir,"miaaft_periodic_cross_denominator_audit.csv"),
+    row.names=FALSE,na="")
+  cat("MIAAFT_NEAR_ZERO_CROSS_TARGET_PAIRS=",
+    sum(cross_denominator$near_zero_cross_spectral_target),
+    ";CROSS_PAIR_AUDIT_ROWS=",nrow(cross_denominator),"\n",sep="")
+  saveRDS(replay,file.path(dir,"miaaft_periodic_phase_replay.rds"))
+  cat("MIAAFT_PERIODIC_NUMPY_VERSION=",source_result$numpy_version,
+    ";R_DEFAULT_P=",default$p_value,";PYTHON_P=",source_result$p,
+    ";R_REPLAY_P=",native$p_value,";ITERATIONS=",
+    paste(result$convergence_iterations,collapse=","),"\n",sep="")
+  cat("MIAAFT_FIRST_ITERATION_INPUT_ERROR=",plain_trace$max_abs_previous[[1L]],
+    ";TARGET_FFT_ERROR=",plain_trace$max_abs_spectrum[[1L]],
+    ";PHASE_OFFSET_ERROR=",plain_trace$max_abs_offsets[[1L]],
+    ";ADJUSTED_FFT_ERROR=",plain_trace$max_abs_adjusted_spectrum[[1L]],
+    ";INVERSE_FFT_ERROR=",plain_trace$max_abs_transformed[[1L]],
+    ";DIFFERENT_RANK_POSITIONS=",plain_trace$different_rank_positions[[1L]],
+    "\n",sep="")
+  cat("MIAAFT_PHASE_REPLAY_SOURCE_COMPARISONS=",nrow(frame),";PASSED=",
+    sum(frame$outcome=="PASS_NUMERIC"),";EXPORTS=",
+    length(unique(frame$python_name)),";REPORT=",file,"\n",sep="")
+  stopifnot(all(frame$outcome=="PASS_NUMERIC"))
+  invisible(frame)
+}
+.etr_trace_miaaft_source_witness()

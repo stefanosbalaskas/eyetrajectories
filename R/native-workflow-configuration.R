@@ -9,8 +9,8 @@
   nm <- names(x)
   .etr_assert(!length(x) ||
       (!is.null(nm) && length(nm)==length(x) && !anyNA(nm) &&
-        all(nzchar(nm)) && !anyDuplicated(nm)),
-    paste0(what," must have unique nonempty character keys"))
+        !anyDuplicated(nm)),
+    paste0(what," must have unique character keys"))
   .etr_workflow_json(x,what,empty_mapping=TRUE,validate_only=TRUE)
   invisible(TRUE)
 }
@@ -72,6 +72,8 @@ etr_preprocessing_plan <- function(steps=list()) {
   } else if (is.object(x) && !is.list(x)) {
     stop("unsupported workflow config object",call.=FALSE)
   }
+  if (is.array(x))
+    return(.etr_python_json_array_to_list(x))
   if (is.list(x))
     return(lapply(x,.etr_workflow_config_jsonable))
   x
@@ -80,6 +82,7 @@ etr_preprocessing_plan <- function(steps=list()) {
 #' Convert native workflow config to a JSON-compatible mapping
 #' @param config Native workflow config, preprocessing step or plan.
 #' @return Named R list retaining field names and ordered preprocessing steps.
+#'   Numeric and logical arrays are projected to nested lists in source order.
 #' @details Source analogue of Python workflow_config_to_dict. Unlike the
 #'   Python API, input is a native S3 record, not a frozen dataclass. Full
 #'   source-class, coercion and error parity is deliberately uncertified.

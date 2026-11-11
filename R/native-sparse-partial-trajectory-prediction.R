@@ -17,7 +17,8 @@
 #' @param min_history_observations Minimum history samples.
 #' @param condition_limit Optional positive numerical conditioning limit.
 #' @param history_ridge Optional nonnegative history regularization.
-#' @return Conditional mean, latent/observed covariance, diagnostics.
+#' @return Conditional mean, latent and observed covariance, history and
+#'   prediction counts, and diagnostics.
 #' @export
 etr_sparse_fpca_partial_trajectory_prediction_native<-function(
     fit,trajectory,history_cutoff,prediction_grid,
@@ -27,7 +28,7 @@ etr_sparse_fpca_partial_trajectory_prediction_native<-function(
     identical(fit$fit_method,"native_covariance")&&
     identical(fit$provenance$sparse_fpca$backend,"native"),
     "fit must retain a native sparse FPCA covariance population")
-  .etr_irregular_validate_samples(trajectory)
+  .etr_irregular_validate_samples(trajectory,allow_infinite_values=TRUE)
   .etr_assert(length(trajectory$curve_ids)==1L,
     "trajectory must contain exactly one target curve")
   .etr_assert(fit$dimension%in%trajectory$dimension_names&&
@@ -51,9 +52,11 @@ etr_sparse_fpca_partial_trajectory_prediction_native<-function(
     length(history_cutoff)==1L&&is.finite(history_cutoff),
     "history_cutoff must be finite")
   cutoff<-as.numeric(history_cutoff)
+  support<-list(grid_start=grid[1L],grid_end=tail(grid,1L))
   if(cutoff<grid[1L]||cutoff>=tail(grid,1L))
     .etr_spn_fail("history_cutoff_outside_fitted_support",
-      "history cutoff must lie inside fitted grid before its end")
+      "history cutoff must lie inside fitted grid before its end",
+      c(list(history_cutoff=cutoff),support))
   .etr_assert(is.numeric(prediction_grid)&&is.null(dim(prediction_grid))&&
     length(prediction_grid)>=1L&&all(is.finite(prediction_grid))&&
     (length(prediction_grid)==1L||all(diff(prediction_grid)>0)),
@@ -61,10 +64,12 @@ etr_sparse_fpca_partial_trajectory_prediction_native<-function(
   future<-as.numeric(prediction_grid)
   if(any(future<=cutoff))
     .etr_spn_fail("prediction_grid_not_strictly_future",
-      "all predictions must follow the history cutoff")
+      "all predictions must follow the history cutoff",
+      list(history_cutoff=cutoff,prediction_grid_min=min(future)))
   if(future[1L]<grid[1L]||tail(future,1L)>tail(grid,1L))
     .etr_spn_fail("prediction_grid_outside_fitted_support",
-      "future prediction times must lie within fitted grid")
+      "future prediction times must lie within fitted grid",
+      c(support,list(prediction_start=future[1L],prediction_end=tail(future,1L))))
   .etr_assert(is.numeric(min_history_observations)&&
     length(min_history_observations)==1L&&
     !is.logical(min_history_observations)&&
@@ -75,17 +80,22 @@ etr_sparse_fpca_partial_trajectory_prediction_native<-function(
   idx<-match(fit$dimension,trajectory$dimension_names)
   t<-trajectory$time[[1L]]
   y<-as.numeric(trajectory$values[[1L]][,idx])
+  id<-as.character(trajectory$curve_ids[1L])
   history<-t<=cutoff
   to<-t[history];yo<-y[history]
   if(length(to)<min_history_observations)
     .etr_spn_fail("insufficient_history_observations",
-      "target history has fewer native observations than required")
+      "target history has fewer native observations than required",
+      list(curve_id=id,history_cutoff=cutoff,n_history=length(to),
+        min_history_observations=as.integer(min_history_observations)))
   if(any(!is.finite(yo)))
     .etr_spn_fail("nonfinite_history_observation",
-      "target history contains nonfinite observations")
+      "target history contains nonfinite observations",
+      list(curve_id=id,n_nonfinite=sum(!is.finite(yo))))
   if(to[1L]<grid[1L]||tail(to,1L)>tail(grid,1L))
     .etr_spn_fail("history_observations_outside_fitted_support",
-      "native history times exceed fitted support")
+      "native history times exceed fitted support",
+      c(list(curve_id=id,history_min=to[1L],history_max=tail(to,1L)),support))
   params<-fit$provenance$sparse_fpca
   selected_limit<-if(is.null(condition_limit))
     params$score_condition_limit else condition_limit
@@ -115,10 +125,12 @@ etr_sparse_fpca_partial_trajectory_prediction_native<-function(
   condition<-if(emin<=0)Inf else emax/emin
   if(emin<=0)
     .etr_spn_fail("history_covariance_not_positive_definite",
-      "history conditioning covariance is not positive definite")
+      "history conditioning covariance is not positive definite",
+      list(curve_id=id,minimum_eigenvalue=emin,history_ridge=selected_ridge))
   if(condition>selected_limit)
     .etr_spn_fail("history_covariance_ill_conditioned",
-      "history conditioning covariance exceeds condition_limit")
+      "history conditioning covariance exceeds condition_limit",
+      list(curve_id=id,condition_number=condition,condition_limit=selected_limit))
   rhs<-cbind(yo-mu_o,Cof)
   solved<-tryCatch(solve(Sigma,rhs),error=function(e)
     .etr_spn_fail("history_covariance_solve_failed",
@@ -131,7 +143,8 @@ etr_sparse_fpca_partial_trajectory_prediction_native<-function(
   ptol<-1e-10*max(1,max(abs(Cff)))
   if(pmin < -ptol)
     .etr_spn_fail("conditional_future_covariance_not_psd",
-      "latent conditional covariance has substantial negative eigenvalues")
+      "latent conditional covariance has substantial negative eigenvalues",
+      list(curve_id=id,minimum_eigenvalue=pmin,tolerance=ptol))
   repaired<-FALSE
   if(pmin<0){
     latent<-pe$vectors%*%diag(pmax(pe$values,0),nrow=k)%*%
@@ -144,7 +157,6 @@ etr_sparse_fpca_partial_trajectory_prediction_native<-function(
   predictive_se<-sqrt(pmax(diag(predictive),0))
   solve_relative<-sqrt(sum((Sigma%*%solved-rhs)^2))/
     max(1,sqrt(sum(rhs^2)))
-  id<-as.character(trajectory$curve_ids[1L])
   audit<-data.frame(
     curve_id=id,history_cutoff=cutoff,
     n_history=m,n_prediction=k,
@@ -185,6 +197,7 @@ etr_sparse_fpca_partial_trajectory_prediction_native<-function(
     latent_covariance=latent,latent_standard_errors=se,
     observed_predictive_covariance=predictive,
     observed_predictive_standard_errors=predictive_se,
+    n_history=m,n_prediction=k,
     diagnostics=audit,method=method,provenance=provenance,
     source_python_full_contract_certified=FALSE,
     independent_full_source_certified=FALSE),

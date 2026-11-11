@@ -151,6 +151,28 @@ def _source_public_scan_replay(fn):
     f$x,f$y,candidate_components=c(2L,3L),
     residual_components=2L,n_bootstrap=20L,
     multiplier_draws=f$draws,confidence_level=.95)
+  source_data<-reticulate::py_eval("traj",convert=FALSE)
+  source_outcome<-reticulate::py_eval("scalary",convert=FALSE)
+  for(law in c("normal","mammen")){
+    seeded_scan<-etr_scan_wild_bootstrap_fpca_truncations(f$x,f$y,
+      candidate_components=c(2L,3L),residual_components=2L,n_bootstrap=20L,
+      multiplier=law,random_state=89L)
+    seeded_projection<-etr_wild_bootstrap_fpca_projection(f$x,f$y,
+      residual_components=2L,inference_components=3L,n_bootstrap=20L,
+      multiplier=law,random_state=89L)
+    source_scan<-reticulate::py_call(
+      etpy_get_export("scan_wild_bootstrap_fpca_truncations"),
+      source_data,source_outcome,candidate_components=reticulate::tuple(2L,3L),
+      residual_components=2L,n_bootstrap=20L,multiplier=law,random_state=89L)
+    source_projection<-reticulate::py_call(
+      etpy_get_export("wild_bootstrap_fpca_projection"),
+      source_data,source_outcome,residual_components=2L,inference_components=3L,
+      n_bootstrap=20L,multiplier=law,random_state=89L)
+    for(pair in list(list(seeded_scan,source_scan),list(seeded_projection,source_projection)))
+      for(field in c("studentized_roots","critical_values","lower","upper"))
+        expect_equal(pair[[1L]][[field]],et_to_r(reticulate::py_get_attr(pair[[2L]],field)),
+          tolerance=1e-5,ignore_attr=TRUE,info=paste("seeded",law,field))
+  }
   expect_equal(unname(x$reference_projections),
     unname(oracle$reference),tolerance=1e-6)
   expect_equal(unname(x$reference_se),

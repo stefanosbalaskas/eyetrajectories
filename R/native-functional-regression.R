@@ -141,10 +141,14 @@ etr_fit_function_on_scalar_regression <- function(trajectories,design,
 #' @param result Native FOS regression.
 #' @param n_bootstrap Number of replicates (>=100).
 #' @param multiplier Rademacher +/-1 or Gaussian weights.
-#' @param random_state Base-R seed; not claimed to reproduce NumPy RNG.
+#' @param random_state Nonnegative integer seed below 2^53, or NULL to use
+#'   the current R RNG stream.
+#' @param random_engine Use `"numpy"` for source-seeded draws or `"base_R"`
+#'   to replay previous native seeded weights.
 #' @export
 etr_bootstrap_function_on_scalar_coefficients <- function(result,
-    n_bootstrap=1000L,multiplier="rademacher",random_state=0L){
+    n_bootstrap=1000L,multiplier="rademacher",random_state=0L,
+    random_engine="numpy"){
   .etr_function_scalar_result_check(result)
   .etr_assert(is.numeric(n_bootstrap)&&length(n_bootstrap)==1L&&
     is.finite(n_bootstrap)&&n_bootstrap==as.integer(n_bootstrap)&&
@@ -153,17 +157,24 @@ etr_bootstrap_function_on_scalar_coefficients <- function(result,
   .etr_assert(identical(multiplier,"rademacher")||
     identical(multiplier,"normal"),
     "multiplier must be 'rademacher' or 'normal'")
-  .etr_assert(is.numeric(random_state)&&length(random_state)==1L&&
-    is.finite(random_state)&&random_state==as.integer(random_state)&&
-    random_state>=0L,"random_state must be a nonnegative R seed")
-  old_exists<-exists(".Random.seed",envir=.GlobalEnv,inherits=FALSE)
-  if(old_exists)old_seed<-get(".Random.seed",envir=.GlobalEnv)
-  on.exit({
-    if(old_exists)assign(".Random.seed",old_seed,envir=.GlobalEnv)
-    else if(exists(".Random.seed",envir=.GlobalEnv,inherits=FALSE))
-      rm(".Random.seed",envir=.GlobalEnv)
-  },add=TRUE)
-  set.seed(as.integer(random_state))
+  random_engine<-match.arg(random_engine,c("numpy","base_R"))
+  rng<-NULL
+  engine<-"base_R_unseeded"
+  if(!is.null(random_state)){
+    if(random_engine=="numpy"){
+      rng<-.etr_numpy_pcg64(random_state)
+      engine<-"numpy_pcg64"
+    }else{
+      restore<-.etr_simulation_rng(random_state)
+      on.exit(restore(),add=TRUE)
+      engine<-"base_R_not_NumPy"
+    }
+    if(random_state<=.Machine$integer.max)random_state<-as.integer(random_state)
+  }
+  draw<-if(multiplier=="rademacher"){
+    if(is.null(rng))function(n)sample(c(-1,1),n,replace=TRUE)
+      else function(n)2*rng$integers(n,2L)-1
+  }else if(is.null(rng))stats::rnorm else rng$normal
   x<-result$design_matrix;n<-nrow(x)
   projection<-solve(crossprod(x))%*%t(x)
   sh<-dim(result$coefficients)
@@ -171,8 +182,7 @@ etr_bootstrap_function_on_scalar_coefficients <- function(result,
   coefs<-array(0,c(b,sh))
   weights<-matrix(0,b,n)
   for(i in seq_len(b)){
-    w<-if(multiplier=="rademacher")sample(c(-1,1),n,replace=TRUE)
-      else stats::rnorm(n)
+    w<-draw(n)
     weights[i,]<-w
     for(t in seq_len(sh[2L]))for(d in seq_len(sh[3L]))
       coefs[i,,t,d]<-as.vector(projection%*%(
@@ -181,14 +191,14 @@ etr_bootstrap_function_on_scalar_coefficients <- function(result,
   provenance<-result$provenance
   provenance$function_on_scalar_bootstrap<-list(
     method="fixed_design_wild_bootstrap",n_bootstrap=b,
-    multiplier=multiplier,random_state=as.integer(random_state),
+    multiplier=multiplier,random_state=random_state,
     unit=result$unit,n_units=n,design_resampled=FALSE,
     residual_functions_multiplied_as_whole_functions=TRUE,
     simultaneous_band_calibration=FALSE,
-    random_engine="base_R_not_NumPy")
+    random_engine=engine)
   structure(list(reference=result,bootstrap_coefficients=coefs,
     multipliers=weights,multiplier=multiplier,
-    random_state=as.integer(random_state),provenance=provenance),
+    random_state=random_state,provenance=provenance),
     class="etr_function_on_scalar_bootstrap")
 }
 

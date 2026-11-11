@@ -4,7 +4,7 @@
 \usage{
 etr_bootstrap_generalized_function_on_scalar_predictions(
   bootstrap, profiles, profile_id_column = "profile_id",
-  exposure_profiles = NULL, prediction_scale = NULL
+  exposure_profiles = NULL, prediction_scale = NULL, python_boundary_mode = FALSE
 )
 }
 \arguments{
@@ -13,6 +13,7 @@ etr_bootstrap_generalized_function_on_scalar_predictions(
 \item{profile_id_column}{Unique target identifier column.}
 \item{exposure_profiles}{Explicit positive Poisson target exposures, when needed.}
 \item{prediction_scale}{Optional family-compatible prediction scale.}
+\item{python_boundary_mode}{Use pandas-style profile identifier conversion in the fixed-profile prediction.}
 }
 \value{Source-shaped native record of precomputed B by target by time bootstrap predictions.}
 \description{Projects retained whole-participant bootstrap coefficient draws

@@ -9,6 +9,7 @@
     requireNamespace("reticulate",quietly=TRUE))
   pkgload::load_all(".",quiet=TRUE)
   stopifnot(identical(et_python_version(),"1.2.0"))
+  source("scripts/sparse_workflow_source_records.R",local=TRUE)
   source("tests/testthat/helper-native-sparse-source-fixture.R",
     encoding="UTF-8",local=TRUE)
   tr<-.etr_spn_source_fixture()
@@ -94,6 +95,8 @@ def _etr_sparse_make_irregular(times, values, ids):
       r=list(dimension="unknown")),
     invalid_components=list(py=list(n_components=0L),
       r=list(n_components=0L)),
+    invalid_smoother=list(py=list(mean_smoother="spline"),
+      r=list(mean_smoother="spline")),
     outside_support=list(py=list(analysis_support_action="error"),
       r=list(analysis_support_action="error")))
   native_args<-list(trajectories=tr,dimension="signal",
@@ -119,6 +122,48 @@ def _etr_sparse_make_irregular(times, values, ids):
         "DIVERGENT_ACCEPTANCE",
       detail="invalid-domain acceptance only; exact exception classes not proven",
       native_error=rout$message,python_error=pyout$message)
+  }
+  for(field in c("backend_object","backend_data","reconstructed_backend")){
+    actual<-et_to_r(reticulate::py_get_attr(py,field))
+    add("fixed_noise",field,
+      if(field%in%names(native)&&is.null(native[[field]])&&is.null(actual))
+        "PASS_SCHEMA"else"DIVERGENT_SCHEMA")
+  }
+  changed<-list(min_score_samples=9L)
+  .etr_sparse_source_error_contract(
+    function()do.call(etr_fit_sparse_fpca_native,modifyList(native_args,changed)),
+    function()do.call(reticulate::py_call,c(list(fit_fn),modifyList(args,changed))),
+    function(field,ok)add("univariate_failed_score",field,
+      if(ok)"PASS_SCHEMA"else"DIVERGENT_SCHEMA"))
+
+  diagonal<-tr
+  diagonal$values<-.etr_seed_scope(224L,function()
+    lapply(tr$values,function(v)v+stats::rnorm(length(v),sd=.2)))
+  diagonal_py<-reticulate::py_call(
+    reticulate::py_eval("_etr_sparse_make_irregular",convert=FALSE),
+    times=reticulate::r_to_py(diagonal$time),
+    values=reticulate::r_to_py(diagonal$values),
+    ids=reticulate::r_to_py(diagonal$curve_ids))
+  r_settings<-native_args
+  p_settings<-args
+  for(key in c("measurement_error_variance","noise_variance_method")){
+    r_settings[[key]]<-NULL
+    p_settings[[key]]<-NULL
+  }
+  settings<-list(noise_bandwidth=.45,noise_support=c(.20,.80),
+    mean_smoother="local_linear",covariance_smoother="local_linear",
+    kernel="epanechnikov")
+  r_settings$trajectories<-diagonal
+  left<-do.call(etr_fit_sparse_fpca_native,c(r_settings,settings))
+  p_settings$trajectories<-diagonal_py
+  settings$noise_support<-reticulate::tuple(.20,.80)
+  right<-do.call(reticulate::py_call,c(list(fit_fn),p_settings,settings))
+  for(field in c("noise_variance","noise_raw_diagonal","noise_diagonal_difference",
+      "covariance","eigenvalues","scores","score_diagnostics")){
+    actual<-et_to_r(reticulate::py_get_attr(right,field))
+    add("default_diagonal_difference",field,
+      if(.etr_sparse_source_record_equal(left[[field]],actual))
+        "PASS_NUMERIC"else"DIVERGENT_NUMERIC")
   }
   result<-do.call(rbind,out)
   head<-system2("git",c("rev-parse","HEAD"),stdout=TRUE)
