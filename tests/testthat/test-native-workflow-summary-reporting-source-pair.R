@@ -8,7 +8,7 @@
   sources<-c("analyst","audited_selector","workflow_contract","derived")
   steps<-lapply(seq_len(n),function(i) {
     j<-i-1L
-    list(name=paste0("step",j),function="fit",status=statuses[j%%4L+1L],
+    list(name=paste0("step",j),`function`="fit",status=statuses[j%%4L+1L],
       parameters=list(trial=as.integer(j)),elapsed_seconds=j/8,
       warnings=rep("w",j%%3L))
   })
