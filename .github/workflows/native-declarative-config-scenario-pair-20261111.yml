@@ -1,0 +1,88 @@
+name: Native declarative config plus scenario expansion source Python 1.2
+on:
+  pull_request:
+    paths:
+      - "R/native-workflow-configuration.R"
+      - "R/zz-native-scenario-expansion-batch29.R"
+      - "tests/testthat/test-native-declarative-source-pair-20261111.R"
+      - "tests/testthat/test-native-workflow-configuration.R"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/reviewed_source_contract_closures_v1.csv"
+      - "docs/source_contract_reviews/**"
+      - ".github/workflows/native-declarative-config-scenario-pair-20261111.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-r:
+    name: Declarative R contracts / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Native scientific configuration and Cartesian scenario contract checks
+        shell: bash
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          for(x in c("native-declarative-source-pair-20261111",
+            "native-workflow-configuration",
+            "native-functional-scenario-design"))
+            testthat::test_local(".",filter=x,reporter="summary",
+              stop_on_failure=TRUE,stop_on_warning=TRUE)
+          RSCRIPT
+      - name: Check source contract and review-record ledger
+        if: runner.os == 'Linux'
+        run: |
+          python scripts/source_gap_inventory.py
+          python -m unittest discover -s tests -p 'test_source_gap_inventory.py'
+  frozen-python:
+    name: Source typed Python 1.2 config and expansion / ubuntu
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - id: python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0" "numpy==2.3.5" "pandas"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Compare five Python dataclass JSON projections and eight complete source factor matrices
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          stopifnot(identical(et_python_version(),"1.2.0"))
+          for(x in c("native-declarative-source-pair-20261111",
+            "native-workflow-configuration",
+            "native-functional-scenario-design"))
+            testthat::test_local(".",filter=x,reporter="summary",
+              stop_on_failure=TRUE,stop_on_warning=TRUE)
+          RSCRIPT
+      - run: python scripts/source_gap_inventory.py
