@@ -164,17 +164,15 @@ test_that("frozen Python 1.2 matches whole recovery value records on four domain
     "_etr_pair_recovery_source")
   for(variant in c("basic","uneven","zero_eigen","no_components")){
     z<-.etr_two_recovery_fixture(variant)
-    expected<-reticulate::py_to_r(reticulate::py_call(oracle,
+    py_results<-reticulate::py_call(oracle,
       reticulate::r_to_py(z$truth),
-      reticulate::r_to_py(z$registration)))
+      reticulate::r_to_py(z$registration))
     a<-etr_evaluate_hierarchy_truth_recovery(z$truth)
     b<-etr_evaluate_registration_recovery(z$registration,z$truth)
     pairs<-list(hierarchy=a,registration=b)
     for(i in seq_along(pairs)){
       obj<-pairs[[i]]
-      ref<-reticulate::py_get_item(
-        reticulate::py_call(oracle,reticulate::r_to_py(z$truth),
-          reticulate::r_to_py(z$registration)),as.integer(i-1L))
+      ref<-reticulate::py_get_item(py_results,as.integer(i-1L))
       # Direct original public Python output converted to complete source
       # 9-column metric table, including metadata, null labels, ordering.
       pyFrame<-as.data.frame(et_to_r(reticulate::py_call(
