@@ -15,9 +15,7 @@
   tr<-result$truth
   .etr_assert(is.list(tr$provenance)&&
     is.numeric(tr$truth_grid)&&length(tr$truth_grid)>=3L&&
-    identical(tr$observation_design,"dense")||
-    (is.list(result$truth)&&
-      identical(result$truth$observation_design,"irregular")),
+    tr$observation_design%in%c("dense","irregular"),
     "source simulation boundary requires a declared observation design")
   prov<-tr$provenance
   nd<-length(tr$dimension_names);n<-nrow(tr$scores)
