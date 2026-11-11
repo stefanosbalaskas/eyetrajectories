@@ -1,0 +1,72 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "functional_recovery_reporting_text",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/recovery.py::functional_recovery_reporting_text",
+  "native_signature": "etr_functional_recovery_reporting_text(assessment, python_boundary_mode=TRUE)",
+  "reviewer_statement": "Author-side six-domain native-language scientific source review against frozen Python 1.2. Exact developer-tested typed FunctionalRecoveryAssessment/Value/Metric numerical, semantic, nullable, Unicode and text outputs. Native R records/data.frame/string are numeric and semantic counterparts but not Python dataclass/pandas objects. Python exception type identity and arbitrary custom __str__/__repr__ object protocols are excluded; independent certification remains zero.",
+  "native_language_semantic_policy": "Native R validated assessment lists/S3 records and R data.frame/text map frozen Python typed recovery records and pandas/string semantic fields. Explicit Python-boundary mode accepts source-like scalar text coercion and preserves the stricter ordinary R default. Never call reticulate in native production implementation.",
+  "native_files": [
+    {
+      "path": "R/native-functional-rqa-recovery.R",
+      "sha256": "57dde16d9dc23bbb9b5164c68cbf14d3145c9851dacfaaf85bdda57692a5f2e1"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-recovery-assessment-reporting-full-source.R",
+      "sha256": "477f938e9e69bf9b31593771d10ed51500fb054af0b124cc23b821d331f92db9",
+      "description": "Source function requires a typed assessment and returns one compact string through shared assessment frame"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-recovery-assessment-reporting-full-source.R",
+      "sha256": "477f938e9e69bf9b31593771d10ed51500fb054af0b124cc23b821d331f92db9",
+      "description": "Native source assessment and estimator provenance use normalized built-in/custom metric labels and ordinary scalar/list/mapping repr"
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-recovery-assessment-reporting-full-source.R",
+      "sha256": "477f938e9e69bf9b31593771d10ed51500fb054af0b124cc23b821d331f92db9",
+      "description": "Direct frozen Python 1.2 oracle compares exact UTF-8 report text and sorted metric families, punctuation, estimator nesting, None and absent estimator"
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-functional-rqa-recovery.R",
+      "sha256": "47a742a2817a25cb088316f057166b154a4895b9994a495f19497fb38876736b",
+      "description": "Invalid assessment metadata and duplicates are rejected via shared validated source frame; unsupported Python arbitrary object repr remains language-specific"
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-recovery-assessment-reporting-full-source.R",
+      "sha256": "477f938e9e69bf9b31593771d10ed51500fb054af0b124cc23b821d331f92db9",
+      "description": "Native R scalar UTF-8 text matches published Python reporting string for verified data, including trailing no-tuning statement"
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-functional-rqa-recovery.R",
+      "sha256": "47a742a2817a25cb088316f057166b154a4895b9994a495f19497fb38876736b",
+      "description": "Scientific report describes known-truth evaluation after fitting, retaining metric families without tuning an estimator on ground truth"
+    }
+  ],
+  "extra_source_evidence": [
+    {
+      "path": "tests/testthat/test-native-recovery-assessment-reporting-full-source.R",
+      "sha256": "477f938e9e69bf9b31593771d10ed51500fb054af0b124cc23b821d331f92db9"
+    },
+    {
+      "path": "tests/testthat/test-native-functional-rqa-recovery.R",
+      "sha256": "47a742a2817a25cb088316f057166b154a4895b9994a495f19497fb38876736b"
+    }
+  ],
+  "independent_review_status": "developer-verified; independent review not obtained",
+  "language_specific_limits": [
+    "Python pandas/dataclass identities do not exist in native R",
+    "Python arbitrary custom __repr__/__str__ and keyword binding are not native R protocols",
+    "Python ValueError/TypeError represented by native R conditions"
+  ]
+}
