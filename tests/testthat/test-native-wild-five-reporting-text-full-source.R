@@ -17,7 +17,7 @@
    selected_components=c(2,NA_real_,5),width_threshold=.15,
    center_threshold=.08,stability_run=1L)
  if(variant=="alternate"){
-   p$independent_unit_column<-NULL
+   p["independent_unit_column"]<-list(NULL)
    s$projection_result<-p
    f$projection_result<-p;f$pvalue_correction<-"none"
    m$family_test_result<-f
@@ -41,7 +41,7 @@ test_that("five wild-bootstrap report strings contain all scientific qualificati
  expect_match(v[[1L]],"median reference SE=0.340")
  expect_match(v[[1L]],"'fish_id'",fixed=TRUE)
  expect_match(v[[2L]],"critical value was 2.350")
- expect_match(v[[3L]],"1 target(s) were rejected")
+ expect_match(v[[3L]],"1 target(s) were rejected",fixed=TRUE)
  expect_match(v[[4L]],"1 of 3 maxT-adjusted")
  expect_match(v[[5L]],"Selected h ranged from 2 to 5")
  w<-.etr_five_wild_report_texts(.etr_five_wild_report_fixture("alternate"),3L)
