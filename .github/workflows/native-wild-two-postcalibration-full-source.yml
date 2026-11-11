@@ -1,0 +1,118 @@
+name: Native wild postcalibration source closures
+on:
+  pull_request:
+    paths:
+      - "R/native-wild-simultaneous-source-calibration.R"
+      - "R/native-wild-monte-carlo-source-contracts.R"
+      - "tests/testthat/test-native-two-wild-postcalibrators-full-source-20261111.R"
+      - "tests/testthat/test-native-wild-simultaneous-source-calibration.R"
+      - "tests/testthat/test-native-wild-monte-carlo-source-contracts.R"
+      - "tests/testthat/test-full-native-r-parity-ledger.R"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/reviewed_source_contract_closures_v1.csv"
+      - "docs/source_contract_reviews/fpca_wild_bootstrap_projection_simultaneous_interval.json"
+      - "docs/source_contract_reviews/fpca_wild_bootstrap_family_test_monte_carlo_diagnostics.json"
+      - ".github/workflows/native-wild-two-postcalibration-full-source.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  receipt-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Audit SHA256 receipts and 508 gap partition
+        shell: bash
+        run: |
+          python - <<'PY'
+          import csv, hashlib, json
+          from pathlib import Path
+          root=Path(".")
+          gap=list(csv.DictReader((root/"inst/extdata/native_source_contract_gaps_stage22.csv").open(encoding="utf-8",newline="")))
+          non=list(csv.DictReader((root/"inst/extdata/native_nonfunction_source_gaps_v1.csv").open(encoding="utf-8",newline="")))
+          reg=list(csv.DictReader((root/"inst/extdata/reviewed_source_contract_closures_v1.csv").open(encoding="utf-8",newline="")))
+          names={"fpca_wild_bootstrap_projection_simultaneous_interval",
+                 "fpca_wild_bootstrap_family_test_monte_carlo_diagnostics"}
+          assert len(gap)==203 and len(non)==1
+          assert len([x for x in gap if x["unresolved_source_gap"]=="TRUE"])==123
+          assert len([x for x in non if x["unresolved"]=="TRUE"])==1
+          assert 508-123-1==384
+          for name in names:
+              row,= [x for x in gap if x["python_name"]==name]
+              assert row["unresolved_source_gap"]=="FALSE"
+              receipt,=[x for x in reg if x["python_name"]==name]
+              assert receipt["independently_certified"]=="FALSE"
+              file=root/receipt["review_record_path"]
+              raw=file.read_bytes()
+              assert hashlib.sha256(raw).hexdigest()==receipt["review_record_sha256"]
+              audit=json.loads(raw)
+              assert audit["python_name"]==name and audit["independently_certified"] is False
+              assert audit["author_decision"]=="FULL_CONTRACT_REVIEWED"
+              assert len(audit["case_evidence"])==6
+              for p in audit["native_files"]+audit["case_evidence"]:
+                  check=root/p["path"]
+                  assert check.is_file() and hashlib.sha256(check.read_bytes()).hexdigest()==p["sha256"],str(check)
+          print("384/508 author-recorded; SHA256 receipts 2/2; zero certifications")
+          PY
+  native-r:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Native full mathematical contract plus ledger regression
+        shell: bash
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          before<-reticulate::py_available(initialize=FALSE)
+          testthat::test_local(".",filter="native-two-wild-postcalibrators-full-source-20261111|native-wild-simultaneous-source-calibration|native-wild-monte-carlo-source-contracts|full-native-r-parity-ledger",reporter="summary",stop_on_failure=TRUE)
+          stopifnot(identical(before,reticulate::py_available(initialize=FALSE)))
+          RSCRIPT
+  pinned-python:
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        id: py
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Typed frozen Python 1.2 complete postcalibration result oracle
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.py.outputs.python-path }}
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          stopifnot(identical(et_python_version(),"1.2.0"))
+          testthat::test_local(".",filter="native-two-wild-postcalibrators-full-source-20261111|native-wild-simultaneous-source-calibration|native-wild-monte-carlo-source-contracts",reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
