@@ -1,0 +1,117 @@
+name: Native two generalized FoSR bands full Python 1.2 source
+on:
+  pull_request:
+    paths:
+      - "R/native-generalized-fosr-coefficient-bands.R"
+      - "R/native-generalized-fosr-bootstrap-source.R"
+      - "tests/testthat/test-native-two-generalized-bands-full-source-20261111.R"
+      - "tests/testthat/test-native-generalized-fosr-coefficient-bands.R"
+      - "tests/testthat/test-native-generalized-fosr-bootstrap-source.R"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/reviewed_source_contract_closures_v1.csv"
+      - "docs/source_contract_reviews/generalized_function_on_scalar_simultaneous_bands.json"
+      - "docs/source_contract_reviews/generalized_function_on_scalar_prediction_bands.json"
+      - ".github/workflows/native-two-generalized-bands-full-source-20261111.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-receipts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Exact SHA256 six-domain reviewer receipts and census
+        shell: bash
+        run: |
+          python - <<'PY'
+          import csv,hashlib,json
+          from pathlib import Path
+          root=Path(".")
+          ledger=list(csv.DictReader((root/"inst/extdata/native_source_contract_gaps_stage22.csv").open(encoding="utf-8",newline="")))
+          nonfunctions=list(csv.DictReader((root/"inst/extdata/native_nonfunction_source_gaps_v1.csv").open(encoding="utf-8",newline="")))
+          registry=list(csv.DictReader((root/"inst/extdata/reviewed_source_contract_closures_v1.csv").open(encoding="utf-8",newline="")))
+          names=("generalized_function_on_scalar_simultaneous_bands",
+                 "generalized_function_on_scalar_prediction_bands")
+          assert len(ledger)==203 and len(nonfunctions)==1
+          open_callable=sum(r["unresolved_source_gap"]=="TRUE" for r in ledger)
+          open_other=sum(r["unresolved"]=="TRUE" for r in nonfunctions)
+          assert open_callable<=118 and open_other==1
+          assert 508-open_callable-open_other>=389
+          for name in names:
+              record,=[r for r in registry if r["python_name"]==name]
+              row,=[r for r in ledger if r["python_name"]==name]
+              assert row["unresolved_source_gap"]=="FALSE"
+              data=(root/record["review_record_path"]).read_bytes()
+              assert hashlib.sha256(data).hexdigest()==record["review_record_sha256"]
+              review=json.loads(data)
+              assert review["python_name"]==name
+              assert review["independently_certified"] is False
+              assert {r["kind"] for r in review["case_evidence"]}=={
+                "source_signature","accepted_input_domain","numerical_outputs",
+                "exception_semantics","returned_schema","scientific_estimand"}
+              for evidence in review["native_files"]+review["case_evidence"]:
+                  actual=hashlib.sha256((root/evidence["path"]).read_bytes()).hexdigest()
+                  assert actual==evidence["sha256"],evidence["path"]
+          print(f"{508-open_callable-open_other}/508 source-reviewed;"
+                f" {open_callable} callable gaps; {open_other} noncallable; zero independent approvals")
+          PY
+  native-r:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Run paired generalized FoSR native band and legacy tests
+        shell: bash
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          testthat::test_local(".",filter="native-two-generalized-bands-full-source-20261111|native-generalized-fosr-coefficient-bands|native-generalized-fosr-bootstrap-source",reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
+  frozen-python:
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        id: py
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Full frozen typed Python coefficient and profile-family source oracle
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.py.outputs.python-path }}
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          stopifnot(identical(et_python_version(),"1.2.0"))
+          testthat::test_local(".",filter="native-two-generalized-bands-full-source-20261111|native-generalized-fosr-coefficient-bands|native-generalized-fosr-bootstrap-source",reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
