@@ -42,6 +42,7 @@
   .etr_assert(is.numeric(t_a) && is.null(dim(t_a)) &&
     is.numeric(t_b) && is.null(dim(t_b)) &&
     length(t_a)==n && length(t_b)==n &&
+    !anyNA(t_a) && !anyNA(t_b) &&
     identical(as.numeric(t_a),as.numeric(t_b)),
     "auto-recurrence network requires identical time grids on both axes")
   th <- source$theiler_window_samples
@@ -65,9 +66,9 @@
     source$state_dimension>=1L &&
     source$state_dimension==floor(source$state_dimension),
     "state_dimension must be positive integer")
-  .etr_assert(is.character(source$time_unit) &&
-    length(source$time_unit)==1L && !is.na(source$time_unit) &&
-    nzchar(source$time_unit) &&
+  .etr_assert((is.null(source$time_unit) ||
+      (is.character(source$time_unit) &&
+        length(source$time_unit)==1L && !is.na(source$time_unit))) &&
     is.character(source$metric) &&
     length(source$metric)==1L && !is.na(source$metric) &&
     nzchar(source$metric) && is.list(source$provenance),
@@ -89,7 +90,9 @@
   # recurrence_networks itself checks only exact axis equality).
   proxy <- structure(list(
     matrix=adjacency,kind="auto",time=as.numeric(seq_len(n)),
-    time_unit=source$time_unit,theiler=as.integer(th),
+    time_unit=if(is.null(source$time_unit))"source_unknown" else
+      if(nzchar(source$time_unit))source$time_unit else "source_empty",
+    theiler=as.integer(th),
     metric=source$metric,radius=as.numeric(source$radius),
     recurrence_rate=as.numeric(source$achieved_recurrence_rate),
     target_recurrence_rate=target,
