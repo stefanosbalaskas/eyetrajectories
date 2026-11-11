@@ -1,0 +1,63 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "wild_bootstrap_fpca_projection",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/wild_regression.py::wild_bootstrap_fpca_projection; src/eyetrajectoriespy/types.py::FPCAWildBootstrapProjectionResult",
+  "native_signature": "etr_wild_bootstrap_fpca_projection(trajectories,outcome,targets=NULL,n_bootstrap=1000L,residual_components=2L,inference_components=3L,scaling='none',multiplier='normal',confidence_level=.95,independent_unit_column=NULL,random_state=0L,multiplier_draws=NULL,random_engine='numpy',python_boundary_mode=TRUE)",
+  "reviewer_statement": "Provisional source-scientific six-domain author review of complete canonical return fields, seeded exact scientific multiplier and fixed-FPCA estimating equations. Python 1.2 typed differential comparisons committed but exact-head CI has not been executed green; zero independent certifications.",
+  "native_language_semantic_policy": "R S3 source-scientific data records and native FPCA represent Python frozen dataclass/SciPy scientific arrays, not Python class or statsmodels object identity. RNG comparison claims only explicit PCG64 seeds, not unseeded entropy realizations.",
+  "native_files": [
+    {
+      "path": "R/native-wild-bootstrap-projection.R",
+      "sha256": "e080abbcd1227ec0f3a944d2ba4c6c2494b03a4906c0ac33d8edc74663138660"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-wild-paired-full-source-20261111.R",
+      "sha256": "3120bd98b187a4faa5595eb2c9fa83ea35c5faba69f6319011bfe7754d59c823",
+      "description": "Gaussian centered functional FPCR wild bootstrap residual-truncation k, pseudo-truth g=k, inference-truncation h>=k; source-typed source-mode signature with fixed target configuration, independent curve unit identification, NumPy PCG64 seed, normal or Mammen wild law."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-wild-paired-full-source-20261111.R",
+      "sha256": "3120bd98b187a4faa5595eb2c9fa83ea35c5faba69f6319011bfe7754d59c823",
+      "description": "Complete 24-curve observed-grid data with 13 times, single functional dimension, finite Gaussian numeric outcome, B=20, k=2 and h=3, two explicit Python NumPy RNG seeds 7 and 89, normal/Mammen multipliers; native-only fixed multiplier and base-R stream are rejected in source mode."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-wild-paired-full-source-20261111.R",
+      "sha256": "3120bd98b187a4faa5595eb2c9fa83ea35c5faba69f6319011bfe7754d59c823",
+      "description": "Fixed full-sample FPCA score basis, k-pseudo-truth, h-inference projection, studentized Gaussian FPCR roots, heteroscedastic sandwich score covariance with pseudo-fit residuals, NumPy higher empirical |root| quantiles, symmetric targetwise lower and upper intervals; source-typed Python differential arrays for all these numerical fields."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-wild-paired-full-source-20261111.R",
+      "sha256": "3120bd98b187a4faa5595eb2c9fa83ea35c5faba69f6319011bfe7754d59c823",
+      "description": "Reject nonfinite training/target trajectories, absent independent unit column, repeated independent unit IDs, h<k, source-invalid multiplier, insufficient wild replicates, invalid confidence level, rank deficient score covariance and nonzero bootstrap projection root with zero studentizing SE; strict mode rejects native-only multiplier/replay engine."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-wild-paired-full-source-20261111.R",
+      "sha256": "3120bd98b187a4faa5595eb2c9fa83ea35c5faba69f6319011bfe7754d59c823",
+      "description": "Twenty-one ordered FPCAWildBootstrapProjectionResult scientific fields, all result quantities as native R scientific arrays, full source ordered nested provenance including Gaussian independence and explicit multiplier support/moments; no extra R audit flags in source mode."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-wild-paired-full-source-20261111.R",
+      "sha256": "3120bd98b187a4faa5595eb2c9fa83ea35c5faba69f6319011bfe7754d59c823",
+      "description": "Centered fixed-target scalar-on-function projection under fixed FPCA functional regressors, independent row Gaussian model, heteroscedastic studentized wild bootstrap. Not clustered, not a future noisy-response interval, not familywise simultaneous and no component selection inside bootstrap."
+    }
+  ],
+  "independent_review_status": "Provisional author-reviewed scientific contract. CI and independent verification pending.",
+  "language_specific_limits": [
+    "R native FPCA and SciPy Python dataclass/model class object identity differs; scientific numbers are compared within numerical tolerances.",
+    "R-specific fixed multiplier input and base_R generator remain native extensions, prohibited by python_boundary_mode=TRUE.",
+    "random_state=NULL uses an independent ambient R stream and cannot reproduce a particular Python NumPy entropy-driven realization; only seeded deterministic draw domains are claimed.",
+    "Some Python dynamic object coercion and exception classes are not native R types."
+  ]
+}
