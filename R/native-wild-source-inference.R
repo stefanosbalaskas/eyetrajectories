@@ -68,9 +68,13 @@ etr_select_fpca_wild_bootstrap_truncation <- function(
     is.finite(stability_run)&&stability_run>=0&&
     stability_run==floor(stability_run),
     "stability_run must be a nonnegative integer")
-  need<-as.integer(stability_run)+1L
-  .etr_assert(need<=nh-1L,
+  # Bound the transition count *before* coercing to R's 32-bit integer.
+  # Frozen Python integers can exceed that range; every such count fails
+  # because it exceeds the finite source candidate grid. Never allow an
+  # integer-overflow NA to obscure the source validation error.
+  .etr_assert(stability_run+1<=nh-1L,
     "stability_run requires more consecutive stable transitions than candidate grid can provide")
+  need<-as.integer(stability_run+1)
   .etr_assert(is.character(on_failure)&&length(on_failure)==1L&&
     !is.na(on_failure)&&on_failure%in%c("error","warn","ignore"),
     "on_failure must be error, warn or ignore")
