@@ -3,7 +3,9 @@
 # commit c1cd95ad718327550f7e55393ff38582872f7a94.
 # Applies an observed-grid max-standardized calibration to precomputed
 # coefficient bootstrap draws. Does not refit models or resample participants.
-# Python class typing/error schemas remain unresolved source differences.
+# Returned scientific values, observed-grid maxima and provenance are subject
+# to a paired frozen-Python source comparison; Python dataclass identity and
+# Python exception classes remain language-specific (not native R objects).
 
 #' Simultaneous link-scale generalized function-on-scalar coefficient bands
 #'
