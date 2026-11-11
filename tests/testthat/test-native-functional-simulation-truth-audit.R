@@ -65,6 +65,9 @@ test_that("simulation report states scientific design without overclaiming",{
 
 test_that("realized truth/source report are explicit unresolved contracts",{
   catalog<-etr_native_parity_catalog()
+  ledger<-utils::read.csv(system.file("extdata",
+    "native_source_contract_gaps_stage22.csv",package="eyetrajectories"),
+    stringsAsFactors=FALSE)
   for(name in c("functional_simulation_truth_frame",
                 "functional_simulation_reporting_text")){
     row<-catalog[catalog$is_python_function&
@@ -72,7 +75,10 @@ test_that("realized truth/source report are explicit unresolved contracts",{
     expect_equal(nrow(row),1L)
     expect_true(row$named_native_candidate)
     expect_true(row$native_implementation_started)
-    expect_true(row$source_contract_gap_unresolved)
+    source<-ledger[ledger$python_name==name,,drop=FALSE]
+    expect_equal(nrow(source),1L)
+    expect_identical(as.logical(row$source_contract_gap_unresolved),
+      as.logical(source$unresolved_source_gap))
     expect_false(row$one_to_one_native_contract_complete)
   }
   # Frozen Python 1.2 exposes 380 callable exports; mapping all of them
