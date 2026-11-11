@@ -120,11 +120,13 @@ test_that("workflow integration stays uncertified until independent full review"
   expect_equal(nrow(z),508L)
   expect_gte(sum(z$is_python_function & z$named_native_candidate),337L)
   expect_gte(sum(z$native_implementation_started),313L)
-  expect_gte(sum(z$source_contract_gap_unresolved),160L)
+
   reviewed <- utils::read.csv(
     system.file("extdata","native_source_contract_gaps_stage22.csv",
       package="eyetrajectories"),
     stringsAsFactors=FALSE,check.names=FALSE)
+  expect_identical(sum(z$source_contract_gap_unresolved),
+    sum(reviewed$unresolved_source_gap))
   for(name in c("workflow_steps_frame","workflow_decisions_frame",
                 "workflow_summary_frame","workflow_reporting_text")){
     row <- z[z$python_name==name & z$is_python_function,,drop=FALSE]
@@ -141,7 +143,8 @@ test_that("workflow integration stays uncertified until independent full review"
   expect_equal(nrow(queue),508L)
   expect_gte(sum(queue$mapped & queue$kind=="function"),337L)
   expect_equal(sum(queue$targeted_numerical_fixture_pass),4L)
-  expect_gte(sum(queue$source_gap_unresolved),160L)
+  expect_identical(sum(queue$source_gap_unresolved),
+    sum(reviewed$unresolved_source_gap))
   expect_false(any(queue$full_numeric_approved))
   expect_false(any(queue$schema_boundary_approved))
   expect_false(any(queue$scientific_scope_approved))

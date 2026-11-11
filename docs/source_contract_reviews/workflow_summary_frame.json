@@ -37,7 +37,7 @@
     {
       "kind": "exception_semantics",
       "path": "tests/testthat/test-native-workflow-source-audit.R",
-      "sha256": "006085deaa7f0c64b1265aecd33f74e06b76e76cd6b0fc62fd57bfbd65cfa3f6",
+      "sha256": "523a3112b7544118339062c1ae8b88c0a5875542c083a448917d9676b7ac27ed",
       "description": "Invalid workflow record, version, status, selector criterion, nonfinite nested configuration/provenance and empty identifiers are rejected"
     },
     {
@@ -60,7 +60,7 @@
     },
     {
       "path": "tests/testthat/test-native-workflow-source-audit.R",
-      "sha256": "006085deaa7f0c64b1265aecd33f74e06b76e76cd6b0fc62fd57bfbd65cfa3f6"
+      "sha256": "523a3112b7544118339062c1ae8b88c0a5875542c083a448917d9676b7ac27ed"
     }
   ],
   "independent_review_status": "developer-reviewed; independent certification has not been performed",

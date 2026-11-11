@@ -74,7 +74,8 @@ test_that("3 source reporting functions stay uncertified until full review",{
   expect_false(any(actual$one_to_one_native_contract_complete))
   expect_gte(sum(z$is_python_function & z$named_native_candidate),336L)
   expect_gte(sum(z$native_implementation_started),311L)
-  expect_gte(sum(z$source_contract_gap_unresolved),158L)
+  expect_identical(sum(z$source_contract_gap_unresolved),
+    sum(ledger$unresolved_source_gap))
 })
 
 test_that("three reports match direct Python 1.2 source strings",{
