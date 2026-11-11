@@ -1,0 +1,68 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "functional_mixed_effects_full_refit_audit_frame",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/functional_mixed_effects_full_refit.py::functional_mixed_effects_full_refit_audit_frame",
+  "native_signature": "etr_functional_mixed_effects_full_refit_audit_frame(bootstrap)",
+  "reviewer_statement": "Developer six-domain review of existing complete native R full-refit bootstrap identity audit frames against frozen Python 1.2, including typed source dataclass/pandas cellwise evidence and native source id/draw ordering. Source dataclass/exception class identity cannot be native in R. Independent audit and full exact-head CI are not yet complete.",
+  "native_language_semantic_policy": "The frozen Python FunctionalMixedEffectsFullRefitBootstrapResult typed record is represented by an explicitly checked R list or native S3 record. The pandas audit frame is represented by a native R data.frame preserving five source-named columns, zero-based draw indices and original scientific identity mapping. No statistical re-estimation is implied.",
+  "native_files": [
+    {
+      "path": "R/native-source-audit-frames.R",
+      "sha256": "b55a7c3268103b8485719cd0bddd0df6117360525f1063a18901b538d1f8ad50"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-mixed-fullrefit-audit-full-source-pair.R",
+      "sha256": "6c2860edf074678fc9e76712c7c48c1b66d4591304c2534cc3e4ee002591f1f9",
+      "description": "Python FunctionalMixedEffectsFullRefitBootstrapResult source-typed bootstrap record to native checked S3/list representation"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-mixed-fullrefit-audit-full-source-pair.R",
+      "sha256": "6c2860edf074678fc9e76712c7c48c1b66d4591304c2534cc3e4ee002591f1f9",
+      "description": "One or many bootstrap samples, repeated source participants, repeated or empty nested trial audit sets, Unicode IDs"
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-mixed-fullrefit-audit-full-source-pair.R",
+      "sha256": "6c2860edf074678fc9e76712c7c48c1b66d4591304c2534cc3e4ee002591f1f9",
+      "description": "Zero-based bootstrap and draw indices, exact sampled source participant index, no aggregation and no random refit"
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-mixed-fullrefit-audit-full-source-pair.R",
+      "sha256": "6c2860edf074678fc9e76712c7c48c1b66d4591304c2534cc3e4ee002591f1f9",
+      "description": "Reject malformed bootstrap participant shape, negative source indices, inconsistent sampled identifiers or invalid nested trial records"
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-mixed-fullrefit-audit-full-source-pair.R",
+      "sha256": "6c2860edf074678fc9e76712c7c48c1b66d4591304c2534cc3e4ee002591f1f9",
+      "description": "Exact ordered five-column participant draw frame and five-column nested trial provenance frame including zero-row audit"
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-mixed-fullrefit-audit-full-source-pair.R",
+      "sha256": "6c2860edf074678fc9e76712c7c48c1b66d4591304c2534cc3e4ee002591f1f9",
+      "description": "Descriptive bootstrap-resampled source-to-target identity provenance; not inference, no fitted-model mutation"
+    }
+  ],
+  "extra_source_evidence": [
+    {
+      "path": "tests/testthat/test-native-direct-source-frame-attribution.R",
+      "sha256": "2294e19134b7f94cc4ac133b5c3c7df5d3cea7a613643fde0d0045ab4dd3b1b4"
+    }
+  ],
+  "independent_review_status": "developer-reviewed only; full exact-head CI and independent certification pending",
+  "language_specific_limits": [
+    "Python frozen dataclass is not an R list/S3 object",
+    "Python pandas DataFrame is not R data.frame",
+    "TypeError and ValueError correspond to native semantic errors, not identical exception classes"
+  ]
+}
