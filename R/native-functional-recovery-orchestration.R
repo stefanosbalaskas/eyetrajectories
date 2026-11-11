@@ -11,11 +11,23 @@
 #'   schedules (one numeric time vector per curve), overriding only the
 #'   random sampling policy during deterministic review.
 #' @param random_engine Native simulation stream, "base_R" or "numpy".
+#' @param python_boundary_mode If TRUE, require the seeded native NumPy
+#'   source stream and the frozen Python scenario invocation domain,
+#'   retaining source truth-only scenario provenance without native flags.
 #' @return Native simulation observations and complete truth with provenance.
 #' @export
 etr_simulate_functional_scenario<-function(scenario,mean,eigenfunctions,
     replicate=0L,source_draws=NULL,observation_times=NULL,
-    random_engine="base_R") {
+    random_engine="base_R",python_boundary_mode=FALSE) {
+  .etr_assert(is.logical(python_boundary_mode)&&
+    length(python_boundary_mode)==1L&&!is.na(python_boundary_mode),
+    "python_boundary_mode must be a nonmissing logical scalar")
+  if(isTRUE(python_boundary_mode)){
+    .etr_assert(identical(random_engine,"numpy"),
+      "Python scenario source mode requires random_engine='numpy'")
+    .etr_assert(is.null(source_draws)&&is.null(observation_times),
+      "Python scenario source mode does not expose draw/schedule replay")
+  }
   .etr_assert(inherits(scenario,"etr_functional_simulation_scenario"),
     "scenario must be a declared native functional simulation scenario")
   index<-.etr_scenario_integer(replicate,"replicate",0L)
@@ -54,7 +66,8 @@ etr_simulate_functional_scenario<-function(scenario,mean,eigenfunctions,
     score_distribution=scenario$score_distribution,
     score_df=scenario$score_df,
     orthonormal_tolerance=scenario$orthonormal_tolerance,
-    random_state=seed,source_draws=source_draws,random_engine=random_engine)
+    random_state=seed,source_draws=source_draws,random_engine=random_engine,
+    python_boundary_mode=python_boundary_mode)
   result$truth$provenance$scenario_name<-scenario$name
   result$truth$provenance$scenario_replicate<-index
   result$truth$provenance$scenario_seed<-seed
