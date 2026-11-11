@@ -1,0 +1,72 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "run_functional_recovery_scenarios",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/simulate.py::run_functional_recovery_scenarios and FunctionalRecoveryRecord/FunctionalRecoveryResult; src/eyetrajectoriespy/recovery.py::FunctionalRecoveryAssessment",
+  "native_signature": "etr_run_functional_recovery_scenarios(scenarios,mean,eigenfunctions,estimator,recovery,failure_action='raise',source_draws_by_replicate=NULL,observation_times_by_replicate=NULL,random_engine='numpy',python_boundary_mode=TRUE)",
+  "reviewer_statement": "Provisional author-reviewed scientific source-contract record; direct seeded frozen Python 1.2 recovery runner comparison for ordinary mapping metrics, structured semantic metrics, retained fit failures and true simulation/scenario inputs committed. Exact-head workflow and independent scientific certification are pending.",
+  "native_language_semantic_policy": "Native R S3 records are source-ordered scientific analogues of Python immutable dataclasses, not Python runtime identity; non-serializable arbitrary Python callback protocols, Python exception class inheritance and unseeded NumPy entropy realizations are not claimed. R-only source draw/schedule replay and enriched provenance remain outside source mode.",
+  "native_files": [
+    {
+      "path": "R/native-functional-recovery-orchestration.R",
+      "sha256": "4c56bfead752a2a5dfdd4d4a30bd128fad065fb2090bf882658e2b24bbb58348"
+    },
+    {
+      "path": "R/native-functional-recovery-assessment-orchestration.R",
+      "sha256": "078f2c3314ea0f6f17c50fbbd4300936714565ac5dc25061e5756b5057f726be"
+    },
+    {
+      "path": "R/native-functional-simulation-source-boundary.R",
+      "sha256": "c95d76f638b4e6139a0f42bd814ae97f034a6f94e4e220767988df66d141bc76"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-functional-recovery-runner-full-source-20261111.R",
+      "sha256": "a16225a0531b29b805d249213940a6004f2b6130aa84110c841847da772f6007",
+      "description": "Frozen eyetrajectoriespy==1.2.0 simulate.py::run_functional_recovery_scenarios consumes a nonempty ordered list of FunctionalSimulationScenario analogue, required mean and eigenfunction callables, a truth-blinded estimator, a truth-aware recovery callback and explicit raise/record failure handling. Strict native python_boundary_mode TRUE invokes the seeded NumPy PCG64 source simulation, rejects R-only replay and emits canonical source-scientific returned structures."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-functional-recovery-runner-full-source-20261111.R",
+      "sha256": "a16225a0531b29b805d249213940a6004f2b6130aa84110c841847da772f6007",
+      "description": "Real seeded Gaussian functional simulation with a 3-participant by 2-trial design, five-point quadrature-orthonormal truth grid, two replicates seeded at 73/74; scalar finite recovered metrics, structured native FunctionalRecoveryAssessment metric definitions with zero-based components and provenance, deterministic fitting failures and both raise/record policies. The same scenarios and callbacks execute independently through frozen Python 1.2."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-functional-recovery-runner-full-source-20261111.R",
+      "sha256": "a16225a0531b29b805d249213940a6004f2b6130aa84110c841847da772f6007",
+      "description": "One exact simulation per declared replicate without replacement, seeded source-equivalent NumPy score/noise paths; estimator sees only observations and the design, recovery alone sees generating truth. Source scalar recovery metric values, structured hierarchy truth-source variance metrics, retained seed/replicate labels and error status records compared numerically and structurally against direct frozen Python 1.2 source results."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-functional-recovery-runner-full-source-20261111.R",
+      "sha256": "a16225a0531b29b805d249213940a6004f2b6130aa84110c841847da772f6007",
+      "description": "Nonempty typed scenario collection, estimator/recovery callables and failure_action policy enforced. Source mode rejects base-R RNG, fixed source scores/noise replay and manual irregular schedule replay. Simulation, fit and recovery exceptions are distinguished without redrawing, recorded with type/message or raised; invalid recovered metrics and inconsistent definitions remain fatal as in Python. A simple R stop() maps to Python RuntimeError only for matched validation fixtures; arbitrary Python exception classes are not claimed."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-functional-recovery-runner-full-source-20261111.R",
+      "sha256": "a16225a0531b29b805d249213940a6004f2b6130aa84110c841847da772f6007",
+      "description": "Exactly two fields of Python FunctionalRecoveryResult in strict mode (records,metric_definitions). Each ordered record has precisely nine source fields: scenario_name,replicate,seed,metrics,metric_values,status,error_type,error_message,assessment_provenance. Metric definitions are un-named ordered source-scientific records. All R-only provenance flags remain in default mode, not in Python boundary mode."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-functional-recovery-runner-full-source-20261111.R",
+      "sha256": "a16225a0531b29b805d249213940a6004f2b6130aa84110c841847da772f6007",
+      "description": "Known-truth Monte Carlo functional recovery evaluation: no truth leakage to estimator, no dropped failed replications, no automatic estimator selection, no silent redraws and no claim that a success score is a certified confidence-coverage result; recorded successes and failures describe behavior under explicitly declared synthetic generating scenarios."
+    }
+  ],
+  "independent_review_status": "Author-reviewed provisional scientific source closure. No independent certification and no exact-head CI green claim.",
+  "language_specific_limits": [
+    "Python frozen FunctionalSimulationScenario, FunctionalRecoveryRecord, FunctionalRecoveryValue and FunctionalRecoveryResult classes are native R scientific records and S3 analogous classes, not Python object identities.",
+    "The only translated exception mapping is a matching deliberate simple R stop() into Python RuntimeError; arbitrary Python exception subclasses, invalid inputs and callables are not identical.",
+    "R accepts declared finite scalar numeric-like callback mappings and native structured assessment records; Python general Mapping protocols and user-defined __float__ or __iter__ are not R object domains.",
+    "NumPy PCG64 seeded streams match in the supported exactly-representable R seed domain, not arbitrary SeedSequence/128-bit integers or fresh OS-entropy draws.",
+    "Source-mode R only supports source-generated schedules and score/noise draws rather than the native R fixed replay interfaces."
+  ]
+}
