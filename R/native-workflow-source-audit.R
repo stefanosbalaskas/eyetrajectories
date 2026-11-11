@@ -173,9 +173,28 @@ etr_workflow_audit_result <- function(workflow_contract,steps=list(),
     class="etr_workflow_audit_result")
 }
 
+# Python workflows/_core.py validates int(workflow_schema_version), not
+# Python integer object identity. Preserve that source boundary for ordinary
+# R scalar analogues (for example 1.9 -> 1, TRUE -> 1 and "1" -> 1).
+.etr_workflow_source_schema_version <- function(value) {
+  if (length(value)!=1L || is.object(value) || !is.null(dim(value)) ||
+      !(is.numeric(value) || is.logical(value) || is.character(value)) ||
+      is.na(value)) return(NA_integer_)
+  # R as.integer("1.9") truncates, whereas Python int("1.9") rejects.
+  # Accept only source decimal integer syntax for the string case.
+  if (is.character(value)) {
+    trimmed <- trimws(value)
+    if (!grepl("^[+-]?[0-9]+(?:_[0-9]+)*$",trimmed,perl=TRUE))
+      return(NA_integer_)
+    value <- gsub("_","",trimmed,fixed=TRUE)
+  }
+  suppressWarnings(as.integer(value))
+}
+
 .etr_workflow_check_result <- function(result) {
   .etr_assert(inherits(result,"etr_workflow_audit_result") &&
-    identical(result$workflow_schema_version,1L),
+    identical(.etr_workflow_source_schema_version(
+      result$workflow_schema_version),1L),
     "result must have the native workflow audit schema version 1")
   .etr_assert(is.character(result$workflow_contract) &&
     length(result$workflow_contract)==1L &&
@@ -200,7 +219,8 @@ etr_workflow_summary_frame <- function(result) {
   statuses <- vapply(result$steps,function(s)s$status,character(1L))
   sources <- vapply(result$decisions,function(d)d$source,character(1L))
   data.frame(
-    workflow_schema_version=1L,
+    workflow_schema_version=.etr_workflow_source_schema_version(
+      result$workflow_schema_version),
     workflow_contract=result$workflow_contract,
     step_count=length(result$steps),
     completed_steps=sum(statuses=="completed"),
@@ -240,6 +260,18 @@ etr_workflow_summary_frame <- function(result) {
   paste0(quote,paste(chars,collapse=""),quote)
 }
 
+# Python workflow_reporting_text interpolates the raw schema-version
+# value, whereas workflow_summary_frame coerces it with int(). Preserve the
+# source distinction for native scalar representations, especially floats
+# (1.0 versus 1) and booleans (True versus TRUE).
+.etr_workflow_source_version_text <- function(x) {
+  if(is.logical(x)) return(if(x) "True" else "False")
+  if(is.integer(x)) return(as.character(x))
+  if(is.double(x)) return(.etr_python_json_float(x))
+  if(is.character(x)) return(x)
+  stop("unsupported workflow schema-version text",call.=FALSE)
+}
+
 #' Compact native workflow provenance reporting text
 #' @param result Native workflow audit record.
 #' @return Descriptive text without automated scientific approval.
@@ -248,7 +280,8 @@ etr_workflow_reporting_text <- function(result) {
   z <- etr_workflow_summary_frame(result)
   quoted <- .etr_python_workflow_identifier_repr(result$workflow_contract)
   paste0("Workflow ",quoted," used schema ",
-    z$workflow_schema_version," and retained ",z$step_count,
+    .etr_workflow_source_version_text(result$workflow_schema_version),
+    " and retained ",z$step_count,
     " ordered steps (",z$completed_steps," completed, ",z$failed_steps,
     " failed, ",z$skipped_steps," skipped). It retained ",
     z$decision_count," scientific decisions (",z$analyst_decisions,

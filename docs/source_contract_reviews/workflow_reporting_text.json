@@ -1,0 +1,72 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "workflow_reporting_text",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/workflows/_core.py::workflow_reporting_text",
+  "native_signature": "etr_workflow_reporting_text(result)",
+  "reviewer_statement": "Author-side six-domain native-language source review against frozen Python 1.2. The full declared validated native R workflow audit record domain matches source 12-column integer-coerced summary schema, raw-type workflow_reporting_text schema formatting, descriptive scientific counts, and exact text in direct Python dataclass oracle tests. Python pandas/dataclass class identity, arbitrary Python objects, and exception class identity remain language-specific. Independent certification is not claimed.",
+  "native_language_semantic_policy": "Python dataclass WorkflowStepRecord/WorkflowDecisionRecord and generic dataclass workflow result map to explicit validated native R S3 workflow audit record; pandas source data frame maps to R data.frame, Python text to UTF-8 R character scalar. Python int() coercion of version is reproduced for native atomic scalar analogues. Exception class identity and arbitrary Python object protocols are not R semantics.",
+  "native_files": [
+    {
+      "path": "R/native-workflow-source-audit.R",
+      "sha256": "5d795dafc616f7d2af83dbb492fb40492188df300c5ae9be6739d93797565ba6"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-workflow-summary-reporting-source-pair.R",
+      "sha256": "dbec695f8ba37822dd745f4a609f46d9e429a744e0df36c131a445163fe4b221",
+      "description": "Published Python 1.2 workflow summary and report signatures; source typed dataclass result versus explicit native S3 record boundary"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-workflow-summary-reporting-source-pair.R",
+      "sha256": "dbec695f8ba37822dd745f4a609f46d9e429a744e0df36c131a445163fe4b221",
+      "description": "Native schema 1 integer, float, bool and numeric string coercion, zero through 13 ordered steps, four decision provenance categories, valid Unicode identifiers"
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-workflow-summary-reporting-source-pair.R",
+      "sha256": "dbec695f8ba37822dd745f4a609f46d9e429a744e0df36c131a445163fe4b221",
+      "description": "Direct Python 1.2 oracle tests exact counts for completed, failed, skipped, warnings, decisions and schema coercion across eight scenarios"
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-workflow-source-audit.R",
+      "sha256": "006085deaa7f0c64b1265aecd33f74e06b76e76cd6b0fc62fd57bfbd65cfa3f6",
+      "description": "Invalid workflow record, version, status, selector criterion, nonfinite nested configuration/provenance and empty identifiers are rejected"
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-workflow-summary-reporting-source-pair.R",
+      "sha256": "dbec695f8ba37822dd745f4a609f46d9e429a744e0df36c131a445163fe4b221",
+      "description": "Exact twelve source summary columns, ordered dataframe row, and byte-for-byte Python f-string reporting text across ASCII, quotes and Unicode"
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-workflow-summary-reporting-source-pair.R",
+      "sha256": "dbec695f8ba37822dd745f4a609f46d9e429a744e0df36c131a445163fe4b221",
+      "description": "Summary is a descriptive provenance count only; does not execute inference, silently preprocess, select scientific estimators or claim statistical approval"
+    }
+  ],
+  "extra_source_evidence": [
+    {
+      "path": "tests/testthat/test-native-workflow-summary-reporting-source-pair.R",
+      "sha256": "dbec695f8ba37822dd745f4a609f46d9e429a744e0df36c131a445163fe4b221"
+    },
+    {
+      "path": "tests/testthat/test-native-workflow-source-audit.R",
+      "sha256": "006085deaa7f0c64b1265aecd33f74e06b76e76cd6b0fc62fd57bfbd65cfa3f6"
+    }
+  ],
+  "independent_review_status": "developer-reviewed; independent certification has not been performed",
+  "language_specific_limits": [
+    "Python dataclass and pandas runtime identities are not identical to native R S3 records/data.frames",
+    "Native R conditions do not claim Python TypeError or ValueError class identity",
+    "R cannot execute arbitrary user-defined Python __repr__ or dataclass hooks"
+  ]
+}
