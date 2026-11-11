@@ -66,7 +66,7 @@ test_that("FPCR CV and mixed-effects source interpretations are preserved",{
   expect_match(etr_functional_mixed_effects_reporting_text(z$fit,z$band),
     "variance-component re-estimation",fixed=TRUE)
   expect_match(etr_functional_mixed_effects_reporting_text(z$fit,z$band),
-    "weakly identified",fixed=FALSE)
+    "within-trial continuous-time exponential correlation",fixed=TRUE)
 })
 test_that("source reports reject invalid native scientific domains",{
   z<-.etr_two_report_source_fixture()
