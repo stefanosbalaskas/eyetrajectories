@@ -170,7 +170,7 @@ test_that("Unicode multichannel scenario source table matches all Python 1.2 fie
     coordinate_system="tank's frame",time_unit="seconds",
     observation_design="irregular",
     samples_per_curve=reticulate::tuple(3L,5L),
-    measurement_noise_sd=reticulate::py_none(),
+    measurement_noise_sd=reticulate::py_eval("None",convert=FALSE),
     measurement_noise_covariance=numpy$array(covariance,dtype="float64"),
     missingness=reticulate::dict(kind="mcar",probability=.2),
     phase_variation=reticulate::dict(kind="power",sd=.15),
