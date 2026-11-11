@@ -80,7 +80,11 @@ etr_functional_random_effect_frame <- function(result,effect="intercept") {
   }
   source<-.etr_frame_matrix(source,length(ids),length(time),
     paste0("random_",effect,"_functions"))
-  predictor<-if(effect=="intercept")NA_character_ else{
+  # Frozen Python frame inserts result.random_slope_predictor directly, and
+  # pandas represents None as a nullable column value. In source-shaped R
+  # records, NULL maps to NA_character_ rather than raising a new error.
+  predictor<-if(effect=="intercept"||is.null(result$random_slope_predictor))
+    NA_character_ else{
     .etr_assert(is.character(result$random_slope_predictor)&&
       length(result$random_slope_predictor)==1L&&
       !is.na(result$random_slope_predictor)&&
