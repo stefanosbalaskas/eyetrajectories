@@ -200,16 +200,19 @@ test_that("catalog and numerical additions do not self-certify source contracts"
     "functional_recovery_metric_catalog_frame",
     "functional_recovery_reporting_text",
     "functional_recovery_assessment_frame")
+  ledger<-utils::read.csv(.etr_test_extdata(
+    "native_source_contract_gaps_stage22.csv"),
+    stringsAsFactors=FALSE,check.names=FALSE)
   for(name in new){
     row<-z[z$python_name==name&z$is_python_function,,drop=FALSE]
     expect_equal(nrow(row),1L)
     expect_identical(row$native_r_candidate,paste0("etr_",name))
     expect_identical(row$native_implementation_stage,26L)
-    if(name %in% c("functional_recovery_metric_catalog_frame",
-                     "functional_recovery_metric_catalog")) {
-      # Complete native table semantics, not Python pandas class identity.
-      expect_false(row$source_contract_gap_unresolved)
-    } else expect_true(row$source_contract_gap_unresolved)
+    idx<-match(name,ledger$python_name)
+    expect_false(is.na(idx))
+    expect_identical(row$source_contract_gap_unresolved,
+      as.logical(ledger$unresolved_source_gap[[idx]]))
+    # Source-semantic author review is not independent certification.
     expect_false(row$one_to_one_native_contract_complete)
   }
   expect_equal(nrow(z),508L)
