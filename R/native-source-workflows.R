@@ -36,8 +36,14 @@
 #'   for source-shaped workflow bundle export. Defaults to FALSE.
 #' @return Source-inspired native workflow with FPCA fit, scores, variance
 #'   table, declarations and complete audit of absent preprocessing.
+#' @param python_boundary_mode When TRUE, emit a frozen Python 1.2
+#'   source-scientific W3 report, table, config and step record, with genuine
+#'   measured R time. Python dataclass/sklearn runtime identity is excluded.
 #' @export
-etr_run_fpca_workflow <- function(trajectories,config=list(),measure_time=FALSE){
+etr_run_fpca_workflow <- function(trajectories,config=list(),measure_time=FALSE,
+    python_boundary_mode=FALSE){
+  .etr_assert(is.logical(python_boundary_mode)&&length(python_boundary_mode)==1L&&
+    !is.na(python_boundary_mode),"python_boundary_mode must be TRUE or FALSE")
   etr_validate(trajectories,require_complete=TRUE)
   .etr_assert(identical(measure_time,TRUE)||identical(measure_time,FALSE),
     "measure_time must be TRUE or FALSE")
@@ -55,7 +61,11 @@ etr_run_fpca_workflow <- function(trajectories,config=list(),measure_time=FALSE)
   parameters<-list(n_components=cfg$n_components,scaling=cfg$scaling)
   fit_model<-function() etr_fit_fpca(trajectories,
     n_components=cfg$n_components,scaling=cfg$scaling)
-  if(measure_time) {
+  if(isTRUE(python_boundary_mode)){
+    started<-proc.time()[["elapsed"]]
+    fit<-fit_model()
+    step<-.etr_w3_source_elapsed_step("fit_fpca",parameters,started)
+  }else if(measure_time) {
     measured<-.etr_sparse_timed_step("fit","etr_fit_fpca",parameters,fit_model())
     fit<-measured$result
     step<-measured$step
@@ -63,7 +73,7 @@ etr_run_fpca_workflow <- function(trajectories,config=list(),measure_time=FALSE)
     fit<-fit_model()
     step<-.etr_source_workflow_step("fit_fpca",parameters)
   }
-  structure(list(workflow_schema_version=1L,
+  out<-structure(list(workflow_schema_version=1L,
     workflow_contract="fpca:v1",config=cfg,fit=fit,
     steps=list(step),
     decisions=list(
@@ -82,6 +92,9 @@ etr_run_fpca_workflow <- function(trajectories,config=list(),measure_time=FALSE)
     tables=list(scores=etr_fpca_scores(fit),
       explained_variance=etr_fpca_variance_frame(fit))),
     class="etr_fpca_workflow")
+  if(isTRUE(python_boundary_mode))
+    out<-.etr_w3_source_fpca_result(out,trajectories)
+  out
 }
 
 #' Run native observed-grid function-on-scalar regression declaratively
@@ -91,9 +104,14 @@ etr_run_fpca_workflow <- function(trajectories,config=list(),measure_time=FALSE)
 #' @param config Explicit predictors, optional dimensions and unit, and
 #'   empty preprocessing. No hidden interpolation or encoding is performed.
 #' @return Native FOS fit with auditable decisions, coefficients and provenance.
+#' @param python_boundary_mode When TRUE, preserve frozen Python 1.2
+#'   W3 returned scientific fields and real timed source-named fit step,
+#'   while preserving the original native R result by default.
 #' @export
 etr_run_function_on_scalar_workflow <- function(
-    trajectories,design,config){
+    trajectories,design,config,python_boundary_mode=FALSE){
+  .etr_assert(is.logical(python_boundary_mode)&&length(python_boundary_mode)==1L&&
+    !is.na(python_boundary_mode),"python_boundary_mode must be TRUE or FALSE")
   etr_validate(trajectories,require_complete=TRUE)
   cfg<-.etr_source_workflow_config(config,
     list(predictors=NULL,dimensions=NULL,participant_column=NULL,
@@ -109,15 +127,19 @@ etr_run_function_on_scalar_workflow <- function(
     (cfg$unit=="participant"&&is.character(cfg$participant_column)&&
       length(cfg$participant_column)==1L&&nzchar(cfg$participant_column)),
     "participant_column must match declared inference unit")
+  started<-if(isTRUE(python_boundary_mode))proc.time()[["elapsed"]] else NULL
   fit<-etr_fit_function_on_scalar_regression(trajectories,
     design,predictors=cfg$predictors,dimensions=cfg$dimensions,
     participant_column=cfg$participant_column,unit=cfg$unit)
   parameters=cfg[c("predictors","dimensions","participant_column","unit")]
   decisions=lapply(parameters,.etr_source_workflow_decision)
-  structure(list(workflow_schema_version=1L,
+  step<-if(isTRUE(python_boundary_mode))
+    .etr_w3_source_elapsed_step("fit_function_on_scalar_regression",
+      parameters,started) else
+    .etr_source_workflow_step("fit_function_on_scalar_regression",parameters)
+  out<-structure(list(workflow_schema_version=1L,
     workflow_contract="function_on_scalar:v1",config=cfg,fit=fit,
-    steps=list(.etr_source_workflow_step(
-      "fit_function_on_scalar_regression",parameters)),
+    steps=list(step),
     decisions=decisions,
     provenance=list(input_layout="complete_common_grid",
       preprocessing_executed=FALSE,
@@ -130,4 +152,7 @@ etr_run_function_on_scalar_workflow <- function(
       " predictor(s); source reporting text unqualified.")),
     tables=list(coefficients=etr_function_on_scalar_coefficient_frame(fit))),
     class="etr_function_on_scalar_workflow")
+  if(isTRUE(python_boundary_mode))
+    out<-.etr_w3_source_fos_result(out)
+  out
 }
