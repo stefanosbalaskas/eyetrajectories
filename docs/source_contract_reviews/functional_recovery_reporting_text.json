@@ -37,7 +37,7 @@
     {
       "kind": "exception_semantics",
       "path": "tests/testthat/test-native-functional-rqa-recovery.R",
-      "sha256": "47a742a2817a25cb088316f057166b154a4895b9994a495f19497fb38876736b",
+      "sha256": "1e1b2cf76d6c7e7273ef51967a23143e7dc582ca943fe50284bed3c7dcab7111",
       "description": "Invalid assessment metadata and duplicates are rejected via shared validated source frame; unsupported Python arbitrary object repr remains language-specific"
     },
     {
@@ -49,7 +49,7 @@
     {
       "kind": "scientific_estimand",
       "path": "tests/testthat/test-native-functional-rqa-recovery.R",
-      "sha256": "47a742a2817a25cb088316f057166b154a4895b9994a495f19497fb38876736b",
+      "sha256": "1e1b2cf76d6c7e7273ef51967a23143e7dc582ca943fe50284bed3c7dcab7111",
       "description": "Scientific report describes known-truth evaluation after fitting, retaining metric families without tuning an estimator on ground truth"
     }
   ],
@@ -60,7 +60,7 @@
     },
     {
       "path": "tests/testthat/test-native-functional-rqa-recovery.R",
-      "sha256": "47a742a2817a25cb088316f057166b154a4895b9994a495f19497fb38876736b"
+      "sha256": "1e1b2cf76d6c7e7273ef51967a23143e7dc582ca943fe50284bed3c7dcab7111"
     }
   ],
   "independent_review_status": "developer-verified; independent review not obtained",
