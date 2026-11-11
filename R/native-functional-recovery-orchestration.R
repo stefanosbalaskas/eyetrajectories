@@ -98,13 +98,29 @@ etr_simulate_functional_scenario<-function(scenario,mean,eigenfunctions,
 #'   per replicate; each NULL or a list of per-curve irregular schedules.
 #'   For exact irregular replay, pass the source's pre-missing schedules.
 #' @param random_engine Native simulation stream, "base_R" or "numpy".
+#' @param python_boundary_mode If TRUE, require a seeded NumPy PCG64
+#'   generator and source scenario simulation, prohibit R-only fixed-draw
+#'   and schedule replay, and return exactly the two frozen Python 1.2
+#'   scientific result fields with canonical ordered per-replicate records.
+#'   The returned R S3 records do not claim Python frozen dataclass identity.
 #' @return Native R result with all successful and failed replicates.
 #' @export
 etr_run_functional_recovery_scenarios<-function(
     scenarios,mean,eigenfunctions,estimator,recovery,
     failure_action="raise",source_draws_by_replicate=NULL,
-    observation_times_by_replicate=NULL,random_engine="base_R") {
+    observation_times_by_replicate=NULL,random_engine="base_R",
+    python_boundary_mode=FALSE) {
+  .etr_assert(is.logical(python_boundary_mode)&&
+    length(python_boundary_mode)==1L&&!is.na(python_boundary_mode),
+    "python_boundary_mode must be a nonmissing logical scalar")
   random_engine<-match.arg(random_engine,c("base_R","numpy"))
+  if(isTRUE(python_boundary_mode)){
+    .etr_assert(identical(random_engine,"numpy"),
+      "Python recovery source mode requires random_engine='numpy'")
+    .etr_assert(is.null(source_draws_by_replicate)&&
+      is.null(observation_times_by_replicate),
+      "Python recovery source mode rejects native-only draw and schedule replay")
+  }
   .etr_assert(is.list(scenarios)&&length(scenarios)>0L&&
     all(vapply(scenarios,function(s)
       inherits(s,"etr_functional_simulation_scenario"),logical(1L))),
@@ -148,7 +164,8 @@ etr_run_functional_recovery_scenarios<-function(
       simulation<-tryCatch(etr_simulate_functional_scenario(
         scenario,mean,eigenfunctions,replicate,
         source_draws=replay_draws,observation_times=replay_times,
-        random_engine=random_engine),error=function(e)
+        random_engine=random_engine,
+        python_boundary_mode=python_boundary_mode),error=function(e)
           structure(list(error=e,status="simulation_failed"),
             class="etr_recovery_attempt_error"))
       if(inherits(simulation,"etr_recovery_attempt_error"))return(simulation)
@@ -191,6 +208,28 @@ etr_run_functional_recovery_scenarios<-function(
         assessment_provenance=result$assessment_provenance,
         error_type=NULL,error_message=NULL))
     }
+  }
+  if(isTRUE(python_boundary_mode)){
+    # Frozen simulate.py FunctionalRecoveryRecord declaration order:
+    # scenario_name, replicate, seed, metrics, metric_values, status,
+    # error_type, error_message, assessment_provenance.
+    # An R stop() and a Python RuntimeError are different runtime classes;
+    # this translation makes only the deliberately matched error scenario
+    # comparable without claiming all exception classes coincide.
+    ordered<-c("scenario_name","replicate","seed","metrics",
+      "metric_values","status","error_type","error_message",
+      "assessment_provenance")
+    rows<-lapply(rows,function(record){
+      if(!identical(record$status,"ok")&&
+         identical(record$error_type,"simpleError"))
+        record$error_type<-"RuntimeError"
+      # list["name"] <- NULL deletes a key; use indexing for the
+      # canonical nine fields because NULL error values must remain fields.
+      record[ordered]
+    })
+    return(structure(list(records=rows,
+      metric_definitions=unname(definitions)),
+      class="etr_functional_recovery_result"))
   }
   structure(list(records=rows,metric_definitions=definitions,
     provenance=list(truth_available_to_estimator=FALSE,
