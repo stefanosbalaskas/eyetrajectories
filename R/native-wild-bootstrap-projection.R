@@ -103,13 +103,27 @@
 #'   previous native normal multipliers, or `"numpy"` for source draws.
 #' @return Native result reusing source schema numerical fields. Full-domain
 #'   source accepted-type and dataclass contracts remain unsigned.
+#' @param python_boundary_mode When TRUE, validate the frozen Python 1.2 public
+#'   multiplier interface and retain only its canonical scientific provenance.
+#'   Native fixed-multiplier replay and base-R random streams are unavailable
+#'   in strict source mode; the ordinary native interface remains unchanged.
 #' @export
 etr_wild_bootstrap_fpca_projection<-function(
     trajectories,outcome,targets=NULL,n_bootstrap=1000L,
     residual_components=2L,inference_components=3L,
     scaling="none",multiplier="normal",
     confidence_level=.95,independent_unit_column=NULL,
-    random_state=0L,multiplier_draws=NULL,random_engine="numpy"){
+    random_state=0L,multiplier_draws=NULL,random_engine="numpy",
+    python_boundary_mode=FALSE){
+  .etr_assert(is.logical(python_boundary_mode)&&
+    length(python_boundary_mode)==1L&&!is.na(python_boundary_mode),
+    "python_boundary_mode must be TRUE or FALSE")
+  if(isTRUE(python_boundary_mode)){
+    .etr_assert(is.null(multiplier_draws),
+      "Python source mode does not accept fixed multiplier_draws")
+    .etr_assert(identical(random_engine,"numpy"),
+      "Python source mode requires the NumPy PCG64 random engine")
+  }
   etr_validate(trajectories,require_complete=TRUE)
   .etr_assert(all(is.finite(trajectories$values)),
     "training trajectories must be complete finite")
@@ -239,6 +253,17 @@ etr_wild_bootstrap_fpca_projection<-function(
     seeded_mammen_draws_match_numpy=is.null(multiplier_draws)&&
       !is.null(random_state)&&random_engine=="numpy"&&multiplier=="mammen",
     source_full_contract_certified=FALSE)
+  if(isTRUE(python_boundary_mode)){
+    # Match every key and its order in frozen wild_regression.py. No audit
+    # extensions silently pollute the Python FPCAWildBootstrapProjectionResult.
+    provenance$fpca_wild_bootstrap_projection<-
+      provenance$fpca_wild_bootstrap_projection[
+        setdiff(names(provenance$fpca_wild_bootstrap_projection),
+          c("fixed_source_multiplier_draws_supplied",
+            "seeded_normal_draws_match_numpy",
+            "seeded_mammen_draws_match_numpy",
+            "source_full_contract_certified"))]
+  }
   structure(list(reference_fpca=fit,
     target_curve_ids=targets$curve_ids,
     reference_projection=reference,pseudo_truth_projection=pseudo_truth,
