@@ -45,6 +45,9 @@ etr_nested_cross_validate_fpca_regression <- function(
     length(strict_source_record)==1L&&!is.na(strict_source_record),
     "strict_source_record must be a single TRUE or FALSE")
   if(isTRUE(strict_source_record)){
+    if(missing(shuffle))shuffle<-TRUE
+    if(missing(random_engine)&&identical(cv_unit,"curve")&&isTRUE(shuffle))
+      random_engine<-"numpy"
     .etr_assert(is.null(outer_fold_assignments)&&
       is.null(inner_fold_assignments),
       "strict_source_record cannot import R-only outer or inner fold assignments")
