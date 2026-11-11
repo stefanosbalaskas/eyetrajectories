@@ -213,3 +213,60 @@ test_that("real frozen Python 1.2 statsmodels GEE numerically validates native s
     expect_true(inherits(native$model,"etr_native_gee_scientific_model"))
   }
 })
+
+test_that("actual frozen Python generalized workflow matches report and numerical W3 tables",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("requires frozen Python 1.2 statsmodels W3 generalized workflow oracle")
+  expect_identical(et_python_version(),"1.2.0")
+  pd<-reticulate::import("pandas",convert=FALSE)
+  builtins<-reticulate::import_builtins(convert=FALSE)
+  pycore<-reticulate::import("eyetrajectoriespy.workflows._dense_regression",
+    convert=FALSE)
+  source_fun<-etpy_get_export("run_generalized_functional_workflow",
+    .namespace="workflows")
+  for(spec in list(
+    list(family="poisson",grouped=FALSE,exposed=FALSE),
+    list(family="poisson",grouped=FALSE,exposed=TRUE),
+    list(family="binomial",grouped=TRUE,exposed=FALSE))){
+    f<-do.call(.etr_gee_strict_case,spec)
+    native<-etr_run_generalized_functional_workflow(
+      f$x,f$d,f$config,python_boundary_mode=TRUE,
+      strict_source_record=TRUE)
+    pyx<-reticulate::py_call(etpy_get_export("TrajectorySet"),
+      time=f$x$time,values=f$x$values,
+      curve_ids=builtins$tuple(as.list(f$x$curve_ids)),
+      dimension_names=builtins$tuple(as.list(f$x$dimension_names)),
+      metadata=pd$DataFrame(lapply(f$x$metadata,as.list)),
+      coordinate_system=f$x$coordinate_system,time_unit=f$x$time_unit)
+    pyd<-pd$DataFrame(lapply(f$d,as.list))
+    pycfg<-reticulate::py_call(
+      pycore$GeneralizedFunctionalWorkflowConfig,
+      predictors=builtins$tuple("treatment"),
+      participant_column="participant_id",dimension="outcome",
+      family=spec$family,basis_size=4L,spline_degree=3L,
+      exposure=f$config$exposure,exposure_units=f$config$exposure_units,
+      binomial_denominator=f$config$binomial_denominator)
+    py<-reticulate::py_call(source_fun,
+      trajectories=pyx,design=pyd,config=pycfg)
+    expect_equal(native$fit$coefficient_functions,
+      et_to_r(py$fit$coefficient_functions),tolerance=1e-6,
+      ignore_attr=TRUE)
+    expect_equal(native$fit$coefficient_standard_errors,
+      et_to_r(py$fit$coefficient_standard_errors),tolerance=1e-5,
+      ignore_attr=TRUE)
+    expect_identical(native$reports$fit,et_to_r(py$reports[["fit"]]))
+    expected_table<-et_to_r(py$tables[["coefficients"]])
+    expect_identical(names(native$tables$coefficients),
+      names(expected_table))
+    for(field in names(expected_table))
+      expect_equal(native$tables$coefficients[[field]],
+        expected_table[[field]],tolerance=1e-6,
+        ignore_attr=TRUE,info=paste(spec$family,field))
+    expect_identical(names(native$decisions),
+      names(et_to_r(py$decisions)))
+    expect_identical(names(native$provenance),
+      names(et_to_r(py$provenance)))
+    expect_identical(native$steps[[1L]][["function"]],
+      "fit_generalized_function_on_scalar_regression")
+  }
+})
