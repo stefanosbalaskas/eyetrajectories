@@ -69,7 +69,7 @@ jobs:
           extra-packages: |
             any::pkgload
             any::testthat
-      - name: Direct frozen Python 1.2 step and decision record frames
+      - name: Direct frozen Python 1.2 FPCA scan and selection record frames
         shell: bash
         env:
           RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
