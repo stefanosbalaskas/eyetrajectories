@@ -136,9 +136,9 @@ test_that("frozen typed Python 1.2 wild scan and selection source frames match n
   for(k in c("selected_centers","selected_widths","selected_lower","selected_upper"))
     z$selection[[k]]<-rep(NA_real_,3L)
   actual[[3L]]<-etr_fpca_wild_bootstrap_truncation_selection_frame(z$selection)
-  names<-c("_etr_wild_py_scan","_etr_wild_py_selection","_etr_wild_py_all_missing")
-  for(i in seq_along(names)){
-    from_python<-as.data.frame(et_to_r(reticulate::py_eval(names[[i]],convert=FALSE)),
+  oracle_names<-c("_etr_wild_py_scan","_etr_wild_py_selection","_etr_wild_py_all_missing")
+  for(i in seq_along(oracle_names)){
+    from_python<-as.data.frame(et_to_r(reticulate::py_eval(oracle_names[[i]],convert=FALSE)),
       check.names=FALSE)
     native<-actual[[i]]
     expect_identical(names(from_python),names(native),info=paste("columns",i))
