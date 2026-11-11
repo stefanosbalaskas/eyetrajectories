@@ -4,10 +4,13 @@ on:
   pull_request:
     paths:
       - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/reviewed_source_contract_closures_v1.csv"
+      - "scripts/build_508_certification_review_batches.R"
       - "tests/testthat/test-native-zeroarg-catalog-source-semantic-closures.R"
       - "tests/testthat/test-native-catalog-contract-boundaries.R"
       - "tests/testthat/test-native-functional-rqa-recovery.R"
       - "tests/testthat/test-native-508-certification-batches.R"
+      - "tests/testthat/test-native-workflow-source-audit.R"
       - "tests/testthat/test-native-nonfunction-source-gaps.R"
       - "tests/testthat/test-native-zeroarg-metadata-source-semantic-closure.R"
       - "tests/testthat/test-native-math-contracts-diagnostics.R"
@@ -46,7 +49,7 @@ jobs:
           pkgload::load_all(".",quiet=TRUE)
           old <- reticulate::py_available(initialize=FALSE)
           testthat::test_local(".",
-            filter="native-(zeroarg-catalog-source-semantic-closures|catalog-contract-boundaries|zeroarg-metadata-source-semantic-closure|math-contracts-diagnostics|functional-rqa-recovery|508-certification-batches|nonfunction-source-gaps|source-contract-gaps)",
+            filter="native-(zeroarg-catalog-source-semantic-closures|catalog-contract-boundaries|zeroarg-metadata-source-semantic-closure|math-contracts-diagnostics|functional-rqa-recovery|508-certification-batches|nonfunction-source-gaps|workflow-source-audit|source-contract-gaps)",
             reporter="summary",stop_on_failure=TRUE,stop_on_warning=TRUE)
           stopifnot(identical(old,reticulate::py_available(initialize=FALSE)))
           api <- etr_native_parity_catalog()
@@ -94,6 +97,6 @@ jobs:
           pkgload::load_all(".",quiet=TRUE)
           stopifnot(identical(et_python_version(),"1.2.0"))
           testthat::test_local(".",
-            filter="native-(zeroarg-catalog-source-semantic-closures|catalog-contract-boundaries|zeroarg-metadata-source-semantic-closure|math-contracts-diagnostics|functional-rqa-recovery|508-certification-batches|nonfunction-source-gaps)",
+            filter="native-(zeroarg-catalog-source-semantic-closures|catalog-contract-boundaries|zeroarg-metadata-source-semantic-closure|math-contracts-diagnostics|functional-rqa-recovery|508-certification-batches|workflow-source-audit|nonfunction-source-gaps)",
             reporter="summary",stop_on_failure=TRUE,stop_on_warning=TRUE)
           RSCRIPT

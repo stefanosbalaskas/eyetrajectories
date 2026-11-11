@@ -59,7 +59,9 @@ test_that("508-export review fast lane preserves every uncertified export",{
   expect_identical(sum(z$queue$native_nonfunction_source_gap_open),1L)
   # Author-side semantic closure can change the active flag, never erase
   # historical frozen Python/R difference witnesses or approve contracts.
-  closed<-c("functional_recovery_metric_catalog_frame",
+  # Legacy semantic closures are immutable, but new source-reviewed
+  # functions enter the queue dynamically only with SHA256 pinned receipts.
+  legacy<-c("functional_recovery_metric_catalog_frame",
     "mathematical_contract_frame",
     "list_mathematical_contracts",
     "functional_recovery_metric_catalog",
@@ -68,7 +70,16 @@ test_that("508-export review fast lane preserves every uncertified export",{
   gap<-utils::read.csv(file.path(root,"inst","extdata",
     "native_source_contract_gaps_stage22.csv"),
     stringsAsFactors=FALSE,check.names=FALSE)
-  expect_setequal(gap$python_name[!gap$unresolved_source_gap],closed)
+  receipts<-utils::read.csv(file.path(root,"inst","extdata",
+    "reviewed_source_contract_closures_v1.csv"),
+    stringsAsFactors=FALSE,check.names=FALSE)
+  closed<-gap$python_name[!gap$unresolved_source_gap]
+  expect_true(length(closed)>=length(legacy))
+  expect_true(all(legacy%in%closed))
+  expect_setequal(setdiff(closed,legacy),receipts$python_name)
+  expect_true(all(receipts$independently_certified==FALSE))
+  expect_true(all(grepl("^[0-9a-f]{64}$",
+    receipts$review_record_sha256)))
   expect_identical(sum(z$queue$kind=="function" &
     z$queue$source_gap_open),sum(gap$unresolved_source_gap))
   expect_identical(sum(z$queue$source_gap_open),

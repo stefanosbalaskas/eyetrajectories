@@ -37,7 +37,7 @@
     {
       "kind": "exception_semantics",
       "path": "tests/testthat/test-native-workflow-source-audit.R",
-      "sha256": "006085deaa7f0c64b1265aecd33f74e06b76e76cd6b0fc62fd57bfbd65cfa3f6",
+      "sha256": "207ce8db2bf3769f0ad3c444479361ed6365a51c7bb558a42a5b028cdf632303",
       "description": "Reject nonfinite/negative/NA step time, unknown statuses and decision sources, duplicated mapping keys, missing audited selector criteria, invalid numerical values"
     },
     {
@@ -60,7 +60,7 @@
     },
     {
       "path": "tests/testthat/test-native-workflow-source-audit.R",
-      "sha256": "006085deaa7f0c64b1265aecd33f74e06b76e76cd6b0fc62fd57bfbd65cfa3f6"
+      "sha256": "207ce8db2bf3769f0ad3c444479361ed6365a51c7bb558a42a5b028cdf632303"
     }
   ],
   "independent_review_status": "developer-reviewed only; independent reviewer and cross-platform latest-head CI pending",

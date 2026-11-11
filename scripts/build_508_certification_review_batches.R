@@ -125,6 +125,43 @@ etr_build_508_certification_review_batches <- function(
     check.names=FALSE)
   nf_gaps<-utils::read.csv(nf_path,stringsAsFactors=FALSE,
     check.names=FALSE)
+  # Historical 203+1 witness rows are fixed, but the number of closed
+  # source contracts is ledger-driven. Developer-reviewed closures must have
+  # independently SHA-pinned receipt files rather than an arbitrary
+  # human-readable prefix such as "Resolved". This does NOT grant approval.
+  reviewed_path<-file.path(root,"inst","extdata",
+    "reviewed_source_contract_closures_v1.csv")
+  ck(file.exists(reviewed_path),
+    "Full source-contract review receipt register missing")
+  reviewed<-utils::read.csv(reviewed_path,stringsAsFactors=FALSE,
+    check.names=FALSE)
+  review_fields<-c("python_name","frozen_python_commit",
+    "review_record_path","review_record_sha256",
+    "author_full_contract_decision","independently_certified")
+  ck(identical(names(reviewed),review_fields)&&
+    !anyDuplicated(reviewed$python_name)&&
+    all(reviewed$frozen_python_commit==frozen_python)&&
+    all(reviewed$author_full_contract_decision==
+      "AUTHOR_FULL_CONTRACT_REVIEWED")&&
+    all(!reviewed$independently_certified)&&
+    all(grepl("^[0-9a-f]{64}$",reviewed$review_record_sha256)),
+    "Malformed or falsely certified source-contract review register")
+  for(i in seq_len(nrow(reviewed))){
+    relative<-reviewed$review_record_path[[i]]
+    ck(startsWith(relative,"docs/source_contract_reviews/")&&
+      !grepl("..",relative,fixed=TRUE),
+      "Invalid source-review receipt path")
+    file<-file.path(root,relative)
+    ck(file.exists(file)&&identical(
+      unname(digest::digest(file,algo="sha256",file=TRUE)),
+      reviewed$review_record_sha256[[i]]),
+      "Source-review receipt is absent or hash mismatched")
+  }
+  legacy_closures<-c("functional_recovery_metric_catalog_frame",
+    "mathematical_contract_frame",
+    "functional_recovery_metric_catalog","list_mathematical_contracts",
+    "sparse_fpca_score_frame","sparse_mfpca_score_frame")
+  closed_names<-fn_gaps$python_name[!fn_gaps$unresolved_source_gap]
   ck(nrow(fn_gaps)==203L&&nrow(nf_gaps)==1L&&
     all(c("python_name","gap_kind","known_source_difference",
       "source_witness","review_resolution","unresolved_source_gap")%in%
@@ -134,13 +171,13 @@ etr_build_508_certification_review_batches <- function(
       "unresolved")%in%names(nf_gaps))&&
     is.logical(fn_gaps$unresolved_source_gap)&&
     !anyNA(fn_gaps$unresolved_source_gap)&&
-    all(grepl("^Resolved",
-      fn_gaps$review_resolution[!fn_gaps$unresolved_source_gap]))&&
-    all(grepl("test-",fn_gaps$source_witness[
-      !fn_gaps$unresolved_source_gap],fixed=TRUE))&&
+    all(nzchar(fn_gaps$source_witness))&&
+    all(nzchar(fn_gaps$review_resolution))&&
+    all(closed_names%in%c(legacy_closures,reviewed$python_name))&&
+    all(reviewed$python_name%in%closed_names)&&
     all(nf_gaps$unresolved)&&
     !anyDuplicated(fn_gaps$python_name),
-    "The 203 historical callable witnesses plus 1 nonfunction witness are incomplete or lack closure evidence")
+    "The 203 historical callable witnesses plus 1 nonfunction witness are incomplete or lack valid SHA-reviewed closure evidence")
   fn_idx<-match(scope$python_name,fn_gaps$python_name)
   nf_idx<-match(paste(scope$namespace,scope$python_name,sep="::"),
     paste(nf_gaps$namespace,nf_gaps$python_name,sep="::"))
