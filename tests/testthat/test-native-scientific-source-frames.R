@@ -121,7 +121,7 @@ test_that("native science frames reject invalid identifiers, shape, uncertainty 
     class="etr_sparse_mfpca_source")),"scores")
 })
 
-test_that("six adapter mappings retain open typed-Python source gaps",{
+test_that("six adapter mappings match the authoritative source gap ledger",{
   names<-c("sparse_fpca_score_frame","sparse_mfpca_score_frame",
     "generalized_function_on_scalar_coefficient_frame",
     "generalized_function_on_scalar_prediction_frame",
@@ -133,15 +133,18 @@ test_that("six adapter mappings retain open typed-Python source gaps",{
   expect_identical(sort(rows$native_r_candidate),
     sort(paste0("etr_",names)))
   expect_true(all(rows$native_implementation_started))
-  closed<-rows$python_name%in%
-    c("sparse_fpca_score_frame","sparse_mfpca_score_frame")
-  expect_identical(sum(closed),2L)
-  expect_false(any(rows$source_contract_gap_unresolved[closed]))
-  expect_true(all(rows$source_contract_gap_unresolved[!closed]))
+  ledger<-utils::read.csv(system.file("extdata",
+    "native_source_contract_gaps_stage22.csv",package="eyetrajectories"),
+    stringsAsFactors=FALSE,check.names=FALSE)
+  source<-ledger[match(rows$python_name,ledger$python_name),,drop=FALSE]
+  expect_false(anyNA(source$python_name))
+  expect_identical(as.logical(rows$source_contract_gap_unresolved),
+    as.logical(source$unresolved_source_gap))
   expect_false(any(rows$one_to_one_native_contract_complete))
   expect_gte(sum(p$is_python_function & p$named_native_candidate),332L)
   expect_gte(sum(p$native_implementation_started),307L)
-  expect_gte(sum(p$source_contract_gap_unresolved),154L)
+  expect_identical(sum(p$source_contract_gap_unresolved),
+    sum(ledger$unresolved_source_gap))
 })
 
 test_that("six observation frames match published Python 1.2 source records",{
