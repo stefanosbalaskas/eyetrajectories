@@ -1,0 +1,68 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "expand_functional_simulation_scenarios",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/simulate.py::expand_functional_simulation_scenarios",
+  "native_signature": "etr_expand_functional_simulation_scenarios(...)",
+  "reviewer_statement": "Developer-side frozen Python 1.2 scientific declarative-output review of expand_functional_simulation_scenarios. Source-based R revalidation and 13 proposed typed Python 1.2 source comparisons across both contracts test complete JSON mappings, original factor order, scenario grids and seed pairing. Native R S3/list semantic counterpart is used, not Python dataclass/MappingProxyType object identity. Exact-head Python/OS CI has not yet passed; independent source certification has not been provided.",
+  "native_language_semantic_policy": "Frozen Python dataclass declaration/Mapping/tuple/ndarray/Path/pandas.Index sources are mapped to explicitly validated native R scientific list/S3, matrix and path-string representations, retaining source JSON-compatible primitive semantics and ordering; no Python is invoked by native R.",
+  "native_files": [
+    {
+      "path": "R/zz-native-scenario-expansion-batch29.R",
+      "sha256": "b2997136607a23441d92be3fe9678906876f1f819f7423168201dbb18ed65d46"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-declarative-source-pair-20261111.R",
+      "sha256": "dfdb77681ba99c39cbd28f3ca8db983cfecc6a12e32c8f1cf752bf8c58c28787",
+      "description": "Frozen Python 1.2 src/eyetrajectoriespy/simulate.py entrypoint signature and typed scientific declaration schema, mapped to native R validated S3/list record semantics."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-declarative-source-pair-20261111.R",
+      "sha256": "dfdb77681ba99c39cbd28f3ca8db983cfecc6a12e32c8f1cf752bf8c58c28787",
+      "description": "Five typed Python dataclass configuration cases (empty/one/multi-step, nested ndarray/Index/Path and decision provenance), plus 8 fully paired Cartesian simulation matrices across four factor families and shared/disjoint seeds; representable native R scientific object domains only."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-declarative-source-pair-20261111.R",
+      "sha256": "dfdb77681ba99c39cbd28f3ca8db983cfecc6a12e32c8f1cf752bf8c58c28787",
+      "description": "Thirteen proposed direct frozen Python 1.2 source-vs-native R full-output cases, comparing every JSON mapping value and every 23-column scenario frame value, source slug, factor enumeration order and exact integer seed policies."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-declarative-source-pair-20261111.R",
+      "sha256": "dfdb77681ba99c39cbd28f3ca8db983cfecc6a12e32c8f1cf752bf8c58c28787",
+      "description": "Native R rechecks mutable S3 scenario and preprocessing plan metadata to match Python frozen-constructor invariants; rejects duplicate/invalid factors, invalid source records, nonfinite parameter payloads and seed block overflow. Python TypeError identity and unbounded bigint domain explicitly excluded."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-declarative-source-pair-20261111.R",
+      "sha256": "dfdb77681ba99c39cbd28f3ca8db983cfecc6a12e32c8f1cf752bf8c58c28787",
+      "description": "Python dict maps to ordered named native R list, original dataclass tuple to native ordered S3 record list, complete source 23-column pandas scenario table to native R data.frame preserving value/JSON text and nullable scientific provenance."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-declarative-source-pair-20261111.R",
+      "sha256": "dfdb77681ba99c39cbd28f3ca8db983cfecc6a12e32c8f1cf752bf8c58c28787",
+      "description": "Cartesian factor expansion of frozen validated simulation scenario declarations, Python source suffix slug/order, stable factor levels and deterministic shared vs disjoint seed pairing, including irregular timing, student-t distribution and correlated multichannel measurement noise."
+    }
+  ],
+  "extra_source_evidence": [
+    {
+      "path": "tests/testthat/test-native-functional-scenario-design.R",
+      "sha256": "de162032b47d952683a88ece343b3bfa26a604137f4ccdbbdbec06724f4310fc"
+    }
+  ],
+  "independent_review_status": "Developer-reviewed source semantic candidate; direct Python 1.2 and Linux/macOS/Windows CI pending; 0 independent certifications.",
+  "language_specific_limits": [
+    "Native R S3/list/matrix/path-string is not Python frozen dataclass, pandas.Index, numpy.ndarray, pathlib.Path, or Python mapping runtime identity",
+    "Python arbitrary custom __iter__/__str__, unbounded positive integers and exception classes are language-specific and outside native R representable scientific records",
+    "These contracts declare/report parameters; they do not imply simulation RNG, scientific estimator, or external artifact export parity"
+  ]
+}

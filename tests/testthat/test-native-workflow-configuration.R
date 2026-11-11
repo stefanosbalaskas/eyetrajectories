@@ -47,7 +47,7 @@ test_that("native workflow config validation refuses implicit scientific decisio
   expect_length(etr_workflow_config_to_dict(etr_workflow_config()),0L)
 })
 
-test_that("workflow configuration remains an unresolved, individually tracked source contract",{
+test_that("workflow configuration source contract is tracked by authoritative gap ledger",{
   z <- etr_native_parity_catalog()
   row <- z[z$is_python_function &
     z$python_name=="workflow_config_to_dict",,drop=FALSE]
@@ -55,7 +55,12 @@ test_that("workflow configuration remains an unresolved, individually tracked so
   expect_identical(row$native_r_candidate,
     "etr_workflow_config_to_dict")
   expect_true(row$native_implementation_started)
-  expect_true(row$source_contract_gap_unresolved)
+  source<-utils::read.csv(
+    .etr_test_extdata("native_source_contract_gaps_stage22.csv"),
+    stringsAsFactors=FALSE)
+  expect_identical(as.logical(row$source_contract_gap_unresolved),
+    as.logical(source$unresolved_source_gap[
+      source$python_name=="workflow_config_to_dict"]))
   expect_false(row$one_to_one_native_contract_complete)
   expect_equal(nrow(z),508L)
   expect_equal(sum(z$is_python_function & z$named_native_candidate),380L)
