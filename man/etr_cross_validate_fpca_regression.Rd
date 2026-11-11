@@ -9,9 +9,11 @@ etr_cross_validate_fpca_regression(trajectories, outcome,
   group_column = NULL, shuffle = FALSE, random_state = 0L,
   fold_assignments = NULL,
   coerce_numeric_text_covariates = FALSE, random_engine = "base_R",
-  group_tie_order = "native")
+  group_tie_order = "native", strict_source_record = FALSE)
 }
 \arguments{
+\item{strict_source_record}{If TRUE, return the six canonical frozen Python 1.2 scientific provenance fields and require source-compatible fold generation; shuffled curve folds must use \code{random_engine="numpy"}, grouped folds an explicit NumPy tie-order profile, and R-only supplied fold assignments and numeric-text covariate coercion are rejected. The default FALSE preserves native diagnostic provenance. Runtime classes and full exceptional domains are not independently certified.}
+
 \item{coerce_numeric_text_covariates}{Native-only opt-in for finite numeric-text covariate columns (including interdigit underscores). The frozen Python validator parses text but source statsmodels rejects object-typed columns, so FALSE preserves the default source-safe behavior.}
 \item{trajectories}{Complete native common-grid trajectory set.}
 \item{outcome}{Curve-aligned finite numeric, logical, or decimal numeric-looking character outcomes. Logical TRUE/FALSE becomes numeric 1/0; binomial responses must be 0/1. R factors are not converted to their integer codes.}
