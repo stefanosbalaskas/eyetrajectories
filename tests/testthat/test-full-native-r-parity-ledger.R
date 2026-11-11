@@ -14,7 +14,12 @@ test_that("strict register covers all 508 Python public exports without Python",
   expect_lte(unmapped,48L)
   expect_equal(mapped+unmapped,380L)
   expect_gte(sum(z$source_contract_gap_known),154L)
-  expect_gte(sum(z$source_contract_gap_unresolved),154L)
+  callable_gaps <- utils::read.csv(.etr_test_extdata(
+    "native_source_contract_gaps_stage22.csv"))
+  class_gaps <- utils::read.csv(.etr_test_extdata(
+    "native_nonfunction_source_gaps_v1.csv"))
+  expect_equal(sum(z$source_contract_gap_unresolved),
+    sum(callable_gaps$unresolved_source_gap)+sum(class_gaps$unresolved))
   expect_true(all(z$one_to_one_native_contract_complete==FALSE))
   expect_true(all(z$independent_numeric_parity_pass==FALSE))
   expect_true(all(z$scientific_inference_qualified==FALSE))
