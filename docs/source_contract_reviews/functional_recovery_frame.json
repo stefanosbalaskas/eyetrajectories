@@ -1,0 +1,69 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "functional_recovery_frame",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/simulate.py::functional_recovery_frame",
+  "native_signature": "etr_functional_recovery_frame(result)",
+  "reviewer_statement": "Developer-side frozen Python 1.2 scientific recovery frame semantic review of functional_recovery_frame, based on original simulate.py and typed FunctionalRecoveryResult records. Proposed twelve complete source data-frame differential cases across three linked functions and four source-science inputs, including failed replicates, flat and structured metrics, scenario sorting, error domains and NumPy quantile/SD arithmetic. Exact-head CI and independent certification remain pending; Python runtime class identity is not asserted for R.",
+  "native_language_semantic_policy": "Python frozen recovery metric/record/result dataclasses map to validated native scientific R lists, pandas DataFrame to native source-ordered R data.frame with exact scientific numerical values and metadata. Default mean, SD and quantiles use NumPy-equivalent source behavior; legacy R arithmetic is a named explicit opt-out. Native implementations invoke no Python.",
+  "native_files": [
+    {
+      "path": "R/native-functional-recovery-evidence.R",
+      "sha256": "4ecf6c2f6e1b4c38f33c3ea1aa854f065e5685e99621b1351176adf1cfc4b441"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-three-recovery-frames-full-source-20261111.R",
+      "sha256": "4f7e8776ac35025981a9a60f11db26efcb7da8092daf6be8f3dbab46ba3f83e9",
+      "description": "Frozen Python 1.2 simulate.py signature for typed FunctionalRecoveryResult, FunctionalRecoveryRecord, and FunctionalRecoveryValue dataclasses, native R scientific record mapping"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-three-recovery-frames-full-source-20261111.R",
+      "sha256": "4f7e8776ac35025981a9a60f11db26efcb7da8092daf6be8f3dbab46ba3f83e9",
+      "description": "Four distinct source-record configurations: structured source metrics, unstructured fallback metrics with missing metadata, every replicate failed, and nine successful observations with one failed replicate"
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-three-recovery-frames-full-source-20261111.R",
+      "sha256": "4f7e8776ac35025981a9a60f11db26efcb7da8092daf6be8f3dbab46ba3f83e9",
+      "description": "Twelve complete typed Python 1.2 vs native R data.frame comparisons (four configurations by three exports) including every source column and numeric/nullable value, NumPy-source reduction and 5th/25th/50th/75th/95th quantiles, failure counts/MCSE"
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-three-recovery-frames-full-source-20261111.R",
+      "sha256": "4f7e8776ac35025981a9a60f11db26efcb7da8092daf6be8f3dbab46ba3f83e9",
+      "description": "Native R constructor rejects unknown source statuses, nonfinite metrics, metrics on failed replicates, structured/flat source disagreements and malformed summary arithmetic choices; Python runtime exception types remain language-specific"
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-three-recovery-frames-full-source-20261111.R",
+      "sha256": "4f7e8776ac35025981a9a60f11db26efcb7da8092daf6be8f3dbab46ba3f83e9",
+      "description": "Python pandas DataFrame values and source column order mapped to R data.frame, including zero-column empty metric observations and 19-column empty summary for all-failed source records"
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-three-recovery-frames-full-source-20261111.R",
+      "sha256": "4f7e8776ac35025981a9a60f11db26efcb7da8092daf6be8f3dbab46ba3f83e9",
+      "description": "Per-simulation-replicate structured or flat metric evidence, zero-based to one-based component labels, exact metadata origin and missing fields with source-ordered long form"
+    }
+  ],
+  "extra_source_evidence": [
+    {
+      "path": "tests/testthat/test-native-functional-recovery-evidence.R",
+      "sha256": "9efce7f12ccee5826f17af8be11ffe792a86888668507db9adb43c3ca531454d"
+    }
+  ],
+  "independent_review_status": "Author full-source reviewed, exact-head Linux/Windows/macOS and pinned Python 1.2 differential CI pending; independent certification not granted.",
+  "language_specific_limits": [
+    "Python pandas/index and frozen dataclass identities are semantic rather than identical R runtime classes",
+    "Python TypeError/ValueError exception classes cannot be identical to R native condition classes",
+    "Records containing non-representable >2^53-1 integer IDs are outside finite double-exact native R domain",
+    "These source-frame reviews do not certify underlying estimator or simulation RNG procedures"
+  ]
+}
