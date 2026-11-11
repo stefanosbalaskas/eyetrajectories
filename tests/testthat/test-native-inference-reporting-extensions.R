@@ -64,7 +64,13 @@ test_that("3 source reporting functions stay uncertified until full review",{
   expect_identical(sort(actual$native_r_candidate),
     sort(paste0("etr_",names)))
   expect_true(all(actual$native_implementation_started))
-  expect_true(all(actual$source_contract_gap_unresolved))
+  ledger<-utils::read.csv(system.file("extdata",
+    "native_source_contract_gaps_stage22.csv",package="eyetrajectories"),
+    stringsAsFactors=FALSE)
+  witnesses<-ledger[match(actual$python_name,ledger$python_name),,drop=FALSE]
+  expect_false(anyNA(witnesses$python_name))
+  expect_identical(as.logical(actual$source_contract_gap_unresolved),
+    as.logical(witnesses$unresolved_source_gap))
   expect_false(any(actual$one_to_one_native_contract_complete))
   expect_gte(sum(z$is_python_function & z$named_native_candidate),336L)
   expect_gte(sum(z$native_implementation_started),311L)
