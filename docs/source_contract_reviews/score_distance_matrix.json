@@ -1,0 +1,62 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "score_distance_matrix",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/analysis.py::score_distance_matrix",
+  "native_signature": "etr_score_distance_matrix(fpca,n_components=NULL,python_boundary_mode=TRUE)",
+  "reviewer_statement": "Developer-side source-semantic scientific review based on frozen Python 1.2, full mathematical outputs and row/field geometry, input/boundary cases and direct source-typed differential tests committed. Cross-platform and pinned-Python exact-head GitHub Actions remain queued; this is not independent scientific certification.",
+  "native_language_semantic_policy": "Source mathematical result represented in native R scientific arrays/data.frames, with source-specific input mode where needed, not Python runtime object identity. Source-shaped result validation is not an assertion of upstream optimizer parity or Python exception class matching.",
+  "native_files": [
+    {
+      "path": "R/native-functional-diagnostics.R",
+      "sha256": "5f53c64b05f0113b87d7f125bca0a0b74729fb669647fcbfb4047d77d5ee8183"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-score-distance-full-source-20261111.R",
+      "sha256": "b62a3c1cc5a72c539ce986c8daca996b6942ec05020ca5fbac0c28bd0db0b10d",
+      "description": "Frozen Python FPCA-compatible score matrix and optional retained component count; native R scientific list or fitted FPCA result with an explicit Python boundary mode. No Python inference or refitting."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-score-distance-full-source-20261111.R",
+      "sha256": "b62a3c1cc5a72c539ce986c8daca996b6942ec05020ca5fbac0c28bd0db0b10d",
+      "description": "Finite dense and SciPy-like sparse FPCA scores, non-square curve-by-component source arrays, integer one-to-k slicing and source overdeclared metadata using actual available columns, sparse Boolean arrays."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-score-distance-full-source-20261111.R",
+      "sha256": "b62a3c1cc5a72c539ce986c8daca996b6942ec05020ca5fbac0c28bd0db0b10d",
+      "description": "Frozen sklearn pairwise Euclidean distances over retained FPCA score columns: Gram/squared norms, nonnegative squared distance clamp, zero diagonal, symmetric unlabelled n-curves-square matrix, complete dense and sparse Python oracle values."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-score-distance-full-source-20261111.R",
+      "sha256": "b62a3c1cc5a72c539ce986c8daca996b6942ec05020ca5fbac0c28bd0db0b10d",
+      "description": "Invalid fractional slice index, negative and out-of-range k, nonfinite score entries, zero score dimensions and bounded native dense-output resource protection."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-score-distance-full-source-20261111.R",
+      "sha256": "b62a3c1cc5a72c539ce986c8daca996b6942ec05020ca5fbac0c28bd0db0b10d",
+      "description": "Unlabelled real symmetric numeric square R matrix matching Python ndarray values and row/column ordering, with exact zero diagonal and no extraneous metadata or provenance."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-score-distance-full-source-20261111.R",
+      "sha256": "b62a3c1cc5a72c539ce986c8daca996b6942ec05020ca5fbac0c28bd0db0b10d",
+      "description": "Euclidean pairwise distance on explicitly retained principal-component score coordinates, conditional on the source fit, not similarity based on curves or a newly estimated FPCA basis."
+    }
+  ],
+  "independent_review_status": "Provisional author-reviewed with exact SHA256 provenance, no independent certification; exact-head CI pending.",
+  "language_specific_limits": [
+    "R default preserves the more numerically stable stats::dist path; exact sklearn source arithmetic and integer coercion are explicitly selected by python_boundary_mode=TRUE.",
+    "R source mode applies a 5,000,000-cell dense output resource bound; source Python accepts operations until host memory exhaustion. This is an operational safety bound, not a different distance estimand.",
+    "Native sparse Matrix classes replace SciPy CSR identity and error classes; no independent certification yet."
+  ]
+}

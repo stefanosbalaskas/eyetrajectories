@@ -9,6 +9,24 @@
     .etr_mixed_moments_fit(result)
     return(result)
   }
+  # Published Python 1.2 FunctionalMixedEffectsResult scientific record.
+  # This input path accepts source-shaped fitted values *after* estimation;
+  # it does not claim that the native moments or nlme optimizers reproduce
+  # Python's MixedLM / nested GLS fitting algorithm.
+  if(is.list(result) && !inherits(result,c(
+      "etr_functional_mixed_moments","etr_joint_bspline_mixed",
+      "etr_joint_source_residual_view")) &&
+      all(c("converged","time","time_unit","dimension_name",
+        "source_curve_ids","curve_participant_ids","residual_functions",
+        "residual_variance") %in% names(result))){
+    .etr_assert(identical(result$converged,TRUE),
+      "Residual diagnostics require a converged mixed-effects fit")
+    if(is.null(result$residual_correlation_matrix)){
+      result$residual_correlation_matrix <- diag(
+        length(result$time))
+    }
+    class(result) <- "etr_joint_source_residual_view"
+  }
   if(inherits(result,"etr_joint_bspline_mixed")) {
     .etr_assert(is.list(result) && identical(result$backend,"nlme::lme"),
       "joint residual analysis requires an actual native nlme fit")

@@ -1,0 +1,120 @@
+name: Native residual sensitivity and score distance frozen Python source
+on:
+  pull_request:
+    paths:
+      - "R/native-joint-source-residual-view.R"
+      - "R/native-mixed-residual-comparison.R"
+      - "R/native-functional-diagnostics.R"
+      - "tests/testthat/test-native-residual-sensitivity-full-source-20261111.R"
+      - "tests/testthat/test-native-score-distance-full-source-20261111.R"
+      - "tests/testthat/test-native-sparse-score-distance-source.R"
+      - "tests/testthat/test-native-mixed-residual-comparison.R"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/reviewed_source_contract_closures_v1.csv"
+      - "docs/source_contract_reviews/compare_functional_mixed_effects_residual_diagnostics.json"
+      - "docs/source_contract_reviews/score_distance_matrix.json"
+      - ".github/workflows/native-residual-score-distance-full-source-20261111.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-receipts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: SHA256 six-domain scientific review and live 508 census
+        shell: bash
+        run: |
+          python - <<'PY'
+          import csv,hashlib,json
+          from pathlib import Path
+          base=Path(".")
+          gaps=list(csv.DictReader((base/"inst/extdata/native_source_contract_gaps_stage22.csv").open(encoding="utf-8",newline="")))
+          other=list(csv.DictReader((base/"inst/extdata/native_nonfunction_source_gaps_v1.csv").open(encoding="utf-8",newline="")))
+          reviews=list(csv.DictReader((base/"inst/extdata/reviewed_source_contract_closures_v1.csv").open(encoding="utf-8",newline="")))
+          assert len(gaps)==203 and len(other)==1
+          open_calls=sum(x["unresolved_source_gap"]=="TRUE" for x in gaps)
+          open_other=sum(x["unresolved"]=="TRUE" for x in other)
+          assert open_calls<=110 and open_other==1,(open_calls,open_other)
+          assert 508-open_calls-open_other>=397
+          for name in ("compare_functional_mixed_effects_residual_diagnostics",
+                       "score_distance_matrix"):
+              row,=[x for x in gaps if x["python_name"]==name]
+              receipt,=[x for x in reviews if x["python_name"]==name]
+              assert row["unresolved_source_gap"]=="FALSE"
+              assert receipt["independently_certified"]=="FALSE"
+              raw=(base/receipt["review_record_path"]).read_bytes()
+              assert hashlib.sha256(raw).hexdigest()==receipt["review_record_sha256"]
+              review=json.loads(raw)
+              assert review["python_name"]==name
+              assert review["independently_certified"] is False
+              assert review["frozen_python_commit"]=="c1cd95ad718327550f7e55393ff38582872f7a94"
+              assert {x["kind"] for x in review["case_evidence"]}=={
+                "source_signature","accepted_input_domain","numerical_outputs",
+                "exception_semantics","returned_schema","scientific_estimand"}
+              for evidence in review["native_files"]+review["case_evidence"]:
+                  p=base/evidence["path"]
+                  assert hashlib.sha256(p.read_bytes()).hexdigest()==evidence["sha256"],str(p)
+          print(f"{508-open_calls-open_other}/508 provisional author reviews; "
+                f"{open_calls} callable gaps; {open_other} noncallable; 0 independently certified")
+          PY
+  native-r:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Native residual comparison and source score geometry tests
+        shell: bash
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          testthat::test_local(".",filter="native-residual-sensitivity-full-source-20261111|native-score-distance-full-source-20261111|native-sparse-score-distance-source|native-mixed-residual-comparison",reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
+  frozen-python:
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        id: py
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Frozen typed source mixed diagnostics and sklearn dense/sparse score distance
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.py.outputs.python-path }}
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          stopifnot(identical(et_python_version(),"1.2.0"))
+          testthat::test_local(".",filter="native-residual-sensitivity-full-source-20261111|native-score-distance-full-source-20261111|native-sparse-score-distance-source|native-mixed-residual-comparison",reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
