@@ -1,0 +1,68 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "sparse_mfpca_reporting_text",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/sparse_multivariate.py::sparse_mfpca_reporting_text",
+  "native_signature": "etr_sparse_mfpca_reporting_text(result,digits=3L)",
+  "reviewer_statement": "Developer-side source-semantic review of sparse_mfpca_reporting_text against eyetrajectoriespy 1.2.0 frozen commit. Paired typed Python scientific data classes and native R records have a 24-exact-string cross-export differential suite covering three scientific variants and digits two and five, including Gaussian/bionomial exposure, raw/whitened residuals, sparse PACE covariance and native/FDApy paths. The exact-head CI must run before qualification. No Python runtime type-identity or independent certification is claimed.",
+  "native_language_semantic_policy": "Typed Python scientific dataclass source results map to validated native R scientific list/data.frame representations; Python str returns native R scalar character. Python repr provenance strings, source manuscript wording, interpretation caveats, selected data domain and numerical formats are preserved without Python runtime dependency.",
+  "native_files": [
+    {
+      "path": "R/native-source-model-reports.R",
+      "sha256": "2df2f59101ada62578259327b915eccac179d6e1d33ed94e8eabdf9b0c819076"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-four-model-reporting-full-source.R",
+      "sha256": "295ee87caf24470e835b5e51da9df6f6dfdc4d585fbef7245cceb913c954ecf2",
+      "description": "Exact published Python 1.2 src/eyetrajectoriespy/sparse_multivariate.py typed dataclass reporting source parameters and native equivalent return-string schema"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-four-model-reporting-full-source.R",
+      "sha256": "295ee87caf24470e835b5e51da9df6f6dfdc4d585fbef7245cceb913c954ecf2",
+      "description": "Three scientific source record variants, including native and FDApy PACE paths, grouped-binomial/Poisson exposure, and raw versus whitened diagnostics"
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-four-model-reporting-full-source.R",
+      "sha256": "295ee87caf24470e835b5e51da9df6f6dfdc4d585fbef7245cceb913c954ecf2",
+      "description": "24 proposed complete typed Python 1.2 versus native R scientific reporting strings: four exports x three cases x digits 2 and 5"
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-four-model-reporting-full-source.R",
+      "sha256": "295ee87caf24470e835b5e51da9df6f6dfdc4d585fbef7245cceb913c954ecf2",
+      "description": "Native R rejects malformed inferential precision, residual-domain lags, nonfinite covariance matrices, invalid sparse eigenvalues and scientific record shapes; Python TypeError class identity not claimed"
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-four-model-reporting-full-source.R",
+      "sha256": "295ee87caf24470e835b5e51da9df6f6dfdc4d585fbef7245cceb913c954ecf2",
+      "description": "Exactly one complete ordered manuscript reporting string with Python repr quoting for Unicode or apostrophe labels, numerical precision, caveats and no estimator side effects"
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-four-model-reporting-full-source.R",
+      "sha256": "295ee87caf24470e835b5e51da9df6f6dfdc4d585fbef7245cceb913c954ecf2",
+      "description": "Sparse planar MFPCA joint PACE score audit; measurement-error 2x2 covariance matrix, spectral PSD repair, local-linear bandwidths and failed score systems"
+    }
+  ],
+  "extra_source_evidence": [
+    {
+      "path": "tests/testthat/test-native-source-model-reports.R",
+      "sha256": "7e86df89d67bf4ab096b21065c1a17347d97082cc6208b8a232ef1c9415d50cd"
+    }
+  ],
+  "independent_review_status": "Developer-reviewed native semantic closure proposed; exact-head Linux/Windows/macOS and pinned Python 1.2 CI pending, independent certification count unchanged.",
+  "language_specific_limits": [
+    "Python scientific dataclasses/NumPy/pandas are mapped to native R scientific records rather than identical objects",
+    "Native R condition types are not Python exception classes",
+    "No claim of scientific estimator/RNG full domain parity from reporting-text reviews"
+  ]
+}

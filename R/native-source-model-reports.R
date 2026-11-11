@@ -114,12 +114,12 @@ etr_functional_mixed_effects_residual_reporting_text <- function(result) {
   .etr_assert(scale%in%c("raw","whitened"),
     "residual_scale must be raw or whitened")
   slope<-result$reference$random_slope_predictor
-  if(!is.null(slope))slope<-.etr_source_text_word(slope,
+  if(!is.null(slope))slope<-.etr_gfosr_predict_scalar(slope,
     "random_slope_predictor")
-  unit<-.etr_source_text_word(result$reference$time_unit,"time_unit")
+  unit<-.etr_gfosr_predict_scalar(result$reference$time_unit,"time_unit")
   structure<-if(is.null(slope))"random functional intercept only" else
     paste0("random functional intercept plus the declared random ",
-      "functional slope for '",slope,"'")
+      "functional slope for ",.etr_python_workflow_identifier_repr(slope))
   scale_text<-if(scale=="raw")"raw conditional residual functions" else
     paste0("conditional residual functions whitened within each trial ",
       "by the fitted residual covariance Cholesky factor")
@@ -137,8 +137,9 @@ etr_functional_mixed_effects_residual_reporting_text <- function(result) {
     ". For each trial, residuals were centered within trial before ",
     "calculating autocovariance and autocorrelation; empirical ",
     "semivariance used one-half of the mean squared residual difference ",
-    "at each lag. The observed common time grid was retained in '",
-    unit,"'; index lags retain their mean/minimum/maximum physical ",
+    "at each lag. The observed common time grid was retained in ",
+    .etr_python_workflow_identifier_repr(unit),
+    "; index lags retain their mean/minimum/maximum physical ",
     "separations and no physical-lag binning was performed. Participant ",
     "and overall summaries are descriptive pair-count-weighted summaries ",
     "of trial-level diagnostics. ",zero,
@@ -220,16 +221,16 @@ etr_sparse_mfpca_reporting_text <- function(result,digits=3L) {
     "covariance_bandwidth",min=0)
   ridge<-.etr_source_text_number(config$score_ridge,
     "score_ridge",min=0)
-  mode<-.etr_source_text_word(config$measurement_error_mode,
+  mode<-.etr_gfosr_predict_scalar(config$measurement_error_mode,
     "measurement_error_mode")
-  failure<-.etr_source_text_word(config$score_failure_action,
+  failure<-.etr_gfosr_predict_scalar(config$score_failure_action,
     "score_failure_action")
   psd<-result$covariance_diagnostics
   .etr_scientific_frame_fields(psd,c("requested_action",
     "applied_action","correction_frobenius_norm"),
     "covariance_diagnostics")
-  requested<-.etr_source_text_word(psd$requested_action,"requested_action")
-  applied<-.etr_source_text_word(psd$applied_action,"applied_action")
+  requested<-.etr_gfosr_predict_scalar(psd$requested_action,"requested_action")
+  applied<-.etr_gfosr_predict_scalar(psd$applied_action,"applied_action")
   repair<-.etr_source_text_number(psd$correction_frobenius_norm,
     "correction_frobenius_norm",min=0)
   error_text<-.etr_sparse_mfpca_numpy_2x2(
@@ -241,17 +242,20 @@ etr_sparse_mfpca_reporting_text <- function(result,digits=3L) {
     "local-linear bandwidths ",mean_band," and ",cov_band,
     "; all latent covariance products excluded same-time pairs. Cxy ",
     "was fitted directionally, was not self-symmetrized, and Cyx was ",
-    "defined as its transpose. The full joint operator used PSD action '",
-    requested,"' (applied='",applied,
-    "'; correction Frobenius norm=",
+    "defined as its transpose. The full joint operator used PSD action ",
+    .etr_python_workflow_identifier_repr(requested)," (applied=",
+    .etr_python_workflow_identifier_repr(applied),
+    "; correction Frobenius norm=",
     .etr_manuscript_number(repair,d),
-    "). Measurement error used mode '",mode,"' with R_epsilon=",
+    "). Measurement error used mode ",
+    .etr_python_workflow_identifier_repr(mode)," with R_epsilon=",
     error_text,". Joint PACE scores used the full fitted joint covariance ",
     "plus measurement error and ridge=",ridge,
     ", never a rank-K covariance reconstruction. ",success,
     " curve(s) were scored successfully and ",failed,
-    " retained score-system failure(s) were recorded under failure_action='",
-    failure,"'. Raw sparse trajectories were not pre-interpolated; ",
+    " retained score-system failure(s) were recorded under failure_action=",
+    .etr_python_workflow_identifier_repr(failure),
+    ". Raw sparse trajectories were not pre-interpolated; ",
     "population functions were evaluated at retained native times.")
 }
 
