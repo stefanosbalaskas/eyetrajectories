@@ -146,8 +146,14 @@ test_that("workflow integration stays uncertified until independent full review"
     system.file("extdata","native_nonfunction_source_gaps_v1.csv",
       package="eyetrajectories"),
     stringsAsFactors=FALSE,check.names=FALSE)
+  # The review queue's source_gap_unresolved field is CALLABLE-only.
+  # The one Python nonfunction source gap has its own distinct catalog
+  # field; never add it to the callable count or silently lose it.
   expect_identical(sum(queue$source_gap_unresolved),
-    sum(reviewed$unresolved_source_gap)+sum(other$unresolved))
+    sum(reviewed$unresolved_source_gap))
+  expect_identical(sum(other$unresolved),1L)
+  expect_identical(sum(z$nonfunction_source_gap_unresolved),
+    sum(other$unresolved))
   expect_false(any(queue$full_numeric_approved))
   expect_false(any(queue$schema_boundary_approved))
   expect_false(any(queue$scientific_scope_approved))
