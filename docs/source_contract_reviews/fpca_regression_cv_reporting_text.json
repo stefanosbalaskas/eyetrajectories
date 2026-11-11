@@ -1,0 +1,68 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "fpca_regression_cv_reporting_text",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/reporting.py::fpca_regression_cv_reporting_text",
+  "native_signature": "etr_fpca_regression_cv_reporting_text(result,rule='minimum',digits=3L)",
+  "reviewer_statement": "Developer-side frozen Python 1.2 exact source scientific manuscript review for fpca_regression_cv_reporting_text. The 21 distinct direct output comparisons span the two related reporters with typed Python dataclasses, two CV rules, three precision values, three inference cases and explicit native invalid-domain tests. Python runtime dataclass identity is not claimed in R; exact-head CI and independent scientific qualification remain outstanding.",
+  "native_language_semantic_policy": "Validated Python scientific result dataclasses map to checked native R list/data.frame scientific records, and Python str maps to R scalar character; all reporting text is Python-free at native runtime. The nested selection-and-fit and conditional-versus-full-refit inference claims are preserved.",
+  "native_files": [
+    {
+      "path": "R/native-inference-reporting-extensions.R",
+      "sha256": "a12fe694eaf931bbd78fd5cbe9d4020f71d4f2be32d089a0522298a3520517ea"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-fpcr-cv-mixed-reporting-full-source.R",
+      "sha256": "f81f319c03d66a782c3d789f1a559498c880dfd19c2a41da712278917ad232e9",
+      "description": "Frozen Python 1.2 reporting.py source signature and typed scientific result records; native R source semantic map with keyword defaults and return string."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-fpcr-cv-mixed-reporting-full-source.R",
+      "sha256": "f81f319c03d66a782c3d789f1a559498c880dfd19c2a41da712278917ad232e9",
+      "description": "Three scenarios each: no-band iid/grouped CV, conditional-coefficient bootstrap with AR1 and random slope, full-refit bootstrap with exponential trial random effects; CV selection minimum/one_se and multiple precisions."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-fpcr-cv-mixed-reporting-full-source.R",
+      "sha256": "f81f319c03d66a782c3d789f1a559498c880dfd19c2a41da712278917ad232e9",
+      "description": "21 distinct Python 1.2 typed source-to-native reporting comparisons: 18 CV variants and 3 mixed-effects narratives with exact numerical text and Python repr of Unicode scientific labels."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-fpcr-cv-mixed-reporting-full-source.R",
+      "sha256": "f81f319c03d66a782c3d789f1a559498c880dfd19c2a41da712278917ad232e9",
+      "description": "Native R rejects invalid CV selection policy and precision, undeclared CV scope, missing/malformed scientific mixed fit flags, covariance and incompatible bootstrap-band source reference."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-fpcr-cv-mixed-reporting-full-source.R",
+      "sha256": "f81f319c03d66a782c3d789f1a559498c880dfd19c2a41da712278917ad232e9",
+      "description": "One exact ordered source manuscript text string per call, correct held-out CV loss/SE, data family repr, coefficient-band scope and variance-component uncertainty wording."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-fpcr-cv-mixed-reporting-full-source.R",
+      "sha256": "f81f319c03d66a782c3d789f1a559498c880dfd19c2a41da712278917ad232e9",
+      "description": "FPCR predictive component selection performed on held-out nested training-fold results; minimum versus one-standard-error selection, grouped versus curve-level folds, fold means and SE."
+    }
+  ],
+  "extra_source_evidence": [
+    {
+      "path": "tests/testthat/test-native-inference-reporting-extensions.R",
+      "sha256": "fd9e55c60c0f4771219efc885b34c267c3df9c5ac0ec4b9c65dfff8ad609d2ed"
+    }
+  ],
+  "independent_review_status": "Developer full-source text review recorded, not independently certified; Linux/Windows/macOS and typed frozen Python exact-head CI pending.",
+  "language_specific_limits": [
+    "Python dataclass identity and native R scientific record list identity are distinct runtime contracts",
+    "Python TypeError/ValueError identity does not map directly to native R conditions",
+    "Reporting-only reviews do not independently certify FPCR or mixed-effects estimator numerical algorithms"
+  ]
+}

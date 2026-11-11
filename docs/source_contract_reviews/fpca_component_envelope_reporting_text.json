@@ -12,7 +12,7 @@
   "native_files": [
     {
       "path": "R/native-inference-reporting-extensions.R",
-      "sha256": "5444941dfef8518c42aa726c0bc21899748390ff09759790ae8c063495f24b5e"
+      "sha256": "a12fe694eaf931bbd78fd5cbe9d4020f71d4f2be32d089a0522298a3520517ea"
     }
   ],
   "case_evidence": [

@@ -34,9 +34,11 @@ etr_fpca_regression_cv_reporting_text <- function(
   heuristic<-if(rule=="one_se")
     " The one-standard-error rule was used as a parsimony heuristic." else ""
   paste0("Outcome-tuned FPCA regression used ",folds,"-fold ",unit,
-    " cross-validation with family='",family,"' and held-out ",loss,
+    " cross-validation with family=",
+    .etr_python_workflow_identifier_repr(family)," and held-out ",loss,
     ". FPCA and the scalar regression were refitted inside every ",
-    "training fold. The explicit '",rule,"' rule selected ",selected,
+    "training fold. The explicit ",
+    .etr_python_workflow_identifier_repr(rule)," rule selected ",selected,
     " component(s) (mean held-out loss=",
     .etr_inference_report_f(row$mean_loss,d),
     ", SE=",.etr_inference_report_f(row$se_loss,d),").",heuristic)
