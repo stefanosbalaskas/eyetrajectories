@@ -26,6 +26,11 @@
 #' @param coerce_numeric_text_covariates Native-only optional parsing of
 #'   finite text/underscore numeric covariate columns. Default FALSE: the
 #'   full Python 1.2 statsmodels model rejects object-typed pandas columns.
+#' @param strict_source_record If TRUE, emit canonical frozen Python 1.2
+#'   scientific provenance only and reject R-only explicit folds and text
+#'   coercion. Shuffled folds require the native NumPy-compatible engine,
+#'   while group CV requires an explicit NumPy group-sort profile. The
+#'   default retains the expanded native R diagnostic provenance.
 #' @export
 etr_nested_cross_validate_fpca_regression <- function(
   trajectories, outcome, candidate_components=c(1L,2L,3L,4L,5L),
@@ -35,7 +40,26 @@ etr_nested_cross_validate_fpca_regression <- function(
   shuffle=FALSE, random_state=0L,
   outer_fold_assignments=NULL,inner_fold_assignments=NULL,
   coerce_numeric_text_covariates=FALSE,random_engine="base_R",
-  group_tie_order="native") {
+  group_tie_order="native",strict_source_record=FALSE) {
+  .etr_assert(is.logical(strict_source_record)&&
+    length(strict_source_record)==1L&&!is.na(strict_source_record),
+    "strict_source_record must be a single TRUE or FALSE")
+  if(isTRUE(strict_source_record)){
+    if(missing(shuffle))shuffle<-TRUE
+    if(missing(random_engine)&&identical(cv_unit,"curve")&&isTRUE(shuffle))
+      random_engine<-"numpy"
+    .etr_assert(is.null(outer_fold_assignments)&&
+      is.null(inner_fold_assignments),
+      "strict_source_record cannot import R-only outer or inner fold assignments")
+    .etr_assert(identical(coerce_numeric_text_covariates,FALSE),
+      "strict_source_record cannot enable R-only text covariate coercion")
+    if(identical(cv_unit,"curve")&&isTRUE(shuffle))
+      .etr_assert(identical(random_engine,"numpy"),
+        "strict_source_record shuffled nested CV requires random_engine='numpy'")
+    if(identical(cv_unit,"group"))
+      .etr_assert(group_tie_order%in%c("numpy_simd","numpy_scalar"),
+        "strict_source_record group nested CV requires an explicit NumPy tie-order profile")
+  }
   etr_validate(trajectories,require_complete=TRUE)
   .etr_fpcr_validate_family(family)
   resolved_loss<-.etr_fpcr_resolve_loss(family,loss)
@@ -117,7 +141,8 @@ etr_nested_cross_validate_fpca_regression <- function(
         random_state+f+1L else NULL,
       fold_assignments=if(is.null(inner_fold_assignments))NULL else
         inner_fold_assignments[[f+1L]],
-      random_engine=random_engine,group_tie_order=group_tie_order)
+      random_engine=random_engine,group_tie_order=group_tie_order,
+      strict_source_record=strict_source_record)
     selected<-etr_select_fpca_regression_components(inner_cv,rule=selection_rule)
     summary<-etr_summarise_fpca_regression_cv(inner_cv)
     inner_rows[[f+1L]]<-data.frame(outer_fold=rep(as.integer(f),nrow(summary)),
@@ -155,7 +180,7 @@ etr_nested_cross_validate_fpca_regression <- function(
   outer<-do.call(rbind,outer_rows);inside<-do.call(rbind,inner_rows)
   predictions<-do.call(rbind,prediction_rows)
   rownames(outer)<-NULL;rownames(inside)<-NULL;rownames(predictions)<-NULL
-  structure(list(outer_folds=outer,inner_summaries=inside,
+  result<-structure(list(outer_folds=outer,inner_summaries=inside,
     predictions=predictions,family=family,
     loss=resolved_loss,selection_rule=selection_rule,
     component_counts=counts,outer_splits=no,inner_splits=ni,
@@ -183,4 +208,13 @@ etr_nested_cross_validate_fpca_regression <- function(
         "inner FPC-count selection. It does not remove within-group",
         "dependence from a curve-level outcome model."))),
     class="etr_nested_fpcr_cv")
+  if(isTRUE(strict_source_record)){
+    source_fields<-c("method","nested_selection","outer_performance_unseen_by_inner_selection","group_leakage_prevented","covariates","scientific_warning")
+    .etr_assert(all(source_fields%in%names(result$provenance)),
+      "strict FPCR CV source provenance fields are incomplete")
+    result$provenance<-result$provenance[source_fields]
+    .etr_assert(identical(names(result$provenance),source_fields),
+      "strict FPCR CV source provenance order is invalid")
+  }
+  result
 }
