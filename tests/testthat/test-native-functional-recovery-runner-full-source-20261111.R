@@ -166,7 +166,7 @@ _rs_failed=et.run_functional_recovery_scenarios(
     failure_action="record",random_engine="numpy",
     python_boundary_mode=TRUE)
   for(kind in c("ok","structured","failed")){
-    a<-get(kind,environment())
+    a<-switch(kind,ok=native,structured=structured,failed=failed)
     py<-reticulate::py_eval(paste0("_rs_",kind),convert=FALSE)
     expect_identical(length(a$records),length(et_to_r(py$records)))
     expect_identical(length(a$metric_definitions),
