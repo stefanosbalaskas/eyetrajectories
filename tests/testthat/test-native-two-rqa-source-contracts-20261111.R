@@ -105,7 +105,7 @@ test_that("single RQA source specification produces the pandas 0x0 pairwise tabl
     "duplicate resolved")
   expect_error(etr_windowed_rqa_sensitivity(x,
     metrics="recurrence_rate",
-    window_step_pairs=list(c(TRUE,2L)),radius=.75),"numeric")
+    window_step_pairs=list(list(TRUE,2L)),radius=.75),"numeric")
 })
 
 test_that("RQA source rejects participant-column metadata for curve inference",{
