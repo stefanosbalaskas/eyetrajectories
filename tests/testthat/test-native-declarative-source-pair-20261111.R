@@ -51,6 +51,11 @@
 }
 
 .etr_pair_compare_json <- function(native,py,info="source") {
+  # reticulate can convert an empty Python dictionary to an R list with
+  # names=character(0), whereas a native list() has names=NULL.
+  # Both have zero fields: preserve strict key/order checks otherwise.
+  if(is.list(native)&&is.list(py)&&length(native)==0L&&length(py)==0L)
+    return(invisible(NULL))
   expect_identical(names(native),names(py),info=paste(info,"keys"))
   if(is.list(native)) {
     for(n in names(native))
