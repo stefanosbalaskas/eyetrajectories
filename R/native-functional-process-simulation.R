@@ -72,6 +72,10 @@
 #'   "numpy" for native PCG64 source replay. Fixed source draws use base_R.
 #' @return Native R observations and fully auditable source-shaped truth;
 #'   Python frozen dataclass representation is not claimed.
+#' @param python_boundary_mode If TRUE, use the seeded native NumPy PCG64
+#'   scientific source stream and return the exact 19-field frozen Python
+#'   simulation provenance in observations and truth. The native result
+#'   remains an R scientific record, not a Python dataclass.
 #' @export
 etr_simulate_functional_process<-function(
     mean,eigenfunctions,eigenvalues,truth_grid,n_participants,
@@ -84,12 +88,22 @@ etr_simulate_functional_process<-function(
     missingness=NULL,phase_variation=NULL,
     score_distribution="normal",score_df=5,
     orthonormal_tolerance=1e-6,random_state=42L,
-    source_draws=NULL,random_engine="base_R"){
+    source_draws=NULL,random_engine="base_R",
+    python_boundary_mode=FALSE){
+  .etr_assert(is.logical(python_boundary_mode)&&
+    length(python_boundary_mode)==1L&&!is.na(python_boundary_mode),
+    "python_boundary_mode must be a nonmissing logical scalar")
   random_engine<-match.arg(random_engine,c("base_R","numpy"))
+  if(isTRUE(python_boundary_mode)){
+    .etr_assert(identical(random_engine,"numpy"),
+      "Python source mode requires random_engine='numpy'")
+    .etr_assert(is.null(source_draws),
+      "Python source mode rejects native-only source_draws replay")
+  }
   .etr_assert(identical(random_engine,"base_R")||is.null(source_draws),
     "source_draws must use random_engine='base_R'")
-  if(identical(observation_design,"irregular"))
-    return(.etr_functional_simulation_irregular(
+  if(identical(observation_design,"irregular")){
+    out<-.etr_functional_simulation_irregular(
       mean=mean,eigenfunctions=eigenfunctions,eigenvalues=eigenvalues,
       truth_grid=truth_grid,n_participants=n_participants,
       trials_per_participant=trials_per_participant,
@@ -105,7 +119,13 @@ etr_simulate_functional_process<-function(
       score_distribution=score_distribution,score_df=score_df,
       orthonormal_tolerance=orthonormal_tolerance,
       random_state=random_state,source_draws=source_draws,
-      random_engine=random_engine))
+      random_engine=random_engine)
+    if(isTRUE(python_boundary_mode))
+      out<-.etr_functional_simulation_python_boundary(out,
+        observation_times=observation_times,
+        irregular_time_design=irregular_time_design)
+    return(out)
+  }
   np<-.etr_scenario_integer(n_participants,"n_participants",1L)
   trials<-.etr_scenario_integer(trials_per_participant,
     "trials_per_participant",1L)
@@ -331,6 +351,10 @@ etr_simulate_functional_process<-function(
     observation_design="dense",score_distribution=score_spec$kind,
     score_distribution_parameters=score_spec,
     random_state=seed,provenance=provenance)
-  structure(list(observations=observations,truth=truth),
+  result<-structure(list(observations=observations,truth=truth),
     class="etr_functional_simulation_result")
+  if(isTRUE(python_boundary_mode))
+    result<-.etr_functional_simulation_python_boundary(result,
+      irregular_time_design=irregular_time_design)
+  result
 }

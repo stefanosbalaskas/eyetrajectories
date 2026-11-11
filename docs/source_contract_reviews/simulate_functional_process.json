@@ -1,0 +1,72 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "simulate_functional_process",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/simulate.py::simulate_functional_process; src/eyetrajectoriespy/_functional_simulation.py::simulate_functional_process_core; FunctionalSimulationTruth",
+  "native_signature": "etr_simulate_functional_process(mean,eigenfunctions,eigenvalues,truth_grid,n_participants,trials_per_participant=1L,...,random_state=42L,source_draws=NULL,random_engine='numpy',python_boundary_mode=TRUE)",
+  "reviewer_statement": "Provisional six-domain author source-scientific review. Direct frozen Python 1.2 true-generating-data and provenance differential tests added for real seeded dense, missingness, phase, Student-t correlated noise, explicit/generated irregular observations and a real scenario replicate. Scientific runtime objects differ; exact-head CI/independent certification pending.",
+  "native_language_semantic_policy": "Native R source mode emits canonical 19-field provenance simultaneously in observations and truth, with identical source science throughout dense and irregular generated outcome domains. Native-only replay and base-R generator remain default extensions outside source mode.",
+  "native_files": [
+    {
+      "path": "R/native-functional-simulation-source-boundary.R",
+      "sha256": "c95d76f638b4e6139a0f42bd814ae97f034a6f94e4e220767988df66d141bc76"
+    },
+    {
+      "path": "R/native-functional-process-simulation.R",
+      "sha256": "bf3eb43f74f6e20cfaf8f354b129cac1cd4c3a6186ef11e96f1d924d5f6d489c"
+    },
+    {
+      "path": "R/native-functional-simulation-irregular.R",
+      "sha256": "cc135bd9080d6d5c93415280b774109a59ce876dc4365e79b8b9153cf4d76387"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-functional-simulation-process-scenario-full-source-20261111.R",
+      "sha256": "5d8fdaeee8bf6923d66970138cde3ca25d3cb951f9311abb2ad0890bf06936cd",
+      "description": "Frozen eyetrajectoriespy==1.2.0 public source domain with generating mean and eigenfunctions, ordered positive eigenvalues, truth_grid, participant/trial design, coordinate and time units, dense/irregular observations, component score distributions, phase, missingness, Gaussian measurement covariance, and seeded random_state. R explicit python_boundary_mode requires native NumPy PCG64 and forbids native-only source_draws."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-functional-simulation-process-scenario-full-source-20261111.R",
+      "sha256": "5d8fdaeee8bf6923d66970138cde3ca25d3cb951f9311abb2ad0890bf06936cd",
+      "description": "Two-dimensional nine-time quadrature-orthonormal score basis, four participants and two trials per participant, dense normal independent noise, MCAR power-phase, Student-t finite-variance curve scores and correlated covariance noise, explicitly declared irregular schedules or generated irregular boundary-poor schedules, seeded NumPy random generators and real scenario replicate 1 of 2."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-functional-simulation-process-scenario-full-source-20261111.R",
+      "sha256": "5d8fdaeee8bf6923d66970138cde3ca25d3cb951f9311abb2ad0890bf06936cd",
+      "description": "Frozen NumPy PCG64 curve/participant/trial scores, finite-variance Student-t gamma draws, phase power exponents, warp and latent values evaluated at real scheduled times without interpolation, Gaussian multi-channel noise, MCAR/block missingness, pre-missing and output schedules, complete 31-field realized truth and observations. Direct typed Python differential compares all generated score, noise, time and functional truth fields."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-functional-simulation-process-scenario-full-source-20261111.R",
+      "sha256": "5d8fdaeee8bf6923d66970138cde3ca25d3cb951f9311abb2ad0890bf06936cd",
+      "description": "Fail closed on invalid source mode scalar, native-only fixed numerical score/phase/noise replay, unsupported base-R source RNG, unknown observation domain, non-orthonormal mode geometry, non-finite eigenvalues, invalid missingness/phase parameters, unsupported irregular sampling schedules and incompatible measurement-noise covariance. Exact Python exception class identity is not asserted."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-functional-simulation-process-scenario-full-source-20261111.R",
+      "sha256": "5d8fdaeee8bf6923d66970138cde3ca25d3cb951f9311abb2ad0890bf06936cd",
+      "description": "FunctionalSimulationResult canonical observations and truth fields, 31 ordered FunctionalSimulationTruth scientific fields and identical canonical 19-field provenance mapping for generated observations and truth. The source result carries true realized curves, not a fabricated synthetic practice proxy; R S3 and Python dataclass classes differ."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-functional-simulation-process-scenario-full-source-20261111.R",
+      "sha256": "5d8fdaeee8bf6923d66970138cde3ca25d3cb951f9311abb2ad0890bf06936cd",
+      "description": "Known-generating-truth synthetic functional process with explicit independent curve modes, participant/trial hierarchy, measurement error, declared dropout, phase misregistration and irregular observation designs. This simulator is not an inferential estimator, confidence interval, or claim that observed data are real participants."
+    }
+  ],
+  "independent_review_status": "Provisional SHA256-pinned author scientific review; no independent certificate, exact-head CI pending.",
+  "language_specific_limits": [
+    "R S3 observational/irregular-set/truth records are scientific data analogues, not Python frozen dataclass classes or arbitrary Python ndarray object identities.",
+    "Explicit NumPy PCG64 seeds can be reproduced within R's precisely representable seed domain. Python arbitrary 128-bit/SeedSequence seed objects and NULL/OS entropy sample identity are outside native source-scientific mode.",
+    "Native simulation requires R numeric callable return arrays and eigenvalue inputs; arbitrary Python float-coercible objects/exception classes are not claimed identical.",
+    "Caller-supplied retained source draw arrays and irregular scenario schedule replay are R-only native options, rejected in strict Python source mode.",
+    "Scenario class is a native R scientific S3 record, not a Python FunctionalSimulationScenario frozen dataclass runtime identity."
+  ]
+}
