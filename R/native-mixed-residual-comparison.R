@@ -41,15 +41,20 @@ etr_compare_functional_mixed_effects_residual_diagnostics <- function(
     !is.na(comparison_label)&&nzchar(comparison_label),
     "reference and comparison labels must be nonempty strings")
   .etr_assert(is.character(residual_scale)&&length(residual_scale)==1L&&
-    !is.na(residual_scale)&&residual_scale%in%c("raw","whitened"),
+    !is.na(residual_scale)&&nzchar(trimws(residual_scale)),
+    "residual_scale must be raw or whitened")
+  # Python's underlying diagnostic normalizes the residual source scale,
+  # while the outer comparison table retains the literal supplied label.
+  normalized_scale<-tolower(trimws(residual_scale))
+  .etr_assert(normalized_scale%in%c("raw","whitened"),
     "residual_scale must be raw or whitened")
   lag<-.etr_nonlinear_integer(max_lag,1L,"max_lag")
   .etr_assert(lag<length(reference$time),
     "max_lag must be smaller than n_time")
   a<-etr_functional_mixed_effects_residual_diagnostics(reference,
-    max_lag=lag,residual_scale=residual_scale)$overall_diagnostics
+    max_lag=lag,residual_scale=normalized_scale)$overall_diagnostics
   b<-etr_functional_mixed_effects_residual_diagnostics(comparison,
-    max_lag=lag,residual_scale=residual_scale)$overall_diagnostics
+    max_lag=lag,residual_scale=normalized_scale)$overall_diagnostics
   keys<-c("lag_index","lag_time_mean","lag_time_min","lag_time_max",
     "n_pairs","n_trials_total")
   metrics<-c("n_trials_acf_defined","autocovariance","autocorrelation",
