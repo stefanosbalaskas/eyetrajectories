@@ -1,0 +1,124 @@
+name: Native generalized profiles and mixed bootstrap widths frozen source
+on:
+  pull_request:
+    paths:
+      - "R/native-generalized-fosr-prediction.R"
+      - "R/native-mixed-bootstrap-width-comparison.R"
+      - "R/native-fpcr-future-prediction-interval.R"
+      - "tests/testthat/test-native-generalized-profile-fpcr-future-full-source-20261111.R"
+      - "tests/testthat/test-native-mixed-width-full-source-20261111.R"
+      - "tests/testthat/test-native-generalized-fosr-prediction.R"
+      - "tests/testthat/test-native-mixed-bootstrap-width-comparison.R"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/reviewed_source_contract_closures_v1.csv"
+      - "docs/source_contract_reviews/generalized_function_on_scalar_predict.json"
+      - "docs/source_contract_reviews/compare_functional_mixed_effects_bootstraps.json"
+      - ".github/workflows/native-generalized-profile-mixed-width-full-source-20261111.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  author-review-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check current census and all frozen six-domain SHA256 receipts
+        shell: bash
+        run: |
+          python - <<'PY'
+          import csv,hashlib,json
+          from pathlib import Path
+          root=Path(".")
+          ledger=list(csv.DictReader((root/"inst/extdata/native_source_contract_gaps_stage22.csv").open(encoding="utf-8",newline="")))
+          nonfunctions=list(csv.DictReader((root/"inst/extdata/native_nonfunction_source_gaps_v1.csv").open(encoding="utf-8",newline="")))
+          registry=list(csv.DictReader((root/"inst/extdata/reviewed_source_contract_closures_v1.csv").open(encoding="utf-8",newline="")))
+          names=("generalized_function_on_scalar_predict",
+                 "compare_functional_mixed_effects_bootstraps")
+          assert len(ledger)==203 and len(nonfunctions)==1
+          n=sum(row["unresolved_source_gap"]=="TRUE" for row in ledger)
+          other=sum(row["unresolved"]=="TRUE" for row in nonfunctions)
+          assert n<=112 and other==1,(n,other)
+          assert 508-n-other>=395
+          for name in names:
+              record,=[r for r in ledger if r["python_name"]==name]
+              receipt,=[r for r in registry if r["python_name"]==name]
+              assert record["unresolved_source_gap"]=="FALSE"
+              assert receipt["independently_certified"]=="FALSE"
+              raw=(root/receipt["review_record_path"]).read_bytes()
+              assert hashlib.sha256(raw).hexdigest()==receipt["review_record_sha256"]
+              review=json.loads(raw)
+              assert review["python_name"]==name
+              assert review["independently_certified"] is False
+              assert review["frozen_python_commit"]=="c1cd95ad718327550f7e55393ff38582872f7a94"
+              assert {x["kind"] for x in review["case_evidence"]}=={
+                  "source_signature","accepted_input_domain","numerical_outputs",
+                  "exception_semantics","returned_schema","scientific_estimand"}
+              for case in review["native_files"]+review["case_evidence"]:
+                  actual=hashlib.sha256((root/case["path"]).read_bytes()).hexdigest()
+                  assert actual==case["sha256"],case["path"]
+          # The future outcome resampling contract remains *open*:
+          # random_state=None in native R uses a different unseeded stream.
+          open_future,=[r for r in ledger if r["python_name"]=="fpca_regression_future_prediction_interval"]
+          assert open_future["unresolved_source_gap"]=="TRUE"
+          print(f"{508-n-other}/508 author-reviewed; {n} callable and {other} noncallable unresolved")
+          PY
+  native-r:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Compare generalized profile, mixed widths, and future boundary source tests
+        shell: bash
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          testthat::test_local(".",filter="native-generalized-profile-fpcr-future-full-source-20261111|native-mixed-width-full-source-20261111|native-generalized-fosr-prediction|native-mixed-bootstrap-width-comparison",reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
+  frozen-python:
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        id: py
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Full typed Python source tables, profile fields and seeded FPCR sensitivity
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.py.outputs.python-path }}
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          stopifnot(identical(et_python_version(),"1.2.0"))
+          testthat::test_local(".",filter="native-generalized-profile-fpcr-future-full-source-20261111|native-mixed-width-full-source-20261111|native-generalized-fosr-prediction|native-mixed-bootstrap-width-comparison",reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
