@@ -1,0 +1,66 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "compare_functional_mixed_effects_residual_diagnostics",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/functional_mixed_effects_diagnostics.py::compare_functional_mixed_effects_residual_diagnostics",
+  "native_signature": "etr_compare_functional_mixed_effects_residual_diagnostics(reference,comparison,max_lag,reference_label='reference',comparison_label='comparison',residual_scale='raw')",
+  "reviewer_statement": "Developer-side source-semantic scientific review based on frozen Python 1.2, full mathematical outputs and row/field geometry, input/boundary cases and direct source-typed differential tests committed. Cross-platform and pinned-Python exact-head GitHub Actions remain queued; this is not independent scientific certification.",
+  "native_language_semantic_policy": "Source mathematical result represented in native R scientific arrays/data.frames, with source-specific input mode where needed, not Python runtime object identity. Source-shaped result validation is not an assertion of upstream optimizer parity or Python exception class matching.",
+  "native_files": [
+    {
+      "path": "R/native-joint-source-residual-view.R",
+      "sha256": "f70749c52587b61ae50ed45b7ad5f02e70d4594b63522ae5cef964d90956cfb2"
+    },
+    {
+      "path": "R/native-mixed-residual-comparison.R",
+      "sha256": "9d7b83c2ef600b60f41eaba572757415fd1dcc54e2be71ee86fef1a633d34639"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-residual-sensitivity-full-source-20261111.R",
+      "sha256": "7269f14c3eef18b0df371966401aec9f2081cb825c7e0a8d3a8068bff5278b56",
+      "description": "Published Python typed mixed-effects fitted source results for reference and comparison, declared maximum lag, labels and raw or whitened scale. Source-shaped R residual postfit scientific records are validated without model refitting."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-residual-sensitivity-full-source-20261111.R",
+      "sha256": "7269f14c3eef18b0df371966401aec9f2081cb825c7e0a8d3a8068bff5278b56",
+      "description": "Converged finite fitted source residual arrays with aligned curve, participant, response dimension, time unit and exactly matched irregular time grid; iid identity or fitted symmetric positive-definite serial residual correlation; mixed 3-curve repeated participant inputs."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-residual-sensitivity-full-source-20261111.R",
+      "sha256": "7269f14c3eef18b0df371966401aec9f2081cb825c7e0a8d3a8068bff5278b56",
+      "description": "Source centered within-trial autocovariance, normalized ACF, physical-lag min/mean/max, pair-weighted overall summaries, exact inner one-to-one merge keys and comparison minus reference deltas on raw or Cholesky-whitened residuals."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-residual-sensitivity-full-source-20261111.R",
+      "sha256": "7269f14c3eef18b0df371966401aec9f2081cb825c7e0a8d3a8068bff5278b56",
+      "description": "Nonconverged source fit, mismatched time/cohort/dimension/participant mapping, malformed residual covariance, zero covariance variance for source view, bad maximum lag and unrecognized residual scale fail closed."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-residual-sensitivity-full-source-20261111.R",
+      "sha256": "7269f14c3eef18b0df371966401aec9f2081cb825c7e0a8d3a8068bff5278b56",
+      "description": "Complete 20-column source comparison pandas table as native R data.frame: labels, six inner join keys, four reference and four comparison metrics, three signed delta columns, all in source column order."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-residual-sensitivity-full-source-20261111.R",
+      "sha256": "7269f14c3eef18b0df371966401aec9f2081cb825c7e0a8d3a8068bff5278b56",
+      "description": "Descriptive sensitivity of residual-dependence diagnostics between two predeclared fitted models, not an estimator reconstruction, covariance selection, goodness-of-fit ranking or automated hypothesis test."
+    }
+  ],
+  "independent_review_status": "Provisional author-reviewed with exact SHA256 provenance, no independent certification; exact-head CI pending.",
+  "language_specific_limits": [
+    "R consumes validated postfit source-shaped scientific records; it does not claim to reproduce Python's upstream MixedLM optimizer.",
+    "Python fitted dataclass identity and Python exception classes are not native R objects, and existing native mixed moments are separate estimators.",
+    "Comparison labels are validated native strings, and source output strings are retained; arbitrary non-string Python label coercion is not claimed."
+  ]
+}
