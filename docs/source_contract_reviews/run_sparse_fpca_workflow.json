@@ -1,0 +1,68 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "run_sparse_fpca_workflow",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_SCIENTIFIC_CONTRACT_REVIEW_ON_DECLARED_DOMAIN",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/workflows/_sparse_fpca.py::run_sparse_fpca_workflow; workflows/_sparse_shared.py; sparse_native.py::fit_sparse_fpca",
+  "native_signature": "etr_run_sparse_fpca_workflow(trajectories,config,observation_process=NULL,strict_source_record=TRUE)",
+  "reviewer_statement": "Provisional native R source-scientific review of the W2 sparse FPCA result schema and direct frozen Python 1.2 fixed/uncertainty comparisons, with existing source covariance, selection and observation diagnostics primitives. Neither exact-head green CI nor full Python source runtime classes or independent certification have been established.",
+  "native_language_semantic_policy": "R-native irregular PACE computation remains genuine and uses no Python backend. The source-scientific 12-field record has 27 ordered config fields, 7 decisions, 4 source provenance fields, measured R elapsed times and source scientific tables. Native R fit and dataclass identities are retained as native R, not represented as Python objects; selected-mode grouping requires an explicit NumPy sort policy.",
+  "native_files": [
+    {
+      "path": "R/native-bounded-model-workflows.R",
+      "sha256": "5314cfaccc65dc1a4bba76ed56ba37d251def522059a3ee81fcbaeb251e795bb"
+    },
+    {
+      "path": "R/native-sparse-fpca-w2-source-workflow-record.R",
+      "sha256": "20e31005ca7ff6b8a3f71b96d02d54e9e5a6a8c8bc774b62cd7474aa81fc0fc0"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-sparse-fpca-w2-workflow-strict-20261112.R",
+      "sha256": "1f39f89b5ad6bf9e1ab0ebdf783a08502befb0889af92ea543f7c1d4956435a8",
+      "description": "Frozen Python W2 run_sparse_fpca_workflow(trajectories: IrregularTrajectorySet, *, config: SparseFPCAWorkflowConfig, observation_process=None) orchestrates fixed or audited selected bandwidths, native sparse PACE, optional posterior score uncertainty, observation-process diagnostics, measured workflow steps, scientific decisions, reports and tables."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-sparse-fpca-w2-workflow-strict-20261112.R",
+      "sha256": "1f39f89b5ad6bf9e1ab0ebdf783a08502befb0889af92ea543f7c1d4956435a8",
+      "description": "Native R source covariance backend, complete finite irregular samples, explicitly named dimension, grid and positive bandwidths or validated source candidate selection, analyst-declared noise method and smoothing/PSD/support/error rules, fixed or optional score uncertainty. Strict source mode rejects fdapace and R-only supplied selector fold indices. GroupKFold requires a declared NumPy tie profile."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-sparse-fpca-w2-workflow-strict-20261112.R",
+      "sha256": "1f39f89b5ad6bf9e1ab0ebdf783a08502befb0889af92ea543f7c1d4956435a8",
+      "description": "The committed exact Python 1.2 direct comparison exercises fixed-bandwidth native PACE and optional conditional-score uncertainty, comparing mean, covariance, spectrum, eigenfunctions, quadrature, scores, posterior covariance/SE/correlation, score tables, decisions, measured steps and four-key provenance. The estimator also has earlier pinned standalone numerical and bandwidth/observation tests. CI passing is not yet verified."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-sparse-fpca-w2-workflow-strict-20261112.R",
+      "sha256": "1f39f89b5ad6bf9e1ab0ebdf783a08502befb0889af92ea543f7c1d4956435a8",
+      "description": "Source-oriented public mode rejects unsupported native backend, nonlogical source flag, R-only CV fold assignments or unsupported selection fields. Invalid fixed/selected bandwidths, PACE covariance rank and support, score conditioning, and declared native exception categories retain explicit failure rather than silent fallback. Python exception classes and opaque dataclass identity are not duplicated in R."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-sparse-fpca-w2-workflow-strict-20261112.R",
+      "sha256": "1f39f89b5ad6bf9e1ab0ebdf783a08502befb0889af92ea543f7c1d4956435a8",
+      "description": "Strict W2 source-scientific representation exposes 12 canonical outer fields: workflow_schema_version, workflow_contract, config, fit, bandwidth_selection, score_uncertainty, observation_diagnostics, steps, decisions, provenance, reports and tables; 27 ordered source-scientific config fields, 7 decisions, 4 outer provenance fields, source-timed steps, source-matching fit/report/table names, and no extra R-only score_diagnostics table. Python typed runtime objects are not impersonated."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-sparse-fpca-w2-workflow-strict-20261112.R",
+      "sha256": "1f39f89b5ad6bf9e1ab0ebdf783a08502befb0889af92ea543f7c1d4956435a8",
+      "description": "Sparse irregular one-dimensional local-linear Epanechnikov covariance smoothing, fixed or audited selected bandwidths and model-based PACE coefficient scores, estimated or fixed measurement noise, uncertainty conditional on observed sparse times and values, no raw interpolation onto a new trajectory grid or unreported model selection. Native alternative fdapace remains explicitly distinct and excluded from source-scientific mode."
+    }
+  ],
+  "independent_review_status": "Provisional author review; paired Python comparison tests committed but no confirmed passing CI or independent external certification.",
+  "language_specific_limits": [
+    "Python SparseFPCAWorkflowResult and its nested dataclasses, pandas metadata semantics and exception identities do not exist as identical native R objects.",
+    "Direct new W2 oracle currently covers fixed-bandwidth/uncertainty cases; optional selector and observation paths build on previous native source tests but require broader exact-head Python workflow differential evidence.",
+    "The native source model retains local smoothing and score-conditioning numeric thresholds, but all ill-conditioned domains and unseeded/grouped permutations are not independently verified.",
+    "Runtime elapsed_seconds are actually measured separately in R and Python and cannot be expected byte-identical.",
+    "No guarantee of numerical agreement until GitHub CI and independent external review have passed; no merge into main or CRAN qualification asserted."
+  ]
+}
