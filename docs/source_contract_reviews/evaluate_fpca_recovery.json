@@ -1,0 +1,73 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "evaluate_fpca_recovery",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/recovery.py::evaluate_fpca_recovery",
+  "native_signature": "etr_evaluate_fpca_recovery(result, truth)",
+  "reviewer_statement": "Author-side source scientific review against frozen Python 1.2. Prior direct-source oracle cases for evaluate_fpca_recovery are retained. Fifteen additional proposed full assessment-frame and provenance comparisons test all three FPCA recovery families across five scientific parameter/diagnostic domains. Shared sparse Boolean score condition and covariance correction coercion now matches published pandas/float(bool) source behavior. Direct CI and independent scientific certification are pending.",
+  "native_language_semantic_policy": "Python frozen FPCA/SparseFPCA/SparseMFPCA and truth dataclasses map to explicitly typed/validated native scientific R result records; the returned assessment tuple and provenance become source-ordered registered R scientific metric lists. Core mathematical source estimands, 0-based component indexing and statistical tolerances are reviewed while runtime identity and exception classes remain language-specific.",
+  "native_files": [
+    {
+      "path": "R/native-fpca-known-truth-recovery.R",
+      "sha256": "a1c4830abe8bdd2007f660c9ca8a69081da0e55686dde488e4c91fa87b0670d6"
+    },
+    {
+      "path": "R/native-fpca-multicomponent-recovery.R",
+      "sha256": "7c9948a7e69ca4362c77c9cfb5d6fcf473eb8ca2461293259847e2a4e481e804"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-three-fpca-recovery-source-20261111.R",
+      "sha256": "2d1cce986d97f75989259cd847e2b9804ede37646d1b4621719602a8ddcb2121",
+      "description": "Frozen published eyetrajectoriespy==1.2.0 recovery.py::evaluate_fpca_recovery taking typed fit and FunctionalSimulationTruth; native scientific records mapped without importing Python."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-three-fpca-recovery-source-20261111.R",
+      "sha256": "2d1cce986d97f75989259cd847e2b9804ede37646d1b4621719602a8ddcb2121",
+      "description": "Five related typed full-source records: baseline numeric score-condition diagnostic, pandas Boolean diagnostic with float(True) PSD correction, status-only diagnostics, empty score diagnostics, and zero declared measurement-noise. Prior multi-component and tied-eigenspace source oracles retained."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-three-fpca-recovery-source-20261111.R",
+      "sha256": "2d1cce986d97f75989259cd847e2b9804ede37646d1b4621719602a8ddcb2121",
+      "description": "Fifteen complete Python 1.2 and native R data.frame source comparisons covering three linked evaluator exports over five scientific records: all nine semantic metric columns, exact row order and missingness, absolute/relative metrics, provenance, alignment, covariance blocks, and numerical angular precision qualification."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-three-fpca-recovery-source-20261111.R",
+      "sha256": "2d1cce986d97f75989259cd847e2b9804ede37646d1b4621719602a8ddcb2121",
+      "description": "Native source scientific records reject invalid fitted truth grid, scaling/geometry, absent sparse dimensions, invalid covariance operator shape and wrong declared quadrature; Python dataclass class identity, NumPy warning identity and arbitrary malformed runtime objects are not claimed."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-three-fpca-recovery-source-20261111.R",
+      "sha256": "2d1cce986d97f75989259cd847e2b9804ede37646d1b4621719602a8ddcb2121",
+      "description": "Python FunctionalRecoveryAssessment metric tuple and provenance map correspond to native R scientific value records, reconstructible into exact nine-column assessment data.frame; source component numbers and alignment provenance maintained."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-three-fpca-recovery-source-20261111.R",
+      "sha256": "2d1cce986d97f75989259cd847e2b9804ede37646d1b4621719602a8ddcb2121",
+      "description": "Exact-grid unscaled dense FPCA/MFPCA known-truth recovery, signed component assignment, eigen spectrum and population covariance operator, source 0-based component metrics, finite score pairs and weighted principal-angle/reconstruction geometry."
+    }
+  ],
+  "extra_source_evidence": [
+    {
+      "path": "tests/testthat/test-native-fpca-multicomponent-recovery-source.R",
+      "sha256": "e6194a0f5ea0cb87d51ea4cdce0ab1d670771f522b432f6ea369b7020b8c1367"
+    }
+  ],
+  "independent_review_status": "Developer-reviewed source-semantic evidence; native Linux/macOS/Windows and frozen Python 1.2 exact-head CI not yet passed, independent certification=0.",
+  "language_specific_limits": [
+    "Pandas and frozen scientific dataclass runtime identities differ from native R list/assessment objects",
+    "Acos at a cosine numerically near 1 requires machine-roundoff-derived absolute angular tolerance while all other metrics use tight numerical tolerances",
+    "Python exception and NumPy warning class equality are not claimed for malformed source object identities or arbitrary custom inputs",
+    "These contracts assess known truth from supplied fits and do not certify the FPCA or sparse PACE estimation algorithms or source simulator RNG"
+  ]
+}

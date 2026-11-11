@@ -53,8 +53,8 @@
 }
 
 .etr_three_recovery_compare <- function(a,b,variant,name){
-  expect_s3_class(a,"data.frame",info=paste(variant,name))
-  expect_s3_class(b,"data.frame",info=paste(variant,name))
+  expect_s3_class(a,"data.frame")
+  expect_s3_class(b,"data.frame")
   expect_identical(names(a),names(b),info=paste(variant,name,"columns"))
   expect_identical(nrow(a),nrow(b),info=paste(variant,name,"rows"))
   for(col in names(a)){
