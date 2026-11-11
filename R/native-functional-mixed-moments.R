@@ -402,9 +402,10 @@ etr_functional_mixed_effects_variance_decomposition <- function(fit,
     # An absent short optional field must not match the longer
     # trial_random_effect_covariance field.
     trial<-fit[["trial_random_effect",exact=TRUE]]
-    if(!is.null(trial)){
-      .etr_assert(identical(trial,"functional_intercept"),
-        "unsupported source trial_random_effect")
+    # Frozen Python emits trial variance only for functional_intercept.
+    # For every other declared trial mode it silently retains the other
+    # components; do not substitute an R-only rejection here.
+    if(identical(trial,"functional_intercept")){
       .etr_assert(!is.null(fit$trial_random_basis)&&
         !is.null(fit$trial_random_effect_covariance),
         "trial random-effect result is missing its basis/covariance")
