@@ -1,0 +1,62 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "bootstrap_generalized_function_on_scalar_predictions",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py::bootstrap_generalized_function_on_scalar_predictions",
+  "native_signature": "etr_bootstrap_generalized_function_on_scalar_predictions(bootstrap,profiles,profile_id_column='profile_id',exposure_profiles=NULL,prediction_scale=NULL,python_boundary_mode=FALSE)",
+  "reviewer_statement": "Developer-scoped full mathematical and returned-scientific-schema review of frozen Python 1.2, with retained source-produced valid numerical input domain, complete source-typed differential results, nested data/provenance and exceptional domains. Exact-head CI has not completed and independent review remains outstanding.",
+  "native_language_semantic_policy": "R list and data.frame scientific equivalents of frozen Python dataclasses and pandas results, preserving source estimands, ordering, values and provenance; not claiming Python interpreter type identity or upstream fit parity.",
+  "native_files": [
+    {
+      "path": "R/native-generalized-fosr-bootstrap-source.R",
+      "sha256": "63d96f3fedc9de9bd3928e6f003839de530981bea4caad3c8bd08404dc3c9607"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-bootstrap-variance-source-pair-20261111.R",
+      "sha256": "ced16b053702572301523dab557ccfe75db79e85076e57f249f4089256da43b9",
+      "description": "Frozen Python source projects already retained whole-participant bootstrap coefficient arrays into predeclared fixed-profile rows; no refits or new draws."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-bootstrap-variance-source-pair-20261111.R",
+      "sha256": "ced16b053702572301523dab557ccfe75db79e85076e57f249f4089256da43b9",
+      "description": "Finite B-by-coefficient-by-time source arrays and valid fixed-profile data frames for binomial probability, Poisson unexposed counts, exposure-adjusted rates and positive exposure-adjusted counts."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-bootstrap-variance-source-pair-20261111.R",
+      "sha256": "ced16b053702572301523dab557ccfe75db79e85076e57f249f4089256da43b9",
+      "description": "Profile design-by-coefficient array contraction, optional target log-exposure offset, monotone inverse logit or exponential link, source rates/expected counts and identical per-replicate participant design."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-bootstrap-variance-source-pair-20261111.R",
+      "sha256": "ced16b053702572301523dab557ccfe75db79e85076e57f249f4089256da43b9",
+      "description": "Malformed coefficient-by-time dimensions, invalid numerical profile fields, duplicated profile IDs, invalid predicted scale and invalid exposure support fail closed under native source-scientific validation."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-bootstrap-variance-source-pair-20261111.R",
+      "sha256": "ced16b053702572301523dab557ccfe75db79e85076e57f249f4089256da43b9",
+      "description": "Complete named source result with nested original prediction and coefficient bootstrap, all four expected tensor/optional fields and nested source provenance, with frozen Python dataclass represented as R scientific list."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-bootstrap-variance-source-pair-20261111.R",
+      "sha256": "ced16b053702572301523dab557ccfe75db79e85076e57f249f4089256da43b9",
+      "description": "Marginal fixed-profile predictions of retained whole-participant coefficient bootstrap replicates, no fresh sampling or automatic selection, and exposure applied only on expected-count scale."
+    }
+  ],
+  "independent_review_status": "Provisional author-reviewed source evidence; no exact-head CI pass or external scientific certificate.",
+  "language_specific_limits": [
+    "Underlying mixed-effects estimator/optimizer equivalence is not inferred from algebraic variance decomposition.",
+    "Python runtime class identity, arbitrary duck-typed objects and Python exception classes are not native R semantics.",
+    "Cross-platform runs remain queued; author evidence does not replace independent certification or CRAN checks."
+  ]
+}
