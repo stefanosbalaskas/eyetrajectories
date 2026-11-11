@@ -57,8 +57,8 @@ test_that("source W4 returns 11 field top-level and complete nested result",{
       "automatic_embedding_parameter_selection",
       "automatic_rqa_parameter_selection"))
     expect_identical(names(ans$decisions),c(
-      "curve","dimensions","embedding_dimension","delay","radius",
-      "delay_units","metric","theiler_window","theiler_window_units",
+      "curve","dimensions","embedding_dimension","delay","delay_units",
+      "radius","metric","theiler_window","theiler_window_units",
       "min_diagonal_length","min_vertical_length",
       "resolved_delay_samples","resolved_theiler_window_samples"))
     expect_identical(vapply(ans$steps,function(v)v[["function"]],
@@ -186,7 +186,8 @@ w4_x=et.TrajectorySet(
     for(j in 1:3){
       step<-reticulate::py_get_item(py$steps,as.integer(j-1L))
       expect_identical(native$steps[[j]]$name,et_to_r(step$name))
-      expect_identical(native$steps[[j]][["function"]],et_to_r(step[["function"]]))
+      expect_identical(native$steps[[j]][["function"]],
+        et_to_r(reticulate::py_get_attr(step,"function")))
       expect_identical(native$steps[[j]]$status,et_to_r(step$status))
       expect_equal(native$steps[[j]]$parameters,
         et_to_r(step$parameters),ignore_attr=TRUE)
