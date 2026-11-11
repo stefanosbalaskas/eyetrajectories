@@ -12,7 +12,7 @@
   "native_files": [
     {
       "path": "R/native-generalized-gee-bootstrap.R",
-      "sha256": "aca33fa121b021c8b33923cc732c79587ab95ad93a43457abd647c240222ffc8"
+      "sha256": "47e044f5e10b84ba960e217a0b5db34cbf1f43542b94eb760619de8967fc9330"
     },
     {
       "path": "R/native-generalized-gee-solver.R",
