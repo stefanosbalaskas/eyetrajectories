@@ -96,8 +96,10 @@
       "number of qualifying lines"),
     corm_definition="100 * mean upper-triangle recurrence lag / (n-1)")
   # All source decisions include the explicit analyst/derived attribution.
-  source_decisions<-lapply(source_config[
-    setdiff(source_config_fields,"preprocessing")],
+  source_decision_fields<-c("curve","dimensions","embedding_dimension",
+    "delay","delay_units","radius","metric","theiler_window",
+    "theiler_window_units","min_diagonal_length","min_vertical_length")
+  source_decisions<-lapply(source_config[source_decision_fields],
     function(value)list(value=value,source="analyst",criterion=NULL))
   source_decisions$resolved_delay_samples<-list(
     value=as.integer(embedding$delay_samples),source="derived",
