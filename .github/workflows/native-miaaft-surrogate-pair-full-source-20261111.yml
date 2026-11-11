@@ -1,0 +1,121 @@
+name: Native MIAAFT generator and Lyapunov surrogate frozen Python 1.2 source
+on:
+  pull_request:
+    paths:
+      - "R/native-multivariate-iaaft-generator.R"
+      - "R/native-multivariate-surrogate-nonlinearity.R"
+      - "R/native-divergence.R"
+      - "tests/testthat/test-native-miaaft-pair-full-source-20261111.R"
+      - "tests/testthat/test-native-multivariate-iaaft-generator.R"
+      - "tests/testthat/test-native-multivariate-surrogate-nonlinearity.R"
+      - "tests/testthat/test-native-miaaft-fixed-permutation-source.R"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/reviewed_source_contract_closures_v1.csv"
+      - "docs/source_contract_reviews/generate_multivariate_iaaft_surrogates.json"
+      - "docs/source_contract_reviews/multivariate_surrogate_nonlinearity_test.json"
+      - ".github/workflows/native-miaaft-surrogate-pair-full-source-20261111.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Check full SHA256 six-domain MIAAFT source evidence and 411/508 ledger
+        shell: bash
+        run: |
+          python - <<'PY'
+          import csv,hashlib,json
+          from pathlib import Path
+          root=Path(".")
+          gaps=list(csv.DictReader((root/"inst/extdata/native_source_contract_gaps_stage22.csv").open(encoding="utf-8",newline="")))
+          others=list(csv.DictReader((root/"inst/extdata/native_nonfunction_source_gaps_v1.csv").open(encoding="utf-8",newline="")))
+          registry=list(csv.DictReader((root/"inst/extdata/reviewed_source_contract_closures_v1.csv").open(encoding="utf-8",newline="")))
+          assert len(gaps)==203 and len(others)==1
+          remaining=sum(x["unresolved_source_gap"]=="TRUE" for x in gaps)
+          other_remaining=sum(x["unresolved"]=="TRUE" for x in others)
+          assert remaining<=96 and other_remaining==1,(remaining,other_remaining)
+          assert 508-remaining-other_remaining>=411
+          for name in ("generate_multivariate_iaaft_surrogates",
+                       "multivariate_surrogate_nonlinearity_test"):
+              row,=(x for x in gaps if x["python_name"]==name)
+              assert row["unresolved_source_gap"]=="FALSE",name
+              receipt,=(x for x in registry if x["python_name"]==name)
+              assert receipt["independently_certified"]=="FALSE"
+              raw=(root/receipt["review_record_path"]).read_bytes()
+              assert hashlib.sha256(raw).hexdigest()==receipt["review_record_sha256"]
+              review=json.loads(raw)
+              assert review["python_name"]==name
+              assert review["independently_certified"] is False
+              assert review["frozen_python_commit"]=="c1cd95ad718327550f7e55393ff38582872f7a94"
+              assert {e["kind"] for e in review["case_evidence"]}=={
+                "source_signature","accepted_input_domain","numerical_outputs",
+                "exception_semantics","returned_schema","scientific_estimand"}
+              for item in review["native_files"]+review["case_evidence"]:
+                  p=root/item["path"]
+                  assert hashlib.sha256(p.read_bytes()).hexdigest()==item["sha256"],p
+          print(f"{508-remaining-other_remaining}/508 provisional; "
+                f"{remaining} callable + {other_remaining} noncallable gaps; "
+                "0 independently certified")
+          PY
+  native-r:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Native exact-source MIAAFT surrogate and LLE inference tests
+        shell: bash
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          testthat::test_local(".",filter="native-miaaft-pair-full-source-20261111|native-multivariate-iaaft-generator|native-multivariate-surrogate-nonlinearity|native-miaaft-fixed-permutation-source",reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
+  frozen-python-1-2:
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        id: py
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Exact pinned Python 1.2 MIAAFT generator and Rosenstein Lyapunov source oracle
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.py.outputs.python-path }}
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          stopifnot(identical(et_python_version(),"1.2.0"))
+          testthat::test_local(".",filter="native-miaaft-pair-full-source-20261111|native-multivariate-iaaft-generator|native-multivariate-surrogate-nonlinearity|native-miaaft-fixed-permutation-source",reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
