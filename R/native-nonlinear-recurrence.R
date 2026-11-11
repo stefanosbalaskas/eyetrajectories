@@ -206,9 +206,18 @@
 #'   100000 already-sparse source states without a dense conversion.
 #'   Triangle counting uses forward-neighbor intersections and
 #'   component enumeration uses queue-head breadth-first search.
+#' @param python_boundary_mode FALSE retains the R legacy record and optional
+#'   dense output. TRUE accepts a complete frozen Python RecurrenceResult
+#'   scientific record and returns only the source canonical graph fields,
+#'   with native sparse Matrix standing for SciPy CSR.
 #' @export
 etr_recurrence_network <- function(recurrence,
-    adjacency_storage=c("dense","sparse")){
+    adjacency_storage=c("dense","sparse"),python_boundary_mode=FALSE){
+  .etr_assert(is.logical(python_boundary_mode)&&
+    length(python_boundary_mode)==1L&&!is.na(python_boundary_mode),
+    "python_boundary_mode must be TRUE or FALSE")
+  if(isTRUE(python_boundary_mode))
+    return(.etr_recurrence_network_python_source(recurrence))
   sparse_source<-inherits(recurrence$matrix,"sparseMatrix")
   if(sparse_source) adj<-.etr_recurrence_sparse_source(recurrence)
   else .etr_recurrence_internal(recurrence,"auto")
@@ -365,7 +374,8 @@ etr_recurrence_network_node_frame <- function(result){
   n<-length(result$degree)
   data.frame(
     node_index=seq_len(n)-1L,
-    time=result$source_recurrence$time,
+    time=if(!is.null(result$source_recurrence$time_a))
+      result$source_recurrence$time_a else result$source_recurrence$time,
     degree=as.integer(result$degree),
     normalized_degree=result$normalized_degree,
     local_clustering=result$local_clustering,
@@ -381,7 +391,10 @@ etr_recurrence_network_summary_frame <- function(result){
     "result must be native recurrence network")
   data.frame(n_nodes=as.integer(length(result$degree)),
     edge_count=result$edge_count,graph_density=result$graph_density,
-    source_achieved_recurrence_rate=result$source_recurrence$recurrence_rate,
+    source_achieved_recurrence_rate=if(!is.null(
+      result$source_recurrence$achieved_recurrence_rate))
+        result$source_recurrence$achieved_recurrence_rate else
+        result$source_recurrence$recurrence_rate,
     mean_degree=mean(result$degree),
     mean_local_clustering=result$mean_local_clustering,
     transitivity=result$transitivity,
