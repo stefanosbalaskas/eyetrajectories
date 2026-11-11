@@ -179,6 +179,12 @@ etr_functional_simulation_scenario_frame <- function(scenarios) {
     inherits(x,"etr_functional_simulation_scenario"),logical(1L))),
     "every scenario must be a native functional simulation scenario")
   rows<-lapply(scenarios,function(s){
+    # Python 1.2 FunctionalSimulationScenario is frozen and validated by
+    # __post_init__. Native S3 lists can be mutated after construction:
+    # re-check the full scientific declaration before building the table.
+    # This prevents a stale/edited R record from bypassing Python's
+    # structural invariants or producing a superficially valid source row.
+    s<-do.call(etr_functional_simulation_scenario,unclass(s))
     counts<-s$samples_per_curve
     if(is.null(counts))counts<-as.integer(length(s$truth_grid))
     data.frame(scenario=s$name,
