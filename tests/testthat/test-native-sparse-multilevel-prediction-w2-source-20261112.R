@@ -207,7 +207,7 @@ def _w2_irregular(time,values,ids,field,metadata,dimensions):
     values=reticulate::r_to_py(x$values),
     ids=reticulate::r_to_py(as.list(as.character(x$curve_ids))),
     field=field,metadata=reticulate::r_to_py(
-      as.list(as.character(x$metadata[[field]]))),
+      as.list(x$metadata[[field]])),
     dimensions=reticulate::r_to_py(as.list(x$dimension_names)))
   ml<-.etr_spml_fixture()
   cfg<-c(list(backend="native_covariance"),.etr_spml_options())
