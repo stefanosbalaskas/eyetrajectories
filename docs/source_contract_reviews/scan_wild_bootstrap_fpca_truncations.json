@@ -1,0 +1,63 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "scan_wild_bootstrap_fpca_truncations",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/wild_selection.py::scan_wild_bootstrap_fpca_truncations; src/eyetrajectoriespy/types.py::FPCAWildBootstrapTruncationScanResult",
+  "native_signature": "etr_scan_wild_bootstrap_fpca_truncations(trajectories,outcome,candidate_components,targets=NULL,n_bootstrap=1000L,residual_components=2L,scaling='none',multiplier='normal',confidence_level=.95,independent_unit_column=NULL,random_state=0L,multiplier_draws=NULL,random_engine='numpy',python_boundary_mode=TRUE)",
+  "reviewer_statement": "Provisional source-scientific six-domain author review of complete canonical return fields, seeded exact scientific multiplier and fixed-FPCA estimating equations. Python 1.2 typed differential comparisons committed but exact-head CI has not been executed green; zero independent certifications.",
+  "native_language_semantic_policy": "R S3 source-scientific data records and native FPCA represent Python frozen dataclass/SciPy scientific arrays, not Python class or statsmodels object identity. RNG comparison claims only explicit PCG64 seeds, not unseeded entropy realizations.",
+  "native_files": [
+    {
+      "path": "R/native-wild-bootstrap-truncation-scan.R",
+      "sha256": "833984b77fe4994233799adf1915c90a6993f85ae03421a6e0019430b35d81ce"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-wild-paired-full-source-20261111.R",
+      "sha256": "3120bd98b187a4faa5595eb2c9fa83ea35c5faba69f6319011bfe7754d59c823",
+      "description": "Frozen Python shared-multiplier FPCR inference truncation scan over unique consecutive candidates h >= fixed residual/pseudo-truth k with complete trajectories, target configuration and scientific NumPy RNG settings; explicit source-mode canonical output."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-wild-paired-full-source-20261111.R",
+      "sha256": "3120bd98b187a4faa5595eb2c9fa83ea35c5faba69f6319011bfe7754d59c823",
+      "description": "Complete 24-curve observed-grid source FPCA, k=2, candidate h=2,3, B=20, training targets, finite Gaussian scalar outcomes, seeded 7/89 NumPy PCG64 normal/Mammen multipliers, independent-curve row design and valid consecutive candidate domain."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-wild-paired-full-source-20261111.R",
+      "sha256": "3120bd98b187a4faa5595eb2c9fa83ea35c5faba69f6319011bfe7754d59c823",
+      "description": "One fixed FPCA basis fitted at maximum candidate h, identical rowwise Mammen/normal wild multipliers shared across candidate h, k-component pseudo-response, h-specific heteroscedastic standard errors, source higher-method root quantiles, interval widths/centers, all fixed-target projections and full B-by-target-by-h studentized root tensor."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-wild-paired-full-source-20261111.R",
+      "sha256": "3120bd98b187a4faa5595eb2c9fa83ea35c5faba69f6319011bfe7754d59c823",
+      "description": "Strictly consecutive ascending candidate grid of size at least 2, valid nonzero source rank, all h >= k, matched target geometry, no repeated independent unit identifiers, no nonfinite data, no degenerate nonzero root zero SE; rejects native fixed multiplier replay and base-R seeds when strict source mode."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-wild-paired-full-source-20261111.R",
+      "sha256": "3120bd98b187a4faa5595eb2c9fa83ea35c5faba69f6319011bfe7754d59c823",
+      "description": "Twenty canonical FPCAWildBootstrapTruncationScanResult scientific fields with ordered source-shaped provenance and source-canonical candidate h vector; no native-only RNG match flags or source certification boolean in strict source mode."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-wild-paired-full-source-20261111.R",
+      "sha256": "3120bd98b187a4faa5595eb2c9fa83ea35c5faba69f6319011bfe7754d59c823",
+      "description": "Sensitivity of fixed-target centered FPCR inference intervals across predeclared candidate truncations under shared random multipliers, not automatic h selection or simultaneous inference."
+    }
+  ],
+  "independent_review_status": "Provisional author-reviewed scientific contract. CI and independent verification pending.",
+  "language_specific_limits": [
+    "R native FPCA and SciPy Python dataclass/model class object identity differs; scientific numbers are compared within numerical tolerances.",
+    "R-specific fixed multiplier input and base_R generator remain native extensions, prohibited by python_boundary_mode=TRUE.",
+    "random_state=NULL uses an independent ambient R stream and cannot reproduce a particular Python NumPy entropy-driven realization; only seeded deterministic draw domains are claimed.",
+    "Some Python dynamic object coercion and exception classes are not native R types."
+  ]
+}
