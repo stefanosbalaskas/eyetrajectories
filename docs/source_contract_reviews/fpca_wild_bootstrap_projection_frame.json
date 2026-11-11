@@ -1,0 +1,69 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "fpca_wild_bootstrap_projection_frame",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/wild_regression.py::fpca_wild_bootstrap_projection_frame",
+  "native_signature": "etr_fpca_wild_bootstrap_projection_frame(result)",
+  "reviewer_statement": "Developer full six-domain source-semantic review for Python 1.2 fpca_wild_bootstrap_projection_frame; the native R frame retains seven ordered source columns, target identity, numerical inference evidence and per-cell values, as verified by typed frozen Python source and published two-target fixtures. Python dataclass and pandas/exception class identities are different from R S3/data.frame/conditions and not claimed equivalent. Exact-head CI and separate independent certification remain pending.",
+  "native_language_semantic_policy": "Frozen Python typed result dataclass is represented as a checked native R source-shaped record. The published pandas scientific table is represented by a base R data.frame without changing the statistical estimand, fitting an estimator or drawing bootstrap samples. Source error classes and arbitrary invalid Python object protocols are not natively representable.",
+  "native_files": [
+    {
+      "path": "R/native-wild-source-inference.R",
+      "sha256": "96951ac14fecfaca2a98506f5f647ca25142c2a4bc2d10fad6ddb216a08c681f"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-wild-inference-four-full-source.R",
+      "sha256": "e149e572dcc474ca1d0c27186fcc4f31b57264b5df1ba0241bc1388aa73f2662",
+      "description": "Frozen Python 1.2 typed scientific frame source accepts explicit result dataclass; native R accepts scientific source-shaped list or fit analogue; no Python class identity equivalence"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-wild-inference-four-full-source.R",
+      "sha256": "e149e572dcc474ca1d0c27186fcc4f31b57264b5df1ba0241bc1388aa73f2662",
+      "description": "One or more finite precomputed wild-bootstrap fixed-target projection arrays, optional family results, logical reject or decision-stability flags and valid finite probability or threshold fields"
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-wild-inference-four-full-source.R",
+      "sha256": "e149e572dcc474ca1d0c27186fcc4f31b57264b5df1ba0241bc1388aa73f2662",
+      "description": "Pinned three-target Unicode fixture compares every result column cell-by-cell against frozen Python 1.2 actual typed result dataclasses and pandas output, supplementing existing two-target direct Python oracle"
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-wild-inference-four-full-source.R",
+      "sha256": "e149e572dcc474ca1d0c27186fcc4f31b57264b5df1ba0241bc1388aa73f2662",
+      "description": "Native R fails closed on nonfinite or negative scientific uncertainty, invalid target/matrix dimensions, invalid probability values and incomplete logical decision flags; Python exception types are not equivalent R classes"
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-wild-inference-four-full-source.R",
+      "sha256": "e149e572dcc474ca1d0c27186fcc4f31b57264b5df1ba0241bc1388aa73f2662",
+      "description": "seven ordered source columns; Pinned exact source column order and row ordering; native R preserves numerical fields and derives the source's published stable_reject, stable_non_reject and monte_carlo_sensitive precision status labels"
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-wild-inference-four-full-source.R",
+      "sha256": "e149e572dcc474ca1d0c27186fcc4f31b57264b5df1ba0241bc1388aa73f2662",
+      "description": "Observed fixed-target centered projections, bootstrap pseudo-truth projections, heteroscedastic uncertainty, critical values and confidence interval limits without new fitting"
+    }
+  ],
+  "extra_source_evidence": [
+    {
+      "path": "tests/testthat/test-native-wild-source-inference.R",
+      "sha256": "fd01f6244bbb2b18d41fd945c59131f2e9d939aaf3f59df5302b8b08e166e403"
+    }
+  ],
+  "independent_review_status": "Developer-review receipt only; exact-head multi-platform R and pinned Python 1.2 test matrix and independent certification pending",
+  "language_specific_limits": [
+    "Python dataclass differs from checked native R list/S3 record",
+    "Python pandas and R data.frame are language-native table types, not class-identical",
+    "Python exception class identity differs from native R condition types",
+    "Invalid ad hoc Python dataclasses outside scientific fit domain are not supported native inputs"
+  ]
+}
