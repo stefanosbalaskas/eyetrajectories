@@ -50,12 +50,16 @@
     },
     {
       "kind": "scientific_estimand",
-      "path": "inst/extdata/native_mathematical_contract_frame_py120.csv",
-      "sha256": "05e55c0db3c1250a7369306665067130f75417f97d020f1cbee5b7a8798d34ca",
-      "description": "Deterministic static mathematical definitions and LaTeX registry; 41 stable contract keys and 88 aliases; no numerical data transformation or estimator stochasticity."
+      "path": "tests/testthat/test-native-catalog-contract-boundaries.R",
+      "sha256": "54f13840ca3926efa227276745feb270e61d218700d56eab782d6438953725ec",
+      "description": "The frozen scientific meaning is finite immutable mathematical metadata, with all 41 keys and 88 aliases resolved and returned consistently; supplemental source registry CSV pinned separately for deterministic provenance."
     }
   ],
   "outstanding_independent_review": true,
   "scheduled_exact_head_source_oracle": "Native mathematical lookup frozen Python 1.2 full source",
-  "source_identity_note": "The six review categories pin author evidence files and do not constitute signed external certification."
+  "source_identity_note": "The six review categories pin author evidence files and do not constitute signed external certification.",
+  "source_registry_snapshot": {
+    "path": "inst/extdata/native_mathematical_contract_frame_py120.csv",
+    "sha256": "05e55c0db3c1250a7369306665067130f75417f97d020f1cbee5b7a8798d34ca"
+  }
 }
