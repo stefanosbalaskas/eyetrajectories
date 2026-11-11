@@ -143,3 +143,44 @@ test_that("four exact Python 1.2 scenario contracts match every source column",{
       scenarios=reticulate::tuple())),
     "empty source frame")
 })
+
+test_that("Unicode multichannel scenario source table matches all Python 1.2 fields",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("direct frozen Python 1.2 source oracle is opt-in")
+  skip_if_not_installed("jsonlite")
+  covariance<-matrix(c(.04,.018,.018,.09),nrow=2L,byrow=TRUE)
+  native<-etr_functional_simulation_scenario(
+    name="fish's β",truth_grid=c(0,.5,1),eigenvalues=c(1,.35),
+    n_participants=12L,dimension_names=c("bass","eel"),
+    coordinate_system="tank's frame",time_unit="seconds",
+    observation_design="irregular",samples_per_curve=c(3L,5L),
+    measurement_noise_sd=NULL,measurement_noise_covariance=covariance,
+    missingness=list(kind="mcar",probability=.2),
+    phase_variation=list(kind="power",sd=.15),
+    score_distribution="student_t",score_df=3.375,
+    labels=list(locale="Ελληνικά",notes="fish's β"),
+    replicates=2L,seed_start=42L)
+  numpy<-reticulate::import("numpy",convert=FALSE)
+  python<-reticulate::py_call(
+    etpy_get_export("FunctionalSimulationScenario"),
+    name="fish's β",truth_grid=reticulate::r_to_py(list(0,.5,1)),
+    eigenvalues=reticulate::r_to_py(list(1,.35)),
+    n_participants=as.integer(12L),
+    dimension_names=reticulate::tuple("bass","eel"),
+    coordinate_system="tank's frame",time_unit="seconds",
+    observation_design="irregular",
+    samples_per_curve=reticulate::tuple(3L,5L),
+    measurement_noise_sd=reticulate::py_none(),
+    measurement_noise_covariance=numpy$array(covariance,dtype="float64"),
+    missingness=reticulate::dict(kind="mcar",probability=.2),
+    phase_variation=reticulate::dict(kind="power",sd=.15),
+    score_distribution="student_t",score_df=3.375,
+    labels=reticulate::dict(locale="Ελληνικά",notes="fish's β"),
+    replicates=as.integer(2L),seed_start=as.integer(42L))
+  .etr_four_recovery_compare_frame(
+    etr_functional_simulation_scenario_frame(list(native)),
+    et_to_r(reticulate::py_call(
+      etpy_get_export("functional_simulation_scenario_frame"),
+      scenarios=reticulate::tuple(python))),
+    "unicode, irregular, correlated-noise source record")
+})
