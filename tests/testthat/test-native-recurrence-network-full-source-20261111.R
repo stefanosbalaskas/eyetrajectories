@@ -89,8 +89,7 @@ test_that("source disconnected and empty graphs retain NaN transitivity",{
       expect_identical(x$n_connected_components,7L)
       expect_equal(x$isolated_node_fraction,1)
       expect_equal(x$largest_component_fraction,1/7)
-      expect_true(length(x$adjacency@x)==0L ||
-        Matrix::nnzero(x$adjacency)==0L)
+      expect_identical(as.integer(Matrix::nnzero(x$adjacency)),0L)
     }else {
       expect_identical(x$edge_count,3L)
       expect_equal(x$graph_density,3/21,tolerance=0)
@@ -109,7 +108,7 @@ test_that("source graph preserves only exact matched time axes with optional met
   expect_identical(result$source_recurrence$time_a,source$time_a)
   expect_identical(etr_recurrence_network_node_frame(result)$time,
     source$time_a)
-  expect_error(etr_recurrence_network(source), "native etr_recurrence")
+  expect_error(etr_recurrence_network(source), "native sparse Matrix source")
 })
 
 test_that("invalid source network kind, geometry, Theiler, and topology fail closed",{
@@ -144,7 +143,7 @@ test_that("invalid source network kind, geometry, Theiler, and topology fail clo
     "at least two nodes")
   bad<-source;bad$provenance<-NULL
   expect_error(etr_recurrence_network(bad,python_boundary_mode=TRUE),
-    "source recurrence requires")
+    "complete Python RecurrenceResult")
 })
 
 test_that("full frozen Python typed RecurrenceResult yields all source topology and provenance",{
