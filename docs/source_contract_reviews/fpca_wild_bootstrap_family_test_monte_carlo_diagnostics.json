@@ -1,0 +1,63 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "fpca_wild_bootstrap_family_test_monte_carlo_diagnostics",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/wild_testing.py::fpca_wild_bootstrap_family_test_monte_carlo_diagnostics",
+  "native_signature": "etr_fpca_wild_bootstrap_family_test_monte_carlo_diagnostics(result,confidence_level=.95)",
+  "reviewer_statement": "Provisional developer-side reviewed scientific source semantics of frozen Python 1.2 fpca_wild_bootstrap_family_test_monte_carlo_diagnostics. Direct typed source differential tests compare every exposed deterministic result field and provenance; native R does not invoke Python. Exact-head CI and external independent certification remain unverified.",
+  "native_language_semantic_policy": "Python frozen dataclass and NumPy arrays are represented by R S3 scientific list records, R numeric matrices/vectors and conditions. Equivalence claimed only for the explicitly declared mathematical and scientific data domain, never Python runtime identity or exception class identity.",
+  "native_files": [
+    {
+      "path": "R/native-wild-monte-carlo-source-contracts.R",
+      "sha256": "18ad01aa7805b69e0b4c03ebdcfb9ba0bc3ee76735ff1d8294e124ed134ef26c"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-two-wild-postcalibrators-full-source-20261111.R",
+      "sha256": "9612a460b83924bbf2ccd160f66e7eb257e16424b77f9778da3e249674b2d8a4",
+      "description": "etr_fpca_wild_bootstrap_family_test_monte_carlo_diagnostics(result,confidence_level=.95) aligned to pinned frozen Python 1.2 source; typed source class exercised at Python boundary"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-two-wild-postcalibrators-full-source-20261111.R",
+      "sha256": "9612a460b83924bbf2ccd160f66e7eb257e16424b77f9778da3e249674b2d8a4",
+      "description": "Complete source-shaped fixed-target family test with precomputed roots, max statistics, decision flags, alpha and correction; ordinary, zero and all exceedance cases."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-two-wild-postcalibrators-full-source-20261111.R",
+      "sha256": "9612a460b83924bbf2ccd160f66e7eb257e16424b77f9778da3e249674b2d8a4",
+      "description": "All 21 result fields: integer exceedance counts, tail probabilities and MCSE, Clopper-Pearson bounds, original decision-side stability and global/targetwise estimates."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-two-wild-postcalibrators-full-source-20261111.R",
+      "sha256": "9612a460b83924bbf2ccd160f66e7eb257e16424b77f9778da3e249674b2d8a4",
+      "description": "Native R rejects malformed or nonfinite scientific structures and invalid confidence/decision domains. R condition classes differ from Python exceptions."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-two-wild-postcalibrators-full-source-20261111.R",
+      "sha256": "9612a460b83924bbf2ccd160f66e7eb257e16424b77f9778da3e249674b2d8a4",
+      "description": "Full source nested audit provenance with plus-one minimum attainable p, original test decision preservation and no new bootstrap draws. Full R-versus-typed-Python source object field/provenance comparison."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-two-wild-postcalibrators-full-source-20261111.R",
+      "sha256": "9612a460b83924bbf2ccd160f66e7eb257e16424b77f9778da3e249674b2d8a4",
+      "description": "Finite bootstrap-count Monte Carlo precision for fixed-family maxT testing; no scientific effect confidence interval, additional resamples, or stronger FWER guarantee."
+    }
+  ],
+  "independent_review_status": "Author-claimed source semantic coverage; exact-head workflow evidence pending; independent scientific review and certification not established.",
+  "language_specific_limits": [
+    "Python immutable dataclass and NumPy object identity are not native R S3/list identity",
+    "Exact Python exception class, warning type and Python-specific arbitrary duck typing are not reproduced",
+    "Finite test evidence does not prove every backend/platform numerical boundary",
+    "No scientifically stronger inference or fresh bootstrap replicates are claimed"
+  ]
+}
