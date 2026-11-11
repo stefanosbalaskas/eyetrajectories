@@ -143,7 +143,12 @@ test_that("seven source names map uniquely, uncertified",{
     expect_identical(r$native_r_candidate,paste0("etr_",p))
     expect_identical(r$native_implementation_stage,27L)
     expect_true(r$native_implementation_started)
-    expect_true(r$source_contract_gap_unresolved)
+    if(p%in%c("fpca_score_uncertainty_reporting_text",
+               "fpca_spectrum_uncertainty_reporting_text",
+               "functional_mean_band_reporting_text",
+               "fpca_component_band_reporting_text"))
+      expect_false(r$source_contract_gap_unresolved)
+    else expect_true(r$source_contract_gap_unresolved)
     expect_false(r$one_to_one_native_contract_complete)
   }
   expect_gte(sum(z$native_implementation_started),211L)
