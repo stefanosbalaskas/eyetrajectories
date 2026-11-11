@@ -19,19 +19,19 @@
     {
       "kind": "source_signature",
       "path": "tests/testthat/test-native-workflow-audit-frames-full-source-pair.R",
-      "sha256": "af0673841fbb405b2347a6eaaa607c4e5f8e0bd4786e79d8883912ac96a4c92d",
+      "sha256": "7527a1f95c7e6a44f021eabe48f6dc7c78e5eb9953a1ff8999df8465c9ed95dc",
       "description": "Source Python accepts Sequence[WorkflowStepRecord] or Mapping[str,WorkflowDecisionRecord]; R native validated list equivalents and exact output signatures"
     },
     {
       "kind": "accepted_input_domain",
       "path": "tests/testthat/test-native-workflow-audit-frames-full-source-pair.R",
-      "sha256": "af0673841fbb405b2347a6eaaa607c4e5f8e0bd4786e79d8883912ac96a4c92d",
+      "sha256": "7527a1f95c7e6a44f021eabe48f6dc7c78e5eb9953a1ff8999df8465c9ed95dc",
       "description": "Empty and populated ordered records; Python Boolean elapsed seconds; recursive Unicode and ndarray JSON; null, numeric, bool and empty mapping values"
     },
     {
       "kind": "numerical_outputs",
       "path": "tests/testthat/test-native-workflow-audit-frames-full-source-pair.R",
-      "sha256": "af0673841fbb405b2347a6eaaa607c4e5f8e0bd4786e79d8883912ac96a4c92d",
+      "sha256": "7527a1f95c7e6a44f021eabe48f6dc7c78e5eb9953a1ff8999df8465c9ed95dc",
       "description": "Direct frozen Python 1.2 typed dataclass/pandas comparison across empty, mixed step statuses/decision sources, Boolean elapsed seconds and NumPy 2D tensor axes"
     },
     {
@@ -43,20 +43,20 @@
     {
       "kind": "returned_schema",
       "path": "tests/testthat/test-native-workflow-audit-frames-full-source-pair.R",
-      "sha256": "af0673841fbb405b2347a6eaaa607c4e5f8e0bd4786e79d8883912ac96a4c92d",
+      "sha256": "7527a1f95c7e6a44f021eabe48f6dc7c78e5eb9953a1ff8999df8465c9ed95dc",
       "description": "Exact eight ordered steps table fields and four decision fields, row counts, sorted JSON, warnings and missing criterion semantics"
     },
     {
       "kind": "scientific_estimand",
       "path": "tests/testthat/test-native-workflow-audit-frames-full-source-pair.R",
-      "sha256": "af0673841fbb405b2347a6eaaa607c4e5f8e0bd4786e79d8883912ac96a4c92d",
+      "sha256": "7527a1f95c7e6a44f021eabe48f6dc7c78e5eb9953a1ff8999df8465c9ed95dc",
       "description": "Only descriptive audit records and decisions; no estimation, automatic preprocessing or scientific model selection; native S3 analogue remains separate from Python class identity"
     }
   ],
   "extra_source_evidence": [
     {
       "path": "tests/testthat/test-native-workflow-audit-frames-full-source-pair.R",
-      "sha256": "af0673841fbb405b2347a6eaaa607c4e5f8e0bd4786e79d8883912ac96a4c92d"
+      "sha256": "7527a1f95c7e6a44f021eabe48f6dc7c78e5eb9953a1ff8999df8465c9ed95dc"
     },
     {
       "path": "tests/testthat/test-native-workflow-source-audit.R",
