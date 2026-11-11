@@ -44,7 +44,7 @@
 etr_multivariate_iaaft_diagnostics_frame <- function(result) {
   .etr_scientific_frame_fields(result,c("n_surrogates",
     "convergence_iterations","spectral_errors","cross_spectral_errors"))
-  n<-.etr_source_text_int(result$n_surrogates,"n_surrogates",min=1L)
+  n<-.etr_source_text_int(result$n_surrogates,"n_surrogates",min=0L)
   iter<-result$convergence_iterations
   .etr_assert(is.numeric(iter)&&is.null(dim(iter))&&length(iter)==n&&
     all(is.finite(iter))&&all(iter>=0)&&all(iter==floor(iter)),
@@ -55,6 +55,9 @@ etr_multivariate_iaaft_diagnostics_frame <- function(result) {
   .etr_assert(all(result$spectral_errors>=0)&&
     all(result$cross_spectral_errors>=0),
     "relative spectral errors must not be negative")
+  # Python's pd.DataFrame([]) has zero rows and zero columns, not six
+  # predeclared empty columns. Keep its exact observed result schema.
+  if(n==0L)return(data.frame())
   data.frame(surrogate=seq_len(n)-1L,iterations=as.integer(iter),
     max_spectral_error=apply(result$spectral_errors,1L,max),
     max_cross_spectral_error=apply(result$cross_spectral_errors,1L,max),
@@ -77,8 +80,8 @@ etr_functional_mixed_effects_variance_bootstrap_frame <- function(bootstrap) {
   .etr_scientific_frame_fields(bootstrap,fields,"bootstrap")
   coeff<-bootstrap$bootstrap_coefficient_functions
   .etr_assert(is.array(coeff)&&is.numeric(coeff)&&
-    length(dim(coeff))==3L&&dim(coeff)[1L]>=1L&&
-    all(dim(coeff)>0L)&&all(is.finite(coeff)),
+    length(dim(coeff))==3L&&dim(coeff)[1L]>=0L&&
+    all(dim(coeff)[2L:3L]>0L)&&all(is.finite(coeff)),
     "bootstrap_coefficient_functions must be finite 3D bootstrap array")
   n<-dim(coeff)[1L]
   .etr_diagnostic_number(bootstrap$residual_variances,n,
@@ -105,6 +108,10 @@ etr_functional_mixed_effects_variance_bootstrap_frame <- function(bootstrap) {
     length(bootstrap$backend_warnings)==n&&
     all(vapply(bootstrap$backend_warnings,is.character,logical(1L))),
     "backend_warnings must be list of character vectors per replicate")
+  # Source Python builds rows within range(n_bootstrap); the empty typed
+  # record returns a truly 0-column pandas frame, not an empty 13-column
+  # R dataframe. Optional covariance fields are not accessed in this case.
+  if(n==0L)return(data.frame())
   out<-data.frame(
     bootstrap_replicate=seq_len(n)-1L,
     residual_variance=as.numeric(bootstrap$residual_variances),
