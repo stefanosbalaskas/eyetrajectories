@@ -1,0 +1,68 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "generalized_function_on_scalar_prediction_frame",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py::generalized_function_on_scalar_prediction_frame",
+  "native_signature": "etr_generalized_function_on_scalar_prediction_frame(result)",
+  "reviewer_statement": "Developer-side source semantic and scientific frame schema review of generalized_function_on_scalar_prediction_frame against published eyetrajectoriespy 1.2.0. New native R validation plus original Python typed dataclass oracle fixtures propose 23 complete source result frames across four linked exports and four scientific configurations; all column values, row order and exposure attrs are compared, with malformed R domains tested. Exact-head CI is pending. This does not confer Python object identity or independent certification.",
+  "native_language_semantic_policy": "Python typed generalized FoSR result dataclasses map to validated R list records, pandas DataFrame maps to R data.frame with identical scientific values and original source order. Python None nullable columns are R typed NA, pandas exposure_audit attrs are R attributes. Native code is Python-free and all source estimands/meaning are preserved.",
+  "native_files": [
+    {
+      "path": "R/native-scientific-source-frames.R",
+      "sha256": "f10c1266cceca3ef0848ab9ec9ea0f35bf139e4d806ad8c707293fd3847877b4"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-generalized-four-source-frames-20261111.R",
+      "sha256": "27ae2e1fe1410e72a430f5b7351b67c8b83cf5782a5e3bb4fa29407c49169f95",
+      "description": "Published frozen Python 1.2 src/eyetrajectoriespy/generalized_function_on_scalar_prediction.py source for typed generalized scientific fit/prediction/band result and native R frame function."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-generalized-four-source-frames-20261111.R",
+      "sha256": "27ae2e1fe1410e72a430f5b7351b67c8b83cf5782a5e3bb4fa29407c49169f95",
+      "description": "Rate, exposure-adjusted count, nullable exposure units, and binomial fixed-profile source records, each with/without the relevant coefficient/prediction bands; no Python object identity required."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-generalized-four-source-frames-20261111.R",
+      "sha256": "27ae2e1fe1410e72a430f5b7351b67c8b83cf5782a5e3bb4fa29407c49169f95",
+      "description": "23 direct full-result typed Python source vs native R data.frame tests (all values, exact columns, row order, missing columns and global exposure_audit attributes) across four scientific configurations."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-generalized-four-source-frames-20261111.R",
+      "sha256": "27ae2e1fe1410e72a430f5b7351b67c8b83cf5782a5e3bb4fa29407c49169f95",
+      "description": "Native R rejects missing/duplicate coefficient IDs, invalid matrix geometry, nonfinite uncertainties, reversed interval limits, invalid exposure, invalid units and scientific metadata mismatches; Python exceptions cannot preserve R class identity."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-generalized-four-source-frames-20261111.R",
+      "sha256": "27ae2e1fe1410e72a430f5b7351b67c8b83cf5782a5e3bb4fa29407c49169f95",
+      "description": "Source column order, complete row counts, original arbitrary scientific labels, nullable Python None mapped to NA, and source global exposure_audit dictionary mapped to R data.frame attribute."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-generalized-four-source-frames-20261111.R",
+      "sha256": "27ae2e1fe1410e72a430f5b7351b67c8b83cf5782a5e3bb4fa29407c49169f95",
+      "description": "Fixed-profile generalized FoSR observed-grid marginal response means, link functions, robust uncertainty, Poisson rate and exposure-adjusted expected count plus optional simultaneous prediction bounds and extrapolation indicators."
+    }
+  ],
+  "extra_source_evidence": [
+    {
+      "path": "tests/testthat/test-native-scientific-source-frames.R",
+      "sha256": "e66f9147aae489fda923e14ca29e99e80505983a6c830e180873d53dae171f91"
+    }
+  ],
+  "independent_review_status": "Author reviewed record; direct source typed Python CI and cross-platform R CI pending; no independent certifications.",
+  "language_specific_limits": [
+    "Python pandas identity and index dtype are not the native R dataframe class",
+    "Python None in object dtype columns is represented as R typed NA with explicit domain tests",
+    "Estimator and generalized GEE refit numerical contracts are not independently recertified by four source-ordered observation table reviews"
+  ]
+}
