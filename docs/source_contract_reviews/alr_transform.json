@@ -1,0 +1,80 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "alr_transform",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_CONTRACT",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/compositional.py::alr_transform",
+  "native_signature": "etr_alr_transform(..., python_boundary_mode=TRUE)",
+  "reviewer_statement": "Developer native-language source-semantic review against frozen Python 1.2. Exact source mathematical behavior, deterministic reference channel mapping, NumPy float64 standard container conversion, finite/nonfinite source domain, empty-axis and one-channel numerical results, and native error equivalents are pinned by six distinct SHA256 test records. This is not independent certification, live Python ndarray identity, arbitrary Python user-defined coercion protocols or CRAN release approval.",
+  "native_language_semantic_policy": "R double arrays are the numerical native representations of NumPy float64 3D ndarrays; native R conditions stand for source errors. An explicit python_boundary_mode selects the source domain without changing finite-only ordinary R behavior. The Python keyword-only binder, Python object subclass/array protocols and warning class identity cannot be identical in the native R language.",
+  "native_files": [
+    {
+      "path": "R/native-functional-diagnostics.R",
+      "sha256": "5f53c64b05f0113b87d7f125bca0a0b74729fb669647fcbfb4047d77d5ee8183"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-alr-inverse-full-source-pair.R",
+      "sha256": "da2007a2eed43a06a30a93bc5c0b8ac8e79189e1bae7a223756719b928478974",
+      "description": "Required values, reference_dimension and epsilon in 3D, explicit native source boundary mode."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-alr-mixed-nested-source.R",
+      "sha256": "eed342378c1094bb42360d069e3691abc3667115915ed98bd1fb48f98dffa746",
+      "description": "Finite 3D simplex numeric/Boolean/decimal-text and complex arrays and regular scalar containers; zero rows/time and one-channel arrays."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-alr-inverse-full-source-pair.R",
+      "sha256": "da2007a2eed43a06a30a93bc5c0b8ac8e79189e1bae7a223756719b928478974",
+      "description": "Forward log-ratios over k=1,2,3,5,7, multiple references, positive epsilon, zero clipping, normalization and exact pinned Python outputs."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-alr-mixed-nested-source.R",
+      "sha256": "eed342378c1094bb42360d069e3691abc3667115915ed98bd1fb48f98dffa746",
+      "description": "Reject invalid shape, negative/missing/simplex totals and nonpositive epsilon, Python-style source reference integer/Boolean; map source exceptions to native conditions."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-alr-empty-source-boundaries.R",
+      "sha256": "e4e97b5982a5b4809c314f2a46008ac354891be3a33f20a089166462bbd0ec12",
+      "description": "Numeric 3D native R array preserving source NumPy (curve,time,K-1) axis order and source NaN/Inf patterns."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-alr-numpy-complex-source.R",
+      "sha256": "217391c644f6780b09c7e4e169e7515b2cc21b884f3e131a169777ece559fde3",
+      "description": "Additive log ratio of epsilon-clipped normalized composition relative to selected reference, leaving scientific ratio and component order invariant."
+    }
+  ],
+  "additional_source_evidence": [
+    {
+      "path": "tests/testthat/test-native-alr-inverse-full-source-pair.R",
+      "sha256": "da2007a2eed43a06a30a93bc5c0b8ac8e79189e1bae7a223756719b928478974"
+    },
+    {
+      "path": "tests/testthat/test-native-alr-empty-source-boundaries.R",
+      "sha256": "e4e97b5982a5b4809c314f2a46008ac354891be3a33f20a089166462bbd0ec12"
+    },
+    {
+      "path": "tests/testthat/test-native-alr-numpy-complex-source.R",
+      "sha256": "217391c644f6780b09c7e4e169e7515b2cc21b884f3e131a169777ece559fde3"
+    },
+    {
+      "path": "tests/testthat/test-native-alr-mixed-nested-source.R",
+      "sha256": "eed342378c1094bb42360d069e3691abc3667115915ed98bd1fb48f98dffa746"
+    }
+  ],
+  "independent_review_status": "not independently certified",
+  "known_language_specific_limits": [
+    "Native R arrays are not Python ndarray objects",
+    "Arbitrary Python extension objects and Python keyword-only calling syntax are not native R protocols",
+    "Native R warnings and error conditions are not Python NumPy warnings/ValueErrors"
+  ]
+}

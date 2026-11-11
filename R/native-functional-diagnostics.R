@@ -71,6 +71,22 @@
   out
 }
 
+# Shared frozen Python 1.2 np.asarray(dtype=float) counterpart for
+# 3-D compositional grids. This is intentionally a native scalar/ndarray
+# compatibility layer, not a Python object protocol emulator.
+.etr_alr_source_float3d <- function(x,python_boundary_mode=FALSE) {
+  if(!is.array(x)||length(dim(x))!=3L)return(x)
+  if(isTRUE(python_boundary_mode)&&is.complex(x))return(Re(x))
+  if(is.character(x)||is.logical(x)){
+    cast<-suppressWarnings(as.numeric(x))
+    allowed<-all(is.finite(cast)) ||
+      (isTRUE(python_boundary_mode) &&
+         all(!is.na(cast)|is.nan(cast)))
+    if(allowed)return(array(cast,dim=dim(x)))
+  }
+  x
+}
+
 #' Native additive log-ratio transformation for compositional trajectories
 #' @param values Numeric array of shape curve by time by dimension.
 #' @param reference_dimension Python-style zero-based reference index (-1 = last).
@@ -105,25 +121,10 @@ etr_alr_transform <- function(values,reference_dimension=-1L,epsilon=1e-8,
   }
   values<-.etr_simplex_nested_input(values,
     python_boundary_mode=python_boundary_mode)
-  if(isTRUE(python_boundary_mode) && is.array(values) &&
-     length(dim(values))==3L && is.complex(values)) {
-    # np.asarray(complex ndarray, dtype=float) discards the imaginary
-    # part. This rule does not apply to Python lists of complex scalars.
-    values<-Re(values)
-  }
+  values<-.etr_alr_source_float3d(values,python_boundary_mode)
   if(isTRUE(python_boundary_mode) && is.logical(reference_dimension) &&
      length(reference_dimension)==1L && !is.na(reference_dimension))
     reference_dimension<-as.integer(reference_dimension)
-  # NumPy's published np.asarray(values, dtype=float) also accepts 3-D
-  # numeric-string and Boolean arrays. Retain native fail-closed checks for nonfinite
-  # and malformed values; conversion alone never approves full parity.
-  if(is.array(values) &&
-      (is.character(values)||is.logical(values)) &&
-      length(dim(values))==3L) {
-    numeric_values<-suppressWarnings(as.numeric(values))
-    if(all(is.finite(numeric_values)))
-      values<-array(numeric_values,dim=dim(values))
-  }
   # Frozen Python alr_transform accepts a 3-D float array with zero
   # curves or zero time samples. validate_simplex is then vacuous, and
   # NumPy's axis-preserving broadcast produces a 3-D empty output.
@@ -195,27 +196,10 @@ etr_inverse_alr <- function(transformed,reference_dimension,n_dimensions,
   # input geometry in native R (including zero/negative logits).
   transformed<-.etr_simplex_nested_input(transformed,
     python_boundary_mode=python_boundary_mode)
-  if(isTRUE(python_boundary_mode) && is.array(transformed) &&
-     length(dim(transformed))==3L && is.complex(transformed)) {
-    # Frozen Python np.asarray(..., dtype=float) casts a complex ndarray
-    # to its real part; do not silently cast in default R science mode.
-    transformed<-Re(transformed)
-  }
+  transformed<-.etr_alr_source_float3d(transformed,python_boundary_mode)
   if(isTRUE(python_boundary_mode) && is.logical(reference_dimension) &&
      length(reference_dimension)==1L && !is.na(reference_dimension))
     reference_dimension<-as.integer(reference_dimension)
-  # Frozen Python np.asarray(..., dtype=float) accepts numeric-string
-  # and Boolean arrays. Convert that finite, rectangular domain without expanding
-  # the native overflow/nonfinite scientific contract.
-  if(is.array(transformed) &&
-      (is.character(transformed)||is.logical(transformed)) &&
-      length(dim(transformed))==3L) {
-    numeric_values<-suppressWarnings(as.numeric(transformed))
-    if(all(is.finite(numeric_values)) ||
-        (isTRUE(python_boundary_mode) &&
-          all(!is.na(numeric_values) | is.nan(numeric_values))))
-      transformed<-array(numeric_values,dim=dim(transformed))
-  }
   .etr_assert(is.array(transformed) && is.numeric(transformed) &&
     length(dim(transformed))==3L &&
     dim(transformed)[3L]==n_dimensions-1L &&
