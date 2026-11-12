@@ -24,37 +24,37 @@
       "kind": "source_signature",
       "description": "Frozen Python 1.2 public src/eyetrajectoriespy/plotting.py::plot_fpca_cross_validation. Source-scientific native strict mode is explicitly optional.",
       "path": "tests/testthat/test-native-fpca-three-source-artists-20261112.R",
-      "sha256": "824868734564dec5a6a1003a2cfa066d253d1c2aa3ae4b6d0cf9e1545c945938"
+      "sha256": "fb5b3b214d7a8c876e1a4c1389e6425313ca461260676cfbdd060329a7f938d7"
     },
     {
       "kind": "accepted_input_domain",
       "description": "Native actual FPCA held-out reconstruction cross-validation result and finite per-fold integrated RMSE with source n_components/fold labels; source-ordered summary computes observed fold mean and standard error. Strict mode rejects arbitrary Python objects, nonnative R dataframes and negative/undefined source errorbars.",
       "path": "tests/testthat/test-native-fpca-three-source-artists-20261112.R",
-      "sha256": "824868734564dec5a6a1003a2cfa066d253d1c2aa3ae4b6d0cf9e1545c945938"
+      "sha256": "fb5b3b214d7a8c876e1a4c1389e6425313ca461260676cfbdd060329a7f938d7"
     },
     {
       "kind": "numerical_outputs",
       "description": "Native etr_summarise_fpca_cross_validation uses actual held-out fold integrated RMSE, retains candidate component counts, fold mean, source sample SD/sqrt(n_folds) standard error, and constructs exact source errorbar coordinates mean±SE, marker o and capsize=3. Pinned Python 1.2 summary from pandas groupby and public Matplotlib Axes.errorbar line x/y and one errorbar container compared on the same native fold_errors table; exact-head differential execution pending.",
       "path": "tests/testthat/test-native-fpca-three-source-artists-20261112.R",
-      "sha256": "824868734564dec5a6a1003a2cfa066d253d1c2aa3ae4b6d0cf9e1545c945938"
+      "sha256": "fb5b3b214d7a8c876e1a4c1389e6425313ca461260676cfbdd060329a7f938d7"
     },
     {
       "kind": "exception_semantics",
       "description": "Strict rejects unknown class or incomplete/nonfinite source folds, negative/NaN SE, malformed component counts and nonlogical mode. Native base R plot errors and Python object-injection TypeError classes are not fully reproduced.",
       "path": "tests/testthat/test-native-fpca-three-source-artists-20261112.R",
-      "sha256": "824868734564dec5a6a1003a2cfa066d253d1c2aa3ae4b6d0cf9e1545c945938"
+      "sha256": "fb5b3b214d7a8c876e1a4c1389e6425313ca461260676cfbdd060329a7f938d7"
     },
     {
       "kind": "returned_schema",
       "description": "Python Matplotlib Axes with one ErrorbarContainer, marker o and capsize 3. Native strict source-scientific record exposes exact x component counts, per-count RMSE y, fold standard error and lower/upper errorbar positions and artist settings, while default R mode continues returning unchanged native CV summary dataframe. Live Matplotlib Axes identity and pixel-perfect rendered caps remain unimplemented.",
       "path": "tests/testthat/test-native-fpca-three-source-artists-20261112.R",
-      "sha256": "824868734564dec5a6a1003a2cfa066d253d1c2aa3ae4b6d0cf9e1545c945938"
+      "sha256": "fb5b3b214d7a8c876e1a4c1389e6425313ca461260676cfbdd060329a7f938d7"
     },
     {
       "kind": "scientific_estimand",
       "description": "Descriptive held-out integrated reconstruction RMSE across retained functional principal component counts, with sampling variation among observed CV folds. The SE bars are fold-level descriptive dispersion, not a bootstrap confidence interval or automatic model-selection claim.",
       "path": "tests/testthat/test-native-fpca-three-source-artists-20261112.R",
-      "sha256": "824868734564dec5a6a1003a2cfa066d253d1c2aa3ae4b6d0cf9e1545c945938"
+      "sha256": "fb5b3b214d7a8c876e1a4c1389e6425313ca461260676cfbdd060329a7f938d7"
     }
   ],
   "additional_regression_evidence": [
