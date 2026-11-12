@@ -80,9 +80,14 @@ etr_plot_fpca_influence <- function(result,
 #' Plot FPCA reconstruction robust-z versus score Mahalanobis distance
 #' @param result Native score/reconstruction outlier-review result.
 #' @param ... Base graphics options.
-#' @return Invisible source diagnostic columns and thresholds.
+#' @param strict_source_record Return Matplotlib-source numerical
+#'   scatter coordinates, score and optional robust-z reference lines
+#'   as typed native R geometry, never actual Python Axes.
+#' @return Invisible source diagnostic columns or scientific artist record.
 #' @export
-etr_plot_fpca_outlier_diagnostics <- function(result,...) {
+etr_plot_fpca_outlier_diagnostics <- function(result,
+    strict_source_record=FALSE,...) {
+  .etr_fpca_three_validate(result,strict_source_record,"etr_fpca_outliers")
   t<-.etr_plot_require_frame(result,"etr_fpca_outliers",
     c("reconstruction_robust_z","score_mahalanobis_sq","score_cutoff"),
     field="diagnostics")
@@ -100,8 +105,11 @@ etr_plot_fpca_outlier_diagnostics <- function(result,...) {
     graphics::abline(v=threshold,lty=2)
   }
   graphics::abline(h=t$score_cutoff[1L],lty=2)
-  invisible(t[c("reconstruction_robust_z","score_mahalanobis_sq",
-    "score_cutoff","review_flag")])
+  frame<-t[c("reconstruction_robust_z","score_mahalanobis_sq",
+    "score_cutoff","review_flag")]
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_fpca_outlier_artist(result,frame)))
+  invisible(frame)
 }
 
 #' Plot mean held-out FPCA reconstruction error and fold-standard errors
@@ -140,10 +148,16 @@ etr_plot_fpca_cross_validation <- function(result,strict_source_record=FALSE,...
 #' @param result Native FPCA subspace stability result.
 #' @param metric Declared projector-distance/cosine/angle metric.
 #' @param ... Base graphics options.
-#' @return Invisible source replicate/value table.
+#' @param strict_source_record Return Python 1.2 source-aligned
+#'   scientific replicate-point line artist (marker o, no line).
+#' @return Invisible source replicate/value table or strict native
+#'   R source-scientific artist geometry (not Python Axes).
 #' @export
 etr_plot_fpca_subspace_stability <- function(result,
-    metric="normalized_projector_distance",...) {
+    metric="normalized_projector_distance",
+    strict_source_record=FALSE,...) {
+  .etr_fpca_three_validate(result,strict_source_record,
+    "etr_fpca_subspace_stability")
   .etr_assert(inherits(result,"etr_fpca_subspace_stability")&&
     is.matrix(result$principal_cosines)&&
     is.matrix(result$principal_angles_degrees)&&
@@ -170,6 +184,8 @@ etr_plot_fpca_subspace_stability <- function(result,
     main=sprintf("FPCA subspace stability: FPC%d-FPC%d",
       result$component_indices[1L]+1L,
       tail(result$component_indices,1L)+1L),...)
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_fpca_subspace_artist(result,metric,out)))
   invisible(out)
 }
 
@@ -177,9 +193,16 @@ etr_plot_fpca_subspace_stability <- function(result,
 #' @param result Native multiplier functional mean band.
 #' @param dimension Optional named functional dimension.
 #' @param ... Base graphics options.
-#' @return Invisible time, mean, lower and upper in native units.
+#' @param strict_source_record Return source-aligned numerical
+#'   simultaneous band polygon and mean line, retaining alpha 0.2,
+#'   confidence-level label, original grid and source legend.
+#' @return Invisible time, mean, lower and upper native data frame,
+#'   or strict source-scientific artist record (not Matplotlib Axes).
 #' @export
-etr_plot_functional_mean_band <- function(result,dimension=NULL,...) {
+etr_plot_functional_mean_band <- function(result,dimension=NULL,
+    strict_source_record=FALSE,...) {
+  .etr_fpca_three_validate(result,strict_source_record,
+    "etr_functional_mean_band")
   .etr_assert(inherits(result,"etr_functional_mean_band")&&
     is.numeric(result$time)&&length(result$time)>=2L&&
     all(is.finite(result$time))&&
@@ -208,6 +231,8 @@ etr_plot_functional_mean_band <- function(result,dimension=NULL,...) {
     c(out$lower,rev(out$upper)),
     col=grDevices::adjustcolor("grey70",alpha.f=.3),border=NA)
   graphics::lines(out$time,out$mean,lwd=2)
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_fpca_mean_band_artist(result,dimension,out)))
   invisible(out)
 }
 
