@@ -27,9 +27,11 @@ etr_run_functional_mixed_effects_workflow<-function(
       identical(config$estimator,"native_joint_bspline_gaussian"),
       "strict source workflow requires native_joint_bspline_gaussian likelihood")
   if(is.list(config) && !is.data.frame(config) &&
-      identical(config$estimator,"native_joint_bspline_gaussian"))
-    return(.etr_source_joint_bspline_workflow(trajectories,design,config,
-      strict_source_record=strict_source_record))
+      identical(config$estimator,"native_joint_bspline_gaussian")){
+    if(isTRUE(strict_source_record))
+      return(.etr_joint_workflow_w3_execute(trajectories,design,config))
+    return(.etr_source_joint_bspline_workflow(trajectories,design,config))
+  }
   etr_validate(trajectories,require_complete=TRUE)
   cfg<-.etr_source_workflow_config(config,
     list(predictors=NULL,participant_column=NULL,dimension=NULL,
