@@ -1,7 +1,7 @@
 {
   "audit_version": "source-submethod-v1",
   "python_name": "fit_sparse_fpca_fdapy",
-  "source_export_gap_open": true,
+  "source_export_gap_open": false,
   "scientific_stage": "postfit_fixed_spectrum_PACE_scores_and_inverse",
   "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
   "upstream_fdapy_commit": "6626ebc6a70a6496f3058c4abb0bb97f5bdb20be",
@@ -12,18 +12,19 @@
     },
     {
       "path": "R/native-thirdparty-functional-analogues.R",
-      "sha256": "43cde171f561e79429b67efaf333af080782e00def7bf855924f60b27683400b"
+      "sha256": "e5f17a37d13765a5d07aec36de45e1f51bcf57d3e4e180f5f4ac410a6274d8cc"
     }
   ],
   "numerical_evidence": [
     {
       "path": "tests/testthat/test-native-fdapy-fixed-spectrum-pace-source-20261112.R",
-      "sha256": "391006c4606020d76f7d2f53dfdb475141e3f68fb9f450fe87e59efad2b73c4e"
+      "sha256": "99e2826a4b218c0e6c6377117bb67a58433c0419d10fd6cbff426d2a5b386cef"
     }
   ],
   "new_scientific_implementation": "Actual FDApy 1.0.x UFPCA fixed-fitted-spectrum PACE numerical stage: per-observation np.interp on pooled sorted grid (despite frozen wrapper no-interpolation public docstring), spectral-covariance pinv scores with max(noise,tol) and inverse reconstruction.",
-  "not_yet_source_gap_free": "Native R never estimates raw irregular FDApy PS or LP mean/covariance, eigensystem and source noise variance. source_fit_snapshot is supplied externally; normalize TRUE and Python object identity unqualified.",
+  "not_yet_source_gap_free": "The public export now has a separate native R raw-irregular PS/LP scientific UFPCA fit in R/native-fdapy-ufpca-ps-lp-fit-source.R; this earlier memo remains scoped to the optional conditional fixed-spectrum PACE substage. Source-scoped default/raw fit is review-recorded but normalize=TRUE, source unsorted Python eigensystem sign/order, unrestricted kwargs and Python backend object identity remain unimplemented/unqualified.",
   "claimed_independent_certification": false,
   "source_fit_full_parity": false,
-  "status": "SOURCE_SUBMETHOD_SCIENTIFIC_IMPLEMENTATION_COMMITTED_EXPORT_GAP_STILL_OPEN"
+  "status": "POSTFIT_FIXED_SPECTRUM_STAGE_IMPLEMENTED_PLUS_RAW_PS_LP_SCIENTIFIC_FIT_REVIEWED_FULL_PYTHON_OBJECT_DOMAIN_UNCERTIFIED",
+  "additional_raw_fit_review": "docs/source_contract_reviews/fit_sparse_fpca_fdapy.json"
 }
