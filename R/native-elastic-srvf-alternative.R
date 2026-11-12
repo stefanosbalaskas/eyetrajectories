@@ -7,12 +7,25 @@
 #' @param n_components Predeclared integer number of velocity components.
 #' @param rotation,scale_curves Both must be FALSE for native screen geometry.
 #' @param lam Must be zero; no regularized reparameterization fitted.
-#' @param method Must be identity_only: source DP warping unsupported.
-#' @return Native SRVF FPCA of unregistered planar curves with identity warp.
-#'   Not Python fdasrsf ElasticFPCAResult, not phase invariant.
+#' @param method Historical default is `identity_only`. For opt-in
+#'   genuine native R elastic registration, explicitly use `method="DP"`
+#'   with `strict_source_record=TRUE`. RBFGS source mode is unimplemented.
+#' @param strict_source_record FALSE preserves historical unregistered SRVF
+#'   alternative unchanged; TRUE uses actual R fdasrvf >=2.5.1 native
+#'   Karcher SRVF dynamic-programming elastic alignment and geodesic PCA.
+#' @return Native unregistered SRVF FPCA by default. With source mode,
+#'   native R elastic Karcher/DP and tangent shape PCA scientific record,
+#'   NOT a Python fdasrsf ElasticFPCAResult or Python backend object.
 #' @export
 etr_fit_elastic_fpca<-function(trajectories,n_components=3L,
-    rotation=FALSE,scale_curves=FALSE,lam=0,method="identity_only"){
+    rotation=FALSE,scale_curves=FALSE,lam=0,method="identity_only",
+    strict_source_record=FALSE){
+  .etr_assert(is.logical(strict_source_record)&&
+    length(strict_source_record)==1L&&!is.na(strict_source_record),
+    "strict_source_record must be one TRUE/FALSE logical value")
+  if(isTRUE(strict_source_record))
+    return(.etr_native_fdasrvf_elastic_source(
+      trajectories,n_components,rotation,scale_curves,lam,method))
   etr_validate(trajectories,require_complete=TRUE)
   .etr_assert(length(trajectories$dimension_names)>=2L,
     "square-root velocity FPCA requires at least two planar channels")
