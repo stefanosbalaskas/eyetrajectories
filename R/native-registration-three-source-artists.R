@@ -54,7 +54,7 @@
 }
 
 .etr_reg_registration_artist <- function(result,source) {
-  names<-c("Original","Registered")
+  panel_names<-c("Original","Registered")
   .etr_assert(is.list(source)&&
     all(c("original","registered","dimension","curve_ids")%in%
       names(source))&&
@@ -63,7 +63,7 @@
     "registration source panels need original and registered actual samples")
   ids<-as.character(source$curve_ids)
   unit<-result$original$time_unit
-  axes<-lapply(seq_along(names),function(d){
+  axes<-lapply(seq_along(panel_names),function(d){
     frame<-if(d==1L)source$original else source$registered
     lines<-lapply(seq_along(ids),function(i){
       idx<-frame$curve_id==ids[[i]]
@@ -72,7 +72,7 @@
         xdata=as.numeric(frame$time[idx]),
         ydata=as.numeric(frame$value[idx]))
     })
-    list(title=names[[d]],xlabel=paste0("Time (",unit,")"),
+    list(title=panel_names[[d]],xlabel=paste0("Time (",unit,")"),
       ylabel=source$dimension,lines=lines,legend=FALSE)
   })
   .etr_reg_artist_record("plot_registration",axes,c(1L,2L),
