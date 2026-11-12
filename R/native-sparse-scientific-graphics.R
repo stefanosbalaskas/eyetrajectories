@@ -153,10 +153,14 @@ etr_plot_sparse_fpca_component <- function(result,component=0L,
 #' @param result Native sparse bivariate PACE fitted record.
 #' @param component Zero-based retained component identifier.
 #' @param sd_multiplier Positive standard-deviation multiple.
-#' @return Invisibly per-dimension mean and perturbation trajectories.
+#' @param strict_source_record Return frozen Python 1.2 Matplotlib
+#'   source-scientific artist geometry as a native R record; never Python Axes.
+#' @return Invisibly per-dimension mean and perturbation trajectories,
+#'   or source-scientific artist geometry in strict mode.
 #' @export
 etr_plot_sparse_mfpca_component <- function(result,component=0L,
-    sd_multiplier=2) {
+    sd_multiplier=2,strict_source_record=FALSE) {
+  .etr_sm_artist_require(result,strict_source_record)
   v<-.etr_sparse_visual_core(result,multivariate=TRUE)
   i<-.etr_sparse_visual_component(component,v$k)
   m<-.etr_sparse_visual_scalar(sd_multiplier,"sd_multiplier",
@@ -182,6 +186,9 @@ etr_plot_sparse_mfpca_component <- function(result,component=0L,
     data.frame(time=v$grid,mean=center,upper=high,lower=low)
   })
   names(modes)<-result$dimensions
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_sm_artist_component(
+      result,modes,component,m)))
   invisible(modes)
 }
 
@@ -189,10 +196,22 @@ etr_plot_sparse_mfpca_component <- function(result,component=0L,
 #' @param result Native sparse multivariate PACE fitted record.
 #' @param source Whether to display the used PSD-qualified operator or the
 #'   pre-repair smoothed covariance surfaces.
-#' @return Invisibly four source-order numeric covariance matrices.
+#' @param stage Frozen Python 1.2 stage name, 'used' or 'smoothed'.
+#'   If supplied, must agree with an explicitly supplied source value.
+#' @param strict_source_record Return native R source-scientific Matplotlib
+#'   heatmap geometry with shared signed color limits, not actual Python Axes.
+#' @return Invisibly four source-order numeric covariance matrices,
+#'   or a source-scientific artist geometry record in strict mode.
 #' @export
 etr_plot_sparse_mfpca_covariance_blocks <- function(result,
-    source="used") {
+    source="used",stage=NULL,strict_source_record=FALSE) {
+  .etr_sm_artist_require(result,strict_source_record)
+  if(!is.null(stage)){
+    stage<-.etr_sparse_visual_source(stage)
+    .etr_assert(missing(source)||identical(source,stage),
+      "source and stage must agree when both supplied")
+    source<-stage
+  }
   source<-.etr_sparse_visual_source(source)
   v<-.etr_sparse_visual_blocks(result,source)
   old<-graphics::par(mfrow=c(2L,2L))
@@ -208,6 +227,9 @@ etr_plot_sparse_mfpca_covariance_blocks <- function(result,
       paste0("t (",result$time_unit,")"),
       paste0("s (",result$time_unit,")"),
       c(-ceiling,ceiling))
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_sm_artist_heatmap(
+      result,v$blocks,source,cross=FALSE)))
   invisible(v$blocks)
 }
 
@@ -216,7 +238,14 @@ etr_plot_sparse_mfpca_covariance_blocks <- function(result,
 #' @return Invisibly the directional xy and yx covariance matrices.
 #' @export
 etr_plot_sparse_mfpca_cross_covariance <- function(result,
-    source="used") {
+    source="used",stage=NULL,strict_source_record=FALSE) {
+  .etr_sm_artist_require(result,strict_source_record)
+  if(!is.null(stage)){
+    stage<-.etr_sparse_visual_source(stage)
+    .etr_assert(missing(source)||identical(source,stage),
+      "source and stage must agree when both supplied")
+    source<-stage
+  }
   source<-.etr_sparse_visual_source(source)
   v<-.etr_sparse_visual_blocks(result,source)
   old<-graphics::par(mfrow=c(1L,2L))
@@ -231,14 +260,21 @@ etr_plot_sparse_mfpca_cross_covariance <- function(result,
       paste0("t (",result$time_unit,")"),
       paste0("s (",result$time_unit,")"),
       c(-ceiling,ceiling))
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_sm_artist_heatmap(
+      result,blocks,source,cross=TRUE)))
   invisible(blocks)
 }
 
 #' Sparse multivariate PACE condition-number diagnostic scatter
 #' @param result Native sparse multivariate fit with score diagnostics.
-#' @return Invisibly the finite per-curve diagnostic observations.
+#' @param strict_source_record Return source-scientific finite/flagged and
+#'   nonfinite placeholder scatter artist geometry. No Python Axes identity.
+#' @return Invisibly finite per-curve diagnostics or strict artist geometry.
 #' @export
-etr_plot_sparse_mfpca_score_diagnostics <- function(result) {
+etr_plot_sparse_mfpca_score_diagnostics <- function(result,
+    strict_source_record=FALSE) {
+  .etr_sm_artist_require(result,strict_source_record)
   .etr_scientific_frame_fields(result,c("score_diagnostics"),
     "sparse result")
   d<-result$score_diagnostics
@@ -253,19 +289,33 @@ etr_plot_sparse_mfpca_score_diagnostics <- function(result) {
   valid<-is.finite(d$n_time_points)&is.finite(d$condition_number)
   solved<-d$status_code=="ok"
   finite<-d[valid,required,drop=FALSE]
-  .etr_assert(nrow(finite)>=1L,
-    "at least one finite diagnostic point is required for native plot")
-  graphics::plot(finite$n_time_points,finite$condition_number,
-    type="n",xlab="paired native observations",
-    ylab="conditional-system condition number",
-    main="Sparse MFPCA joint-PACE score diagnostics")
+  if(nrow(finite)){
+    graphics::plot(finite$n_time_points,finite$condition_number,
+      type="n",xlab="paired native observations",
+      ylab="conditional-system condition number",
+      main="Sparse MFPCA joint-PACE score diagnostics")
+  }else{
+    # Matplotlib plots an empty Axes with an explicit legend placeholder
+    # when every conditioning observation is nonfinite/failed.
+    graphics::plot(NA_real_,NA_real_,type="n",
+      xlim=c(0,1),ylim=c(0,1),
+      xlab="paired native observations",
+      ylab="conditional-system condition number",
+      main="Sparse MFPCA joint-PACE score diagnostics")
+  }
   good<-finite$status_code=="ok"
   if(any(good))graphics::points(
     finite$n_time_points[good],finite$condition_number[good],pch=1L)
   if(any(!good))graphics::points(
     finite$n_time_points[!good],finite$condition_number[!good],pch=4L)
-  graphics::legend("topright",legend=c("joint PACE solved",
-    "flagged solve"),pch=c(1L,4L),bty="n")
+  legend<-character();pch<-integer()
+  if(any(good)){legend<-c(legend,"joint PACE solved");pch<-c(pch,1L)}
+  if(any(!good)){legend<-c(legend,"flagged solve");pch<-c(pch,4L)}
+  if(any(!valid)){legend<-c(legend,"non-finite / failed");pch<-c(pch,4L)}
+  if(length(legend))graphics::legend("topright",legend=legend,
+    pch=pch,bty="n")
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_sm_artist_scores(d)))
   invisible(list(finite=finite,nonfinite_count=sum(!valid),
     solved_count=sum(valid&solved)))
 }
