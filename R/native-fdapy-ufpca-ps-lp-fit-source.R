@@ -315,17 +315,35 @@
   # scientifically legitimate but numpy.linalg.eig in frozen FDApy
   # does not enforce a descending order or deterministic signs.
   # Both versions are compared in eigenspace after assignment.
+  # Frozen public source explicitly calls UFPCA.transform(data, ...)
+  # rather than UFPCA.transform(NULL, ...). FDApy therefore calls
+  # data.center(mean=self._mean,method_smoothing=score_smoothing).
+  # This SECOND centering is distinct from FIT's required PS penalty=0
+  # re-smoothing and must be used for public PACE scores.
+  score_mean<-if(identical(score_smoothing,"LP"))
+    .etr_fdapy_lp_predict(grid,mu,grid,
+      bandwidth=m^(-1/5),degree=1L,
+      kernel_name="epanechnikov")
+  else if(identical(score_smoothing,"PS"))
+    .etr_fdapy_ps_1d(grid,mu,grid,penalty=1,
+      n_segments=10L,degree=3L,order_penalty=2L)
+  else stop("FDApy score_smoothing must be PS or LP",call.=FALSE)
+  score_centered<-lapply(seq_along(time),function(i)
+    values[[i]]-score_mean[match(time[[i]],grid)])
   snapshot<-list(mean_grid=mu,
     eigenfunctions=phi,
     eigenvalues=lambda[seq_len(n_components)],
     noise_variance=noise,
-    centered_observations=centered,
+    centered_observations=score_centered,
     backend_version=NULL)
   out<-.etr_fdapy_fixed_spectrum_pace(trajectories,dimension,
     n_components,fit_smoothing,score_smoothing,tol,normalize,
     evaluation_grid,kwargs_mean,kwargs_covariance,snapshot)
   out$source_mean_fit<-mu
   out$source_mean_center_resmoothed<-mu_center
+  out$source_fit_centered_observations<-centered
+  out$source_score_mean_resmoothed<-score_mean
+  out$source_score_centered_observations<-score_centered
   out$source_raw_covariance<-raw$raw
   out$source_raw_covariance_counts<-raw$count
   out$source_smoothed_covariance<-C
@@ -343,6 +361,11 @@
   out$source_backend<-"native_R_FDApy_1_0_x_UFPCA_PS_LP_PACE_scientific"
   out$provenance$sparse_fpca$spectral_state_supplied_instead_of_fitted<-FALSE
   out$provenance$sparse_fpca$scientific_native_UFPCA_fit<-TRUE
+  out$provenance$sparse_fpca$fit_covariance_centering<-
+    "data.center(mean=UFPCA.mean,method_smoothing=PS,penalty=0)"
+  out$provenance$sparse_fpca$pace_score_centering<-
+    paste0("data.center(mean=UFPCA.mean,method_smoothing=",
+      score_smoothing,")")
   out$provenance$sparse_fpca$source_eigen_sign_and_order_uncertified<-TRUE
   class(out)<-c("etr_fdapy_native_ufpca_ps_lp_scientific_record",class(out))
   out
