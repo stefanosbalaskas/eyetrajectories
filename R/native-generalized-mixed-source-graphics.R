@@ -204,7 +204,9 @@ etr_plot_generalized_function_on_scalar_coefficients <- function(result,
     reference=0,labels="estimate")
 }
 
-.etr_source_plot_sensitivity <- function(result,coefficient,width=FALSE) {
+.etr_source_plot_sensitivity <- function(result,coefficient,width=FALSE,
+    strict_source_record=FALSE) {
+  .etr_mixed_artist_check(strict_source_record,result,"sensitivity")
   fields<-c("specifications","reference_label","fits",
     if(width)"band_width_frame" else "coefficient_frame")
   .etr_scientific_frame_fields(result,fields,"covariance sensitivity")
@@ -265,24 +267,40 @@ etr_plot_generalized_function_on_scalar_coefficients <- function(result,
   graphics::abline(h=if(width)1 else 0,lty=3L)
   graphics::legend("topright",legend=spec_ids[keep],lty=1L,
     col=colors,bty="n")
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_mixed_artist_sensitivity(
+      nm,width,curves,spec_ids[keep],unit)))
   invisible(curves_flat)
 }
 
 #' Plot difference of covariance-sensitivity coefficients from reference
 #' @param result Explicit sensitivity record and source-ordered fit records.
 #' @param coefficient One named fitted regression coefficient.
+#' @param strict_source_record Return an R scientific artist geometry
+#'   record of native Gaussian likelihood source lines, not Matplotlib Axes.
 #' @return Invisible source coefficient sensitivity geometry.
 #' @export
-etr_plot_covariance_sensitivity_coefficients <- function(result,coefficient) {
-  .etr_source_plot_sensitivity(result,coefficient,width=FALSE)
+etr_plot_covariance_sensitivity_coefficients <- function(
+    result,coefficient,strict_source_record=FALSE) {
+  .etr_source_plot_sensitivity(result,coefficient,width=FALSE,
+    strict_source_record=strict_source_record)
 }
 
 #' Plot covariance-sensitivity simultaneous band-width ratios
 #' @inheritParams etr_plot_covariance_sensitivity_coefficients
 #' @return Invisible source band-width-ratio geometry.
 #' @export
-etr_plot_covariance_sensitivity_band_widths <- function(result,coefficient) {
-  .etr_source_plot_sensitivity(result,coefficient,width=TRUE)
+etr_plot_covariance_sensitivity_band_widths <- function(
+    result,coefficient,strict_source_record=FALSE) {
+  # Source band widths remain a genuine scientific gap until a qualified
+  # simultaneous-band estimator actually supplies this dataframe.
+  .etr_mixed_artist_check(strict_source_record,result,"sensitivity")
+  if(isTRUE(strict_source_record))
+    .etr_assert(is.data.frame(result$band_width_frame)&&
+      nrow(result$band_width_frame)>0L,
+      "strict source band widths require independently qualified native bands")
+  .etr_source_plot_sensitivity(result,coefficient,width=TRUE,
+    strict_source_record=strict_source_record)
 }
 
 .etr_source_residual_frame <- function(result,level,curve_id,participant_id) {
@@ -336,26 +354,32 @@ etr_plot_covariance_sensitivity_band_widths <- function(result,coefficient) {
   df
 }
 .etr_source_plot_residual <- function(result,metric,level,curve_id,
-    participant_id) {
+    participant_id,strict_source_record=FALSE) {
+  .etr_mixed_artist_check(strict_source_record,result,"residual")
   df<-.etr_source_residual_frame(result,level,curve_id,participant_id)
   x<-df$lag_time_mean
   y<-.etr_source_plot_vector(df[[metric]],length(x),metric,allow_na=TRUE)
-  .etr_assert(any(is.finite(y)),
-    "residual metric must contain at least one defined value")
+  if(!isTRUE(strict_source_record))
+    .etr_assert(any(is.finite(y)),
+      "residual metric must contain at least one defined value")
   scale<-.etr_source_text_word(result$residual_scale,"residual_scale")
   .etr_assert(scale%in%c("whitened","raw"),
     "residual_scale must be raw or whitened")
   prefix<-if(scale=="whitened")"Whitened residual" else "Residual"
   unit<-result$reference$time_unit
   nonuniform<-any(df$lag_time_min!=df$lag_time_max)
-  graphics::plot(x,y,type="o",pch=1L,
-    ylim=.etr_source_plot_ymax(c(y,if(metric=="autocorrelation")0)),
+  limits<-if(any(is.finite(y))) .etr_source_plot_ymax(
+    c(y,if(metric=="autocorrelation")0)) else c(-1,1)
+  graphics::plot(x,y,type="o",pch=1L,ylim=limits,
     xlab=paste0("Physical lag (",unit,")"),
     ylab=paste(prefix,metric),
     main=if(nonuniform)
       "Index-lag diagnostic (x = mean physical lag; inspect min/max or pair frame)"
       else "")
   if(metric=="autocorrelation")graphics::abline(h=0,lty=3L)
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_mixed_artist_residual(df,metric,level,
+      curve_id,participant_id,scale,unit)))
   invisible(data.frame(lag_time_mean=x,
     lag_time_min=df$lag_time_min,lag_time_max=df$lag_time_max,
     value=y))
@@ -366,12 +390,17 @@ etr_plot_covariance_sensitivity_band_widths <- function(result,coefficient) {
 #' @param level Summary: overall, participant or selected trial.
 #' @param curve_id Required for a trial-level plot.
 #' @param participant_id Required for a participant-level plot.
+#' @param strict_source_record Require true native joint likelihood
+#'   residual diagnostics and return source line/horizontal reference
+#'   artist geometry; actual Matplotlib Axes remain unavailable.
 #' @return Invisible source physical lag and autocorrelation geometry.
 #' @export
 etr_plot_functional_mixed_effects_residual_acf <- function(result,
-    level="overall",curve_id=NULL,participant_id=NULL) {
+    level="overall",curve_id=NULL,participant_id=NULL,
+    strict_source_record=FALSE) {
   .etr_source_plot_residual(result,"autocorrelation",
-    level,curve_id,participant_id)
+    level,curve_id,participant_id,
+    strict_source_record=strict_source_record)
 }
 
 #' Plot residual empirical semivariance against physical lag
@@ -379,7 +408,9 @@ etr_plot_functional_mixed_effects_residual_acf <- function(result,
 #' @return Invisible source physical lag and semivariance geometry.
 #' @export
 etr_plot_functional_mixed_effects_residual_variogram <- function(result,
-    level="overall",curve_id=NULL,participant_id=NULL) {
+    level="overall",curve_id=NULL,participant_id=NULL,
+    strict_source_record=FALSE) {
   .etr_source_plot_residual(result,"semivariance",
-    level,curve_id,participant_id)
+    level,curve_id,participant_id,
+    strict_source_record=strict_source_record)
 }
