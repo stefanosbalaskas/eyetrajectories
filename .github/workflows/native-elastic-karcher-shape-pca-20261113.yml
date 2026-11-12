@@ -109,6 +109,7 @@ jobs:
         run: |
           Rscript - <<'RSCRIPT'
           stopifnot(utils::packageVersion("fdasrvf") >= package_version("2.5.1"))
+          source("scripts/check_all_r_syntax.R")
           parse("R/native-elastic-fdasrvf-karcher-source-20261113.R")
           parse("R/native-elastic-srvf-alternative.R")
           parse("tests/testthat/test-native-elastic-fdasrvf-karcher-pca-20261113.R")
