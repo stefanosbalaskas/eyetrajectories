@@ -160,6 +160,14 @@ test_that("full PS FDApy UFPCA fit produces real native source covariance, eigen
     FALSE)
   expect_identical(
     out$provenance$sparse_fpca$scientific_native_UFPCA_fit,TRUE)
+  expect_false(isTRUE(all.equal(
+    out$source_score_mean_resmoothed,
+    out$source_mean_center_resmoothed)))
+  expect_identical(length(out$source_score_centered_observations),10L)
+  expect_identical(length(out$source_fit_centered_observations),10L)
+  expect_match(
+    out$provenance$sparse_fpca$pace_score_centering,
+    "method_smoothing=LP")
 })
 
 test_that("native FDApy UFPCA LP fits raw irregular mean, diagonal-excluded covariance and PACE",{
@@ -199,7 +207,7 @@ test_that("FDApy full-fit and earlier fixed-spectrum conditional-score paths rem
     noise_variance=fit$source_noise_floor,
     centered_observations=lapply(seq_along(fx$trajectories$time),
       function(i)as.numeric(fx$trajectories$values[[i]][,1L]-
-        fit$source_mean_center_resmoothed[
+        fit$source_score_mean_resmoothed[
           match(fx$trajectories$time[[i]],fx$pooled)])))
   conditional<-etr_fit_sparse_fpca_fdapy(fx$trajectories,"x",
     n_components=1L,strict_source_record=TRUE,
