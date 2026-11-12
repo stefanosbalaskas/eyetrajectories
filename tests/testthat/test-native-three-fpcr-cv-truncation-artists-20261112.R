@@ -14,7 +14,12 @@
       widths=matrix(c(4,5,3,6,2,7),nrow=3L,byrow=TRUE),
       centers=matrix(c(.2,.5,.3,.6,.4,.7),nrow=3L,byrow=TRUE))
   selected<-list(scan=scan,selected_components=c(2L,NA_real_))
-  list(cv=cv,nested=nested,scan=scan,selected=selected)
+  comparison<-data.frame(coefficient=c("beta","beta","gamma","beta"),
+    time=c(2,0,1,1),
+    full_refit_to_fixed_covariance_width_ratio=c(1.4,1.1,9,1.2),
+    stringsAsFactors=FALSE)
+  list(cv=cv,nested=nested,scan=scan,selected=selected,
+    comparison=comparison)
 }
 .etr_three_predictive_pdf <- function(expr) {
   p<-tempfile(fileext=".pdf")
@@ -131,6 +136,46 @@ test_that("wild scan artists preserve selection and source zero-based targets",{
   })
 })
 
+test_that("mixed-effects bootstrap width comparison retains source ratio and identity line",{
+  z<-.etr_three_predictive_plot_fixture()
+  .etr_three_predictive_pdf({
+    a<-etr_plot_functional_mixed_effects_bootstrap_comparison(
+      z$comparison,"beta",strict_source_record=TRUE)
+    expect_s3_class(a,"etr_predictive_scientific_artist_record")
+    expect_false(a$matplotlib_object_identity)
+    expect_identical(a$source_export,
+      "plot_functional_mixed_effects_bootstrap_comparison")
+    ax<-a$axes[[1L]]
+    expect_identical(ax$title,"Mixed-effects bootstrap sensitivity: beta")
+    expect_identical(ax$xlabel,"Time")
+    expect_identical(ax$ylabel,
+      "Full-refit / fixed-covariance band width")
+    expect_false(ax$legend)
+    expect_length(ax$legend_labels,0L)
+    expect_length(ax$artists,2L)
+    expect_identical(ax$artists[[1L]]$kind,"line")
+    expect_identical(ax$artists[[1L]]$linestyle,"-")
+    expect_identical(ax$artists[[1L]]$marker,"None")
+    expect_equal(ax$artists[[1L]]$xdata,c(0,1,2))
+    expect_equal(ax$artists[[1L]]$ydata,c(1.1,1.2,1.4))
+    expect_identical(ax$artists[[2L]]$kind,"horizontal_reference")
+    expect_identical(ax$artists[[2L]]$linestyle,"--")
+    expect_equal(ax$artists[[2L]]$ydata,c(1,1))
+    original<-etr_plot_functional_mixed_effects_bootstrap_comparison(
+      z$comparison,"beta")
+    expect_equal(original$identity_baseline,1)
+    expect_equal(original$line$x,c(0,1,2))
+    expect_equal(original$line$y,c(1.1,1.2,1.4))
+    expect_false(original$provenance$python_axes_return_equivalence)
+    expect_error(etr_plot_functional_mixed_effects_bootstrap_comparison(
+      z$comparison,"unseen",strict_source_record=TRUE),
+      "Unknown coefficient")
+    expect_error(etr_plot_functional_mixed_effects_bootstrap_comparison(
+      z$comparison,"beta",strict_source_record=NA),
+      "strict_source_record")
+  })
+})
+
 test_that("invalid strict flags, source target indices and numeric data fail closed",{
   z<-.etr_three_predictive_plot_fixture()
   .etr_three_predictive_pdf({
@@ -170,6 +215,8 @@ test_that("pinned Python 1.2 Matplotlib CV and wild source plots match artist ge
       strict_source_record=TRUE)
     d<-etr_plot_fpca_wild_bootstrap_truncation_scan(z$selected,
       target=1L,metric="center",strict_source_record=TRUE)
+    e<-etr_plot_functional_mixed_effects_bootstrap_comparison(
+      z$comparison,"beta",strict_source_record=TRUE)
     reticulate::py_run_string("
 import numpy as np
 import pandas as pd
@@ -197,11 +244,16 @@ scan=_plot_obj(et.FPCAWildBootstrapTruncationScanResult,
     centers=np.array([[.2,.5],[.3,.6],[.4,.7]]))
 selection=_plot_obj(et.FPCAWildBootstrapTruncationSelectionResult,
     scan=scan,selected_components=np.array([2.,np.nan]))
+compare=pd.DataFrame({
+ 'coefficient':['beta','beta','gamma','beta'],
+ 'time':[2.,0.,1.,1.],
+ 'full_refit_to_fixed_covariance_width_ratio':[1.4,1.1,9.,1.2]})
 axes=[
  et.plot_fpca_regression_cv(cv),
  et.plot_nested_fpca_regression_cv(nested),
  et.plot_fpca_wild_bootstrap_truncation_scan(selection,target=0),
- et.plot_fpca_wild_bootstrap_truncation_scan(selection,target=1,metric='center')]
+ et.plot_fpca_wild_bootstrap_truncation_scan(selection,target=1,metric='center'),
+ et.plot_functional_mixed_effects_bootstrap_comparison(compare,coefficient='beta')]
 def _get_line(ax):
     line=ax.lines[0]
     return {
@@ -222,11 +274,13 @@ oracle[0]['upper']=segments[:,1,1]
 oracle[0]['capsize']=eb[1][0].get_markersize()/2.
 oracle[2]['selected_x']=np.asarray(axes[2].lines[1].get_xdata(),dtype=float)
 oracle[2]['selected_y']=np.asarray(axes[2].lines[1].get_ydata(),dtype=float)
+oracle[4]['identity_x']=np.asarray(axes[4].lines[1].get_xdata(),dtype=float)
+oracle[4]['identity_y']=np.asarray(axes[4].lines[1].get_ydata(),dtype=float)
 plt.close('all')
 ")
     py<-et_to_r(reticulate::py_get_attr(reticulate::py,"oracle"))
     for(i in seq_along(py)){
-      r<-list(a,b,c,d)[[i]]$axes[[1L]]
+      r<-list(a,b,c,d,e)[[i]]$axes[[1L]]
       source<-py[[i]]
       for(k in c("title","xlabel","ylabel"))
         expect_identical(r[[k]],source[[k]],info=paste("label",i,k))
@@ -252,5 +306,9 @@ plt.close('all')
       as.numeric(py[[3L]]$selected_x),tolerance=0)
     expect_equal(c$axes[[1L]]$artists[[2L]]$ydata,
       as.numeric(py[[3L]]$selected_y),tolerance=0)
+    expect_equal(e$axes[[1L]]$artists[[2L]]$xdata,
+      as.numeric(py[[5L]]$identity_x),tolerance=0)
+    expect_equal(e$axes[[1L]]$artists[[2L]]$ydata,
+      as.numeric(py[[5L]]$identity_y),tolerance=0)
   })
 })
