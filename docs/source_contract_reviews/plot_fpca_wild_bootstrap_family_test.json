@@ -24,37 +24,37 @@
       "kind": "source_signature",
       "description": "Frozen Python plotting.py public signature and matching explicitly opt-in native source artist scientific geometry; standard native R return preserved.",
       "path": "tests/testthat/test-native-fpca-three-inference-artists-20261112.R",
-      "sha256": "85d1657040b7774bc1810ea3d3094b60c72a66446308efbee7f58164eae3dcf3"
+      "sha256": "f289f7bb5a4929cc7457b25a2a6bb8cf0c4a3bbc6095d572bee2cddc91da1f5c"
     },
     {
       "kind": "accepted_input_domain",
       "description": "Native validated numeric result records, source-fitted component indexing, original ordered targets, finite statistical arrays and explicit strict-flag error guards; arbitrary Python object protocols are excluded.",
       "path": "tests/testthat/test-native-fpca-three-inference-artists-20261112.R",
-      "sha256": "85d1657040b7774bc1810ea3d3094b60c72a66446308efbee7f58164eae3dcf3"
+      "sha256": "f289f7bb5a4929cc7457b25a2a6bb8cf0c4a3bbc6095d572bee2cddc91da1f5c"
     },
     {
       "kind": "numerical_outputs",
       "description": "Single-step maxT-adjusted p-values, optional unadjusted target-wise p-values, original alpha horizontal line, 0-based target ordering, exact labels and y-limits. Committed native numerical tests plus opt-in frozen Python Matplotlib artist comparisons; execution pending.",
       "path": "tests/testthat/test-native-fpca-three-inference-artists-20261112.R",
-      "sha256": "85d1657040b7774bc1810ea3d3094b60c72a66446308efbee7f58164eae3dcf3"
+      "sha256": "f289f7bb5a4929cc7457b25a2a6bb8cf0c4a3bbc6095d572bee2cddc91da1f5c"
     },
     {
       "kind": "exception_semantics",
       "description": "Invalid numerical bounds, flags, unsupported dimensions and nonfinite statistical arrays fail closed with R conditions. Exact Python TypeError, KeyError, IndexError classes and live Matplotlib backend remain outside scope.",
       "path": "tests/testthat/test-native-fpca-three-inference-artists-20261112.R",
-      "sha256": "85d1657040b7774bc1810ea3d3094b60c72a66446308efbee7f58164eae3dcf3"
+      "sha256": "f289f7bb5a4929cc7457b25a2a6bb8cf0c4a3bbc6095d572bee2cddc91da1f5c"
     },
     {
       "kind": "returned_schema",
       "description": "Strict mode returns a typed native scientific artist record (axes metadata, ordered artists, coordinates, source legend); Python returns matplotlib.axes.Axes; native default unchanged.",
       "path": "tests/testthat/test-native-fpca-three-inference-artists-20261112.R",
-      "sha256": "85d1657040b7774bc1810ea3d3094b60c72a66446308efbee7f58164eae3dcf3"
+      "sha256": "f289f7bb5a4929cc7457b25a2a6bb8cf0c4a3bbc6095d572bee2cddc91da1f5c"
     },
     {
       "kind": "scientific_estimand",
       "description": "No p-value recalculation or change to the multiple-testing family.",
       "path": "tests/testthat/test-native-fpca-three-inference-artists-20261112.R",
-      "sha256": "85d1657040b7774bc1810ea3d3094b60c72a66446308efbee7f58164eae3dcf3"
+      "sha256": "f289f7bb5a4929cc7457b25a2a6bb8cf0c4a3bbc6095d572bee2cddc91da1f5c"
     }
   ],
   "additional_regression_evidence": [],
