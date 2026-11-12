@@ -213,7 +213,24 @@ etr_plot_functional_mixed_effects_coefficient <- function(result,coefficient,...
 #' @param ... Base R graphics arguments.
 #' @return Invisible exact reconstructed conservative marginal p-values.
 #' @export
-etr_plot_conformal_fpca_anomaly <- function(result,max_targets=50L,...) {
+etr_plot_conformal_fpca_anomaly <- function(result,max_targets=50L,
+    strict_source_record=FALSE,...) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
+  if(isTRUE(strict_source_record)) {
+    .etr_assert(is.integer(max_targets)&&length(max_targets)==1L&&
+      !is.na(max_targets)&&max_targets>=1L,
+      "strict source max_targets must be a positive integer")
+    coords<-.etr_conformal_source_pvalue_frame(result,max_targets)
+    graphics::plot(coords$target_index,coords$p_value,pch=1,
+      ylim=c(0,1),xaxt="n",xlab="Target trajectory",
+      ylab="Marginal conformal p-value",
+      main="Split-conformal FPCA anomaly review",...)
+    graphics::axis(1,at=coords$target_index,labels=coords$curve_id,las=2)
+    graphics::abline(h=result$alpha,lty=2)
+    graphics::legend("topright",legend=paste0("alpha=",
+      format(result$alpha,scientific=FALSE,trim=TRUE)),lty=2,bty="n")
+    return(invisible(.etr_conformal_pvalue_source_artist(result,coords)))
+  }
   a<-.etr_conformal_review(result)
   .etr_assert(is.numeric(max_targets)&&length(max_targets)==1L&&
     !is.logical(max_targets)&&is.finite(max_targets)&&
