@@ -1,0 +1,73 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "plot_sparse_fpca_component",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_NATIVE_SPARSE_UNIVARIATE_SOURCE_ARTIST_GEOMETRY_REVIEW",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/plotting.py::plot_sparse_fpca_component",
+  "native_signature": "etr_plot_sparse_fpca_component(result,component=0L,sd_multiplier=2,strict_source_record=TRUE)",
+  "reviewer_statement": "Developer-scoped source scientific geometry on actual native R sparse population or original irregular observations. Committed direct frozen Python Matplotlib artist numerical comparisons, not yet witnessed passing exact-head CI. R graphics renderer is not Matplotlib Axes runtime identity and no independent reviewer has certified full parity.",
+  "native_language_semantic_policy": "R native scientific artists retain exact Matplotlib source plotting arrays, legend values, scientific text and source image extents, but they are neither Matplotlib Figure/Axes nor pixel-identical Python backend colors. The accepted source-scientific domain is bounded and explicit; all other Python axes/backends remain unresolved outside this scope.",
+  "native_files": [
+    {
+      "path": "R/native-sparse-scientific-graphics.R",
+      "sha256": "7b338addd39576ee707082c20ba46937f63dc6761f0236bd7c010ef6d0882718"
+    },
+    {
+      "path": "R/native-sparse-univariate-artist-source.R",
+      "sha256": "d84b8311902b2c447d37c71f4c8a697ba5952d163ac5cdb57983a18ad484dcd4"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Frozen Python 1.2 public src/eyetrajectoriespy/plotting.py::plot_sparse_fpca_component. Real fitted univariate sparse PACE mean plus or minus eigenvalue-scaled component mode with exact Matplotlib line ordering, labels and scientific curve coordinates.",
+      "path": "tests/testthat/test-native-sparse-univariate-three-artist-source-20261112.R",
+      "sha256": "00946a9c13655a1beb5e506aaaf93c5fb04ebb5126261ac799f31bc36f84fd7d"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Native real sparse FPCA covariance/PACE result, zero-based retained component integer and finite positive SD multiplier. Source default component zero and multiplier two are supported. Arbitrary Python Axes injection, out-of-range indices or fdapace substituted estimators are deliberately refused in strict mode.",
+      "path": "tests/testthat/test-native-sparse-univariate-three-artist-source-20261112.R",
+      "sha256": "00946a9c13655a1beb5e506aaaf93c5fb04ebb5126261ac799f31bc36f84fd7d"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "The source line arrays are mean, mean-SD×sqrt(eigenvalue)*eigenfunction, mean+SD×sqrt(eigenvalue)*eigenfunction on the actual fitted evaluation grid, retaining the source order and string labels. Committed direct Python 1.2 public plot line get_xdata/get_ydata, titles and labels comparisons use the real native PACE population estimates rather than synthetic fit impersonation. CI runs queued/not observed green.",
+      "path": "tests/testthat/test-native-sparse-univariate-three-artist-source-20261112.R",
+      "sha256": "00946a9c13655a1beb5e506aaaf93c5fb04ebb5126261ac799f31bc36f84fd7d"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Reject nonnative fit, nonlogical strict flag, nonnumeric/negative/nonfinite mode multiplier, invalid zero-based component or malformed curve shape. Python TypeError/IndexError class and external axes mutation semantics are not matched.",
+      "path": "tests/testthat/test-native-sparse-univariate-three-artist-source-20261112.R",
+      "sha256": "00946a9c13655a1beb5e506aaaf93c5fb04ebb5126261ac799f31bc36f84fd7d"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Three source ordered Matplotlib line data artists with labels fitted mean/-N SD/+N SD and source scientific x/y/title axes are represented by a one-panel native R scientific record. Legacy default returns a four-column numerical data frame. Source Matplotlib Axes runtime identity and pixels remain unavailable.",
+      "path": "tests/testthat/test-native-sparse-univariate-three-artist-source-20261112.R",
+      "sha256": "00946a9c13655a1beb5e506aaaf93c5fb04ebb5126261ac799f31bc36f84fd7d"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Population mean and eigenfunction principal perturbations under actual fitted sparse conditional-expectation FPCA covariance, honoring amplitude sqrt(lambda_k) and original source times, not a different score fit.",
+      "path": "tests/testthat/test-native-sparse-univariate-three-artist-source-20261112.R",
+      "sha256": "00946a9c13655a1beb5e506aaaf93c5fb04ebb5126261ac799f31bc36f84fd7d"
+    }
+  ],
+  "additional_regression_evidence": [
+    {
+      "path": "tests/testthat/test-native-sparse-scientific-graphics.R",
+      "sha256": "6c93eb4ba0351003ce0eb49fe50bfb96c4a08ad6a935dce285a12ef20a2e0664"
+    }
+  ],
+  "independent_review_status": "Provisional scoped author review only: direct Python 1.2 differential CI committed but not observed passing; zero independent source contract certifications.",
+  "language_specific_limits": [
+    "An R graphics device and source artist data cannot return or mutate a Matplotlib Axes/Figure runtime object.",
+    "Visual-pixel and native Matplotlib colormap/GPU rendering are not certified; exact numerical scientific artist data are the bounded comparison target.",
+    "Python exceptions and Python dataclass object identity are not reproduced by the R-native scientific types.",
+    "The six-domain author review and SHA256 receipts are not independent parity certificates, main merge or CRAN readiness."
+  ]
+}

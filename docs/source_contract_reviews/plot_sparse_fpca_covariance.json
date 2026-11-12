@@ -1,0 +1,73 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "plot_sparse_fpca_covariance",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_NATIVE_SPARSE_UNIVARIATE_SOURCE_ARTIST_GEOMETRY_REVIEW",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/plotting.py::plot_sparse_fpca_covariance",
+  "native_signature": "etr_plot_sparse_fpca_covariance(result,strict_source_record=TRUE)",
+  "reviewer_statement": "Developer-scoped source scientific geometry on actual native R sparse population or original irregular observations. Committed direct frozen Python Matplotlib artist numerical comparisons, not yet witnessed passing exact-head CI. R graphics renderer is not Matplotlib Axes runtime identity and no independent reviewer has certified full parity.",
+  "native_language_semantic_policy": "R native scientific artists retain exact Matplotlib source plotting arrays, legend values, scientific text and source image extents, but they are neither Matplotlib Figure/Axes nor pixel-identical Python backend colors. The accepted source-scientific domain is bounded and explicit; all other Python axes/backends remain unresolved outside this scope.",
+  "native_files": [
+    {
+      "path": "R/native-sparse-scientific-graphics.R",
+      "sha256": "7b338addd39576ee707082c20ba46937f63dc6761f0236bd7c010ef6d0882718"
+    },
+    {
+      "path": "R/native-sparse-univariate-artist-source.R",
+      "sha256": "d84b8311902b2c447d37c71f4c8a697ba5952d163ac5cdb57983a18ad484dcd4"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Frozen Python 1.2 public src/eyetrajectoriespy/plotting.py::plot_sparse_fpca_covariance. Real fitted univariate sparse PACE latent covariance heatmap, preserving scientific evaluation times, fitted covariance matrix, Matplotlib image lower origin, source title and source axes/viridis color limits.",
+      "path": "tests/testthat/test-native-sparse-univariate-three-artist-source-20261112.R",
+      "sha256": "00946a9c13655a1beb5e506aaaf93c5fb04ebb5126261ac799f31bc36f84fd7d"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Accepted domain: genuine native R fitted sparse covariance/PACE scientific result class etr_sparse_fpca_native, finite increasing evaluation grid, finite n-by-n covariance and matching eigensystem. Default R plot remains unchanged. Strict source scientific geometry does not accept external Python ax injection; it will not impersonate Python Matplotlib objects.",
+      "path": "tests/testthat/test-native-sparse-univariate-three-artist-source-20261112.R",
+      "sha256": "00946a9c13655a1beb5e506aaaf93c5fb04ebb5126261ac799f31bc36f84fd7d"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Native source image stores the actual fitted Gaussian PACE latent covariance matrix, data grid extent (g0,gmax,g0,gmax), min/max scientific image normalization, source plot titles and labels. Committed pinned Python 1.2 tests create public SparseFPCAResult using the exact native population arrays and directly compare public plot get_array, get_extent, get_clim and source colormap name. A fitted native 24-curve sparse population fixture is used; exact-head CI not witnessed green.",
+      "path": "tests/testthat/test-native-sparse-univariate-three-artist-source-20261112.R",
+      "sha256": "00946a9c13655a1beb5e506aaaf93c5fb04ebb5126261ac799f31bc36f84fd7d"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Strict source refuses non-native fitted result, missing/malformed covariance and any nonfinite entry, unknown source fields and nonlogical strict flag. Native R error classes and Matplotlib ax injection are distinct and no claim of Python runtime class/exception parity is made.",
+      "path": "tests/testthat/test-native-sparse-univariate-three-artist-source-20261112.R",
+      "sha256": "00946a9c13655a1beb5e506aaaf93c5fb04ebb5126261ac799f31bc36f84fd7d"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Frozen Python returns a Matplotlib Axes with one imshow image plus an attached figure colorbar. Native R draws on base R and returns a typed one-panel source-scientific artist record including exactly the original fitted covariance array, source image extent, vmin/vmax, declared viridis cmap, plot axis labels, title and colorbar label. Not a live Matplotlib Axes or identical pixels.",
+      "path": "tests/testthat/test-native-sparse-univariate-three-artist-source-20261112.R",
+      "sha256": "00946a9c13655a1beb5e506aaaf93c5fb04ebb5126261ac799f31bc36f84fd7d"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Visual display of the genuine fitted univariate sparse FPCA/PACE latent covariance operator, retaining any PSD projection and original evaluation grid rather than an alternative fdapace fit or raw-data interpolation.",
+      "path": "tests/testthat/test-native-sparse-univariate-three-artist-source-20261112.R",
+      "sha256": "00946a9c13655a1beb5e506aaaf93c5fb04ebb5126261ac799f31bc36f84fd7d"
+    }
+  ],
+  "additional_regression_evidence": [
+    {
+      "path": "tests/testthat/test-native-sparse-scientific-graphics.R",
+      "sha256": "6c93eb4ba0351003ce0eb49fe50bfb96c4a08ad6a935dce285a12ef20a2e0664"
+    }
+  ],
+  "independent_review_status": "Provisional scoped author review only: direct Python 1.2 differential CI committed but not observed passing; zero independent source contract certifications.",
+  "language_specific_limits": [
+    "An R graphics device and source artist data cannot return or mutate a Matplotlib Axes/Figure runtime object.",
+    "Visual-pixel and native Matplotlib colormap/GPU rendering are not certified; exact numerical scientific artist data are the bounded comparison target.",
+    "Python exceptions and Python dataclass object identity are not reproduced by the R-native scientific types.",
+    "The six-domain author review and SHA256 receipts are not independent parity certificates, main merge or CRAN readiness."
+  ]
+}

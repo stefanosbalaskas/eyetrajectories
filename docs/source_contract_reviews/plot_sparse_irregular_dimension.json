@@ -1,0 +1,73 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "plot_sparse_irregular_dimension",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_NATIVE_SPARSE_UNIVARIATE_SOURCE_ARTIST_GEOMETRY_REVIEW",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/plotting.py::plot_sparse_irregular_dimension",
+  "native_signature": "etr_plot_sparse_irregular_dimension(trajectories,dimension,strict_source_record=TRUE)",
+  "reviewer_statement": "Developer-scoped source scientific geometry on actual native R sparse population or original irregular observations. Committed direct frozen Python Matplotlib artist numerical comparisons, not yet witnessed passing exact-head CI. R graphics renderer is not Matplotlib Axes runtime identity and no independent reviewer has certified full parity.",
+  "native_language_semantic_policy": "R native scientific artists retain exact Matplotlib source plotting arrays, legend values, scientific text and source image extents, but they are neither Matplotlib Figure/Axes nor pixel-identical Python backend colors. The accepted source-scientific domain is bounded and explicit; all other Python axes/backends remain unresolved outside this scope.",
+  "native_files": [
+    {
+      "path": "R/native-sparse-scientific-graphics.R",
+      "sha256": "7b338addd39576ee707082c20ba46937f63dc6761f0236bd7c010ef6d0882718"
+    },
+    {
+      "path": "R/native-sparse-univariate-artist-source.R",
+      "sha256": "d84b8311902b2c447d37c71f4c8a697ba5952d163ac5cdb57983a18ad484dcd4"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Frozen Python 1.2 public src/eyetrajectoriespy/plotting.py::plot_sparse_irregular_dimension. One source native irregular observed functional dimension plotted without interpolation, preserving all source curve IDs, observed time points, values, per-line Matplotlib marker/linewidth/alpha and source legend threshold.",
+      "path": "tests/testthat/test-native-sparse-univariate-three-artist-source-20261112.R",
+      "sha256": "00946a9c13655a1beb5e506aaaf93c5fb04ebb5126261ac799f31bc36f84fd7d"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Native etr_irregular_trajectory_set scientific collection with original strictly increasing per-curve observation times and finite complete selected dimensions, and a declared existing dimension name. Curves may differ in sample count and time stamps. Source native R plotting still handles arbitrary dimensions but refuses fabricated dataclass/axes identity in strict mode.",
+      "path": "tests/testthat/test-native-sparse-univariate-three-artist-source-20261112.R",
+      "sha256": "00946a9c13655a1beb5e506aaaf93c5fb04ebb5126261ac799f31bc36f84fd7d"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Every source artist retains per-curve original xdata=observed time and ydata=selected dimension measurement without interpolation, in input curve-ID order, with marker o, linewidth 1, alpha .55, source title and axes label. Legend threshold is n_curves<=12. Frozen Python 1.2 public Matplotlib plot line get_xdata/get_ydata/alpha/linewidth/marker and legend status are compared to original measured two-curve irregular native R fixture; 24-curve legend suppression is also tested.",
+      "path": "tests/testthat/test-native-sparse-univariate-three-artist-source-20261112.R",
+      "sha256": "00946a9c13655a1beb5e506aaaf93c5fb04ebb5126261ac799f31bc36f84fd7d"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Reject missing requested dimension, missing or malformed per-curve sample arrays, nonfinite original observations in accepted native geometry and nonlogical strict flag. R native error strings are not Python KeyError and injection of Matplotlib ax is unsupported.",
+      "path": "tests/testthat/test-native-sparse-univariate-three-artist-source-20261112.R",
+      "sha256": "00946a9c13655a1beb5e506aaaf93c5fb04ebb5126261ac799f31bc36f84fd7d"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Source Python returns a Matplotlib Axes with n observed-curve line artists and optional legend. Native R returns a one-panel scientific artist geometry record with each line's native curve ID label, xdata, ydata, marker, linewidth, alpha, source title, axis labels and legend rule. Default native function still returns unchanged original curve ids/time/values/dimension list.",
+      "path": "tests/testthat/test-native-sparse-univariate-three-artist-source-20261112.R",
+      "sha256": "00946a9c13655a1beb5e506aaaf93c5fb04ebb5126261ac799f31bc36f84fd7d"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Exact raw irregular observed functional trajectory visualization on original times for a named functional dimension; never interpolates sparse observations or substitutes a population curve.",
+      "path": "tests/testthat/test-native-sparse-univariate-three-artist-source-20261112.R",
+      "sha256": "00946a9c13655a1beb5e506aaaf93c5fb04ebb5126261ac799f31bc36f84fd7d"
+    }
+  ],
+  "additional_regression_evidence": [
+    {
+      "path": "tests/testthat/test-native-sparse-scientific-graphics.R",
+      "sha256": "6c93eb4ba0351003ce0eb49fe50bfb96c4a08ad6a935dce285a12ef20a2e0664"
+    }
+  ],
+  "independent_review_status": "Provisional scoped author review only: direct Python 1.2 differential CI committed but not observed passing; zero independent source contract certifications.",
+  "language_specific_limits": [
+    "An R graphics device and source artist data cannot return or mutate a Matplotlib Axes/Figure runtime object.",
+    "Visual-pixel and native Matplotlib colormap/GPU rendering are not certified; exact numerical scientific artist data are the bounded comparison target.",
+    "Python exceptions and Python dataclass object identity are not reproduced by the R-native scientific types.",
+    "The six-domain author review and SHA256 receipts are not independent parity certificates, main merge or CRAN readiness."
+  ]
+}

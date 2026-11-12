@@ -108,9 +108,13 @@
 
 #' Sparse univariate fitted latent covariance image
 #' @param result Explicit native univariate sparse FPCA fitted record.
-#' @return Invisibly the grid and latent covariance used for plotting.
+#' @param strict_source_record Return source Matplotlib scientific image
+#'   geometry with native R class, without claiming Python Axes identity.
+#' @return Invisibly grid and latent covariance, or source artist data.
 #' @export
-etr_plot_sparse_fpca_covariance <- function(result) {
+etr_plot_sparse_fpca_covariance <- function(result,
+    strict_source_record=FALSE) {
+  .etr_su_artist_require(result,strict_source_record,"fit")
   v<-.etr_sparse_visual_core(result)
   grid<-v$grid
   .etr_sparse_visual_heatmap(grid,result$covariance,
@@ -118,6 +122,8 @@ etr_plot_sparse_fpca_covariance <- function(result) {
     paste0("Time s (",result$time_unit,")"),
     paste0("Time t (",result$time_unit,")"),
     range(result$covariance))
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_su_covariance_artist(result)))
   invisible(list(grid=grid,covariance=result$covariance))
 }
 
@@ -125,10 +131,13 @@ etr_plot_sparse_fpca_covariance <- function(result) {
 #' @param result Explicit sparse univariate FPCA fitted record.
 #' @param component Zero-based retained principal-component index.
 #' @param sd_multiplier Strictly positive scalar standard-deviation multiple.
-#' @return Invisibly the three plotted source-aligned curves.
+#' @param strict_source_record Return Python-ordered source line data and
+#'   labels as a native R artist record; not Matplotlib Axes identity.
+#' @return Invisibly three plotted curves or source artist geometry.
 #' @export
 etr_plot_sparse_fpca_component <- function(result,component=0L,
-    sd_multiplier=2) {
+    sd_multiplier=2,strict_source_record=FALSE) {
+  .etr_su_artist_require(result,strict_source_record,"fit")
   v<-.etr_sparse_visual_core(result)
   i<-.etr_sparse_visual_component(component,v$k)
   m<-.etr_sparse_visual_scalar(sd_multiplier,"sd_multiplier",
@@ -145,8 +154,12 @@ etr_plot_sparse_fpca_component <- function(result,component=0L,
   graphics::legend("topright",
     legend=c("fitted mean",paste0("-",m," SD"),paste0("+",m," SD")),
     lty=c(1L,2L,2L),bty="n")
-  invisible(data.frame(time=v$grid,mean=result$mean,
-    lower=low,upper=high))
+  curves<-data.frame(time=v$grid,mean=result$mean,
+    lower=low,upper=high)
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_su_component_artist(result,curves,
+      component,m)))
+  invisible(curves)
 }
 
 #' Sparse bivariate PACE principal-component perturbations
@@ -323,9 +336,13 @@ etr_plot_sparse_mfpca_score_diagnostics <- function(result,
 #' Native irregular samples for a predeclared functional channel
 #' @param trajectories Irregular trajectories with per-curve native times.
 #' @param dimension A named dimension, not an inferred coordinate.
-#' @return Invisibly the original curve IDs, times and values.
+#' @param strict_source_record Return source line/scatter artist data,
+#'   per-curve legend flags and labels, without a Python plotting object.
+#' @return Invisibly original IDs, times, values or source artist geometry.
 #' @export
-etr_plot_sparse_irregular_dimension <- function(trajectories,dimension) {
+etr_plot_sparse_irregular_dimension <- function(trajectories,dimension,
+    strict_source_record=FALSE) {
+  .etr_su_artist_require(trajectories,strict_source_record,"irregular")
   .etr_scientific_frame_fields(trajectories,
     c("dimension_names","curve_ids","time","values","time_unit"),
     "irregular trajectories")
@@ -366,6 +383,10 @@ etr_plot_sparse_irregular_dimension <- function(trajectories,dimension) {
     graphics::lines(times[[i]],values[[i]],type="o",pch=1L)
   if(n<=12L)graphics::legend("topright",legend=ids,
     lty=1L,bty="n",cex=.65)
-  invisible(list(curve_ids=ids,time=times,
-    values=values,dimension=name))
+  source<-list(curve_ids=ids,time=times,
+    values=values,dimension=name)
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_su_irregular_artist(
+      source,trajectories$time_unit)))
+  invisible(source)
 }

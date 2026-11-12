@@ -12,7 +12,7 @@
   "native_files": [
     {
       "path": "R/native-sparse-scientific-graphics.R",
-      "sha256": "7b86912b7f82c8dde63f68630c0722a537513007b56c91348b048cb1e959cd7d"
+      "sha256": "7b338addd39576ee707082c20ba46937f63dc6761f0236bd7c010ef6d0882718"
     },
     {
       "path": "R/native-sparse-mfpca-artist-source.R",
@@ -60,7 +60,7 @@
   "additional_regression_evidence": [
     {
       "path": "tests/testthat/test-native-sparse-scientific-graphics.R",
-      "sha256": "243004b445272bc8f4c05bb5f1ce39bf1aa52f47e1a2eb2f99ac60d24efa7591"
+      "sha256": "6c93eb4ba0351003ce0eb49fe50bfb96c4a08ad6a935dce285a12ef20a2e0664"
     }
   ],
   "independent_review_status": "Scoped developer review only; exact-head CI and pinned Matplotlib differential are queued or unverified, no independent scientific contract certification.",
