@@ -1,0 +1,67 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "export_workflow_bundle",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_SOURCE_SCIENTIFIC_INTEROPERABILITY_REVIEW",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/workflows/_core.py::export_workflow_bundle",
+  "native_signature": "etr_export_workflow_bundle(result,directory,overwrite=FALSE,format='python_1_2')",
+  "reviewer_statement": "Provisional author-reviewed source-scientific native R Python 1.2 serialization for accepted fixed sparse MFPCA and other documented native types. Python 1.2 recognizes the serialized science, but R neither provides arbitrary dataclass support nor impersonates Python environment classes. New direct oracle CI not yet proven passing.",
+  "native_language_semantic_policy": "Native R writer is JSON+NPZ and Python 1.2 loader-interoperable in declared domain, but not a Python interpreter, class identity, or environment capture. Unknown source dataclasses, optional selectors and Python overwrite semantics remain unavailable. This is a bounded developmental ledger record, not a certified complete source API.",
+  "native_files": [
+    {
+      "path": "R/native-python-sparse-mfpca-portable.R",
+      "sha256": "f4c31db1758201750ca7c0de14b22b6c3acd72cd830cc06057cb6b85951874e3"
+    },
+    {
+      "path": "R/native-workflow-bundle-export.R",
+      "sha256": "03f9867ec1d9a29beee26c06ccc3bb64ea9ed41db46ece3969ac8ce9d336b343"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Frozen Python 1.2 src/eyetrajectoriespy/workflows/_core.py::export_workflow_bundle; Native Python 1.2 checksummed workflow bundle exporter extended from dense FPCA to strict fixed-bandwidth paired sparse multivariate PACE source-scientific workflows with actual R estimator, canonical typed portable nested fit and measured native scientific audit.",
+      "path": "tests/testthat/test-native-sparse-mfpca-python-portable-bundles-20261112.R",
+      "sha256": "09875a9679c4a1309bd90d51cf1d8e856b0438f574b38478f42dd447e214d435"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Source-scientific Python W2 12-field paired sparse MFPCA workflow with 22 ordered configuration fields; strict paired real native covariance PACE fit, one genuine timed fit step, no optional selector, score-uncertainty or observation diagnostics; existing dense FPCA workflow remains supported. Rejects native RDS-only alternatives under python_1_2, noncanonical result, unsupported optional mode, destination overwrite and path collisions.",
+      "path": "tests/testthat/test-native-sparse-mfpca-python-portable-bundles-20261112.R",
+      "sha256": "09875a9679c4a1309bd90d51cf1d8e856b0438f574b38478f42dd447e214d435"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "New source-pinned Python 1.2 test opens exported Python workflow.json and JSON+NPZ portable result with Python `load_portable_result`, verifies Python dataclass outer and nested scientific type field order, covariance numerical arrays, score metadata and native step payload, and recursively SHA256 checks the bundle; R standalone source tests compare nested real scientific arrays and all file integrity hashes. CI is queued/not observed green.",
+      "path": "tests/testthat/test-native-sparse-mfpca-python-portable-bundles-20261112.R",
+      "sha256": "09875a9679c4a1309bd90d51cf1d8e856b0438f574b38478f42dd447e214d435"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Refuses unsupported workflow classes, unmeasured source step, mandatory scientific fields missing, unsupported score modes, unsafe filenames, overwrite, arbitrary Python runtime types; distinct R-specific exceptions and runtime class identity are recorded as limitations.",
+      "path": "tests/testthat/test-native-sparse-mfpca-python-portable-bundles-20261112.R",
+      "sha256": "09875a9679c4a1309bd90d51cf1d8e856b0438f574b38478f42dd447e214d435"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Published frozen Python 1.2 WORKFLOW_BUNDLE_FORMAT, schema version, workflow contract, result_type, figure-export-deferred status, config.json, provenance.json, environment.json with explicit R rather than fake Python identity, source tables/reports, steps.csv, decisions.csv, result/arrays.npz, result/manifest.json and recursive SHA256SUMS. Serialized nested source workflow dataclasses, source fit, decisions, provenance and score table are recoverable in pinned Python reader.",
+      "path": "tests/testthat/test-native-sparse-mfpca-python-portable-bundles-20261112.R",
+      "sha256": "09875a9679c4a1309bd90d51cf1d8e856b0438f574b38478f42dd447e214d435"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Workflow bundle carries genuine paired sparse planar joint covariance and PACE score estimates with source scientific steps, decisions, fixed-bandwidth analyst choices, source score reports and tables, no substitute marginal interpolation estimator or raw Python object rehydration.",
+      "path": "tests/testthat/test-native-sparse-mfpca-python-portable-bundles-20261112.R",
+      "sha256": "09875a9679c4a1309bd90d51cf1d8e856b0438f574b38478f42dd447e214d435"
+    }
+  ],
+  "independent_review_status": "Scoped developer review only; exact-head native and Python 1.2 CI queued/not verified; independent scientific certification remains zero.",
+  "language_specific_limits": [
+    "Arbitrary Python dataclass objects and Python environment capture are outside native R supported input domain.",
+    "R runtime result classes and Python dataclass objects are distinct. Portable snapshots intentionally do not reconstruct opaque backend fits.",
+    "Python and R report strings, csv bytes, path objects and exception class identity need not be identical; source reader compatibility and scientific values are primary bounded target.",
+    "Python workflow export supports further optional report and selector families not yet included. This author review is provisional and not independent certification."
+  ]
+}
