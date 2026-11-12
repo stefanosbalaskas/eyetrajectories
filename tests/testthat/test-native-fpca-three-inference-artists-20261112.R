@@ -4,7 +4,7 @@
 
 .etr_three_inference_fixture<-function() {
   time<-c(0,.5,1)
-  components<-array(c(.2,.4,.6,.1,-.2,.3),c(2L,3L,1L))
+  components<-array(c(.2,.1,.4,-.2,.6,.3),c(2L,3L,1L))
   ref<-list(time=time,dimension_names="x",time_unit="s",
     components=components)
   envelope<-list(reference=ref,lower=components-.2,
@@ -162,9 +162,6 @@ import matplotlib.pyplot as plt
 from types import SimpleNamespace
 import eyetrajectoriespy as et
 
-components=np.array([[[.2],[.1]],[[.4],[-.2]],[[.6],[.3]]],dtype=float).transpose(1,0,2)
-# Matrices are explicitly defined in source dimensional order:
-# shape (component,time,dimension).
 components=np.array([[[.2],[.4],[.6]],[[.1],[-.2],[.3]]],dtype=float)
 reference=SimpleNamespace(
   n_components=2, components=components,
@@ -231,8 +228,10 @@ plt.close('all')
     expect_identical(c$axes[[1L]]$legend_labels,p$family$legend)
     expect_identical(c$axes[[1L]]$xticklabels,p$family$labels)
     expect_equal(c$axes[[1L]]$artists[[1L]]$offsets,
-      do.call(rbind,p$family$adjusted),ignore_attr=TRUE)
+      matrix(as.numeric(unlist(p$family$adjusted)),ncol=2L,byrow=TRUE),
+      ignore_attr=TRUE)
     expect_equal(c$axes[[1L]]$artists[[2L]]$offsets,
-      do.call(rbind,p$family$targetwise),ignore_attr=TRUE)
+      matrix(as.numeric(unlist(p$family$targetwise)),ncol=2L,byrow=TRUE),
+      ignore_attr=TRUE)
   })
 })
