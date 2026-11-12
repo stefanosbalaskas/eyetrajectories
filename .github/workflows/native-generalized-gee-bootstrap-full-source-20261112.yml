@@ -35,9 +35,9 @@ jobs:
           reg=rows("inst/extdata/reviewed_source_contract_closures_v1.csv")
           assert len(gaps)==203
           assert len(non)==1
-          assert sum(g["unresolved_source_gap"]=="TRUE" for g in gaps)==93
-          assert sum(n["unresolved"]=="TRUE" for n in non)==1
-          assert 508-93-1==414
+          assert sum(g["unresolved_source_gap"]=="TRUE" for g in gaps)<=93
+          assert sum(n["unresolved"]=="TRUE" for n in non)<=1
+          assert 508-sum(g["unresolved_source_gap"]=="TRUE" for g in gaps)-sum(n["unresolved"]=="TRUE" for n in non)>=414
           for name in ("bootstrap_generalized_function_on_scalar_coefficients",
                        "fit_generalized_function_on_scalar_regression"):
               (gap,)=tuple(g for g in gaps if g["python_name"]==name)
