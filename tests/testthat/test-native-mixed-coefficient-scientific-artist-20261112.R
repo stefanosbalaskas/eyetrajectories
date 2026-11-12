@@ -109,6 +109,38 @@ test_that("native simultaneous band is not relabelled or recalibrated as pointwi
       c(1.35,1.6,1.85))
   })
 })
+test_that("native bootstrap-calibrated simultaneous bands feed the strict scientific artist",{
+  x<-.etr_mixed_coefficient_scientific_fixture()
+  estimate<-x$fit$coefficient_functions
+  draws<-array(NA_real_,c(5L,2L,3L))
+  for(b in 1:5)draws[b,,]<-estimate+(b-3)*.07
+  bootstrap<-list(reference=x$fit,
+    bootstrap_mean=estimate,
+    bootstrap_standard_errors=matrix(.09,2L,3L),
+    bootstrap_coefficient_functions=draws,
+    bootstrap_type="conditional_covariance",
+    provenance=list(source="native precomputed participant draws"))
+  band<-etr_functional_mixed_effects_simultaneous_bands(
+    bootstrap,confidence_level=.9,simultaneous_scope="family")
+  .etr_mixed_coefficient_scientific_pdf({
+    r<-etr_plot_functional_mixed_effects_coefficient(
+      band,coefficient="dose",strict_source_record=TRUE)
+    a<-r$axes[[1L]]
+    expect_true(r$source_options$simultaneous_band_input)
+    expect_identical(a$legend_labels,
+      c("90.0% simultaneous band (family)","dose"))
+    expect_equal(a$artists[[1L]]$y1,
+      as.numeric(band$lower[2L,]),tolerance=0)
+    expect_equal(a$artists[[1L]]$y2,
+      as.numeric(band$upper[2L,]),tolerance=0)
+    expect_equal(a$artists[[2L]]$ydata,
+      as.numeric(x$fit$coefficient_functions[2L,]),tolerance=0)
+    expect_identical(band$provenance$
+      functional_mixed_effects_simultaneous_bands$
+      variance_components_refit,FALSE)
+  })
+})
+
 test_that("source mixed coefficient rejects malformed selection and impossible bands",{
   x<-.etr_mixed_coefficient_scientific_fixture()
   .etr_mixed_coefficient_scientific_pdf({
