@@ -5,6 +5,7 @@ on:
       - "R/native-mixed-sensitivity-paired-band-source.R"
       - "R/native-joint-likelihood-covariance-sensitivity.R"
       - "R/native-generalized-mixed-source-graphics.R"
+      - "R/native-mixed-covariance-sensitivity.R"
       - "tests/testthat/test-native-paired-mixed-band-sensitivity-20261112.R"
       - "tests/testthat/test-native-generalized-mixed-source-graphics.R"
       - "docs/source_contract_reviews/plot_covariance_sensitivity_band_widths.json"
@@ -42,6 +43,7 @@ jobs:
           assert 508-callable-noncallable>=500
           names=[
             "plot_covariance_sensitivity_band_widths",
+            "functional_mixed_effects_covariance_sensitivity",
             "plot_covariance_sensitivity_coefficients",
             "plot_functional_mixed_effects_residual_acf",
             "plot_functional_mixed_effects_residual_variogram",
