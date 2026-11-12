@@ -220,8 +220,10 @@
     !is.logical(max_lag)&&is.finite(max_lag)&&
     max_lag==floor(max_lag)&&max_lag>=1L,
     "max_lag must be a positive integer")
-  .etr_assert(is.null(bands),
-    "joint likelihood sensitivity requires independently qualified bands")
+  # Source only compares bands whose original participant bootstrap draws
+  # and calibration scope are explicitly comparable. No band is synthesized.
+  .etr_assert(is.null(bands)||(is.list(bands)&&!is.data.frame(bands)),
+    "bands must be NULL or a named list of existing calibrated mixed bands")
   .etr_assert(is.list(failures)&&
     (length(failures)==0L||(!is.null(names(failures))&&
        !anyNA(names(failures))&&!anyDuplicated(names(failures))&&
@@ -352,15 +354,12 @@
   summary<-do.call(rbind,coef_summary);rownames(summary)<-NULL
   variance<-do.call(rbind,var_frames);rownames(variance)<-NULL
   residual<-do.call(rbind,diag_frames);rownames(residual)<-NULL
-  empty_band<-data.frame(model=character(),
-    coefficient=character(),time=numeric(),band_width=numeric(),
-    reference_band_width=numeric(),
-    band_width_ratio_to_reference=numeric())
+  paired_band_frame<-.etr_joint_source_band_width_frame(fits,bands,reference)
   structure(list(reference=reference,specifications=specifications,
     failures=failures,model_summary=model_summary,
     coefficient_frame=frame,coefficient_summary=summary,
     variance_decomposition=variance,
-    residual_diagnostics=residual,band_width_frame=empty_band,
+    residual_diagnostics=residual,band_width_frame=paired_band_frame,
     information_criterion_available=TRUE,model_selected=FALSE,
     ranking_performed=FALSE,likelihood_ratio_tests_performed=FALSE,
     source_python_equivalent=FALSE,independent_full_source_certified=FALSE,
@@ -371,6 +370,7 @@
       no_automatic_covariance_selection=TRUE,
       REML_and_ML_must_not_be_compared=TRUE,
       within_curve_residual_centering=TRUE,
+      source_paired_bootstrap_bands_validated=!is.null(bands)&&length(bands)>0L,
       pair_count_weighted_source_residual_autocorrelation=TRUE,
       entire_python_domain_and_optimizer_parity_certified=FALSE)),
     class=c("etr_joint_likelihood_covariance_sensitivity",
