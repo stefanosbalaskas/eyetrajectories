@@ -309,7 +309,9 @@ etr_conformal_fpca_anomaly_reporting_text <- function(result,
 #' @param ... Base R graphics arguments.
 #' @return Invisible numeric mean/percentile interval source rows.
 #' @export
-etr_plot_rqa_metric_mean_bootstrap <- function(result,metrics=NULL,...) {
+etr_plot_rqa_metric_mean_bootstrap <- function(result,metrics=NULL,
+    strict_source_record=FALSE,...) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   .etr_assert(inherits(result,"etr_rqa_metric_bootstrap")&&
     is.data.frame(result$summary_table)&&
     all(c("metric","mean","lower","upper")%in%
@@ -336,6 +338,9 @@ etr_plot_rqa_metric_mean_bootstrap <- function(result,metrics=NULL,...) {
     length=.04,angle=90)
   graphics::axis(1,at=x,labels=metrics,las=2)
   rownames(frame)<-NULL
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_rqa_mean_bootstrap_source_artist(
+      result,metrics,frame)))
   invisible(frame)
 }
 
