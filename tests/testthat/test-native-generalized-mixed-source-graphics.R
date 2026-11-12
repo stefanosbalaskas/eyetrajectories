@@ -126,11 +126,13 @@ test_that("new seven sources are mapped without unearned full certification",{
   expect_true(all(z$native_implementation_started))
   scoped<-c("plot_covariance_sensitivity_coefficients",
     "plot_functional_mixed_effects_residual_acf",
-    "plot_functional_mixed_effects_residual_variogram")
-  # Only three of the seven source graphics receive new scoped
-  # Gaussian scientific artist records in this mixed diagnostic wave.
-  # The band-width ratio stays unresolved because the native likelihood
-  # sensitivity source does not yet implement qualified band inputs.
+    "plot_functional_mixed_effects_residual_variogram",
+    "plot_generalized_function_on_scalar_predictions",
+    "plot_generalized_function_on_scalar_mean_difference",
+    "plot_generalized_function_on_scalar_coefficients")
+  # Three generalized FoSR plotting contracts now expose source-scientific
+  # Matplotlib artist geometry on bounded native R records. The Gaussian
+  # covariance band-width ratio still requires a qualified band estimator.
   expect_false(any(z$source_contract_gap_unresolved[
     z$python_name%in%scoped]))
   expect_true(all(z$source_contract_gap_unresolved[
