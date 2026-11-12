@@ -64,7 +64,14 @@
 #' @return Invisible observed-grid estimate and optional simultaneous bounds.
 #' @export
 etr_plot_function_on_scalar_coefficients <- function(result,coefficient,
-    dimension=NULL,band=NULL,...) {
+    dimension=NULL,band=NULL,strict_source_record=FALSE,...) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
+  if(isTRUE(strict_source_record)&&inherits(result,"etr_function_on_scalar_band")) {
+    .etr_assert(is.null(band),
+      "source band result cannot be combined with a second band")
+    band<-result
+    result<-band$reference
+  }
   g<-.etr_native_fos_geometry(result,coefficient,dimension,band)
   yrange<-range(c(g$estimate,g$lower,g$upper,0))
   graphics::plot(g$time,g$estimate,type="n",ylim=yrange,
@@ -76,6 +83,8 @@ etr_plot_function_on_scalar_coefficients <- function(result,coefficient,
     col=grDevices::adjustcolor("grey60",alpha.f=.25))
   graphics::lines(g$time,g$estimate,lwd=2)
   graphics::abline(h=0,lty=2)
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_fos_coefficients_source_artist(result,g)))
   invisible(g[c("time","estimate","lower","upper","coefficient","dimension")])
 }
 
