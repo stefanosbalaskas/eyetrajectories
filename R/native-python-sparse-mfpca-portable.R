@@ -197,3 +197,67 @@ etr_export_sparse_mfpca_python_portable<-function(result,directory,
     else .etr_python_mfpca_portable_fit(result,add_array)
   })
 }
+
+# Frozen Python _core.py::export_workflow_bundle scientific artifact layout.
+# Environment remains an explicitly identified R environment; it cannot
+# faithfully become a Python interpreter capture.
+.etr_export_python_sparse_mfpca_workflow_bundle<-function(result,directory){
+  .etr_assert(inherits(result,"etr_sparse_mfpca_paired_source_workflow")&&
+    identical(result$workflow_contract,"sparse_mfpca:v1"),
+    "source sparse MFPCA Python bundle requires strict paired W2 workflow")
+  .etr_portable_require("zip")
+  .etr_native_bundle_validate_artifacts(result)
+  .etr_assert(length(result$steps)==1L&&
+    is.numeric(result$steps[[1L]]$elapsed_seconds)&&
+    is.finite(result$steps[[1L]]$elapsed_seconds)&&
+    result$steps[[1L]]$elapsed_seconds>=0,
+    "Python sparse MFPCA source bundle requires a measured fit step")
+  # Preflight before creating or publishing the destination.
+  .etr_python_mfpca_portable_config(result$config,function(x)
+    list('__portable_type__'="ndarray",
+      key="preflight",dtype="float64",shape=as.list(dim(x))))
+  temp<-.etr_native_bundle_temp_dir(directory)
+  on.exit(unlink(temp,recursive=TRUE),add=TRUE)
+  write_json<-function(value,name)
+    .etr_native_bundle_write_text(
+      .etr_workflow_json(value,name,empty_mapping=TRUE),
+      file.path(temp,name))
+  write_json(result$config,"config.json")
+  write_json(result$provenance,"provenance.json")
+  environment<-list(schema_version=1L,runtime="R",
+    captured_at_utc=format(Sys.time(),
+      "%Y-%m-%dT%H:%M:%OS6+00:00",tz="UTC"),
+    package=list(name="eyetrajectories",
+      version=as.character(getNamespaceVersion("eyetrajectories"))),
+    r=list(version=as.character(getRversion()),
+      platform=R.version$platform),python=NULL)
+  write_json(environment,"environment.json")
+  steps<-etr_workflow_steps_frame(result$steps)
+  decisions<-etr_workflow_decisions_frame(result$decisions)
+  steps$elapsed_seconds<-vapply(steps$elapsed_seconds,
+    .etr_python_json_float,character(1L))
+  .etr_write_python_workflow_csv(steps,file.path(temp,"steps.csv"))
+  .etr_write_python_workflow_csv(decisions,file.path(temp,"decisions.csv"))
+  portable_dir<-.etr_write_python_portable_result(
+    file.path(temp,"result"),
+    function(add_array)
+      .etr_python_mfpca_portable_workflow(result,add_array),
+    encode_manifest=.etr_python_json_encode)
+  manifest<-jsonlite::fromJSON(file.path(portable_dir,"manifest.json"))
+  artifacts<-.etr_native_bundle_write_artifacts(
+    result,temp,portable=TRUE)
+  frozen<-etr_frozen_workflow_values()
+  write_json(list(
+    schema_version=frozen$WORKFLOW_BUNDLE_SCHEMA_VERSION,
+    format=frozen$WORKFLOW_BUNDLE_FORMAT,
+    workflow_schema_version=result$workflow_schema_version,
+    workflow_contract=result$workflow_contract,
+    result_type=manifest$result_type,
+    portable_result_directory="result",
+    reports=as.list(artifacts$reports),
+    tables=as.list(artifacts$tables),
+    figure_export_included=FALSE,
+    figure_export_status="deferred_to_later_workflow_plotting_tranche"),
+    "workflow.json")
+  .etr_native_bundle_publish(temp,directory,portable=TRUE)
+}
