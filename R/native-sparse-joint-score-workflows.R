@@ -98,8 +98,12 @@
 #' @param options Native fdapace model options.
 #' @param observation_process Must be NULL; source observation-process
 #'   weighting is not modeled by the native alternative.
-#' @return Joint score FPCA over marginal conditional-expectation scores.
-#'   Not the Python 1.2 joint sparse covariance PACE model.
+#' @return Native joint covariance/PACE fit or explicitly declared
+#'   alternative. Strict mode returns a source-scientific 29-field record.
+#' @param strict_source_record If TRUE, require the genuine native joint
+#'   covariance/PACE estimator, all mandatory frozen Python 1.2 controls,
+#'   and return the exact ordered 29 scientific SparseMFPCAResult fields
+#'   without Python dataclass identity or R-only auxiliary fields.
 #' @export
 etr_fit_sparse_mfpca<-function(trajectories,dimensions=c("x","y"),
     n_components=2L,backend=NULL,max_marginal_components=3L,
@@ -111,13 +115,29 @@ etr_fit_sparse_mfpca<-function(trajectories,dimensions=c("x","y"),
     positive_eigen_tolerance=1e-10,score_ridge=0,
     score_condition_limit=1e12,min_score_time_points=2L,
     score_failure_action="error",mean_min_local_points=3L,
-    covariance_min_local_pairs=6L){
+    covariance_min_local_pairs=6L,strict_source_record=FALSE){
+  .etr_assert(is.logical(strict_source_record)&&
+    length(strict_source_record)==1L&&!is.na(strict_source_record),
+    "strict_source_record must be a nonmissing logical scalar")
+  if(isTRUE(strict_source_record)){
+    .etr_assert(identical(backend,"native_covariance"),
+      "strict source fit requires native_covariance, never marginal fdapace")
+    .etr_assert(!missing(n_components)&&
+      !missing(measurement_error)&&
+      !is.null(evaluation_grid)&&
+      !is.null(mean_bandwidth)&&!is.null(covariance_bandwidth),
+      "strict source fit requires explicit Python mandatory scientific controls")
+    .etr_assert(identical(max_marginal_components,3L)&&
+      identical(fve,.95)&&is.list(options)&&!length(options)&&
+      is.null(observation_process),
+      "strict source fit forbids R-only marginal, options and observation controls")
+  }
   if(identical(backend,"native_covariance")){
     .etr_assert(is.null(observation_process),
       "joint source model does not yet support observation_process")
     .etr_assert(inherits(trajectories,"etr_irregular_trajectory_set"),
       "joint source model requires jointly observed native irregular curves")
-    return(etr_fit_sparse_mfpca_native(
+    fit<-etr_fit_sparse_mfpca_native(
       trajectories=trajectories,dimensions=dimensions,
       n_components=n_components,evaluation_grid=evaluation_grid,
       mean_bandwidth=mean_bandwidth,
@@ -133,7 +153,10 @@ etr_fit_sparse_mfpca<-function(trajectories,dimensions=c("x","y"),
       min_score_time_points=min_score_time_points,
       score_failure_action=score_failure_action,
       mean_min_local_points=mean_min_local_points,
-      covariance_min_local_pairs=covariance_min_local_pairs))
+      covariance_min_local_pairs=covariance_min_local_pairs)
+    if(isTRUE(strict_source_record))
+      return(.etr_sparse_mfpca_w2_scientific_record(fit))
+    return(fit)
   }
   .etr_assert(identical(backend,"fdapace_joint_score_pca"),
     "explicitly choose native_covariance or fdapace_joint_score_pca")
