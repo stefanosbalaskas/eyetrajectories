@@ -1,0 +1,145 @@
+name: Native four ordinary and generalized FoSR scientific source artists
+on:
+  pull_request:
+    paths:
+      - "R/native-four-fos-generalized-scientific-artists.R"
+      - "R/native-generalized-mixed-source-graphics.R"
+      - "R/native-functional-inference-visuals.R"
+      - "tests/testthat/test-native-four-fos-generalized-source-artists-20261112.R"
+      - "tests/testthat/test-native-generalized-mixed-source-graphics.R"
+      - "tests/testthat/test-native-functional-inference-visuals.R"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/reviewed_source_contract_closures_v1.csv"
+      - "docs/source_contract_reviews/plot_generalized_function_on_scalar_predictions.json"
+      - "docs/source_contract_reviews/plot_generalized_function_on_scalar_mean_difference.json"
+      - "docs/source_contract_reviews/plot_generalized_function_on_scalar_coefficients.json"
+      - "docs/source_contract_reviews/plot_function_on_scalar_coefficients.json"
+      - ".github/workflows/native-four-fos-generalized-source-artists-20261112.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  scoped-source-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check 493/508 provenance and ten six-domain review SHA256 evidence chains
+        shell: bash
+        run: |
+          python - <<'PY'
+          import csv, hashlib, json
+          from pathlib import Path
+          root=Path(".")
+          with (root/"inst/extdata/native_source_contract_gaps_stage22.csv").open(
+              newline="",encoding="utf-8") as f:
+              gaps=list(csv.reader(f,strict=True))
+          assert len(gaps)==204,len(gaps)
+          assert all(len(row)==7 for row in gaps)
+          assert len({row[0] for row in gaps[1:]})==203
+          assert all(row[-1] in ("TRUE","FALSE") for row in gaps[1:])
+          with (root/"inst/extdata/reviewed_source_contract_closures_v1.csv").open(
+              newline="",encoding="utf-8") as f:
+              registry=list(csv.DictReader(f))
+          with (root/"inst/extdata/native_nonfunction_source_gaps_v1.csv").open(
+              newline="",encoding="utf-8") as f:
+              noncallable=list(csv.DictReader(f))
+          assert len(registry)>=183,len(registry)
+          assert len({r["python_name"] for r in registry})==len(registry)
+          new=(
+              "plot_generalized_function_on_scalar_predictions",
+              "plot_generalized_function_on_scalar_mean_difference",
+              "plot_generalized_function_on_scalar_coefficients",
+              "plot_function_on_scalar_coefficients")
+          inherited=(
+              "plot_covariance_sensitivity_coefficients",
+              "plot_functional_mixed_effects_residual_acf",
+              "plot_functional_mixed_effects_residual_variogram",
+              "function_on_scalar_reporting_text",
+              "conformal_fpca_anomaly_reporting_text",
+              "plot_functional_variance_decomposition")
+          for name in new:
+              (record,)=tuple(r for r in gaps[1:] if r[0]==name)
+              assert record[-1]=="FALSE",name
+          for name in new+inherited:
+              (reg,)=tuple(r for r in registry if r["python_name"]==name)
+              assert reg["independently_certified"]=="FALSE",name
+              raw=(root/reg["review_record_path"]).read_bytes()
+              assert hashlib.sha256(raw).hexdigest()==reg["review_record_sha256"],name
+              review=json.loads(raw)
+              assert review["frozen_python_commit"]=="c1cd95ad718327550f7e55393ff38582872f7a94"
+              assert review["independently_certified"] is False
+              assert {e["kind"] for e in review["case_evidence"]}=={
+                  "source_signature","accepted_input_domain",
+                  "numerical_outputs","exception_semantics",
+                  "returned_schema","scientific_estimand"}
+              for e in (review["native_files"]+review["case_evidence"]+
+                        review.get("additional_regression_evidence",[])):
+                  path=root/e["path"]
+                  assert hashlib.sha256(path.read_bytes()).hexdigest()==e["sha256"],path
+          callable_gaps=sum(r[-1]=="TRUE" for r in gaps[1:])
+          others=sum(r["unresolved"]=="TRUE" for r in noncallable)
+          assert callable_gaps<=14,callable_gaps
+          assert others<=1,others
+          assert 508-callable_gaps-others>=493
+          print("493/508 provisional source-scientific R contracts; 14 callable + 1 noncallable unresolved; 0 independently certified")
+          PY
+  three-platform-r:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Native FoSR/generalized four scoped artists and full legacy tests
+        shell: bash
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          testthat::test_local(".",
+            filter="native-four-fos-generalized-source-artists-20261112|native-generalized-mixed-source-graphics|native-functional-inference-visuals|full-native-r-parity-ledger",
+            reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
+  frozen-python-1-2:
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        id: python
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0" "numpy==2.3.5"
+      - uses: r-lib/actions/setup-r@v2
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+            any::reticulate
+      - name: Compare frozen Python 1.2 public FoSR Matplotlib scientific artists with native R
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          stopifnot(identical(et_python_version(),"1.2.0"))
+          np<-reticulate::import("numpy")
+          stopifnot(identical(as.character(np$__version__),"2.3.5"))
+          testthat::test_local(".",
+            filter="native-four-fos-generalized-source-artists-20261112",
+            reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
