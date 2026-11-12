@@ -212,10 +212,16 @@
     c("penalty","n_segments","degree","order_penalty",
       "remove_diagonal") else
     c("bandwidth","degree","kernel_name","remove_diagonal")
-  .etr_assert(all(names(meanopts)%in%allowed_mean)&&
-    all(names(covopts)%in%allowed_cov)&&
-    !anyDuplicated(names(meanopts))&&!anyDuplicated(names(covopts)),
-    "FDApy full source fit kwargs_mean/kwargs_covariance include unsupported or duplicate options")
+  named_valid<-function(x,allowed) {
+    length(x)==0L ||
+      (!is.null(names(x))&&
+        all(!is.na(names(x))&nzchar(names(x)))&&
+        all(names(x)%in%allowed)&&
+        !anyDuplicated(names(x)))
+  }
+  .etr_assert(named_valid(meanopts,allowed_mean)&&
+    named_valid(covopts,allowed_cov),
+    "FDApy full source fit kwargs_mean/kwargs_covariance include unnamed, unsupported or duplicate options")
   .etr_assert(is.null(covopts$remove_diagonal)||
     identical(covopts$remove_diagonal,TRUE),
     "FDApy source-scientific covariance currently requires remove_diagonal=TRUE")
@@ -293,8 +299,8 @@
   # FDApy UFPCA._fit_covariance: eig(W^1/2 C W^1/2) where
   # W denotes actual nonuniform-grid trapezoidal quadrature weights.
   delta<-diff(grid)
-  w<-c(delta[1L],grid[3:m]-grid[1:(m-2L)],delta[m-1L])/2
-  if(m==2L)w<-rep(delta[1L]/2,2L)
+  w<-if(m==2L) rep(delta[1L]/2,2L) else
+    c(delta[1L],grid[3:m]-grid[1:(m-2L)],delta[m-1L])/2
   .etr_assert(all(is.finite(w))&&all(w>0),
     "FDApy covariance fitting requires strictly positive trapezoidal source weights")
   weighted<-C*outer(sqrt(w),sqrt(w))
