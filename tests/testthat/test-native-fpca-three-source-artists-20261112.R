@@ -163,8 +163,20 @@ def _etr_fpca_three_oracle(sim,folds,group,metric):
     a=et.plot_fpca_stability(stability)
     b=et.plot_fpca_influence(influence,metric='influence_score')
     c=et.plot_fpca_cross_validation(cv)
-    medians=[np.asarray(a.lines[i*6+4].get_ydata(),dtype=float)
-             for i in range(m.shape[1])]
+    # Matplotlib may change boxplot internal line order. Verify a
+    # displayed two-point median segment directly, rather than assuming
+    # a fixed Axes.lines index.
+    medians=[]
+    for i in range(m.shape[1]):
+        median=float(np.percentile(m[:,i],50))
+        present=any(
+            np.asarray(line.get_ydata()).size==2 and
+            np.allclose(np.asarray(line.get_ydata(),dtype=float),
+                        [median,median]) and
+            abs(np.mean(np.asarray(line.get_xdata(),dtype=float))-(i+1))<0.2
+            for line in a.lines
+        )
+        medians.append({'value':median,'present':present})
     result={
       'stability':{
           'title':a.get_title(),'ylabel':a.get_ylabel(),
@@ -202,8 +214,11 @@ def _etr_fpca_three_oracle(sim,folds,group,metric):
     expect_equal(st$axes[[1L]]$ylim,a$ylim,tolerance=0,
       ignore_attr=TRUE)
     for(i in seq_along(a$medians))
-      expect_equal(st$axes[[1L]]$artists[[i]]$quartiles[[2L]],
-        a$medians[[i]][[1L]],tolerance=1e-12)
+      {
+        expect_true(a$medians[[i]]$present)
+        expect_equal(st$axes[[1L]]$artists[[i]]$quartiles[[2L]],
+          a$medians[[i]]$value,tolerance=1e-12)
+      }
     b<-get("influence")
     for(key in c("title","xlabel","ylabel"))
       expect_identical(infl$axes[[1L]][[key]],b[[key]])
