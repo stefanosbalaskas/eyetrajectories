@@ -12,7 +12,7 @@
   "native_files": [
     {
       "path": "R/native-functional-inference-visuals.R",
-      "sha256": "30e22222e1f921698a039af98a7a28c79e36f22fcc2bc200ad9a234d3cc52d78"
+      "sha256": "5176e7fe5c8058006dfb4b66bedeba1774c0f01f12358da754b7638a4b37905d"
     },
     {
       "path": "R/native-four-multivar-rqa-recovery-artists.R",

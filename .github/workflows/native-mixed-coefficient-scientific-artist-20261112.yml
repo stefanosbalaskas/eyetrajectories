@@ -1,0 +1,139 @@
+name: Native mixed coefficient pointwise and simultaneous source scientific artist
+on:
+  pull_request:
+    paths:
+      - "R/native-mixed-coefficient-scientific-artist.R"
+      - "R/native-functional-inference-visuals.R"
+      - "tests/testthat/test-native-mixed-coefficient-scientific-artist-20261112.R"
+      - "man/etr_plot_functional_mixed_effects_coefficient.Rd"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/reviewed_source_contract_closures_v1.csv"
+      - "docs/source_contract_reviews/plot_functional_mixed_effects_coefficient.json"
+      - ".github/workflows/native-mixed-coefficient-scientific-artist-20261112.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  scoped-source-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify provisional 497/508 and seven six-domain SHA256 scientific reviews
+        shell: bash
+        run: |
+          python - <<'PY'
+          import csv, hashlib, json
+          from pathlib import Path
+          root=Path(".")
+          with (root/"inst/extdata/native_source_contract_gaps_stage22.csv").open(
+              encoding="utf-8",newline="") as f:
+              gaps=list(csv.reader(f,strict=True))
+          assert len(gaps)==204,len(gaps)
+          assert all(len(r)==7 for r in gaps)
+          assert len({r[0] for r in gaps[1:]})==203
+          assert all(r[-1] in ("TRUE","FALSE") for r in gaps[1:])
+          with (root/"inst/extdata/reviewed_source_contract_closures_v1.csv").open(
+              encoding="utf-8",newline="") as f:
+              registry=list(csv.DictReader(f))
+          with (root/"inst/extdata/native_nonfunction_source_gaps_v1.csv").open(
+              encoding="utf-8",newline="") as f:
+              other=list(csv.DictReader(f))
+          assert len(registry)>=187,len(registry)
+          assert len({r["python_name"] for r in registry})==len(registry)
+          fresh="plot_functional_mixed_effects_coefficient"
+          inherited=(
+              "function_on_scalar_reporting_text",
+              "conformal_fpca_anomaly_reporting_text",
+              "plot_functional_variance_decomposition",
+              "plot_function_on_scalar_coefficients",
+              "plot_rqa_metric_mean_bootstrap",
+              "plot_conformal_fpca_anomaly")
+          (gap,)=tuple(r for r in gaps[1:] if r[0]==fresh)
+          assert gap[-1]=="FALSE",fresh
+          for name in (fresh,)+inherited:
+              (row,)=tuple(r for r in registry if r["python_name"]==name)
+              assert row["independently_certified"]=="FALSE",name
+              raw=(root/row["review_record_path"]).read_bytes()
+              assert hashlib.sha256(raw).hexdigest()==row["review_record_sha256"],name
+              obj=json.loads(raw)
+              assert obj["independently_certified"] is False
+              assert obj["frozen_python_commit"]=="c1cd95ad718327550f7e55393ff38582872f7a94"
+              assert {e["kind"] for e in obj["case_evidence"]}=={
+                  "source_signature","accepted_input_domain",
+                  "numerical_outputs","exception_semantics",
+                  "returned_schema","scientific_estimand"},name
+              for e in (obj["native_files"]+obj["case_evidence"]+
+                        obj.get("additional_regression_evidence",[])):
+                  p=root/e["path"]
+                  assert hashlib.sha256(p.read_bytes()).hexdigest()==e["sha256"],p
+          callable=sum(r[-1]=="TRUE" for r in gaps[1:])
+          noncallable=sum(r["unresolved"]=="TRUE" for r in other)
+          assert callable<=10,callable
+          assert noncallable<=1,noncallable
+          assert 508-callable-noncallable>=497
+          print("497+/508 provisional mixed coefficient plotting geometry; 10 callable + 1 noncallable source gaps, no independently certified contracts")
+          PY
+  three-os-native:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Run native mixed coefficient source Wald and calibrated simultaneous band integration
+        shell: bash
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          testthat::test_local(".",
+            filter="native-mixed-coefficient-scientific-artist-20261112|native-functional-inference-visuals|native-mixed-coefficient-bands-source|full-native-r-parity-ledger",
+            reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
+  frozen-python-1-2:
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        id: python
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0" "numpy==2.3.5"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+            any::reticulate
+      - name: Public frozen Python 1.2 mixed coefficient Matplotlib pointwise and simultaneous fill differential oracle
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          stopifnot(identical(et_python_version(),"1.2.0"))
+          np<-reticulate::import("numpy")
+          stopifnot(identical(as.character(np$__version__),"2.3.5"))
+          testthat::test_local(".",
+            filter="native-mixed-coefficient-scientific-artist-20261112",
+            reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT

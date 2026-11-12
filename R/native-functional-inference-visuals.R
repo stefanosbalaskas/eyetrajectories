@@ -147,7 +147,13 @@ etr_function_on_scalar_reporting_text <- function(result,band=NULL) {
 #' @param ... Base R graphics arguments.
 #' @return Invisible pointwise 95 percent Wald numerical geometry.
 #' @export
-etr_plot_functional_mixed_effects_coefficient <- function(result,coefficient,...) {
+etr_plot_functional_mixed_effects_coefficient <- function(result,
+    coefficient,strict_source_record=FALSE,...) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
+  if(isTRUE(strict_source_record)) {
+    source<-.etr_mixed_coefficient_plot_source(result,coefficient)
+    return(invisible(.etr_mixed_coefficient_source_plot(source,...)))
+  }
   .etr_mixed_moments_fit(result)
   k<-.etr_choose_named_component(result$coefficient_names,coefficient)
   nt<-length(result$time)
