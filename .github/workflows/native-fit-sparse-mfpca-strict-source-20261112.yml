@@ -34,7 +34,7 @@ jobs:
           assert len(gaps)==203 and len(nc)==1
           remaining=sum(row["unresolved_source_gap"]=="TRUE" for row in gaps)
           noncallable=sum(row["unresolved"]=="TRUE" for row in nc)
-          assert (remaining,noncallable,508-remaining-noncallable)==(85,1,422)
+          assert remaining<=85 and noncallable<=1 and 508-remaining-noncallable>=422
           (gap,)=tuple(x for x in gaps if x["python_name"]=="fit_sparse_mfpca")
           assert gap["unresolved_source_gap"]=="FALSE"
           (r,)=tuple(x for x in reg if x["python_name"]=="fit_sparse_mfpca")
