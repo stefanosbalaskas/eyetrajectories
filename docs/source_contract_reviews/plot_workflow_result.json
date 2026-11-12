@@ -1,0 +1,63 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "plot_workflow_result",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_NATIVE_W4_SEVEN_ROUTE_SCIENTIFIC_DISPATCH",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/workflows/_plotting.py::plot_workflow_result",
+  "native_signature": "etr_plot_workflow_result(result,plot,component=NULL,dimension=NULL,coefficient=NULL,sd_multiplier=2,max_points=200000L,ax=NULL,axes=NULL,strict_source_record=TRUE)",
+  "reviewer_statement": "Developer-scoped seven-route native R scientific artist dispatch, not independently certified full Python 1.2 contract. Frozen Python 1.2 exact-head source/signature inspections and native regressions authored, but executable CI not witnessed.",
+  "native_language_semantic_policy": "Preserves default legacy three-route native plotting. Opt-in route checks exact canonical plot type and native workflow class, requires explicit source coefficient/component, and reuses existing fitted source-scientific R geometry without model refitting.",
+  "native_files": [
+    {
+      "path": "R/native-workflow-plot-dispatch.R",
+      "sha256": "5c859514980cab78084b9f8c8625c6e1d6a3324b141a70c79f1a1c357b223f55"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Seven exact ordered canonical plot names, argument presence and declared component/coefficient requirements from frozen workflows/_plotting.py; strict native record is opt-in.",
+      "path": "tests/testthat/test-native-workflow-seven-plot-source-20261112.R",
+      "sha256": "37c515b89d4a2e9e3f51f32c5cbe6dc94c6461e45444daeb11cf99738cd9c18c"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Seven native workflow class families, dense, sparse, generalized, mixed and recurrence fit records. No Python pandas/dataclasses or injected Matplotlib Axes accepted; no plot fallback.",
+      "path": "tests/testthat/test-native-workflow-seven-plot-source-20261112.R",
+      "sha256": "37c515b89d4a2e9e3f51f32c5cbe6dc94c6461e45444daeb11cf99738cd9c18c"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Previously fitted observed-grid FPCA and sparse PACE component lines, FoSR coefficient lines, mixed 95% pointwise Wald intervals, generalized link-scale coefficients and recurrence matrix; no hidden fitting or calibration.",
+      "path": "tests/testthat/test-native-workflow-seven-plot-source-20261112.R",
+      "sha256": "37c515b89d4a2e9e3f51f32c5cbe6dc94c6461e45444daeb11cf99738cd9c18c"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Reject unknown plot types, wrong result families, omitted component or coefficient, invalid zero-based index types, multichannel dimension ambiguity and unsupported injected Matplotlib axes.",
+      "path": "tests/testthat/test-native-workflow-seven-plot-source-20261112.R",
+      "sha256": "37c515b89d4a2e9e3f51f32c5cbe6dc94c6461e45444daeb11cf99738cd9c18c"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Typed etr_workflow_scientific_plot_record holding explicit canonical plot identity and underlying scientific R artist geometry. Not a real Matplotlib Axes or pixel-identical figure.",
+      "path": "tests/testthat/test-native-workflow-seven-plot-source-20261112.R",
+      "sha256": "37c515b89d4a2e9e3f51f32c5cbe6dc94c6461e45444daeb11cf99738cd9c18c"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Pure workflow visualization dispatch preserving each estimator, calibrated uncertainty type and observed scientific support; no inferential estimand or optimizer is changed.",
+      "path": "tests/testthat/test-native-workflow-seven-plot-source-20261112.R",
+      "sha256": "37c515b89d4a2e9e3f51f32c5cbe6dc94c6461e45444daeb11cf99738cd9c18c"
+    }
+  ],
+  "additional_regression_evidence": [],
+  "independent_review_status": "Provisional developer-scoped W4 implementation, independent full-contract certification zero; exact-head native R/Python CI not yet witnessed green.",
+  "language_specific_limits": [
+    "No Python Matplotlib Axes identity or arbitrary axes injection.",
+    "Native strict recurrence does not silently subsample a matrix exceeding max_points.",
+    "Underlying fit, covariance, optimizer, scientific sampling semantics and Python exception classes are not fully independently qualified."
+  ]
+}
