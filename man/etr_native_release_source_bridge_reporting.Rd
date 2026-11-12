@@ -142,5 +142,34 @@ is not claimed. See
 \code{docs/native-skfda-mbd-functional-boxplot-source-20261112.md}.
 }
 
+\section{Fixed-spectrum FDApy PACE numerical source stage}{
+Opt-in \code{etr_fit_sparse_fpca_fdapy(trajectories, dimension,
+n_components, strict_source_record=TRUE,
+source_fit_snapshot=...)} evaluates the native R numerical FDApy
+1.0.x \code{UFPCA} conditional PACE score stage, provided a genuine
+already fitted FDApy source eigensystem and source-centered irregular
+observations in \code{source_fit_snapshot}.
+
+The supplied snapshot must contain \code{mean_grid},
+\code{eigenfunctions}, \code{eigenvalues}, \code{noise_variance}
+and a \code{centered_observations} list, all in original curve order
+and with eigenfunctions on the exact sorted pooled observation times.
+The native score estimator follows source FDApy's actual internal
+\code{np.interp} pooled-grid interpolation, including constant endpoint
+extension, spectral covariance reconstruction and pseudoinverse
+\code{(Phi' diag(lambda) Phi + max(tol, noise_variance)*I)^+};
+the scores are reconstructed with the supplied eigenfunctions and mean.
+
+This stage does NOT fit FDApy's penalized B-spline or local-polynomial
+mean/covariance smoothers or estimate its eigenpairs. \code{normalize=TRUE}
+and the source backend Python \code{UFPCA} object and classes are NOT
+implemented. Its semantic coverage is specifically restricted to
+fixed-source-spectrum PACE scoring and inverse reconstruction; the
+native full sparse-FPCA model-fitting source gap remains open in
+\code{inst/extdata/native_scoped_fdapy_submethod_gaps_20261112.csv}.
+Historical \code{backend="fdapace"} remains unchanged by default.
+See \code{docs/native-fdapy-fixed-spectrum-pace-20261112.md}.
+}
+
 \value{Each function returns its own documented native R, scientific-model,
 bridge, workflow or audit result; no single shared return type is asserted.}

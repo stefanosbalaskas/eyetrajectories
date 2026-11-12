@@ -1,0 +1,76 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "TrajectorySet",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_NATIVE_TRAJECTORY_SCIENTIFIC_DATACLASS_FIELDS_DIMENSIONS_SUBSET_AND_TRANSFORM_METHODS",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/types.py::TrajectorySet frozen public Python 1.2 dataclass and its n_curves/n_time/n_dimensions/dimension/subset/with_values methods",
+  "native_signature": "etr_trajectory_set(...,python_boundary_mode=TRUE); etr_trajectory_source_class_record(x); etr_dimension(x,name); etr_subset(x,indices,python_boundary_mode=TRUE); etr_with_values(x,values,provenance_update)",
+  "reviewer_statement": "Source-scientific bounded native R TrajectorySet constructor/scientific record surface for the 8 dataclass scientific fields, Python-boundary missing/empty-axis numeric tensor geometry, curve-indexed normalized metadata, exact channel dimension slices, zero-based signed ordered subset, and provenance-preserving with_values. Python frozen dataclass identity, arbitrary NumPy conversion, pandas index heterogeneity/duplicate coercion, error class identity and object equality/immutability in all edge domains are not claimed.",
+  "native_language_semantic_policy": "Native R etr_trajectory_set remains its own object, with explicit opt-in source boundary mode and an exported field-ordered scientific record; R list and data.frame are not Python frozen dataclass or pandas instances. Historical one-based native R APIs remain unchanged.",
+  "native_files": [
+    {
+      "path": "R/native-trajectory-source-class-record-20261112.R",
+      "sha256": "1ced0f4eb7e643079f352f0e934cc9eff73146d51637172d699c2374723b5634"
+    },
+    {
+      "path": "R/native-trajectories.R",
+      "sha256": "b71181051e8e8e12462397292502c9afb439aff4edc140b6865e800f04f0ff28"
+    },
+    {
+      "path": "R/native-trajectory-provenance.R",
+      "sha256": "7355580ecbe4dead9c321a071c17ad36fc8eb273f359b2824962f73f0aa15a13"
+    },
+    {
+      "path": "NAMESPACE",
+      "sha256": "469de6cebb76d136bc6391ae653d2e11a5fccbe5d7c0b7336930e8f569c265b0"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Frozen Python dataclass exposes exactly 8 scientific fields and three shape properties, dimension(name), subset(zero-based indices), with_values(replaced data/provenance); native R scientific record exposes these fields/properties and existing R methods with opt-in Python source boundary.",
+      "path": "tests/testthat/test-native-trajectory-class-source-record-20261112.R",
+      "sha256": "ee0816ec031cb0b8b4d9945e133dea1355281d4a927bd3181d6f1a7b66f360a5"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Bounded source scientific numeric 3D array on finite increasing common time, NaN missingness, curve and dimension order, unique character identifiers and pandas-like indexed data.frame metadata, provenance and units; zero-curve and zero-channel boundary arrays, empty subsets, signed zero-based subset indices. Heterogeneous coercion and panda duplicate-index edge cases excluded.",
+      "path": "tests/testthat/test-native-trajectory-class-source-record-20261112.R",
+      "sha256": "ee0816ec031cb0b8b4d9945e133dea1355281d4a927bd3181d6f1a7b66f360a5"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Exact same observed time/3D array, no interpolation, same selected numeric channel matrix including NaN, ordered curve subset and metadata, value changes and shallow provenance updates; source n_curves/n_time/n_dimensions and 8 ordered scientific fields exposed.",
+      "path": "tests/testthat/test-native-trajectory-class-source-record-20261112.R",
+      "sha256": "ee0816ec031cb0b8b4d9945e133dea1355281d4a927bd3181d6f1a7b66f360a5"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Native constructor and method source boundary reject nonmonotone time, shape/metadata mismatch, invalid dimensions, duplicated text IDs and invalid signed subset positions; Python-specific NumPy coercion/complex warning and exact KeyError/IndexError classes cannot be completely certified.",
+      "path": "tests/testthat/test-native-trajectory-class-source-record-20261112.R",
+      "sha256": "ee0816ec031cb0b8b4d9945e133dea1355281d4a927bd3181d6f1a7b66f360a5"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "New exported typed R source class record contains 8 Python dataclass scientific fields in exact order, metadata_index name='curve_id' and ordered labels, numeric shape and three dimension properties, native method map, explicit frozen_python_class_identity=FALSE and independently_source_certified=FALSE.",
+      "path": "tests/testthat/test-native-trajectory-class-source-record-20261112.R",
+      "sha256": "ee0816ec031cb0b8b4d9945e133dea1355281d4a927bd3181d6f1a7b66f360a5"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "A trajectory is an ordered curve-by-observation-by-channel tensor on a common observed time support, with scientific metadata, units and provenance. Dimension and subset are non-interpolating source-preserving operations; with_values is an explicit transformed copy with shallow provenance updates, not a fit or statistical estimator.",
+      "path": "tests/testthat/test-native-trajectory-class-source-record-20261112.R",
+      "sha256": "ee0816ec031cb0b8b4d9945e133dea1355281d4a927bd3181d6f1a7b66f360a5"
+    }
+  ],
+  "additional_regression_evidence": [],
+  "independent_review_status": "Provisional scientific native R data-and-method surface. Native regression and true public Python 1.2 TrajectorySet class differential tests authored, execution not witnessed; zero independent full Python class/domain certifications.",
+  "language_specific_limits": [
+    "A native R source scientific record is not a frozen Python dataclass or pandas DataFrame.",
+    "Source class reflection, direct immutable object identity, pandas arbitrary or duplicate index values, NumPy broad coercion, Python warning and exact exception class identities are not certified.",
+    "Only source-scientific numerical array/data class fields and named methods are reviewed; general Python object graph parity remains unqualified.",
+    "No exact-head R/Python CI success or independent certification claimed."
+  ]
+}
