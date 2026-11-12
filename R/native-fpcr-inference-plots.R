@@ -53,6 +53,11 @@
       identical(operation,"plot_fpca_wild_bootstrap_projection"))
     return(invisible(.etr_fpca_wild_projection_artist(
       geometry,max_targets)))
+  if(isTRUE(strict_source_record)&&
+      operation%in%c("plot_fpca_regression_future_prediction_interval",
+        "plot_fpca_regression_mean_prediction_uncertainty"))
+    return(invisible(.etr_fpcr_prediction_artist(
+      geometry,operation,max_targets)))
   invisible(list(geometry=geometry,
     provenance=list(backend="base_R",source_operation=operation,
       source_x_zero_based=TRUE,python_axes_return_equivalence=FALSE)))
@@ -82,7 +87,8 @@ etr_plot_fpca_wild_bootstrap_projection <- function(result,max_targets=30L,
 #' @return Invisible interval and conditional-mean numerical geometry.
 #' @export
 etr_plot_fpca_regression_future_prediction_interval <- function(
-    result,max_targets=30L){
+    result,max_targets=30L,strict_source_record=FALSE){
+  .etr_fpca_uncertainty_strict(strict_source_record)
   .etr_frame_record(result,c("regression_uncertainty",
     "median","lower","upper"),"result")
   base<-result$regression_uncertainty
@@ -92,7 +98,8 @@ etr_plot_fpca_regression_future_prediction_interval <- function(
     result$median,result$lower,result$upper,max_targets,
     reference=base$reference_mean_predictions,
     operation="plot_fpca_regression_future_prediction_interval",
-    title="Gaussian FPCR future-outcome prediction",ylabel="Scalar response")
+    title="Gaussian FPCR future-outcome prediction",ylabel="Scalar response",
+    strict_source_record=strict_source_record)
 }
 
 #' Plot conditional mean FPCR uncertainty for fixed targets natively
@@ -101,7 +108,8 @@ etr_plot_fpca_regression_future_prediction_interval <- function(
 #' @return Invisible source interval and reference-mean numerical geometry.
 #' @export
 etr_plot_fpca_regression_mean_prediction_uncertainty <- function(
-    result,max_targets=30L){
+    result,max_targets=30L,strict_source_record=FALSE){
+  .etr_fpca_uncertainty_strict(strict_source_record)
   .etr_frame_record(result,c("target_curve_ids","prediction_median",
     "prediction_lower","prediction_upper",
     "reference_mean_predictions"),"result")
@@ -110,7 +118,8 @@ etr_plot_fpca_regression_mean_prediction_uncertainty <- function(
     result$prediction_upper,max_targets,
     reference=result$reference_mean_predictions,
     operation="plot_fpca_regression_mean_prediction_uncertainty",
-    title="FPCR conditional-mean uncertainty",ylabel="Conditional mean response")
+    title="FPCR conditional-mean uncertainty",ylabel="Conditional mean response",
+    strict_source_record=strict_source_record)
 }
 
 .etr_fpcr_plot_slope <- function(uncertainty,lower,upper,
