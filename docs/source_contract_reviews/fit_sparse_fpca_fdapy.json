@@ -1,0 +1,80 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "fit_sparse_fpca_fdapy",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_NATIVE_FDAPY_1_0_3_UFPCA_PS_LP_IRREGULAR_COVARIANCE_OPERATOR_PACE_SCORE_AND_INVERSE_NORMALIZE_FALSE",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/sparse.py::fit_sparse_fpca_fdapy source Python 1.2 pinned c1cd95ad718327550f7e55393ff38582872f7a94; StevenGolovkine/FDApy v1.0.3 files ufpca.py,functional_data.py,psplines.py,local_polynomial.py,basis.py,utils.py byte-identical to source tree 6626ebc6a70a6496f3058c4abb0bb97f5bdb20be",
+  "native_signature": "etr_fit_sparse_fpca_fdapy(trajectories,dimension,n_components,backend=NULL,fve=.95,options=list(),strict_source_record=TRUE,fit_smoothing='PS'|'LP',score_smoothing='LP',tol=1e-4,normalize=FALSE,evaluation_grid=NULL,kwargs_mean=NULL,kwargs_covariance=NULL,source_fit_snapshot=NULL)",
+  "reviewer_statement": "Real native R raw-irregular PS/LP scientific fit of FDApy 1.0.3 UFPCA covariance-operator estimand: source unclamped B-spline penalized mean/covariance or Epanechnikov local-polynomial mean/covariance smoothing, zero-penalty PS FIT centering, observed-time pairwise covariance, correct PS vs LP diagonal handling, FDApy rounded order-2 difference sequence noise, trapezoid-weighted eigensystem, source public transform's SECOND LP centering, internal np.interp pooled-grid score smoothing, source max(noise,tol) spectral-covariance PACE pseudoinverse and inverse reconstruction. Native R scientific arrays, not backend Python object; normalize TRUE and broader Python exception/kwargs/eigenvector sign/order domains remain unqualified. Real source differential authored, passing CI not yet observed.",
+  "native_language_semantic_policy": "Native R independent fit without fdapace or Python; opt-in strict_source_record=TRUE. The historical native R explicit backend='fdapace' remains unchanged by default. Native R eigensolver yields sorted eigenvalues/sign-indeterminate eigenvectors; source NumPy linalg.eig does not guarantee ordering/sign, so compare matched eigenspaces and sign/permutation aligned scores; no fabricated source backend instance.",
+  "native_files": [
+    {
+      "path": "R/native-fdapy-ufpca-ps-lp-fit-source.R",
+      "sha256": "8e6c08dbb2fbdb536d835ba2bf83469164449132482d6944daf7a269d77cfcff"
+    },
+    {
+      "path": "R/native-thirdparty-functional-analogues.R",
+      "sha256": "e5f17a37d13765a5d07aec36de45e1f51bcf57d3e4e180f5f4ac410a6274d8cc"
+    },
+    {
+      "path": "R/native-fdapy-fixed-spectrum-pace-source.R",
+      "sha256": "2887c015e9b65fd82c9485f60d8e3f01309bf44abcb28d6bcff745b5d6a250a4"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Frozen source public fit_sparse_fpca_fdapy chooses UFPCA(n_components,method='covariance',normalize), fits actual FDApy mean/covariance smoothing on irregular observations, calls transform with explicit original data and method='PACE' score_smoothing/tol, returns sparse scientific results plus backend_data/model and reconstruction. Native full strict opts from NULL snapshot into raw PS/LP fitting; supplied snapshot retains conditional score-only semantics.",
+      "path": "tests/testthat/test-native-fdapy-ufpca-ps-lp-source-20261112.R",
+      "sha256": "173b80a26d1d229e88a1e34a4f0846350df8fc57b5f286ba6943ba8905b580d9"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Native source-scientific domain: finite complete selected irregular time observations, ncurves >=3 and 1<=n_components<=ncurves-1, sorted exact pooled evaluation grid, fit smoothing PS or LP with reviewed kwargs, default LP score smoother and tol>0, normalize=FALSE, PS tensor basis <=1600 coefficients and LP degree 0..2; unverified arbitrary Python mapping/NaN, normalize TRUE, score PS and object exceptions excluded.",
+      "path": "tests/testthat/test-native-fdapy-ufpca-ps-lp-source-20261112.R",
+      "sha256": "173b80a26d1d229e88a1e34a4f0846350df8fc57b5f286ba6943ba8905b580d9"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Exact source mathematical pipeline: uniform unclamped B-splines and P-spline normal-equation smoothing; univariate/bivariate local-polynomial source weights with np.linalg.lstsq rcond 1e-10; fit-stage zero-penalty mean resmoothing; raw pooled covariance with PS weights captured before diagonal-zero and LP diagonal excluded; difference sequence .809,-.5,-.309 noise; weighted covariance eigensystem; source score-stage separate mean LP smoothing, pooled np.interp with boundary extension, BLUP scores from inverse(C_spectral+noise I) and Karhunen-Loeve inverse reconstruction.",
+      "path": "tests/testthat/test-native-fdapy-ufpca-ps-lp-source-20261112.R",
+      "sha256": "173b80a26d1d229e88a1e34a4f0846350df8fc57b5f286ba6943ba8905b580d9"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Native source bounded mode explicitly rejects non-finite selected irregular curves, unsorted/unsupported grids, invalid ranks, normalize TRUE, source PS score mode with forwarded tol, unsupported kwargs/diagonal options, higher LP degrees and excessive tensor basis; source exact ImportError/type errors and general object or degeneracy exceptions not qualified.",
+      "path": "tests/testthat/test-native-fdapy-ufpca-ps-lp-source-20261112.R",
+      "sha256": "173b80a26d1d229e88a1e34a4f0846350df8fc57b5f286ba6943ba8905b580d9"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "The native typed etr_fdapy_native_ufpca_ps_lp_scientific_record has source scientific SparseFPCAResult core score/eigenvalue/meta/unit/fit-method fields and complete source fitted means, source-fit/source-score centered observations, raw/smoothed covariance matrices, quadrature weights, fitted eigenfunctions, difference-noise, source PACE reconstruction as R records. Python FDApy UFPCA/backend_data/reconstructed_backend object identity NULL, full source class parity false.",
+      "path": "tests/testthat/test-native-fdapy-ufpca-ps-lp-source-20261112.R",
+      "sha256": "173b80a26d1d229e88a1e34a4f0846350df8fc57b5f286ba6943ba8905b580d9"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Sparse functional PCA of univariate irregular trajectories through FDApy original pooled-grid covariance operator with source PS/LP smoothing, trapezoid-weighted spectral decomposition and conditional-expectation PACE scoring. Scientifically identifies component eigenspaces, variance spectra, scores modulo signs/ordering; raw trajectories are not interpolated before covariance fitting; internal source score interpolation is explicitly performed.",
+      "path": "tests/testthat/test-native-fdapy-ufpca-ps-lp-source-20261112.R",
+      "sha256": "173b80a26d1d229e88a1e34a4f0846350df8fc57b5f286ba6943ba8905b580d9"
+    }
+  ],
+  "additional_regression_evidence": [
+    {
+      "path": "tests/testthat/test-native-fdapy-fixed-spectrum-pace-source-20261112.R",
+      "sha256": "99e2826a4b218c0e6c6377117bb67a58433c0419d10fd6cbff426d2a5b386cef",
+      "kind": "postfit_source_stage"
+    }
+  ],
+  "independent_review_status": "Provisional developer-authored six-domain raw PS/LP mathematical estimator science review. Direct public frozen Python 1.2 + real FDApy v1.0.3 PS/LP numerical differential and cross-platform native tests committed but no exact-head CI green or independent full-source contract certification witnessed.",
+  "language_specific_limits": [
+    "No Python FDApy UFPCA backend_object/backend_data/reconstructed_backend class identity, no Python errors/warnings or true complete accepted-domain parity.",
+    "Source numpy.linalg.eig returns unsorted, sign-indeterminate eigenpairs; native R symmetric eigensolver sorts, so returned component ordering is NOT guaranteed identical; match subspaces/eigenvalues and sign-aligned scores.",
+    "Source normalize TRUE and the FDApy rescaling/inverse weights remain unimplemented; native fit requires FALSE.",
+    "Frozen public source score_smoothing PS forwards tol into PSplines constructor, which does not accept tol; native raw fitter refuses that path.",
+    "Unreviewed smoothing kwargs, LP degree >2, covariance diagonal-inclusive mode, tensor basis >1600, irregular NaN and singular edge domains are excluded.",
+    "No actual R/scientific QA tests have been witnessed green at exact PR head; qualification deferred until CI."
+  ]
+}

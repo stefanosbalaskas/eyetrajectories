@@ -111,9 +111,11 @@ test_that("FDApy source-snapshot checks frozen grid, rank and unsupported fittin
     "score_smoothing")
   expect_error(run(fit_smoothing="unknown"),"fit_smoothing")
   expect_error(run(strict_source_record=NA),"strict_source_record")
+  # No supplied snapshot now opts into native FDApy UFPCA PS/LP fitting.
+  # Unsupported unsmoothed native fitting is an explicit separate boundary.
   expect_error(etr_fit_sparse_fpca_fdapy(fx$trajectories,"x",
-    n_components=2L,strict_source_record=TRUE),
-    "source_fit_snapshot")
+    n_components=2L,fit_smoothing=NULL,
+    strict_source_record=TRUE),"PS or LP")
   bad<-fx$snapshot;bad$centered_observations[[2L]]<-1
   expect_error(etr_fit_sparse_fpca_fdapy(fx$trajectories,"x",
     n_components=2L,strict_source_record=TRUE,
