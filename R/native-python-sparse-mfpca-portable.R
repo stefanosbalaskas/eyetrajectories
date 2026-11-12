@@ -171,33 +171,6 @@
     module=.etr_python_mfpca_portable_module)
 }
 
-#' Export strict sparse MFPCA scientific state as Python 1.2 JSON and NPZ
-#' @param result Strict 29-field native PACE scientific record or fixed-mode
-#'   strict sparse MFPCA W2 workflow record.
-#' @param directory New or empty output directory.
-#' @param include_environment Must be FALSE; an R environment cannot
-#'   impersonate the captured Python environment.
-#' @param overwrite Must be FALSE; prior source evidence is immutable.
-#' @return Source portable result directory invisibly.
-#' @export
-etr_export_sparse_mfpca_python_portable<-function(result,directory,
-    include_environment=FALSE,overwrite=FALSE){
-  .etr_assert(identical(include_environment,FALSE)&&
-    identical(overwrite,FALSE),
-    "native sparse source cannot impersonate Python environment or overwrite evidence")
-  .etr_portable_require("jsonlite")
-  .etr_portable_require("digest")
-  .etr_portable_require("zip")
-  .etr_assert(inherits(result,"etr_sparse_mfpca_w2_scientific_record")||
-    inherits(result,"etr_sparse_mfpca_paired_source_workflow"),
-    "source portable result requires strict sparse MFPCA fit or W2 workflow")
-  .etr_write_python_portable_result(directory,function(add_array){
-    if(inherits(result,"etr_sparse_mfpca_paired_source_workflow"))
-      .etr_python_mfpca_portable_workflow(result,add_array)
-    else .etr_python_mfpca_portable_fit(result,add_array)
-  })
-}
-
 # Frozen Python _core.py::export_workflow_bundle scientific artifact layout.
 # Environment remains an explicitly identified R environment; it cannot
 # faithfully become a Python interpreter capture.
