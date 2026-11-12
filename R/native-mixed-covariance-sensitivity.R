@@ -10,7 +10,10 @@
 #' @param max_lag Positive integer smaller than time-grid length.
 #' @param specifications Optional named list of declared ridge specifications.
 #' @param failures Optional named list of failed intended specifications.
-#' @param bands Must be NULL; Python MixedLM band provenance is unsupported.
+#' @param bands Optional named real participant-bootstrap calibrated mixed
+#'   simultaneous coefficient bands for the native joint-likelihood path.
+#'   Bands must share exact draws, calibration scope, level and model support.
+#'   The legacy method-of-moments path still requires NULL.
 #' @return Descriptive coefficient differences, covariance traces, residual
 #'   lag summaries and complete retained failure audit; no model selection.
 #' @export
