@@ -106,17 +106,18 @@ test_that("seven new graphics map to frozen source without asserting backend par
   expect_identical(sort(x$native_r_candidate),
     sort(paste0("etr_",names)))
   expect_true(all(x$native_implementation_started))
-  # Source scientific artist-geometry reviews are provisionally recorded
-  # for four multivariate plots. R/Matplotlib class identity remains a
-  # documented backend difference, not an independent certificate.
-  scoped<-c("plot_sparse_mfpca_component",
+  # Seven native sparse scientific plot records now have developer
+  # reviewed source artist geometry. R/Matplotlib runtime class identity
+  # remains different, so these are not independent full certificates.
+  scoped<-c("plot_sparse_fpca_covariance",
+    "plot_sparse_fpca_component",
+    "plot_sparse_mfpca_component",
     "plot_sparse_mfpca_covariance_blocks",
     "plot_sparse_mfpca_cross_covariance",
-    "plot_sparse_mfpca_score_diagnostics")
-  expect_false(any(x$source_contract_gap_unresolved[
-    x$python_name%in%scoped]))
-  expect_true(all(x$source_contract_gap_unresolved[
-    !(x$python_name%in%scoped)]))
+    "plot_sparse_mfpca_score_diagnostics",
+    "plot_sparse_irregular_dimension")
+  expect_setequal(x$python_name,scoped)
+  expect_false(any(x$source_contract_gap_unresolved))
   expect_false(any(x$one_to_one_native_contract_complete))
   expect_gte(sum(p$is_python_function&p$named_native_candidate),327L)
   expect_gte(sum(p$native_implementation_started),302L)
