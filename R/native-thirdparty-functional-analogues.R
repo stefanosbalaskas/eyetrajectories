@@ -280,9 +280,37 @@ etr_to_fdapy_irregular<-function(trajectories,dimension,
 #' @param backend Must be exactly fdapace.
 #' @param fve Explicit explained-variance threshold.
 #' @param options Native fdapace options; locked core score method.
+#' @param strict_source_record TRUE computes the FDApy 1.0.x exact
+#'   conditional PACE score/inverse-transform mathematical stage using
+#'   externally supplied already fitted UFPCA spectrum. Does not fit
+#'   the FDApy PS/LP mean and covariance estimator.
+#' @param fit_smoothing,score_smoothing Source UFPCA declared smoothing
+#'   controls (recorded but not estimated in native strict mode).
+#' @param tol FDApy source positive numerical noise variance floor.
+#' @param normalize Must be FALSE in strict fixed-spectrum source mode.
+#' @param evaluation_grid Exact sorted pooled observation time grid or NULL.
+#' @param kwargs_mean,kwargs_covariance Optional recorded source fitting
+#'   settings; actual PS/LP fitting is not performed.
+#' @param source_fit_snapshot Required native record with FDApy fitted
+#'   `mean_grid`, `eigenfunctions` (components x grid),
+#'   `eigenvalues`, `noise_variance` and a
+#'   `centered_observations` list preserving actual time/curve order.
+#'   Use source-frozen fitted inputs, never invented eigenpairs.
 #' @export
 etr_fit_sparse_fpca_fdapy<-function(trajectories,dimension,
-    n_components=3L,backend=NULL,fve=.95,options=list()){
+    n_components=3L,backend=NULL,fve=.95,options=list(),
+    strict_source_record=FALSE,fit_smoothing="PS",
+    score_smoothing="LP",tol=1e-4,normalize=FALSE,
+    evaluation_grid=NULL,kwargs_mean=NULL,kwargs_covariance=NULL,
+    source_fit_snapshot=NULL){
+  .etr_assert(is.logical(strict_source_record)&&
+    length(strict_source_record)==1L&&!is.na(strict_source_record),
+    "strict_source_record must be a nonmissing logical scalar")
+  if(isTRUE(strict_source_record))
+    return(.etr_fdapy_fixed_spectrum_pace(
+      trajectories,dimension,n_components,fit_smoothing,
+      score_smoothing,tol,normalize,evaluation_grid,
+      kwargs_mean,kwargs_covariance,source_fit_snapshot))
   .etr_assert(identical(backend,"fdapace"),
     "source FDApy backend unavailable natively; explicitly choose fdapace")
   out<-etr_to_fdapy_irregular(trajectories,dimension)
