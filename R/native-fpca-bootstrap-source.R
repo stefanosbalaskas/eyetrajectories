@@ -209,11 +209,15 @@ etr_fpca_component_band_reporting_text <- function(result,digits=2L) {
 #' @param result Native score uncertainty.
 #' @param component Python-compatible zero-based retained component index.
 #' @param max_targets Maximum plotted fixed target trajectories.
+#' @param strict_source_record If TRUE return source scientific Matplotlib
+#'   score-interval, reference-scatter and zero-reference artist geometry
+#'   as a typed native R record; no Python Axes identity is claimed.
 #' @param ... Base R plotting options.
 #' @return Invisible source scores and interval geometry.
 #' @export
 etr_plot_fpca_score_uncertainty <- function(result,component=0L,
-    max_targets=30L,...) {
+    max_targets=30L,strict_source_record=FALSE,...) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   k<-.etr_validate_fpca_plot_component(result,component,"etr_fpca_score_uncertainty")
   .etr_assert(is.numeric(max_targets)&&length(max_targets)==1L&&
     is.finite(max_targets)&&!is.logical(max_targets)&&
@@ -246,17 +250,23 @@ etr_plot_fpca_score_uncertainty <- function(result,component=0L,
   graphics::points(x,out$reference,pch=4)
   graphics::abline(h=0,lty=2)
   graphics::axis(1,at=x,labels=out$target_curve_id,las=2)
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_fpca_score_uncertainty_artist(
+      out,component,max_targets)))
   invisible(out)
 }
 
 #' Plot source matched FPCA spectrum uncertainty intervals
 #' @param result Native FPC spectrum bootstrap result.
 #' @param metric Source-defined spectrum measure.
+#' @param strict_source_record If TRUE return matched source spectrum
+#'   errorbar arrays, labels and calibration scope as native R artist data.
 #' @param ... Base R graphics options.
 #' @return Invisible retained-component source interval geometry.
 #' @export
 etr_plot_fpca_spectrum_uncertainty <- function(result,
-    metric="explained_variance_ratio",...) {
+    metric="explained_variance_ratio",strict_source_record=FALSE,...) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   .etr_assert(inherits(result,"etr_fpca_spectrum_uncertainty")&&
     is.character(metric)&&length(metric)==1L&&
     !is.na(metric)&&metric%in%c("eigenvalue",
@@ -286,6 +296,9 @@ etr_plot_fpca_spectrum_uncertainty <- function(result,
       result$simultaneous_scope),...)
   graphics::arrows(out$component,out$lower,out$component,out$upper,
     code=3,angle=90,length=.04)
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_fpca_spectrum_uncertainty_artist(
+      result,metric,out)))
   invisible(out)
 }
 
@@ -293,11 +306,15 @@ etr_plot_fpca_spectrum_uncertainty <- function(result,
 #' @param result Native FPCA simultaneous component band result.
 #' @param component Zero-based source FPC component.
 #' @param dimension Named physical or abstract functional dimension.
+#' @param strict_source_record If TRUE return source observed-grid band
+#'   polygon, confidence-level label and reference FPC line geometry
+#'   rather than a Python Matplotlib Axes object.
 #' @param ... Base R graphics options.
 #' @return Invisible observed-time component estimate and band geometry.
 #' @export
 etr_plot_fpca_component_band <- function(result,component=0L,
-    dimension=NULL,...) {
+    dimension=NULL,strict_source_record=FALSE,...) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   k<-.etr_validate_fpca_plot_component(result,component,"etr_fpca_component_band")
   ref<-result$reference
   if(is.null(dimension))dimension<-ref$dimension_names[1L]
@@ -328,5 +345,8 @@ etr_plot_fpca_component_band <- function(result,component=0L,
     c(out$lower,rev(out$upper)),
     col=grDevices::adjustcolor("grey70",alpha.f=.3),border=NA)
   graphics::lines(out$time,out$estimate,lwd=2)
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_fpca_component_band_artist(
+      result,component,dimension,out)))
   invisible(out)
 }
