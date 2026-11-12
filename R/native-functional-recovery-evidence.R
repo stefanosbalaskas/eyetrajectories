@@ -329,7 +329,8 @@ etr_functional_recovery_summary_frame <- function(result,python_boundary_mode=TR
 #' @return Invisible exact numerical plotting geometry.
 #' @export
 etr_plot_functional_recovery_summary <- function(summary,metric,
-    statistic="median",...) {
+    statistic="median",strict_source_record=FALSE,...) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   .etr_assert(is.data.frame(summary)&&
     is.character(metric)&&length(metric)==1L&&!is.na(metric)&&
     nzchar(metric)&&
@@ -372,7 +373,10 @@ etr_plot_functional_recovery_summary <- function(summary,metric,
         length=.04,code=3,angle=90)
   }
   graphics::axis(1,at=x,labels=labels,las=2)
-  invisible(data.frame(label=labels,x=x,estimate=y,
+  out<-data.frame(label=labels,x=x,estimate=y,
     lower=if(has_band)subset$q25 else rep(NA_real_,length(y)),
-    upper=if(has_band)subset$q75 else rep(NA_real_,length(y))))
+    upper=if(has_band)subset$q75 else rep(NA_real_,length(y)))
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_recovery_source_artist(out,metric,statistic)))
+  invisible(out)
 }
