@@ -1,0 +1,142 @@
+name: Native FPCR slope and sparse PACE three source scientific artists
+on:
+  pull_request:
+    paths:
+      - "R/native-fpcr-inference-plots.R"
+      - "R/native-fpcr-slope-pace-three-artists.R"
+      - "tests/testthat/test-native-fpcr-slope-pace-three-artists-20261112.R"
+      - "tests/testthat/test-native-fpcr-inference-plots.R"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/reviewed_source_contract_closures_v1.csv"
+      - "docs/source_contract_reviews/plot_fpca_regression_slope_band.json"
+      - "docs/source_contract_reviews/plot_fpca_regression_slope_uncertainty.json"
+      - "docs/source_contract_reviews/plot_sparse_fpca_score_diagnostics.json"
+      - "docs/source_contract_reviews/plot_fpca_wild_bootstrap_projection.json"
+      - "docs/source_contract_reviews/plot_fpca_regression_future_prediction_interval.json"
+      - "docs/source_contract_reviews/plot_fpca_regression_mean_prediction_uncertainty.json"
+      - ".github/workflows/native-fpcr-slope-pace-three-artists-20261112.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-contract-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate 464/508 provisional ledger and six-domain SHA256 reviews
+        shell: bash
+        run: |
+          python - <<'PY'
+          import csv,hashlib,json
+          from pathlib import Path
+          root=Path(".")
+          with (root/"inst/extdata/native_source_contract_gaps_stage22.csv").open(
+            encoding="utf-8",newline="") as f:
+            rows=list(csv.reader(f,strict=True))
+          assert len(rows)==204,len(rows)
+          assert all(len(row)==7 for row in rows),[
+            (i,len(row),row[0]) for i,row in enumerate(rows) if len(row)!=7]
+          assert len({row[0] for row in rows[1:]})==203
+          assert all(row[-1] in ("TRUE","FALSE") for row in rows[1:])
+          with (root/"inst/extdata/reviewed_source_contract_closures_v1.csv").open(
+            encoding="utf-8",newline="") as f:
+            reg=list(csv.DictReader(f))
+          with (root/"inst/extdata/native_nonfunction_source_gaps_v1.csv").open(
+            encoding="utf-8",newline="") as f:
+            non=list(csv.DictReader(f))
+          assert len(reg)==154,len(reg)
+          assert len({r["python_name"] for r in reg})==len(reg)
+          keys=(
+            "plot_fpca_regression_slope_band",
+            "plot_fpca_regression_slope_uncertainty",
+            "plot_sparse_fpca_score_diagnostics",
+            "plot_fpca_wild_bootstrap_projection",
+            "plot_fpca_regression_future_prediction_interval",
+            "plot_fpca_regression_mean_prediction_uncertainty")
+          for name in keys:
+            (rec,)=tuple(x for x in reg if x["python_name"]==name)
+            assert rec["independently_certified"]=="FALSE"
+            data=(root/rec["review_record_path"]).read_bytes()
+            assert hashlib.sha256(data).hexdigest()==rec["review_record_sha256"],name
+            review=json.loads(data)
+            assert review["independently_certified"] is False
+            assert review["frozen_python_commit"]=="c1cd95ad718327550f7e55393ff38582872f7a94"
+            assert {x["kind"] for x in review["case_evidence"]}=={
+              "source_signature","accepted_input_domain","numerical_outputs",
+              "exception_semantics","returned_schema","scientific_estimand"}
+            for ev in (review["native_files"]+review["case_evidence"]+
+                       review.get("additional_regression_evidence",[])):
+              path=root/ev["path"]
+              assert hashlib.sha256(path.read_bytes()).hexdigest()==ev["sha256"],path
+          for name in keys[:3]:
+            (row,)=tuple(r for r in rows[1:] if r[0]==name)
+            assert row[-1]=="FALSE",name
+          remaining=sum(row[-1]=="TRUE" for row in rows[1:])
+          other=sum(row["unresolved"]=="TRUE" for row in non)
+          assert remaining==43,remaining
+          assert other==1,other
+          assert 508-remaining-other==464
+          print("464/508 provisional developer-reviewed; 43 callable + 1 noncallable open; independently certified 0")
+          PY
+  native-r:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Three frozen-scientific native FPCR slope and PACE artist tests
+        shell: bash
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          testthat::test_local(".",
+            filter="native-fpcr-slope-pace-three-artists-20261112|native-fpcr-inference-plots|native-fpcr-two-prediction-artists-20261112|full-native-r-parity-ledger",
+            reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
+  frozen-python-1-2:
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        id: python
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+            any::reticulate
+      - name: Native vs frozen Python 1.2 Matplotlib slope fills and PACE scatter masks
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          stopifnot(identical(et_python_version(),"1.2.0"))
+          testthat::test_local(".",
+            filter="native-fpcr-slope-pace-three-artists-20261112|native-fpcr-inference-plots",
+            reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
