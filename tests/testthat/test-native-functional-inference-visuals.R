@@ -79,7 +79,8 @@ test_that("seven new public implementations are scientific and source-blocked",{
   expect_lte(sum(z$is_python_function&!z$named_native_candidate),144L)
   # This historical suite must not freeze the moving unresolved-gap count.
   # Current exact totals are checked by full-native-r-parity-ledger.
-  expect_gte(sum(z$source_contract_gap_unresolved),53L)
+  # The authoritative gap ledger advances monotonically across stacked waves.
+  expect_lte(sum(z$source_contract_gap_unresolved),20L)
   expect_equal(sum(z$one_to_one_native_contract_complete),0L)
   expect_false(any(grepl("stage[0-9]+|etr[0-9]+_",
     getNamespaceExports("eyetrajectories"),ignore.case=TRUE)))
