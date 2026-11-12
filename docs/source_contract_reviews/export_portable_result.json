@@ -1,0 +1,67 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "export_portable_result",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_SOURCE_SCIENTIFIC_INTEROPERABILITY_REVIEW",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/portable_results.py::export_portable_result",
+  "native_signature": "etr_export_python_portable_result(result,directory,include_environment=FALSE,overwrite=FALSE)",
+  "reviewer_statement": "Provisional author-reviewed source-scientific native R Python 1.2 serialization for accepted fixed sparse MFPCA and other documented native types. Python 1.2 recognizes the serialized science, but R neither provides arbitrary dataclass support nor impersonates Python environment classes. New direct oracle CI not yet proven passing.",
+  "native_language_semantic_policy": "Native R writer is JSON+NPZ and Python 1.2 loader-interoperable in declared domain, but not a Python interpreter, class identity, or environment capture. Unknown source dataclasses, optional selectors and Python overwrite semantics remain unavailable. This is a bounded developmental ledger record, not a certified complete source API.",
+  "native_files": [
+    {
+      "path": "R/native-python-sparse-mfpca-portable.R",
+      "sha256": "f4c31db1758201750ca7c0de14b22b6c3acd72cd830cc06057cb6b85951874e3"
+    },
+    {
+      "path": "R/native-python-portable-writer.R",
+      "sha256": "60bb1f4b2311c7a1a5b92b7cbc10c87e5e8eeef400591fac822d6f5e7e896a2f"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Frozen Python 1.2 src/eyetrajectoriespy/portable_results.py::export_portable_result; Native Python 1.2 scientific JSON+NPZ portable writer extended from common/irregular trajectory and dense/compositional FPCA to 29-field strict sparse planar joint covariance/PACE, and to strict fixed-bandwidth paired sparse MFPCA W2 scientific workflow.",
+      "path": "tests/testthat/test-native-sparse-mfpca-python-portable-bundles-20261112.R",
+      "sha256": "09875a9679c4a1309bd90d51cf1d8e856b0438f574b38478f42dd447e214d435"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Accepted native source-scientific result domain now includes full 29-field paired sparse MFPCA scientific records and 12-field W2 fixed-bandwidth workflows with one measured fit step and no optional selector, score uncertainty or observation diagnostics. Also retains prior supported trajectory/dense/compositional FPCA result families. Explicitly refuses non-source native marginal models, malformed altered dimensions, arbitrary dataclasses, Python environment spoofing and destructive overwrite.",
+      "path": "tests/testthat/test-native-sparse-mfpca-python-portable-bundles-20261112.R",
+      "sha256": "09875a9679c4a1309bd90d51cf1d8e856b0438f574b38478f42dd447e214d435"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "New frozen Python 1.2 direct load_portable_result tests decode NumPy C-order numeric arrays, 29 ordered SparseMFPCAResult dataclass scientific fields, covariance blocks, eigenpairs, scores, curve identifiers and pandas metadata; R standalone reader checks exact NPZ shapes, checksums, schema, units and scientific values. Historical dense/irregular direct interoperability tests continue. The tests are committed but not yet witnessed green.",
+      "path": "tests/testthat/test-native-sparse-mfpca-python-portable-bundles-20261112.R",
+      "sha256": "09875a9679c4a1309bd90d51cf1d8e856b0438f574b38478f42dd447e214d435"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Native bounded R writer requires exact strict scientific source class, rejects invalid arrays, no non-finite grid/spectrum, explicit unsupported optional mode, nonempty existing directory, include_environment=TRUE and overwrite=TRUE. Python dataclass arbitrary type identity and original Python error exceptions cannot be matched natively.",
+      "path": "tests/testthat/test-native-sparse-mfpca-python-portable-bundles-20261112.R",
+      "sha256": "09875a9679c4a1309bd90d51cf1d8e856b0438f574b38478f42dd447e214d435"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Python 1.2 portable manifest v1 with arrays.npz, manifest.json, SHA256 arrays checksum, source type strings eyetrajectoriespy.types.SparseMFPCAResult or eyetrajectoriespy.workflows._sparse_mfpca.SparseMFPCAWorkflowResult, source-native ndarray/dataframe/tuple/mapping/dataclass markers, actual scientific measurements and explicit R-native version and environment NULL; Python reader produces scientific payload with nonportable_fields empty.",
+      "path": "tests/testthat/test-native-sparse-mfpca-python-portable-bundles-20261112.R",
+      "sha256": "09875a9679c4a1309bd90d51cf1d8e856b0438f574b38478f42dd447e214d435"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Portable state reproduces real native R direct paired sparse covariance/PACE scientific estimates and fit-only source workflow record; no invented covariance model, no raw interpolation, no information silently dropped for accepted input type.",
+      "path": "tests/testthat/test-native-sparse-mfpca-python-portable-bundles-20261112.R",
+      "sha256": "09875a9679c4a1309bd90d51cf1d8e856b0438f574b38478f42dd447e214d435"
+    }
+  ],
+  "independent_review_status": "Scoped developer review only; exact-head native and Python 1.2 CI queued/not verified; independent scientific certification remains zero.",
+  "language_specific_limits": [
+    "Arbitrary Python dataclass objects and Python environment capture are outside native R supported input domain.",
+    "R runtime result classes and Python dataclass objects are distinct. Portable snapshots intentionally do not reconstruct opaque backend fits.",
+    "Python and R report strings, csv bytes, path objects and exception class identity need not be identical; source reader compatibility and scientific values are primary bounded target.",
+    "Python workflow export supports further optional report and selector families not yet included. This author review is provisional and not independent certification."
+  ]
+}
