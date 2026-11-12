@@ -12,7 +12,7 @@
   "native_files": [
     {
       "path": "R/native-fpcr-inference-plots.R",
-      "sha256": "4c4dcbadd178bba2367102835f851972baa2b71092f7dc0546f80a3dcffcf528"
+      "sha256": "a841687e1e5ef393087ed77a6d7022523f564c23d0286c1b93f357616114466a"
     },
     {
       "path": "R/native-fpca-three-inference-artist-source.R",
