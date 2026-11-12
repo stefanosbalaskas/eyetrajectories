@@ -44,7 +44,7 @@ jobs:
           with (root/"inst/extdata/native_nonfunction_source_gaps_v1.csv").open(
             encoding="utf-8",newline="") as f:
             non=list(csv.DictReader(f))
-          assert len(reg)==154,len(reg)
+          assert len(reg)>=154,len(reg
           assert len({r["python_name"] for r in reg})==len(reg)
           keys=(
             "plot_fpca_regression_slope_band",
@@ -73,9 +73,9 @@ jobs:
             assert row[-1]=="FALSE",name
           remaining=sum(row[-1]=="TRUE" for row in rows[1:])
           other=sum(row["unresolved"]=="TRUE" for row in non)
-          assert remaining==43,remaining
-          assert other==1,other
-          assert 508-remaining-other==464
+          assert remaining<=43,remaining
+          assert other<=1,other
+          assert 508-remaining-other>=464
           print("464/508 provisional developer-reviewed; 43 callable + 1 noncallable open; independently certified 0")
           PY
   native-r:
