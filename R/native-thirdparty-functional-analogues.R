@@ -67,10 +67,21 @@ etr_to_skfda_grid<-function(trajectories,strict_source_record=FALSE){
 #' @param basis bspline or fourier.
 #' @param n_basis Number of fixed basis columns.
 #' @param order Positive B-spline order.
+#' @param strict_source_record TRUE computes the pinned scikit-fda
+#'   numerical sampled-grid least-squares Fourier/B-spline source
+#'   geometry (including Fourier normalization and odd basis expansion),
+#'   returning a native R source-scientific record rather than FDataBasis.
+#'   Default FALSE preserves the historical R least-squares alternative.
 #' @return R least-squares basis projection (not scikit-fda FDataBasis).
 #' @export
 etr_to_skfda_basis<-function(trajectories,dimension,basis="bspline",
-    n_basis=15L,order=4L){
+    n_basis=15L,order=4L,strict_source_record=FALSE){
+  .etr_assert(is.logical(strict_source_record)&&
+    length(strict_source_record)==1L&&!is.na(strict_source_record),
+    "strict_source_record must be a nonmissing logical scalar")
+  if(isTRUE(strict_source_record))
+    return(.etr_skfda_source_basis_projection(
+      trajectories,dimension,basis,n_basis,order))
   etr_validate(trajectories,require_complete=TRUE)
   .etr_assert(is.character(dimension)&&length(dimension)==1L&&
     !is.na(dimension)&&dimension%in%trajectories$dimension_names,
