@@ -89,7 +89,7 @@
       sd_multiplier=as.numeric(multiplier)))
 }
 
-.etr_su_irregular_artist<-function(source){
+.etr_su_irregular_artist<-function(source,time_unit){
   .etr_assert(is.list(source)&&all(c("curve_ids","time",
     "values","dimension")%in%names(source)),
     "source irregular geometry needs native sample traces")
@@ -111,7 +111,7 @@
   })
   axis<-list(
     title=paste0("Native irregular observations: ",source$dimension),
-    xlabel=paste0("Time (",source$time_unit,")"),
+    xlabel=paste0("Time (",time_unit,")"),
     ylabel=source$dimension,
     lines=artists,
     legend=n<=12L)
