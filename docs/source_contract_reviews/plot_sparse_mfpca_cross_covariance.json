@@ -1,0 +1,73 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "plot_sparse_mfpca_cross_covariance",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_NATIVE_SOURCE_ARTIST_GEOMETRY_REVIEW",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/sparse_multivariate_plotting.py::plot_sparse_mfpca_cross_covariance",
+  "native_signature": "etr_plot_sparse_mfpca_cross_covariance(result,...,strict_source_record=TRUE)",
+  "reviewer_statement": "Provisional developer-reviewed source scientific graphics geometry on actual native R sparse joint PACE models, verified in committed tests against exact Matplotlib 1.2 data/artists (not observed green yet). R base graphics is not Matplotlib and runtime plotting return types, colors and injected axes remain outside the accepted scoped scientific domain. No independent certification.",
+  "native_language_semantic_policy": "Native R scientific artist geometry implements source line/image/scatter coordinates, layout, common color limits, titles, labels and failure markers. The renderer uses R base graphics and cannot return actual Python Matplotlib axes or guarantee pixel-identical output; its typed plot metadata explicitly reports matplotlib_object_identity=false.",
+  "native_files": [
+    {
+      "path": "R/native-sparse-scientific-graphics.R",
+      "sha256": "7b86912b7f82c8dde63f68630c0722a537513007b56c91348b048cb1e959cd7d"
+    },
+    {
+      "path": "R/native-sparse-mfpca-artist-source.R",
+      "sha256": "d0d13a2ea3e7bc85023a8d10a74caff301cbb16940cca962da41261d7e406e6b"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Frozen Python public src/eyetrajectoriespy/sparse_multivariate_plotting.py::plot_sparse_mfpca_cross_covariance. Two separate directional Cxy and Cyx cross-covariance heatmap source artist geometries",
+      "path": "tests/testthat/test-native-sparse-mfpca-four-artist-source-20261112.R",
+      "sha256": "55afabe13d9f26fbe7715fcf7eca1be606539dcdb132817f379e7f2f474d47ab"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Real fitted joint paired sparse PACE result, stage='used' or 'smoothed', backward-compatible source alias and strict native source-scientific record option. No Python axes injection, no silent transpose to make directional raw covariance disappear.",
+      "path": "tests/testthat/test-native-sparse-mfpca-four-artist-source-20261112.R",
+      "sha256": "55afabe13d9f26fbe7715fcf7eca1be606539dcdb132817f379e7f2f474d47ab"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Native strict geometry encodes source direct Cxy and Cyx matrices and shared signed symmetric max(abs(block)) color limits, exact increasing-grid image extent, directional source titles, xlabel/ylabel, and cross-covariance colorbar intent. Frozen Python 1.2 public Matplotlib imshow arrays, get_clim and source titles are compared for both stages under actual native result; plot base R colormap pixels remain distinct.",
+      "path": "tests/testthat/test-native-sparse-mfpca-four-artist-source-20261112.R",
+      "sha256": "55afabe13d9f26fbe7715fcf7eca1be606539dcdb132817f379e7f2f474d47ab"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Rejects invalid stage, mutually conflicting source/stage, source-untyped fit and nonfinite or dimensionally invalid directional covariance blocks; Python backend error classes are not native.",
+      "path": "tests/testthat/test-native-sparse-mfpca-four-artist-source-20261112.R",
+      "sha256": "55afabe13d9f26fbe7715fcf7eca1be606539dcdb132817f379e7f2f474d47ab"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Source Python returns two Matplotlib Axes via NumPy array plus a figure-level colorbar; native R returns an inspectable 1x2 scientific artist geometry with exact source arrays, signed limit, stage, title and cross-covariance colorbar metadata and draws native base-R heatmaps. Does not claim Python Axes identity or exact native color pixels.",
+      "path": "tests/testthat/test-native-sparse-mfpca-four-artist-source-20261112.R",
+      "sha256": "55afabe13d9f26fbe7715fcf7eca1be606539dcdb132817f379e7f2f474d47ab"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Show directional sparse planar cross-covariance estimated for joint PACE, Cxy(s,t) and Cyx(s,t) separately. Avoid inadvertent self-symmetrization or replacement by univariate covariance.",
+      "path": "tests/testthat/test-native-sparse-mfpca-four-artist-source-20261112.R",
+      "sha256": "55afabe13d9f26fbe7715fcf7eca1be606539dcdb132817f379e7f2f474d47ab"
+    }
+  ],
+  "additional_regression_evidence": [
+    {
+      "path": "tests/testthat/test-native-sparse-scientific-graphics.R",
+      "sha256": "475025401e40c8a8a2646b2f5a60a230760a8f1c07959333636e66987162b648"
+    }
+  ],
+  "independent_review_status": "Scoped developer review only; exact-head CI and pinned Matplotlib differential are queued or unverified, no independent scientific contract certification.",
+  "language_specific_limits": [
+    "Matplotlib Axes and Figure identity, external axes injection, and pixel-exact `coolwarm` rendering cannot be implemented by a native base-R graphics return.",
+    "Accepted source parity is restricted to fitted scientific array values, line/scatter points, image extents/color limits, metadata and failure geometry, not complete Python graphics objects.",
+    "Native result remains a real fitted R scientific object; Python class identity and exact error classes are not interchangeable.",
+    "No green exact-head CI observed, independent certification, main-branch merge, or CRAN readiness is claimed."
+  ]
+}
