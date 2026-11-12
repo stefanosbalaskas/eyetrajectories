@@ -242,7 +242,9 @@ etr_plot_functional_mean_band <- function(result,dimension=NULL,
 #' @param ... Base graphics options.
 #' @return Invisible zero-based source index pairs.
 #' @export
-etr_plot_joint_recurrence <- function(result,max_points=200000L,...) {
+etr_plot_joint_recurrence <- function(result,max_points=200000L,
+    strict_source_record=FALSE,...) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   .etr_assert(inherits(result,"etr_joint_recurrence")&&
     is.matrix(result$matrix)&&
     nrow(result$matrix)==ncol(result$matrix)&&
@@ -265,6 +267,9 @@ etr_plot_joint_recurrence <- function(result,max_points=200000L,...) {
     xlab="State index",ylab="State index",
     main=sprintf("Joint recurrence (JRR=%.3f, components=%d)",
       result$joint_recurrence_rate,length(result$component_labels)),...)
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_joint_recurrence_source_artist(
+      result,out,max_points)))
   invisible(out)
 }
 
@@ -277,7 +282,8 @@ etr_plot_joint_recurrence <- function(result,max_points=200000L,...) {
 #' @return Invisible source time and curve-value geometry.
 #' @export
 etr_plot_windowed_rqa_trajectories <- function(result,metric,
-    show_mean=FALSE,max_curves=NULL,...) {
+    show_mean=FALSE,max_curves=NULL,strict_source_record=FALSE,...) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   .etr_assert(inherits(result,"etr_windowed_rqa_functional")&&
     inherits(result$trajectories,"etr_trajectory_set")&&
     is.character(metric)&&length(metric)==1L&&
@@ -305,8 +311,12 @@ etr_plot_windowed_rqa_trajectories <- function(result,metric,
   all_values<-matrix(x$values[,,j,drop=FALSE],nrow=n)
   mu<-colMeans(all_values,na.rm=TRUE)
   if(show_mean)graphics::lines(x$time,mu,lwd=3)
-  invisible(list(time=x$time,curve_values=v,
-    across_curve_mean=if(show_mean)mu else NULL))
+  out<-list(time=x$time,curve_values=v,
+    across_curve_mean=if(show_mean)mu else NULL)
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_windowed_rqa_trajectories_source_artist(
+      result,metric,out,show_mean,max_curves)))
+  invisible(out)
 }
 
 #' Plot one unambiguous predeclared RQA parameter-sensitivity slice
@@ -318,7 +328,8 @@ etr_plot_windowed_rqa_trajectories <- function(result,metric,
 #' @return Invisible selected parameter and metric table.
 #' @export
 etr_plot_rqa_sensitivity <- function(result,parameter,metric,
-    filters=NULL,...) {
+    filters=NULL,strict_source_record=FALSE,...) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   .etr_assert(inherits(result,"etr_rqa_parameter_sensitivity")&&
     is.data.frame(result$table)&&
     is.character(parameter)&&length(parameter)==1L&&
@@ -350,5 +361,9 @@ etr_plot_rqa_sensitivity <- function(result,parameter,metric,
   graphics::plot(t[[parameter]],t[[metric]],type="o",pch=1,
     xlab=parameter,ylab=metric,
     main=sprintf("RQA parameter sensitivity: %s",result$curve_id),...)
-  invisible(t[c(parameter,metric)])
+  out<-t[c(parameter,metric)]
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_rqa_sensitivity_source_artist(
+      result,parameter,metric,out)))
+  invisible(out)
 }

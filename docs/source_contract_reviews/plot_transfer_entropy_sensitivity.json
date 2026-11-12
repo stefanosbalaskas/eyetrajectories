@@ -1,0 +1,72 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "plot_transfer_entropy_sensitivity",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_NATIVE_JOINT_RECURRENCE_RQA_TE_SCIENTIFIC_ARTIST_REVIEW",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/transfer_entropy_sensitivity.py::plot_transfer_entropy_sensitivity",
+  "native_signature": "etr_plot_transfer_entropy_sensitivity(result,parameter,metric='transfer_entropy_bits',filters=NULL,strict_source_record=TRUE,...)",
+  "reviewer_statement": "Developer-scoped six-domain frozen Python scientific artist review only. Public pinned Python 1.2 differential tests are authored but exact-head execution has not been observed, and no independent full-contract certification is claimed.",
+  "native_language_semantic_policy": "Strict mode preserves observable scientific Matplotlib geometry as typed native R data. Original default base R plot and numeric returns stay unchanged. No full live Python runtime or Matplotlib object identity.",
+  "native_files": [
+    {
+      "path": "R/native-transfer-entropy-visual.R",
+      "sha256": "3279014e29acf96ef9e1973296e9a537dfe16cb9c0ba1fa3c0e40c97dd65cdd8"
+    },
+    {
+      "path": "R/native-four-recurrence-te-scientific-artists.R",
+      "sha256": "d1faef4c52e8c9abc1ab7e7a04a3aed9ed1dc76fa028c340768f172a9996b3bf"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Source public frozen Python 1.2 module src/eyetrajectoriespy/transfer_entropy_sensitivity.py::plot_transfer_entropy_sensitivity inspected. New R strict_source_record=TRUE mode exposes bound source Matplotlib scientific geometry and retains the legacy R return.",
+      "path": "tests/testthat/test-native-four-recurrence-te-scientific-artists-20261112.R",
+      "sha256": "377852b80f6f9308de807b4d8611bcfebb531f6ca59023fa484b09af61ccc956"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Native validated recurrence/RQA or TE scientific result records and finite source-shaped scalar/frame arrays. Strict mode enforces source sensitivity no-hidden-averaging, explicit parameter-domain uniqueness and source graph caps. Arbitrary Python dataclass, pandas and injected Axes object input are beyond the bounded cross-language review.",
+      "path": "tests/testthat/test-native-four-recurrence-te-scientific-artists-20261112.R",
+      "sha256": "377852b80f6f9308de807b4d8611bcfebb531f6ca59023fa484b09af61ccc956"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Source TE unaggregated parameter sensitivity sorted line and source marker, underscore-replaced labels, strict-mode refusal of unresolved other tuning parameter dimensions, source title and explicit no-causal-identification metadata. Native numeric input/error regression tests and direct public frozen Python 1.2 Matplotlib artist comparisons are committed; no exact-head CI success has been observed.",
+      "path": "tests/testthat/test-native-four-recurrence-te-scientific-artists-20261112.R",
+      "sha256": "377852b80f6f9308de807b4d8611bcfebb531f6ca59023fa484b09af61ccc956"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Explicit R input validation errors cover max_points, flags, source dimensions, selected metrics/filters and duplicate parameter values. Exact Python TypeError/ValueError/KeyError exception-class identity remains outside native R source-scientific parity.",
+      "path": "tests/testthat/test-native-four-recurrence-te-scientific-artists-20261112.R",
+      "sha256": "377852b80f6f9308de807b4d8611bcfebb531f6ca59023fa484b09af61ccc956"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Native default base-R graphs and invisible numeric table/geometry returned unchanged. Strict mode returns a typed native R scientific artist record with ordered artist coordinates and axes labels, not Python matplotlib.axes.Axes, figure or raster output.",
+      "path": "tests/testthat/test-native-four-recurrence-te-scientific-artists-20261112.R",
+      "sha256": "377852b80f6f9308de807b4d8611bcfebb531f6ca59023fa484b09af61ccc956"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Already computed noncausal transfer-entropy sensitivity grid over fixed analyst-declared history/lag tuning choices; no TE estimator rerun or causal interpretation.",
+      "path": "tests/testthat/test-native-four-recurrence-te-scientific-artists-20261112.R",
+      "sha256": "377852b80f6f9308de807b4d8611bcfebb531f6ca59023fa484b09af61ccc956"
+    }
+  ],
+  "additional_regression_evidence": [
+    {
+      "path": "tests/testthat/test-native-transfer-entropy-visual.R",
+      "sha256": "f8051187c4a4668a2ca81f5aaa80a069e328f04695c30519b41a5f232809cddd"
+    }
+  ],
+  "independent_review_status": "Provisional developer-scoped, exact-head R and Python CI pending; zero independent certifications.",
+  "language_specific_limits": [
+    "Native R returns typed scientific geometry, not Python Matplotlib Axes, images, Python dataclass/pandas protocols, or Python error classes.",
+    "Strict source data geometry rejects ambiguity rather than aggregating tuning specifications.",
+    "All underlying statistical/scientific algorithms and default native output are unchanged."
+  ]
+}

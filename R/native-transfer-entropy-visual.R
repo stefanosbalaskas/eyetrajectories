@@ -45,11 +45,18 @@
 #' @return Invisible exact source x/y coordinates.
 #' @export
 etr_plot_transfer_entropy_sensitivity <- function(result,parameter,
-    metric="transfer_entropy_bits",filters=NULL,...) {
+    metric="transfer_entropy_bits",filters=NULL,
+    strict_source_record=FALSE,...) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   t<-.etr_select_te_plot_slice(result,parameter,metric,filters)
   graphics::plot(t[[parameter]],t[[metric]],type="o",pch=1,
     xlab=gsub("_"," ",parameter),ylab=gsub("_"," ",metric),
     main="Transfer-entropy specification sensitivity",...)
+  if(isTRUE(strict_source_record)) {
+    .etr_te_strict_source_validate_slice(result,parameter,filters)
+    return(invisible(.etr_te_sensitivity_source_artist(
+      parameter,metric,t)))
+  }
   invisible(t)
 }
 
