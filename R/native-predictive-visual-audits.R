@@ -110,7 +110,8 @@ etr_plot_nested_fpca_regression_cv <- function(result,
 #' @return Invisible source-aligned sorted ratio line and identity baseline.
 #' @export
 etr_plot_functional_mixed_effects_bootstrap_comparison <- function(
-    comparison,coefficient) {
+    comparison,coefficient,strict_source_record=FALSE) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   cols<-c("coefficient","time",
     "full_refit_to_fixed_covariance_width_ratio")
   .etr_assert(is.data.frame(comparison)&&
@@ -134,11 +135,14 @@ etr_plot_functional_mixed_effects_bootstrap_comparison <- function(
     main=paste0("Mixed-effects bootstrap sensitivity: ",coefficient),
     ylim=.etr_diagnostic_plot_range(c(1,y)))
   graphics::abline(h=1,lty=2)
-  invisible(list(coefficient=coefficient,line=data.frame(x=x,y=y),
+  out<-list(coefficient=coefficient,line=data.frame(x=x,y=y),
     identity_baseline=1,
     provenance=list(backend="base_R",
       source_operation="plot_functional_mixed_effects_bootstrap_comparison",
-      python_axes_return_equivalence=FALSE)))
+      python_axes_return_equivalence=FALSE))
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_predictive_bootstrap_comparison_source_artist(out)))
+  invisible(out)
 }
 
 #' Native FPCA wild-bootstrap truncation scan interval-width or center plot
