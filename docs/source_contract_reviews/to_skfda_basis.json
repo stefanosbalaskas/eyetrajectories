@@ -1,0 +1,68 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "to_skfda_basis",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_SKFDA_SAMPLED_FOURIER_BSPLINE_SOURCE_LEAST_SQUARES_NUMERICAL",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/backends.py::to_skfda_basis -> scikit-fda FDataGrid.to_basis / BasisSmoother; scientific source snapshot GAA-UAM/scikit-fda 9e21b2a0bf7674ebea906851f48883c3f4c0c375",
+  "native_signature": "etr_to_skfda_basis(trajectories,dimension,basis=\"bspline\",n_basis=15L,order=4L,strict_source_record=TRUE)",
+  "reviewer_statement": "Source-scientific native R full-column-rank sampled-grid least squares for the exact scikit-fda normalized Fourier (including even basis count expansion) and order-specific B-spline basis designs. QR and SVD numeric full-rank objective equivalent; Python object identity, rank deficient acceptance, full optional backend methods and exception classes excluded. Real backend opt-in differential tests authored, executable CI not yet witnessed green.",
+  "native_language_semantic_policy": "Native R numerical LS function and scientific record rather than Python scikit-fda FDataBasis instance; historical native R basis left unchanged by default. Observed sample grid not quadrature or smoothing.",
+  "native_files": [
+    {
+      "path": "R/native-skfda-ls-basis-scientific.R",
+      "sha256": "2a2423e739d8df6dc4450b9dc8e059e5182c32c64ca3272caf52939207feab45"
+    },
+    {
+      "path": "R/native-thirdparty-functional-analogues.R",
+      "sha256": "2e794235e370728eeda751edcc5b5bc9ee2955445c352536a26de0a86926592f"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Python public source validates complete TrajectorySet, exact dimension, family, n_basis and spline order, constructs FDataGrid and BSplineBasis/FourierBasis, runs grid.to_basis. Native opt-in strict_source_record dispatch retains public R default and frozen source requested n_basis.",
+      "path": "tests/testthat/test-native-skfda-ls-basis-source-20261112.R",
+      "sha256": "654f5855f4c1007061b67761b74926ac4ebaed73ed40353eb416e7641a673405"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Native source scientific scope: finite complete common-grid real curves, existing named channel, B-spline order/n_basis validation, Fourier even requested n_basis expanding to odd, nonempty curves, full-rank evaluated design and at least as many time samples as actual basis columns.",
+      "path": "tests/testthat/test-native-skfda-ls-basis-source-20261112.R",
+      "sha256": "654f5855f4c1007061b67761b74926ac4ebaed73ed40353eb416e7641a673405"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Fourier normalized 1/sqrt(T) constant and sqrt(2/T) sine/cosine columns on physical time; B-spline uniform base knots, repeated endpoints and right boundary; QR unweighted sampled-grid least squares same full-rank source statistical estimand, with coefficients, reconstructed grid and projected native scientific return fields.",
+      "path": "tests/testthat/test-native-skfda-ls-basis-source-20261112.R",
+      "sha256": "654f5855f4c1007061b67761b74926ac4ebaed73ed40353eb416e7641a673405"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Reject missing selected values, improper family or parameter scalar type, invalid order, unknown channel, rank deficiency or underdetermined source scope; Python original ImportError, solver warnings, arbitrary scikit-fda constructor errors not reproduced.",
+      "path": "tests/testthat/test-native-skfda-ls-basis-source-20261112.R",
+      "sha256": "654f5855f4c1007061b67761b74926ac4ebaed73ed40353eb416e7641a673405"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "R etr_skfda_basis_scientific_record contains source_projection list with all BasisProjectionResult scientific field names and backend_object=NULL, requested n_basis and distinct expanded actual_backend_n_basis, basis matrix, coefficients, provenance and original curve order. Real Python FDataBasis object not returned.",
+      "path": "tests/testthat/test-native-skfda-ls-basis-source-20261112.R",
+      "sha256": "654f5855f4c1007061b67761b74926ac4ebaed73ed40353eb416e7641a673405"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Unweighted squared-error minimization over observed times and scikit-fda evaluated Fourier or B-spline basis, not a continuous-domain L2 projection, penalized smoothing, regularization, interpolated data or inference.",
+      "path": "tests/testthat/test-native-skfda-ls-basis-source-20261112.R",
+      "sha256": "654f5855f4c1007061b67761b74926ac4ebaed73ed40353eb416e7641a673405"
+    }
+  ],
+  "additional_regression_evidence": [],
+  "independent_review_status": "Provisional author-reviewed scientific numerical source closure. Real pinned Python scikit-fda opt-in differential fixture authored; not executed successfully or independently certified at this time.",
+  "language_specific_limits": [
+    "Native R QR vs real scikit-fda Python BasisSmoother SVD may differ for ill-conditioned source designs; only full-rank supported.",
+    "Source real scikit-fda FDataBasis backend object/methods cannot be natively identified with a typed R scientific record.",
+    "Underdetermined rank deficient Python accepted domains, Python ImportErrors/warnings, scipy numerical class and full platform reproducibility are not certified.",
+    "No independently certified full Python source contract or published green exact-head CI claim."
+  ]
+}
