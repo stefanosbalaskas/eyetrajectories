@@ -1,0 +1,191 @@
+# Frozen eyetrajectoriespy 1.2.0 types.py TrajectorySet dataclass,
+# source-scientific class fields/methods, not an actual Python class object.
+
+.etr_source_class_fixture<-function(){
+  time<-c(0,.4,1)
+  values<-array(0,c(3L,3L,2L))
+  for(i in 1:3)for(j in 1:3)for(k in 1:2)
+    values[i,j,k]<-100*(i-1)+10*(j-1)+(k-1)
+  values[2L,2L,1L]<-NaN
+  md<-data.frame(participant=c(11L,22L,33L),
+    condition=c("A","B","A"),stringsAsFactors=FALSE)
+  x<-etr_trajectory_set(time,values,c("c1","c2","c3"),
+    c("x","y"),metadata=md,
+    coordinate_system="pixels",time_unit="s",
+    provenance=list(source="frozen",batch=1L),
+    python_boundary_mode=TRUE)
+  list(x=x,values=values,metadata=md)
+}
+
+test_that("source TrajectorySet scientific class record preserves all dataclass source fields",{
+  fx<-.etr_source_class_fixture()
+  obj<-etr_trajectory_source_class_record(fx$x)
+  expect_s3_class(obj,"etr_native_trajectory_source_class_scientific_record")
+  expect_identical(obj$source_field_order,
+    c("time","values","curve_ids","dimension_names",
+      "metadata","coordinate_system","time_unit","provenance"))
+  expect_identical(names(obj)[seq_len(8L)],obj$source_field_order)
+  expect_identical(obj$time,c(0,.4,1))
+  expect_identical(obj$values,fx$values)
+  expect_true(is.nan(obj$values[2L,2L,1L]))
+  expect_identical(obj$curve_ids,c("c1","c2","c3"))
+  expect_identical(obj$dimension_names,c("x","y"))
+  expect_identical(obj$n_curves,3L)
+  expect_identical(obj$n_time,3L)
+  expect_identical(obj$n_dimensions,2L)
+  expect_identical(obj$source_shape,c(3L,3L,2L))
+  expect_identical(obj$metadata_index$name,"curve_id")
+  expect_identical(obj$metadata_index$labels,c("c1","c2","c3"))
+  expect_identical(rownames(obj$metadata),c("c1","c2","c3"))
+  expect_identical(obj$metadata$participant,11L*c(1L,2L,3L))
+  expect_identical(obj$coordinate_system,"pixels")
+  expect_identical(obj$time_unit,"s")
+  expect_identical(obj$provenance$source,"frozen")
+  expect_identical(obj$provenance$batch,1L)
+  expect_identical(obj$source_native_methods$dimension,"etr_dimension")
+  expect_identical(obj$source_native_methods$subset,
+    "etr_subset(python_boundary_mode=TRUE)")
+  expect_identical(obj$source_native_methods$with_values,
+    "etr_with_values")
+  expect_false(obj$frozen_python_class_identity)
+  expect_true(obj$native_r_record_mutable)
+  expect_false(obj$source_equivalent)
+  expect_false(obj$independently_source_certified)
+  expect_true(inherits(fx$x,"etr_trajectory_set"))
+  expect_false("source_field_order"%in%names(fx$x))
+})
+
+test_that("source TrajectorySet Python-boundary dimension, zero-based subset and with_values support scientific methods",{
+  fx<-.etr_source_class_fixture()
+  x<-fx$x
+  dimx<-etr_dimension(x,"x")
+  expect_identical(dim(dimx),c(3L,3L))
+  expect_true(is.nan(dimx[2L,2L]))
+  expect_equal(unname(dimx),
+    matrix(x$values[,,1L],nrow=3L,ncol=3L),
+    tolerance=0,ignore_attr=TRUE)
+  sub<-etr_subset(x,c(2L,0L),python_boundary_mode=TRUE)
+  srecord<-etr_trajectory_source_class_record(sub)
+  expect_identical(srecord$curve_ids,c("c3","c1"))
+  expect_identical(srecord$metadata_index$labels,c("c3","c1"))
+  expect_identical(dim(srecord$values),c(2L,3L,2L))
+  expect_identical(srecord$values[1L,,],
+    fx$values[3L,,])
+  changed<-etr_with_values(x,x$values+1,
+    provenance_update=list(batch="B2",done=TRUE),
+    time_unit="ms")
+  crec<-etr_trajectory_source_class_record(changed)
+  expect_identical(crec$time,x$time)
+  expect_equal(crec$values,x$values+1,
+    ignore_attr=TRUE)
+  expect_identical(crec$provenance$source,"frozen")
+  expect_identical(crec$provenance$batch,"B2")
+  expect_identical(crec$provenance$done,TRUE)
+  expect_identical(crec$time_unit,"ms")
+  expect_identical(x$time_unit,"s")
+  expect_identical(x$provenance$batch,1L)
+  empty<-etr_subset(x,integer(),python_boundary_mode=TRUE)
+  erecord<-etr_trajectory_source_class_record(empty)
+  expect_identical(erecord$n_curves,0L)
+  expect_identical(dim(erecord$values),c(0L,3L,2L))
+  expect_identical(erecord$metadata_index$labels,character(0))
+})
+
+test_that("source TrajectorySet record rejects ordinary unqualified R constructor mode and tampered fields",{
+  f<-.etr_source_class_fixture()
+  native<-etr_trajectory_set(f$x$time,
+    array(1,c(3L,3L,2L)),
+    curve_ids=f$x$curve_ids,
+    dimension_names=f$x$dimension_names)
+  expect_error(etr_trajectory_source_class_record(native),
+    "python_boundary_mode")
+  copy<-f$x
+  rownames(copy$metadata)<-c("z1","z2","z3")
+  expect_error(etr_trajectory_source_class_record(copy),
+    "metadata index")
+  copy<-f$x
+  copy$values<-array(1,c(3L,2L,2L))
+  expect_error(etr_trajectory_source_class_record(copy),
+    "values dimensions")
+})
+
+test_that("frozen real Python 1.2 TrajectorySet class values, subset, dimension and with_values match native R science",{
+  if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
+    skip("true frozen public Python TrajectorySet class verification is opt-in")
+  skip_if_not_installed("reticulate")
+  expect_identical(et_python_version(),"1.2.0")
+  reticulate::py_run_string("
+import numpy as np,pandas as pd
+import eyetrajectoriespy as et
+pvals=np.fromfunction(lambda i,j,k:100*i+10*j+k,
+                      (3,3,2),dtype=float)
+pvals[1,1,0]=np.nan
+pmetadata=pd.DataFrame({'participant':[11,22,33],
+                        'condition':['A','B','A']})
+p=et.TrajectorySet(
+  time=np.array([0.,.4,1.]),values=pvals,
+  curve_ids=('c1','c2','c3'),
+  dimension_names=('x','y'),
+  metadata=pmetadata,coordinate_system='pixels',time_unit='s',
+  provenance={'source':'frozen','batch':1})
+psub=p.subset(np.array([2,0],dtype=int))
+pchanged=p.with_values(
+  p.values+1,
+  provenance_update={'batch':'B2','done':True},time_unit='ms')
+pempty=p.subset(np.array([],dtype=int))
+py_source={
+  'values':p.values,'time':p.time,
+  'dimension':p.dimension('x'),
+  'metadata_index_name':p.metadata.index.name,
+  'metadata_ids':list(p.metadata.index),
+  'sub_values':psub.values,
+  'sub_ids':list(psub.curve_ids),
+  'sub_metadata_ids':list(psub.metadata.index),
+  'changed_values':pchanged.values,
+  'changed_provenance':pchanged.provenance,
+  'changed_time_unit':pchanged.time_unit,
+  'empty_values':pempty.values,
+  'empty_n':pempty.n_curves,
+  'n_curves':p.n_curves,'n_time':p.n_time,
+  'n_dimensions':p.n_dimensions,
+  'field_names':list(p.__dataclass_fields__.keys())}
+")
+  fx<-.etr_source_class_fixture()
+  ours<-etr_trajectory_source_class_record(fx$x)
+  py<-reticulate::py_eval("py_source",convert=TRUE)
+  expect_equal(ours$values,as.array(py$values),
+    tolerance=0,ignore_attr=TRUE)
+  expect_equal(ours$time,as.numeric(py$time),tolerance=0)
+  expect_equal(unname(etr_dimension(fx$x,"x")),
+    as.matrix(py$dimension),tolerance=0,ignore_attr=TRUE)
+  expect_identical(ours$metadata_index$name,
+    as.character(py$metadata_index_name))
+  expect_identical(ours$metadata_index$labels,
+    as.character(py$metadata_ids))
+  expect_identical(ours$n_curves,as.integer(py$n_curves))
+  expect_identical(ours$n_time,as.integer(py$n_time))
+  expect_identical(ours$n_dimensions,as.integer(py$n_dimensions))
+  sub<-etr_subset(fx$x,c(2L,0L),python_boundary_mode=TRUE)
+  expect_equal(sub$values,as.array(py$sub_values),tolerance=0,
+    ignore_attr=TRUE)
+  expect_identical(sub$curve_ids,as.character(py$sub_ids))
+  expect_identical(rownames(sub$metadata),
+    as.character(py$sub_metadata_ids))
+  changed<-etr_with_values(fx$x,fx$x$values+1,
+    provenance_update=list(batch="B2",done=TRUE),
+    time_unit="ms")
+  expect_equal(changed$values,as.array(py$changed_values),
+    tolerance=0,ignore_attr=TRUE)
+  expect_identical(changed$provenance$batch,
+    as.character(py$changed_provenance$batch))
+  expect_identical(changed$provenance$done,
+    as.logical(py$changed_provenance$done))
+  expect_identical(changed$time_unit,
+    as.character(py$changed_time_unit))
+  empty<-etr_subset(fx$x,integer(),python_boundary_mode=TRUE)
+  expect_equal(empty$values,as.array(py$empty_values),
+    tolerance=0,ignore_attr=TRUE)
+  expect_identical(length(empty$curve_ids),as.integer(py$empty_n))
+  expect_identical(ours$source_field_order,
+    as.character(py$field_names))
+})
