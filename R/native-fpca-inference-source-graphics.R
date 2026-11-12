@@ -28,7 +28,8 @@
 #' @return Invisibly a source-ordered observed-grid geometry frame.
 #' @export
 etr_plot_fpca_component_envelope <- function(result,component=0L,
-    dimension=NULL) {
+    dimension=NULL,strict_source_record=FALSE) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   .etr_scientific_frame_fields(result,c("reference","lower","median",
     "upper","level"),"component envelope")
   reference<-result$reference
@@ -83,8 +84,12 @@ etr_plot_fpca_component_envelope <- function(result,component=0L,
     paste0(round(100*confidence),"% pointwise envelope"),
     "bootstrap median","reference FPC"),lty=c(1L,2L,1L),
     bty="n",cex=.75)
-  invisible(data.frame(time=time,lower=lower,median=median,
-    upper=upper,reference=estimate))
+  out<-data.frame(time=time,lower=lower,median=median,
+    upper=upper,reference=estimate)
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_fpca_component_envelope_artist(
+      out,component,dimension,confidence,unit)))
+  invisible(out)
 }
 
 # Sparse PACE diagnostics already have an authoritative native implementation
@@ -97,7 +102,8 @@ etr_plot_fpca_component_envelope <- function(result,component=0L,
 #' @return Invisibly the source-ordered displayed numerical p-value frame.
 #' @export
 etr_plot_fpca_wild_bootstrap_family_test <- function(result,
-    max_targets=30L,show_targetwise=TRUE) {
+    max_targets=30L,show_targetwise=TRUE,strict_source_record=FALSE) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   .etr_scientific_frame_fields(result,
     c("projection_result","adjusted_p_values",
       "targetwise_p_values","significance_level"),"family test")
@@ -136,8 +142,12 @@ etr_plot_fpca_wild_bootstrap_family_test <- function(result,
     pch=c(1L,if(show_targetwise)4L,NA_integer_),
     lty=c(NA_integer_,if(show_targetwise)NA_integer_,2L),
     bty="n",cex=.75)
-  invisible(data.frame(target_index=x,target_curve_id=ids[idx],
+  out<-data.frame(target_index=x,target_curve_id=ids[idx],
     adjusted_p_value=adjusted[idx],
     targetwise_p_value=targetwise[idx],
-    significance_level=rep(alpha,count),stringsAsFactors=FALSE))
+    significance_level=rep(alpha,count),stringsAsFactors=FALSE)
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_fpca_family_test_artist(
+      out,show_targetwise,max_targets)))
+  invisible(out)
 }
