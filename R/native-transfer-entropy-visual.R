@@ -52,9 +52,11 @@ etr_plot_transfer_entropy_sensitivity <- function(result,parameter,
   graphics::plot(t[[parameter]],t[[metric]],type="o",pch=1,
     xlab=gsub("_"," ",parameter),ylab=gsub("_"," ",metric),
     main="Transfer-entropy specification sensitivity",...)
-  if(isTRUE(strict_source_record))
+  if(isTRUE(strict_source_record)) {
+    .etr_te_strict_source_validate_slice(result,parameter,filters)
     return(invisible(.etr_te_sensitivity_source_artist(
       parameter,metric,t)))
+  }
   invisible(t)
 }
 
