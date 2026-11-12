@@ -120,7 +120,14 @@ test_that("seven new graphics map to frozen source without asserting backend par
   expect_false(any(x$one_to_one_native_contract_complete))
   expect_gte(sum(p$is_python_function&p$named_native_candidate),327L)
   expect_gte(sum(p$native_implementation_started),302L)
-  expect_gte(sum(p$source_contract_gap_unresolved),149L)
+  # Compare against the live authoritative source inventory, not the
+  # historical pre-wave 149-gap threshold. A stable scientific test must
+  # continue to pass when an independently reviewed source gap closes.
+  inventory<-utils::read.csv(system.file("extdata",
+    "native_source_contract_gaps_stage22.csv",
+    package="eyetrajectories"),stringsAsFactors=FALSE)
+  expect_identical(sum(p$source_contract_gap_unresolved),
+    sum(inventory$unresolved_source_gap))
 })
 test_that("sparse graphics curves and matrices match frozen Python plot data",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
