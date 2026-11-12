@@ -1,0 +1,72 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "plot_sparse_fpca_score_diagnostics",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_NATIVE_FPCR_SLOPE_PACE_SCIENTIFIC_ARTIST_REVIEW",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/plotting.py::plot_sparse_fpca_score_diagnostics",
+  "native_signature": "etr_plot_sparse_fpca_score_diagnostics(result,strict_source_record=TRUE)",
+  "reviewer_statement": "Provisional developer six-domain scientific plotting audit only. Source Matplotlib data tests are authored but exact-head execution is not witnessed and no independent full Python source-contract certification is claimed.",
+  "native_language_semantic_policy": "Source geometry represented as native R typed scientific record; the public default remains original base R plots. No reticulate runtime dependency in R package operation or Python Axes/object/exception identity.",
+  "native_files": [
+    {
+      "path": "R/native-fpcr-inference-plots.R",
+      "sha256": "a841687e1e5ef393087ed77a6d7022523f564c23d0286c1b93f357616114466a"
+    },
+    {
+      "path": "R/native-fpcr-slope-pace-three-artists.R",
+      "sha256": "b313c94cbaa510ea74dc1124424e93670e192e32272524cf7b422afea2da14ad"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Frozen Python 1.2 src/eyetrajectoriespy/plotting.py::plot_sparse_fpca_score_diagnostics inspected against native public signature with optional strict_source_record=TRUE; existing native returns preserved.",
+      "path": "tests/testthat/test-native-fpcr-slope-pace-three-artists-20261112.R",
+      "sha256": "bb37c0a722d03ce9434d676057d6216ad6bf99596dbee3d71e86ea5f44d44f9c"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Native validated fitted-slope time grid and dimension names, finite precomputed uncertainty arrays, or native sparse FPCA score_diagnostics frame with status masks. Arbitrary Python pandas/dataclass and injected Matplotlib axes protocols are explicitly out of scope.",
+      "path": "tests/testthat/test-native-fpcr-slope-pace-three-artists-20261112.R",
+      "sha256": "bb37c0a722d03ce9434d676057d6216ad6bf99596dbee3d71e86ea5f44d44f9c"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Finite positive source PACE conditioning masks, ok vs flagged scatter groups/markers/offsets, logarithmic y scale, source labels, and legend only if flagged; single-scatter domain retained. Committed native numerical and direct frozen Python Matplotlib source artist comparisons use pinned 1.2 public exports. Exact-head CI execution has not been witnessed.",
+      "path": "tests/testthat/test-native-fpcr-slope-pace-three-artists-20261112.R",
+      "sha256": "bb37c0a722d03ce9434d676057d6216ad6bf99596dbee3d71e86ea5f44d44f9c"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Invalid R strict flags, unknown dimension, malformed numerical shape, nonfinite bounds, missing diagnostics and nonpositive conditioning fail explicitly. Native R errors need not match Python exception class identity.",
+      "path": "tests/testthat/test-native-fpcr-slope-pace-three-artists-20261112.R",
+      "sha256": "bb37c0a722d03ce9434d676057d6216ad6bf99596dbee3d71e86ea5f44d44f9c"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Default R plots and invisible source numerical returns unchanged. Strict mode yields a typed native R source scientific record with ordered source artist geometry, original plot labels and metadata. Does not return a live Matplotlib Axes or pixel image.",
+      "path": "tests/testthat/test-native-fpcr-slope-pace-three-artists-20261112.R",
+      "sha256": "bb37c0a722d03ce9434d676057d6216ad6bf99596dbee3d71e86ea5f44d44f9c"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Plot-only diagnostics of precomputed PACE conditional covariance conditioning. This is not a welfare estimate, error rate, or new sparse FPCA estimator.",
+      "path": "tests/testthat/test-native-fpcr-slope-pace-three-artists-20261112.R",
+      "sha256": "bb37c0a722d03ce9434d676057d6216ad6bf99596dbee3d71e86ea5f44d44f9c"
+    }
+  ],
+  "additional_regression_evidence": [
+    {
+      "path": "tests/testthat/test-native-fpcr-inference-plots.R",
+      "sha256": "ad164e5b3f8dd4bc9b283b77c18b96e4a2b9ba5279faadff01fc460e58c91029"
+    }
+  ],
+  "independent_review_status": "Provisional developer-scoped geometry, frozen Python and three OS CI not observed passing, zero independent certifications.",
+  "language_specific_limits": [
+    "No Python Matplotlib Axes/Figure identity, arbitrary existing ax parameter injection or pixel-level guarantees.",
+    "R validators accept a bounded native numeric domain and R condition classes; Python's dynamic dataclass/pandas exception behavior is not reproduced.",
+    "No scientific estimation, bootstrap design, covariance estimation or sparse diagnostic data are modified."
+  ]
+}

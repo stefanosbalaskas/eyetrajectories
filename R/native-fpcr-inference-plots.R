@@ -123,7 +123,7 @@ etr_plot_fpca_regression_mean_prediction_uncertainty <- function(
 }
 
 .etr_fpcr_plot_slope <- function(uncertainty,lower,upper,
-    dimension,operation,title,scope,level) {
+    dimension,operation,title,scope,level,strict_source_record=FALSE) {
   .etr_frame_record(uncertainty,c("reference_fpca","reference_slope"),
     "regression uncertainty")
   fpca<-uncertainty$reference_fpca
@@ -163,6 +163,9 @@ etr_plot_fpca_regression_mean_prediction_uncertainty <- function(
     sprintf("%.1f%% %s",100*level,scope),
     "full-sample FPCR slope"),fill=c("gray",NA),
     lty=c(NA,1),bty="n")
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_fpcr_slope_source_artist(
+      geometry,dimension,fpca$time_unit,level,scope,operation)))
   invisible(list(dimension=dimension,geometry=geometry,
     confidence_level=level,scope=scope,
     provenance=list(backend="base_R",source_operation=operation,
@@ -174,7 +177,9 @@ etr_plot_fpca_regression_mean_prediction_uncertainty <- function(
 #' @param dimension Optional declared channel name.
 #' @return Invisible numeric time, slope and band geometry.
 #' @export
-etr_plot_fpca_regression_slope_band <- function(result,dimension=NULL) {
+etr_plot_fpca_regression_slope_band <- function(result,dimension=NULL,
+    strict_source_record=FALSE) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   .etr_frame_record(result,c("regression_uncertainty","lower","upper",
     "confidence_level","simultaneous_scope"),"result")
   .etr_fpcr_plot_slope(result$regression_uncertainty,
@@ -182,7 +187,8 @@ etr_plot_fpca_regression_slope_band <- function(result,dimension=NULL) {
     operation="plot_fpca_regression_slope_band",
     title="Gaussian FPCR simultaneous slope band",
     scope=paste0("observed-grid ",result$simultaneous_scope," band"),
-    level=result$confidence_level)
+    level=result$confidence_level,
+    strict_source_record=strict_source_record)
 }
 
 #' Plot source-aligned pointwise bootstrap FPCR slope uncertainty
@@ -190,20 +196,25 @@ etr_plot_fpca_regression_slope_band <- function(result,dimension=NULL) {
 #' @param dimension Optional declared channel name.
 #' @return Invisible numerical source slope/percentile envelope.
 #' @export
-etr_plot_fpca_regression_slope_uncertainty <- function(result,dimension=NULL) {
+etr_plot_fpca_regression_slope_uncertainty <- function(result,dimension=NULL,
+    strict_source_record=FALSE) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   .etr_frame_record(result,c("slope_lower","slope_upper","level"),"result")
   .etr_fpcr_plot_slope(result,
     result$slope_lower,result$slope_upper,dimension,
     operation="plot_fpca_regression_slope_uncertainty",
     title="Gaussian FPCR slope uncertainty",
-    scope="pointwise percentile envelope",level=result$level)
+    scope="pointwise percentile envelope",level=result$level,
+    strict_source_record=strict_source_record)
 }
 
 #' Plot sparse PACE per-curve score-system condition diagnostics natively
 #' @param result Explicit sparse FPCA source record with score_diagnostics.
 #' @return Invisible exact source finite/ok/flagged masks and scatter data.
 #' @export
-etr_plot_sparse_fpca_score_diagnostics <- function(result) {
+etr_plot_sparse_fpca_score_diagnostics <- function(result,
+    strict_source_record=FALSE) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   .etr_frame_record(result,"score_diagnostics","result")
   f<-result$score_diagnostics
   .etr_assert(is.data.frame(f)&&nrow(f)>0L&&
@@ -239,6 +250,8 @@ etr_plot_sparse_fpca_score_diagnostics <- function(result) {
     legend=c(if(any(ok))"score system ok",
       "flagged/failed score system"),
     pch=c(if(any(ok))16,4),bty="n")
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_sparse_pace_source_artist(plot_data)))
   invisible(list(geometry=plot_data,
     provenance=list(backend="base_R",log_y=TRUE,
       source_operation="plot_sparse_fpca_score_diagnostics",
