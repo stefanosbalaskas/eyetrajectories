@@ -1,0 +1,166 @@
+name: Native FDApy v1.0.3 PS/LP UFPCA sparse scientific source
+on:
+  pull_request:
+    paths:
+      - "R/native-fdapy-ufpca-ps-lp-fit-source.R"
+      - "R/native-fdapy-fixed-spectrum-pace-source.R"
+      - "R/native-thirdparty-functional-analogues.R"
+      - "tests/testthat/test-native-fdapy-ufpca-ps-lp-source-20261112.R"
+      - "tests/testthat/test-native-fdapy-fixed-spectrum-pace-source-20261112.R"
+      - "docs/native-fdapy-ufpca-ps-lp-source-20261112.md"
+      - "docs/source_contract_reviews/fit_sparse_fpca_fdapy.json"
+      - "docs/source_contract_reviews/fit_sparse_fpca_fdapy_fixed_spectrum_stage.json"
+      - "docs/source_contract_reviews/to_skfda_grid.json"
+      - "docs/source_contract_reviews/to_fdapy_irregular.json"
+      - "docs/source_contract_reviews/to_skfda_basis.json"
+      - "docs/source_contract_reviews/detect_functional_outliers_skfda.json"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/native_scoped_fdapy_submethod_gaps_20261112.csv"
+      - "inst/extdata/reviewed_source_contract_closures_v1.csv"
+      - "man/etr_native_release_source_bridge_reporting.Rd"
+      - ".github/workflows/native-fdapy-ufpca-ps-lp-source-20261112.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  sha256-scientific-contract-ledger:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Exact-head 507/508 six-domain author review, 197 SHA pins and explicit open normalization/elastic gaps
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import csv,json,hashlib
+          root=Path(".")
+          def rows(path):
+              with (root/path).open("r",encoding="utf-8",newline="") as h:
+                  return list(csv.DictReader(h))
+          gaps=rows("inst/extdata/native_source_contract_gaps_stage22.csv")
+          nc=rows("inst/extdata/native_nonfunction_source_gaps_v1.csv")
+          rev=rows("inst/extdata/reviewed_source_contract_closures_v1.csv")
+          sub=rows("inst/extdata/native_scoped_fdapy_submethod_gaps_20261112.csv")
+          assert len(gaps)==203,len(gaps)
+          assert len(rev)>=197,len(rev)
+          assert len({r["python_name"] for r in rev})==len(rev)
+          open_callable=sum(x["unresolved_source_gap"]=="TRUE" for x in gaps)
+          open_noncallable=sum(x["unresolved"]=="TRUE" for x in nc)
+          assert open_callable==1,open_callable
+          assert open_noncallable==0,open_noncallable
+          assert 508-open_callable-open_noncallable==507
+          assert next(x for x in gaps if x["python_name"]=="fit_elastic_fpca")["unresolved_source_gap"]=="TRUE"
+          assert next(x for x in gaps if x["python_name"]=="fit_sparse_fpca_fdapy")["unresolved_source_gap"]=="FALSE"
+          assert next(x for x in gaps if x["python_name"]=="capture_environment")["unresolved_source_gap"]=="FALSE"
+          st={x["source_stage"]:x for x in sub}
+          assert st["postfit_fixed_spectrum_PACE_scores"]["source_gap_open"]=="FALSE"
+          assert st["UFPCA_fit_PS_LP_mean_and_covariance"]["source_gap_open"]=="FALSE"
+          assert st["PACE_public_transform_second_centering_LP"]["source_gap_open"]=="FALSE"
+          for name in ("normalize_true","score_smoothing_PS",
+                       "eigenvector_unsorted_order_and_sign",
+                       "full_backend_object_and_broad_source_options"):
+              assert st[name]["source_gap_open"]=="TRUE",name
+          for name in ("fit_sparse_fpca_fdapy","to_skfda_grid",
+                       "to_fdapy_irregular","to_skfda_basis",
+                       "detect_functional_outliers_skfda"):
+              (r,)=tuple(x for x in rev if x["python_name"]==name)
+              assert r["independently_certified"]=="FALSE"
+              blob=(root/r["review_record_path"]).read_bytes()
+              assert hashlib.sha256(blob).hexdigest()==r["review_record_sha256"],name
+              data=json.loads(blob)
+              assert data["independently_certified"] is False
+              assert {e["kind"] for e in data["case_evidence"]}=={
+                  "source_signature","accepted_input_domain",
+                  "numerical_outputs","exception_semantics",
+                  "returned_schema","scientific_estimand"},name
+              for e in data["native_files"]+data["case_evidence"]+data.get("additional_regression_evidence",[]):
+                  f=root/e["path"]
+                  assert f.exists(),f
+                  assert hashlib.sha256(f.read_bytes()).hexdigest()==e["sha256"],f
+          stage=json.loads((root/"docs/source_contract_reviews/fit_sparse_fpca_fdapy_fixed_spectrum_stage.json").read_text())
+          assert stage["source_export_gap_open"] is False
+          assert stage["source_fit_full_parity"] is False
+          assert stage["additional_raw_fit_review"]=="docs/source_contract_reviews/fit_sparse_fpca_fdapy.json"
+          for e in stage["native_source_files"]+stage["numerical_evidence"]:
+              assert hashlib.sha256((root/e["path"]).read_bytes()).hexdigest()==e["sha256"],e["path"]
+          print("Provisional SCIENTIFIC source inventory 507/508; real raw PS/LP UFPCA math reviewed; elastic still open; independent full Python source certifications 0")
+          PY
+  native-r-three-platform-regression:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Parse native PS LP source, run exact algorithmic and 508-export ledger regression
+        shell: bash
+        run: |
+          Rscript - <<'RSCRIPT'
+          parse("R/native-fdapy-ufpca-ps-lp-fit-source.R")
+          parse("tests/testthat/test-native-fdapy-ufpca-ps-lp-source-20261112.R")
+          pkgload::load_all(".",quiet=TRUE)
+          testthat::test_local(".",
+            filter="native-fdapy-ufpca-ps-lp-source-20261112|native-fdapy-fixed-spectrum-pace-source-20261112|full-native-r-parity-ledger",
+            reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
+  frozen-python-actual-public-fdapy-ufpca-differential:
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        id: python
+        with:
+          python-version: "3.11"
+      - name: Install exact real eyetrajectoriespy 1.2 and FDApy 1.0.3 scientific source libraries
+        run: python -m pip install "eyetrajectoriespy==1.2.0" "FDApy==1.0.3" "numpy==1.26.4"
+      - name: Direct Python source environment and real package inspection
+        shell: bash
+        run: |
+          python - <<'PY'
+          import importlib.metadata
+          import eyetrajectoriespy as et
+          from FDApy.preprocessing import UFPCA
+          from FDApy.representation import IrregularFunctionalData
+          assert importlib.metadata.version("eyetrajectoriespy")=="1.2.0"
+          assert importlib.metadata.version("FDApy")=="1.0.3"
+          assert callable(et.fit_sparse_fpca_fdapy)
+          assert callable(UFPCA.fit)
+          assert callable(IrregularFunctionalData.covariance)
+          print("Real public Python and FDApy source imports ready")
+          PY
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+            any::reticulate
+      - name: Compare actual public frozen fit_sparse_fpca_fdapy PS and LP mean covariance and matched eigensystem/PACE
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          stopifnot(identical(et_python_version(),"1.2.0"))
+          testthat::test_local(".",
+            filter="native-fdapy-ufpca-ps-lp-source-20261112|native-fdapy-fixed-spectrum-pace-source-20261112",
+            reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
