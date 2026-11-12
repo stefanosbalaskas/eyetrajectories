@@ -93,3 +93,31 @@
       selected_inference_components=data$selected_inference_components,
       target_index_zero_based=TRUE))
 }
+
+.etr_predictive_bootstrap_comparison_source_artist <- function(data) {
+  .etr_assert(is.list(data)&&
+    is.character(data$coefficient)&&length(data$coefficient)==1L&&
+    !is.na(data$coefficient)&&nzchar(data$coefficient)&&
+    is.data.frame(data$line)&&
+    identical(names(data$line),c("x","y"))&&
+    nrow(data$line)>=1L&&all(is.finite(as.matrix(data$line)))&&
+    is.numeric(data$identity_baseline)&&
+    length(data$identity_baseline)==1L&&data$identity_baseline==1,
+    "source mixed-effects comparison requires finite sorted ratios and identity baseline")
+  x<-as.numeric(data$line$x);y<-as.numeric(data$line$y)
+  .etr_assert(!is.unsorted(x),
+    "source comparison needs original stable sorted time coordinates")
+  axis<-list(
+    title=paste0("Mixed-effects bootstrap sensitivity: ",data$coefficient),
+    xlabel="Time",ylabel="Full-refit / fixed-covariance band width",
+    artists=list(
+      list(kind="line",marker="None",linestyle="-",xdata=x,ydata=y),
+      list(kind="horizontal_reference",label="_child_identity",
+        linestyle="--",x_transform="axes_fraction",
+        xdata=c(0,1),ydata=c(1,1))),
+    legend=FALSE,legend_labels=character(0))
+  .etr_predictive_plot_artist_record(
+    "plot_functional_mixed_effects_bootstrap_comparison",axis,
+    list(coefficient=data$coefficient,identity_baseline=1,
+      n_time_points=length(x)))
+}
