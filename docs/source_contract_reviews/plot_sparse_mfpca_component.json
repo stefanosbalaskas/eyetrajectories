@@ -60,7 +60,7 @@
   "additional_regression_evidence": [
     {
       "path": "tests/testthat/test-native-sparse-scientific-graphics.R",
-      "sha256": "475025401e40c8a8a2646b2f5a60a230760a8f1c07959333636e66987162b648"
+      "sha256": "243004b445272bc8f4c05bb5f1ce39bf1aa52f47e1a2eb2f99ac60d24efa7591"
     }
   ],
   "independent_review_status": "Scoped developer review only; exact-head CI and pinned Matplotlib differential are queued or unverified, no independent scientific contract certification.",
