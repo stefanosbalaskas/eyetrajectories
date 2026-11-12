@@ -1,0 +1,72 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "plot_fpca_regression_mean_prediction_uncertainty",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_NATIVE_FPCR_PREDICTION_SCIENTIFIC_ARTIST_REVIEW",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/plotting.py::plot_fpca_regression_mean_prediction_uncertainty",
+  "native_signature": "etr_plot_fpca_regression_mean_prediction_uncertainty(result,max_targets=30L,strict_source_record=TRUE)",
+  "reviewer_statement": "Developer-scoped source scientific plotting geometry review. Source comparative Python tests are committed, not yet observed green. No independent complete-domain contract approval or live Matplotlib return object claim.",
+  "native_language_semantic_policy": "Original R numerical estimator and base plot return unchanged; strict mode adds R typed Matplotlib scientific artists without Python runtime, error class, or raster identity.",
+  "native_files": [
+    {
+      "path": "R/native-fpcr-inference-plots.R",
+      "sha256": "4c4dcbadd178bba2367102835f851972baa2b71092f7dc0546f80a3dcffcf528"
+    },
+    {
+      "path": "R/native-fpcr-two-prediction-artists.R",
+      "sha256": "df34c6ac0f4f8e26f9f36dc1d4bc2cfa79bf857d24cee715b36fb50bba2718e7"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Pinned Python 1.2 public Matplotlib plot compared with native strict_source_record=TRUE; no live Python Axes injection, original base-R plotting remains the default.",
+      "path": "tests/testthat/test-native-fpcr-two-prediction-artists-20261112.R",
+      "sha256": "25d3f72ca2bf248b6c66b1781cac222872c8c1f17799b60a63a2363a389614b5"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Genuine source-shaped validated native fixed target predictions and bootstrap uncertainty arrays, source target ID ordering, finite intervals and reference predictions, positive max_targets and explicitly logical strict flag. Python runtime object protocols remain language-specific.",
+      "path": "tests/testthat/test-native-fpcr-two-prediction-artists-20261112.R",
+      "sha256": "25d3f72ca2bf248b6c66b1781cac222872c8c1f17799b60a63a2363a389614b5"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Original zero-based fixed target x positions and bootstrap conditional mean median/errorbar source arrays, lower/upper asymmetric intervals, capsize 3, marker o and full-sample conditional mean marker x scatter preserve Python 1.2 scientific geometry and legend. Direct frozen Python 1.2 errorbar vertical segment and scatter offsets are compared in authored tests; exact-head CI execution is pending.",
+      "path": "tests/testthat/test-native-fpcr-two-prediction-artists-20261112.R",
+      "sha256": "25d3f72ca2bf248b6c66b1781cac222872c8c1f17799b60a63a2363a389614b5"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Input domain, missing fields, nonfinite reference arrays and invalid interval endpoints fail with R conditions, not necessarily Python TypeError or IndexError classes.",
+      "path": "tests/testthat/test-native-fpcr-two-prediction-artists-20261112.R",
+      "sha256": "25d3f72ca2bf248b6c66b1781cac222872c8c1f17799b60a63a2363a389614b5"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Strict mode returns typed R record of scientific source Matplotlib errorbar, scatter, label and tick geometry; original invisible numeric source geometry default is preserved. No Python Axes identity or pixel parity.",
+      "path": "tests/testthat/test-native-fpcr-two-prediction-artists-20261112.R",
+      "sha256": "25d3f72ca2bf248b6c66b1781cac222872c8c1f17799b60a63a2363a389614b5"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Paired-bootstrap conditional-mean FPCR uncertainty for fixed targets; the native plotting function reads already-calculated reference mean predictions and bootstrap median/percentile bounds without changing training, resampling, or coverage claims.",
+      "path": "tests/testthat/test-native-fpcr-two-prediction-artists-20261112.R",
+      "sha256": "25d3f72ca2bf248b6c66b1781cac222872c8c1f17799b60a63a2363a389614b5"
+    }
+  ],
+  "additional_regression_evidence": [
+    {
+      "path": "tests/testthat/test-native-fpcr-inference-plots.R",
+      "sha256": "e1b172832c18fd1dd9b4cdf5cdc10599313e1c1ae11e385a814a3ecceb9b05f3"
+    }
+  ],
+  "independent_review_status": "Provisional developer-scoped scientific geometry, exact-head three-platform and frozen Python execution pending; zero independent certifications.",
+  "language_specific_limits": [
+    "Python Matplotlib Axes/Figure and dataclass runtime identity and exception classes are not native R representations.",
+    "Calibration and scientific estimators are unchanged; scientific artist geometry alone is in scope.",
+    "No source-wide independent scientific certification or CRAN readiness is implied."
+  ]
+}
