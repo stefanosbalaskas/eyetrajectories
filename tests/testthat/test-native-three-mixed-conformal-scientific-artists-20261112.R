@@ -138,7 +138,7 @@ test_that("conformal source p-values are used directly and never silently recons
     expect_false(r$matplotlib_object_identity)
     expect_false(r$independently_certified)
     expect_true(r$source_options$source_pvalues_direct)
-    expect_false(r$source_options$source_pvalues_reconstructed)
+    expect_true(r$source_options$no_reconstructed_calibration_scores)
     ax<-r$axes[[1L]]
     expect_identical(ax$title,"Split-conformal FPCA anomaly review")
     expect_identical(ax$xlabel,"Target trajectory")
