@@ -12,7 +12,7 @@
   "native_files": [
     {
       "path": "R/native-generalized-mixed-source-graphics.R",
-      "sha256": "029add3c09170e38a4aa1639cc1afdb02e356b800112ba6f800c38b3d4acf2b7"
+      "sha256": "939007aded9d58a0fdab7debe94debddd297d0667336613c79f3917abb35c8a1"
     },
     {
       "path": "R/native-mixed-four-diagnostic-artists.R",
@@ -60,7 +60,7 @@
   "additional_regression_evidence": [
     {
       "path": "tests/testthat/test-native-generalized-mixed-source-graphics.R",
-      "sha256": "f82422acc1e422d6de0a025b85616658d23f6a91a3d23a28d5e89447cf074640"
+      "sha256": "2c1332a73d2ef299f6f88dcfe68e43bf62e15e497d47b5c9528497d1b44a00df"
     }
   ],
   "independent_review_status": "New tests/CI committed; no successful exact-head execution or independent source-contract certification witnessed.",
