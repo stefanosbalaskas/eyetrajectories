@@ -130,7 +130,7 @@ test_that("three new source functions remain independently uncertified",{
   expect_true(all(x$native_implementation_started))
   expect_false(x$source_contract_gap_unresolved[
     x$python_name=="fpca_wild_bootstrap_family_test_monte_carlo_diagnostics"])
-  expect_true(all(x$source_contract_gap_unresolved[
+  expect_false(any(x$source_contract_gap_unresolved[
     x$python_name!="fpca_wild_bootstrap_family_test_monte_carlo_diagnostics"]))
   expect_false(any(x$one_to_one_native_contract_complete))
   expect_gte(sum(p$is_python_function & p$named_native_candidate),327L)
