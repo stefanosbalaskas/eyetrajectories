@@ -24,37 +24,37 @@
       "kind": "source_signature",
       "description": "Frozen Python 1.2 public src/eyetrajectoriespy/plotting.py::plot_fpca_influence. Source-scientific native strict mode is explicitly optional.",
       "path": "tests/testthat/test-native-fpca-three-source-artists-20261112.R",
-      "sha256": "824868734564dec5a6a1003a2cfa066d253d1c2aa3ae4b6d0cf9e1545c945938"
+      "sha256": "fb5b3b214d7a8c876e1a4c1389e6425313ca461260676cfbdd060329a7f938d7"
     },
     {
       "kind": "accepted_input_domain",
       "description": "Native leave-one-group-out FPCA influence result class with original per-group source summary table, group labels and explicitly chosen complete numeric metric. User can choose any declared numeric influence summary column as in source; strict mode does not accept fabricated Python FPCAInfluenceResult or external Matplotlib axes.",
       "path": "tests/testthat/test-native-fpca-three-source-artists-20261112.R",
-      "sha256": "824868734564dec5a6a1003a2cfa066d253d1c2aa3ae4b6d0cf9e1545c945938"
+      "sha256": "fb5b3b214d7a8c876e1a4c1389e6425313ca461260676cfbdd060329a7f938d7"
     },
     {
       "kind": "numerical_outputs",
       "description": "Source line actual x=arange(number_of_groups) zero based, y=original declared metric in source group order, marker o, 90-degree original group tick labels, source axes and text. Frozen Python 1.2 public plot Matplotlib get_xdata/get_ydata, tick text and titles compared on precisely matching native scientific summary data; no inference on omissions is performed during drawing.",
       "path": "tests/testthat/test-native-fpca-three-source-artists-20261112.R",
-      "sha256": "824868734564dec5a6a1003a2cfa066d253d1c2aa3ae4b6d0cf9e1545c945938"
+      "sha256": "fb5b3b214d7a8c876e1a4c1389e6425313ca461260676cfbdd060329a7f938d7"
     },
     {
       "kind": "exception_semantics",
       "description": "Native strict rejects wrong result class, missing/NA/Inf metric or group summary, nonlogical mode; source Python KeyError class and Matplotlib injected ax behavior are different, explicitly not claimed.",
       "path": "tests/testthat/test-native-fpca-three-source-artists-20261112.R",
-      "sha256": "824868734564dec5a6a1003a2cfa066d253d1c2aa3ae4b6d0cf9e1545c945938"
+      "sha256": "fb5b3b214d7a8c876e1a4c1389e6425313ca461260676cfbdd060329a7f938d7"
     },
     {
       "kind": "returned_schema",
       "description": "Source Python returns one Matplotlib Axes containing a line with marker o and source tick positions/text. Native strict returns typed source-scientific artist data with original x/y/labels/ticks and label rotation while drawing base R. R numeric group/value list remains unchanged in default mode.",
       "path": "tests/testthat/test-native-fpca-three-source-artists-20261112.R",
-      "sha256": "824868734564dec5a6a1003a2cfa066d253d1c2aa3ae4b6d0cf9e1545c945938"
+      "sha256": "fb5b3b214d7a8c876e1a4c1389e6425313ca461260676cfbdd060329a7f938d7"
     },
     {
       "kind": "scientific_estimand",
       "description": "Leave-one-group-out sensitivity of an already computed FPCA component measure to omission of each observed group. Display does not refit a model, recompute influence or alter source grouping.",
       "path": "tests/testthat/test-native-fpca-three-source-artists-20261112.R",
-      "sha256": "824868734564dec5a6a1003a2cfa066d253d1c2aa3ae4b6d0cf9e1545c945938"
+      "sha256": "fb5b3b214d7a8c876e1a4c1389e6425313ca461260676cfbdd060329a7f938d7"
     }
   ],
   "additional_regression_evidence": [
