@@ -1,0 +1,127 @@
+name: Native scikit-fda sampled Fourier and B-spline LS source parity
+on:
+  pull_request:
+    paths:
+      - "R/native-skfda-ls-basis-scientific.R"
+      - "R/native-thirdparty-functional-analogues.R"
+      - "tests/testthat/test-native-skfda-ls-basis-source-20261112.R"
+      - "man/etr_native_release_source_bridge_reporting.Rd"
+      - "docs/source_contract_reviews/to_skfda_basis.json"
+      - "docs/source_contract_reviews/to_skfda_grid.json"
+      - "docs/source_contract_reviews/to_fdapy_irregular.json"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/reviewed_source_contract_closures_v1.csv"
+      - ".github/workflows/native-skfda-ls-basis-source-20261112.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-review-sha256-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Confirm 503/508 provisional and three scientific source reviews
+        shell: bash
+        run: |
+          python - <<'PY'
+          import csv,hashlib,json
+          from pathlib import Path
+          root=Path(".")
+          def csvrows(p):
+              with (root/p).open(encoding="utf-8",newline="") as f:
+                  return list(csv.DictReader(f))
+          gaps=csvrows("inst/extdata/native_source_contract_gaps_stage22.csv")
+          nc=csvrows("inst/extdata/native_nonfunction_source_gaps_v1.csv")
+          r=csvrows("inst/extdata/reviewed_source_contract_closures_v1.csv")
+          assert len(gaps)==203
+          assert len(r)>=193
+          assert len({v["python_name"] for v in r})==len(r)
+          callable=sum(v["unresolved_source_gap"]=="TRUE" for v in gaps)
+          noncallable=sum(v["unresolved"]=="TRUE" for v in nc)
+          assert callable<=4,callable
+          assert noncallable<=1,noncallable
+          assert 508-callable-noncallable>=503
+          for name in ("to_skfda_basis","to_skfda_grid","to_fdapy_irregular"):
+              (entry,)=tuple(v for v in r if v["python_name"]==name)
+              (gap,)=tuple(v for v in gaps if v["python_name"]==name)
+              assert gap["unresolved_source_gap"]=="FALSE",name
+              assert entry["independently_certified"]=="FALSE"
+              raw=(root/entry["review_record_path"]).read_bytes()
+              assert hashlib.sha256(raw).hexdigest()==entry["review_record_sha256"],name
+              obj=json.loads(raw)
+              assert obj["independently_certified"] is False
+              assert obj["frozen_python_commit"]=="c1cd95ad718327550f7e55393ff38582872f7a94"
+              assert {d["kind"] for d in obj["case_evidence"]}=={
+                  "source_signature","accepted_input_domain","numerical_outputs",
+                  "exception_semantics","returned_schema","scientific_estimand"},name
+              for datum in obj["native_files"]+obj["case_evidence"]+obj.get("additional_regression_evidence",[]):
+                  file=root/datum["path"]
+                  assert hashlib.sha256(file.read_bytes()).hexdigest()==datum["sha256"],file
+          print("503/508 provisional sampled-LS source-scientific contracts; 4 callable + 1 noncallable gaps; no independent full certification")
+          PY
+  native-r-three-os:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Pure native R Fourier/B-spline LS, grid and irregular regression
+        shell: bash
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          testthat::test_local(".",
+            filter="native-skfda-ls-basis-source-20261112|native-skfda-fdapy-scientific-records-20261112|native-thirdparty-functional-analogues|full-native-r-parity-ledger",
+            reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
+  frozen-python-real-scikit-fda:
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        id: python
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0" "scikit-fda==0.10.1" "numpy==2.3.5"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+            any::reticulate
+      - name: Execute actual frozen public Python 1.2 to_skfda_basis and real FDataBasis source comparison
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          stopifnot(identical(et_python_version(),"1.2.0"))
+          stopifnot(identical(as.character(
+            reticulate::import("numpy")$__version__),"2.3.5"))
+          stopifnot(identical(as.character(
+            reticulate::import("skfda")$__version__),"0.10.1"))
+          testthat::test_local(".",
+            filter="native-skfda-ls-basis-source-20261112",
+            reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
