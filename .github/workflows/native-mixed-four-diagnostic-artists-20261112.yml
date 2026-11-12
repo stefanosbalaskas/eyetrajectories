@@ -1,0 +1,136 @@
+name: Native Gaussian mixed four diagnostic scientific artists
+on:
+  pull_request:
+    paths:
+      - "R/native-generalized-mixed-source-graphics.R"
+      - "R/native-functional-inference-visuals.R"
+      - "R/native-mixed-four-diagnostic-artists.R"
+      - "tests/testthat/test-native-mixed-four-diagnostic-artists-20261112.R"
+      - "tests/testthat/test-native-generalized-mixed-source-graphics.R"
+      - "docs/source_contract_reviews/plot_covariance_sensitivity_coefficients.json"
+      - "docs/source_contract_reviews/plot_functional_mixed_effects_residual_acf.json"
+      - "docs/source_contract_reviews/plot_functional_mixed_effects_residual_variogram.json"
+      - "docs/source_contract_reviews/plot_functional_variance_decomposition.json"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/reviewed_source_contract_closures_v1.csv"
+      - ".github/workflows/native-mixed-four-diagnostic-artists-20261112.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  scientific-review-ledger:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify 442/508 scoped source reviews and SHA256 receipts
+        shell: bash
+        run: |
+          python - <<'PY'
+          import csv,hashlib,json
+          from pathlib import Path
+          root=Path('.')
+          def rows(p):
+              with (root/p).open(encoding='utf-8',newline='') as f:
+                  return list(csv.DictReader(f))
+          gaps=rows('inst/extdata/native_source_contract_gaps_stage22.csv')
+          nc=rows('inst/extdata/native_nonfunction_source_gaps_v1.csv')
+          reg=rows('inst/extdata/reviewed_source_contract_closures_v1.csv')
+          assert len(gaps)==203 and len(nc)==1
+          callable_missing=sum(x['unresolved_source_gap']=='TRUE' for x in gaps)
+          noncallable=sum(x['unresolved']=='TRUE' for x in nc)
+          assert callable_missing<=65 and noncallable<=1
+          assert 508-callable_missing-noncallable>=442
+          names=(
+            'plot_covariance_sensitivity_coefficients',
+            'plot_functional_mixed_effects_residual_acf',
+            'plot_functional_mixed_effects_residual_variogram',
+            'plot_functional_variance_decomposition')
+          for name in names:
+              (gap,)=tuple(x for x in gaps if x['python_name']==name)
+              assert gap['unresolved_source_gap']=='FALSE'
+              (item,)=tuple(x for x in reg if x['python_name']==name)
+              assert item['independently_certified']=='FALSE'
+              raw=(root/item['review_record_path']).read_bytes()
+              assert hashlib.sha256(raw).hexdigest()==item['review_record_sha256']
+              review=json.loads(raw)
+              assert review['frozen_python_commit']=='c1cd95ad718327550f7e55393ff38582872f7a94'
+              assert review['independently_certified'] is False
+              assert {x['kind'] for x in review['case_evidence']}=={
+                'source_signature','accepted_input_domain','numerical_outputs',
+                'exception_semantics','returned_schema','scientific_estimand'}
+              for x in review['native_files']+review['case_evidence']+review['additional_regression_evidence']:
+                  p=root/x['path']
+                  assert hashlib.sha256(p.read_bytes()).hexdigest()==x['sha256'],p
+          (unresolved_band,)=tuple(x for x in gaps if
+              x['python_name']=='plot_covariance_sensitivity_band_widths')
+          assert unresolved_band['unresolved_source_gap']=='TRUE',(
+              'The native sensitivity estimator has no qualified band input; '
+              'do not falsely close simultaneous band-width plot.')
+          print(f'{508-callable_missing-noncallable}/508 provisional scoped; '
+                f'{callable_missing} callable gaps, {noncallable} noncallable; '
+                'zero independent certifications')
+          PY
+  native-three-os:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::nlme
+            any::pkgload
+            any::testthat
+      - name: Genuine Gaussian ML/REML, residual and covariance source plots
+        shell: bash
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all('.',quiet=TRUE)
+          testthat::test_local('.',
+            filter='native-mixed-four-diagnostic-artists-20261112|native-generalized-mixed-source-graphics|native-functional-inference-visuals',
+            reporter='summary',stop_on_failure=TRUE)
+          RSCRIPT
+  frozen-python-1-2:
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        id: python
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::nlme
+            any::pkgload
+            any::testthat
+      - name: Frozen Python source Matplotlib line, reference and label differential
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all('.',quiet=TRUE)
+          stopifnot(identical(et_python_version(),'1.2.0'))
+          testthat::test_local('.',
+            filter='native-mixed-four-diagnostic-artists-20261112|native-generalized-mixed-source-graphics|native-functional-inference-visuals',
+            reporter='summary',stop_on_failure=TRUE)
+          RSCRIPT
