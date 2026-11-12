@@ -1,0 +1,76 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "plot_covariance_sensitivity_band_widths",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_NATIVE_PAIRED_BOOTSTRAP_BAND_WIDTH_SOURCE_SCIENTIFIC_ARTIST",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/functional_mixed_effects_covariance_sensitivity.py::_validate_bands::_band_width_frame::plot_covariance_sensitivity_band_widths",
+  "native_signature": "etr_plot_covariance_sensitivity_band_widths(result,coefficient,strict_source_record=TRUE)",
+  "reviewer_statement": "Developer-scoped scientific band-width numerical and plotting contract from genuine native joint nlme fits, already calibrated mixed participant bands and exact paired draws. Native and pinned public Python tests authored, not exact-head executed or independently certified complete Python class/optimizer/Matplotlib parity.",
+  "native_language_semantic_policy": "Native R exact source frame and inspectable Matplotlib scientific artist geometry from genuine validated precomputed paired bands; Matplotlib axes, pandas classes, Python runtime fitted object identity, and optimizer parity excluded. Unbanded and moments legacy R behavior retained.",
+  "native_files": [
+    {
+      "path": "R/native-mixed-sensitivity-paired-band-source.R",
+      "sha256": "ffc12aa5029398f23084b166364e7c331aa968f09a09437b1e16155119654267"
+    },
+    {
+      "path": "R/native-joint-likelihood-covariance-sensitivity.R",
+      "sha256": "6d15d0492046899faeb6188c3162e85bca618ed17b0a2a0a1d1d385b86ea8282"
+    },
+    {
+      "path": "R/native-generalized-mixed-source-graphics.R",
+      "sha256": "7e837c1e4adeba68021838e5e4b34c83dd558293a9aa423c5bda5dae98c7dfa6"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Pinned source Python 1.2 plot_covariance_sensitivity_band_widths signature result, keyword-only coefficient and optional ax, with source _validate_bands and _band_width_frame rules. Native R strict_source_record preserves existing native default.",
+      "path": "tests/testthat/test-native-paired-mixed-band-sensitivity-20261112.R",
+      "sha256": "5fec8934aac0f579a6ea5ad6ffc29eff62165974c16653d820f145b0b34b8bb5"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Only native R real calibrated mixed simultaneous coefficient bands, tied to actual successful Gaussian joint spline likelihood fits, same paired bootstrap type, count, confidence/scope, coefficient/time support and identical participant draws; excludes arbitrary Python dataclass/pandas/axes identity.",
+      "path": "tests/testthat/test-native-paired-mixed-band-sensitivity-20261112.R",
+      "sha256": "5fec8934aac0f579a6ea5ad6ffc29eff62165974c16653d820f145b0b34b8bb5"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Exact Python source success-model/coefficient/time ordered six-column band width ratios from precomputed upper and lower, denominator strictly positive else NaN, complete reference y=1 scientific Matplotlib artist geometry, source titles and ordered legends; no inference recalibration.",
+      "path": "tests/testthat/test-native-paired-mixed-band-sensitivity-20261112.R",
+      "sha256": "5fec8934aac0f579a6ea5ad6ffc29eff62165974c16653d820f145b0b34b8bb5"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Reject missing reference band, unknown model label, inconsistent source fitted reference, bootstrap type, draws, replicate counts, confidence or scope; reject nonfinite/invalid band matrices and tampered plotted ratio values. Native R error classes are not Python TypeError/ValueError/KeyError identity.",
+      "path": "tests/testthat/test-native-paired-mixed-band-sensitivity-20261112.R",
+      "sha256": "5fec8934aac0f579a6ea5ad6ffc29eff62165974c16653d820f145b0b34b8bb5"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Strict source native mixed W3 sensitivity emits actual band_width_frame; strict plotting returns typed etr_mixed_diagnostic_artist_source_record with ordered lines, labels, reference y=1 and NaN breaks; not Python Matplotlib Axes object.",
+      "path": "tests/testthat/test-native-paired-mixed-band-sensitivity-20261112.R",
+      "sha256": "5fec8934aac0f579a6ea5ad6ffc29eff62165974c16653d820f145b0b34b8bb5"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Descriptive model-to-reference simultaneous coefficient band width ratios conditional on predeclared paired participant-cluster bootstrap draws and observed grid; zero-denominator undefined; no model selection or new covariance optimization.",
+      "path": "tests/testthat/test-native-paired-mixed-band-sensitivity-20261112.R",
+      "sha256": "5fec8934aac0f579a6ea5ad6ffc29eff62165974c16653d820f145b0b34b8bb5"
+    }
+  ],
+  "additional_regression_evidence": [
+    {
+      "path": "tests/testthat/test-native-generalized-mixed-source-graphics.R",
+      "sha256": "668c794156a17c75e474d1cdb479b7857843b514c0531d975581bc1e1ddf12b7"
+    }
+  ],
+  "independent_review_status": "Provisional developer scientific closure; 0 independent full contracts; GitHub exact-head R/Python CI not observed passing.",
+  "language_specific_limits": [
+    "R nlme joint spline Gaussian optimizer and Python statsmodels mixed likelihood have no independently established full numerical or class parity.",
+    "R structural equality cannot certify Python object identity; Python pandas, plotting axes, exceptional domains and full source input polymorphism remain different.",
+    "No refitting, band re-calibration, false finite value for undefined reference width, automatic covariance model choice or inference-selection claims."
+  ]
+}
