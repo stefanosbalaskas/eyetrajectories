@@ -82,5 +82,35 @@ destination must be new or empty.}
 \item{\code{etr_workflow_summary_frame}}{\emph{workflow summary frame} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
 }
 }
+\section{Source-sampled scikit-fda basis projection}{
+An additional opt-in \code{etr_to_skfda_basis(trajectories,
+dimension, basis="bspline", n_basis=15L, order=4L,
+strict_source_record=TRUE)} computes the frozen Python 1.2
+scikit-fda sampled least-squares scientific coefficients on
+the original complete observed time grid. The native R QR
+solver is used on the actual source-compatible B-spline or
+Fourier basis values without interpolation or regularization.
+
+The Fourier mode uses the normalized
+\code{1/sqrt(T)}, \code{sqrt(2/T) sin(2*pi*k*t/T)}
+and \code{sqrt(2/T) cos(2*pi*k*t/T)} columns, and
+automatically expands even requested basis counts to the
+next odd count, preserving the originally requested count
+separately in the frozen-source scientific result fields.
+B-spline mode retains the source uniformly placed interior
+knots and endpoint repetition. Strict numerical mode requires
+a finite complete grid and full-column-rank basis design;
+the broader singular and underdetermined Python backend
+domain remains outside the reviewed scientific contract.
+
+The return is a typed native R scientific basis record with
+an explicit \code{backend_object=NULL}; it is not a real
+Python \code{skfda.FDataBasis} instance. The legacy native
+R basis projection remains the default and unchanged.
+Independent Python object identity and whole-domain
+backend equivalence are not certified. See
+\code{docs/native-skfda-basis-sampled-ls-source-20261112.md}.
+}
+
 \value{Each function returns its own documented native R, scientific-model,
 bridge, workflow or audit result; no single shared return type is asserted.}
