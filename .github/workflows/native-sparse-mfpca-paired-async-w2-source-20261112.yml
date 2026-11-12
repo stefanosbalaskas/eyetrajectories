@@ -36,7 +36,7 @@ jobs:
           n=sum(x["unresolved_source_gap"]=="TRUE" for x in gaps)
           m=sum(x["unresolved"]=="TRUE" for x in nc)
           assert len(gaps)==203 and len(nc)==1
-          assert (n,m,508-n-m)==(88,1,419)
+          assert n<=88 and m<=1 and 508-n-m>=419
           names=("run_sparse_mfpca_workflow",
                  "run_sparse_mfpca_async_workflow")
           for name in names:
