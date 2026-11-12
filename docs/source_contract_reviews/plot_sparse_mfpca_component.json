@@ -1,0 +1,73 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "plot_sparse_mfpca_component",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_NATIVE_SOURCE_ARTIST_GEOMETRY_REVIEW",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/sparse_multivariate_plotting.py::plot_sparse_mfpca_component",
+  "native_signature": "etr_plot_sparse_mfpca_component(result,...,strict_source_record=TRUE)",
+  "reviewer_statement": "Provisional developer-reviewed source scientific graphics geometry on actual native R sparse joint PACE models, verified in committed tests against exact Matplotlib 1.2 data/artists (not observed green yet). R base graphics is not Matplotlib and runtime plotting return types, colors and injected axes remain outside the accepted scoped scientific domain. No independent certification.",
+  "native_language_semantic_policy": "Native R scientific artist geometry implements source line/image/scatter coordinates, layout, common color limits, titles, labels and failure markers. The renderer uses R base graphics and cannot return actual Python Matplotlib axes or guarantee pixel-identical output; its typed plot metadata explicitly reports matplotlib_object_identity=false.",
+  "native_files": [
+    {
+      "path": "R/native-sparse-scientific-graphics.R",
+      "sha256": "7b86912b7f82c8dde63f68630c0722a537513007b56c91348b048cb1e959cd7d"
+    },
+    {
+      "path": "R/native-sparse-mfpca-artist-source.R",
+      "sha256": "d0d13a2ea3e7bc85023a8d10a74caff301cbb16940cca962da41261d7e406e6b"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Frozen Python public src/eyetrajectoriespy/sparse_multivariate_plotting.py::plot_sparse_mfpca_component. Bivariate sparse joint-PACE mean and plus/minus principal-component deviation artist geometry",
+      "path": "tests/testthat/test-native-sparse-mfpca-four-artist-source-20261112.R",
+      "sha256": "55afabe13d9f26fbe7715fcf7eca1be606539dcdb132817f379e7f2f474d47ab"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Real fitted native paired sparse multivariate Gaussian PACE scientific result class, zero-based integer retained component, positive finite SD multiplier. The default native plotting return remains a two-coordinate line data frame collection. strict_source_record=TRUE returns source scientific two-panel artist geometry; Python Matplotlib axes injection is not supported by native R.",
+      "path": "tests/testthat/test-native-sparse-mfpca-four-artist-source-20261112.R",
+      "sha256": "55afabe13d9f26fbe7715fcf7eca1be606539dcdb132817f379e7f2f474d47ab"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Component 0/1+ actual native covariance eigenspectrum controls source lines center(t), center+sd_multiplier*sqrt(lambda_k)*phi_k(t), center-sd_multiplier*sqrt(lambda_k)*phi_k(t). Native source R strict record stores six exact line arrays, labels, titles, x/y axes and legend. Frozen Python 1.2 Matplotlib oracle calls the public plot on the exact same native science object mapped into SparseMFPCAResult and compares each get_ydata and text artist. Existing source scientific test compares population fit arrays directly to Python 1.2. Exact-head CI not yet witnessed green.",
+      "path": "tests/testthat/test-native-sparse-mfpca-four-artist-source-20261112.R",
+      "sha256": "55afabe13d9f26fbe7715fcf7eca1be606539dcdb132817f379e7f2f474d47ab"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Refuses non-native strict result class, invalid zero-based component, nonpositive or nonfinite SD, malformed scientific mean/eigenfunction arrays and missing names; Python exception classes and Matplotlib axes handling are not reproduced.",
+      "path": "tests/testthat/test-native-sparse-mfpca-four-artist-source-20261112.R",
+      "sha256": "55afabe13d9f26fbe7715fcf7eca1be606539dcdb132817f379e7f2f474d47ab"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Source Python returns two Matplotlib Axes instances via NumPy ndarray; native R returns a typed two-panel source-scientific geometry record plus actual native base graphics. Metadata labels and line coordinates are source-aligned, but R is not a Matplotlib renderer and does not return Python Axes class identity.",
+      "path": "tests/testthat/test-native-sparse-mfpca-four-artist-source-20261112.R",
+      "sha256": "55afabe13d9f26fbe7715fcf7eca1be606539dcdb132817f379e7f2f474d47ab"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Visualize retained sparse paired multivariate PACE functional principal direction in both coordinates, reusing the exact fitted mean, eigenvalue and eigenfunction rather than resmoothing or fitting marginal independent models.",
+      "path": "tests/testthat/test-native-sparse-mfpca-four-artist-source-20261112.R",
+      "sha256": "55afabe13d9f26fbe7715fcf7eca1be606539dcdb132817f379e7f2f474d47ab"
+    }
+  ],
+  "additional_regression_evidence": [
+    {
+      "path": "tests/testthat/test-native-sparse-scientific-graphics.R",
+      "sha256": "475025401e40c8a8a2646b2f5a60a230760a8f1c07959333636e66987162b648"
+    }
+  ],
+  "independent_review_status": "Scoped developer review only; exact-head CI and pinned Matplotlib differential are queued or unverified, no independent scientific contract certification.",
+  "language_specific_limits": [
+    "Matplotlib Axes and Figure identity, external axes injection, and pixel-exact `coolwarm` rendering cannot be implemented by a native base-R graphics return.",
+    "Accepted source parity is restricted to fitted scientific array values, line/scatter points, image extents/color limits, metadata and failure geometry, not complete Python graphics objects.",
+    "Native result remains a real fitted R scientific object; Python class identity and exact error classes are not interchangeable.",
+    "No green exact-head CI observed, independent certification, main-branch merge, or CRAN readiness is claimed."
+  ]
+}
