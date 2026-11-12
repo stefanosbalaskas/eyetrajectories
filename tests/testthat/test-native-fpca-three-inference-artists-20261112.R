@@ -197,8 +197,8 @@ etr_three_py_out={
              'labels':[t.get_text() for t in ax2.get_xticklabels()]},
  'family':{'title':ax3.get_title(),'ylabel':ax3.get_ylabel(),
              'ylim':list(ax3.get_ylim()),
-             'adjusted':np.asarray(ax3.collections[0].get_offsets()).tolist(),
-             'targetwise':np.asarray(ax3.collections[1].get_offsets()).tolist(),
+             'adjusted':np.asarray(ax3.collections[0].get_offsets()),
+             'targetwise':np.asarray(ax3.collections[1].get_offsets()),
              'legend':[t.get_text() for t in ax3.get_legend().get_texts()],
              'labels':[t.get_text() for t in ax3.get_xticklabels()]}
 }
@@ -208,7 +208,7 @@ plt.close('all')
     expect_identical(a$axes[[1L]]$title,p$envelope$title)
     expect_identical(a$axes[[1L]]$xlabel,p$envelope$xlabel)
     expect_identical(a$axes[[1L]]$ylabel,p$envelope$ylabel)
-    expect_identical(a$axes[[1L]]$legend_labels,p$envelope$legend)
+    expect_identical(a$axes[[1L]]$legend_labels,as.character(p$envelope$legend))
     expect_equal(a$axes[[1L]]$artists[[1L]]$alpha,p$envelope$alpha)
     expect_equal(a$axes[[1L]]$artists[[2L]]$ydata,
       unlist(p$envelope$median),tolerance=1e-12)
@@ -220,18 +220,18 @@ plt.close('all')
       unlist(p$projection$x))
     expect_equal(b$axes[[1L]]$artists[[1L]]$ydata,
       unlist(p$projection$y),tolerance=1e-12)
-    expect_identical(b$axes[[1L]]$legend_labels,p$projection$legend)
-    expect_identical(b$axes[[1L]]$xticklabels,p$projection$labels)
+    expect_identical(b$axes[[1L]]$legend_labels,as.character(p$projection$legend))
+    expect_identical(b$axes[[1L]]$xticklabels,as.character(p$projection$labels))
     expect_identical(c$axes[[1L]]$title,p$family$title)
     expect_identical(c$axes[[1L]]$ylabel,p$family$ylabel)
     expect_equal(c$axes[[1L]]$ylim,unlist(p$family$ylim))
-    expect_identical(c$axes[[1L]]$legend_labels,p$family$legend)
-    expect_identical(c$axes[[1L]]$xticklabels,p$family$labels)
+    expect_identical(c$axes[[1L]]$legend_labels,as.character(p$family$legend))
+    expect_identical(c$axes[[1L]]$xticklabels,as.character(p$family$labels))
     expect_equal(c$axes[[1L]]$artists[[1L]]$offsets,
-      matrix(as.numeric(unlist(p$family$adjusted)),ncol=2L,byrow=TRUE),
+      as.matrix(p$family$adjusted),
       ignore_attr=TRUE)
     expect_equal(c$axes[[1L]]$artists[[2L]]$offsets,
-      matrix(as.numeric(unlist(p$family$targetwise)),ncol=2L,byrow=TRUE),
+      as.matrix(p$family$targetwise),
       ignore_attr=TRUE)
   })
 })
