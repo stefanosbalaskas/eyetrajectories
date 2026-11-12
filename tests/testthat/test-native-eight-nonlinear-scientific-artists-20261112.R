@@ -277,6 +277,7 @@ test_that("frozen Python 1.2 nonlinear source plot geometry matches typed native
         strict_source_record=TRUE))
     reticulate::py_run_string("
 import numpy as np, pandas as pd
+from scipy.sparse import csr_matrix
 import matplotlib
 matplotlib.use('Agg',force=True)
 import matplotlib.pyplot as plt
@@ -294,7 +295,7 @@ fnn=S(table=pd.DataFrame({'embedding_dimension':[2,3,4],
 network=object.__new__(et.RecurrenceNetworkResult)
 for key,val in dict(
  degree=np.array([1,2,1]),normalized_degree=np.array([.5,1,.5]),
- n_nodes=3,graph_density=2./3.).items():
+ adjacency=csr_matrix((3,3)),graph_density=2./3.).items():
  object.__setattr__(network,key,val)
 radius=S(table=pd.DataFrame({'radius':[.1,.2,.3],
  'recurrence_rate':[.1,.4,.8]}),metric='euclidean',curve_id='test')
