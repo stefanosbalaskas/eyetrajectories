@@ -4,10 +4,39 @@
 # semantics and numerical native Gaussian likelihood, NOT independent
 # statsmodels optimization identity or all Python error classes.
 
+# These fixtures are self-contained: filtered and full testthat runs must
+# never depend on the evaluation order of other test files.
+.etr_mw3_live_fixture<-function(){
+  tt<-seq(0,1,length.out=7L)
+  n<-24L;ids<-sprintf("c%02d",seq_len(n))
+  g<-rep(sprintf("P%02d",seq_len(8L)),each=3L)
+  stim<-rep(c(-1,0,1),8L)
+  values<-array(0,c(n,length(tt),1L))
+  for(p in seq_len(8L))for(j in seq_len(3L)){
+    i<-(p-1L)*3L+j
+    values[i,,1L]<-.7+.2*tt+stim[i]*(.5-.15*tt)+
+      .6*sin(1.1*p)+.3*cos(2*p)*tt+
+      .07*sin(.7*(p*3+j)*(tt+.3))+
+      .035*cos((p+j)*tt)
+  }
+  tr<-etr_trajectory_set(tt,values,ids,
+    "gaze_x",metadata=data.frame(participant_id=g),
+    coordinate_system="degrees",time_unit="s")
+  list(trajectories=tr,design=data.frame(
+    curve_id=rev(ids),stimulus=rev(stim),stringsAsFactors=FALSE))
+}
+
+.etr_mw3_config<-function(...){
+  utils::modifyList(list(
+    predictors="stimulus",participant_column="participant_id",
+    dimension="gaze_x",estimator="native_joint_bspline_gaussian"),
+    list(...))
+}
+
 test_that("mixed W3 source workflow preserves fifteen config fields and nine result fields",{
   skip_if_not_installed("nlme")
-  f<-.etr_joint_workflow_live_fixture()
-  cfg<-.etr_joint_source_cfg(
+  f<-.etr_mw3_live_fixture()
+  cfg<-.etr_mw3_config(
     dimension="gaze_x",
     fixed_basis_size=2L,random_basis_size=2L,
     spline_degree=1L,reml=TRUE,maxiter=500L)
@@ -86,8 +115,8 @@ test_that("mixed W3 source workflow preserves fifteen config fields and nine res
 })
 
 test_that("mixed W3 strict mode refuses moments, Python optimizer impersonation and unrecorded transformations",{
-  f<-.etr_joint_source_workflow_fixture()
-  cfg<-.etr_joint_source_cfg()
+  f<-.etr_mw3_live_fixture()
+  cfg<-.etr_mw3_config()
   check<-function(configuration,strict=TRUE)
     etr_run_functional_mixed_effects_workflow(
       f$trajectories,f$design,configuration,
