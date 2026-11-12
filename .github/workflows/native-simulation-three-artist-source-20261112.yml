@@ -1,0 +1,125 @@
+name: Native simulation three source-scientific artist plots
+on:
+  pull_request:
+    paths:
+      - "R/native-functional-simulation-plots.R"
+      - "R/native-functional-simulation-artist-source.R"
+      - "tests/testthat/test-native-simulation-three-artist-source-20261112.R"
+      - "tests/testthat/test-native-functional-simulation-plots.R"
+      - "docs/source_contract_reviews/plot_functional_simulation_curve.json"
+      - "docs/source_contract_reviews/plot_functional_simulation_phase_warps.json"
+      - "docs/source_contract_reviews/plot_functional_simulation_score_variances.json"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/reviewed_source_contract_closures_v1.csv"
+      - ".github/workflows/native-simulation-three-artist-source-20261112.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-scientific-hashes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify 438/508 development ledger, bounded geometry and six-domain source receipts
+        shell: bash
+        run: |
+          python - <<'PY'
+          import csv,hashlib,json
+          from pathlib import Path
+          root=Path(".")
+          def rows(path):
+              with (root/path).open(encoding="utf-8",newline="") as f:
+                  return list(csv.DictReader(f))
+          gaps=rows("inst/extdata/native_source_contract_gaps_stage22.csv")
+          non=rows("inst/extdata/native_nonfunction_source_gaps_v1.csv")
+          reg=rows("inst/extdata/reviewed_source_contract_closures_v1.csv")
+          assert len(gaps)==203 and len(non)==1
+          callable_gaps=sum(x["unresolved_source_gap"]=="TRUE" for x in gaps)
+          noncallable_gaps=sum(x["unresolved"]=="TRUE" for x in non)
+          assert callable_gaps<=69 and noncallable_gaps<=1
+          assert 508-callable_gaps-noncallable_gaps>=438
+          targets=(
+            "plot_functional_simulation_curve",
+            "plot_functional_simulation_phase_warps",
+            "plot_functional_simulation_score_variances")
+          for name in targets:
+              (gap,)=tuple(x for x in gaps if x["python_name"]==name)
+              assert gap["unresolved_source_gap"]=="FALSE"
+              (entry,)=tuple(x for x in reg if x["python_name"]==name)
+              assert entry["independently_certified"]=="FALSE"
+              raw=(root/entry["review_record_path"]).read_bytes()
+              assert hashlib.sha256(raw).hexdigest()==entry["review_record_sha256"]
+              review=json.loads(raw)
+              assert review["frozen_python_commit"]=="c1cd95ad718327550f7e55393ff38582872f7a94"
+              assert review["independently_certified"] is False
+              assert {ev["kind"] for ev in review["case_evidence"]}=={
+                "source_signature","accepted_input_domain","numerical_outputs",
+                "exception_semantics","returned_schema","scientific_estimand"}
+              for ev in review["native_files"]+review["case_evidence"]+review["additional_regression_evidence"]:
+                  p=root/ev["path"]
+                  assert hashlib.sha256(p.read_bytes()).hexdigest()==ev["sha256"],p
+          print("438 provisional scoped scientific contracts; "
+                "69 callable and 1 noncallable gaps; no independent certifications")
+          PY
+  native-three-os:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Real native simulation, zero-based strict plotting and population variance tests
+        shell: bash
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          testthat::test_local(".",
+            filter="native-simulation-three-artist-source-20261112|native-functional-simulation-plots",
+            reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
+  frozen-python-1-2:
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        id: python
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Direct frozen Python 1.2 Matplotlib line scatter and six-population-source bar artist comparisons
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          stopifnot(identical(et_python_version(),"1.2.0"))
+          testthat::test_local(".",
+            filter="native-simulation-three-artist-source-20261112|native-functional-simulation-plots",
+            reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
