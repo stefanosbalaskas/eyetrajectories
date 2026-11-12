@@ -12,7 +12,8 @@
 }
 
 .etr_fpcr_plot_intervals <- function(ids,center,lower,upper,
-    max_targets,reference=NULL,operation,title,ylabel) {
+    max_targets,reference=NULL,operation,title,ylabel,
+    strict_source_record=FALSE) {
   ids<-.etr_frame_ids(ids,"target_curve_ids")
   n<-length(ids)
   for(nm in c("center","lower","upper"))
@@ -48,6 +49,10 @@
       "future-outcome predictive interval" else
       "bootstrap median + conditional-mean envelope"),
     pch=c(if(!is.null(reference))4,16),bty="n")
+  if(isTRUE(strict_source_record)&&
+      identical(operation,"plot_fpca_wild_bootstrap_projection"))
+    return(invisible(.etr_fpca_wild_projection_artist(
+      geometry,max_targets)))
   invisible(list(geometry=geometry,
     provenance=list(backend="base_R",source_operation=operation,
       source_x_zero_based=TRUE,python_axes_return_equivalence=FALSE)))
@@ -58,14 +63,17 @@
 #' @param max_targets Positive integer number of fixed targets to display.
 #' @return Invisible numerical source geometry and backend provenance.
 #' @export
-etr_plot_fpca_wild_bootstrap_projection <- function(result,max_targets=30L){
+etr_plot_fpca_wild_bootstrap_projection <- function(result,max_targets=30L,
+    strict_source_record=FALSE){
+  .etr_fpca_uncertainty_strict(strict_source_record)
   .etr_frame_record(result,c("target_curve_ids",
     "reference_projection","lower","upper"),"result")
   .etr_fpcr_plot_intervals(result$target_curve_ids,
     result$reference_projection,result$lower,result$upper,max_targets,
     operation="plot_fpca_wild_bootstrap_projection",
     title="Heteroscedastic Gaussian FPCR projection inference",
-    ylabel="Centered FPCR projection")
+    ylabel="Centered FPCR projection",
+    strict_source_record=strict_source_record)
 }
 
 #' Plot fixed-target future-outcome FPCR predictive intervals natively
