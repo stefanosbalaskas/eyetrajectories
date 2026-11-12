@@ -3,6 +3,27 @@
 # Commit c1cd95ad718327550f7e55393ff38582872f7a94.
 # These are matched native scientific input arrays, not full Python class
 # or bit-identical Matplotlib renderer parity.
+.etr_fpca_three_fixture<-function(){
+  # Independent frozen-data boundary fixture. This is deliberately
+  # self-contained so the dedicated test does not rely on test-file
+  # lexical load order or on mutable outside test state.
+  list(
+    st=structure(list(
+      similarities=matrix(c(.9,.8,.95,.7,.75,.8),3L,2L),
+      reference=list(n_components=2L)),
+      class="etr_fpca_stability"),
+    infl=structure(list(
+      summary=data.frame(group=c("a","b","c"),
+        influence_score=c(.2,.5,.1),
+        min_abs_component_similarity=c(.8,.5,.9))),
+      class="etr_fpca_influence"),
+    cv=structure(list(
+      fold_errors=data.frame(fold=c(0L,1L,0L,1L),
+        n_components=c(1L,1L,2L,2L),
+        mean_integrated_rmse=c(.5,.6,.3,.35))),
+      class="etr_fpca_cv"))
+}
+
 .etr_fpca_art_pdf<-function(f){
   path<-tempfile(fileext=".pdf")
   grDevices::pdf(path,width=9,height=6)
@@ -45,7 +66,7 @@ test_that("repair the seven-column published source gap inventory independently 
 })
 
 test_that("three native FPCA scientific artist records preserve source raw data and errorbar semantics",{
-  x<-.etr_test_scientific_plot_fixture()
+  x<-.etr_fpca_three_fixture()
   .etr_fpca_art_pdf({
     st<-etr_plot_fpca_stability(x$st,strict_source_record=TRUE)
     expect_s3_class(st,"etr_fpca_source_artist_record")
@@ -101,7 +122,7 @@ test_that("three native FPCA scientific artist records preserve source raw data 
 })
 
 test_that("three strict source plots reject non-native and malformed scientific data",{
-  x<-.etr_test_scientific_plot_fixture()
+  x<-.etr_fpca_three_fixture()
   .etr_fpca_art_pdf({
     expect_error(etr_plot_fpca_stability(
       unclass(x$st),strict_source_record=TRUE),
@@ -134,7 +155,7 @@ test_that("frozen Python 1.2 actual Matplotlib artists match source FPCA box med
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))
     skip("frozen Python 1.2 boxplot/line/errorbar oracle opt-in")
   expect_identical(et_python_version(),"1.2.0")
-  x<-.etr_test_scientific_plot_fixture()
+  x<-.etr_fpca_three_fixture()
   .etr_fpca_art_pdf({
     st<-etr_plot_fpca_stability(x$st,strict_source_record=TRUE)
     infl<-etr_plot_fpca_influence(x$infl,
