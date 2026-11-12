@@ -1,0 +1,123 @@
+name: Native Python 1.2 sparse MFPCA JSON NPZ workflow portability
+on:
+  pull_request:
+    paths:
+      - "R/native-python-sparse-mfpca-portable.R"
+      - "R/native-python-portable-writer.R"
+      - "R/native-workflow-bundle-export.R"
+      - "tests/testthat/test-native-sparse-mfpca-python-portable-bundles-20261112.R"
+      - "docs/source_contract_reviews/export_portable_result.json"
+      - "docs/source_contract_reviews/export_workflow_bundle.json"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/reviewed_source_contract_closures_v1.csv"
+      - ".github/workflows/native-sparse-mfpca-python-portable-bundles-20261112.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  six-domain-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify pinned schema review hashes and 424/508 source-scientific ledger
+        shell: bash
+        run: |
+          python - <<'PY'
+          import csv,hashlib,json
+          from pathlib import Path
+          root=Path('.')
+          def records(path):
+              with (root/path).open(encoding='utf-8',newline='') as f:
+                  return list(csv.DictReader(f))
+          gaps=records('inst/extdata/native_source_contract_gaps_stage22.csv')
+          ncf=records('inst/extdata/native_nonfunction_source_gaps_v1.csv')
+          ledger=records('inst/extdata/reviewed_source_contract_closures_v1.csv')
+          assert len(gaps)==203 and len(ncf)==1
+          n=sum(x['unresolved_source_gap']=='TRUE' for x in gaps)
+          m=sum(x['unresolved']=='TRUE' for x in ncf)
+          assert (n,m,508-n-m)==(83,1,424)
+          for name in ('export_portable_result','export_workflow_bundle'):
+              (gap,)=tuple(x for x in gaps if x['python_name']==name)
+              assert gap['unresolved_source_gap']=='FALSE'
+              (row,)=tuple(x for x in ledger if x['python_name']==name)
+              assert row['independently_certified']=='FALSE'
+              raw=(root/row['review_record_path']).read_bytes()
+              assert hashlib.sha256(raw).hexdigest()==row['review_record_sha256']
+              review=json.loads(raw)
+              assert review['independently_certified'] is False
+              assert review['frozen_python_commit']=='c1cd95ad718327550f7e55393ff38582872f7a94'
+              assert {e['kind'] for e in review['case_evidence']}=={
+                'source_signature','accepted_input_domain','numerical_outputs',
+                'exception_semantics','returned_schema','scientific_estimand'}
+              for evidence in review['native_files']+review['case_evidence']:
+                  path=root/evidence['path']
+                  assert hashlib.sha256(path.read_bytes()).hexdigest()==evidence['sha256'],path
+          print('424 provisional scoped native source-scientific closures; 83 callable + 1 noncallable gaps; zero independently certified')
+          PY
+  native-r:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+            any::zip
+            any::jsonlite
+            any::digest
+      - name: Native Python-format JSON NPZ and workflow regression tests
+        shell: bash
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          testthat::test_local(".",
+            filter="native-sparse-mfpca-python-portable-bundles-20261112|native-python-portable-writer|native-workflow-bundle-export",
+            reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
+  frozen-python-1-2:
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        id: python
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+            any::zip
+            any::jsonlite
+            any::digest
+      - name: Frozen Python 1.2 read, dataclass schema, scientific arrays and SHA256 checksums
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          stopifnot(identical(et_python_version(),"1.2.0"))
+          testthat::test_local(".",
+            filter="native-sparse-mfpca-python-portable-bundles-20261112|native-python-portable-writer|native-workflow-bundle-export",
+            reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
