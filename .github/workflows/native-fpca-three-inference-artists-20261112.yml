@@ -119,6 +119,7 @@ jobs:
           extra-packages: |
             any::pkgload
             any::testthat
+            any::reticulate
       - name: Compare frozen Python Matplotlib artists with R source geometry
         shell: bash
         env:
