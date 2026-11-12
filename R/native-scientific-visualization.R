@@ -16,7 +16,9 @@
 #' @param ... Further native graphics options.
 #' @return Invisible geometry including source time, AMI, ACF and marked minima.
 #' @export
-etr_plot_embedding_delay_diagnostics <- function(result,...) {
+etr_plot_embedding_delay_diagnostics <- function(result,
+    strict_source_record=FALSE,...) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   t<-.etr_visualization_table(result,"etr_embedding_delay_diagnostics",
     c("lag_time","average_mutual_information","autocorrelation"))
   .etr_assert("first_ami_local_minimum"%in%names(t)&&
@@ -41,9 +43,12 @@ etr_plot_embedding_delay_diagnostics <- function(result,...) {
     axes=FALSE,xlab="",ylab="")
   graphics::axis(4)
   graphics::mtext("Autocorrelation",side=4,line=2.5)
-  invisible(list(time=t$lag_time,ami=t$average_mutual_information,
+  out<-list(time=t$lag_time,ami=t$average_mutual_information,
     autocorrelation=t$autocorrelation,
-    first_ami_local_minimum_indices=as.integer(marks-1L)))
+    first_ami_local_minimum_indices=as.integer(marks-1L))
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_nonlinear_delay_artists(result,out)))
+  invisible(out)
 }
 
 #' Plot false-nearest-neighbor fractions by embedding dimension
@@ -51,7 +56,9 @@ etr_plot_embedding_delay_diagnostics <- function(result,...) {
 #' @param ... Native graphics options.
 #' @return Invisibly, the source table used to render the curve.
 #' @export
-etr_plot_embedding_dimension_diagnostics <- function(result,...) {
+etr_plot_embedding_dimension_diagnostics <- function(result,
+    strict_source_record=FALSE,...) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   t<-.etr_visualization_table(result,"etr_embedding_dimension_diagnostics",
     c("embedding_dimension","false_neighbor_fraction"))
   .etr_assert(all(is.finite(t$embedding_dimension))&&
@@ -64,6 +71,8 @@ etr_plot_embedding_dimension_diagnostics <- function(result,...) {
     xlab="Embedding dimension",ylab="False-nearest-neighbor fraction",
     main=sprintf("FNN diagnostics: %s / %s",
       result$curve_id,result$dimension),...)
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_nonlinear_dimension_artists(result,t)))
   invisible(t)
 }
 
@@ -73,7 +82,9 @@ etr_plot_embedding_dimension_diagnostics <- function(result,...) {
 #' @param ... Graphics options.
 #' @return Invisibly, a zero-based index and degree data.frame.
 #' @export
-etr_plot_recurrence_network_degree <- function(result,normalized=TRUE,...) {
+etr_plot_recurrence_network_degree <- function(result,normalized=TRUE,
+    strict_source_record=FALSE,...) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   .etr_assert(inherits(result,"etr_recurrence_network")&&
     is.numeric(result$degree)&&length(result$degree)>=2L&&
     all(is.finite(result$degree))&&
@@ -90,6 +101,9 @@ etr_plot_recurrence_network_degree <- function(result,normalized=TRUE,...) {
     xlab="State index",ylab=if(normalized)"Normalized degree" else "Degree",
     main=sprintf("Recurrence-network degree (density=%.3f)",
       result$graph_density),...)
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_nonlinear_degree_artists(
+      result,out,normalized)))
   invisible(out)
 }
 
@@ -98,7 +112,9 @@ etr_plot_recurrence_network_degree <- function(result,normalized=TRUE,...) {
 #' @param ... Graphics options.
 #' @return Invisibly, the exact source profile table.
 #' @export
-etr_plot_recurrence_rate_curve <- function(result,...) {
+etr_plot_recurrence_rate_curve <- function(result,
+    strict_source_record=FALSE,...) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   t<-.etr_visualization_table(result,"etr_recurrence_radius_profile",
     c("radius","recurrence_rate"))
   .etr_assert(all(is.finite(t$radius))&&all(t$radius>=0)&&
@@ -109,6 +125,8 @@ etr_plot_recurrence_rate_curve <- function(result,...) {
     ylim=c(0,1),xlab=sprintf("Radius (%s state-space distance)",
       result$metric),ylab="Recurrence rate",
     main=sprintf("Recurrence radius profile: %s",result$curve_id),...)
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_nonlinear_radius_artists(result,t)))
   invisible(t)
 }
 
@@ -119,7 +137,9 @@ etr_plot_recurrence_rate_curve <- function(result,...) {
 #' @return Invisible data.frame of the original plotted metric values.
 #' @export
 etr_plot_windowed_rqa <- function(result,
-    metrics=c("recurrence_rate","determinism","laminarity"),...) {
+    metrics=c("recurrence_rate","determinism","laminarity"),
+    strict_source_record=FALSE,...) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   .etr_assert(inherits(result,"etr_windowed_rqa")&&
     is.data.frame(result$table)&&
     "center_time"%in%names(result$table),
@@ -145,7 +165,10 @@ etr_plot_windowed_rqa <- function(result,
     graphics::lines(t$center_time,v[,i],type="o",pch=i,col=i)
   graphics::legend("topright",legend=metrics,col=seq_along(metrics),
     lty=1,pch=seq_along(metrics),bty="n")
-  invisible(t[c("center_time",metrics)])
+  out<-t[c("center_time",metrics)]
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_nonlinear_windowed_artists(result,out,metrics)))
+  invisible(out)
 }
 
 #' Plot Rosenstein/Kantz divergence and optional declared Lyapunov fit
@@ -153,7 +176,9 @@ etr_plot_windowed_rqa <- function(result,
 #' @param ... Graphics options.
 #' @return Invisibly, the original divergence curve and optional fitted values.
 #' @export
-etr_plot_local_divergence <- function(result,...) {
+etr_plot_local_divergence <- function(result,
+    strict_source_record=FALSE,...) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   fitted<-inherits(result,"etr_largest_lyapunov")
   divergence<-if(fitted)result$divergence else result
   .etr_assert(inherits(divergence,c("etr_local_divergence",
@@ -190,6 +215,8 @@ etr_plot_local_divergence <- function(result,...) {
       result$exponent,result$exponent_unit)) else
     "Mean log divergence",lty=if(fitted)1:2 else 1,bty="n")
   out$fit<-fit_y
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_nonlinear_divergence_artists(result,out)))
   invisible(out)
 }
 
@@ -205,7 +232,9 @@ etr_plot_local_divergence <- function(result,...) {
 #' @return Invisibly, breaks and counts alongside observed statistic.
 #' @export
 etr_plot_surrogate_nonlinearity <- function(
-    result,bins=20L,python_boundary_mode=FALSE,...) {
+    result,bins=20L,python_boundary_mode=FALSE,
+    strict_source_record=FALSE,...) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   .etr_assert(inherits(result,"etr_surrogate_nonlinearity")&&
     is.numeric(result$surrogate_statistics)&&
     length(result$surrogate_statistics)>=1L&&
@@ -218,6 +247,7 @@ etr_plot_surrogate_nonlinearity <- function(
   .etr_assert(is.logical(python_boundary_mode)&&
     length(python_boundary_mode)==1L&&!is.na(python_boundary_mode),
     "python_boundary_mode must be a nonmissing logical scalar")
+  if(isTRUE(strict_source_record))python_boundary_mode<-TRUE
   if(isTRUE(python_boundary_mode)) {
     # Python nonlinear_plotting.py checks isinstance(bins, int), then
     # passes an integer count to Matplotlib, which delegates to NumPy.
@@ -249,10 +279,13 @@ etr_plot_surrogate_nonlinearity <- function(
       toupper(result$method),result$p_value),...)
   graphics::abline(v=result$observed_statistic,lty=2)
   graphics::legend("topright",legend="Observed",lty=2,bty="n")
-  invisible(list(breaks=h$breaks,counts=h$counts,
+  out<-list(breaks=h$breaks,counts=h$counts,
     observed=result$observed_statistic,
     python_matplotlib_histogram_binning_equivalent=
-      isTRUE(python_boundary_mode)))
+      isTRUE(python_boundary_mode))
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_nonlinear_surrogate_artists(result,out)))
+  invisible(out)
 }
 
 #' Plot one-dimensional empirical Poincare return map without projection
@@ -261,7 +294,9 @@ etr_plot_surrogate_nonlinearity <- function(
 #' @param ... Graphics options.
 #' @return Invisibly, consecutive states and optional fitted affine curve.
 #' @export
-etr_plot_poincare_return_map <- function(crossings,fit=NULL,...) {
+etr_plot_poincare_return_map <- function(crossings,fit=NULL,
+    strict_source_record=FALSE,...) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   .etr_assert(inherits(crossings,"etr_poincare_crossings")&&
     is.matrix(crossings$states)&&is.numeric(crossings$states)&&
     ncol(crossings$states)==1L&&nrow(crossings$states)>=2L&&
@@ -294,5 +329,7 @@ etr_plot_poincare_return_map <- function(crossings,fit=NULL,...) {
       c("Successive crossings","Identity","Local affine fit"),
     lty=if(is.null(fit))c(NA,3) else c(NA,3,2),
     pch=if(is.null(fit))c(1,NA) else c(1,NA,NA),bty="n")
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_nonlinear_return_artists(crossings,out)))
   invisible(out)
 }
