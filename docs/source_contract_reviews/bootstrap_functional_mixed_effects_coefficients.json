@@ -1,0 +1,67 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "bootstrap_functional_mixed_effects_coefficients",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_NATIVE_MIXED_SCIENTIFIC_CONTRACT_REVIEW",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/functional_mixed_effects_inference.py::bootstrap_functional_mixed_effects_coefficients",
+  "native_signature": "etr_bootstrap_functional_mixed_effects_coefficients(...,strict_source_record=TRUE)",
+  "reviewer_statement": "Provisional author-reviewed scoped native R mixed-effects scientific contract. Actual joint covariance likelihood/GLS operations are implemented in R, using nlme rather than frozen Python statsmodels. Scientific result field order and declared estimator targets are reviewed; passing current CI, full optimizer equivalence and independent review have not been observed.",
+  "native_language_semantic_policy": "Native R joint Gaussian likelihood under nlme and frozen Python statsmodels MixedLM can disagree at optimizer and boundary domains. Under an explicit strict scientific record mode, source field order and real native scientific arrays are preserved, not arbitrary Python dataclass identity, optimizer or exception semantics.",
+  "native_files": [
+    {
+      "path": "R/native-mixed-participant-bootstraps.R",
+      "sha256": "5a78bd131ecace13eae99a64c17cda32bdcac7b2fe84484e3341799f3c362cf2"
+    },
+    {
+      "path": "R/native-mixed-w3-source-records.R",
+      "sha256": "ec89a8ed02a6c8278e00d233b08450715f9448eb8441d9ae78a25b13e8c26eb1"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Frozen Python 1.2 src/eyetrajectoriespy/functional_mixed_effects_inference.py::bootstrap_functional_mixed_effects_coefficients. Native R participant-cluster case bootstrap refits fixed B-spline coefficients by full participant-block GLS while holding reference Gaussian random/residual covariance fixed. Source scientific 9-field FunctionalMixedEffectsBootstrapResult envelope, seeded PCG64 sampling; rejects the older timewise moments path in strict mode.",
+      "path": "tests/testthat/test-native-mixed-w3-source-records-20261112.R",
+      "sha256": "de41ed995a5e93ef45ad99ea75c00e4687ace45155ded09c740186ef4be24e96"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Accepted source domain: actual previously fitted native joint spline likelihood model with complete participant grouping and full finite fixed/random design, reference covariance invertible, integer n_bootstrap>=100, exactly represented PCG64 seed, no user-supplied sample-draw override in strict mode. Actual native fitted covariance rather than an independent statsmodels refit is conditioned upon.",
+      "path": "tests/testthat/test-native-mixed-w3-source-records-20261112.R",
+      "sha256": "de41ed995a5e93ef45ad99ea75c00e4687ace45155ded09c740186ef4be24e96"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Existing frozen Python 1.2 direct adapter tests compare participant-level joint GLS resampling coefficients and simultaneous uncertainty under matched native fitted Gaussian covariance and source sample indices. New strict-mode R regression compares all nine scientific fields against full unmodified native result, sampled draw index arrays, coefficient tensor, mean, SD and original source-dataclass field order against frozen Python. Source pinned tests committed, exact-head runs not witnessed green.",
+      "path": "tests/testthat/test-native-mixed-w3-source-records-20261112.R",
+      "sha256": "de41ed995a5e93ef45ad99ea75c00e4687ace45155ded09c740186ef4be24e96"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Fail closed for moments estimator, no lme likelihood, nonlogical strict flag, R-only externally supplied draw indices, malformed participant groups, singular reference GLS information or per-resample singular systems; frozen Python exact runtime exception class and all precision-boundary behavior are not claimed.",
+      "path": "tests/testthat/test-native-mixed-w3-source-records-20261112.R",
+      "sha256": "de41ed995a5e93ef45ad99ea75c00e4687ace45155ded09c740186ef4be24e96"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Exactly nine declared frozen Python FunctionalMixedEffectsBootstrapResult scientific fields with real reference, bootstrap_fixed_basis_coefficients, bootstrap_coefficient_functions, sampled_participant_indices, bootstrap_mean, bootstrap_standard_errors, random_state, covariance_conditioning, provenance. Retain native R value identity and source scientific meaning; exclude R-only bootstrap_type and certification flags.",
+      "path": "tests/testthat/test-native-mixed-w3-source-records-20261112.R",
+      "sha256": "de41ed995a5e93ef45ad99ea75c00e4687ace45155ded09c740186ef4be24e96"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Conditional participant cluster sampling variability of fixed B-spline functional regression under the reference full marginal Gaussian covariance, retaining participant-level whole-trial resampling, never independent timewise moments; same fitted covariance is conditioned on across R and frozen Python source comparison.",
+      "path": "tests/testthat/test-native-mixed-w3-source-records-20261112.R",
+      "sha256": "de41ed995a5e93ef45ad99ea75c00e4687ace45155ded09c740186ef4be24e96"
+    }
+  ],
+  "independent_review_status": "Scoped provisional author review; new tests and CI have been committed, not observed passing; no independent scientific contract certified.",
+  "language_specific_limits": [
+    "Python statsmodels MixedLM and native R nlme spline mixed optimization are distinct; full numerical and convergence equivalence cannot be claimed.",
+    "Source scientific record is a native R list with ordered fields, not a Python dataclass, and no Python exception-type or serialization identity is promised.",
+    "Additional covariance/warning boundary cases, numerical singular limits and optimizer convergence surfaces are not fully source-differential-tested.",
+    "Record is not an independently certified full contract; no completed CI, merge, or CRAN readiness is claimed."
+  ]
+}

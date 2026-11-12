@@ -1,0 +1,67 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "functional_mixed_effects_covariance_sensitivity",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_NATIVE_MIXED_SCIENTIFIC_CONTRACT_REVIEW",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/functional_mixed_effects_covariance_sensitivity.py::functional_mixed_effects_covariance_sensitivity",
+  "native_signature": "etr_functional_mixed_effects_covariance_sensitivity(fits,reference,max_lag,...,strict_source_record=TRUE)",
+  "reviewer_statement": "Provisional author-reviewed scoped native R mixed-effects scientific contract. Actual joint covariance likelihood/GLS operations are implemented in R, using nlme rather than frozen Python statsmodels. Scientific result field order and declared estimator targets are reviewed; passing current CI, full optimizer equivalence and independent review have not been observed.",
+  "native_language_semantic_policy": "Native R joint Gaussian likelihood under nlme and frozen Python statsmodels MixedLM can disagree at optimizer and boundary domains. Under an explicit strict scientific record mode, source field order and real native scientific arrays are preserved, not arbitrary Python dataclass identity, optimizer or exception semantics.",
+  "native_files": [
+    {
+      "path": "R/native-mixed-covariance-sensitivity.R",
+      "sha256": "20008d0461eec65726529969ca50c121c97e833a21f85d3d983cbede1eb5a127"
+    },
+    {
+      "path": "R/native-mixed-w3-source-records.R",
+      "sha256": "ec89a8ed02a6c8278e00d233b08450715f9448eb8441d9ae78a25b13e8c26eb1"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Frozen Python 1.2 src/eyetrajectoriespy/functional_mixed_effects_covariance_sensitivity.py::functional_mixed_effects_covariance_sensitivity. Native source-scientific sensitivity describes already fitted joint spline likelihood covariance choices using same fixed design, nonranked REML/ML-specific AIC/BIC, coefficient curve differences, variance decomposition and within-curve centered pair-count-weighted raw and whitened residual diagnostics. Strict 12-field FunctionalMixedEffectsCovarianceSensitivityResult envelope.",
+      "path": "tests/testthat/test-native-mixed-w3-source-records-20261112.R",
+      "sha256": "de41ed995a5e93ef45ad99ea75c00e4687ace45155ded09c740186ef4be24e96"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Source declared likelihood-only collection of one or more comparable named converged Gaussian spline functional mixed fits with identical time/response/design/method, declared reference and max_lag, explicit covariance specifications and failures where applicable, no independently unreviewed mixed-effect bands. Source scientific analysis never fits, ranks, selects or performs likelihood-ratio tests. Older native moments path is disallowed in strict mode.",
+      "path": "tests/testthat/test-native-mixed-w3-source-records-20261112.R",
+      "sha256": "de41ed995a5e93ef45ad99ea75c00e4687ace45155ded09c740186ef4be24e96"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Existing stable native REML tests validate actual logLik/IC parameter counts for full Gaussian spline likelihood, zero delta IC for duplicate reference fits, covariance component traces and residual lag source-law; frozen NumPy source within-curve residual ACF checks are present. New strict native tests compare all source scientific summary tables to existing likelihood implementation; pinned Python dataclass field order and covariance specification order are directly checked. Exact optimizer parity of independent Python MixedLM refits remains unresolved.",
+      "path": "tests/testthat/test-native-mixed-w3-source-records-20261112.R",
+      "sha256": "de41ed995a5e93ef45ad99ea75c00e4687ace45155ded09c740186ef4be24e96"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Strict refuses mixed moments, invalid labels, duplicate or noncomparable likelihood fits, mismatched time, design or REML/ML methods, overlapping success/failure labels, unsupported covariance specification, out-of-range max_lag or unqualified band inputs. Python dataclass/class identity and exact error messages are not copied.",
+      "path": "tests/testthat/test-native-mixed-w3-source-records-20261112.R",
+      "sha256": "de41ed995a5e93ef45ad99ea75c00e4687ace45155ded09c740186ef4be24e96"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Source ordered 12 fields: specifications (ordered native four-field covariance-spec records), reference_label, fits, failures, model_summary, coefficient_frame, coefficient_summary, band_width_frame, variance_decomposition, residual_diagnostics, max_lag and provenance. R descriptions remain source-scientific; no Python runtime MixedLM class impersonation.",
+      "path": "tests/testthat/test-native-mixed-w3-source-records-20261112.R",
+      "sha256": "de41ed995a5e93ef45ad99ea75c00e4687ace45155ded09c740186ef4be24e96"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Descriptive, predeclared covariance-structure sensitivity of already fitted Gaussian spline mixed models without automatic selection, inferential likelihood-ratio significance claims or comparison across incompatible REML/ML fits.",
+      "path": "tests/testthat/test-native-mixed-w3-source-records-20261112.R",
+      "sha256": "de41ed995a5e93ef45ad99ea75c00e4687ace45155ded09c740186ef4be24e96"
+    }
+  ],
+  "independent_review_status": "Scoped provisional author review; new tests and CI have been committed, not observed passing; no independent scientific contract certified.",
+  "language_specific_limits": [
+    "Python statsmodels MixedLM and native R nlme spline mixed optimization are distinct; full numerical and convergence equivalence cannot be claimed.",
+    "Source scientific record is a native R list with ordered fields, not a Python dataclass, and no Python exception-type or serialization identity is promised.",
+    "Additional covariance/warning boundary cases, numerical singular limits and optimizer convergence surfaces are not fully source-differential-tested.",
+    "Record is not an independently certified full contract; no completed CI, merge, or CRAN readiness is claimed."
+  ]
+}
