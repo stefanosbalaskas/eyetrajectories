@@ -108,8 +108,10 @@
 #'
 #' @description Writes config, steps, decisions, provenance, reports, tables,
 #'   and SHA-256 checksums without modifying input results.
-#'   The default uses an RDS snapshot. The Python 1.2 format supports native
-#'   dense FPCA workflows with measured elapsed times and writes JSON/NPZ.
+#'   The default uses an RDS snapshot. Python 1.2 format writes JSON/NPZ
+#'   for native dense FPCA and fixed-bandwidth strict paired sparse-MFPCA W2
+#'   scientific workflows; the latter preserves joint sparse covariance/PACE,
+#'   measured steps, decisions, checksums and explicitly R-native environment.
 #' @param result Explicit native R workflow with scientific fit and provenance.
 #' @param directory Non-existing output directory; atomic best-effort rename.
 #' @param overwrite Must be FALSE; never delete prior scientific evidence.
@@ -143,8 +145,12 @@ etr_export_workflow_bundle<-function(result,directory,overwrite=FALSE,
     length(result$workflow_contract)==1L&&
     !is.na(result$workflow_contract)&&nzchar(result$workflow_contract),
     "workflow schema version and contract are malformed")
-  if(format=="python_1_2")
+  if(format=="python_1_2"){
+    if(inherits(result,"etr_sparse_mfpca_paired_source_workflow"))
+      return(.etr_export_python_sparse_mfpca_workflow_bundle(
+        result,directory))
     return(.etr_export_python_fpca_workflow_bundle(result,directory))
+  }
   .etr_workflow_json(result$config,"config",validate_only=TRUE)
   .etr_workflow_json(result$provenance,"provenance",validate_only=TRUE)
   .etr_assert(length(result$steps)>0L&&
