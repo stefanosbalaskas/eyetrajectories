@@ -15,7 +15,17 @@
 #'   lag summaries and complete retained failure audit; no model selection.
 #' @export
 etr_functional_mixed_effects_covariance_sensitivity<-function(
-    fits,reference,max_lag,specifications=NULL,failures=list(),bands=NULL){
+    fits,reference,max_lag,specifications=NULL,failures=list(),bands=NULL,
+    strict_source_record=FALSE){
+  .etr_assert(is.logical(strict_source_record)&&
+    length(strict_source_record)==1L&&!is.na(strict_source_record),
+    "strict_source_record must be a nonmissing logical scalar")
+  if(isTRUE(strict_source_record)){
+    .etr_assert(is.list(fits)&&length(fits)>0L&&
+      all(vapply(fits,function(x)
+        inherits(x,"etr_joint_bspline_mixed"),logical(1L))),
+      "strict mixed sensitivity requires native joint spline likelihood fits")
+  }
   # The older moments path and the full joint-likelihood path use different
   # estimators. Never silently compare their incompatible likelihoods.
   if(is.list(fits)&&length(fits)>0L&&
@@ -24,8 +34,11 @@ etr_functional_mixed_effects_covariance_sensitivity<-function(
     .etr_assert(all(vapply(fits,function(x)
       inherits(x,"etr_joint_bspline_mixed"),logical(1L))),
       "mixed covariance sensitivity cannot combine moments and joint likelihood fits")
-    return(.etr_joint_likelihood_covariance_sensitivity(
-      fits,reference,max_lag,specifications,failures,bands))
+    out<-.etr_joint_likelihood_covariance_sensitivity(
+      fits,reference,max_lag,specifications,failures,bands)
+    if(isTRUE(strict_source_record))
+      return(.etr_mixed_w3_sensitivity_record(out,fits,max_lag))
+    return(out)
   }
   .etr_assert(is.list(fits)&&length(fits)>=1L&&
     !is.null(names(fits))&&!anyDuplicated(names(fits))&&
