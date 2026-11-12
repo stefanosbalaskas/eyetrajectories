@@ -1,0 +1,72 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "plot_windowed_rqa",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_NATIVE_NONLINEAR_SCIENTIFIC_MATPLOTLIB_ARTIST_REVIEW",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/nonlinear_plotting.py::plot_windowed_rqa",
+  "native_signature": "etr_plot_windowed_rqa(...,strict_source_record=TRUE)",
+  "reviewer_statement": "Developer-scoped six-domain source scientific plotting geometry review. Frozen Python public Matplotlib differential tests are authored but have not been observed passing at the exact head. No independent full source contract certification claimed.",
+  "native_language_semantic_policy": "Native R typed scientific source artist records with original existing R graphical/numeric defaults; no live Python runtime, exception-class, dataclass, or render-pixel parity.",
+  "native_files": [
+    {
+      "path": "R/native-scientific-visualization.R",
+      "sha256": "45b85ff82e452012d2d2cbda2d442d1332168b54103c9a2e8b76d35de75c92c2"
+    },
+    {
+      "path": "R/native-eight-nonlinear-scientific-artists.R",
+      "sha256": "f599c9c9f61bb1cf06d8aac73198e7e16c251671c73eedba2484f8263e94d4b8"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Frozen published eyetrajectoriespy 1.2.0 src/eyetrajectoriespy/nonlinear_plotting.py::plot_windowed_rqa inspected. Native R adds opt-in strict_source_record=TRUE without changing default graphics or numeric return.",
+      "path": "tests/testthat/test-native-eight-nonlinear-scientific-artists-20261112.R",
+      "sha256": "b6154b749938028ac65f2ed44050e1cb8d2740c8991fe5827fc320704da69700"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Precomputed source-shaped native nonlinear statistics and R table/arrays with verified dimensions, positive/finite domain, selected metrics and source original labels. Python-specific dataclass, pandas, arbitrary injected Matplotlib ax protocols remain outside bounded native support.",
+      "path": "tests/testthat/test-native-eight-nonlinear-scientific-artists-20261112.R",
+      "sha256": "b6154b749938028ac65f2ed44050e1cb8d2740c8991fe5827fc320704da69700"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Ordered source RQA time metric lines with marker o, physical center times and original legend. Native numeric domain, source labels and selected edge cases and opt-in pinned Python 1.2 public Matplotlib scientific geometry comparisons are committed; exact-head CI success not observed.",
+      "path": "tests/testthat/test-native-eight-nonlinear-scientific-artists-20261112.R",
+      "sha256": "b6154b749938028ac65f2ed44050e1cb8d2740c8991fe5827fc320704da69700"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Native R conditions guard malformed domains, invalid flags, undefined metrics, nonfinite scientific arrays and illegal source histogram bins; Python exception class identity is not claimed.",
+      "path": "tests/testthat/test-native-eight-nonlinear-scientific-artists-20261112.R",
+      "sha256": "b6154b749938028ac65f2ed44050e1cb8d2740c8991fe5827fc320704da69700"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Default base-R drawing and original invisible numeric results remain unchanged. Strict mode returns typed native scientific artist record with ordered source graphics axes and artists; it does NOT return a live Python Matplotlib Axes or pixel-identical backend.",
+      "path": "tests/testthat/test-native-eight-nonlinear-scientific-artists-20261112.R",
+      "sha256": "b6154b749938028ac65f2ed44050e1cb8d2740c8991fe5827fc320704da69700"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Precomputed time-window RQA metrics without changing window design or estimator. Plotting does not recalculate statistics, resample surrogates or refit models.",
+      "path": "tests/testthat/test-native-eight-nonlinear-scientific-artists-20261112.R",
+      "sha256": "b6154b749938028ac65f2ed44050e1cb8d2740c8991fe5827fc320704da69700"
+    }
+  ],
+  "additional_regression_evidence": [
+    {
+      "path": "tests/testthat/test-native-scientific-visualization.R",
+      "sha256": "6050d88301984ed4bde175978a31b4307acf038e3302298cb66f3cce722d65ac"
+    }
+  ],
+  "independent_review_status": "Provisional developer six-domain scientific artist geometry; exact-head R and Python tests unobserved, independent certifications 0.",
+  "language_specific_limits": [
+    "The actual Python Matplotlib Axes/Figure, arbitrary ax object injection, Python dataclasses/pandas protocols, exact Python error classes and pixel rendering are not native R objects.",
+    "Source-scientific coordinates and labels are matched in bounded validated native R domains only.",
+    "No nonlinear statistic, permutation law, recurrence algorithm, nonlinear estimand or model is refitted or changed."
+  ]
+}
