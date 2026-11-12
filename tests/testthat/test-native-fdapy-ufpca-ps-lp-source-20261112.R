@@ -146,11 +146,10 @@ test_that("full PS FDApy UFPCA fit produces real native source covariance, eigen
   expect_true(all(is.finite(out$source_reconstructed$values)))
   expect_equal(sum(out$source_quadrature_weights),1,
     tolerance=1e-12)
+  weighted_phi<-sweep(out$source_eigenfunctions,2L,
+    out$source_quadrature_weights,"*")
   expect_equal(
-    out$source_eigenfunctions%*%
-      (out$source_eigenfunctions*
-        matrix(rep(out$source_quadrature_weights,each=2L),nrow=2L)) |>
-      t(),
+    weighted_phi%*%t(out$source_eigenfunctions),
     diag(2),tolerance=1e-7)
   expect_identical(out$curve_ids,fx$trajectories$curve_ids)
   expect_false(out$source_equivalent)
