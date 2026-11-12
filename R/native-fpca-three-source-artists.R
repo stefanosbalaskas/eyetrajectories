@@ -49,7 +49,7 @@
       quartiles=q,
       whisker_low=min(inside),
       whisker_high=max(inside),
-      fliers=a[a<min(inside)|a>max(inside)]))
+      fliers=a[a<min(inside)|a>max(inside)])
   })
   .etr_fpca_three_record("plot_fpca_stability",list(
     title=sprintf("FPCA bootstrap stability (%d replicates)",n),
