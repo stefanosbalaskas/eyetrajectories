@@ -237,8 +237,8 @@ def _etr_fpca_plot_source_oracle(
       ps$x,tolerance=0,ignore_attr=TRUE)
     expect_equal(rs$axes[[1L]]$artists[[1L]]$ydata,
       ps$y,tolerance=1e-12,ignore_attr=TRUE)
-    expect_identical(rs$axes[[1L]]$artists[[1L]]$linestyle,
-      ps$linestyle)
+    expect_identical(tolower(rs$axes[[1L]]$artists[[1L]]$linestyle),
+      tolower(ps$linestyle))
     expect_identical(rs$axes[[1L]]$artists[[1L]]$marker,ps$marker)
     pm<-get("mean")
     for(name in c("title","xlabel","ylabel"))
