@@ -8,15 +8,28 @@
 #' @param config Named list of predictors, participant_column, dimension,
 #'   estimator="two_level_functional_method_of_moments", covariance_ridge
 #'   and empty preprocessing.
-#' @return Native bounded workflow with honest non-Python-equivalent provenance.
+#' @return Native workflow; with strict_source_record=TRUE, a
+#'   9-field frozen-Python-shaped W3 scientific record with actual Gaussian
+#'   spline likelihood fit and measured fit-step audit (not statsmodels parity).
+#' @param strict_source_record Require genuine native Gaussian spline
+#'   likelihood, source-ordered W3 configuration, decisions and scientific
+#'   fields. An R optimizer remains explicitly distinguished from Python.
 #' @export
 etr_run_functional_mixed_effects_workflow<-function(
-    trajectories,design,config){
-  # Opt-in source-family likelihood workflow. Preserve the legacy moments
-  # contract and its strict parameter validation without silent migration.
+    trajectories,design,config,strict_source_record=FALSE){
+  .etr_assert(is.logical(strict_source_record)&&
+    length(strict_source_record)==1L&&!is.na(strict_source_record),
+    "strict_source_record must be a nonmissing logical scalar")
+  # The frozen Python workflow fits a Gaussian spline likelihood model.
+  # Never publish an R moments alternative as a source-scientific W3 fit.
+  if(isTRUE(strict_source_record))
+    .etr_assert(is.list(config)&&!is.data.frame(config)&&
+      identical(config$estimator,"native_joint_bspline_gaussian"),
+      "strict source workflow requires native_joint_bspline_gaussian likelihood")
   if(is.list(config) && !is.data.frame(config) &&
       identical(config$estimator,"native_joint_bspline_gaussian"))
-    return(.etr_source_joint_bspline_workflow(trajectories,design,config))
+    return(.etr_source_joint_bspline_workflow(trajectories,design,config,
+      strict_source_record=strict_source_record))
   etr_validate(trajectories,require_complete=TRUE)
   cfg<-.etr_source_workflow_config(config,
     list(predictors=NULL,participant_column=NULL,dimension=NULL,
