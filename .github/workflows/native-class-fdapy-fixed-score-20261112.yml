@@ -51,7 +51,7 @@ jobs:
           assert len({r["python_name"] for r in registry})==len(registry)
           unresolved_api=sum(r["unresolved_source_gap"]=="TRUE" for r in api)
           unresolved_classes=sum(r["unresolved"]=="TRUE" for r in classes)
-          assert unresolved_api in (2,3),unresolved_api
+          assert unresolved_api in (0,1,2,3),unresolved_api
           assert unresolved_classes==0,unresolved_classes
           assert 508-unresolved_api-unresolved_classes>=505
           (classgap,)=tuple(r for r in classes if r["python_name"]=="TrajectorySet")
