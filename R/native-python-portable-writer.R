@@ -235,6 +235,9 @@
 #'   Python 1.2 portable schema. Native export supports common-grid and
 #'   irregular trajectories, dense FPCA/MFPCA and compositional FPCA.
 #'   Missing character and logical metadata cells use JSON null.
+#'   Frozen Python 1.2 sparse MFPCA strict 29-field joint PACE scientific
+#'   records and fixed-bandwidth paired W2 workflows are additionally
+#'   supported without Python runtime type identity.
 #' @param result An etr_trajectory_set, etr_irregular_trajectory_set,
 #'   etr_fpca, or etr_compositional_fpca.
 #' @param directory New or empty destination directory.
@@ -249,7 +252,9 @@ etr_export_python_portable_result <- function(result,directory,
   .etr_portable_require("digest")
   .etr_portable_require("zip")
   .etr_assert(is.list(result) && inherits(result,c("etr_trajectory_set",
-    "etr_irregular_trajectory_set","etr_fpca","etr_compositional_fpca")),
+    "etr_irregular_trajectory_set","etr_fpca","etr_compositional_fpca",
+    "etr_sparse_mfpca_w2_scientific_record",
+    "etr_sparse_mfpca_paired_source_workflow")),
     paste("native portable writer supports etr_trajectory_set,",
       "etr_irregular_trajectory_set, etr_fpca and etr_compositional_fpca"))
   .etr_assert(identical(include_environment,FALSE),
@@ -263,6 +268,10 @@ etr_export_python_portable_result <- function(result,directory,
       .etr_portable_writer_trajectories(result,add_array,irregular=TRUE)
     } else if(inherits(result,"etr_fpca")) {
       .etr_portable_writer_fpca(result,add_array)
+    } else if(inherits(result,"etr_sparse_mfpca_paired_source_workflow")){
+      .etr_python_mfpca_portable_workflow(result,add_array)
+    } else if(inherits(result,"etr_sparse_mfpca_w2_scientific_record")){
+      .etr_python_mfpca_portable_fit(result,add_array)
     } else {
       .etr_portable_writer_compositional(result,add_array)
     }
