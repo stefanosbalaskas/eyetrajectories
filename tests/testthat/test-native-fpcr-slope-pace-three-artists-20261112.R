@@ -132,7 +132,7 @@ test_that("sparse PACE source artists preserve ok and flagged log scatters",{
       "flagged/failed score system")
     old<-etr_plot_sparse_fpca_score_diagnostics(x$sparse)
     expect_true(old$provenance$log_y)
-    expect_equal(old$geometry$n_samples,3:8)
+    expect_equal(old$geometry$n_samples,as.numeric(3:8))
     expect_identical(old$geometry$ok,c(TRUE,FALSE,FALSE,FALSE,TRUE,FALSE))
   })
 })
