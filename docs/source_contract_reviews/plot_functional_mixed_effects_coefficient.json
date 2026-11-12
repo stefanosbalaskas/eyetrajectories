@@ -28,37 +28,37 @@
       "kind": "source_signature",
       "description": "Frozen eyetrajectoriespy==1.2.0 plotting.py::plot_functional_mixed_effects_coefficient signature and two Python runtime branches inspected at commit c1cd95ad718327550f7e55393ff38582872f7a94. Native R adds strict_source_record=TRUE, preserving previous default R pointwise audit graph and numeric return.",
       "path": "tests/testthat/test-native-mixed-coefficient-scientific-artist-20261112.R",
-      "sha256": "1ff47460688934b91b3c608db95b3aa2f6fddf9849905fa395fe61a70a2899d1"
+      "sha256": "59b441ae0e43aa9d31ac9ea6b69b77504ac273fbb58a68aff35ba77ba1ebdd8d"
     },
     {
       "kind": "accepted_input_domain",
       "description": "Explicit source-shaped native R finite ordered observed-grid mixed coefficient fits or supplied already-calibrated simultaneous-band records; exact coefficient names or zero-based R integer. Matrices must be coefficient-by-time with coherent shapes and source units. Arbitrary Python dataclass identity, injected Python Axes, full optimizer state or exception classes excluded.",
       "path": "tests/testthat/test-native-mixed-coefficient-scientific-artist-20261112.R",
-      "sha256": "1ff47460688934b91b3c608db95b3aa2f6fddf9849905fa395fe61a70a2899d1"
+      "sha256": "59b441ae0e43aa9d31ac9ea6b69b77504ac273fbb58a68aff35ba77ba1ebdd8d"
     },
     {
       "kind": "numerical_outputs",
       "description": "The frozen source unbanded path uses pointwise z=1.959963984540054 times nonnegative standard errors; the supplied-band path uses its calibrated lower and upper directly, including source confidence percentage and scope. Alpha-0.2 fill is before the coefficient line and dashed zero reference, with original source title, units, labels and legend. New R numeric/domain regression tests and opt-in public frozen Python 1.2 Matplotlib fill polygon/line/legend differential tests are authored but not yet executed at exact head.",
       "path": "tests/testthat/test-native-mixed-coefficient-scientific-artist-20261112.R",
-      "sha256": "1ff47460688934b91b3c608db95b3aa2f6fddf9849905fa395fe61a70a2899d1"
+      "sha256": "59b441ae0e43aa9d31ac9ea6b69b77504ac273fbb58a68aff35ba77ba1ebdd8d"
     },
     {
       "kind": "exception_semantics",
       "description": "R native errors reject invalid strict switches, noninteger/out-of-range indices, unknown coefficient names, duplicate or non-increasing observed grid, nonfinite estimates/SE/bounds, contradictory simultaneous intervals, missing/invalid confidence_level or scope. Equivalent Python error subclass object identity is intentionally not asserted.",
       "path": "tests/testthat/test-native-mixed-coefficient-scientific-artist-20261112.R",
-      "sha256": "1ff47460688934b91b3c608db95b3aa2f6fddf9849905fa395fe61a70a2899d1"
+      "sha256": "59b441ae0e43aa9d31ac9ea6b69b77504ac273fbb58a68aff35ba77ba1ebdd8d"
     },
     {
       "kind": "returned_schema",
       "description": "Default native R pointwise 95 percent Wald data.frame and original base-R plot remain. Strict mode returns typed etr_nonlinear_scientific_artist_record with source Matplotlib scientific axes, bounded band endpoints, line/zero artist geometry and legend, not Python matplotlib.axes.Axes or pixel-identical plotting.",
       "path": "tests/testthat/test-native-mixed-coefficient-scientific-artist-20261112.R",
-      "sha256": "1ff47460688934b91b3c608db95b3aa2f6fddf9849905fa395fe61a70a2899d1"
+      "sha256": "59b441ae0e43aa9d31ac9ea6b69b77504ac273fbb58a68aff35ba77ba1ebdd8d"
     },
     {
       "kind": "scientific_estimand",
       "description": "Plot-only presentation of a previously computed mixed-effects functional coefficient; unbanded pointwise Wald uncertainty is scientifically distinct from an externally supplied simultaneously calibrated band. No mixed likelihood optimizer, covariance model, bootstrap distribution, FPCA, or scientific fitting changes.",
       "path": "tests/testthat/test-native-mixed-coefficient-scientific-artist-20261112.R",
-      "sha256": "1ff47460688934b91b3c608db95b3aa2f6fddf9849905fa395fe61a70a2899d1"
+      "sha256": "59b441ae0e43aa9d31ac9ea6b69b77504ac273fbb58a68aff35ba77ba1ebdd8d"
     }
   ],
   "additional_regression_evidence": [
