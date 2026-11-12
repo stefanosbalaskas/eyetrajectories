@@ -19,7 +19,12 @@
 #' @details Draws using base R; Python source returns Matplotlib Axes.
 #' @export
 etr_plot_functional_random_effects <- function(result,
-    effect="intercept",max_participants=NULL,alpha=.35) {
+    effect="intercept",max_participants=NULL,alpha=.35,
+    strict_source_record=FALSE) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
+  if(isTRUE(strict_source_record)&&!is.null(max_participants))
+    .etr_assert(is.integer(max_participants),
+      "strict source max_participants must be a Python-style integer")
   frame<-etr_functional_random_effect_frame(result,effect=effect)
   ids<-result$participant_ids
   time<-.etr_frame_time(result$time)
@@ -58,11 +63,14 @@ etr_plot_functional_random_effects <- function(result,
   graphics::abline(h=0,lty=2)
   if(n<=12L)graphics::legend("topright",legend=ids,lty=1,bty="n")
   rownames(lines)<-NULL
-  invisible(list(lines=lines,participant_ids=ids,
+  out<-list(lines=lines,participant_ids=ids,
     n_plotted=as.integer(n),effect=effect,alpha=alpha,
     provenance=list(backend="base_R",
       source_operation="plot_functional_random_effects",
-      python_axes_return_equivalence=FALSE)))
+      python_axes_return_equivalence=FALSE))
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_mixed_participant_source_artist(result,out)))
+  invisible(out)
 }
 
 #' Native trial functional random-intercept plot
@@ -72,7 +80,12 @@ etr_plot_functional_random_effects <- function(result,
 #' @return Invisible source-aligned line geometry and retained trial IDs.
 #' @export
 etr_plot_functional_trial_random_effects <- function(
-    result,participant_id=NULL,max_trials=12L) {
+    result,participant_id=NULL,max_trials=12L,
+    strict_source_record=FALSE) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
+  if(isTRUE(strict_source_record))
+    .etr_assert(is.integer(max_trials),
+      "strict source max_trials must be a Python-style integer")
   frame<-etr_functional_trial_random_effect_frame(result)
   unit<-.etr_random_effect_plot_time_unit(result)
   .etr_assert(is.numeric(max_trials)&&length(max_trials)==1L&&
@@ -106,9 +119,12 @@ etr_plot_functional_trial_random_effects <- function(
   graphics::abline(h=0)
   if(length(ids)<=12L)graphics::legend("topright",legend=ids,lty=1,bty="n")
   rownames(selected)<-NULL
-  invisible(list(lines=selected,trial_ids=ids,
+  out<-list(lines=selected,trial_ids=ids,
     n_plotted=as.integer(length(ids)),participant_id=participant_id,
     provenance=list(backend="base_R",
       source_operation="plot_functional_trial_random_effects",
-      python_axes_return_equivalence=FALSE)))
+      python_axes_return_equivalence=FALSE))
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_mixed_trial_source_artist(result,out)))
+  invisible(out)
 }
