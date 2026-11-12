@@ -1,0 +1,124 @@
+name: Native functional mixed W3 scientific source records
+on:
+  pull_request:
+    paths:
+      - "R/native-mixed-participant-bootstraps.R"
+      - "R/native-mixed-covariance-sensitivity.R"
+      - "R/native-mixed-w3-source-records.R"
+      - "tests/testthat/test-native-mixed-w3-source-records-20261112.R"
+      - "docs/source_contract_reviews/bootstrap_functional_mixed_effects_coefficients.json"
+      - "docs/source_contract_reviews/bootstrap_functional_mixed_effects_full_refit.json"
+      - "docs/source_contract_reviews/functional_mixed_effects_covariance_sensitivity.json"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/reviewed_source_contract_closures_v1.csv"
+      - ".github/workflows/native-mixed-w3-source-records-20261112.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  six-domain-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify 427/508 scoped developer scientific reviews and immutable SHA256 receipts
+        shell: bash
+        run: |
+          python - <<'PY'
+          import csv,hashlib,json
+          from pathlib import Path
+          root=Path('.')
+          def rows(path):
+              with (root/path).open(encoding='utf-8',newline='') as f:
+                  return list(csv.DictReader(f))
+          gaps=rows('inst/extdata/native_source_contract_gaps_stage22.csv')
+          nc=rows('inst/extdata/native_nonfunction_source_gaps_v1.csv')
+          reg=rows('inst/extdata/reviewed_source_contract_closures_v1.csv')
+          assert len(gaps)==203 and len(nc)==1
+          remaining=sum(x['unresolved_source_gap']=='TRUE' for x in gaps)
+          noncallable=sum(x['unresolved']=='TRUE' for x in nc)
+          assert (remaining,noncallable,508-remaining-noncallable)==(80,1,427)
+          targets=(
+            'bootstrap_functional_mixed_effects_coefficients',
+            'bootstrap_functional_mixed_effects_full_refit',
+            'functional_mixed_effects_covariance_sensitivity')
+          for name in targets:
+              (gap,)=tuple(x for x in gaps if x['python_name']==name)
+              assert gap['unresolved_source_gap']=='FALSE'
+              (r,)=tuple(x for x in reg if x['python_name']==name)
+              assert r['independently_certified']=='FALSE'
+              raw=(root/r['review_record_path']).read_bytes()
+              assert hashlib.sha256(raw).hexdigest()==r['review_record_sha256']
+              review=json.loads(raw)
+              assert review['frozen_python_commit']=='c1cd95ad718327550f7e55393ff38582872f7a94'
+              assert review['independently_certified'] is False
+              assert {x['kind'] for x in review['case_evidence']}=={
+                  'source_signature','accepted_input_domain','numerical_outputs',
+                  'exception_semantics','returned_schema','scientific_estimand'}
+              for ev in review['native_files']+review['case_evidence']:
+                  f=root/ev['path']
+                  assert hashlib.sha256(f.read_bytes()).hexdigest()==ev['sha256'],f
+          print('427 developer-scoped source scientific records; 80 callable, 1 noncallable unresolved; zero independently certified')
+          PY
+  native-three-os:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+            any::nlme
+      - name: Genuine joint likelihood and strict source W3 mixed bootstrap/sensitivity tests
+        shell: bash
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          testthat::test_local(".",
+            filter="native-mixed-w3-source-records-20261112|native-joint-fixed-covariance-bootstrap|native-joint-likelihood-full-refit-bootstrap|native-joint-likelihood-covariance-sensitivity",
+            reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
+  frozen-python-1-2:
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        id: python
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+            any::nlme
+      - name: Frozen Python 1.2 dataclass source field order, native numerical GLS and likelihood tests
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          stopifnot(identical(et_python_version(),"1.2.0"))
+          testthat::test_local(".",
+            filter="native-mixed-w3-source-records-20261112|native-joint-fixed-covariance-bootstrap|native-joint-likelihood-full-refit-bootstrap|native-joint-likelihood-covariance-sensitivity",
+            reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
