@@ -1,0 +1,69 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "detect_functional_outliers_skfda",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_DEFAULT_BOXPlot_SKFDA_MODIFIED_BAND_DEPTH_SIMPSON_CENTRAL_FUNCTIONAL_ENVELOPE",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/backends.py::detect_functional_outliers_skfda(method='boxplot') -> scikit-fda BoxplotOutlierDetector/ModifiedBandDepth/SimplicialDepth, GAA-UAM/scikit-fda source snapshot 9e21b2a0bf7674ebea906851f48883c3f4c0c375",
+  "native_signature": "etr_detect_functional_outliers_skfda(trajectories,dimension,method=\"boxplot\",factor=1.5,random_state=0L,strict_source_record=TRUE)",
+  "reviewer_statement": "Native R true frozen scikit-fda default method='boxplot' functional-depth scientific calculation: pointwise univariate SimplicialDepth over all distinct training pairs (including ties), scipy-compatible Simpson averaging over original possibly irregular time grids, deepest ceil(n/2) central envelope and factor times functional central width fences. Real source MSPlot method, Python detector object and central-cutoff MBD ties are explicitly unimplemented/unqualified.",
+  "native_language_semantic_policy": "Retains original marginal Tukey native R default strict_source_record=FALSE. With TRUE returns a typed source scientific R record with full depth and central envelope evidence; real Python scikit-fda detector object/exception identity not fabricated. Full Python method coverage cannot be claimed since msplot remains unsupported.",
+  "native_files": [
+    {
+      "path": "R/native-skfda-mbd-functional-boxplot.R",
+      "sha256": "4741154bf367e57f9ea29043acb1be2d5147d734247ad09d1dd07e7c14ccf428"
+    },
+    {
+      "path": "R/native-thirdparty-functional-analogues.R",
+      "sha256": "9baaf3bcd0b574e388f3638903eda1064cb6c742c8b635c4725d0e841c2c7f3e"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Frozen Python public function accepts dimension, method boxplot/msplot, factor, random_state, wraps actual BoxplotOutlierDetector in FunctionalOutlierResult; native strict scope implements only selected boxplot method and explicitly rejects msplot.",
+      "path": "tests/testthat/test-native-skfda-mbd-functional-boxplot-20261112.R",
+      "sha256": "525eae44993b138d3c45e1e65b42129ff8aa2c6455d879f5616ddd4cc275701d"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Native bounded source-scientific default: complete finite univariate selected channel with >=3 curves, >=2 strictly increasing finite time samples, positive finite factor and no MBD ties straddling central 50% membership. Native rejects Python-specific backend/missing optional library and broad coercion cases.",
+      "path": "tests/testthat/test-native-skfda-mbd-functional-boxplot-20261112.R",
+      "sha256": "525eae44993b138d3c45e1e65b42129ff8aa2c6455d879f5616ddd4cc275701d"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Native pointwise SimplicialDepth equals [choose(n,2)-choose(n_strictly_below,2)-choose(n_strictly_above,2)]/choose(n,2). Integrate MBD using explicit SciPy Simpson nonuniform weights including Cartwright even-length correction. Central ceil(n/2) envelope pointwise min/max and source multiplier fences. Expected published example labels [-1,+1,+1,-1].",
+      "path": "tests/testthat/test-native-skfda-mbd-functional-boxplot-20261112.R",
+      "sha256": "525eae44993b138d3c45e1e65b42129ff8aa2c6455d879f5616ddd4cc275701d"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "R raises explicit errors for invalid selected channel, incomplete values, nonpositive or nonfinite factor, invalid native time, unsupported stochastic msplot method, and central depth ties; Python import errors, backend object errors, general Python NumPy tie sorting and MSPlot failure paths unqualified.",
+      "path": "tests/testthat/test-native-skfda-mbd-functional-boxplot-20261112.R",
+      "sha256": "525eae44993b138d3c45e1e65b42129ff8aa2c6455d879f5616ddd4cc275701d"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Native etr_skfda_mbd_boxplot_scientific_record contains exact source scientific fields diagnostics (curve_id,backend_label,review_flag), method='skfda_boxplot', reference=NULL, provenance including scientific warning, backend_object=NULL. Extra R audit matrices weights, pointwise and integrated depth, zero-based central membership and envelopes; no Python detector instance.",
+      "path": "tests/testthat/test-native-skfda-mbd-functional-boxplot-20261112.R",
+      "sha256": "525eae44993b138d3c45e1e65b42129ff8aa2c6455d879f5616ddd4cc275701d"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Functional boxplot based on univariate Modified Band Depth and Simpson integrated depth; review flags from deepest-half envelope scaled by factor. Not marginal pointwise Tukey quartiles, not stochastic MSPlot directional-outlyingness/MCD, no automatic participant exclusion.",
+      "path": "tests/testthat/test-native-skfda-mbd-functional-boxplot-20261112.R",
+      "sha256": "525eae44993b138d3c45e1e65b42129ff8aa2c6455d879f5616ddd4cc275701d"
+    }
+  ],
+  "additional_regression_evidence": [],
+  "independent_review_status": "Provisional developer-scoped mathematical-source default boxplot only; native tests and actual frozen Python 1.2 real scikit-fda differential test authored. Runtime CI green, independent full-source class parity and MSPlot method have not been witnessed or independently certified.",
+  "language_specific_limits": [
+    "Frozen source method='msplot' requires directional outlyingness and robust MinCovDet stochastic estimator with published scaling cutoffs: deliberately NOT implemented.",
+    "Native strict mode rejects central MBD ties straddling the 50% membership cutoff to avoid unverified NumPy argsort quicksort tie resolution.",
+    "Returned backend_object is NULL in native R, not skfda.BoxplotOutlierDetector.",
+    "Missing/error semantics, incomplete/degenerate curves, actual scikit-fda Python methods and full Python accepted domain not independently certified.",
+    "Direct differential tests target exact pinned Python public function and real scikit-fda, but passing CI is not asserted."
+  ]
+}

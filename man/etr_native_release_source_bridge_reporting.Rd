@@ -112,5 +112,35 @@ backend equivalence are not certified. See
 \code{docs/native-skfda-basis-sampled-ls-source-20261112.md}.
 }
 
+\section{Modified Band Depth source-scientific functional boxplot}{
+The opt-in \code{etr_detect_functional_outliers_skfda(trajectories,
+dimension, method="boxplot", factor=1.5, random_state=0L,
+strict_source_record=TRUE)} implements the frozen Python 1.2
+scikit-fda BoxplotOutlierDetector's deterministic default method
+through a native R ModifiedBandDepth functional data record.
+
+Each selected observed channel curve receives pointwise
+SimplicialDepth based on all distinct pairs of training curves.
+The depth profile is integrated using SciPy-compatible composite
+Simpson quadrature on the actual (possibly nonuniform) observed
+time grid. The deepest \code{ceil(n/2)} curves define the functional
+central region, which is expanded by \code{factor} times the
+pointwise central-envelope width. A curve is flagged for scientific
+review if any point lies outside this functional fence.
+
+Strict source mode is bounded to complete finite input and
+untied deepest-half cutoff depths. It returns native R labels,
+modified-band depths, Simpson weights and central/non-outlying
+envelope diagnostics, never a real Python scikit-fda detector.
+The stochastic \code{method="msplot"} requires different
+directional-outlyingness and robust MCD calculations and is
+explicitly not supported by this scientific review. The
+historical marginal pointwise Tukey alternative remains the
+default when \code{strict_source_record=FALSE}.
+Full Python class/exception and MSPlot-method contract equivalence
+is not claimed. See
+\code{docs/native-skfda-mbd-functional-boxplot-source-20261112.md}.
+}
+
 \value{Each function returns its own documented native R, scientific-model,
 bridge, workflow or audit result; no single shared return type is asserted.}

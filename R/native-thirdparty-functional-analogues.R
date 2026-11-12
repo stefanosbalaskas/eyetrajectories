@@ -148,11 +148,24 @@ etr_to_skfda_basis<-function(trajectories,dimension,basis="bspline",
 #' @param dimension Explicit observed functional channel.
 #' @param method Only boxplot; scikit-fda msplot is not implemented.
 #' @param factor Positive Tukey multiplier.
-#' @param random_state Recorded seed, unused by deterministic R envelope.
+#' @param random_state Recorded seed, unused by deterministic native
+#'   functional boxplot; a stochastic Python MSPlot is not implemented.
+#' @param strict_source_record TRUE selects the pinned scikit-fda default
+#'   ModifiedBandDepth functional-boxplot mathematical source estimator:
+#'   univariate simplicial depths, scipy-compatible Simpson integration,
+#'   deepest-half central envelope and expanded pointwise fences.
+#'   Tied depth cutoffs and stochastic MSPlot are explicitly unqualified.
+#'   Default FALSE retains the historical marginal Tukey alternative.
 #' @export
 etr_detect_functional_outliers_skfda<-function(
     trajectories,dimension,method="boxplot",factor=1.5,
-    random_state=0L){
+    random_state=0L,strict_source_record=FALSE){
+  .etr_assert(is.logical(strict_source_record)&&
+    length(strict_source_record)==1L&&!is.na(strict_source_record),
+    "strict_source_record must be a nonmissing logical scalar")
+  if(isTRUE(strict_source_record))
+    return(.etr_skfda_mbd_boxplot_scientific(
+      trajectories,dimension,method,factor,random_state))
   etr_validate(trajectories,require_complete=TRUE)
   .etr_assert(is.character(dimension)&&length(dimension)==1L&&
     !is.na(dimension)&&dimension%in%trajectories$dimension_names,
