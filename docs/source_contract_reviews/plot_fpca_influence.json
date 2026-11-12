@@ -12,7 +12,7 @@
   "native_files": [
     {
       "path": "R/native-nine-scientific-plots.R",
-      "sha256": "bddeec3d310ba30066db3ca74a9d8dcf4525839317864795e10c7c37aa65190f"
+      "sha256": "6259a3d5b47fd51f6062cfc633a6246abee6fd9b0548a36f74071365f1930383"
     },
     {
       "path": "R/native-fpca-three-source-artists.R",
@@ -60,7 +60,7 @@
   "additional_regression_evidence": [
     {
       "path": "tests/testthat/test-native-nine-scientific-plots.R",
-      "sha256": "a99a2d7e8b5d76646a71b68b019153eb46bee693a40bc121027909e88f599f2a"
+      "sha256": "d12da90bfe0983442569fa6311cdd0dd18e6fad730ad1149af85b455ffa855c8"
     }
   ],
   "independent_review_status": "Developer source-scientific geometry review; exact-head native/Python test run not yet confirmed green, no independent reviewer signed off.",
