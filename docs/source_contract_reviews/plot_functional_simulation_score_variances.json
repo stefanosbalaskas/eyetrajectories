@@ -1,0 +1,73 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "plot_functional_simulation_score_variances",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_NATIVE_FUNCTIONAL_SIMULATION_SOURCE_ARTIST_REVIEW",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/plotting.py::plot_functional_simulation_score_variances",
+  "native_signature": "etr_plot_functional_simulation_score_variances(result,strict_source_record=TRUE)",
+  "reviewer_statement": "A provisional developer-reviewed native R scientific plotting contract on a genuine simulated functional result. Numeric source artists have pinned Python 1.2 comparisons in committed tests, but successful exact-head CI has not yet been observed, and native R cannot return Matplotlib Axes or provide runtime class parity. This is not independent full-domain certification.",
+  "native_language_semantic_policy": "Native R scientific geometry is source-aligned on accepted simulated truth and original observations. Source plot semantics for numeric zero-based indices, finite scatter masks, phase-warp line order and population variance are implemented in strict mode. Python plotting Axes identity, Matplotlib rendering bytes and exception classes are excluded.",
+  "native_files": [
+    {
+      "path": "R/native-functional-simulation-plots.R",
+      "sha256": "3f66324fb53303f35958158278a480970ebc02429d13071363894ca0ed722436"
+    },
+    {
+      "path": "R/native-functional-simulation-artist-source.R",
+      "sha256": "c6b02d98e186ae98e409fbd180f69bd988e0f0ba1c5b4751c4b09943fddd5b62"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Frozen Python 1.2 src/eyetrajectoriespy/plotting.py::plot_functional_simulation_score_variances. Six grouped source score-variance artist families across curve, participant, trial sources and declared/realized values.",
+      "path": "tests/testthat/test-native-simulation-three-artist-source-20261112.R",
+      "sha256": "9062671768c5dc1b28ac33448ea5002151f52e125f369c1e728da1e36e71d351"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Native genuine functional simulation with complete finite curve/participant/trial score matrices and corresponding component eigenvalues. Strict scientific mode requires valid native result class and all six source bar arrays. No alternative statistical variance estimator is used; matplotlib axes injection and native Python bar artists are unsupported.",
+      "path": "tests/testthat/test-native-simulation-three-artist-source-20261112.R",
+      "sha256": "9062671768c5dc1b28ac33448ea5002151f52e125f369c1e728da1e36e71d351"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Source declared columns are curve eigenvalues, participant eigenvalues, trial eigenvalues; realized columns compute NumPy population var(ddof=0), exactly mean((scores-mean)^2) rather than sample n-1 variance. Six bar families ordered per source declared then realized and arranged with Matplotlib width .18 and x-center offsets source-2.5 and source+.5. Frozen public Matplotlib bar patches get_x()+width/2, get_height, width and legend labels are compared on same native actual simulation truth in committed direct source tests.",
+      "path": "tests/testthat/test-native-simulation-three-artist-source-20261112.R",
+      "sha256": "9062671768c5dc1b28ac33448ea5002151f52e125f369c1e728da1e36e71d351"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Reject malformed simulation truth scores or source component counts, nonfinite/negative source variances, unsupported class and nonlogical strict flag. Matplotlib backend exceptions and runtime object identity are not copied.",
+      "path": "tests/testthat/test-native-simulation-three-artist-source-20261112.R",
+      "sha256": "9062671768c5dc1b28ac33448ea5002151f52e125f369c1e728da1e36e71d351"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Source Matplotlib Axes has six bar containers with source axis title/ticks and legend. Native R strict artist record preserves every source bar center, height, width and label, semantic tick text and exact source legend order. Native base R remains a distinct pixel and class backend.",
+      "path": "tests/testthat/test-native-simulation-three-artist-source-20261112.R",
+      "sha256": "9062671768c5dc1b28ac33448ea5002151f52e125f369c1e728da1e36e71d351"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Descriptive audit of declared versus population-realized variance in simulated curve-level, participant-level and trial-level FPC score sources, with correct NumPy ddof=0 denominator and no sampling-variance bias correction.",
+      "path": "tests/testthat/test-native-simulation-three-artist-source-20261112.R",
+      "sha256": "9062671768c5dc1b28ac33448ea5002151f52e125f369c1e728da1e36e71d351"
+    }
+  ],
+  "additional_regression_evidence": [
+    {
+      "path": "tests/testthat/test-native-functional-simulation-plots.R",
+      "sha256": "9efeb0b065005247a1f9ef578d3f5fa70dcb93154ecd5fd678b39b5b58894735"
+    }
+  ],
+  "independent_review_status": "Provisional scoped native scientific geometry author review; exact-head differential CI queued/unverified, independent certification zero.",
+  "language_specific_limits": [
+    "R base plotting does not implement Python Matplotlib Axes or Figure return type, external ax parameter or pixel-equivalent rendering.",
+    "Strict result is a genuine native R simulated object with source artist data, not a Python FunctionalSimulationResult dataclass instance.",
+    "Python and R exceptions, plot legend backend state and Matplotlib figure event machinery remain different.",
+    "New tests have not been observed executing green, and no independent source-contract approval, main-branch merge or CRAN qualification is claimed."
+  ]
+}
