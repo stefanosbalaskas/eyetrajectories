@@ -97,7 +97,7 @@ test_that("source functional boxplot guards rank ties and stochastic MSPlot excl
   expect_error(etr_detect_functional_outliers_skfda(
     x,"x",factor=0,strict_source_record=TRUE),"positive")
   expect_error(etr_detect_functional_outliers_skfda(
-    x,"x",dimension="y",strict_source_record=TRUE),"dimension")
+    x,"y",strict_source_record=TRUE),"dimension")
   same<-array(1,dim=c(4L,6L,1L))
   tied<-etr_trajectory_set(0:5,same,paste0("a",1:4),"x")
   expect_error(etr_detect_functional_outliers_skfda(
