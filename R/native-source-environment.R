@@ -13,10 +13,30 @@
 #' Records the R interpreter, platform, package and relevant thread settings.
 #' Unlike Python capture_environment(), this does not claim a Python
 #' executable or Python dependency versions when Python is unavailable.
-#' @return Named schema-versioned reproducibility record. Its Python/R
-#'   schema difference remains explicitly pending source-contract review.
+#' @param strict_source_record FALSE (default) preserves the existing
+#'   native R environment record unchanged. TRUE returns an explicitly
+#'   source-mapped scientific reproducibility record with exact Python
+#'   source field names, actual R interpreter/dependency measurements,
+#'   and the source runtime-language differences transparently recorded.
+#' @param python_source_snapshot Optional actual Python 1.2
+#'   `capture_environment()` record captured EXTERNALLY; validated
+#'   against exact source keys and scientific metadata without importing
+#'   Python or inventing interpreter/dependency values. Requires
+#'   `strict_source_record=TRUE`.
+#' @return Named schema-versioned reproducibility record, or an
+#'   inspectable source-scientific R/Python environment comparison. The
+#'   default report captures R runtime facts, not a Python interpreter.
 #' @export
-etr_capture_environment <- function(){
+etr_capture_environment <- function(strict_source_record=FALSE,
+    python_source_snapshot=NULL){
+  .etr_assert(is.logical(strict_source_record)&&
+    length(strict_source_record)==1L&&!is.na(strict_source_record),
+    "strict_source_record must be a nonmissing logical scalar")
+  if(isTRUE(strict_source_record))
+    return(.etr_capture_environment_source_scientific(
+      python_source_snapshot=python_source_snapshot))
+  .etr_assert(is.null(python_source_snapshot),
+    "python_source_snapshot is only accepted with strict_source_record=TRUE")
   info<-Sys.info()
   package_version<-tryCatch(as.character(utils::packageVersion("eyetrajectories")),
     error=function(e){
