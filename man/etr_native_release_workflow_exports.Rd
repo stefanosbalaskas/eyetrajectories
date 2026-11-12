@@ -107,6 +107,24 @@ portable filenames, and the destination must be new. The default
 classes and arbitrary Python dataclass and backend objects remain outside
 the portable scope.
 }
+\section{W4 seven-route scientific plotting and figure export}{
+The opt-in \code{etr_plot_workflow_result(..., strict_source_record=TRUE)}
+supports seven explicitly named canonical workflows: dense and sparse
+FPCA components, sparse multivariate FPCA components, function-on-scalar,
+functional mixed-effects, generalized functional coefficients and recurrence.
+It returns an R scientific artist-geometry record, not a Python Matplotlib
+Axes object or guaranteed pixel-identical image. The existing three-route
+native result and numeric output remain the default.
+\code{etr_save_workflow_figure(..., strict_source_record=TRUE)} writes
+actual native R PNG/SVG/PDF files and allows overwrite. Its strict route
+requires \code{close=TRUE} to flush R devices and accepts supported device
+DPI values from 1 to 1200. Python \code{close=FALSE}, arbitrary Python
+Axes injection, SVG metadata identity and pathlib object identity remain
+unsupported. Neither entry point is an independently certified full
+Python 1.2 contract. See
+\code{docs/native-w4-seven-workflow-figure-source-scope.md}.
+}
+
 \section{Exported entry points}{
 \describe{
 \item{\code{etr_export_workflow_bundle}}{\emph{export workflow bundle} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}
