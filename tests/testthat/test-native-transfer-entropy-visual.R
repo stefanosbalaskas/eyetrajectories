@@ -100,7 +100,10 @@ test_that("three actual Python source names are mapped and unsigned",{
     expect_identical(x$native_r_candidate,paste0("etr_",name))
     expect_identical(x$native_implementation_stage,29L)
     expect_true(x$native_implementation_started)
-    expect_true(x$source_contract_gap_unresolved)
+    if(identical(name,"plot_transfer_entropy_sensitivity"))
+      expect_false(x$source_contract_gap_unresolved)
+    else
+      expect_true(x$source_contract_gap_unresolved)
     expect_false(x$one_to_one_native_contract_complete)
   }
   expect_equal(nrow(z),508L)
@@ -108,7 +111,7 @@ test_that("three actual Python source names are mapped and unsigned",{
   expect_gte(sum(z$named_native_candidate&z$is_python_function),236L)
   expect_gte(sum(z$native_implementation_started),211L)
   expect_lte(sum(z$is_python_function&!z$named_native_candidate),144L)
-  expect_gte(sum(z$source_contract_gap_unresolved),57L)
+  expect_lte(sum(z$source_contract_gap_unresolved),28L)
   expect_equal(sum(z$one_to_one_native_contract_complete),0L)
 })
 
