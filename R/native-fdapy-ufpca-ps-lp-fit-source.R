@@ -199,6 +199,14 @@
   .etr_assert(is.character(fit_smoothing)&&length(fit_smoothing)==1L&&
     fit_smoothing%in%c("PS","LP"),
     "FDApy native full UFPCA source fit needs fit_smoothing PS or LP")
+  # UFPCA.transform(data,method="PACE",tol=...) passes tol through
+  # IrregularFunctionalData.center to DenseFunctionalData.smooth.
+  # Source PSplines.__init__ does NOT accept 'tol', whereas source
+  # LocalPolynomial.__init__ accepts and ignores **kwargs. Therefore
+  # the frozen public wrapper's score_smoothing='PS' can fail with a
+  # TypeError rather than supplying scores. Do not claim that mode.
+  .etr_assert(identical(score_smoothing,"LP"),
+    "FDApy frozen 1.0.x public PACE transform with tol requires score_smoothing='LP'; PS source passes unexpected tol to PSplines")
   .etr_assert(is.null(kwargs_mean)||is.list(kwargs_mean),
     "FDApy kwargs_mean must be a named source options list")
   .etr_assert(is.null(kwargs_covariance)||is.list(kwargs_covariance),
