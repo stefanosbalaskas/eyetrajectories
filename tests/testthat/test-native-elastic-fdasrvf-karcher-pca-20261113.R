@@ -128,8 +128,11 @@ test_that("native fdasrvf source Karcher supports single principal component and
 test_that("native elastic source explicitly rejects unreviewed method, warping and rank domains",{
   x<-.etr_elastic_native_phase_fixture(n=6L,m=25L)
   fit<-function(...){
-    etr_fit_elastic_fpca(x,n_components=2L,
-      method="DP",strict_source_record=TRUE,...)
+    kwargs<-utils::modifyList(
+      list(trajectories=x,n_components=2L,
+        method="DP",strict_source_record=TRUE),
+      list(...))
+    do.call(etr_fit_elastic_fpca,kwargs)
   }
   expect_error(fit(method="RBFGS"),"DP.*only")
   expect_error(fit(method="identity_only"),"DP.*only")
