@@ -118,7 +118,7 @@
   if(is.null(provenance))provenance<-list()
   provenance$dimension<-dimension
   provenance$factor<-as.numeric(factor)
-  provenance$random_state<-random_state
+  provenance["random_state"]<-list(random_state)
   provenance$scientific_warning<-warning_text
   structure(list(
     diagnostics=data.frame(
