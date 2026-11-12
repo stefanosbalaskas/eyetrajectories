@@ -1,0 +1,73 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "plot_sparse_mfpca_score_diagnostics",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_NATIVE_SOURCE_ARTIST_GEOMETRY_REVIEW",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/sparse_multivariate_plotting.py::plot_sparse_mfpca_score_diagnostics",
+  "native_signature": "etr_plot_sparse_mfpca_score_diagnostics(result,...,strict_source_record=TRUE)",
+  "reviewer_statement": "Provisional developer-reviewed source scientific graphics geometry on actual native R sparse joint PACE models, verified in committed tests against exact Matplotlib 1.2 data/artists (not observed green yet). R base graphics is not Matplotlib and runtime plotting return types, colors and injected axes remain outside the accepted scoped scientific domain. No independent certification.",
+  "native_language_semantic_policy": "Native R scientific artist geometry implements source line/image/scatter coordinates, layout, common color limits, titles, labels and failure markers. The renderer uses R base graphics and cannot return actual Python Matplotlib axes or guarantee pixel-identical output; its typed plot metadata explicitly reports matplotlib_object_identity=false.",
+  "native_files": [
+    {
+      "path": "R/native-sparse-scientific-graphics.R",
+      "sha256": "7b86912b7f82c8dde63f68630c0722a537513007b56c91348b048cb1e959cd7d"
+    },
+    {
+      "path": "R/native-sparse-mfpca-artist-source.R",
+      "sha256": "d0d13a2ea3e7bc85023a8d10a74caff301cbb16940cca962da41261d7e406e6b"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Frozen Python public src/eyetrajectoriespy/sparse_multivariate_plotting.py::plot_sparse_mfpca_score_diagnostics. Per-curve source PACE joint Gaussian score covariance condition-number scatter and explicit nonfinite failures",
+      "path": "tests/testthat/test-native-sparse-mfpca-four-artist-source-20261112.R",
+      "sha256": "55afabe13d9f26fbe7715fcf7eca1be606539dcdb132817f379e7f2f474d47ab"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Real fitted native paired sparse MFPCA scientific record with score_diagnostics columns n_time_points, condition_number and status_code. Strict source geometry records finite successful and flagged points, and an empty nonfinite/failed Matplotlib-style scatter collection when any system is nonfinite; empty and all nonfinite input valid as in Python source.",
+      "path": "tests/testthat/test-native-sparse-mfpca-four-artist-source-20261112.R",
+      "sha256": "55afabe13d9f26fbe7715fcf7eca1be606539dcdb132817f379e7f2f474d47ab"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Native source uses exactly recorded joint PACE conditional system matrix conditioning, not new/unqualified scores; scatter x=n_time_points and y=condition_number, finite mask np.isfinite both, okay statuses code=='ok', flagged otherwise. Python public scatter collection get_offsets on same diagnostic data is the frozen numerical geometry oracle; native base R now renders all-nonfinite or empty scores without throwing away the scientific failure semantics.",
+      "path": "tests/testthat/test-native-sparse-mfpca-four-artist-source-20261112.R",
+      "sha256": "55afabe13d9f26fbe7715fcf7eca1be606539dcdb132817f379e7f2f474d47ab"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Rejects missing required diagnostics columns and invalid status-code class/nonlogical strict flag; source valid all-nonfinite diagnostics now yield an empty native figure and failure legend rather than errors. Python class identity and backend exceptions remain different.",
+      "path": "tests/testthat/test-native-sparse-mfpca-four-artist-source-20261112.R",
+      "sha256": "55afabe13d9f26fbe7715fcf7eca1be606539dcdb132817f379e7f2f474d47ab"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "One-panel native strict source artist record contains Matplotlib-source scatter collection labels, paired-point offsets and empty nonfinite/failed placeholder, axes labels and title; default R backend returns finite diagnostics with failure counts. It is not a Python Matplotlib Axes class and native glyph pixels may differ.",
+      "path": "tests/testthat/test-native-sparse-mfpca-four-artist-source-20261112.R",
+      "sha256": "55afabe13d9f26fbe7715fcf7eca1be606539dcdb132817f379e7f2f474d47ab"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Visual diagnosis of the numerical conditioning and explicit failed/nonfinite status of each actual joint PACE conditional score-system solve, including unsuccessful attempts, without conflating missing points with successful fitting.",
+      "path": "tests/testthat/test-native-sparse-mfpca-four-artist-source-20261112.R",
+      "sha256": "55afabe13d9f26fbe7715fcf7eca1be606539dcdb132817f379e7f2f474d47ab"
+    }
+  ],
+  "additional_regression_evidence": [
+    {
+      "path": "tests/testthat/test-native-sparse-scientific-graphics.R",
+      "sha256": "475025401e40c8a8a2646b2f5a60a230760a8f1c07959333636e66987162b648"
+    }
+  ],
+  "independent_review_status": "Scoped developer review only; exact-head CI and pinned Matplotlib differential are queued or unverified, no independent scientific contract certification.",
+  "language_specific_limits": [
+    "Matplotlib Axes and Figure identity, external axes injection, and pixel-exact `coolwarm` rendering cannot be implemented by a native base-R graphics return.",
+    "Accepted source parity is restricted to fitted scientific array values, line/scatter points, image extents/color limits, metadata and failure geometry, not complete Python graphics objects.",
+    "Native result remains a real fitted R scientific object; Python class identity and exact error classes are not interchangeable.",
+    "No green exact-head CI observed, independent certification, main-branch merge, or CRAN readiness is claimed."
+  ]
+}
