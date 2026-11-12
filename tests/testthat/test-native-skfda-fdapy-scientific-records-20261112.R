@@ -88,11 +88,14 @@ test_that("FDApy source maps per-curve irregular coordinates with zero-based key
   expect_error(etr_to_fdapy_irregular(tr,"x"),
     "at least 3 samples per curve")
   # Legacy R fdapace path still handles its declared >=3-visit domain.
-  tr_three<-etr_irregular_trajectory_set(time[-1],values[-1],
-    c("B","C"),c("x","y"),time_unit="s")
+  time_three<-list(time[[2L]],time[[3L]],c(0,.3,.9))
+  values_three<-list(values[[2L]],values[[3L]],
+    cbind(x=c(.1,.2,.3),y=c(1,2,3)))
+  tr_three<-etr_irregular_trajectory_set(time_three,values_three,
+    c("B","C","D"),c("x","y"),time_unit="s")
   old<-etr_to_fdapy_irregular(tr_three,"x")
   expect_s3_class(old,"etr_sparse_curves")
-  expect_identical(old$times,time[-1])
+  expect_identical(old$times,time_three)
 })
 
 test_that("FDApy source raises on selected missing data and wrong channels",{
@@ -157,8 +160,11 @@ _irregular_values=_ipy.values
   expect_identical(names(data),
     c("data_matrix","grid_points","dataset_name","coordinate_names"))
   expect_equal(as.numeric(data$grid_points),c(0,.5,1),tolerance=0)
-  expect_equal(as.array(data$data_matrix),array(0:17,c(3L,3L,2L)),
-    ignore_attr=TRUE,tolerance=0)
+  dm<-as.array(data$data_matrix)
+  expect_identical(dim(dm),c(3L,3L,2L))
+  expect_equal(as.numeric(dm[1L,1L,]),c(0,1),tolerance=0)
+  expect_equal(as.numeric(dm[2L,1L,]),c(6,7),tolerance=0)
+  expect_equal(as.numeric(dm[3L,3L,]),c(16,17),tolerance=0)
   expect_identical(data$dataset_name,"eyetrajectoriespy trajectories")
   expect_identical(as.character(unlist(data$coordinate_names)),c("x","y"))
   keys<-reticulate::py_eval("list(_irregular_argvals.keys())",convert=TRUE)
