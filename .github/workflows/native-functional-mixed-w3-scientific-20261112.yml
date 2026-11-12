@@ -1,0 +1,121 @@
+name: Native mixed Gaussian W3 source-scientific workflow
+on:
+  pull_request:
+    paths:
+      - "R/native-bounded-model-workflows.R"
+      - "R/native-functional-mixed-w3-source-workflow.R"
+      - "tests/testthat/test-native-functional-mixed-w3-scientific-20261112.R"
+      - "docs/source_contract_reviews/run_functional_mixed_effects_workflow.json"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/reviewed_source_contract_closures_v1.csv"
+      - "man/etr_run_functional_mixed_effects_workflow.Rd"
+      - ".github/workflows/native-functional-mixed-w3-scientific-20261112.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  scientific-source-ledger:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate 428/508 source scientific review receipt and actual file hashes
+        shell: bash
+        run: |
+          python - <<'PY'
+          import csv,hashlib,json
+          from pathlib import Path
+          root=Path(".")
+          def rows(p):
+              with (root/p).open(encoding="utf-8",newline="") as f:
+                  return list(csv.DictReader(f))
+          source=rows("inst/extdata/native_source_contract_gaps_stage22.csv")
+          noncallable=rows("inst/extdata/native_nonfunction_source_gaps_v1.csv")
+          reviews=rows("inst/extdata/reviewed_source_contract_closures_v1.csv")
+          assert len(source)==203 and len(noncallable)==1
+          pending=sum(x["unresolved_source_gap"]=="TRUE" for x in source)
+          other=sum(x["unresolved"]=="TRUE" for x in noncallable)
+          assert (pending,other,508-pending-other)==(79,1,428)
+          (gap,)=tuple(x for x in source if
+              x["python_name"]=="run_functional_mixed_effects_workflow")
+          assert gap["unresolved_source_gap"]=="FALSE"
+          (reg,)=tuple(x for x in reviews if
+              x["python_name"]=="run_functional_mixed_effects_workflow")
+          assert reg["independently_certified"]=="FALSE"
+          raw=(root/reg["review_record_path"]).read_bytes()
+          assert hashlib.sha256(raw).hexdigest()==reg["review_record_sha256"]
+          rec=json.loads(raw)
+          assert rec["frozen_python_commit"]=="c1cd95ad718327550f7e55393ff38582872f7a94"
+          assert rec["independently_certified"] is False
+          assert {x["kind"] for x in rec["case_evidence"]}=={
+              "source_signature","accepted_input_domain","numerical_outputs",
+              "exception_semantics","returned_schema","scientific_estimand"}
+          for evidence in rec["native_files"]+rec["case_evidence"]:
+              path=root/evidence["path"]
+              assert hashlib.sha256(path.read_bytes()).hexdigest()==evidence["sha256"],path
+          print("428 provisional developer-reviewed scientific contracts, 79 callable + 1 noncallable gaps; independent certification 0")
+          PY
+  native-three-os:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+      ET_RUN_NATIVE_JOINT_WORKFLOW_INTEGRATION: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::nlme
+            any::pkgload
+            any::testthat
+      - name: Execute real native Gaussian spline mixed fit and source W3 schema tests
+        shell: bash
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          testthat::test_local(".",
+            filter="native-functional-mixed-w3-scientific-20261112|native-joint-bspline-source-workflow",
+            reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
+  frozen-python-1-2:
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+      ET_RUN_NATIVE_JOINT_WORKFLOW_INTEGRATION: "true"
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        id: python
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::nlme
+            any::pkgload
+            any::testthat
+      - name: Frozen Python dataclass order, measured native likelihood fit and canonical scientific table
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          stopifnot(identical(et_python_version(),"1.2.0"))
+          testthat::test_local(".",
+            filter="native-functional-mixed-w3-scientific-20261112|native-joint-bspline-source-workflow",
+            reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
