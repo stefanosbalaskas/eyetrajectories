@@ -37,7 +37,7 @@
     artists=list(list(kind="errorbar",marker="o",capsize=3,
       linestyle="-",xdata=x,ydata=y,
       yerr=rbind(y-low,high-y),lower=low,upper=high)),
-    legend=FALSE)
+    legend=FALSE,legend_labels=character(0))
   .etr_predictive_plot_artist_record("plot_fpca_regression_cv",axis,
     list(family=family,loss=loss,n_candidates=length(x)))
 }
@@ -52,7 +52,8 @@
   axis<-list(title="Nested predictive FPCA regression",
     xlabel="Outer fold",ylabel=paste0("Outer held-out ",loss),
     artists=list(list(kind="line",marker="o",
-      linestyle="-",xdata=x,ydata=y)),legend=FALSE)
+      linestyle="-",xdata=x,ydata=y)),legend=FALSE,
+    legend_labels=character(0))
   .etr_predictive_plot_artist_record("plot_nested_fpca_regression_cv",
     axis,list(loss=loss,n_outer_folds=length(x)))
 }
