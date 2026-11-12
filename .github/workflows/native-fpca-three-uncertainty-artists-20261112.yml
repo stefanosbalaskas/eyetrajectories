@@ -1,0 +1,135 @@
+name: Native FPCA score spectrum and component scientific source artists
+on:
+  pull_request:
+    paths:
+      - "R/native-fpca-bootstrap-source.R"
+      - "R/native-fpca-three-uncertainty-artist-source.R"
+      - "tests/testthat/test-native-fpca-bootstrap-source.R"
+      - "tests/testthat/test-native-fpca-three-uncertainty-artists-20261112.R"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/reviewed_source_contract_closures_v1.csv"
+      - "docs/source_contract_reviews/plot_fpca_score_uncertainty.json"
+      - "docs/source_contract_reviews/plot_fpca_spectrum_uncertainty.json"
+      - "docs/source_contract_reviews/plot_fpca_component_band.json"
+      - ".github/workflows/native-fpca-three-uncertainty-artists-20261112.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  six-domain-source-ledger:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify 454/508 provenance, six-domain SHA256s, and strict CSV parsing
+        shell: bash
+        run: |
+          python - <<'PY'
+          import csv,json,hashlib
+          from pathlib import Path
+          root=Path(".")
+          with (root/"inst/extdata/native_source_contract_gaps_stage22.csv").open(
+               encoding="utf-8",newline="") as f:
+              rows=list(csv.reader(f,strict=True))
+          assert len(rows)==204,len(rows)
+          assert all(len(row)==7 for row in rows),[
+              (i,len(row),row[0]) for i,row in enumerate(rows) if len(row)!=7]
+          assert len({row[0] for row in rows[1:]})==203
+          assert all(row[-1] in ("TRUE","FALSE") for row in rows[1:])
+          with (root/"inst/extdata/native_nonfunction_source_gaps_v1.csv").open(
+               encoding="utf-8",newline="") as f:
+              nc=list(csv.DictReader(f))
+          with (root/"inst/extdata/reviewed_source_contract_closures_v1.csv").open(
+               encoding="utf-8",newline="") as f:
+              evidence=list(csv.DictReader(f))
+          assert len(nc)==1
+          assert len({row["python_name"] for row in evidence})==len(evidence)
+          targets=("plot_fpca_score_uncertainty",
+                   "plot_fpca_spectrum_uncertainty",
+                   "plot_fpca_component_band")
+          for name in targets:
+              (row,)=tuple(x for x in rows[1:] if x[0]==name)
+              assert row[-1]=="FALSE",name
+              (entry,)=tuple(x for x in evidence if x["python_name"]==name)
+              assert entry["independently_certified"]=="FALSE"
+              raw=(root/entry["review_record_path"]).read_bytes()
+              assert hashlib.sha256(raw).hexdigest()==entry["review_record_sha256"]
+              review=json.loads(raw)
+              assert review["frozen_python_commit"]=="c1cd95ad718327550f7e55393ff38582872f7a94"
+              assert review["independently_certified"] is False
+              assert {ev["kind"] for ev in review["case_evidence"]}=={
+                  "source_signature","accepted_input_domain","numerical_outputs",
+                  "exception_semantics","returned_schema","scientific_estimand"}
+              for ev in (review["native_files"]+
+                         review["case_evidence"]+
+                         review["additional_regression_evidence"]):
+                  p=root/ev["path"]
+                  assert hashlib.sha256(p.read_bytes()).hexdigest()==ev["sha256"],p
+          callable_gaps=sum(row[-1]=="TRUE" for row in rows[1:])
+          other_gaps=sum(row["unresolved"]=="TRUE" for row in nc)
+          assert callable_gaps<=53 and other_gaps<=1
+          assert 508-callable_gaps-other_gaps>=454
+          print(f"{508-callable_gaps-other_gaps}/508 provisional developer "
+                f"source reviews; {callable_gaps} callable gaps, "
+                f"{other_gaps} noncallable; zero independently certified")
+          PY
+  three-os-native:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Genuine native FPC bootstrap, score, spectrum and shape-band tests
+        shell: bash
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all('.',quiet=TRUE)
+          testthat::test_local('.',
+            filter='native-fpca-three-uncertainty-artists-20261112|native-fpca-bootstrap-source|native-bootstrap-inference|full-native-r-parity-ledger',
+            reporter='summary',stop_on_failure=TRUE)
+          RSCRIPT
+  frozen-python-1-2:
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        id: python
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Direct pinned Python 1.2 Matplotlib asymmetric errorbars and FPC band artist comparison
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all('.',quiet=TRUE)
+          stopifnot(identical(et_python_version(),'1.2.0'))
+          testthat::test_local('.',
+            filter='native-fpca-three-uncertainty-artists-20261112|native-fpca-bootstrap-source|native-bootstrap-inference|full-native-r-parity-ledger',
+            reporter='summary',stop_on_failure=TRUE)
+          RSCRIPT
