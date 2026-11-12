@@ -1,11 +1,17 @@
-# Native bounded square-root velocity FPCA: original curve traversal timing
-# is preserved. Frozen Python 1.2 elastic.py uses fdasrsf Karcher mean,
-# dynamic programming warping and shape PCA, NOT implemented here.
+# Historical default: native unregistered square-root velocity FPCA,
+# preserving original traversal timing and identity warps.
+# New explicit strict_source_record=TRUE method="DP": actual native R
+# fdasrvf Karcher dynamic-programming elastic registration and
+# geodesic tangent-space shape PCA (independently implemented from
+# Python fdasrsf, not exact frozen Python optimizer or backend identity).
 
 #' Fit square-root-velocity FPCA without elastic time registration
 #' @param trajectories Complete native planar trajectories.
 #' @param n_components Predeclared integer number of velocity components.
-#' @param rotation,scale_curves Both must be FALSE for native screen geometry.
+#' @param rotation,scale_curves Historical identity-only mode requires
+#'   both FALSE. In strict elastic source mode TRUE may request genuine
+#'   native R optimal rotation or scale-invariant SRVF registration;
+#'   source Python scale-augmented PCA covariance remains uncertified.
 #' @param lam Must be zero; no regularized reparameterization fitted.
 #' @param method Historical default is `identity_only`. For opt-in
 #'   genuine native R elastic registration, explicitly use `method="DP"`
