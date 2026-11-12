@@ -7,12 +7,12 @@
   "independently_certified": false,
   "source_location": "src/eyetrajectoriespy/functional_mixed_effects_covariance_sensitivity.py::functional_mixed_effects_covariance_sensitivity",
   "native_signature": "etr_functional_mixed_effects_covariance_sensitivity(fits,reference,max_lag,...,strict_source_record=TRUE)",
-  "reviewer_statement": "Provisional author-reviewed scoped native R mixed-effects scientific contract. Actual joint covariance likelihood/GLS operations are implemented in R, using nlme rather than frozen Python statsmodels. Scientific result field order and declared estimator targets are reviewed; passing current CI, full optimizer equivalence and independent review have not been observed.",
+  "reviewer_statement": "Provisional author-reviewed scoped native R mixed-effects scientific contract. Actual joint covariance likelihood/GLS operations are implemented in R, using nlme rather than frozen Python statsmodels. Scientific result field order and declared estimator targets are reviewed; passing current CI, full optimizer equivalence and independent review have not been observed. The paired-source scientific band-width path now validates original calibrated bands, common participant draws, confidence and scope; this extension is developer-scoped and is not a certified full Python optimizer/domain contract.",
   "native_language_semantic_policy": "Native R joint Gaussian likelihood under nlme and frozen Python statsmodels MixedLM can disagree at optimizer and boundary domains. Under an explicit strict scientific record mode, source field order and real native scientific arrays are preserved, not arbitrary Python dataclass identity, optimizer or exception semantics.",
   "native_files": [
     {
       "path": "R/native-mixed-covariance-sensitivity.R",
-      "sha256": "20008d0461eec65726529969ca50c121c97e833a21f85d3d983cbede1eb5a127"
+      "sha256": "f6be16cf485d1d5fb263900542e76c0122e6833ba0519923c785829c7fdb2bb8"
     },
     {
       "path": "R/native-mixed-w3-source-records.R",

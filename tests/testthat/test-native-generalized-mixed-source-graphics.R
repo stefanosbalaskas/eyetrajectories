@@ -124,15 +124,15 @@ test_that("new seven sources are mapped without unearned full certification",{
   expect_equal(nrow(z),7L)
   expect_identical(sort(z$native_r_candidate),sort(paste0("etr_",names)))
   expect_true(all(z$native_implementation_started))
-  scoped<-c("plot_covariance_sensitivity_coefficients",
+  scoped<-c("plot_covariance_sensitivity_band_widths",
+    "plot_covariance_sensitivity_coefficients",
     "plot_functional_mixed_effects_residual_acf",
     "plot_functional_mixed_effects_residual_variogram",
     "plot_generalized_function_on_scalar_predictions",
     "plot_generalized_function_on_scalar_mean_difference",
     "plot_generalized_function_on_scalar_coefficients")
-  # Three generalized FoSR plotting contracts now expose source-scientific
-  # Matplotlib artist geometry on bounded native R records. The Gaussian
-  # covariance band-width ratio still requires a qualified band estimator.
+  # Native source-scientific width ratios are now traced to comparable
+  # precomputed paired participant-bootstrap bands, not arbitrary columns.
   expect_false(any(z$source_contract_gap_unresolved[
     z$python_name%in%scoped]))
   expect_true(all(z$source_contract_gap_unresolved[

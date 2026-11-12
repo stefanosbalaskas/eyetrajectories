@@ -60,7 +60,7 @@
   "additional_regression_evidence": [
     {
       "path": "tests/testthat/test-native-generalized-mixed-source-graphics.R",
-      "sha256": "2c1332a73d2ef299f6f88dcfe68e43bf62e15e497d47b5c9528497d1b44a00df"
+      "sha256": "668c794156a17c75e474d1cdb479b7857843b514c0531d975581bc1e1ddf12b7"
     }
   ],
   "independent_review_status": "New tests/CI committed; no successful exact-head execution or independent source-contract certification witnessed.",

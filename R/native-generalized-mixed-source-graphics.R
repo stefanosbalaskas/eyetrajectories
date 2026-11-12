@@ -232,8 +232,29 @@ etr_plot_generalized_function_on_scalar_coefficients <- function(result,
   value<-if(width)"band_width_ratio_to_reference" else
     "difference_from_reference"
   required<-c("coefficient","model","time",value)
+  if(width&&isTRUE(strict_source_record))
+    required<-c(required,"band_width","reference_band_width")
   .etr_assert(all(required%in%names(frame)),
     "sensitivity frame missing required source columns")
+  if(width&&isTRUE(strict_source_record)) {
+    .etr_assert(is.numeric(frame$band_width)&&
+      is.numeric(frame$reference_band_width)&&
+      is.numeric(frame[[value]])&&
+      all(is.finite(frame$band_width))&&
+      all(is.finite(frame$reference_band_width))&&
+      all(frame$band_width>=0)&&
+      all(frame$reference_band_width>=0),
+      "strict source width plot requires finite nonnegative calibrated band widths")
+    positive<-frame$reference_band_width>0
+    .etr_assert(
+      all(is.finite(frame[[value]][positive]))&&
+      isTRUE(all.equal(as.numeric(frame[[value]][positive]),
+        as.numeric(frame$band_width[positive]/
+          frame$reference_band_width[positive]),
+        tolerance=1e-12,check.attributes=FALSE))&&
+      all(is.nan(frame[[value]][!positive])),
+      "source band width ratios must equal paired widths; zero reference width must yield NaN")
+  }
   nm<-.etr_source_text_word(coefficient,"coefficient")
   .etr_assert(any(frame$coefficient==nm),"Unknown coefficient")
   label<-.etr_source_text_word(result$reference_label,"reference_label")
@@ -257,7 +278,9 @@ etr_plot_generalized_function_on_scalar_coefficients <- function(result,
     x<-source_frame[source_frame$model==id,,drop=FALSE]
     if(nrow(x)==0L)return(NULL)
     .etr_assert(is.numeric(x$time)&&is.numeric(x[[value]])&&
-      all(is.finite(x$time))&&all(is.finite(x[[value]]))&&
+      all(is.finite(x$time))&&
+      (if(width) all(is.finite(x[[value]])|is.nan(x[[value]]))
+       else all(is.finite(x[[value]])))&&
       !anyDuplicated(x$time),
       "sensitivity time/value must be finite without duplicate times")
     data.frame(model=id,time=x$time,value=x[[value]],
@@ -307,13 +330,18 @@ etr_plot_covariance_sensitivity_coefficients <- function(
 #' @export
 etr_plot_covariance_sensitivity_band_widths <- function(
     result,coefficient,strict_source_record=FALSE) {
-  # Source band widths remain a genuine scientific gap until a qualified
-  # simultaneous-band estimator actually supplies this dataframe.
+  # In strict mode only a source-shaped real joint Gaussian likelihood
+  # sensitivity record is accepted. Its band_width_frame was derived from
+  # audited, already calibrated participant-bootstrap bands.
   .etr_mixed_artist_check(strict_source_record,result,"sensitivity")
-  if(isTRUE(strict_source_record))
+  if(isTRUE(strict_source_record)) {
+    .etr_assert(isTRUE(result$provenance$
+      source_paired_bootstrap_bands_validated),
+      "strict source band widths require paired calibrated participant bootstrap provenance")
     .etr_assert(is.data.frame(result$band_width_frame)&&
       nrow(result$band_width_frame)>0L,
-      "strict source band widths require independently qualified native bands")
+      "result does not contain simultaneous-band sensitivity information")
+  }
   .etr_source_plot_sensitivity(result,coefficient,width=TRUE,
     strict_source_record=strict_source_record)
 }
