@@ -82,7 +82,9 @@ test_that("three plot mappings remain uncertified with explicit backend gaps",{
     expect_equal(nrow(row),1L)
     expect_identical(row$native_r_candidate,paste0("etr_",name))
     expect_true(row$native_implementation_started)
-    expect_true(row$source_contract_gap_unresolved)
+    # Source-scientific artist geometry is now developer-reviewed. This is
+    # still not a Python Axes runtime identity or independent certificate.
+    expect_false(row$source_contract_gap_unresolved)
     expect_false(row$one_to_one_native_contract_complete)
   }
   expect_gte(sum(a$is_python_function&a$named_native_candidate),380L)

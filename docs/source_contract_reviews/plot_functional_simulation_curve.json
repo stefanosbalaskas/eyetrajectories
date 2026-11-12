@@ -1,0 +1,73 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "plot_functional_simulation_curve",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_NATIVE_FUNCTIONAL_SIMULATION_SOURCE_ARTIST_REVIEW",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/plotting.py::plot_functional_simulation_curve",
+  "native_signature": "etr_plot_functional_simulation_curve(result,curve=0L,dimension=0L,show_pre_missing=FALSE,strict_source_record=TRUE)",
+  "reviewer_statement": "A provisional developer-reviewed native R scientific plotting contract on a genuine simulated functional result. Numeric source artists have pinned Python 1.2 comparisons in committed tests, but successful exact-head CI has not yet been observed, and native R cannot return Matplotlib Axes or provide runtime class parity. This is not independent full-domain certification.",
+  "native_language_semantic_policy": "Native R scientific geometry is source-aligned on accepted simulated truth and original observations. Source plot semantics for numeric zero-based indices, finite scatter masks, phase-warp line order and population variance are implemented in strict mode. Python plotting Axes identity, Matplotlib rendering bytes and exception classes are excluded.",
+  "native_files": [
+    {
+      "path": "R/native-functional-simulation-plots.R",
+      "sha256": "3f66324fb53303f35958158278a480970ebc02429d13071363894ca0ed722436"
+    },
+    {
+      "path": "R/native-functional-simulation-artist-source.R",
+      "sha256": "c6b02d98e186ae98e409fbd180f69bd988e0f0ba1c5b4751c4b09943fddd5b62"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Frozen Python 1.2 src/eyetrajectoriespy/plotting.py::plot_functional_simulation_curve. Genuine native functional simulation latent truth vs original observed values under source zero-based curve and coordinate selection, including plotted missing-by-design points when requested.",
+      "path": "tests/testthat/test-native-simulation-three-artist-source-20261112.R",
+      "sha256": "9062671768c5dc1b28ac33448ea5002151f52e125f369c1e728da1e36e71d351"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Strict source geometry requires actual native etr_functional_simulation_result with validated dense or irregular observation arrays, native truth grid, original observation schedule and missingness audit; source curve and dimension numeric indices are zero based and default zero, or recorded name strings. Non-strict native R backward-compatible indices remain one based. No Python ax injection or Matplotlib runtime identity is implied.",
+      "path": "tests/testthat/test-native-simulation-three-artist-source-20261112.R",
+      "sha256": "9062671768c5dc1b28ac33448ea5002151f52e125f369c1e728da1e36e71d351"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Actual simulated latent_on_truth_grid[curve,:,dimension] is rendered as line; exact original times and finite dense observed values are scatter offsets, with optional removed/missing pre-truth observed points. No fitted interpolation replaces true latent function. Direct pinned Python 1.2 public plot artist line and scatter get_ydata/get_offsets and title comparisons use actual native functional simulation draws, and source curve index zero. Tests committed but not observed passing CI.",
+      "path": "tests/testthat/test-native-simulation-three-artist-source-20261112.R",
+      "sha256": "9062671768c5dc1b28ac33448ea5002151f52e125f369c1e728da1e36e71d351"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Strict rejects fabricated nonnative simulation class, invalid zero-based/out-of-range curve and channel identifiers, unsupported missingness structure, nonlogical strict flag and nonfinite required truth values. R native error classes are not Python TypeError/IndexError/KeyError. Plotting axes injection is omitted.",
+      "path": "tests/testthat/test-native-simulation-three-artist-source-20261112.R",
+      "sha256": "9062671768c5dc1b28ac33448ea5002151f52e125f369c1e728da1e36e71d351"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Source Python returns one Matplotlib Axes with one latent line and observed scatter, plus optional removed/missing scatter. Native R returns one-panel source-scientific line and scatter artist data with correct source labels, title, coordinates and curve selection. Actual Python Axes object, exact renderer state and mutation semantics are not provided.",
+      "path": "tests/testthat/test-native-simulation-three-artist-source-20261112.R",
+      "sha256": "9062671768c5dc1b28ac33448ea5002151f52e125f369c1e728da1e36e71d351"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Visual validation of simulated latent functional truth against actual sampled and missing-by-design observed measurements for the selected original simulation curve and named scientific channel, never resampled at a different grid.",
+      "path": "tests/testthat/test-native-simulation-three-artist-source-20261112.R",
+      "sha256": "9062671768c5dc1b28ac33448ea5002151f52e125f369c1e728da1e36e71d351"
+    }
+  ],
+  "additional_regression_evidence": [
+    {
+      "path": "tests/testthat/test-native-functional-simulation-plots.R",
+      "sha256": "9efeb0b065005247a1f9ef578d3f5fa70dcb93154ecd5fd678b39b5b58894735"
+    }
+  ],
+  "independent_review_status": "Provisional scoped native scientific geometry author review; exact-head differential CI queued/unverified, independent certification zero.",
+  "language_specific_limits": [
+    "R base plotting does not implement Python Matplotlib Axes or Figure return type, external ax parameter or pixel-equivalent rendering.",
+    "Strict result is a genuine native R simulated object with source artist data, not a Python FunctionalSimulationResult dataclass instance.",
+    "Python and R exceptions, plot legend backend state and Matplotlib figure event machinery remain different.",
+    "New tests have not been observed executing green, and no independent source-contract approval, main-branch merge or CRAN qualification is claimed."
+  ]
+}
