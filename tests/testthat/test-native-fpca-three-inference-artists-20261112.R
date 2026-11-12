@@ -171,7 +171,7 @@ envelope=SimpleNamespace(reference=reference,
   lower=components-.2,median=components+.02,upper=components+.25,
   level=.95)
 projection=SimpleNamespace(
-  target_curve_ids=('u','v'),reference_projection=np.array([.1,-.2]),
+  n_targets=2,target_curve_ids=('u','v'),reference_projection=np.array([.1,-.2]),
   lower=np.array([-.04,-.4]),upper=np.array([.3,-.01]),
   bootstrap_projections=np.zeros((4,2)))
 family=object.__new__(et.FPCAWildBootstrapFamilyTestResult)
