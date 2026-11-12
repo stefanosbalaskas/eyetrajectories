@@ -167,7 +167,9 @@ etr_fpca_wild_bootstrap_family_test_monte_carlo_diagnostics <- function(
 #' @return Invisibly the source-aligned numeric drawing geometry.
 #' @export
 etr_plot_fpca_wild_bootstrap_monte_carlo_diagnostics <- function(
-    result,max_targets=30L,show_targetwise=FALSE) {
+    result,max_targets=30L,show_targetwise=FALSE,
+    strict_source_record=FALSE) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   .etr_scientific_frame_fields(result,c("family_test_result",
     "adjusted_tail_probabilities","adjusted_interval_lower",
     "adjusted_interval_upper","targetwise_tail_probabilities",
@@ -214,13 +216,17 @@ etr_plot_fpca_wild_bootstrap_monte_carlo_diagnostics <- function(
     pch=c(1L,if(show_targetwise)4L,NA_integer_),
     lty=c(NA_integer_,if(show_targetwise)NA_integer_,2L),
     bty="n",cex=.75)
-  invisible(data.frame(target_index=x,target_curve_id=ids[ix],
+  out<-data.frame(target_index=x,target_curve_id=ids[ix],
     adjusted=values$adjusted[ix],
     adjusted_lower=values$adjusted_lower[ix],
     adjusted_upper=values$adjusted_upper[ix],
     targetwise=values$targetwise[ix],
     targetwise_lower=values$targetwise_lower[ix],
-    targetwise_upper=values$targetwise_upper[ix]))
+    targetwise_upper=values$targetwise_upper[ix])
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_wild_precision_artist(
+      out,alpha,show_targetwise,max_targets)))
+  invisible(out)
 }
 
 #' Plot familywise simultaneous and targetwise FPCR projection intervals
@@ -229,7 +235,9 @@ etr_plot_fpca_wild_bootstrap_monte_carlo_diagnostics <- function(
 #' @return Invisibly displayed fixed-target projection and interval data.
 #' @export
 etr_plot_fpca_wild_bootstrap_simultaneous_interval <- function(
-    result,max_targets=30L,show_targetwise=TRUE) {
+    result,max_targets=30L,show_targetwise=TRUE,
+    strict_source_record=FALSE) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   .etr_scientific_frame_fields(result,c("projection_result",
     "lower","upper","targetwise_critical_values"),"simultaneous interval")
   base<-result$projection_result
@@ -276,9 +284,13 @@ etr_plot_fpca_wild_bootstrap_simultaneous_interval <- function(
     "familywise simultaneous interval",
     if(show_targetwise)"target-wise interval"),
     pch=c(1L,if(show_targetwise)20L),bty="n")
-  invisible(data.frame(target_index=x,target_curve_id=ids[ix],
+  out<-data.frame(target_index=x,target_curve_id=ids[ix],
     reference_projection=center[ix],
     simultaneous_lower=low[ix],
     simultaneous_upper=high[ix],
-    targetwise_lower=target_lo[ix],targetwise_upper=target_hi[ix]))
+    targetwise_lower=target_lo[ix],targetwise_upper=target_hi[ix])
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_wild_simultaneous_artist(
+      out,show_targetwise,max_targets)))
+  invisible(out)
 }

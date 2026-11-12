@@ -1,0 +1,72 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "plot_fpca_wild_bootstrap_simultaneous_interval",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_NATIVE_WILD_BOOTSTRAP_SCIENTIFIC_ARTIST_REVIEW",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/plotting.py::plot_fpca_wild_bootstrap_simultaneous_interval",
+  "native_signature": "etr_plot_fpca_wild_bootstrap_simultaneous_interval(result,max_targets=30L,show_targetwise=TRUE,strict_source_record=TRUE)",
+  "reviewer_statement": "Developer-scoped six-domain scientific artist review only. Three-platform R and pinned Python 1.2 Matplotlib regression tests have been authored but exact-head success is not observed. Full Python runtime, error-class and Matplotlib Axes parity and independent certification are not asserted.",
+  "native_language_semantic_policy": "Native R numeric inference and default plotting untouched. strict_source_record returns inspectable frozen Python scientific plotting geometry in a typed R record, without backend identity.",
+  "native_files": [
+    {
+      "path": "R/native-wild-monte-carlo-source-contracts.R",
+      "sha256": "d75055dc2d0609b13e8de2e2708e1cb9c32167e4c31e53d1c54bcf39465e9c58"
+    },
+    {
+      "path": "R/native-wild-two-scientific-artists.R",
+      "sha256": "0e17006d5d7a847e553196e96e7b5ac2da553394c4d062b49bd5d1acce0985a2"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Frozen eyetrajectoriespy 1.2.0 public plotting signature compared with explicit opt-in strict source artist record; no injected Python Matplotlib ax.",
+      "path": "tests/testthat/test-native-wild-two-scientific-artists-20261112.R",
+      "sha256": "df51f35f80bcfdf409c94b0c788f4226f66981ecc0f1464eb6f7076a7d065f13"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Actual native already-calibrated FPCR familywise or Monte Carlo diagnostic records, finite source arrays and correct target IDs; positive max_targets, boolean show_targetwise and strict flag. Language-specific Python object protocols remain outside scope.",
+      "path": "tests/testthat/test-native-wild-two-scientific-artists-20261112.R",
+      "sha256": "df51f35f80bcfdf409c94b0c788f4226f66981ecc0f1464eb6f7076a7d065f13"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Frozen Matplotlib familywise errorbar marker o capsize 3 and optional target-wise marker . capsize 2 retain original centers and asymmetric vertical interval segments; 0 horizontal baseline with source tick IDs and labels. Genuine native postcalibration objects drive the tests; fixed Python 1.2 public Matplotlib errorbar segment and artist comparisons are authored, pending CI execution.",
+      "path": "tests/testthat/test-native-wild-two-scientific-artists-20261112.R",
+      "sha256": "df51f35f80bcfdf409c94b0c788f4226f66981ecc0f1464eb6f7076a7d065f13"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Invalid max targets, type flags, probability values, interval order and unsupported records are explicitly rejected using R error conditions. Python exception class identity remains outside scope.",
+      "path": "tests/testthat/test-native-wild-two-scientific-artists-20261112.R",
+      "sha256": "df51f35f80bcfdf409c94b0c788f4226f66981ecc0f1464eb6f7076a7d065f13"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Existing invisible native base-R numerical frame is preserved by default; strict mode returns typed R scientific artist record with x/y/errorbars, labels, reference and Matplotlib return-kind metadata. No live Python Axes, figure or raster equivalence.",
+      "path": "tests/testthat/test-native-wild-two-scientific-artists-20261112.R",
+      "sha256": "df51f35f80bcfdf409c94b0c788f4226f66981ecc0f1464eb6f7076a7d065f13"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Already calibrated fixed-family simultaneous intervals around Gaussian FPCR projections; target-wise critical values and reference standard errors are read only. No new multiplier draws, selection or inferred uncertainty.",
+      "path": "tests/testthat/test-native-wild-two-scientific-artists-20261112.R",
+      "sha256": "df51f35f80bcfdf409c94b0c788f4226f66981ecc0f1464eb6f7076a7d065f13"
+    }
+  ],
+  "additional_regression_evidence": [
+    {
+      "path": "tests/testthat/test-native-wild-monte-carlo-source-contracts.R",
+      "sha256": "3b06e87c22f9bf6b9abe3c6830dc1e28868d637f98f760f18b830df511d5a6ed"
+    }
+  ],
+  "independent_review_status": "Provisional developer scientific geometry review, exact-head CI unobserved, zero independent certifications.",
+  "language_specific_limits": [
+    "No Python Matplotlib Axes/Figure object identity or Python-specific exception class equivalence.",
+    "Native R list validation differs from frozen Python dataclass-instance and optional injected ax runtime protocols.",
+    "Bootstrap procedure, sampling law, fixed-family coverage and inferential estimands are not modified."
+  ]
+}
