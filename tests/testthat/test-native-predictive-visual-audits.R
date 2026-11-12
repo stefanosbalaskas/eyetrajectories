@@ -85,7 +85,7 @@ test_that("predictive source graphics are mapped but not fully certified",{
     expect_equal(nrow(row),1L)
     expect_identical(row$native_r_candidate,paste0("etr_",nm))
     expect_true(row$native_implementation_started)
-    expect_true(row$source_contract_gap_unresolved)
+    expect_false(row$source_contract_gap_unresolved)
     expect_false(row$one_to_one_native_contract_complete)
   }
   expect_gte(sum(z$is_python_function&z$named_native_candidate),380L)

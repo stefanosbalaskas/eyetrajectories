@@ -1,0 +1,72 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "plot_nested_fpca_regression_cv",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_NATIVE_FPCR_PREDICTIVE_AND_MIXED_ARTIST_REVIEW",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/plotting.py::plot_nested_fpca_regression_cv",
+  "native_signature": "etr_plot_nested_fpca_regression_cv(result,strict_source_record=TRUE)",
+  "reviewer_statement": "Developer-scoped six-domain frozen Python scientific plot geometry review. Numeric source R and direct Python Matplotlib comparison tests are authored but have not been observed passing at this exact head. No independent whole-domain source-contract certification claimed.",
+  "native_language_semantic_policy": "Original R plots and numeric returns remain default; strict_source_record generates only source-comparable scientific artist coordinates in native R. Python runtime object identity and exception semantics intentionally excluded.",
+  "native_files": [
+    {
+      "path": "R/native-predictive-visual-audits.R",
+      "sha256": "d83b39342aeb9b853dd9e2b89cecc99b87afdb90ee922a741272caee1466ac60"
+    },
+    {
+      "path": "R/native-fpcr-three-predictive-artists-source.R",
+      "sha256": "04d9ee35a3d529156b3d65e2b64cfd414f4d55c65cb46a1f0e306cf11dc23020"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Frozen published Python 1.2 plotting.py source signature inspected; optional strict_source_record=TRUE provides bounded native R scientific plot geometry without modifying the default R API result.",
+      "path": "tests/testthat/test-native-three-fpcr-cv-truncation-artists-20261112.R",
+      "sha256": "632c49dc9b53e0028de61e07c53d7ddf077ea5fe2bc12634a5b86666561f5d7f"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Explicit native R records, finite precomputed statistical arrays and explicit target/coefficient names, with source zero-based indexing in strict scan mode. Arbitrary Python typed dataclasses, pandas object protocols and Matplotlib ax injection remain outside this bounded native language representation.",
+      "path": "tests/testthat/test-native-three-fpcr-cv-truncation-artists-20261112.R",
+      "sha256": "632c49dc9b53e0028de61e07c53d7ddf077ea5fe2bc12634a5b86666561f5d7f"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Source outer_fold + 1 x positions and observed held-out loss y positions with marker o, solid line, source title and axes labels. Native fixtures and opt-in direct Python Matplotlib artist differential tests are committed, exact-head CI execution unobserved.",
+      "path": "tests/testthat/test-native-three-fpcr-cv-truncation-artists-20261112.R",
+      "sha256": "632c49dc9b53e0028de61e07c53d7ddf077ea5fe2bc12634a5b86666561f5d7f"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "R numerical-domain validation and error conditions are explicit; Python TypeError, KeyError, IndexError, ValueError classes and general duck typing are not reproduced across runtimes.",
+      "path": "tests/testthat/test-native-three-fpcr-cv-truncation-artists-20261112.R",
+      "sha256": "632c49dc9b53e0028de61e07c53d7ddf077ea5fe2bc12634a5b86666561f5d7f"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Default R base-graphics and invisible numeric auditing values remain unchanged. Strict source mode returns a typed R source scientific artist record including ordered plots, axes text and provenance, not live Python Matplotlib Axes or pixel geometry.",
+      "path": "tests/testthat/test-native-three-fpcr-cv-truncation-artists-20261112.R",
+      "sha256": "632c49dc9b53e0028de61e07c53d7ddf077ea5fe2bc12634a5b86666561f5d7f"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Nested cross-validation outer-fold held-out predictive loss, independent from the inner selection training folds. Plotting performs no new nested model fitting.",
+      "path": "tests/testthat/test-native-three-fpcr-cv-truncation-artists-20261112.R",
+      "sha256": "632c49dc9b53e0028de61e07c53d7ddf077ea5fe2bc12634a5b86666561f5d7f"
+    }
+  ],
+  "additional_regression_evidence": [
+    {
+      "path": "tests/testthat/test-native-predictive-visual-audits.R",
+      "sha256": "01212a96603134d155b88e2d28709bfe5f03b1cdb7d5b1fb85cbf2cd603fd37b"
+    }
+  ],
+  "independent_review_status": "Provisional author-scoped scientific artists, exact-head Python/R CI pending, zero independent certifications.",
+  "language_specific_limits": [
+    "Python Axes identity, pixel output, injection of arbitrary matplotlib.axes.Axes objects and exception-class parity not offered.",
+    "The original scientific estimators, bootstrapping and model-selection estimands remain untouched.",
+    "Successful exact-head cross-platform R tests and independent scientific reviewer signoff are outstanding."
+  ]
+}
