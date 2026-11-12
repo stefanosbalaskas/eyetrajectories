@@ -119,7 +119,7 @@ test_that("three FPCA inference source records fail closed on bad scientific dom
       dimension="missing",strict_source_record=TRUE),"dimension")
     bad<-z$envelope;bad$median[1L,1L,1L]<-Inf
     expect_error(etr_plot_fpca_component_envelope(bad,
-      strict_source_record=TRUE),"finite")
+      strict_source_record=TRUE),"median")
     bad<-z$envelope;bad$lower[1L,1L,1L]<-100
     expect_error(etr_plot_fpca_component_envelope(bad,
       strict_source_record=TRUE),"ordered")
