@@ -1,0 +1,169 @@
+name: Native R elastic Karcher DP and geodesic shape FPCA source
+on:
+  pull_request:
+    paths:
+      - "R/native-elastic-fdasrvf-karcher-source-20261113.R"
+      - "R/native-elastic-srvf-alternative.R"
+      - "DESCRIPTION"
+      - "man/etr_fit_elastic_fpca.Rd"
+      - "tests/testthat/test-native-elastic-fdasrvf-karcher-pca-20261113.R"
+      - "tests/testthat/test-native-final-sparse-elastic-analogues.R"
+      - "docs/native-elastic-fdasrvf-karcher-source-20261113.md"
+      - "docs/source_contract_reviews/fit_elastic_fpca.json"
+      - "inst/extdata/native_scoped_elastic_submethod_gaps_20261113.csv"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/native_nonfunction_source_gaps_v1.csv"
+      - "inst/extdata/reviewed_source_contract_closures_v1.csv"
+      - ".github/workflows/native-elastic-karcher-shape-pca-20261113.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  exact-source-sha256-inventory:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Assert 508/508 provisional R scientific coverage, SHA256 review and open Python parity differences
+        shell: bash
+        run: |
+          python - <<'PY'
+          import csv,hashlib,json
+          from pathlib import Path
+          root=Path(".")
+          def rows(path):
+              with (root/path).open(encoding="utf-8",newline="") as f:
+                  return list(csv.DictReader(f))
+          callable=rows("inst/extdata/native_source_contract_gaps_stage22.csv")
+          noncallable=rows("inst/extdata/native_nonfunction_source_gaps_v1.csv")
+          reviews=rows("inst/extdata/reviewed_source_contract_closures_v1.csv")
+          subs=rows("inst/extdata/native_scoped_elastic_submethod_gaps_20261113.csv")
+          assert len(callable)==203
+          assert len(reviews)>=198
+          assert len({r["python_name"] for r in reviews})==len(reviews)
+          open_callable=sum(r["unresolved_source_gap"]=="TRUE" for r in callable)
+          open_noncallable=sum(r["unresolved"]=="TRUE" for r in noncallable)
+          assert open_callable==0,open_callable
+          assert open_noncallable==0,open_noncallable
+          assert 508-open_callable-open_noncallable==508
+          (elastic,)=tuple(x for x in callable if x["python_name"]=="fit_elastic_fpca")
+          assert elastic["unresolved_source_gap"]=="FALSE"
+          (fda,)=tuple(x for x in callable if x["python_name"]=="fit_sparse_fpca_fdapy")
+          assert fda["unresolved_source_gap"]=="FALSE"
+          assert (root/"R/native-elastic-fdasrvf-karcher-source-20261113.R").exists()
+          assert "fdasrvf (>= 2.5.1)" in (root/"DESCRIPTION").read_text()
+          assert "etr_fit_elastic_fpca" in (root/"man/etr_fit_elastic_fpca.Rd").read_text()
+          s={r["source_submethod"]:r for r in subs}
+          for key in ("true_open_curve_SRVF_Karcher_time_registration",
+                      "true_elastic_tangent_geodesic_shape_PCA",
+                      "source_trajectory_schema_and_phase_outputs"):
+              assert s[key]["source_gap_open"]=="FALSE",key
+              assert s[key]["native_scientific_implementation"]=="TRUE",key
+          for key in ("Python_first_curve_Karcher_initialization",
+                      "Python_explicit_second_srvf_align_and_curve_reconstruction",
+                      "Python_RBFGS_and_other_source_optimizer_domains",
+                      "Python_fdasrsf_backend_object_and_exception_identity",
+                      "full_numeric_qualification_and_broad_data_domain"):
+              assert s[key]["source_gap_open"]=="TRUE",key
+              assert s[key]["native_scientific_implementation"]=="FALSE",key
+          for name in ("fit_elastic_fpca","fit_sparse_fpca_fdapy",
+                       "capture_environment","TrajectorySet"):
+              (row,)=tuple(x for x in reviews if x["python_name"]==name)
+              assert row["independently_certified"]=="FALSE"
+              b=(root/row["review_record_path"]).read_bytes()
+              assert hashlib.sha256(b).hexdigest()==row["review_record_sha256"],name
+              doc=json.loads(b)
+              assert doc["independently_certified"] is False
+              assert doc["frozen_python_commit"]=="c1cd95ad718327550f7e55393ff38582872f7a94"
+              assert {e["kind"] for e in doc["case_evidence"]}=={
+                  "source_signature","accepted_input_domain","numerical_outputs",
+                  "exception_semantics","returned_schema","scientific_estimand"},name
+              for evidence in doc["native_files"]+doc["case_evidence"]+doc.get("additional_regression_evidence",[]):
+                  file=root/evidence["path"]
+                  assert hashlib.sha256(file.read_bytes()).hexdigest()==evidence["sha256"],file
+          assert "independently_source_certified=FALSE" in (root/"R/native-elastic-fdasrvf-karcher-source-20261113.R").read_text()
+          print("508/508 provisional bounded scientific R source contracts, 198 SHA-pinned reviews; no full Python parity or independent certification asserted")
+          PY
+  native-r-genuine-Karcher-DP-three-OS:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      ET_RUN_PYTHON_ELASTIC_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::fdasrvf
+            any::pkgload
+            any::testthat
+            any::reticulate
+      - name: Parse elastic native scientific source and run real fdasrvf R Karcher DP and shape-PCA test suite
+        shell: bash
+        run: |
+          Rscript - <<'RSCRIPT'
+          stopifnot(utils::packageVersion("fdasrvf") >= package_version("2.5.1"))
+          parse("R/native-elastic-fdasrvf-karcher-source-20261113.R")
+          parse("R/native-elastic-srvf-alternative.R")
+          parse("tests/testthat/test-native-elastic-fdasrvf-karcher-pca-20261113.R")
+          pkgload::load_all(".",quiet=TRUE)
+          testthat::test_local(".",
+            filter="native-elastic-fdasrvf-karcher-pca-20261113|native-final-sparse-elastic-analogues|full-native-r-parity-ledger",
+            reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
+  frozen-Python-actual-fdasrsf-source-differential:
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_ELASTIC_TESTS: "true"
+      ET_RUN_PYTHON_TESTS: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        id: python
+        with:
+          python-version: "3.11"
+      - name: Install real frozen Python 1.2 and real optional fdasrsf 2.7
+        run: python -m pip install "eyetrajectoriespy==1.2.0" "fdasrsf>=2.7,<2.8"
+      - name: Assert genuine public frozen Python elastic function and backend
+        shell: bash
+        run: |
+          python - <<'PY'
+          import importlib.metadata
+          import eyetrajectoriespy as et
+          import fdasrsf as fs
+          assert importlib.metadata.version("eyetrajectoriespy")=="1.2.0"
+          assert tuple(map(int,importlib.metadata.version("fdasrsf").split(".")[:2]))>=(2,7)
+          assert callable(et.fit_elastic_fpca)
+          assert callable(fs.fdacurve)
+          print("Actual Python 1.2 + native compiled fdasrsf source available")
+          PY
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::fdasrvf
+            any::pkgload
+            any::testthat
+            any::reticulate
+      - name: Compare true R Karcher/DP phase-science schema to real frozen public Python fdasrsf output
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          stopifnot(identical(et_python_version(),"1.2.0"))
+          stopifnot(utils::packageVersion("fdasrvf") >= package_version("2.5.1"))
+          testthat::test_local(".",
+            filter="native-elastic-fdasrvf-karcher-pca-20261113",
+            reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
