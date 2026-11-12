@@ -24,37 +24,37 @@
       "kind": "source_signature",
       "description": "Frozen Python 1.2 public src/eyetrajectoriespy/plotting.py::plot_fpca_stability. Source-scientific native strict mode is explicitly optional.",
       "path": "tests/testthat/test-native-fpca-three-source-artists-20261112.R",
-      "sha256": "824868734564dec5a6a1003a2cfa066d253d1c2aa3ae4b6d0cf9e1545c945938"
+      "sha256": "fb5b3b214d7a8c876e1a4c1389e6425313ca461260676cfbdd060329a7f938d7"
     },
     {
       "kind": "accepted_input_domain",
       "description": "Actual native bootstrap FPCA stability scientific result with finite n_bootstrap×n_reference_FPC matched absolute similarity matrix bounded 0..1 and reference n_components. Python Source allows Matplotlib ax injection but native R base graphics only accepts native result and drawing device; arbitrary Python object protocol remains out-of-scope.",
       "path": "tests/testthat/test-native-fpca-three-source-artists-20261112.R",
-      "sha256": "824868734564dec5a6a1003a2cfa066d253d1c2aa3ae4b6d0cf9e1545c945938"
+      "sha256": "fb5b3b214d7a8c876e1a4c1389e6425313ca461260676cfbdd060329a7f938d7"
     },
     {
       "kind": "numerical_outputs",
       "description": "Native scientific source record preserves the exact original matched FPCA bootstrap similarity for every retained reference component, source 0..1.02 y-limits, per-component FPCk labels, NumPy linear interpolation 25/50/75 percentiles, source 1.5 IQR whiskers and explicit outlier values. Pinned Python 1.2 public Matplotlib ax.boxplot artist medians and titles compared directly to same native matrix, plus offline native scientific tests; exact-head CI not yet observed green.",
       "path": "tests/testthat/test-native-fpca-three-source-artists-20261112.R",
-      "sha256": "824868734564dec5a6a1003a2cfa066d253d1c2aa3ae4b6d0cf9e1545c945938"
+      "sha256": "fb5b3b214d7a8c876e1a4c1389e6425313ca461260676cfbdd060329a7f938d7"
     },
     {
       "kind": "exception_semantics",
       "description": "Refuses unsupported class, malformed finite/similarity bounds or component matrix, absent reference n_components and nonlogical strict flag, without silently clipping true outliers. Python TypeError and live Axes exceptions are not replicated by R native graphics.",
       "path": "tests/testthat/test-native-fpca-three-source-artists-20261112.R",
-      "sha256": "824868734564dec5a6a1003a2cfa066d253d1c2aa3ae4b6d0cf9e1545c945938"
+      "sha256": "fb5b3b214d7a8c876e1a4c1389e6425313ca461260676cfbdd060329a7f938d7"
     },
     {
       "kind": "returned_schema",
       "description": "Python returns one Matplotlib Axes with per-FPC boxplots. Native R returns one scientific source-geometry record with full replicate vectors, exact quartile/whisker values, labels and y-range, and also draws a base-R boxplot. Pixel-identical Matplotlib boxes and Python axes identity are explicitly not represented.",
       "path": "tests/testthat/test-native-fpca-three-source-artists-20261112.R",
-      "sha256": "824868734564dec5a6a1003a2cfa066d253d1c2aa3ae4b6d0cf9e1545c945938"
+      "sha256": "fb5b3b214d7a8c876e1a4c1389e6425313ca461260676cfbdd060329a7f938d7"
     },
     {
       "kind": "scientific_estimand",
       "description": "Bootstrap distribution of absolute matched functional principal-component similarities to reference FPCA components, preserving the actual resampling source without generating new bootstrap results or inferring coverage.",
       "path": "tests/testthat/test-native-fpca-three-source-artists-20261112.R",
-      "sha256": "824868734564dec5a6a1003a2cfa066d253d1c2aa3ae4b6d0cf9e1545c945938"
+      "sha256": "fb5b3b214d7a8c876e1a4c1389e6425313ca461260676cfbdd060329a7f938d7"
     }
   ],
   "additional_regression_evidence": [
