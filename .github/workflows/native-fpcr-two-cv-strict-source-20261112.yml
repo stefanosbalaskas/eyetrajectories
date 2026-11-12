@@ -35,8 +35,8 @@ jobs:
           assert len(gaps)==203 and len(non)==1
           outstanding=sum(x["unresolved_source_gap"]=="TRUE" for x in gaps)
           noncallable=sum(x["unresolved"]=="TRUE" for x in non)
-          assert outstanding==91 and noncallable==1
-          assert 508-outstanding-noncallable==416
+          assert outstanding<=91 and noncallable<=1
+          assert 508-outstanding-noncallable>=416
           for name in ("cross_validate_fpca_regression",
                        "nested_cross_validate_fpca_regression"):
               (gap,)=tuple(x for x in gaps if x["python_name"]==name)

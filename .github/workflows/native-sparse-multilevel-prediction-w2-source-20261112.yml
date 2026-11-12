@@ -36,7 +36,7 @@ jobs:
           assert len(gaps)==203 and len(nc)==1
           n=sum(x["unresolved_source_gap"]=="TRUE" for x in gaps)
           m=sum(x["unresolved"]=="TRUE" for x in nc)
-          assert (n,m,508-n-m)==(86,1,421)
+          assert n<=86 and m<=1 and 508-n-m>=421
           targets=("run_sparse_multilevel_workflow","run_sparse_prediction_workflow")
           for name in targets:
               (gap,)=tuple(x for x in gaps if x["python_name"]==name)

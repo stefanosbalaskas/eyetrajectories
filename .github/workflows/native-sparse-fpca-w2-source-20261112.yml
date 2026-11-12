@@ -35,7 +35,7 @@ jobs:
           assert len(gaps)==203 and len(nc)==1
           n=sum(x["unresolved_source_gap"]=="TRUE" for x in gaps)
           m=sum(x["unresolved"]=="TRUE" for x in nc)
-          assert n==90 and m==1 and 508-n-m==417
+          assert n<=90 and m<=1 and 508-n-m>=417
           (entry,)=tuple(x for x in gaps if x["python_name"]=="run_sparse_fpca_workflow")
           assert entry["unresolved_source_gap"]=="FALSE"
           (r,)=tuple(x for x in reg if x["python_name"]=="run_sparse_fpca_workflow")

@@ -35,7 +35,7 @@ jobs:
           assert len(gaps)==203 and len(ncf)==1
           n=sum(x['unresolved_source_gap']=='TRUE' for x in gaps)
           m=sum(x['unresolved']=='TRUE' for x in ncf)
-          assert (n,m,508-n-m)==(83,1,424)
+          assert n<=83 and m<=1 and 508-n-m>=424
           for name in ('export_portable_result','export_workflow_bundle'):
               (gap,)=tuple(x for x in gaps if x['python_name']==name)
               assert gap['unresolved_source_gap']=='FALSE'

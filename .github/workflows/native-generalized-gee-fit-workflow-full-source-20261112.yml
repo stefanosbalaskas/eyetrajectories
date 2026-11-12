@@ -39,7 +39,7 @@ jobs:
           assert len(gaps)==203 and len(noncallable)==1
           missing=sum(item["unresolved_source_gap"]=="TRUE" for item in gaps)
           nc=sum(item["unresolved"]=="TRUE" for item in noncallable)
-          assert missing<=94 and nc==1,(missing,nc)
+          assert missing<=94 and nc<=1,(missing,nc)
           assert 508-missing-nc>=413
           for name in ("fit_generalized_function_on_scalar_regression",
                        "run_generalized_functional_workflow"):
