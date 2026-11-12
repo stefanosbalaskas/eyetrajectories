@@ -12,7 +12,7 @@
   "native_files": [
     {
       "path": "R/native-source-diagnostic-frames.R",
-      "sha256": "04838206dcf361c33931c828f05b07b86f46df0ab3a382cde583586b83b75e52"
+      "sha256": "64eeb27883462bd909cd3ef3fdd730af3ffff7fe6e9e922b1fe69a84fea5d1c2"
     }
   ],
   "case_evidence": [
