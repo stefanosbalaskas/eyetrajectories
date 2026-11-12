@@ -67,7 +67,9 @@
 #' @param result Prediction fit or prediction-band record.
 #' @return Invisible source-aligned per-profile numerical drawing geometry.
 #' @export
-etr_plot_generalized_function_on_scalar_predictions <- function(result) {
+etr_plot_generalized_function_on_scalar_predictions <- function(result,
+    strict_source_record=FALSE) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   .etr_assert(is.list(result) && !is.data.frame(result),
     "result must be a native prediction or prediction-band record")
   # A native band record nests the prediction in result$prediction.
@@ -129,14 +131,19 @@ etr_plot_generalized_function_on_scalar_predictions <- function(result) {
   })
   graphics::legend("topright",legend=labels,lty=1L,col=colors,
     bty="n",cex=.75)
-  invisible(do.call(rbind,rows))
+  out<-do.call(rbind,rows)
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_gfos_predictions_source_artist(result,out)))
+  invisible(out)
 }
 
 #' Plot response-scale generalized FoSR profile contrast and band
 #' @param result One predeclared difference/ratio and its simultaneous band.
 #' @return Invisible estimate and band geometry.
 #' @export
-etr_plot_generalized_function_on_scalar_mean_difference <- function(result) {
+etr_plot_generalized_function_on_scalar_mean_difference <- function(result,
+    strict_source_record=FALSE) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   .etr_scientific_frame_fields(result,c("prediction_bootstrap",
     "estimate","lower","upper","confidence_level",
     "contrast_scale","profile_a","profile_b"),"contrast")
@@ -163,12 +170,15 @@ etr_plot_generalized_function_on_scalar_mean_difference <- function(result) {
   b<-.etr_source_text_word(result$profile_b,"profile_b")
   unit<-.etr_source_text_word(p$prediction$reference$time_unit,
     "time_unit")
-  .etr_source_plot_band(grid,estimate,lower,upper,
+  out<-.etr_source_plot_band(grid,estimate,lower,upper,
     paste0("Time (",unit,")"),labels[[scale]],
     paste0("Generalized FoSR ",gsub("_"," ",scale),": ",a," - ",b),
     reference=if(scale=="rate_ratio")1 else 0,
     labels=c("estimate",paste0(round(level*100),
       "% simultaneous band")))
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_gfos_mean_difference_source_artist(result,out)))
+  invisible(out)
 }
 
 #' Plot a generalized FoSR coefficient on its declared link scale
@@ -177,7 +187,8 @@ etr_plot_generalized_function_on_scalar_mean_difference <- function(result) {
 #' @return Invisible source-aligned coefficient geometry.
 #' @export
 etr_plot_generalized_function_on_scalar_coefficients <- function(result,
-    coefficient) {
+    coefficient,strict_source_record=FALSE) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   if("reference"%in%names(result)&&
     "lower"%in%names(result)&&"upper"%in%names(result)){
     fit<-result$reference
@@ -196,12 +207,16 @@ etr_plot_generalized_function_on_scalar_coefficients <- function(result,
     low<-as.numeric(band$lower[i,])
     upper<-as.numeric(band$upper[i,])
   }
-  .etr_source_plot_band(v$time,
+  out<-.etr_source_plot_band(v$time,
     as.numeric(fit$coefficient_functions[i,]),low,upper,
     paste0("Time (",fit$time_unit,")"),
     paste0(name," coefficient (",fit$link," scale)"),
     paste0("Generalized function-on-scalar coefficient: ",name),
     reference=0,labels="estimate")
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_gfos_coefficients_source_artist(
+      result,name,out)))
+  invisible(out)
 }
 
 .etr_source_plot_sensitivity <- function(result,coefficient,width=FALSE,
