@@ -130,7 +130,7 @@ test_that("mixed W3 strict mode refuses moments, Python optimizer impersonation 
   expect_error(check(utils::modifyList(cfg,list(method="lbfgs"))),
     "Python lbfgs")
   expect_error(check(utils::modifyList(cfg,list(
-    preprocessing=list(list(kind="smooth")))))),
+    preprocessing=list(list(kind="smooth"))))),
     "empty preprocessing")
   expect_error(check(utils::modifyList(cfg,list(
     residual_correlation="ar1"))),
