@@ -1,0 +1,63 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "save_workflow_figure",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_NATIVE_W4_REAL_PNG_SVG_PDF_FIGURE_EXPORT",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/workflows/_plotting.py::save_workflow_figure",
+  "native_signature": "etr_save_workflow_figure(result,path,plot,dpi=150L,close=TRUE,...,strict_source_record=TRUE)",
+  "reviewer_statement": "Developer-scoped native R image-file export with actual bytes and overwrite, not independently certified Matplotlib Figure/pathlib/path metadata compatibility. Native and frozen Python tests authored; no exact-head executable success yet.",
+  "native_language_semantic_policy": "Preserves safe no-overwrite legacy default. Strict mode writes real nonempty PDF/SVG/PNG, validates declared route and file extension, applies device DPI, supports destination overwrite, and closes native devices on success/failure.",
+  "native_files": [
+    {
+      "path": "R/native-workflow-plot-dispatch.R",
+      "sha256": "5c859514980cab78084b9f8c8625c6e1d6a3324b141a70c79f1a1c357b223f55"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Frozen Python save_workflow_figure source accepts explicit result/path/plot, positive dpi, close and forwards plot_kwargs; R strict source mode documents its backend restrictions.",
+      "path": "tests/testthat/test-native-workflow-seven-plot-source-20261112.R",
+      "sha256": "37c515b89d4a2e9e3f51f32c5cbe6dc94c6461e45444daeb11cf99738cd9c18c"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Single output path ending png, svg or pdf; native figure device DPI integer 1..1200 and close TRUE. Python close FALSE, arbitrary matplotlib axes and broader dpi types are excluded.",
+      "path": "tests/testthat/test-native-workflow-seven-plot-source-20261112.R",
+      "sha256": "37c515b89d4a2e9e3f51f32c5cbe6dc94c6461e45444daeb11cf99738cd9c18c"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Dispatches a genuine native R plot, writes a nonempty PDF/SVG/PNG output after device close, and permits reusing a destination; no placeholder figures.",
+      "path": "tests/testthat/test-native-workflow-seven-plot-source-20261112.R",
+      "sha256": "37c515b89d4a2e9e3f51f32c5cbe6dc94c6461e45444daeb11cf99738cd9c18c"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Fails unsupported extension, invalid dpi, close FALSE and invalid workflow plot; closes active device on failure and cleans newly created partial destination.",
+      "path": "tests/testthat/test-native-workflow-seven-plot-source-20261112.R",
+      "sha256": "37c515b89d4a2e9e3f51f32c5cbe6dc94c6461e45444daeb11cf99738cd9c18c"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Returns normalized R file path invisibly after verifying file existence and positive length; Python pathlib.Path and exact Matplotlib metadata bytes are excluded.",
+      "path": "tests/testthat/test-native-workflow-seven-plot-source-20261112.R",
+      "sha256": "37c515b89d4a2e9e3f51f32c5cbe6dc94c6461e45444daeb11cf99738cd9c18c"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Figure serialization of the same explicitly chosen scientific plot; no independent fitting, uncertainty recalibration, plot guessing or data transformation.",
+      "path": "tests/testthat/test-native-workflow-seven-plot-source-20261112.R",
+      "sha256": "37c515b89d4a2e9e3f51f32c5cbe6dc94c6461e45444daeb11cf99738cd9c18c"
+    }
+  ],
+  "additional_regression_evidence": [],
+  "independent_review_status": "Provisional developer-scoped W4 implementation, independent full-contract certification zero; exact-head native R/Python CI not yet witnessed green.",
+  "language_specific_limits": [
+    "No Matplotlib image/pixel or SVG Date=None metadata identity.",
+    "Native close=FALSE cannot flush a file while retaining a usable Matplotlib figure, so is rejected.",
+    "Python pathlib.Path and original figure object lifetime are not represented."
+  ]
+}
