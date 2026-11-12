@@ -73,6 +73,10 @@ test_that("native R fdasrvf performs genuine elastic Karcher DP alignment and ta
   expect_true(all(is.finite(got$mean_curve)))
   expect_true(all(got$warping_functions>=-1e-5))
   expect_true(all(got$warping_functions<=1+1e-5))
+  # An actual phase-varying fixture must not silently return the old
+  # scientific alternative with entirely identity warps.
+  identity<-matrix(rep(x$time,each=7L),nrow=7L,ncol=29L)
+  expect_gt(max(abs(got$warping_functions-identity)),1e-5)
   expect_true(all(vapply(seq_len(7L),function(i)
     all(diff(got$warping_functions[i,])>=-1e-5),logical(1L))))
   expect_equal(got$warping_functions[,1L],rep(0,7L),tolerance=1e-4)
