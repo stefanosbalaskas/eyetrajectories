@@ -171,5 +171,48 @@ Historical \code{backend="fdapace"} remains unchanged by default.
 See \code{docs/native-fdapy-fixed-spectrum-pace-20261112.md}.
 }
 
+\section{FDApy 1.0.x native raw-data PS/LP covariance UFPCA fit}{
+The opt-in \code{etr_fit_sparse_fpca_fdapy(trajectories, dimension,
+n_components, strict_source_record=TRUE, source_fit_snapshot=NULL,
+fit_smoothing="PS", score_smoothing="LP", tol=1e-4,
+normalize=FALSE, kwargs_mean=list(...),
+kwargs_covariance=list(...))}
+now fits an explicitly bounded native-R source-scientific FDApy 1.0.x
+UFPCA covariance-operator model from the ORIGINAL irregular observations.
+
+It implements native pooled-time P-spline and local-polynomial mean
+smoothing, the source zero-penalty P-spline re-smoothing required to
+center data for covariance fitting, original-visit pairwise covariance,
+source-differenced measurement-noise estimation, PS/LP covariance
+smoothing with the source's distinct diagonal treatment, symmetric
+trapezoid-weighted covariance eigensystem, and conditional PACE scoring.
+The source-frozen public transform has a SEPARATE second centering
+operation: passing the source \code{data} to
+\code{UFPCA.transform(method="PACE", method_smoothing="LP")} smooths
+the trained mean with local-polynomial regression. The native R fit
+reproduces that distinct score-centering operation, then uses FDApy's
+internal pooled-grid linear interpolation, spectral-covariance
+pseudoinverse and inverse reconstruction.
+
+Supplying \code{source_fit_snapshot} continues selecting the earlier
+independent conditional fixed-spectrum score stage, while calling
+without strict source mode preserves the historical explicit
+\code{backend="fdapace"} scientific alternative unchanged.
+
+Native R reports matched mathematical source-estimand values and
+diagnostics but NOT a Python FDApy \code{UFPCA} backend instance.
+The source's \code{numpy.linalg.eig} order/sign convention and native
+R symmetric-eigen sorted principal-component convention are not
+bitwise equal. The reviewed raw-fitting domain is restricted to
+finite source-selected curves, \code{normalize=FALSE},
+\code{fit_smoothing="PS"} or \code{"LP"}, and source-supported
+\code{score_smoothing="LP"}; higher-order LP, unrestricted smoothing
+kwargs, covariance diagonal inclusion, Python objects/exceptions and
+complete numerical source certification remain unqualified.
+
+See \code{docs/native-fdapy-ufpca-ps-lp-source-20261112.md} and
+\code{inst/extdata/native_scoped_fdapy_submethod_gaps_20261112.csv}.
+}
+
 \value{Each function returns its own documented native R, scientific-model,
 bridge, workflow or audit result; no single shared return type is asserted.}
