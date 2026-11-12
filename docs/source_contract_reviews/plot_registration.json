@@ -1,0 +1,72 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "plot_registration",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_NATIVE_FUNCTIONAL_REGISTRATION_ARTIST_GEOMETRY_REVIEW",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/plotting.py::plot_registration",
+  "native_signature": "etr_plot_registration(...,strict_source_record=TRUE)",
+  "reviewer_statement": "Scoped source scientific data and plotting-artist developer review. Native R registered trajectories/warp geometry and direct pinned Python 1.2 source artist comparisons are committed. Exact-head differential CI and external certification are not yet verified; native R cannot return Python Matplotlib Axes/Figure instances.",
+  "native_language_semantic_policy": "Only observed scientific line coordinates, figure panel count/metadata, source labels/opacity and source identity/displacement definitions are represented. The native base graphics object is not Python Matplotlib, and exception/axes mutation/pixel parity remain out of scope.",
+  "native_files": [
+    {
+      "path": "R/native-functional-registration-plots.R",
+      "sha256": "49186cabeb7f2ee6cb413b37501c86f19001c9bb645879554f3ae40992bd3b6a"
+    },
+    {
+      "path": "R/native-registration-three-source-artists.R",
+      "sha256": "2279be74bf01cf5af1adb5243dc191ff62e099403093b2bbb5ab722071a1c3ef"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Frozen public Python 1.2 src/eyetrajectoriespy/plotting.py::plot_registration. No R implementation reuses Python runtime plotting classes.",
+      "path": "tests/testthat/test-native-registration-three-scientific-artists-20261112.R",
+      "sha256": "9302ecd11f3b827004d45aef5b37b155594d2e7b210aceffc9b22fbbea515a4d"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Requires real native landmark registration with identical original and registered time grids, curve IDs and named dimension; positive integer max_curves selects first N. Strict source mode requires a nonmissing logical scalar; Python source permits max_curves=0 edge while this native accepted domain is explicitly positive only.",
+      "path": "tests/testthat/test-native-registration-three-scientific-artists-20261112.R",
+      "sha256": "9302ecd11f3b827004d45aef5b37b155594d2e7b210aceffc9b22fbbea515a4d"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Two panels titled Original/Registered; native original and fitted registered source values for every selected original curve are preserved, with exact x=time, y=source scientific values, alpha=0.25 per line, original curve order, source time unit axes and Python figure size intent (10,4). Direct frozen Python 1.2 public (fig,axes) plot lines, opacity and figure size tests committed.",
+      "path": "tests/testthat/test-native-registration-three-scientific-artists-20261112.R",
+      "sha256": "9302ecd11f3b827004d45aef5b37b155594d2e7b210aceffc9b22fbbea515a4d"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Unsupported result class, incomplete warps, mismatched original/registered grids or curve IDs, unknown dimension, nonpositive max_curves and invalid strict flag fail explicitly. Python KeyError and plotting Figure runtime behavior are not reproduced.",
+      "path": "tests/testthat/test-native-registration-three-scientific-artists-20261112.R",
+      "sha256": "9302ecd11f3b827004d45aef5b37b155594d2e7b210aceffc9b22fbbea515a4d"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Python returns (Matplotlib Figure, NumPy array of two Axes). R strictly returns a typed two-panel source-scientific artist record declaring that intended Python return kind, but does not create Python Axes/Figure or pixels. Default native R still returns original/registered numeric per-curve data frames.",
+      "path": "tests/testthat/test-native-registration-three-scientific-artists-20261112.R",
+      "sha256": "9302ecd11f3b827004d45aef5b37b155594d2e7b210aceffc9b22fbbea515a4d"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Genuine registered and original source trajectories shown in separate panels without refitting a landmark or resampling original measurement coordinates.",
+      "path": "tests/testthat/test-native-registration-three-scientific-artists-20261112.R",
+      "sha256": "9302ecd11f3b827004d45aef5b37b155594d2e7b210aceffc9b22fbbea515a4d"
+    }
+  ],
+  "additional_regression_evidence": [
+    {
+      "path": "tests/testthat/test-native-functional-registration-plots.R",
+      "sha256": "69a683fd3e1e89498b6753b5e9a44b789292abd89f44e0cff984e8784d4cce53"
+    }
+  ],
+  "independent_review_status": "Author-scoped provisional scientific-geometry review; pinned Python exact-head tests queued/unverified, zero independent certifications.",
+  "language_specific_limits": [
+    "R base graphics and source data do not recreate Python Figure/Axes runtime object identity, exceptions, or pixel-equivalent rendering.",
+    "Supported source-scientific geometry scope is restricted to complete native registration and original observed reconstruction summary; full Python input/ax domain remains different.",
+    "No independently checked numerical end-to-end registration certification, main-branch merge or CRAN qualification asserted."
+  ]
+}
