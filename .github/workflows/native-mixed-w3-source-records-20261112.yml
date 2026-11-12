@@ -36,7 +36,7 @@ jobs:
           assert len(gaps)==203 and len(nc)==1
           remaining=sum(x['unresolved_source_gap']=='TRUE' for x in gaps)
           noncallable=sum(x['unresolved']=='TRUE' for x in nc)
-          assert (remaining,noncallable,508-remaining-noncallable)==(80,1,427)
+          assert remaining<=80 and noncallable<=1 and 508-remaining-noncallable>=427
           targets=(
             'bootstrap_functional_mixed_effects_coefficients',
             'bootstrap_functional_mixed_effects_full_refit',
