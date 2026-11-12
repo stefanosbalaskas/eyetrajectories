@@ -4,6 +4,7 @@
 quadrature-weighted dense FPCA, sampled planar kinematics, trajectory distances,
 basic recurrence analysis, and base graphics.}
 \alias{etr_trajectory_set}
+\alias{etr_trajectory_source_class_record}
 \alias{etr_validate}
 \alias{etr_from_long}
 \alias{etr_as_long}
@@ -45,6 +46,8 @@ basic recurrence analysis, and base graphics.}
 etr_trajectory_set(time, values, curve_ids = NULL, dimension_names = NULL,
     metadata = NULL, coordinate_system = "unknown", time_unit = "unknown",
     provenance = list(), python_boundary_mode = FALSE)
+
+etr_trajectory_source_class_record(x)
 
 etr_validate(x, require_complete = FALSE)
 
@@ -247,6 +250,29 @@ recurrence methods use dense matrices and explicit fixed radii and are not
 full RQA parity. Input preparation is explicit, without hidden interpolation,
 missingness repair, smoothing, or coordinate normalization.
 }
+\section{Frozen Python TrajectorySet source-scientific class record}{
+After explicitly constructing a native \code{etr_trajectory_set(...,
+python_boundary_mode=TRUE)}, the function
+\code{etr_trajectory_source_class_record(x)}
+returns an inspectable typed native R scientific class record with the
+eight frozen Python 1.2 source dataclass scientific fields in their
+original order, metadata indexed by curve ID, and the three shape
+properties \code{n_curves}, \code{n_time}, \code{n_dimensions}.
+It identifies the native method surface:
+\code{etr_dimension} for named channel retrieval,
+\code{etr_subset(x, indices, python_boundary_mode=TRUE)} for
+source zero-based signed indices, and \code{etr_with_values} for
+value replacement with shallow provenance updates.
+
+This is deliberately NOT a real frozen Python \code{TrajectorySet}
+dataclass, pandas container, complete NumPy coercion implementation,
+or independent scientific certification. The source-qualified
+native R data-and-method domain excludes Python-specific object
+reflection, arbitrary pandas indexes, heterogeneous label collisions,
+and Python exception/warning class identity.
+See \code{docs/native-trajectory-source-class-record-20261112.md}.
+}
+
 \value{Depends on the function: a native trajectory collection, native FPCA
 result, numeric matrix/vector, recurrence result, data frame, or base-R plot.}
 \seealso{\code{\link{et_fit_mfpca}}, \code{\link{et_call}}}
