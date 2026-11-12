@@ -178,6 +178,9 @@ test_that("source plot modes reject ambiguous slices and nonlogical strict flags
     expect_error(etr_plot_transfer_entropy_sensitivity(varied,
       parameter="source_lag",strict_source_record=TRUE),
       "must fix all other varying parameters")
+    expect_error(etr_plot_transfer_entropy_sensitivity(varied,
+      parameter="source_lag",filters=list(target_history=TRUE),
+      strict_source_record=TRUE),"integer scalars")
     filtered<-etr_plot_transfer_entropy_sensitivity(varied,
       parameter="source_lag",filters=list(target_history=1L),
       strict_source_record=TRUE)
