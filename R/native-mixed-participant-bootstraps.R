@@ -106,10 +106,16 @@
 #' @export
 etr_bootstrap_functional_mixed_effects_coefficients<-function(
     result,n_bootstrap=1000L,random_state=0L,
-    sampled_participant_indices=NULL){
-  if(inherits(result,"etr_joint_bspline_mixed"))
-    return(.etr_joint_fixed_covariance_gls_bootstrap(
-      result,n_bootstrap,random_state,sampled_participant_indices))
+    sampled_participant_indices=NULL,strict_source_record=FALSE){
+  .etr_mixed_w3_source_mode(strict_source_record,result,
+    sampled_participant_indices)
+  if(inherits(result,"etr_joint_bspline_mixed")){
+    out<-.etr_joint_fixed_covariance_gls_bootstrap(
+      result,n_bootstrap,random_state,sampled_participant_indices)
+    if(isTRUE(strict_source_record))
+      return(.etr_mixed_w3_coefficients_record(out))
+    return(out)
+  }
   ix<-.etr_native_mixed_boot_indices(result,n_bootstrap,
     random_state,sampled_participant_indices)
   B<-nrow(ix);G<-ncol(ix)
@@ -189,10 +195,16 @@ etr_bootstrap_functional_mixed_effects_coefficients<-function(
 #' @export
 etr_bootstrap_functional_mixed_effects_full_refit<-function(
     result,n_bootstrap=1000L,random_state=0L,
-    sampled_participant_indices=NULL){
-  if(inherits(result,"etr_joint_bspline_mixed"))
-    return(.etr_joint_likelihood_full_refit_bootstrap(
-      result,n_bootstrap,random_state,sampled_participant_indices))
+    sampled_participant_indices=NULL,strict_source_record=FALSE){
+  .etr_mixed_w3_source_mode(strict_source_record,result,
+    sampled_participant_indices)
+  if(inherits(result,"etr_joint_bspline_mixed")){
+    out<-.etr_joint_likelihood_full_refit_bootstrap(
+      result,n_bootstrap,random_state,sampled_participant_indices)
+    if(isTRUE(strict_source_record))
+      return(.etr_mixed_w3_full_refit_record(out))
+    return(out)
+  }
   ix<-.etr_native_mixed_boot_indices(result,n_bootstrap,
     random_state,sampled_participant_indices)
   B<-nrow(ix);G<-ncol(ix);nt<-length(result$time)
