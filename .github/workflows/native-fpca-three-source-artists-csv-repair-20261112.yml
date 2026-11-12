@@ -1,0 +1,133 @@
+name: Repaired 508 ledger and three FPCA native source scientific plots
+on:
+  pull_request:
+    paths:
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/reviewed_source_contract_closures_v1.csv"
+      - "R/native-nine-scientific-plots.R"
+      - "R/native-fpca-three-source-artists.R"
+      - "tests/testthat/test-native-nine-scientific-plots.R"
+      - "tests/testthat/test-native-fpca-three-source-artists-20261112.R"
+      - ".github/workflows/native-fpca-three-source-artists-csv-repair-20261112.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  csv-and-hashed-science:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate exactly seven CSV columns and SHA256 source review coverage
+        shell: bash
+        run: |
+          python - <<'PY'
+          import csv,json,hashlib
+          from pathlib import Path
+          root=Path('.')
+          p=root/'inst/extdata/native_source_contract_gaps_stage22.csv'
+          with p.open(encoding='utf-8',newline='') as f:
+            rows=list(csv.reader(f,strict=True))
+          assert len(rows)==204,len(rows)
+          assert all(len(row)==7 for row in rows),[
+              (i,len(row),row[0]) for i,row in enumerate(rows)
+              if len(row)!=7]
+          header=rows[0]
+          assert header==['python_name','native_r_candidate','gap_kind',
+            'known_source_difference','source_witness',
+            'review_resolution','unresolved_source_gap']
+          assert all(row[-1] in ('TRUE','FALSE') for row in rows[1:])
+          assert len(set(row[0] for row in rows[1:]))==203
+          with (root/'inst/extdata/reviewed_source_contract_closures_v1.csv').open(
+              encoding='utf-8',newline='') as f:
+            reg=list(csv.DictReader(f))
+          assert len(set(r['python_name'] for r in reg))==len(reg)
+          names=('plot_fpca_stability','plot_fpca_influence',
+                 'plot_fpca_cross_validation')
+          for name in names:
+              (line,)=tuple(r for r in rows[1:] if r[0]==name)
+              assert line[-1]=='FALSE'
+              (entry,)=tuple(r for r in reg if r['python_name']==name)
+              assert entry['independently_certified']=='FALSE'
+              data=(root/entry['review_record_path']).read_bytes()
+              assert hashlib.sha256(data).hexdigest()==entry['review_record_sha256']
+              review=json.loads(data)
+              assert review['frozen_python_commit']=='c1cd95ad718327550f7e55393ff38582872f7a94'
+              assert review['independently_certified'] is False
+              assert {r['kind'] for r in review['case_evidence']}=={
+                'source_signature','accepted_input_domain',
+                'numerical_outputs','exception_semantics',
+                'returned_schema','scientific_estimand'}
+              for source in review['native_files']+review['case_evidence']+review['additional_regression_evidence']:
+                  path=root/source['path']
+                  assert hashlib.sha256(path.read_bytes()).hexdigest()==source['sha256'],path
+          with (root/'inst/extdata/native_nonfunction_source_gaps_v1.csv').open(
+              encoding='utf-8',newline='') as f:
+              non=list(csv.DictReader(f))
+          assert len(non)==1
+          callable=sum(r[-1]=='TRUE' for r in rows[1:])
+          noncallable=sum(r['unresolved']=='TRUE' for r in non)
+          assert callable<=62 and noncallable<=1
+          print('Verified CSV schema; '+str(508-callable-noncallable)+
+                '/508 provisional scoped developer reviews; zero independent certificates.')
+          PY
+  native-three-os:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Validate native strict FPCA graphics and complete live parity ledger
+        shell: bash
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all('.',quiet=TRUE)
+          testthat::test_local('.',
+            filter='native-fpca-three-source-artists-20261112|native-nine-scientific-plots|full-native-r-parity-ledger',
+            reporter='summary',stop_on_failure=TRUE)
+          RSCRIPT
+  frozen-python-1-2:
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        id: python
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Compare pinned Python 1.2 actual Matplotlib boxplot line and CV uncertainty artists
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all('.',quiet=TRUE)
+          stopifnot(identical(et_python_version(),'1.2.0'))
+          testthat::test_local('.',
+            filter='native-fpca-three-source-artists-20261112|native-nine-scientific-plots|full-native-r-parity-ledger',
+            reporter='summary',stop_on_failure=TRUE)
+          RSCRIPT

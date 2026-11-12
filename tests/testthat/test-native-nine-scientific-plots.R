@@ -77,9 +77,16 @@ test_that("nine scientific visualization mappings are unique and unsigned",{
   expect_gte(sum(z$native_implementation_started),211L)
   expect_equal(sum(z$contract_certification_candidate),4L)
   expect_gte(sum(z$source_contract_gap_unresolved),57L)
-  expect_true(all(z$source_contract_gap_unresolved[
-    z$native_implementation_stage==24L &
-      !is.na(z$native_implementation_stage)]))
+  # Three source-scientific FPCA artist geometries are now
+  # author-reviewed; the other stage-24 graphics remain unresolved.
+  scoped<-c("plot_fpca_stability","plot_fpca_influence",
+    "plot_fpca_cross_validation")
+  subset<-z[z$native_implementation_stage==24L&
+    !is.na(z$native_implementation_stage),,drop=FALSE]
+  expect_false(any(subset$source_contract_gap_unresolved[
+    subset$python_name%in%scoped]))
+  expect_true(all(subset$source_contract_gap_unresolved[
+    !subset$python_name%in%scoped]))
   expect_equal(sum(z$one_to_one_native_contract_complete),0L)
 })
 
