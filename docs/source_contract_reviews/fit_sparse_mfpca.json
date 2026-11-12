@@ -1,0 +1,67 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "fit_sparse_mfpca",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "FULL_SOURCE_SCIENTIFIC_CONTRACT_REVIEW_ON_DECLARED_DOMAIN",
+  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/sparse_multivariate.py::fit_sparse_mfpca and src/eyetrajectoriespy/types.py::SparseMFPCAResult",
+  "native_signature": "etr_fit_sparse_mfpca(trajectories,...,backend='native_covariance',strict_source_record=TRUE)",
+  "reviewer_statement": "Provisional author-reviewed native R joint-covariance PACE scientific contract, based on preexisting frozen Python numerical differential and new direct 29-field Python dataclass and diagnostic comparison tests. Tests have not been observed passing at this exact head. Independent scientific certification has not occurred.",
+  "native_language_semantic_policy": "R-native scientific data record intentionally excludes Python class identity, pandas/NumPy runtime methods and Python exception class. Actual native R model and full optional diagnostic class are unchanged when strict_source_record=FALSE. The R-only marginal fdapace backend is rejected in strict source mode.",
+  "native_files": [
+    {
+      "path": "R/native-sparse-joint-score-workflows.R",
+      "sha256": "77ca323dfc37563817c1c4c964ab73eab4932698554a01ebb444b43ef1524b46"
+    },
+    {
+      "path": "R/native-sparse-mfpca-w2-result.R",
+      "sha256": "a8bf89d0f1514e8dea2234d6a5f506b019b58fe68f15f454b346be32d75686e6"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "path": "tests/testthat/test-native-fit-sparse-mfpca-strict-source-20261112.R",
+      "sha256": "6ff109c32e6db99cdfdc6fa8a942d02f3437dc467af3460ff4b19dcb4b79f992",
+      "description": "Frozen Python 1.2 sparse_multivariate.py::fit_sparse_mfpca requires explicit n_components, evaluation_grid, mean_bandwidth, covariance_bandwidth, measurement_error and returns types.py SparseMFPCAResult. R keeps its prior explicit backend-dispatch public interface and adds strict_source_record=TRUE with source-mandatory scientific control and no R-only marginal options."
+    },
+    {
+      "kind": "accepted_input_domain",
+      "path": "tests/testthat/test-native-fit-sparse-mfpca-strict-source-20261112.R",
+      "sha256": "6ff109c32e6db99cdfdc6fa8a942d02f3437dc467af3460ff4b19dcb4b79f992",
+      "description": "Two jointly observed coordinate channels, native irregular trajectories, finite evaluation grid, declared local-linear Epanechnikov positive bandwidths, one or more integer joint PACE components, diagonal or correlated measurement noise and explicit support/PSD/conditioning policies. Only real native_covariance is permitted in strict mode; marginal fdapace and R-only options are refused."
+    },
+    {
+      "kind": "numerical_outputs",
+      "path": "tests/testthat/test-native-fit-sparse-mfpca-strict-source-20261112.R",
+      "sha256": "6ff109c32e6db99cdfdc6fa8a942d02f3437dc467af3460ff4b19dcb4b79f992",
+      "description": "Native joint score and covariance population comparisons already pinned to frozen Python 1.2 (diagonal and correlated noise, smoothed Cxx/Cxy/Cyx/Cyy, scores, eigenvalues/functions, support counts, native PACE). New strict public fit compares all 29 ordered source dataclass scientific fields with legacy native, and directly compares Python 1.2 public fit numerical arrays, score diagnostics, covariance pair counts, full source PSD diagnostic mappings and fit/score methods; new CI is not yet witnessed passing."
+    },
+    {
+      "kind": "exception_semantics",
+      "path": "tests/testthat/test-native-fit-sparse-mfpca-strict-source-20261112.R",
+      "sha256": "6ff109c32e6db99cdfdc6fa8a942d02f3437dc467af3460ff4b19dcb4b79f992",
+      "description": "Strict public mode refuses missing Python mandatory fit controls, nonlogical strict flag, alternative fdapace estimator and R-only marginal controls, and propagates covariance support/PSD/measurement error/score-system failures. Native R retains R-native conditions and errors, not Python classes, exception message identity, or arbitrary Python input coercions."
+    },
+    {
+      "kind": "returned_schema",
+      "path": "tests/testthat/test-native-fit-sparse-mfpca-strict-source-20261112.R",
+      "sha256": "6ff109c32e6db99cdfdc6fa8a942d02f3437dc467af3460ff4b19dcb4b79f992",
+      "description": "Exactly 29 ordered public Python types.SparseMFPCAResult scientific dataclass fields (scores, spectra, mean, time/grid and identifiers, smoothed and PSD covariance blocks, error covariance, score/support/PSD diagnostics, method and provenance). Native R backend auxiliaries n_curves, joint_scores, source certification flags are excluded from strict scientific record. It remains R class etr_sparse_mfpca_w2_scientific_record, not Python dataclass."
+    },
+    {
+      "kind": "scientific_estimand",
+      "path": "tests/testthat/test-native-fit-sparse-mfpca-strict-source-20261112.R",
+      "sha256": "6ff109c32e6db99cdfdc6fa8a942d02f3437dc467af3460ff4b19dcb4b79f992",
+      "description": "Paired planar sparse FPCA with direct local-linear smooth mean and four covariance blocks, full joint latent covariance PSD projection, weighted eigendecomposition and joint Gaussian conditional PACE scores using full fitted covariance and noise (never rank-k score covariance substitution), honoring raw observation times and declared analysis support."
+    }
+  ],
+  "independent_review_status": "Provisional six-domain developer review; tests and cross-platform CI committed, but not confirmed passing; independently_certified=false.",
+  "language_specific_limits": [
+    "Python dataclass class/descriptor identity and Python-specific exceptions are not reproduced in native R.",
+    "R record is a strict scientific field envelope, not a drop-in Python object or backend-native fitted model.",
+    "The full domain of poorly conditioned score systems, low-support covariance, nonfinite missingness policies and optional source coercions needs further Python source differential evidence.",
+    "No independently certified contract, no completed CI qualification, no merge to main or CRAN claim."
+  ]
+}
