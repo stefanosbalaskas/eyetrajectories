@@ -28,37 +28,37 @@
       "kind": "source_signature",
       "description": "Published eyetrajectoriespy 1.2.0 src/eyetrajectoriespy/functional_mixed_effects_nested.py::plot_functional_trial_random_effects inspected; strict_source_record=TRUE opt-in extends the native R plot while preserving original default base graphics and numerical output.",
       "path": "tests/testthat/test-native-three-mixed-conformal-scientific-artists-20261112.R",
-      "sha256": "42793d99746e654eb4c82eeff7a13a267fe1b26a3830f12a2433ebf2c6d71d5d"
+      "sha256": "34057f25f6faaf437b4051af04187c74e9699fffee7ab28e09fc38915fd331ac"
     },
     {
       "kind": "accepted_input_domain",
       "description": "Validated source-shaped native R mixed BLUP or direct conformal p-value lists with positive integer limits and explicit IDs. Source conformal requires actual p_values and target_curve_ids rather than recomputing hidden scores. General Python dataclass identity, pandas grouping API, arbitrary Matplotlib Axes injection and exception-class identity remain outside bounded R domain.",
       "path": "tests/testthat/test-native-three-mixed-conformal-scientific-artists-20261112.R",
-      "sha256": "42793d99746e654eb4c82eeff7a13a267fe1b26a3830f12a2433ebf2c6d71d5d"
+      "sha256": "34057f25f6faaf437b4051af04187c74e9699fffee7ab28e09fc38915fd331ac"
     },
     {
       "kind": "numerical_outputs",
       "description": "Frozen Python pandas source row-order trial ID selection and first-seen grouped trial functional intercept line artists, no hidden trial averaging, optional participant ID, conditional legend, source time/title and source linewidth-1 solid zero reference. Native source order/error cases, legacy default checks, and opt-in public frozen Python 1.2 Matplotlib differential artist assertions authored in a dedicated test file. Executable exact-head CI passing has not yet been observed.",
       "path": "tests/testthat/test-native-three-mixed-conformal-scientific-artists-20261112.R",
-      "sha256": "42793d99746e654eb4c82eeff7a13a267fe1b26a3830f12a2433ebf2c6d71d5d"
+      "sha256": "34057f25f6faaf437b4051af04187c74e9699fffee7ab28e09fc38915fd331ac"
     },
     {
       "kind": "exception_semantics",
       "description": "Native R strict flag, integer max, unknown participant, invalid effect, missing random slope, malformed source array, and conformal p-value/flag identity validations reject incorrect inputs. R condition class is not asserted equal to Python TypeError, ValueError or KeyError.",
       "path": "tests/testthat/test-native-three-mixed-conformal-scientific-artists-20261112.R",
-      "sha256": "42793d99746e654eb4c82eeff7a13a267fe1b26a3830f12a2433ebf2c6d71d5d"
+      "sha256": "34057f25f6faaf437b4051af04187c74e9699fffee7ab28e09fc38915fd331ac"
     },
     {
       "kind": "returned_schema",
       "description": "Default base-R graphics and invisible R audit line/p-value geometry unchanged. Strict mode returns a typed etr_nonlinear_scientific_artist_record with original source artist data, axes, titles, conditional legends and source-only p-value provenance; not an actual Python matplotlib.axes.Axes or a pixel-equivalent figure.",
       "path": "tests/testthat/test-native-three-mixed-conformal-scientific-artists-20261112.R",
-      "sha256": "42793d99746e654eb4c82eeff7a13a267fe1b26a3830f12a2433ebf2c6d71d5d"
+      "sha256": "34057f25f6faaf437b4051af04187c74e9699fffee7ab28e09fc38915fd331ac"
     },
     {
       "kind": "scientific_estimand",
       "description": "Precomputed source nested trial-level functional BLUPs, not refitted or collapsed to participant means. Scientific nested covariance and optimizer identity remain outside plotting review.",
       "path": "tests/testthat/test-native-three-mixed-conformal-scientific-artists-20261112.R",
-      "sha256": "42793d99746e654eb4c82eeff7a13a267fe1b26a3830f12a2433ebf2c6d71d5d"
+      "sha256": "34057f25f6faaf437b4051af04187c74e9699fffee7ab28e09fc38915fd331ac"
     }
   ],
   "additional_regression_evidence": [
