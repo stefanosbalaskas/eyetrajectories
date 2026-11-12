@@ -12,44 +12,44 @@
   "native_files": [
     {
       "path": "R/native-functional-recovery-evidence.R",
-      "sha256": "4ecf6c2f6e1b4c38f33c3ea1aa854f065e5685e99621b1351176adf1cfc4b441"
+      "sha256": "4e07dd6f1c8d373cf2342aa86ed8331eb3040e8d8f76c0198955ca28ca256e00"
     }
   ],
   "case_evidence": [
     {
       "kind": "source_signature",
       "path": "tests/testthat/test-native-three-recovery-frames-full-source-20261111.R",
-      "sha256": "4f7e8776ac35025981a9a60f11db26efcb7da8092daf6be8f3dbab46ba3f83e9",
+      "sha256": "5833afd6af9de11b507932d5b01dcf9a447e14f53b6133ae82fca5af32e07f78",
       "description": "Frozen Python 1.2 simulate.py signature for typed FunctionalRecoveryResult, FunctionalRecoveryRecord, and FunctionalRecoveryValue dataclasses, native R scientific record mapping"
     },
     {
       "kind": "accepted_input_domain",
       "path": "tests/testthat/test-native-three-recovery-frames-full-source-20261111.R",
-      "sha256": "4f7e8776ac35025981a9a60f11db26efcb7da8092daf6be8f3dbab46ba3f83e9",
+      "sha256": "5833afd6af9de11b507932d5b01dcf9a447e14f53b6133ae82fca5af32e07f78",
       "description": "Four distinct source-record configurations: structured source metrics, unstructured fallback metrics with missing metadata, every replicate failed, and nine successful observations with one failed replicate"
     },
     {
       "kind": "numerical_outputs",
       "path": "tests/testthat/test-native-three-recovery-frames-full-source-20261111.R",
-      "sha256": "4f7e8776ac35025981a9a60f11db26efcb7da8092daf6be8f3dbab46ba3f83e9",
+      "sha256": "5833afd6af9de11b507932d5b01dcf9a447e14f53b6133ae82fca5af32e07f78",
       "description": "Twelve complete typed Python 1.2 vs native R data.frame comparisons (four configurations by three exports) including every source column and numeric/nullable value, NumPy-source reduction and 5th/25th/50th/75th/95th quantiles, failure counts/MCSE"
     },
     {
       "kind": "exception_semantics",
       "path": "tests/testthat/test-native-three-recovery-frames-full-source-20261111.R",
-      "sha256": "4f7e8776ac35025981a9a60f11db26efcb7da8092daf6be8f3dbab46ba3f83e9",
+      "sha256": "5833afd6af9de11b507932d5b01dcf9a447e14f53b6133ae82fca5af32e07f78",
       "description": "Native R constructor rejects unknown source statuses, nonfinite metrics, metrics on failed replicates, structured/flat source disagreements and malformed summary arithmetic choices; Python runtime exception types remain language-specific"
     },
     {
       "kind": "returned_schema",
       "path": "tests/testthat/test-native-three-recovery-frames-full-source-20261111.R",
-      "sha256": "4f7e8776ac35025981a9a60f11db26efcb7da8092daf6be8f3dbab46ba3f83e9",
+      "sha256": "5833afd6af9de11b507932d5b01dcf9a447e14f53b6133ae82fca5af32e07f78",
       "description": "Python pandas DataFrame values and source column order mapped to R data.frame, including zero-column empty metric observations and 19-column empty summary for all-failed source records"
     },
     {
       "kind": "scientific_estimand",
       "path": "tests/testthat/test-native-three-recovery-frames-full-source-20261111.R",
-      "sha256": "4f7e8776ac35025981a9a60f11db26efcb7da8092daf6be8f3dbab46ba3f83e9",
+      "sha256": "5833afd6af9de11b507932d5b01dcf9a447e14f53b6133ae82fca5af32e07f78",
       "description": "Per-simulation-replicate structured or flat metric evidence, zero-based to one-based component labels, exact metadata origin and missing fields with source-ordered long form"
     }
   ],

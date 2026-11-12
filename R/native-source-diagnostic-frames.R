@@ -194,7 +194,9 @@ etr_functional_mixed_effects_variance_bootstrap_frame <- function(bootstrap) {
 #' @param ... Additional base graphics plot arguments.
 #' @return Invisibly, the source-ordered numerical frame plotted.
 #' @export
-etr_plot_multivariate_iaaft_diagnostics <- function(result,...) {
+etr_plot_multivariate_iaaft_diagnostics <- function(result,
+    strict_source_record=FALSE,...) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   frame<-etr_multivariate_iaaft_diagnostics_frame(result)
   .etr_scientific_frame_fields(result,c("reference_dimension"),
     "surrogate_result")
@@ -214,6 +216,8 @@ etr_plot_multivariate_iaaft_diagnostics <- function(result,...) {
   graphics::legend("topright",legend=c("Max power-spectrum error",
     "Max cross-spectrum error"),lty=c(1,2),pch=c(1,1),
     bty="n")
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_mv_iaaft_source_artist(result,frame)))
   invisible(frame)
 }
 
@@ -230,7 +234,9 @@ etr_plot_multivariate_iaaft_diagnostics <- function(result,...) {
 #' @return Invisibly, histogram geometry and observed statistic.
 #' @export
 etr_plot_multivariate_surrogate_nonlinearity <- function(result,
-    bins=20L,python_boundary_mode=FALSE,...) {
+    bins=20L,python_boundary_mode=FALSE,
+    strict_source_record=FALSE,...) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   .etr_scientific_frame_fields(result,c("surrogate_statistics",
     "observed_statistic","statistic","p_value"))
   values<-.etr_source_text_vector(result$surrogate_statistics,
@@ -242,6 +248,7 @@ etr_plot_multivariate_surrogate_nonlinearity <- function(result,
   .etr_assert(is.logical(python_boundary_mode)&&
     length(python_boundary_mode)==1L&&!is.na(python_boundary_mode),
     "python_boundary_mode must be a nonmissing logical scalar")
+  if(isTRUE(strict_source_record))python_boundary_mode<-TRUE
   if(isTRUE(python_boundary_mode)) {
     # Python nonlinear_plotting.py checks an integer count, then
     # Matplotlib delegates exact bin boundaries/counts to NumPy.
@@ -273,5 +280,8 @@ etr_plot_multivariate_surrogate_nonlinearity <- function(result,
     xlab=name,ylab="Surrogate count",col="grey75",border="grey45",...)
   graphics::abline(v=observed,lty=2L,lwd=2L)
   graphics::legend("topright","Observed",lty=2L,lwd=2L,bty="n")
-  invisible(list(histogram=h,observed_statistic=observed,p_value=p))
+  out<-list(histogram=h,observed_statistic=observed,p_value=p)
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_mv_surrogate_source_artist(out,name)))
+  invisible(out)
 }
