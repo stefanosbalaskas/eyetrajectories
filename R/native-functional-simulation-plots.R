@@ -21,19 +21,36 @@
 #' @param curve Native one-based curve index or recorded curve ID.
 #' @param dimension Native one-based channel index or declared channel name.
 #' @param show_pre_missing Show measurement values removed by design.
+#' @param strict_source_record Return source-ordered scientific artist
+#'   geometry; numeric curve and dimension become zero-based as in Python.
+#'   Strict mode needs a genuinely simulated native result, not a Python Axes.
 #' @return Invisibly: numerical line and point geometry and plotted curve ID.
 #' @details Native plotting is R graphics, not Python Matplotlib Axes;
 #'   the axes return type is an unresolved source-contract difference.
 #' @export
 etr_plot_functional_simulation_curve <- function(result,curve=1L,
-    dimension=1L,show_pre_missing=FALSE){
+    dimension=1L,show_pre_missing=FALSE,strict_source_record=FALSE){
+  .etr_sim_artist_check(result,strict_source_record)
   x<-.etr_simulation_audit_fields(result)
   truth<-x$truth;obs<-result$observations
+  if(isTRUE(strict_source_record)&&is.numeric(curve)){
+    .etr_assert(length(curve)==1L&&is.finite(curve)&&
+      curve==floor(curve)&&curve>=0&&curve<x$n,
+      "source curve must be a valid zero-based integer")
+    curve<-as.integer(curve)+1L
+  }
   ci<-.etr_simulation_plot_index(curve,x$n,x$ids,"curve")
   dn<-truth$dimension_names
   .etr_assert(is.character(dn)&&length(dn)>=1L&&
     !anyNA(dn)&&all(nzchar(dn))&&!anyDuplicated(dn),
     "truth dimension_names must be distinct nonempty strings")
+  if(isTRUE(strict_source_record)&&is.numeric(dimension)){
+    .etr_assert(length(dimension)==1L&&is.finite(dimension)&&
+      dimension==floor(dimension)&&dimension>=0&&
+      dimension<length(dn),
+      "source dimension must be a valid zero-based integer")
+    dimension<-as.integer(dimension)+1L
+  }
   di<-.etr_simulation_plot_index(dimension,length(dn),dn,"dimension")
   .etr_assert(is.logical(show_pre_missing)&&
     length(show_pre_missing)==1L&&!is.na(show_pre_missing),
@@ -85,23 +102,30 @@ etr_plot_functional_simulation_curve <- function(result,curve=1L,
       if(nrow(removed))"removed/missing by design"),
     lty=c(1,NA,if(nrow(removed))NA),
     pch=c(NA,16,if(nrow(removed))4),bty="n")
-  invisible(list(curve_id=x$ids[[ci]],dimension=dn[[di]],
+  geometry<-list(curve_id=x$ids[[ci]],dimension=dn[[di]],
     latent=data.frame(time=tline,value=yline),
     observed=data.frame(time=times[keep],value=observed[keep]),
     removed=removed,
     provenance=list(backend="base_R",
       source_operation="plot_functional_simulation_curve",
-      python_axes_return_equivalence=FALSE)))
+      python_axes_return_equivalence=FALSE))
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_sim_curve_artist(geometry,truth$time_unit,
+      show_pre_missing,ci-1L,di-1L)))
+  invisible(geometry)
 }
 
 #' Native functional simulation phase-warp audit plot
 #' @param result Explicit realized simulation record.
 #' @param max_curves Positive integer plotted-curve limit or NULL.
 #' @param alpha Transparency for observed phase warps.
+#' @param strict_source_record Emit source-scientific identity and warp
+#'   line-artist data while preserving native base R graphics.
 #' @return Invisibly: numerical source-aligned identity and phase-warp lines.
 #' @export
 etr_plot_functional_simulation_phase_warps <- function(result,
-    max_curves=20L,alpha=.35){
+    max_curves=20L,alpha=.35,strict_source_record=FALSE){
+  .etr_sim_artist_check(result,strict_source_record)
   x<-.etr_simulation_audit_fields(result)
   if(!is.null(max_curves))
     .etr_assert(is.numeric(max_curves)&&length(max_curves)==1L&&
@@ -123,20 +147,28 @@ etr_plot_functional_simulation_phase_warps <- function(result,
   col<-grDevices::adjustcolor("black",alpha.f=alpha)
   for(i in seq_len(n))graphics::lines(x$grid,warps[i,],col=col)
   graphics::legend("topleft",legend="identity warp",lty=2,bty="n")
-  invisible(list(time=x$grid,identity=x$grid,warps=warps,
+  geometry<-list(time=x$grid,identity=x$grid,warps=warps,
     n_plotted=as.integer(n),alpha=alpha,
     provenance=list(backend="base_R",
       source_operation="plot_functional_simulation_phase_warps",
-      python_axes_return_equivalence=FALSE)))
+      python_axes_return_equivalence=FALSE))
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_sim_warps_artist(
+      geometry,time_unit,max_curves)))
+  invisible(geometry)
 }
 
 #' Native declared versus realized simulation score variance audit plot
 #' @param result Explicit realized simulation record with retained score sources.
+#' @param strict_source_record Return Python-ordered source scientific bar
+#'   artist metadata while preserving the actual native population variance.
 #' @return Invisibly: all source-aligned population variance bar geometry.
 #' @details Realized variance uses population denominator n (NumPy ddof=0),
 #'   not R sample variance n-1. R graphics replaces Matplotlib Axes.
 #' @export
-etr_plot_functional_simulation_score_variances <- function(result){
+etr_plot_functional_simulation_score_variances <- function(result,
+    strict_source_record=FALSE){
+  .etr_sim_artist_check(result,strict_source_record)
   x<-.etr_simulation_audit_fields(result)
   truth<-x$truth;k<-x$k
   participants<-truth$participant_scores
@@ -192,8 +224,11 @@ etr_plot_functional_simulation_score_variances <- function(result){
     "curve declared","participant declared","trial declared",
     "curve realized","participant realized","trial realized"),
     fill=fills[c(1,3,5,2,4,6)],bty="n")
-  invisible(list(geometry=bars,declared=declared,realized=realized,
+  geometry<-list(geometry=bars,declared=declared,realized=realized,
     provenance=list(backend="base_R",variance_ddof=0L,
       source_operation="plot_functional_simulation_score_variances",
-      python_axes_return_equivalence=FALSE)))
+      python_axes_return_equivalence=FALSE))
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_sim_variance_artist(geometry)))
+  invisible(geometry)
 }
