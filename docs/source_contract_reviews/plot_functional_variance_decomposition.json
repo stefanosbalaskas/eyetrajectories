@@ -12,7 +12,7 @@
   "native_files": [
     {
       "path": "R/native-functional-inference-visuals.R",
-      "sha256": "4ec2221bc18bc75f39fcfa860071017efe60d8730ad6c0af24545bf4b1c430be"
+      "sha256": "b2c9aa39e10a43c3d6f5cd09366ac2ae85a12883e07b35a6393d77fd6404fccd"
     },
     {
       "path": "R/native-mixed-four-diagnostic-artists.R",
