@@ -1,0 +1,73 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "plot_sparse_mfpca_covariance_blocks",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_NATIVE_SOURCE_ARTIST_GEOMETRY_REVIEW",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/sparse_multivariate_plotting.py::plot_sparse_mfpca_covariance_blocks",
+  "native_signature": "etr_plot_sparse_mfpca_covariance_blocks(result,...,strict_source_record=TRUE)",
+  "reviewer_statement": "Provisional developer-reviewed source scientific graphics geometry on actual native R sparse joint PACE models, verified in committed tests against exact Matplotlib 1.2 data/artists (not observed green yet). R base graphics is not Matplotlib and runtime plotting return types, colors and injected axes remain outside the accepted scoped scientific domain. No independent certification.",
+  "native_language_semantic_policy": "Native R scientific artist geometry implements source line/image/scatter coordinates, layout, common color limits, titles, labels and failure markers. The renderer uses R base graphics and cannot return actual Python Matplotlib axes or guarantee pixel-identical output; its typed plot metadata explicitly reports matplotlib_object_identity=false.",
+  "native_files": [
+    {
+      "path": "R/native-sparse-scientific-graphics.R",
+      "sha256": "7b86912b7f82c8dde63f68630c0722a537513007b56c91348b048cb1e959cd7d"
+    },
+    {
+      "path": "R/native-sparse-mfpca-artist-source.R",
+      "sha256": "d0d13a2ea3e7bc85023a8d10a74caff301cbb16940cca962da41261d7e406e6b"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Frozen Python public src/eyetrajectoriespy/sparse_multivariate_plotting.py::plot_sparse_mfpca_covariance_blocks. Joint 2-by-2 directional sparse planar covariance heatmap geometry with shared symmetric signed color limits",
+      "path": "tests/testthat/test-native-sparse-mfpca-four-artist-source-20261112.R",
+      "sha256": "55afabe13d9f26fbe7715fcf7eca1be606539dcdb132817f379e7f2f474d47ab"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Real native paired direct sparse covariance/PACE scientific result and declared stage 'used' or 'smoothed'. Existing native source= keyword is backward compatible; frozen Python stage= alias is supported. Enforces no conflicting source/stage. Strict native mode does not accept Python Matplotlib axes objects.",
+      "path": "tests/testthat/test-native-sparse-mfpca-four-artist-source-20261112.R",
+      "sha256": "55afabe13d9f26fbe7715fcf7eca1be606539dcdb132817f379e7f2f474d47ab"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Direct covariance Cxx,Cxy,Cyx,Cyy four fitted n-grid-square numerical arrays preserved exactly without swapping directional cross surfaces, with common vmax=max(abs(Cblocks)) and vmin=-vmax, default 1 if zero, imshow lower-origin grid extent, source per-axis labels and titles. Direct frozen Python public Matplotlib imshow get_array(), get_clim(), get_extent() source comparisons committed. Actual native rendering uses base R HCL Blue-Red 3 rather than bitwise Matplotlib coolwarm, and its shared source colorbar appears in metadata but not as identical Matplotlib rendered object.",
+      "path": "tests/testthat/test-native-sparse-mfpca-four-artist-source-20261112.R",
+      "sha256": "55afabe13d9f26fbe7715fcf7eca1be606539dcdb132817f379e7f2f474d47ab"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Rejects non-native strict fit, invalid stage, incompatible source and stage, malformed covariance block dimensions and nonfinite covariance arrays. Python Matplotlib axes shape errors and exception identities remain native-specific.",
+      "path": "tests/testthat/test-native-sparse-mfpca-four-artist-source-20261112.R",
+      "sha256": "55afabe13d9f26fbe7715fcf7eca1be606539dcdb132817f379e7f2f474d47ab"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Native strict source artist record exposes exact 2x2 layout, ordered source title text C_ab(s,t), common signed clim, source declared coolwarm cmap and colorbar label='covariance', source grid extent and four true covariance matrices. It is not a Python ndarray of Axes or a bitwise-identical Matplotlib Figure; native base R graphics backend remains different.",
+      "path": "tests/testthat/test-native-sparse-mfpca-four-artist-source-20261112.R",
+      "sha256": "55afabe13d9f26fbe7715fcf7eca1be606539dcdb132817f379e7f2f474d47ab"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Directional paired joint PACE covariance operator: distinguish pre-PSD-smoothed blocks from the PSD-qualified operator actually used in eigenanalysis and score conditioning. No model selection or alternate covariance fitting.",
+      "path": "tests/testthat/test-native-sparse-mfpca-four-artist-source-20261112.R",
+      "sha256": "55afabe13d9f26fbe7715fcf7eca1be606539dcdb132817f379e7f2f474d47ab"
+    }
+  ],
+  "additional_regression_evidence": [
+    {
+      "path": "tests/testthat/test-native-sparse-scientific-graphics.R",
+      "sha256": "475025401e40c8a8a2646b2f5a60a230760a8f1c07959333636e66987162b648"
+    }
+  ],
+  "independent_review_status": "Scoped developer review only; exact-head CI and pinned Matplotlib differential are queued or unverified, no independent scientific contract certification.",
+  "language_specific_limits": [
+    "Matplotlib Axes and Figure identity, external axes injection, and pixel-exact `coolwarm` rendering cannot be implemented by a native base-R graphics return.",
+    "Accepted source parity is restricted to fitted scientific array values, line/scatter points, image extents/color limits, metadata and failure geometry, not complete Python graphics objects.",
+    "Native result remains a real fitted R scientific object; Python class identity and exact error classes are not interchangeable.",
+    "No green exact-head CI observed, independent certification, main-branch merge, or CRAN readiness is claimed."
+  ]
+}
