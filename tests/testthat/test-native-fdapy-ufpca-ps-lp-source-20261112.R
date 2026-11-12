@@ -276,13 +276,23 @@ for smoother,kwm,kwc in (
    model.fit(fd,method_smoothing=smoother,
       kwargs_mean=kwm,kwargs_covariance=kwc)
    scores=model.transform(fd,method='PACE',method_smoothing='LP',tol=.02)
+   # Call the real frozen Python 1.2 PUBLIC wrapper as well, not just
+   # upstream FDApy's internal UFPCA class.
+   public=et.fit_sparse_fpca_fdapy(
+      tr,dimension='x',n_components=2,
+      fit_smoothing=smoother,score_smoothing='LP',tol=.02,
+      normalize=False,kwargs_mean=kwm,kwargs_covariance=kwc)
+   np.testing.assert_allclose(public.eigenvalues,model.eigenvalues,
+      rtol=1e-9,atol=1e-9)
+   np.testing.assert_allclose(public.scores,scores,
+      rtol=1e-9,atol=1e-9)
    models[smoother]=dict(
       mean=np.asarray(model.mean.values[0]),
-      eigenvalues=np.asarray(model.eigenvalues),
+      eigenvalues=np.asarray(public.eigenvalues),
       eigenfunctions=np.asarray(model.eigenfunctions.values),
       covariance=np.asarray(model.covariance.values[0]),
       noise=float(model._noise_variance),
-      scores=np.asarray(scores))
+      scores=np.asarray(public.scores))
 ")
   fx<-.etr_fdapy_native_fit_fixture()
   for(mode in c("PS","LP")){
@@ -305,5 +315,20 @@ for smoother,kwm,kwc in (
     expect_equal(got$source_covariance_spectral,
       as.matrix(p$covariance),tolerance=1e-4,info=mode)
     expect_true(all(is.finite(got$scores)),info=mode)
+    py_scores<-as.matrix(p$scores)
+    expect_identical(dim(py_scores),dim(got$scores))
+    # Sign and component order are not source-fixed by numpy.linalg.eig.
+    # Match unique eigenvalues by relative nearest-neighbour distance,
+    # then test true public frozen score numerical values.
+    matches<-vapply(got$eigenvalues,function(value)
+      which.min(abs(py_lambda-value)),integer(1L))
+    expect_false(anyDuplicated(matches),info=mode)
+    for(k in seq_along(matches)){
+      sign_k<-sign(sum(got$scores[,k]*py_scores[,matches[k]]))
+      if(sign_k==0)sign_k<-1
+      expect_equal(got$scores[,k],
+        sign_k*py_scores[,matches[k]],
+        tolerance=1e-3,info=paste(mode,k))
+    }
   }
 })
