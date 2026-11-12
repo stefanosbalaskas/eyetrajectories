@@ -1,0 +1,68 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "capture_environment",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_NATIVE_R_REPRODUCIBILITY_ENVIRONMENT_CAPTURE_WITH_GENUINE_OPTIONAL_PYTHON_SOURCE_ATTESTATION",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/portable_results.py::capture_environment, env schema version 1 (frozen Python 1.2 source commit c1cd95ad718327550f7e55393ff38582872f7a94)",
+  "native_signature": "etr_capture_environment(strict_source_record=TRUE,python_source_snapshot=NULL); etr_capture_environment() default native R runtime environment preserved",
+  "reviewer_statement": "Python capture_environment measures Python process interpreter, package distributions and platform. Native R cannot magically observe that interpreter without Python: its scoped scientific reproducibility report instead captures actual R runtime environment, preserves identical source version-one field-order crosswalk and four numerical thread-variable names, and optionally strictly validates+losslessly retains a genuine externally captured Python source environment dictionary without invoking Python. Full runtime identity, platform-specific exact Git fallback and Python dependency versions are explicitly NOT equivalent or certified.",
+  "native_language_semantic_policy": "Native R independent scientific environment capture. R package name, R version, R installed dependency/optional backend identities remain factual; no Python version, runtime executable, distribution or git identity is fabricated. Source snapshot is labelled separately as externally attested.",
+  "native_files": [
+    {
+      "path": "R/native-source-environment.R",
+      "sha256": "0744a3729e310c90a73d9bed4f95e141cb90cab08fde1c0c8a6b79c19b8f0588"
+    },
+    {
+      "path": "R/native-source-environment-scientific-record-20261112.R",
+      "sha256": "72836bf15dff52af7c897fe8ec8aec043fa55f1c641d42ddb72d92b8e01bcc19"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "The frozen public capture_environment() has no required arguments and returns eight ordered top-level schema version-one scientific environment fields. Default native R capture maintains previous schema. An opt-in source-scientific record adds exact ordered source/native field crosswalk and a separate optional external Python snapshot attestation.",
+      "path": "tests/testthat/test-native-environment-scientific-crosswalk-20261112.R",
+      "sha256": "fb9f1d111bdaccb688313baf9747e696a3a0974b13df9d56dd6bbd36249f165a"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Native R runtime capture is supported without Python or extra optional packages, with real package/platform/UTC/thread facts. Optional python_source_snapshot must be a genuine already-captured list with all 8 source fields and nested exact names, installed version strings or None, UTC aware timestamp and actual Python interpreter identifying details. The source Python process cannot be observed automatically by a Python-independent R function.",
+      "path": "tests/testthat/test-native-environment-scientific-crosswalk-20261112.R",
+      "sha256": "fb9f1d111bdaccb688313baf9747e696a3a0974b13df9d56dd6bbd36249f165a"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "No numeric estimator; the scientific output is reproducibility provenance. Source schema_version=1, source and R runtime/package/OS keys, optional CPU count and exact OMP/OPENBLAS/MKL/NUMEXPR_NUM_THREADS values are validated and preserved. Python source package/interpreter/installed dependency values are retained only when genuinely supplied; they are not computed from R analogues.",
+      "path": "tests/testthat/test-native-environment-scientific-crosswalk-20261112.R",
+      "sha256": "fb9f1d111bdaccb688313baf9747e696a3a0974b13df9d56dd6bbd36249f165a"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "R source-scientific mode rejects wrong strict control, unattested Python snapshot in default mode, malformed eight-field Python schema or child field order, missing Python interpreter, wrong Python package name, UTC errors, wrong dependency/backend/thread keys or non-string versions; exact Python OS subprocess errors and importlib distribution behaviors are not equivalent.",
+      "path": "tests/testthat/test-native-environment-scientific-crosswalk-20261112.R",
+      "sha256": "fb9f1d111bdaccb688313baf9747e696a3a0974b13df9d56dd6bbd36249f165a"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Native R etr_native_environment_scientific_record contains the unmodified eight-field R environment, actual R executable path when found, original independent source Python environment or NULL, source field-order crosswalk with Python->R runtime substitution noted, source_equivalent=FALSE and independently_source_certified=FALSE. The R record is not a Python dict obtained from Python capture_environment.",
+      "path": "tests/testthat/test-native-environment-scientific-crosswalk-20261112.R",
+      "sha256": "fb9f1d111bdaccb688313baf9747e696a3a0974b13df9d56dd6bbd36249f165a"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "The epistemic goal is inspectable computational environment provenance for reproducible scientific analyses. R platform/package and attached real Python interpreter snapshot are separate observations, never conflated. Neither environment alone substitutes for the actual other runtime or validates numerical parity of estimators.",
+      "path": "tests/testthat/test-native-environment-scientific-crosswalk-20261112.R",
+      "sha256": "fb9f1d111bdaccb688313baf9747e696a3a0974b13df9d56dd6bbd36249f165a"
+    }
+  ],
+  "additional_regression_evidence": [],
+  "independent_review_status": "Provisional author-reviewed cross-runtime scientific reproducibility provenance. Native R regression tests and real frozen Python 1.2 capture_environment source snapshot test authored but not witnessed passing CI. Zero independently certified full runtime contracts.",
+  "language_specific_limits": [
+    "The native R function does NOT invoke Python; it cannot itself capture sys.executable, Python interpreter or pip/importlib distribution versions.",
+    "Python subprocess git rev-parse fallback, Python platform.platform() string and Python exception/warning classes are outside native R scientific scope.",
+    "The optional genuine Python environment is supplied externally, strictly validated, then retained without altering its values; it is not an independently computed R source capture.",
+    "The provisional reviewed export-level scientific purpose is NOT full source Python process fingerprint parity or independent whole-domain certification."
+  ]
+}
