@@ -64,6 +64,22 @@
   .etr_assert(inherits(fit,"etr_sparse_mfpca_w2_scientific_record")&&
     identical(names(fit),.etr_sparse_mfpca_w2_fields),
     "Python sparse portable fit requires strict 29-field native PACE record")
+  ng<-length(fit$evaluation_grid)
+  nc<-length(fit$curve_ids)
+  k<-fit$n_components
+  .etr_assert(is.numeric(k)&&length(k)==1L&&is.finite(k)&&
+    k>=1L&&k==floor(k)&&
+    is.matrix(fit$mean)&&identical(dim(fit$mean),c(ng,2L))&&
+    is.matrix(fit$scores)&&identical(dim(fit$scores),c(nc,k))&&
+    identical(dim(fit$eigenfunctions),c(k,ng,2L))&&
+    length(fit$eigenvalues)==k&&
+    is.data.frame(fit$metadata)&&nrow(fit$metadata)==nc,
+    "source sparse MFPCA scientific fit shape mismatch")
+  .etr_assert(all(is.finite(fit$evaluation_grid))&&
+    all(diff(fit$evaluation_grid)>0)&&
+    all(is.finite(fit$eigenvalues))&&
+    all(fit$eigenvalues>0),
+    "source sparse MFPCA grid and spectrum must be finite")
   tuple_fields<-c("dimensions","curve_ids")
   fields<-lapply(names(fit),function(nm){
     .etr_python_mfpca_portable_value(fit[[nm]],add_array,
