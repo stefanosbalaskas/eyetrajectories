@@ -1,0 +1,162 @@
+name: Native frozen scikit-fda MBD functional boxplot source
+on:
+  pull_request:
+    paths:
+      - "R/native-skfda-mbd-functional-boxplot.R"
+      - "R/native-thirdparty-functional-analogues.R"
+      - "tests/testthat/test-native-skfda-mbd-functional-boxplot-20261112.R"
+      - "man/etr_native_release_source_bridge_reporting.Rd"
+      - "docs/source_contract_reviews/detect_functional_outliers_skfda.json"
+      - "docs/source_contract_reviews/to_skfda_basis.json"
+      - "docs/source_contract_reviews/to_skfda_grid.json"
+      - "docs/source_contract_reviews/to_fdapy_irregular.json"
+      - "inst/extdata/native_scoped_outlier_submethod_gaps_20261112.csv"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/reviewed_source_contract_closures_v1.csv"
+      - ".github/workflows/native-skfda-mbd-functional-boxplot-20261112.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  integrity-scope-and-scipy-oracle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "numpy==2.3.5" "scipy>=1.14,<2"
+      - name: Exact-head SHA256 audits, 504 provisional count and unclosed MSPlot evidence
+        shell: bash
+        run: |
+          python - <<'PY'
+          import csv,hashlib,json
+          from pathlib import Path
+          import numpy as np
+          from scipy.integrate import simpson
+          root=Path(".")
+          def rows(path):
+              with (root/path).open(encoding="utf-8",newline="") as stream:
+                  return list(csv.DictReader(stream))
+          callable=rows("inst/extdata/native_source_contract_gaps_stage22.csv")
+          noncallable=rows("inst/extdata/native_nonfunction_source_gaps_v1.csv")
+          reviews=rows("inst/extdata/reviewed_source_contract_closures_v1.csv")
+          sub=rows("inst/extdata/native_scoped_outlier_submethod_gaps_20261112.csv")
+          assert len(callable)==203
+          assert len(reviews)>=194
+          assert len(set(x["python_name"] for x in reviews))==len(reviews)
+          open_callable=sum(x["unresolved_source_gap"]=="TRUE" for x in callable)
+          open_noncallable=sum(x["unresolved"]=="TRUE" for x in noncallable)
+          assert open_callable<=3,open_callable
+          assert open_noncallable<=1,open_noncallable
+          assert 508-open_callable-open_noncallable>=504
+          sub_by={x["submethod"]:x for x in sub}
+          assert sub_by["msplot"]["source_accepted"]=="TRUE"
+          assert sub_by["msplot"]["source_gap_open"]=="TRUE"
+          assert sub_by["msplot"]["native_scientific_implementation"]=="FALSE"
+          assert sub_by["boxplot"]["source_gap_open"]=="FALSE"
+          for name in ("detect_functional_outliers_skfda",
+                       "to_skfda_basis","to_fdapy_irregular","to_skfda_grid"):
+              (row,)=tuple(x for x in reviews if x["python_name"]==name)
+              (gap,)=tuple(x for x in callable if x["python_name"]==name)
+              assert gap["unresolved_source_gap"]=="FALSE",name
+              assert row["independently_certified"]=="FALSE"
+              raw=(root/row["review_record_path"]).read_bytes()
+              assert hashlib.sha256(raw).hexdigest()==row["review_record_sha256"],name
+              obj=json.loads(raw)
+              assert obj["independently_certified"] is False
+              assert obj["frozen_python_commit"]=="c1cd95ad718327550f7e55393ff38582872f7a94"
+              assert {x["kind"] for x in obj["case_evidence"]}=={
+                  "source_signature","accepted_input_domain",
+                  "numerical_outputs","exception_semantics",
+                  "returned_schema","scientific_estimand"},name
+              for evidence in (obj["native_files"]+obj["case_evidence"]+
+                               obj.get("additional_regression_evidence",[])):
+                  p=root/evidence["path"]
+                  assert hashlib.sha256(p.read_bytes()).hexdigest()==evidence["sha256"],p
+          y=np.array([[1,1,2,3,2.5,2],
+                      [.5,.5,1,2,1.5,1],
+                      [-1,-1,-.5,1,1,.5],
+                      [-.5,-.5,-.5,-1,-1,-1]],dtype=float)
+          t=np.array([0.,2.,4.,6.,8.,10.])
+          n=y.shape[0]
+          pwise=np.zeros(y.shape,dtype=float)
+          for j in range(y.shape[1]):
+              for i in range(n):
+                  below=np.sum(y[:,j]<y[i,j])
+                  above=np.sum(y[:,j]>y[i,j])
+                  pwise[i,j]=(n*(n-1)-below*(below-1)-above*(above-1))/(n*(n-1))
+          mbd=simpson(pwise,x=t,axis=1)/(t[-1]-t[0])
+          np.testing.assert_allclose(mbd,[.5,5/6,13/18,59/90],rtol=0,atol=1e-13)
+          ix=np.argsort(-mbd)[:2]
+          lo=np.min(y[ix],axis=0)
+          hi=np.max(y[ix],axis=0)
+          flags=np.any((y<lo-1.5*(hi-lo))|(y>hi+1.5*(hi-lo)),axis=1)
+          assert np.array_equal(np.where(flags,-1,1),[-1,1,1,-1])
+          print("504/508 provisional source depth scientific reviews SHA-pinned; MSPlot method still open; scipy oracle golden PASS")
+          PY
+  native-r-three-os:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Native R ModifiedBandDepth Simpson source, legacy regression and ledger checks
+        shell: bash
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          testthat::test_local(".",
+            filter="native-skfda-mbd-functional-boxplot-20261112|native-thirdparty-functional-analogues|full-native-r-parity-ledger",
+            reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
+  frozen-python-real-scikit-fda:
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        id: python
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0" "scikit-fda==0.10.1" "numpy==2.3.5"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+            any::reticulate
+      - name: Compare real frozen Python source function and real scikit-fda MBD depths and flags
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          stopifnot(identical(et_python_version(),"1.2.0"))
+          stopifnot(identical(as.character(
+            reticulate::import("numpy")$__version__),"2.3.5"))
+          stopifnot(identical(as.character(
+            reticulate::import("skfda")$__version__),"0.10.1"))
+          testthat::test_local(".",
+            filter="native-skfda-mbd-functional-boxplot-20261112",
+            reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
