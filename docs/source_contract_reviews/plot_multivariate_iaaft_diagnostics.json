@@ -1,0 +1,76 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "plot_multivariate_iaaft_diagnostics",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_NATIVE_MULTIVARIATE_RQA_RECOVERY_SCIENTIFIC_ARTIST_REVIEW",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/nonlinear_plotting.py::plot_multivariate_iaaft_diagnostics",
+  "native_signature": "etr_plot_multivariate_iaaft_diagnostics(result,strict_source_record=TRUE,...)",
+  "reviewer_statement": "Developer-scoped six-domain scientific source-plot review only. Direct frozen Python 1.2 differential tests are authored but exact-head execution is not observed green, and zero independent complete-domain contracts are certified.",
+  "native_language_semantic_policy": "Native R typed scientific artist geometry records, preserving base R graphics, all scientific calculations and default numeric return; Python object identity intentionally excluded.",
+  "native_files": [
+    {
+      "path": "R/native-source-diagnostic-frames.R",
+      "sha256": "64eeb27883462bd909cd3ef3fdd730af3ffff7fe6e9e922b1fe69a84fea5d1c2"
+    },
+    {
+      "path": "R/native-four-multivar-rqa-recovery-artists.R",
+      "sha256": "0c7671c20d90480be9205812b12d72a82331575df1db9461ef1ed78d44a1ec01"
+    },
+    {
+      "path": "R/native-eight-nonlinear-scientific-artists.R",
+      "sha256": "f599c9c9f61bb1cf06d8aac73198e7e16c251671c73eedba2484f8263e94d4b8"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Pinned frozen Python 1.2 public src/eyetrajectoriespy/nonlinear_plotting.py::plot_multivariate_iaaft_diagnostics inspected. Native R adds optional strict_source_record=TRUE without changing the original function's default R numeric and graphic return.",
+      "path": "tests/testthat/test-native-four-multivar-rqa-recovery-artists-20261112.R",
+      "sha256": "bf403f8ef83b0ea40fc9ac42a54257008dda45b47ef6782f95325889f3154891"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Bounded validated finite native R numeric source records and data.frames with declared fields, explicit metric/statistic names and strict source NumPy bin counts. Python pandas/dataclass runtime and arbitrary supplied Matplotlib Axes or exception classes are excluded.",
+      "path": "tests/testthat/test-native-four-multivar-rqa-recovery-artists-20261112.R",
+      "sha256": "bf403f8ef83b0ea40fc9ac42a54257008dda45b47ef6782f95325889f3154891"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Published source per-surrogate max power- and cross-spectrum mismatch line coordinates, zero-based source surrogate indexes, both solid marker-o lines and source legend/axes/title. The author wrote direct frozen Python 1.2 public Matplotlib artist differential tests, along with native numerical, singleton, malformed-domain and legacy-default regression cases. Exact-head CI success has not been observed.",
+      "path": "tests/testthat/test-native-four-multivar-rqa-recovery-artists-20261112.R",
+      "sha256": "bf403f8ef83b0ea40fc9ac42a54257008dda45b47ef6782f95325889f3154891"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Source semantic checks fail closed for invalid strict flags, nonfinite scientific geometry, incorrect metrics, impossible source intervals and source bin types. Exact Python TypeError, IndexError, ValueError, KeyError identity is not implemented in R.",
+      "path": "tests/testthat/test-native-four-multivar-rqa-recovery-artists-20261112.R",
+      "sha256": "bf403f8ef83b0ea40fc9ac42a54257008dda45b47ef6782f95325889f3154891"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Default R plotting output and invisible numerical source geometry preserved. Strict mode returns typed native etr_nonlinear_scientific_artist_record of ordered Matplotlib scientific coordinates/axes rather than live Python matplotlib.axes.Axes or pixel/raster identity.",
+      "path": "tests/testthat/test-native-four-multivar-rqa-recovery-artists-20261112.R",
+      "sha256": "bf403f8ef83b0ea40fc9ac42a54257008dda45b47ef6782f95325889f3154891"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Already computed multivariate IAAFT preservation error diagnostics; no new surrogate iteration, phase randomization, spectral analysis or hypothesis test is performed.",
+      "path": "tests/testthat/test-native-four-multivar-rqa-recovery-artists-20261112.R",
+      "sha256": "bf403f8ef83b0ea40fc9ac42a54257008dda45b47ef6782f95325889f3154891"
+    }
+  ],
+  "additional_regression_evidence": [
+    {
+      "path": "tests/testthat/test-native-source-diagnostic-frames.R",
+      "sha256": "2d21c26da6dfa1226cfd05c500a1a4bdf4c64bba8a824c43c847524a5a97bbd9"
+    }
+  ],
+  "independent_review_status": "Provisional author-reviewed scoped scientific plotting coordinates; exact-head native R and frozen Python tests unverified, independent certifications 0.",
+  "language_specific_limits": [
+    "No live Python Matplotlib Axes/Figure object, arbitrary pandas or Python dataclass protocol, Python exception-class or pixel-level rendering parity.",
+    "Scientific data arrays and source numerical coordinates are scoped to validated native R result frames only.",
+    "All original statistical estimands, surrogate and bootstrap calibration, recovery results and base R defaults are preserved."
+  ]
+}
