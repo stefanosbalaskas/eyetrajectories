@@ -108,9 +108,14 @@
 .etr_te_strict_source_validate_slice <- function(result,parameter,filters) {
   table<-result$table
   if(!is.null(filters)) {
-    for(nm in names(filters))
+    for(nm in names(filters)) {
+      value<-filters[[nm]]
+      .etr_assert(is.numeric(value)&&!is.logical(value)&&
+        length(value)==1L&&is.finite(value)&&value==floor(value),
+        "source transfer-entropy filter values must be integer scalars")
       table<-table[!is.na(table[[nm]])&
-        table[[nm]]==filters[[nm]],,drop=FALSE]
+        table[[nm]]==value,,drop=FALSE]
+    }
   }
   others<-setdiff(result$parameter_columns,parameter)
   unresolved<-others[vapply(table[others],
