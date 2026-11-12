@@ -19,9 +19,14 @@
 #' Plot bootstrap absolute matched FPCA similarities by retained component
 #' @param result Native bootstrap component-stability result.
 #' @param ... Base graphics options.
-#' @return Invisible source similarity matrix.
+#' @param strict_source_record Return frozen Python 1.2 scientific boxplot
+#'   data, source quartiles and whiskers as native R artist geometry.
+#'   A Matplotlib Axes object is never returned.
+#' @return Invisible source similarity matrix, or a source-scientific
+#'   artist data record in strict mode.
 #' @export
-etr_plot_fpca_stability <- function(result,...) {
+etr_plot_fpca_stability <- function(result,strict_source_record=FALSE,...) {
+  .etr_fpca_three_validate(result,strict_source_record,"etr_fpca_stability")
   .etr_assert(inherits(result,"etr_fpca_stability")&&
     is.matrix(result$similarities)&&is.numeric(result$similarities)&&
     nrow(result$similarities)>=1L&&ncol(result$similarities)>=1L&&
@@ -35,6 +40,8 @@ etr_plot_fpca_stability <- function(result,...) {
     ylab="Absolute matched functional similarity",
     main=sprintf("FPCA bootstrap stability (%d replicates)",
       nrow(result$similarities)),...)
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_fpca_stability_artist(result)))
   invisible(result$similarities)
 }
 
@@ -42,10 +49,14 @@ etr_plot_fpca_stability <- function(result,...) {
 #' @param result Native FPCA group influence result.
 #' @param metric Numeric summary column to plot.
 #' @param ... Base graphics options.
-#' @return Invisible group and selected metric data.frame.
+#' @param strict_source_record Return Python 1.2 source line/axes/tick
+#'   geometry as a native R record rather than Matplotlib Axes.
+#' @return Invisible group and selected metric data.frame or strict
+#'   source-scientific artist geometry.
 #' @export
 etr_plot_fpca_influence <- function(result,
-    metric="min_abs_component_similarity",...) {
+    metric="min_abs_component_similarity",strict_source_record=FALSE,...) {
+  .etr_fpca_three_validate(result,strict_source_record,"etr_fpca_influence")
   .etr_assert(inherits(result,"etr_fpca_influence")&&
     is.data.frame(result$summary)&&nrow(result$summary)>0L&&
     "group"%in%names(result$summary),
@@ -61,6 +72,8 @@ etr_plot_fpca_influence <- function(result,
     xaxt="n",xlab="Omitted group",ylab=gsub("_"," ",metric),
     main="Leave-one-group-out FPCA influence",...)
   graphics::axis(1,at=seq_len(nrow(out))-1L,labels=out$group,las=2)
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_fpca_influence_artist(result,metric,out)))
   invisible(out)
 }
 
@@ -94,9 +107,13 @@ etr_plot_fpca_outlier_diagnostics <- function(result,...) {
 #' Plot mean held-out FPCA reconstruction error and fold-standard errors
 #' @param result Native FPCA held-out cross-validation result.
 #' @param ... Base graphics options.
-#' @return Invisible native CV summary with component counts and standard errors.
+#' @param strict_source_record Return native scientific source-aligned
+#'   Matplotlib errorbar coordinates and caps without Python Axes identity.
+#' @return Invisible native CV summary with component counts and standard
+#'   errors, or strict scientific artist data.
 #' @export
-etr_plot_fpca_cross_validation <- function(result,...) {
+etr_plot_fpca_cross_validation <- function(result,strict_source_record=FALSE,...) {
+  .etr_fpca_three_validate(result,strict_source_record,"etr_fpca_cv")
   .etr_assert(inherits(result,"etr_fpca_cv"),
     "result must be a native FPCA cross-validation object")
   t<-etr_summarise_fpca_cross_validation(result)
@@ -114,6 +131,8 @@ etr_plot_fpca_cross_validation <- function(result,...) {
   graphics::arrows(t$n_components,t$mean_rmse-t$se_rmse,
     t$n_components,t$mean_rmse+t$se_rmse,
     angle=90,code=3,length=.04)
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_fpca_cv_artist(result,t)))
   invisible(t)
 }
 
