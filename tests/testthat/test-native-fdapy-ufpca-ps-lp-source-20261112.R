@@ -233,6 +233,7 @@ test_that("native FDApy full fit rejects unvalidated modes instead of fabricatin
   }
   expect_error(go(normalize=TRUE),"normalize=FALSE")
   expect_error(go(fit_smoothing=NULL),"PS or LP")
+  expect_error(go(score_smoothing="PS"),"unexpected tol")
   expect_error(go(kwargs_mean=list(unknown=TRUE)),"unsupported")
   expect_error(go(kwargs_covariance=list(remove_diagonal=FALSE)),
     "remove_diagonal")
