@@ -31,6 +31,13 @@
 etr_plot_functional_simulation_curve <- function(result,curve=1L,
     dimension=1L,show_pre_missing=FALSE,strict_source_record=FALSE){
   .etr_sim_artist_check(result,strict_source_record)
+  # Default Python plot selects source curve and coordinate index 0,
+  # while legacy native R selects index 1. Explicit caller inputs are
+  # not silently altered except for declared strict zero-based indexing.
+  if(isTRUE(strict_source_record)){
+    if(missing(curve))curve<-0L
+    if(missing(dimension))dimension<-0L
+  }
   x<-.etr_simulation_audit_fields(result)
   truth<-x$truth;obs<-result$observations
   if(isTRUE(strict_source_record)&&is.numeric(curve)){
