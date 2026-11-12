@@ -342,9 +342,20 @@ etr_plot_rqa_metric_mean_bootstrap <- function(result,metrics=NULL,...) {
 #' Plot native method-of-moments functional variance decomposition
 #' @param result Restricted native two-level functional mixed-moments model.
 #' @param ... Base R graphics arguments.
+#' @param model Model label, required for strict source sensitivity
+#'   and prohibited for direct fitted Gaussian likelihood models.
+#' @param strict_source_record Use the real native nlme Gaussian
+#'   covariance components to return a source-scientific line geometry
+#'   record. Never claim Python Matplotlib Axes identity.
 #' @return Invisible complete time/component source frame.
 #' @export
-etr_plot_functional_variance_decomposition <- function(result,...) {
+etr_plot_functional_variance_decomposition <- function(result,...,
+    model=NULL,strict_source_record=FALSE) {
+  .etr_mixed_artist_check(strict_source_record,result,"variance")
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_mixed_artist_variance(result,model=model)))
+  .etr_assert(is.null(model),
+    "model is only accepted with strict Gaussian source sensitivity")
   .etr_mixed_moments_fit(result)
   frame<-etr_functional_mixed_effects_variance_decomposition(result)
   .etr_assert(is.data.frame(frame)&&

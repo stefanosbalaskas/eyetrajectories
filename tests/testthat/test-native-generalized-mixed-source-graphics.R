@@ -124,11 +124,25 @@ test_that("new seven sources are mapped without unearned full certification",{
   expect_equal(nrow(z),7L)
   expect_identical(sort(z$native_r_candidate),sort(paste0("etr_",names)))
   expect_true(all(z$native_implementation_started))
-  expect_true(all(z$source_contract_gap_unresolved))
+  scoped<-c("plot_covariance_sensitivity_coefficients",
+    "plot_functional_mixed_effects_residual_acf",
+    "plot_functional_mixed_effects_residual_variogram")
+  # Only three of the seven source graphics receive new scoped
+  # Gaussian scientific artist records in this mixed diagnostic wave.
+  # The band-width ratio stays unresolved because the native likelihood
+  # sensitivity source does not yet implement qualified band inputs.
+  expect_false(any(z$source_contract_gap_unresolved[
+    z$python_name%in%scoped]))
+  expect_true(all(z$source_contract_gap_unresolved[
+    !(z$python_name%in%scoped)]))
   expect_false(any(z$one_to_one_native_contract_complete))
   expect_gte(sum(p$is_python_function&p$named_native_candidate),332L)
   expect_gte(sum(p$native_implementation_started),307L)
-  expect_gte(sum(p$source_contract_gap_unresolved),154L)
+  inventory<-utils::read.csv(system.file("extdata",
+    "native_source_contract_gaps_stage22.csv",
+    package="eyetrajectories"),stringsAsFactors=FALSE)
+  expect_identical(sum(p$source_contract_gap_unresolved),
+    sum(inventory$unresolved_source_gap))
 })
 test_that("seven generalized/mixed plots match frozen Python 1.2 drawing data",{
   if(!identical(Sys.getenv("ET_RUN_PYTHON_TESTS"),"true"))

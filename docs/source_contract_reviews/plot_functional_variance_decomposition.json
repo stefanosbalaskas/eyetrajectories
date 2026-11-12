@@ -1,0 +1,74 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "plot_functional_variance_decomposition",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_NATIVE_MIXED_GAUSSIAN_SOURCE_ARTIST_GEOMETRY_REVIEW",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/functional_mixed_effects_covariance_sensitivity.py::plot_functional_variance_decomposition",
+  "native_signature": "etr_plot_functional_variance_decomposition(...,strict_source_record=TRUE)",
+  "reviewer_statement": "Provisional six-domain author review. Genuine native Gaussian spline nlme fit-derived scientific arrays, source artist geometry and frozen Python 1.2 Matplotlib line comparisons are implemented and tests committed, not yet observed passing. No claim of Python statsmodels optimizer, plotting Axes runtime, or independent scientific certification.",
+  "native_language_semantic_policy": "Accepted source parity scope is fitted native R Gaussian likelihood scientific plot arrays, labels, physical lag origins/uncertainty values and source horizontal reference line conventions. R base graphics returns typed scientific data; it cannot instantiate or return Python Matplotlib Axes, copy error classes, or guarantee pixel-identical backend rendering.",
+  "native_files": [
+    {
+      "path": "R/native-functional-inference-visuals.R",
+      "sha256": "4ec2221bc18bc75f39fcfa860071017efe60d8730ad6c0af24545bf4b1c430be"
+    },
+    {
+      "path": "R/native-mixed-four-diagnostic-artists.R",
+      "sha256": "027afeb7da95cad85d583966d862bfee26e8503bc7cf7da714a5844b86510632"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Pinned Python 1.2 src/eyetrajectoriespy/functional_mixed_effects_covariance_sensitivity.py::plot_functional_variance_decomposition, matched by native strict scientific plot mode rather than replacing actual statistical calculations.",
+      "path": "tests/testthat/test-native-mixed-four-diagnostic-artists-20261112.R",
+      "sha256": "04a0a55a98b5a253a4b2503f830c06a7b09eee887046f77a06e0aeb79069ca3f"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Native R strict mode supports genuinely converged nlme Gaussian joint B-spline model directly with model=NULL, or prior W3 Gaussian covariance-sensitivity scientific result and explicitly successful model label; rejects moments-only model, unlabelled sensitivity, failed/unknown model and automatically selected response. Legacy native moments visualization remains only nonstrict.",
+      "path": "tests/testthat/test-native-mixed-four-diagnostic-artists-20261112.R",
+      "sha256": "04a0a55a98b5a253a4b2503f830c06a7b09eee887046f77a06e0aeb79069ca3f"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Native variance component curves derive from real joint random covariance and B-spline basis, optional nested trial covariance/residual component; source-ordered variance_decomposition table from existing native Gaussian scientific calculations, retained time grid, unique component labels and horizontal y=0 reference. Direct pinned Python 1.2 Matplotlib get_ydata matched to native fit/sensitivity scientific arrays in new regression; no exact-head successful CI witnessed.",
+      "path": "tests/testthat/test-native-mixed-four-diagnostic-artists-20261112.R",
+      "sha256": "04a0a55a98b5a253a4b2503f830c06a7b09eee887046f77a06e0aeb79069ca3f"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Requires genuine native Gaussian source model or sensitivity, fails for unqualified moments or missing/failed/unknown model; no false zero covariance or extrapolated component replacement. Python TypeError and Matplotlib Axes injection unsupported.",
+      "path": "tests/testthat/test-native-mixed-four-diagnostic-artists-20261112.R",
+      "sha256": "04a0a55a98b5a253a4b2503f830c06a7b09eee887046f77a06e0aeb79069ca3f"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Strict native R one-panel scientific Matplotlib geometry of component lines grouped in first-seen order with source labels, zero reference, source Time (unit), Variance / cross-covariance, source title Functional variance decomposition: model or named sensitivity model, and legend labels. Native base R is not Matplotlib; default restricted R moments source frame unchanged.",
+      "path": "tests/testthat/test-native-mixed-four-diagnostic-artists-20261112.R",
+      "sha256": "04a0a55a98b5a253a4b2503f830c06a7b09eee887046f77a06e0aeb79069ca3f"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Descriptive actual fitted functional participant/trial random-effect covariance, residual variance and cross-covariance component curves on the original Gaussian mixed-effect observation grid, conditional on declared model without refit or ranking.",
+      "path": "tests/testthat/test-native-mixed-four-diagnostic-artists-20261112.R",
+      "sha256": "04a0a55a98b5a253a4b2503f830c06a7b09eee887046f77a06e0aeb79069ca3f"
+    }
+  ],
+  "additional_regression_evidence": [
+    {
+      "path": "tests/testthat/test-native-generalized-mixed-source-graphics.R",
+      "sha256": "f82422acc1e422d6de0a025b85616658d23f6a91a3d23a28d5e89447cf074640"
+    }
+  ],
+  "independent_review_status": "New tests/CI committed; no successful exact-head execution or independent source-contract certification witnessed.",
+  "language_specific_limits": [
+    "Matplotlib Axes, Figure backend, injected Python ax and pixel-identical graphics cannot be produced by a native R base graphics result.",
+    "The real R nlme Gaussian spline likelihood optimizer differs from Python statsmodels MixedLM and may yield different fitted boundary estimands.",
+    "Accepted source plot data reflect the exact already-fitted native scientific model, not independently proved end-to-end optimizer parity.",
+    "The band-width ratio plot remains OPEN because current joint likelihood sensitivity intentionally refuses unqualified simultaneous bands; it is NOT counted as closed.",
+    "Independent Python exception type/state parity and external reviewer sign-off are outstanding."
+  ]
+}
