@@ -21,7 +21,8 @@
 #' @details Source pandas groupby uses sample SD (ddof=1), setting the
 #'   single-fold SD to zero. No model selection is performed.
 #' @export
-etr_plot_fpca_regression_cv <- function(result) {
+etr_plot_fpca_regression_cv <- function(result,strict_source_record=FALSE) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   .etr_frame_record(result,c("fold_losses","loss","family"),"result")
   frame<-result$fold_losses
   .etr_assert(is.data.frame(frame)&&
@@ -56,20 +57,26 @@ etr_plot_fpca_regression_cv <- function(result) {
   if(length(nonzero))graphics::arrows(candidates[nonzero],
     means[nonzero]-summary$se_loss[nonzero],candidates[nonzero],
     means[nonzero]+summary$se_loss[nonzero],angle=90,code=3,length=.05)
-  invisible(list(summary=summary,
+  out<-list(summary=summary,
     line=data.frame(x=candidates,y=means),
     errorbar=data.frame(x=candidates,
       lower=means-summary$se_loss,upper=means+summary$se_loss),
     provenance=list(backend="base_R",variance_ddof=1L,
       source_operation="plot_fpca_regression_cv",
-      python_axes_return_equivalence=FALSE)))
+      python_axes_return_equivalence=FALSE))
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_predictive_cv_source_artist(
+      out,result$loss,result$family)))
+  invisible(out)
 }
 
 #' Native nested predictive FPCA regression held-out loss diagnostic
 #' @param result Explicit nested CV record with outer_folds and loss.
 #' @return Invisible source-aligned outer-fold line geometry.
 #' @export
-etr_plot_nested_fpca_regression_cv <- function(result) {
+etr_plot_nested_fpca_regression_cv <- function(result,
+    strict_source_record=FALSE) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   .etr_frame_record(result,c("outer_folds","loss"),"result")
   f<-result$outer_folds
   .etr_assert(is.data.frame(f)&&
@@ -87,10 +94,14 @@ etr_plot_nested_fpca_regression_cv <- function(result) {
     xlab="Outer fold",ylab=paste0("Outer held-out ",result$loss),
     main="Nested predictive FPCA regression",
     ylim=.etr_diagnostic_plot_range(y))
-  invisible(list(line=data.frame(x=x,y=y),
+  out<-list(line=data.frame(x=x,y=y),
     provenance=list(backend="base_R",
       source_operation="plot_nested_fpca_regression_cv",
-      python_axes_return_equivalence=FALSE)))
+      python_axes_return_equivalence=FALSE))
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_predictive_nested_cv_source_artist(
+      out,result$loss)))
+  invisible(out)
 }
 
 #' Native full-refit versus fixed-covariance bootstrap sensitivity plot
@@ -139,7 +150,16 @@ etr_plot_functional_mixed_effects_bootstrap_comparison <- function(
 #'   numeric indices are one-based. No automatic truncation selection occurs.
 #' @export
 etr_plot_fpca_wild_bootstrap_truncation_scan <- function(result,
-    target=1L,metric="width") {
+    target=1L,metric="width",strict_source_record=FALSE) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
+  # Strict source mode uses Python's zero-based numeric target indices.
+  # Omitted target maps to source default 0; legacy R mode remains 1-based.
+  if(isTRUE(strict_source_record)) {
+    if(missing(target)) target<-0L
+    if(is.numeric(target)&&length(target)==1L&&!is.na(target)&&
+        is.finite(target)&&target==floor(target))
+      target<-target+1L
+  }
   .etr_assert(is.list(result),"result must be an explicit native scan or selection record")
   selection<-if(!is.null(result$scan))result else NULL
   scan<-if(is.null(selection))result else result$scan
@@ -179,11 +199,14 @@ etr_plot_fpca_wild_bootstrap_truncation_scan <- function(result,
     graphics::legend("topright",
       legend=paste0("selected h=",selected),lty=2,bty="n")
   }
-  invisible(list(target_curve_id=ids[k],metric=metric,
+  out<-list(target_curve_id=ids[k],metric=metric,
     line=data.frame(x=as.integer(h),y=y),
     selected_inference_components=selected,
     provenance=list(backend="base_R",
       source_operation="plot_fpca_wild_bootstrap_truncation_scan",
       python_axes_return_equivalence=FALSE,
-      python_numeric_target_index_parity=FALSE)))
+      python_numeric_target_index_parity=FALSE))
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_predictive_truncation_source_artist(out)))
+  invisible(out)
 }
