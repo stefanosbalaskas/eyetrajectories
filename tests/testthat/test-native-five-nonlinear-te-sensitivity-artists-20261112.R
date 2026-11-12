@@ -297,6 +297,16 @@ for i in (3,4):
       patches[-1].get_x()+patches[-1].get_width()])
     oracle[i]['observed_x']=np.asarray(ax[i].lines[0].get_xdata(),
       dtype=float)
+auto_axes=[
+  et.plot_transfer_entropy_circular_shift_test(te,bins='auto'),
+  et.plot_conditional_transfer_entropy_circular_shift_test(cte,bins='auto')]
+oracle_auto=[]
+for aa in auto_axes:
+    patches=aa.patches
+    oracle_auto.append({
+      'counts':np.array([p.get_height() for p in patches]),
+      'edges':np.array([p.get_x() for p in patches]+[
+        patches[-1].get_x()+patches[-1].get_width()])})
 plt.close('all')
 ")
     py<-et_to_r(reticulate::py_get_attr(reticulate::py,"oracle"))
@@ -331,5 +341,21 @@ plt.close('all')
     }
     expect_equal(native[[1L]]$axes[[1L]]$artists[[2L]]$ydata,
       as.numeric(py[[1L]]$lines[[2L]]$y),tolerance=0)
+    # Automatic-bin contracts also compare directly with pinned NumPy 2.3.5.
+    auto_py<-et_to_r(reticulate::py_get_attr(reticulate::py,
+      "oracle_auto"))
+    auto_r<-list(
+      etr_plot_transfer_entropy_circular_shift_test(z$te,
+        bins="auto",strict_source_record=TRUE),
+      etr_plot_conditional_transfer_entropy_circular_shift_test(z$cte,
+        bins="auto",strict_source_record=TRUE))
+    expect_length(auto_py,2L)
+    for(i in 1:2){
+      hist<-auto_r[[i]]$axes[[1L]]$artists[[1L]]
+      expect_equal(hist$counts,as.numeric(auto_py[[i]]$counts),
+        tolerance=0)
+      expect_equal(hist$edges,as.numeric(auto_py[[i]]$edges),
+        tolerance=1e-12)
+    }
   })
 })
