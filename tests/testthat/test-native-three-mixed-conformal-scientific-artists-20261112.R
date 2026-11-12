@@ -162,7 +162,7 @@ test_that("conformal source p-values are used directly and never silently recons
     legacy<-etr_plot_conformal_fpca_anomaly(z$legacy)
     expect_equal(legacy$p_value,c(.8,.4,.2))
     bad<-z$conformal
-    bad$p_values[1L]<-.99
+    bad$p_values[1L] <- -0.99
     expect_error(etr_plot_conformal_fpca_anomaly(bad,
       strict_source_record=TRUE),"p-values/IDs/alpha")
     bad<-z$conformal
