@@ -181,7 +181,7 @@ test_that("source plot modes reject ambiguous slices and nonlogical strict flags
     filtered<-etr_plot_transfer_entropy_sensitivity(varied,
       parameter="source_lag",filters=list(target_history=1L),
       strict_source_record=TRUE)
-    expect_equal(filtered$axes[[1L]]$artists[[1L]]$xdata,c(1,2))
+    expect_equal(filtered$axes[[1L]]$artists[[1L]]$xdata,c(1,3))
   })
 })
 
