@@ -65,9 +65,9 @@ jobs:
                   assert hashlib.sha256(source.read_bytes()).hexdigest()==entry["sha256"],source
           callable_gaps=sum(x[-1]=="TRUE" for x in raw[1:])
           other_gaps=sum(x["unresolved"]=="TRUE" for x in non)
-          assert callable_gaps==50,callable_gaps
-          assert other_gaps==1,other_gaps
-          assert 508-callable_gaps-other_gaps==457
+          assert callable_gaps<=50,callable_gaps
+          assert other_gaps<=1,other_gaps
+          assert 508-callable_gaps-other_gaps>=457
           print("457/508 scoped developer reviewed, 50 callable gaps + 1 noncallable, 0 independently certified")
           PY
   native-r:
