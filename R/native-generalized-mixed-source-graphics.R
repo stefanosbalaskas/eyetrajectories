@@ -279,8 +279,7 @@ etr_plot_generalized_function_on_scalar_coefficients <- function(result,
     if(nrow(x)==0L)return(NULL)
     .etr_assert(is.numeric(x$time)&&is.numeric(x[[value]])&&
       all(is.finite(x$time))&&
-      (if(width&&isTRUE(strict_source_record))
-        all(is.finite(x[[value]])|is.nan(x[[value]]))
+      (if(width) all(is.finite(x[[value]])|is.nan(x[[value]]))
        else all(is.finite(x[[value]])))&&
       !anyDuplicated(x$time),
       "sensitivity time/value must be finite without duplicate times")
