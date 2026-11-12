@@ -12,7 +12,7 @@
   "native_files": [
     {
       "path": "R/native-wild-monte-carlo-source-contracts.R",
-      "sha256": "18ad01aa7805b69e0b4c03ebdcfb9ba0bc3ee76735ff1d8294e124ed134ef26c"
+      "sha256": "00000000000000000000000000000000abbe5d45f5b573527a33e471b690d7df"
     }
   ],
   "case_evidence": [
