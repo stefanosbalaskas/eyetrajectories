@@ -103,12 +103,7 @@ test_that("six FPCR/PACE plots map to the frozen source but remain unapproved",{
     expect_equal(nrow(row),1L)
     expect_identical(row$native_r_candidate,paste0("etr_",name))
     expect_true(row$native_implementation_started)
-    if(name%in%c("plot_fpca_regression_slope_band",
-        "plot_fpca_regression_slope_uncertainty",
-        "plot_sparse_fpca_score_diagnostics"))
-      expect_true(row$source_contract_gap_unresolved)
-    else
-      expect_false(row$source_contract_gap_unresolved)
+    expect_false(row$source_contract_gap_unresolved)
     expect_false(row$one_to_one_native_contract_complete)
   }
   expect_gte(sum(z$is_python_function&z$named_native_candidate),380L)
