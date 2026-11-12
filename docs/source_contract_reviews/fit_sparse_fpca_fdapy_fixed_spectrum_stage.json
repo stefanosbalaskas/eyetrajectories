@@ -1,0 +1,29 @@
+{
+  "audit_version": "source-submethod-v1",
+  "python_name": "fit_sparse_fpca_fdapy",
+  "source_export_gap_open": true,
+  "scientific_stage": "postfit_fixed_spectrum_PACE_scores_and_inverse",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "upstream_fdapy_commit": "6626ebc6a70a6496f3058c4abb0bb97f5bdb20be",
+  "native_source_files": [
+    {
+      "path": "R/native-fdapy-fixed-spectrum-pace-source.R",
+      "sha256": "2887c015e9b65fd82c9485f60d8e3f01309bf44abcb28d6bcff745b5d6a250a4"
+    },
+    {
+      "path": "R/native-thirdparty-functional-analogues.R",
+      "sha256": "43cde171f561e79429b67efaf333af080782e00def7bf855924f60b27683400b"
+    }
+  ],
+  "numerical_evidence": [
+    {
+      "path": "tests/testthat/test-native-fdapy-fixed-spectrum-pace-source-20261112.R",
+      "sha256": "391006c4606020d76f7d2f53dfdb475141e3f68fb9f450fe87e59efad2b73c4e"
+    }
+  ],
+  "new_scientific_implementation": "Actual FDApy 1.0.x UFPCA fixed-fitted-spectrum PACE numerical stage: per-observation np.interp on pooled sorted grid (despite frozen wrapper no-interpolation public docstring), spectral-covariance pinv scores with max(noise,tol) and inverse reconstruction.",
+  "not_yet_source_gap_free": "Native R never estimates raw irregular FDApy PS or LP mean/covariance, eigensystem and source noise variance. source_fit_snapshot is supplied externally; normalize TRUE and Python object identity unqualified.",
+  "claimed_independent_certification": false,
+  "source_fit_full_parity": false,
+  "status": "SOURCE_SUBMETHOD_SCIENTIFIC_IMPLEMENTATION_COMMITTED_EXPORT_GAP_STILL_OPEN"
+}
