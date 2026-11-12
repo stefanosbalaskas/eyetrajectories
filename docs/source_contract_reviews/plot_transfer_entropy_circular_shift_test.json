@@ -1,0 +1,76 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "plot_transfer_entropy_circular_shift_test",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_NATIVE_NONLINEAR_TE_SCIENTIFIC_ARTIST_REVIEW",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/transfer_entropy.py::plot_transfer_entropy_circular_shift_test",
+  "native_signature": "etr_plot_transfer_entropy_circular_shift_test(result,bins='auto',python_boundary_mode=FALSE,numpy_auto_policy='relaxed',strict_source_record=TRUE,...)",
+  "reviewer_statement": "Provisional developer-scoped six-domain source scientific plotting geometry review only; direct frozen Python 1.2 differential tests are authored but exact-head execution and independent full-source certification are not witnessed.",
+  "native_language_semantic_policy": "Native R typed source scientific artist records with legacy numerical default preserved. The scientific estimators, time series, surrogates, uncertainty and null test processes do not change.",
+  "native_files": [
+    {
+      "path": "R/native-transfer-entropy-visual.R",
+      "sha256": "cf5833430488e9b5369579e2a13dfb08d89e7ce35183ad37968b8d9324adf100"
+    },
+    {
+      "path": "R/native-five-nonlinear-te-sensitivity-artists.R",
+      "sha256": "7923bc639c246377ebe49b9a61618f51ecd71a379f9e8e69bb70a90f2e2bc0f8"
+    },
+    {
+      "path": "R/native-eight-nonlinear-scientific-artists.R",
+      "sha256": "f599c9c9f61bb1cf06d8aac73198e7e16c251671c73eedba2484f8263e94d4b8"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Compared published frozen Python 1.2 src/eyetrajectoriespy/transfer_entropy.py::plot_transfer_entropy_circular_shift_test plotting signature with native R opt-in strict_source_record=TRUE. Default native R call, numerical estimator and graphics remain preserved.",
+      "path": "tests/testthat/test-native-five-nonlinear-te-sensitivity-artists-20261112.R",
+      "sha256": "f09b77a788443398ce59c99b3c52edfab4967e8ff934445c4e8d02a5b96feb91"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Supports finite validated precomputed native scientific records and exact source-declared parameter/response/metric names. Conditional TE mode accepts R integer bin count or auto and enforces the NumPy 2.3 histogram auto rule under the relaxed policy. Arbitrary Python dataclass/pandas/Mpl axes protocols excluded.",
+      "path": "tests/testthat/test-native-five-nonlinear-te-sensitivity-artists-20261112.R",
+      "sha256": "f09b77a788443398ce59c99b3c52edfab4967e8ff934445c4e8d02a5b96feb91"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Source NumPy fixed positive-integer or automatic histogram count/edge geometry, observed TE dashed axvline, complete source scientific title and labels. Strict auto-mode uses explicit modern relaxed NumPy auto bin width; alternative classic policy available. Authored native fixture plus direct pinned Python public Matplotlib artist comparisons and a separate NumPy 2.3.5 diagnostic bin check. Exact-head R/Python CI execution not yet observed.",
+      "path": "tests/testthat/test-native-five-nonlinear-te-sensitivity-artists-20261112.R",
+      "sha256": "f09b77a788443398ce59c99b3c52edfab4967e8ff934445c4e8d02a5b96feb91"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "R native domain and strict flag errors reject malformed inputs, ambiguous sensitivity slices, noninteger strict bins and nonfinite surrogate values. Python TypeError/KeyError/ValueError subclass identity is not claimed.",
+      "path": "tests/testthat/test-native-five-nonlinear-te-sensitivity-artists-20261112.R",
+      "sha256": "f09b77a788443398ce59c99b3c52edfab4967e8ff934445c4e8d02a5b96feb91"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Default base-R plotting and original invisible numeric results unchanged. Strict mode returns typed etr_nonlinear_scientific_artist_record with artist geometry, scientific axes labels and options, not a live Matplotlib Axes, Python dataclass or pixel-exact rendering.",
+      "path": "tests/testthat/test-native-five-nonlinear-te-sensitivity-artists-20261112.R",
+      "sha256": "f09b77a788443398ce59c99b3c52edfab4967e8ff934445c4e8d02a5b96feb91"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Precomputed circular-shift null against observed transfer entropy. Histogram is descriptive and never identifies causality.",
+      "path": "tests/testthat/test-native-five-nonlinear-te-sensitivity-artists-20261112.R",
+      "sha256": "f09b77a788443398ce59c99b3c52edfab4967e8ff934445c4e8d02a5b96feb91"
+    }
+  ],
+  "additional_regression_evidence": [
+    {
+      "path": "tests/testthat/test-native-transfer-entropy-visual.R",
+      "sha256": "09dc33cf43ba5c18f1d9642146f004dfa9a3477dab3d5eb4896ff16f447a750c"
+    }
+  ],
+  "independent_review_status": "Provisional developer-scoped; exact-head native R and frozen Python execution unverified, 0 independent certifications.",
+  "language_specific_limits": [
+    "No Python Matplotlib Axes object/pixel identity, Python dataclass/pandas acceptance, Python exception-class parity or independent source-wide verification.",
+    "Source scientific artist geometry and documented finite numerical domains only.",
+    "Original scientific estimation, null shifts, reconstructed trajectories and default R returns are unchanged."
+  ]
+}

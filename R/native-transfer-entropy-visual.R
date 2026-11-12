@@ -99,7 +99,8 @@ etr_plot_transfer_entropy_sensitivity <- function(result,parameter,
 
 .etr_plot_te_surrogate_histogram <- function(result,kind,field,observed_field,
     title,xlab,ylab,bins,python_boundary_mode=FALSE,
-    numpy_auto_policy="relaxed",...) {
+    numpy_auto_policy="relaxed",strict_source_record=FALSE,...) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   .etr_assert(inherits(result,kind)&&is.list(result$observed)&&
     is.numeric(result[[field]])&&length(result[[field]])>=1L&&
     all(is.finite(result[[field]]))&&
@@ -122,6 +123,11 @@ etr_plot_transfer_entropy_sensitivity <- function(result,parameter,
     "numpy_auto_policy must be relaxed or classic")
   values<-as.numeric(result[[field]])
   observed<-as.numeric(result$observed[[observed_field]])
+  if(isTRUE(strict_source_record)) {
+    .etr_assert(is.character(bins)||is.integer(bins),
+      "source histogram bins must be an R integer or auto")
+    if(is.character(bins))python_boundary_mode<-TRUE
+  }
   python_auto<-is.character(bins)&&isTRUE(python_boundary_mode)
   if(python_auto){
     br<-.etr_numpy_histogram_auto_breaks(values,numpy_auto_policy)
@@ -132,7 +138,7 @@ etr_plot_transfer_entropy_sensitivity <- function(result,parameter,
     if(rng[1L]==rng[2L])rng<-rng+c(-.5,.5)
     br<-seq(rng[1L],rng[2L],length.out=as.integer(bins)+1L)
   }
-  if(python_auto) {
+  if(python_auto||isTRUE(strict_source_record)) {
     # NumPy bins are left-closed/right-open, except the last bin,
     # whose right edge is included. R hist() applies a fuzzy edge
     # tolerance: recompute exact NumPy counts for the source geometry.
@@ -147,12 +153,18 @@ etr_plot_transfer_entropy_sensitivity <- function(result,parameter,
       include.lowest=TRUE,xlab=xlab,ylab=ylab,main=title,...)
   }
   graphics::abline(v=observed,lty=2)
-  invisible(list(surrogate=values,observed=observed,
+  out<-list(surrogate=values,observed=observed,
     breaks=as.numeric(h$breaks),counts=as.integer(h$counts),
     binning=if(python_auto)
       paste0("numpy_auto_",numpy_auto_policy) else
       if(is.character(bins))"R_Sturges_not_numpy_auto" else
-      "explicit_equal_width"))
+      "explicit_equal_width")
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_te_shift_source_artist(out,
+      if(identical(observed_field,"conditional_transfer_entropy_bits"))
+        "plot_conditional_transfer_entropy_circular_shift_test" else
+        "plot_transfer_entropy_circular_shift_test")))
+  invisible(out)
 }
 
 #' Plot the source-only circular-shift null and observed transfer entropy
@@ -169,7 +181,7 @@ etr_plot_transfer_entropy_sensitivity <- function(result,parameter,
 #' @export
 etr_plot_transfer_entropy_circular_shift_test <- function(
     result,bins="auto",python_boundary_mode=FALSE,
-    numpy_auto_policy="relaxed",...) {
+    numpy_auto_policy="relaxed",strict_source_record=FALSE,...) {
   .etr_plot_te_surrogate_histogram(result,
     kind="etr_transfer_entropy_circular_shift_test",
     field="surrogate_transfer_entropy_bits",
@@ -177,7 +189,8 @@ etr_plot_transfer_entropy_circular_shift_test <- function(
     title="Transfer-entropy circular-shift test",
     xlab="Transfer entropy (bits)",ylab="Circular-shift surrogates",
     bins=bins,python_boundary_mode=python_boundary_mode,
-    numpy_auto_policy=numpy_auto_policy,...)
+    numpy_auto_policy=numpy_auto_policy,
+    strict_source_record=strict_source_record,...)
 }
 
 #' Plot source-shift null and observed conditional transfer entropy
@@ -194,7 +207,7 @@ etr_plot_transfer_entropy_circular_shift_test <- function(
 #' @export
 etr_plot_conditional_transfer_entropy_circular_shift_test <- function(
     result,bins="auto",python_boundary_mode=FALSE,
-    numpy_auto_policy="relaxed",...) {
+    numpy_auto_policy="relaxed",strict_source_record=FALSE,...) {
   .etr_plot_te_surrogate_histogram(result,
     kind="etr_conditional_transfer_entropy_circular_shift_test",
     field="surrogate_conditional_transfer_entropy_bits",
@@ -203,5 +216,6 @@ etr_plot_conditional_transfer_entropy_circular_shift_test <- function(
     xlab="Conditional transfer entropy (bits)",
     ylab="Source-only circular-shift surrogates",
     bins=bins,python_boundary_mode=python_boundary_mode,
-    numpy_auto_policy=numpy_auto_policy,...)
+    numpy_auto_policy=numpy_auto_policy,
+    strict_source_record=strict_source_record,...)
 }

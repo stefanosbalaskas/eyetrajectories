@@ -156,7 +156,8 @@ etr_mathematical_contract_frame <- function() .etr_read_math_contract_source_fra
 #' @return Invisible exact source pairwise coordinates.
 #' @export
 etr_plot_kantz_sensitivity <- function(result,parameter,
-    response="exponent",filters=NULL,...) {
+    response="exponent",filters=NULL,strict_source_record=FALSE,...) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   allowed<-c("exponent","r_squared","standard_error",
     "n_fit_points","minimum_reference_count_in_fit",
     "minimum_pair_count_in_fit","initial_supported_reference_fraction",
@@ -168,6 +169,9 @@ etr_plot_kantz_sensitivity <- function(result,parameter,
       sprintf("exponent (%s)",result$exponent_unit) else response,
     main=sprintf("Kantz sensitivity: %s",result$curve_id),...)
   if(response=="exponent")graphics::abline(h=0,lty=3)
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_nonlinear_parameter_source_artist(
+      result,parameter,response,t,"kantz")))
   invisible(t)
 }
 
@@ -180,7 +184,8 @@ etr_plot_kantz_sensitivity <- function(result,parameter,
 #' @return Invisible exact plotted numeric coordinates.
 #' @export
 etr_plot_lyapunov_sensitivity <- function(result,parameter,
-    response="exponent",filters=NULL,...) {
+    response="exponent",filters=NULL,strict_source_record=FALSE,...) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   allowed<-c("exponent","r_squared","standard_error",
     "n_fit_points","minimum_pair_count_in_fit",
     "total_zero_distance_count_in_fit")
@@ -191,6 +196,9 @@ etr_plot_lyapunov_sensitivity <- function(result,parameter,
       sprintf("exponent (%s)",result$exponent_unit) else response,
     main=sprintf("Rosenstein sensitivity: %s",result$curve_id),...)
   if(response=="exponent")graphics::abline(h=0,lty=3)
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_nonlinear_parameter_source_artist(
+      result,parameter,response,t,"lyapunov")))
   invisible(t)
 }
 
@@ -201,7 +209,9 @@ etr_plot_lyapunov_sensitivity <- function(result,parameter,
 #' @param ... Base R graphics options.
 #' @return Invisible list of per-specification time and response profiles.
 #' @export
-etr_plot_windowed_rqa_sensitivity <- function(result,curve,metric,...) {
+etr_plot_windowed_rqa_sensitivity <- function(result,curve,metric,
+    strict_source_record=FALSE,...) {
+  .etr_fpca_uncertainty_strict(strict_source_record)
   .etr_assert(inherits(result,"etr_windowed_rqa_sensitivity")&&
     is.list(result$analyses)&&length(result$analyses)>=1L&&
     is.character(metric)&&length(metric)==1L&&!is.na(metric)&&
@@ -251,5 +261,8 @@ etr_plot_windowed_rqa_sensitivity <- function(result,curve,metric,...) {
       sprintf("%s: W=%s, S=%s",z$specification_id[1L],
         z$window[1L],z$step[1L]),character(1L)),
     col=seq_along(profiles),lty=1,pch=1)
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_windowed_rqa_sensitivity_source_artist(
+      result,profiles,ids[i],metric)))
   invisible(profiles)
 }
