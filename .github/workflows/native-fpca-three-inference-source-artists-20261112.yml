@@ -1,0 +1,134 @@
+name: Native FPCA outliers subspace and mean-band source scientific artists
+on:
+  pull_request:
+    paths:
+      - "R/native-nine-scientific-plots.R"
+      - "R/native-fpca-three-source-artists.R"
+      - "R/native-fpca-three-inference-artists.R"
+      - "tests/testthat/test-native-nine-scientific-plots.R"
+      - "tests/testthat/test-native-fpca-outliers-subspace-meanband-20261112.R"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/reviewed_source_contract_closures_v1.csv"
+      - "docs/source_contract_reviews/plot_fpca_outlier_diagnostics.json"
+      - "docs/source_contract_reviews/plot_fpca_subspace_stability.json"
+      - "docs/source_contract_reviews/plot_functional_mean_band.json"
+      - ".github/workflows/native-fpca-three-inference-source-artists-20261112.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  ledger-and-six-domain-hashes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Strictly parse immutable source ledger and audit three plot evidence records
+        shell: bash
+        run: |
+          python - <<'PY'
+          import csv,json,hashlib
+          from pathlib import Path
+          root=Path('.')
+          def rows(path):
+              with (root/path).open(encoding='utf-8',newline='') as f:
+                  return list(csv.reader(f,strict=True))
+          ledger=rows('inst/extdata/native_source_contract_gaps_stage22.csv')
+          assert len(ledger)==204
+          assert all(len(r)==7 for r in ledger),[
+              (i,len(r),r[0]) for i,r in enumerate(ledger) if len(r)!=7]
+          assert all(row[-1] in ('TRUE','FALSE') for row in ledger[1:])
+          assert len({r[0] for r in ledger[1:]})==203
+          with (root/'inst/extdata/reviewed_source_contract_closures_v1.csv').open(
+              encoding='utf-8',newline='') as f:
+              evidence=list(csv.DictReader(f))
+          assert len({x['python_name'] for x in evidence})==len(evidence)
+          names=('plot_fpca_outlier_diagnostics',
+            'plot_fpca_subspace_stability','plot_functional_mean_band')
+          for name in names:
+              (row,)=tuple(x for x in ledger[1:] if x[0]==name)
+              assert row[-1]=='FALSE'
+              (item,)=tuple(x for x in evidence if x['python_name']==name)
+              assert item['independently_certified']=='FALSE'
+              raw=(root/item['review_record_path']).read_bytes()
+              assert hashlib.sha256(raw).hexdigest()==item['review_record_sha256']
+              review=json.loads(raw)
+              assert review['frozen_python_commit']=='c1cd95ad718327550f7e55393ff38582872f7a94'
+              assert review['independently_certified'] is False
+              assert {x['kind'] for x in review['case_evidence']}=={
+                'source_signature','accepted_input_domain',
+                'numerical_outputs','exception_semantics',
+                'returned_schema','scientific_estimand'}
+              for ev in review['native_files']+review['case_evidence']+review['additional_regression_evidence']:
+                  path=root/ev['path']
+                  assert hashlib.sha256(path.read_bytes()).hexdigest()==ev['sha256'],path
+          with (root/'inst/extdata/native_nonfunction_source_gaps_v1.csv').open(
+              encoding='utf-8',newline='') as f:
+              non=list(csv.DictReader(f))
+          assert len(non)==1
+          missing=sum(r[-1]=='TRUE' for r in ledger[1:])
+          nonmissing=sum(r['unresolved']=='TRUE' for r in non)
+          assert missing<=59 and nonmissing<=1
+          print(f'{508-missing-nonmissing}/508 author scoped reviews, '
+                f'{missing} callable + {nonmissing} noncallable outstanding; '
+                'zero new independent certifications.')
+          PY
+  native-three-os:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Test native outlier, subspace, observed-grid mean band and historical nine plots
+        shell: bash
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all('.',quiet=TRUE)
+          testthat::test_local('.',
+            filter='native-fpca-outliers-subspace-meanband-20261112|native-nine-scientific-plots|native-fpca-three-source-artists-20261112',
+            reporter='summary',stop_on_failure=TRUE)
+          RSCRIPT
+  frozen-python-1-2:
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        id: python
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Direct frozen Python 1.2 Matplotlib scatter subspace markers and fill-between artist differential
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all('.',quiet=TRUE)
+          stopifnot(identical(et_python_version(),'1.2.0'))
+          testthat::test_local('.',
+            filter='native-fpca-outliers-subspace-meanband-20261112|native-nine-scientific-plots|native-fpca-three-source-artists-20261112',
+            reporter='summary',stop_on_failure=TRUE)
+          RSCRIPT
