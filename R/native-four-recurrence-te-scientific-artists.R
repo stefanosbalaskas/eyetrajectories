@@ -75,7 +75,8 @@
     c(parameter,metric))&&nrow(frame)>0L&&
     is.numeric(frame[[parameter]])&&is.numeric(frame[[metric]])&&
     all(is.finite(frame[[parameter]]))&&
-    all(is.finite(frame[[metric]])),
+    all(is.finite(frame[[metric]]))&&
+    !anyDuplicated(frame[[parameter]]),
     "RQA scientific source artist requires finite uniquely selected slice")
   ax<-list(title=paste0("RQA parameter sensitivity: ",result$curve_id),
     xlabel=parameter,ylabel=metric,legend=FALSE,
@@ -102,4 +103,21 @@
   .etr_nonlinear_artist_record("plot_transfer_entropy_sensitivity",
     list(ax),options=list(parameter=parameter,metric=metric,
       n_points=nrow(frame),causal_identification_claim=FALSE))
+}
+
+.etr_te_strict_source_validate_slice <- function(result,parameter,filters) {
+  table<-result$table
+  if(!is.null(filters)) {
+    for(nm in names(filters))
+      table<-table[!is.na(table[[nm]])&
+        table[[nm]]==filters[[nm]],,drop=FALSE]
+  }
+  others<-setdiff(result$parameter_columns,parameter)
+  unresolved<-others[vapply(table[others],
+    function(v)length(unique(v[!is.na(v)]))>1L,logical(1L))]
+  .etr_assert(!length(unresolved),
+    "source transfer-entropy sensitivity must fix all other varying parameters")
+  .etr_assert(!anyDuplicated(table[[parameter]]),
+    "source transfer-entropy sensitivity requires distinct plotted values")
+  invisible(TRUE)
 }
