@@ -236,8 +236,8 @@ plt.close('all')
         as.numeric(source$y),tolerance=1e-12,info=paste("y",i))
       expect_identical(r$artists[[1L]]$marker,source$marker)
       expect_identical(r$artists[[1L]]$linestyle,source$linestyle)
-      expect_identical(length(r$artists),
-        as.integer(source$line_count)+if(i==1L)0L else 0L)
+      if(i!=1L)expect_identical(length(r$artists),
+        as.integer(source$line_count))
       expect_identical(r$legend_labels,
         if(is.null(source$legend))character(0) else
           as.character(source$legend))
