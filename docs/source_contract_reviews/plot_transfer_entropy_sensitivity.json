@@ -16,7 +16,7 @@
     },
     {
       "path": "R/native-four-recurrence-te-scientific-artists.R",
-      "sha256": "95af8c7689df14be0dccbb26724494531e5815c1666693940f9f053ea63c6dab"
+      "sha256": "d1faef4c52e8c9abc1ab7e7a04a3aed9ed1dc76fa028c340768f172a9996b3bf"
     }
   ],
   "case_evidence": [
@@ -24,37 +24,37 @@
       "kind": "source_signature",
       "description": "Source public frozen Python 1.2 module src/eyetrajectoriespy/transfer_entropy_sensitivity.py::plot_transfer_entropy_sensitivity inspected. New R strict_source_record=TRUE mode exposes bound source Matplotlib scientific geometry and retains the legacy R return.",
       "path": "tests/testthat/test-native-four-recurrence-te-scientific-artists-20261112.R",
-      "sha256": "47b5739c886bf8c2a484b77233aab94fc6a7888622390fd4aeabf27a3a72e616"
+      "sha256": "377852b80f6f9308de807b4d8611bcfebb531f6ca59023fa484b09af61ccc956"
     },
     {
       "kind": "accepted_input_domain",
       "description": "Native validated recurrence/RQA or TE scientific result records and finite source-shaped scalar/frame arrays. Strict mode enforces source sensitivity no-hidden-averaging, explicit parameter-domain uniqueness and source graph caps. Arbitrary Python dataclass, pandas and injected Axes object input are beyond the bounded cross-language review.",
       "path": "tests/testthat/test-native-four-recurrence-te-scientific-artists-20261112.R",
-      "sha256": "47b5739c886bf8c2a484b77233aab94fc6a7888622390fd4aeabf27a3a72e616"
+      "sha256": "377852b80f6f9308de807b4d8611bcfebb531f6ca59023fa484b09af61ccc956"
     },
     {
       "kind": "numerical_outputs",
       "description": "Source TE unaggregated parameter sensitivity sorted line and source marker, underscore-replaced labels, strict-mode refusal of unresolved other tuning parameter dimensions, source title and explicit no-causal-identification metadata. Native numeric input/error regression tests and direct public frozen Python 1.2 Matplotlib artist comparisons are committed; no exact-head CI success has been observed.",
       "path": "tests/testthat/test-native-four-recurrence-te-scientific-artists-20261112.R",
-      "sha256": "47b5739c886bf8c2a484b77233aab94fc6a7888622390fd4aeabf27a3a72e616"
+      "sha256": "377852b80f6f9308de807b4d8611bcfebb531f6ca59023fa484b09af61ccc956"
     },
     {
       "kind": "exception_semantics",
       "description": "Explicit R input validation errors cover max_points, flags, source dimensions, selected metrics/filters and duplicate parameter values. Exact Python TypeError/ValueError/KeyError exception-class identity remains outside native R source-scientific parity.",
       "path": "tests/testthat/test-native-four-recurrence-te-scientific-artists-20261112.R",
-      "sha256": "47b5739c886bf8c2a484b77233aab94fc6a7888622390fd4aeabf27a3a72e616"
+      "sha256": "377852b80f6f9308de807b4d8611bcfebb531f6ca59023fa484b09af61ccc956"
     },
     {
       "kind": "returned_schema",
       "description": "Native default base-R graphs and invisible numeric table/geometry returned unchanged. Strict mode returns a typed native R scientific artist record with ordered artist coordinates and axes labels, not Python matplotlib.axes.Axes, figure or raster output.",
       "path": "tests/testthat/test-native-four-recurrence-te-scientific-artists-20261112.R",
-      "sha256": "47b5739c886bf8c2a484b77233aab94fc6a7888622390fd4aeabf27a3a72e616"
+      "sha256": "377852b80f6f9308de807b4d8611bcfebb531f6ca59023fa484b09af61ccc956"
     },
     {
       "kind": "scientific_estimand",
       "description": "Already computed noncausal transfer-entropy sensitivity grid over fixed analyst-declared history/lag tuning choices; no TE estimator rerun or causal interpretation.",
       "path": "tests/testthat/test-native-four-recurrence-te-scientific-artists-20261112.R",
-      "sha256": "47b5739c886bf8c2a484b77233aab94fc6a7888622390fd4aeabf27a3a72e616"
+      "sha256": "377852b80f6f9308de807b4d8611bcfebb531f6ca59023fa484b09af61ccc956"
     }
   ],
   "additional_regression_evidence": [
