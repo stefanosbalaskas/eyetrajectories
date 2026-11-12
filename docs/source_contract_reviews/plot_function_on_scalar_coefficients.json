@@ -1,0 +1,76 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "plot_function_on_scalar_coefficients",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_NATIVE_FOS_AND_GENERALIZED_FOS_SCIENTIFIC_MATPLOTLIB_ARTISTS",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/plotting.py::plot_function_on_scalar_coefficients",
+  "native_signature": "etr_plot_function_on_scalar_coefficients(result,coefficient,dimension=NULL,band=NULL,strict_source_record=TRUE,...)",
+  "reviewer_statement": "Developer-reviewed six-domain source-scientific plotting geometry only; frozen Python public Matplotlib differential tests are authored, exact-head CI not confirmed green, independently certified full contracts zero.",
+  "native_language_semantic_policy": "Typed native R plot-artist geometry for frozen Python source scientific content with default native R numeric geometry/graphics preserved. Source Python Axes and arbitrary dataclass inputs remain different.",
+  "native_files": [
+    {
+      "path": "R/native-functional-inference-visuals.R",
+      "sha256": "3f342ea283a97bdae6785c3e84cc5419f7fad099cc375277eede9d8b4764a0e4"
+    },
+    {
+      "path": "R/native-four-fos-generalized-scientific-artists.R",
+      "sha256": "a466e136aa04736517eea01f9e2504eb4b7fdce0438a24de0441cc81f42ffd30"
+    },
+    {
+      "path": "R/native-eight-nonlinear-scientific-artists.R",
+      "sha256": "f599c9c9f61bb1cf06d8aac73198e7e16c251671c73eedba2484f8263e94d4b8"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Reviewed frozen published Python 1.2 src/eyetrajectoriespy/plotting.py::plot_function_on_scalar_coefficients and the existing R function. R strict_source_record=TRUE gives native scientific artist records; default R numerical/graphics returns remain unchanged.",
+      "path": "tests/testthat/test-native-four-fos-generalized-source-artists-20261112.R",
+      "sha256": "637f35eaf78ad467660835cdb35dd8de2fee812bbff783142e2cb8d37ce669e9"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Precomputed finite native R fit, contrast or band records on the exact observed grid, validated coefficient/profile names, family/link scale and optional declared band metadata. Python runtime dataclass/pandas type identity and arbitrary user-supplied Matplotlib ax remain outside bounded native support.",
+      "path": "tests/testthat/test-native-four-fos-generalized-source-artists-20261112.R",
+      "sha256": "637f35eaf78ad467660835cdb35dd8de2fee812bbff783142e2cb8d37ce669e9"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Source optional alpha 0.2 fill-before-coefficient-line ordering, Python band-as-result acceptance in strict R mode, zero-based coefficient or exact name, default first dimension, 1-decimal confidence level and simultaneous scope legend, dashed y=0 reference and exact physical time label. New native numeric, malformed-domain, banded/unbanded and opt-in direct public frozen Python 1.2 Matplotlib artist comparisons authored. Exact-head CI success has not yet been observed.",
+      "path": "tests/testthat/test-native-four-fos-generalized-source-artists-20261112.R",
+      "sha256": "637f35eaf78ad467660835cdb35dd8de2fee812bbff783142e2cb8d37ce669e9"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Native R guards invalid strict flags, unknown coefficient/profile/functional dimension, nonfinite source grids, impossible bounds and missing simultaneous-band confidence provenance. Exact Python exception-class identity is not claimed.",
+      "path": "tests/testthat/test-native-four-fos-generalized-source-artists-20261112.R",
+      "sha256": "637f35eaf78ad467660835cdb35dd8de2fee812bbff783142e2cb8d37ce669e9"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Legacy R base plots and invisible numerical source arrays retained. Strict source mode returns a typed etr_nonlinear_scientific_artist_record describing source plot axes, ordered lines, alpha 0.2 bands, legends and zero reference. No live Python matplotlib.axes.Axes, pandas, pixel rendering or Python object identity.",
+      "path": "tests/testthat/test-native-four-fos-generalized-source-artists-20261112.R",
+      "sha256": "637f35eaf78ad467660835cdb35dd8de2fee812bbff783142e2cb8d37ce669e9"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Precomputed ordinary least-squares function-on-scalar observed-grid coefficient and calibrated wild-bootstrap simultaneous band. No new model fitting, smoothing, grid interpolation or uncertainty law.",
+      "path": "tests/testthat/test-native-four-fos-generalized-source-artists-20261112.R",
+      "sha256": "637f35eaf78ad467660835cdb35dd8de2fee812bbff783142e2cb8d37ce669e9"
+    }
+  ],
+  "additional_regression_evidence": [
+    {
+      "path": "tests/testthat/test-native-functional-inference-visuals.R",
+      "sha256": "36154748325092f0e545e19aa88b4c575b7208b1e7aab4425ace3a22376dd8b0"
+    }
+  ],
+  "independent_review_status": "Provisional scoped developer review, exact-head R/Python execution unverified and independent certifications zero.",
+  "language_specific_limits": [
+    "Python Matplotlib Axes/Figure object identity, arbitrary injected ax, pandas/dataclass runtime and exact Python exception subclass behavior not reproduced in native R.",
+    "Matplotlib artist scientific coordinates/alpha/labels reproduced only in validated bounded native result domains.",
+    "No Python backend pixel parity or independently certified complete-domain contract; no scientific estimator, uncertainty law or default R behavior modified."
+  ]
+}
