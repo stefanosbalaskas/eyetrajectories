@@ -85,7 +85,9 @@ test_that("three real published Python names added to strict 508-export inventor
     expect_equal(nrow(row),1L)
     expect_identical(row$native_r_candidate,paste0("etr_",fn))
     expect_true(row$native_implementation_started)
-    expect_true(row$source_contract_gap_unresolved)
+    # Source-scientific line/figure-artist data are now author reviewed.
+    # Matplotlib runtime Axes/Figure identity remains uncertified.
+    expect_false(row$source_contract_gap_unresolved)
     expect_false(row$one_to_one_native_contract_complete)
   }
   expect_equal(nrow(catalog),508L)

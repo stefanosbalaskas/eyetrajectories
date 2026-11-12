@@ -1,0 +1,134 @@
+name: Native reconstruction registration and warping source-scientific artists
+on:
+  pull_request:
+    paths:
+      - "R/native-functional-registration-plots.R"
+      - "R/native-registration-three-source-artists.R"
+      - "tests/testthat/test-native-functional-registration-plots.R"
+      - "tests/testthat/test-native-registration-three-scientific-artists-20261112.R"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/reviewed_source_contract_closures_v1.csv"
+      - "docs/source_contract_reviews/plot_reconstruction_curve.json"
+      - "docs/source_contract_reviews/plot_registration.json"
+      - "docs/source_contract_reviews/plot_warping_functions.json"
+      - ".github/workflows/native-three-registration-artists-20261112.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check 451/508 native development source records and six-domain hashes
+        shell: bash
+        run: |
+          python - <<'PY'
+          import csv,hashlib,json
+          from pathlib import Path
+          root=Path('.')
+          with (root/'inst/extdata/native_source_contract_gaps_stage22.csv').open(
+              encoding='utf-8',newline='') as f:
+              raw=list(csv.reader(f,strict=True))
+          assert len(raw)==204
+          assert all(len(row)==7 for row in raw),[
+              (i,len(row),row[0]) for i,row in enumerate(raw) if len(row)!=7]
+          assert all(row[-1] in ('TRUE','FALSE') for row in raw[1:])
+          with (root/'inst/extdata/reviewed_source_contract_closures_v1.csv').open(
+              encoding='utf-8',newline='') as f:
+              reg=list(csv.DictReader(f))
+          names=('plot_reconstruction_curve',
+                 'plot_registration',
+                 'plot_warping_functions')
+          for name in names:
+              (gap,)=tuple(row for row in raw[1:] if row[0]==name)
+              assert gap[-1]=='FALSE'
+              (entry,)=tuple(row for row in reg if row['python_name']==name)
+              assert entry['independently_certified']=='FALSE'
+              data=(root/entry['review_record_path']).read_bytes()
+              assert hashlib.sha256(data).hexdigest()==entry['review_record_sha256']
+              receipt=json.loads(data)
+              assert receipt['frozen_python_commit']=='c1cd95ad718327550f7e55393ff38582872f7a94'
+              assert receipt['independently_certified'] is False
+              assert {z['kind'] for z in receipt['case_evidence']}=={
+                  'source_signature','accepted_input_domain','numerical_outputs',
+                  'exception_semantics','returned_schema','scientific_estimand'}
+              for ev in (receipt['native_files']+receipt['case_evidence']+
+                  receipt['additional_regression_evidence']):
+                  item=root/ev['path']
+                  assert hashlib.sha256(item.read_bytes()).hexdigest()==ev['sha256'],item
+          with (root/'inst/extdata/native_nonfunction_source_gaps_v1.csv').open(
+              encoding='utf-8',newline='') as f:
+              nc=list(csv.DictReader(f))
+          assert len(nc)==1
+          callable_remaining=sum(row[-1]=='TRUE' for row in raw[1:])
+          noncallable_remaining=sum(row['unresolved']=='TRUE' for row in nc)
+          assert callable_remaining<=56 and noncallable_remaining<=1
+          assert 508-callable_remaining-noncallable_remaining>=451
+          print(f'{508-callable_remaining-noncallable_remaining}/508 '
+                'provisional developer-scoped reviews; '
+                f'{callable_remaining} callable and '
+                f'{noncallable_remaining} noncallable gaps, '
+                'zero new independent certifications')
+          PY
+  native-three-os:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Test native landmark registration and reconstruction artist scientific arrays
+        shell: bash
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all('.',quiet=TRUE)
+          testthat::test_local('.',
+            filter='native-registration-three-scientific-artists-20261112|native-functional-registration-plots|full-native-r-parity-ledger',
+            reporter='summary',stop_on_failure=TRUE)
+          RSCRIPT
+  frozen-python-1-2:
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        id: python
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Direct published Python 1.2 figure panel and identity/warp scientific artist comparisons
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all('.',quiet=TRUE)
+          stopifnot(identical(et_python_version(),'1.2.0'))
+          testthat::test_local('.',
+            filter='native-registration-three-scientific-artists-20261112|native-functional-registration-plots|full-native-r-parity-ledger',
+            reporter='summary',stop_on_failure=TRUE)
+          RSCRIPT

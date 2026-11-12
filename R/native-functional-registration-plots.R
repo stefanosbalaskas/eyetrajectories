@@ -22,9 +22,13 @@
 #' Source-aligned functional PCA integrated reconstruction curve
 #' @param reconstruction_summary Native FPCA reconstruction summary frame.
 #' @param ... Base graphics parameters.
-#' @return Invisible exact plotted numeric reconstruction geometry.
+#' @param strict_source_record Return source scientific Matplotlib line
+#'   geometry as a native R record, without Python Axes identity.
+#' @return Invisible original numeric geometry or strict scientific artist.
 #' @export
-etr_plot_reconstruction_curve <- function(reconstruction_summary,...) {
+etr_plot_reconstruction_curve <- function(reconstruction_summary,
+    strict_source_record=FALSE,...) {
+  .etr_reg_artist_validate_strict(strict_source_record)
   .etr_assert(is.data.frame(reconstruction_summary)&&
     all(c("n_components","mean_integrated_rmse")%in%
       names(reconstruction_summary))&&nrow(reconstruction_summary)>=1L,
@@ -39,7 +43,10 @@ etr_plot_reconstruction_curve <- function(reconstruction_summary,...) {
     xlab="Retained functional principal components",
     ylab="Mean integrated RMSE",
     main="FPCA reconstruction curve",...)
-  invisible(data.frame(n_components=x,mean_integrated_rmse=y))
+  frame<-data.frame(n_components=x,mean_integrated_rmse=y)
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_reg_reconstruction_artist(frame)))
+  invisible(frame)
 }
 
 #' Original versus registered native functional curves, in two panels
@@ -47,9 +54,13 @@ etr_plot_reconstruction_curve <- function(reconstruction_summary,...) {
 #' @param dimension Optional named functional channel.
 #' @param max_curves Maximum number of curves drawn in each panel.
 #' @param ... Base R graphics options.
-#' @return Invisible exact source time and curve data for each panel.
+#' @param strict_source_record Return original Python two-panel scientific
+#'   line geometry, alpha and titles as R data, not Python Figure/Axes.
+#' @return Invisible original numerical panels or strict artist record.
 #' @export
-etr_plot_registration <- function(result,dimension=NULL,max_curves=20L,...) {
+etr_plot_registration <- function(result,dimension=NULL,max_curves=20L,
+    strict_source_record=FALSE,...) {
+  .etr_reg_artist_validate_strict(strict_source_record)
   .etr_validate_registration_plot(result)
   if(is.null(dimension))dimension<-result$original$dimension_names[1L]
   .etr_assert(is.character(dimension)&&length(dimension)==1L&&
@@ -85,17 +96,24 @@ etr_plot_registration <- function(result,dimension=NULL,max_curves=20L,...) {
       graphics::lines(z$time[ix],z$value[ix],col=i)
     }
   }
-  invisible(list(original=original,registered=registered,
-    dimension=dimension,curve_ids=result$original$curve_ids[seq_len(n)]))
+  source<-list(original=original,registered=registered,
+    dimension=dimension,curve_ids=result$original$curve_ids[seq_len(n)])
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_reg_registration_artist(result,source)))
+  invisible(source)
 }
 
 #' Native landmark time warping function or displacement plot
 #' @param result Native landmark registration output.
 #' @param displacement If TRUE plot h(t)-t; otherwise plot source time h(t).
 #' @param ... Base R graphics options.
-#' @return Invisible exact time-by-curve warp source geometry.
+#' @param strict_source_record Return a typed native source-scientific
+#'   warp/identity artist with actual line coordinates and alpha.
+#' @return Invisible time-by-curve warp geometry or strict artist data.
 #' @export
-etr_plot_warping_functions <- function(result,displacement=FALSE,...) {
+etr_plot_warping_functions <- function(result,displacement=FALSE,
+    strict_source_record=FALSE,...) {
+  .etr_reg_artist_validate_strict(strict_source_record)
   .etr_validate_registration_plot(result)
   .etr_assert(is.logical(displacement)&&length(displacement)==1L&&
     !is.na(displacement),"displacement must be one logical value")
@@ -116,5 +134,7 @@ etr_plot_warping_functions <- function(result,displacement=FALSE,...) {
     graphics::lines(time,warp[i,],col=i)
   if(displacement)graphics::abline(h=0,lty=2)
   else graphics::abline(a=0,b=1,lty=2)
+  if(isTRUE(strict_source_record))
+    return(invisible(.etr_reg_warp_artist(result,out,displacement)))
   invisible(out)
 }
