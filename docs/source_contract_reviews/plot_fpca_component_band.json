@@ -1,0 +1,73 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "plot_fpca_component_band",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_NATIVE_FPCA_BOOTSTRAP_UNCERTAINTY_ARTIST_REVIEW",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/plotting.py::plot_fpca_component_band",
+  "native_signature": "etr_plot_fpca_component_band(result,component=0L,dimension=NULL,strict_source_record=TRUE)",
+  "reviewer_statement": "Developer-scoped six-domain review of native FPCA statistical scientific-artist geometry only. Source Matplotlib arrays are compared in committed pinned Python 1.2 tests, and genuine native bootstrap estimators are exercised. Exact-head Python/three-OS CI is not observed green; no independently certified source-contract or Python matplotlib runtime return parity is claimed.",
+  "native_language_semantic_policy": "Scientific arrays, confidence limits, score references, source errorbar parameters, fill band alpha and legend/titles are source comparable on accepted native fit-result classes. Native R base graphics returns typed R source scientific data rather than Python Matplotlib Axes/Figure, pixel output or Python-specific error exceptions.",
+  "native_files": [
+    {
+      "path": "R/native-fpca-bootstrap-source.R",
+      "sha256": "9c6ecbd07fb6d37fa9317a33513c9f3e192e100692f31110433397bc4a645cb5"
+    },
+    {
+      "path": "R/native-fpca-three-uncertainty-artist-source.R",
+      "sha256": "bb802ab62d201dd5fd43b4f612221ddcccfb2519153527f891b0e508eec40c53"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Frozen public eyetrajectoriespy==1.2.0 src/eyetrajectoriespy/plotting.py::plot_fpca_component_band, matched by optional native strict scientific artist data.",
+      "path": "tests/testthat/test-native-fpca-three-uncertainty-artists-20261112.R",
+      "sha256": "2fc662502e69a05d302edc58d49c5436f0d40ea2ec4c42438cb52ce618ff4674"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Genuine native matched-bootstrap FPCA component-shape band with original observed grid, same-shape reference components and lower/upper arrays, zero-based fitted FPC index, and exact fitted dimension name (first fitted channel when omitted). Confidence level within (0,1), simultaneous scope family/component. The native domain does not inject or return Python Matplotlib Axes instances.",
+      "path": "tests/testthat/test-native-fpca-three-uncertainty-artists-20261112.R",
+      "sha256": "2fc662502e69a05d302edc58d49c5436f0d40ea2ec4c42438cb52ce618ff4674"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Original observed time grid and matched/sign-aligned reference FPC array are the source line. Original bootstrap lower/upper component band arrays form fill_between with alpha=.2 and label formatted as %.1f%% simultaneous band, followed by source reference FPC line and legend. Title 'FPCk simultaneous band (familywise/component-wise)' and Time(unit)/FPC loading dimension are source-matched. Committed direct frozen Python 1.2 Matplotlib Line2D and PolyCollection scientific geometry/alpha/label/legend comparisons and tests on genuine native 20-replicate FPCA component-band fits; exact-head success not yet witnessed.",
+      "path": "tests/testthat/test-native-fpca-three-uncertainty-artists-20261112.R",
+      "sha256": "2fc662502e69a05d302edc58d49c5436f0d40ea2ec4c42438cb52ce618ff4674"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Unsupported native result, invalid/negative/out-of-range component, missing dimension, mismatch of 3D source band arrays, invalid/inverted or nonfinite intervals, invalid confidence level/scope and nonlogical strict flag fail explicitly. Python KeyError/IndexError classes and live Axes behavior differ.",
+      "path": "tests/testthat/test-native-fpca-three-uncertainty-artists-20261112.R",
+      "sha256": "2fc662502e69a05d302edc58d49c5436f0d40ea2ec4c42438cb52ce618ff4674"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Python returns one Matplotlib Axes with fill_between PolyCollection and reference FPC line. Native R preserves its existing observed-grid mean/interval four-column return by default and emits typed numerical source artist data in strict mode; pixel-perfect polygon rasterization and Python runtime identity are outside scope.",
+      "path": "tests/testthat/test-native-fpca-three-uncertainty-artists-20261112.R",
+      "sha256": "2fc662502e69a05d302edc58d49c5436f0d40ea2ec4c42438cb52ce618ff4674"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Bootstrap-calibrated simultaneous component-shape uncertainty after sign and component matching to the original full-sample FPCA eigenspace. The reference eigenfunction and source confidence band are not re-estimated by plotting and do not imply pointwise-only coverage.",
+      "path": "tests/testthat/test-native-fpca-three-uncertainty-artists-20261112.R",
+      "sha256": "2fc662502e69a05d302edc58d49c5436f0d40ea2ec4c42438cb52ce618ff4674"
+    }
+  ],
+  "additional_regression_evidence": [
+    {
+      "path": "tests/testthat/test-native-fpca-bootstrap-source.R",
+      "sha256": "dbd0d3aff7adf62b3eb2bc21c1551e41e0eb3c52cddb010fbbc59bb4c15a81a3"
+    }
+  ],
+  "independent_review_status": "Provisional author scoped scientific geometry; zero independent source-contract certifications, successful exact-head differential CI not witnessed.",
+  "language_specific_limits": [
+    "R base plotting returns R graphics state plus source scientific artist data, not live Matplotlib Axes/Figure nor identically rendered pixels.",
+    "Supported R classes and numerical domains are restricted to genuine native FPCA bootstrap results; general Python ax injection and runtime object protocol equivalence are not delivered.",
+    "Python and R exception classes and implementation-specific random bootstrap PCG64/base-R draws remain distinct.",
+    "No independent scientific parity approval, merged main-branch source or CRAN qualification is implied."
+  ]
+}

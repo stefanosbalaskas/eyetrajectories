@@ -148,13 +148,20 @@ test_that("seven source names map uniquely, uncertified",{
                "functional_mean_band_reporting_text",
                "fpca_component_band_reporting_text"))
       expect_false(r$source_contract_gap_unresolved)
-    else expect_true(r$source_contract_gap_unresolved)
+    else expect_false(r$source_contract_gap_unresolved)
+    # Scientific Matplotlib geometry remains R-native, not full
+    # Python Axes runtime identity or independent certification.
     expect_false(r$one_to_one_native_contract_complete)
   }
   expect_gte(sum(z$native_implementation_started),211L)
   expect_gte(sum(z$named_native_candidate&z$is_python_function),236L)
   expect_lte(sum(z$is_python_function&!z$named_native_candidate),144L)
-  expect_gte(sum(z$source_contract_gap_unresolved),57L)
+  inventory<-utils::read.csv(
+    system.file("extdata","native_source_contract_gaps_stage22.csv",
+      package="eyetrajectories"),
+    stringsAsFactors=FALSE)
+  expect_identical(sum(z$source_contract_gap_unresolved),
+    sum(inventory$unresolved_source_gap))
   expect_equal(sum(z$one_to_one_native_contract_complete),0L)
   expect_identical(was,reticulate::py_available(initialize=FALSE))
 })
