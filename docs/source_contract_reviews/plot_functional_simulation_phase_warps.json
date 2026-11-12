@@ -1,0 +1,73 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "plot_functional_simulation_phase_warps",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_NATIVE_FUNCTIONAL_SIMULATION_SOURCE_ARTIST_REVIEW",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/plotting.py::plot_functional_simulation_phase_warps",
+  "native_signature": "etr_plot_functional_simulation_phase_warps(result,max_curves=20L,alpha=.35,strict_source_record=TRUE)",
+  "reviewer_statement": "A provisional developer-reviewed native R scientific plotting contract on a genuine simulated functional result. Numeric source artists have pinned Python 1.2 comparisons in committed tests, but successful exact-head CI has not yet been observed, and native R cannot return Matplotlib Axes or provide runtime class parity. This is not independent full-domain certification.",
+  "native_language_semantic_policy": "Native R scientific geometry is source-aligned on accepted simulated truth and original observations. Source plot semantics for numeric zero-based indices, finite scatter masks, phase-warp line order and population variance are implemented in strict mode. Python plotting Axes identity, Matplotlib rendering bytes and exception classes are excluded.",
+  "native_files": [
+    {
+      "path": "R/native-functional-simulation-plots.R",
+      "sha256": "3f66324fb53303f35958158278a480970ebc02429d13071363894ca0ed722436"
+    },
+    {
+      "path": "R/native-functional-simulation-artist-source.R",
+      "sha256": "c6b02d98e186ae98e409fbd180f69bd988e0f0ba1c5b4751c4b09943fddd5b62"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Frozen Python 1.2 src/eyetrajectoriespy/plotting.py::plot_functional_simulation_phase_warps. Real native source phase-warp truth vs identity time map, exact retention of first n curves and opacity.",
+      "path": "tests/testthat/test-native-simulation-three-artist-source-20261112.R",
+      "sha256": "9062671768c5dc1b28ac33448ea5002151f52e125f369c1e728da1e36e71d351"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Native true etr_functional_simulation_result with observed truth grid, actual n-by-time phase_warps_on_truth_grid, source max_curves integer positive or NULL, finite alpha in (0,1]. Default retains first twenty source curves. Strict mode exposes source artist representation without Python Matplotlib Axes injection.",
+      "path": "tests/testthat/test-native-simulation-three-artist-source-20261112.R",
+      "sha256": "9062671768c5dc1b28ac33448ea5002151f52e125f369c1e728da1e36e71d351"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Native source artist first line x=truth_grid y=truth_grid, dashed 'identity warp'; subsequent original n=min(n_curves,max_curves) phase-warp lines on exactly retained truth grid, opacity alpha, source title/labels. Committed direct frozen Python 1.2 public phase plot line get_ydata comparisons using same native simulation arrays; existing source-differential geometry tests passed in earlier waves, but this exact-head CI not witnessed green.",
+      "path": "tests/testthat/test-native-simulation-three-artist-source-20261112.R",
+      "sha256": "9062671768c5dc1b28ac33448ea5002151f52e125f369c1e728da1e36e71d351"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Reject unsupported class, zero/negative/noninteger max_curves, invalid alpha and malformed source truth/warps. No Python plotting ax injection and Python error type identity are claimed.",
+      "path": "tests/testthat/test-native-simulation-three-artist-source-20261112.R",
+      "sha256": "9062671768c5dc1b28ac33448ea5002151f52e125f369c1e728da1e36e71d351"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Source one-panel Matplotlib Axes with identity labelled dashed line and n phase lines, axes/title and identity legend. Native R base plot draws these curves and strict mode emits ordered, inspectable source scientific artist data, source options, and explicit matplotlib_object_identity=FALSE.",
+      "path": "tests/testthat/test-native-simulation-three-artist-source-20261112.R",
+      "sha256": "9062671768c5dc1b28ac33448ea5002151f52e125f369c1e728da1e36e71d351"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Visualize functional phase variation in realized simulated individual curves relative to the identity observation-to-latent time map, without retiming or warping any observations beyond truth already generated.",
+      "path": "tests/testthat/test-native-simulation-three-artist-source-20261112.R",
+      "sha256": "9062671768c5dc1b28ac33448ea5002151f52e125f369c1e728da1e36e71d351"
+    }
+  ],
+  "additional_regression_evidence": [
+    {
+      "path": "tests/testthat/test-native-functional-simulation-plots.R",
+      "sha256": "9efeb0b065005247a1f9ef578d3f5fa70dcb93154ecd5fd678b39b5b58894735"
+    }
+  ],
+  "independent_review_status": "Provisional scoped native scientific geometry author review; exact-head differential CI queued/unverified, independent certification zero.",
+  "language_specific_limits": [
+    "R base plotting does not implement Python Matplotlib Axes or Figure return type, external ax parameter or pixel-equivalent rendering.",
+    "Strict result is a genuine native R simulated object with source artist data, not a Python FunctionalSimulationResult dataclass instance.",
+    "Python and R exceptions, plot legend backend state and Matplotlib figure event machinery remain different.",
+    "New tests have not been observed executing green, and no independent source-contract approval, main-branch merge or CRAN qualification is claimed."
+  ]
+}
