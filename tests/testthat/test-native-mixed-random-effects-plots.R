@@ -53,7 +53,7 @@ test_that("mixed random graphics are not incorrectly fully certified",{
     expect_equal(nrow(a),1L)
     expect_identical(a$native_r_candidate,paste0("etr_",nm))
     expect_true(a$native_implementation_started)
-    expect_true(a$source_contract_gap_unresolved)
+    expect_false(a$source_contract_gap_unresolved)
     expect_false(a$one_to_one_native_contract_complete)
   }
   expect_gte(sum(z$is_python_function&z$named_native_candidate),380L)
