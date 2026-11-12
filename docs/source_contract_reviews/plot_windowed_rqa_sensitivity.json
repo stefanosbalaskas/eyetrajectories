@@ -28,37 +28,37 @@
       "kind": "source_signature",
       "description": "Compared published frozen Python 1.2 src/eyetrajectoriespy/nonlinear_plotting.py::plot_windowed_rqa_sensitivity plotting signature with native R opt-in strict_source_record=TRUE. Default native R call, numerical estimator and graphics remain preserved.",
       "path": "tests/testthat/test-native-five-nonlinear-te-sensitivity-artists-20261112.R",
-      "sha256": "a29ae8fb5289153cf3d7b4176b5e5a771d0648131d01a74637e583a09b01c0df"
+      "sha256": "f09b77a788443398ce59c99b3c52edfab4967e8ff934445c4e8d02a5b96feb91"
     },
     {
       "kind": "accepted_input_domain",
       "description": "Supports finite validated precomputed native scientific records and exact source-declared parameter/response/metric names. Conditional TE mode accepts R integer bin count or auto and enforces the NumPy 2.3 histogram auto rule under the relaxed policy. Arbitrary Python dataclass/pandas/Mpl axes protocols excluded.",
       "path": "tests/testthat/test-native-five-nonlinear-te-sensitivity-artists-20261112.R",
-      "sha256": "a29ae8fb5289153cf3d7b4176b5e5a771d0648131d01a74637e583a09b01c0df"
+      "sha256": "f09b77a788443398ce59c99b3c52edfab4967e8ff934445c4e8d02a5b96feb91"
     },
     {
       "kind": "numerical_outputs",
       "description": "Physical windowed RQA center-time arrays for every explicit sensitivity specification, original marker-o traces, source W/S ID legend and zero-based numeric or exact curve ID selection without aggregation. Authored native fixture plus direct pinned Python public Matplotlib artist comparisons and a separate NumPy 2.3.5 diagnostic bin check. Exact-head R/Python CI execution not yet observed.",
       "path": "tests/testthat/test-native-five-nonlinear-te-sensitivity-artists-20261112.R",
-      "sha256": "a29ae8fb5289153cf3d7b4176b5e5a771d0648131d01a74637e583a09b01c0df"
+      "sha256": "f09b77a788443398ce59c99b3c52edfab4967e8ff934445c4e8d02a5b96feb91"
     },
     {
       "kind": "exception_semantics",
       "description": "R native domain and strict flag errors reject malformed inputs, ambiguous sensitivity slices, noninteger strict bins and nonfinite surrogate values. Python TypeError/KeyError/ValueError subclass identity is not claimed.",
       "path": "tests/testthat/test-native-five-nonlinear-te-sensitivity-artists-20261112.R",
-      "sha256": "a29ae8fb5289153cf3d7b4176b5e5a771d0648131d01a74637e583a09b01c0df"
+      "sha256": "f09b77a788443398ce59c99b3c52edfab4967e8ff934445c4e8d02a5b96feb91"
     },
     {
       "kind": "returned_schema",
       "description": "Default base-R plotting and original invisible numeric results unchanged. Strict mode returns typed etr_nonlinear_scientific_artist_record with artist geometry, scientific axes labels and options, not a live Matplotlib Axes, Python dataclass or pixel-exact rendering.",
       "path": "tests/testthat/test-native-five-nonlinear-te-sensitivity-artists-20261112.R",
-      "sha256": "a29ae8fb5289153cf3d7b4176b5e5a771d0648131d01a74637e583a09b01c0df"
+      "sha256": "f09b77a788443398ce59c99b3c52edfab4967e8ff934445c4e8d02a5b96feb91"
     },
     {
       "kind": "scientific_estimand",
       "description": "Previously computed windowed RQA sensitivity across declared window/step specifications. Does not recompute recurrence or RQA metrics.",
       "path": "tests/testthat/test-native-five-nonlinear-te-sensitivity-artists-20261112.R",
-      "sha256": "a29ae8fb5289153cf3d7b4176b5e5a771d0648131d01a74637e583a09b01c0df"
+      "sha256": "f09b77a788443398ce59c99b3c52edfab4967e8ff934445c4e8d02a5b96feb91"
     }
   ],
   "additional_regression_evidence": [
