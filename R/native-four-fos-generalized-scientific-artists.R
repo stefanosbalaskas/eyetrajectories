@@ -97,7 +97,9 @@
     all(c("reference","lower","upper")%in%names(result))
   fit<-if(is_band)result$reference else result
   name<-as.character(coefficient)
-  .etr_assert(length(name)==1L&&identical(frame$time,fit$time),
+  .etr_assert(length(name)==1L&&
+    isTRUE(all.equal(as.numeric(frame$time),as.numeric(fit$time),
+      tolerance=0,check.attributes=FALSE)),
     "generalized FOS source coefficient needs the original observed grid")
   artists<-list(.etr_fos_artist_line(frame$time,frame$estimate,"estimate"))
   labels<-"estimate"
