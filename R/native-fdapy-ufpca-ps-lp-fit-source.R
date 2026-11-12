@@ -194,8 +194,12 @@
 .etr_fdapy_fit_native_ufpca <- function(trajectories,dimension,
     n_components,fit_smoothing,score_smoothing,tol,normalize,
     evaluation_grid,kwargs_mean,kwargs_covariance) {
-  .etr_assert(is.null(normalize)||identical(normalize,FALSE),
+  .etr_assert(identical(normalize,FALSE),
     "FDApy source native PS/LP full fit currently requires normalize=FALSE")
+  n_components<-.etr_fdapy_fit_check_int(n_components,"n_components",1L)
+  .etr_assert(is.character(dimension)&&length(dimension)==1L&&
+    !is.na(dimension)&&dimension%in%trajectories$dimension_names,
+    "FDApy source fit dimension must be a known sampled channel")
   .etr_assert(is.character(fit_smoothing)&&length(fit_smoothing)==1L&&
     fit_smoothing%in%c("PS","LP"),
     "FDApy native full UFPCA source fit needs fit_smoothing PS or LP")
