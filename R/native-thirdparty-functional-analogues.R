@@ -280,10 +280,14 @@ etr_to_fdapy_irregular<-function(trajectories,dimension,
 #' @param backend Must be exactly fdapace.
 #' @param fve Explicit explained-variance threshold.
 #' @param options Native fdapace options; locked core score method.
-#' @param strict_source_record TRUE computes the FDApy 1.0.x exact
-#'   conditional PACE score/inverse-transform mathematical stage using
-#'   externally supplied already fitted UFPCA spectrum. Does not fit
-#'   the FDApy PS/LP mean and covariance estimator.
+#' @param strict_source_record TRUE fits the bounded FDApy 1.0.x
+#'   native R source mathematical chain (PS/LP mean, source PS
+#'   resmoothing for centering, observed pooled covariance, PS/LP
+#'   covariance smoothing, weighted covariance eigensystem,
+#'   difference-sequence noise and PACE scores). When an externally
+#'   supplied source_fit_snapshot is supplied, preserves the earlier
+#'   conditional fitted-spectrum PACE-only mode. This remains a
+#'   scientific R record, not a Python FDApy UFPCA instance.
 #' @param fit_smoothing,score_smoothing Source UFPCA declared smoothing
 #'   controls (recorded but not estimated in native strict mode).
 #' @param tol FDApy source positive numerical noise variance floor.
@@ -291,11 +295,13 @@ etr_to_fdapy_irregular<-function(trajectories,dimension,
 #' @param evaluation_grid Exact sorted pooled observation time grid or NULL.
 #' @param kwargs_mean,kwargs_covariance Optional recorded source fitting
 #'   settings; actual PS/LP fitting is not performed.
-#' @param source_fit_snapshot Required native record with FDApy fitted
-#'   `mean_grid`, `eigenfunctions` (components x grid),
-#'   `eigenvalues`, `noise_variance` and a
-#'   `centered_observations` list preserving actual time/curve order.
-#'   Use source-frozen fitted inputs, never invented eigenpairs.
+#' @param source_fit_snapshot Optional externally measured fitted
+#'   FDApy spectrum with `mean_grid`, `eigenfunctions` (components x
+#'   grid), `eigenvalues`, `noise_variance` and a
+#'   `centered_observations` list, retaining the fixed-spectrum
+#'   score mode. NULL fits PS/LP mean/covariance/eigenfunctions natively.
+#'   Source Python np.linalg.eig component sign and output ordering
+#'   are not guaranteed identical to R's symmetric eigensolver.
 #' @export
 etr_fit_sparse_fpca_fdapy<-function(trajectories,dimension,
     n_components=3L,backend=NULL,fve=.95,options=list(),
@@ -306,11 +312,17 @@ etr_fit_sparse_fpca_fdapy<-function(trajectories,dimension,
   .etr_assert(is.logical(strict_source_record)&&
     length(strict_source_record)==1L&&!is.na(strict_source_record),
     "strict_source_record must be a nonmissing logical scalar")
-  if(isTRUE(strict_source_record))
+  if(isTRUE(strict_source_record)) {
+    if(is.null(source_fit_snapshot))
+      return(.etr_fdapy_fit_native_ufpca(
+        trajectories,dimension,n_components,fit_smoothing,
+        score_smoothing,tol,normalize,evaluation_grid,
+        kwargs_mean,kwargs_covariance))
     return(.etr_fdapy_fixed_spectrum_pace(
       trajectories,dimension,n_components,fit_smoothing,
       score_smoothing,tol,normalize,evaluation_grid,
       kwargs_mean,kwargs_covariance,source_fit_snapshot))
+  }
   .etr_assert(identical(backend,"fdapace"),
     "source FDApy backend unavailable natively; explicitly choose fdapace")
   out<-etr_to_fdapy_irregular(trajectories,dimension)
