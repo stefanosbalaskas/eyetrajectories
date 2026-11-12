@@ -1,0 +1,132 @@
+name: Native FPCR two prediction scientific source artists
+on:
+  pull_request:
+    paths:
+      - "R/native-fpcr-inference-plots.R"
+      - "R/native-fpcr-two-prediction-artists.R"
+      - "tests/testthat/test-native-fpcr-inference-plots.R"
+      - "tests/testthat/test-native-fpcr-two-prediction-artists-20261112.R"
+      - "inst/extdata/native_source_contract_gaps_stage22.csv"
+      - "inst/extdata/reviewed_source_contract_closures_v1.csv"
+      - "docs/source_contract_reviews/plot_fpca_wild_bootstrap_projection.json"
+      - "docs/source_contract_reviews/plot_fpca_regression_future_prediction_interval.json"
+      - "docs/source_contract_reviews/plot_fpca_regression_mean_prediction_uncertainty.json"
+      - ".github/workflows/native-fpcr-two-prediction-artists-20261112.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-contract-integrity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify 461 source records, strict CSV and SHA256 scientific reviews
+        shell: bash
+        run: |
+          python - <<'PY'
+          import csv, hashlib, json
+          from pathlib import Path
+          root=Path(".")
+          with (root/"inst/extdata/native_source_contract_gaps_stage22.csv").open(
+              encoding="utf-8",newline="") as f:
+              gaps=list(csv.reader(f,strict=True))
+          assert len(gaps)==204,len(gaps)
+          assert all(len(row)==7 for row in gaps)
+          assert len({row[0] for row in gaps[1:]})==203
+          with (root/"inst/extdata/reviewed_source_contract_closures_v1.csv").open(
+              encoding="utf-8",newline="") as f:
+              registry=list(csv.DictReader(f))
+          with (root/"inst/extdata/native_nonfunction_source_gaps_v1.csv").open(
+              encoding="utf-8",newline="") as f:
+              other=list(csv.DictReader(f))
+          assert len({row["python_name"] for row in registry})==len(registry)
+          targets=("plot_fpca_regression_future_prediction_interval",
+                   "plot_fpca_regression_mean_prediction_uncertainty")
+          inherited=("plot_fpca_wild_bootstrap_projection",)
+          for name in targets+inherited:
+              (rec,)=tuple(row for row in registry if row["python_name"]==name)
+              assert rec["independently_certified"]=="FALSE"
+              raw=(root/rec["review_record_path"]).read_bytes()
+              assert hashlib.sha256(raw).hexdigest()==rec["review_record_sha256"]
+              review=json.loads(raw)
+              assert review["independently_certified"] is False
+              assert review["frozen_python_commit"]=="c1cd95ad718327550f7e55393ff38582872f7a94"
+              assert {entry["kind"] for entry in review["case_evidence"]}=={
+                  "source_signature","accepted_input_domain","numerical_outputs",
+                  "exception_semantics","returned_schema","scientific_estimand"}
+              for entry in (review["native_files"]+review["case_evidence"]+
+                            review.get("additional_regression_evidence",[])):
+                  path=root/entry["path"]
+                  assert hashlib.sha256(path.read_bytes()).hexdigest()==entry["sha256"],path
+          for name in targets:
+              (record,)=tuple(r for r in gaps[1:] if r[0]==name)
+              assert record[-1]=="FALSE",name
+          callable_gaps=sum(r[-1]=="TRUE" for r in gaps[1:])
+          other_gaps=sum(r["unresolved"]=="TRUE" for r in other)
+          assert callable_gaps==46,callable_gaps
+          assert other_gaps==1,other_gaps
+          assert 508-callable_gaps-other_gaps==461
+          print("461/508 provisional scoped reviews; 46 callable + 1 noncallable open, independently certified 0")
+          PY
+  three-os-native:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      ET_RUN_PYTHON_TESTS: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+      - name: Validate FPCR prediction plot source and previously qualified geometry
+        shell: bash
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          testthat::test_local(".",
+            filter="native-fpcr-two-prediction-artists-20261112|native-fpcr-inference-plots|native-fpca-three-inference-artists-20261112|full-native-r-parity-ledger",
+            reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
+  frozen-python-1-2:
+    runs-on: ubuntu-latest
+    env:
+      ET_RUN_PYTHON_TESTS: "true"
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        id: python
+        with:
+          python-version: "3.12"
+      - run: python -m pip install "eyetrajectoriespy==1.2.0"
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::pkgload
+            any::testthat
+            any::reticulate
+      - name: Compare native intervals and frozen Python source Matplotlib errorbar and scatter geometry
+        shell: bash
+        env:
+          RETICULATE_PYTHON: ${{ steps.python.outputs.python-path }}
+        run: |
+          Rscript - <<'RSCRIPT'
+          pkgload::load_all(".",quiet=TRUE)
+          stopifnot(identical(et_python_version(),"1.2.0"))
+          testthat::test_local(".",
+            filter="native-fpcr-two-prediction-artists-20261112|native-fpcr-inference-plots",
+            reporter="summary",stop_on_failure=TRUE)
+          RSCRIPT
