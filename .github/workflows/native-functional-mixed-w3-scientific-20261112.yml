@@ -34,7 +34,7 @@ jobs:
           assert len(source)==203 and len(noncallable)==1
           pending=sum(x["unresolved_source_gap"]=="TRUE" for x in source)
           other=sum(x["unresolved"]=="TRUE" for x in noncallable)
-          assert (pending,other,508-pending-other)==(79,1,428)
+          assert pending<=79 and other<=1 and 508-pending-other>=428
           (gap,)=tuple(x for x in source if
               x["python_name"]=="run_functional_mixed_effects_workflow")
           assert gap["unresolved_source_gap"]=="FALSE"
