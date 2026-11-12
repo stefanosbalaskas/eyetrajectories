@@ -5,11 +5,18 @@
 #' Copy native trajectory geometry to a backend-independent functional grid
 #' @description Preserves time, values and dimension ordering exactly.
 #'   Returns a native R grid, NOT Python scikit-fda FDataGrid.
+#'   Strict source-scientific mode additionally exposes source constructor
+#'   arguments and one-dimensional normalized grid points without fitting.
 #' @param trajectories Native complete/common-grid trajectory set.
+#' @param strict_source_record Opt-in inspectable Python 1.2 source constructor
+#'   geometry in a native R record; never a Python backend object.
 #' @export
-etr_to_skfda_grid<-function(trajectories){
+etr_to_skfda_grid<-function(trajectories,strict_source_record=FALSE){
+  .etr_assert(is.logical(strict_source_record)&&
+    length(strict_source_record)==1L&&!is.na(strict_source_record),
+    "strict_source_record must be a nonmissing logical scalar")
   etr_validate(trajectories)
-  structure(list(values=trajectories$values,time=trajectories$time,
+  out<-structure(list(values=trajectories$values,time=trajectories$time,
     curve_ids=trajectories$curve_ids,
     dimension_names=trajectories$dimension_names,
     coordinate_system=trajectories$coordinate_system,
@@ -18,6 +25,40 @@ etr_to_skfda_grid<-function(trajectories){
     source_object_type="skfda.FDataGrid_NOT_RETURNED",
     independently_source_certified=FALSE),
     class="etr_native_functional_grid")
+  if(!isTRUE(strict_source_record))return(out)
+  # Frozen Python 1.2 backends.py::to_skfda_grid passes the original
+  # curve-by-time-by-codomain array to FDataGrid without interpolation.
+  # Both source constructor kwargs and the normalized single-domain
+  # grid_points tuple are retained as inspectable R numerical objects.
+  shape<-dim(trajectories$values)
+  .etr_assert(length(shape)==3L&&shape[1L]>=1L&&shape[3L]>=1L,
+    "source scikit-fda scientific grid requires observed curves and channels")
+  .etr_assert(is.numeric(trajectories$values)&&
+    !any(is.infinite(trajectories$values)),
+    "source scientific grid requires finite or explicitly missing values, not infinity")
+  .etr_assert(length(trajectories$curve_ids)==shape[1L]&&
+    length(trajectories$dimension_names)==shape[3L],
+    "source scientific grid curve and coordinate dimensions are inconsistent")
+  canonical<-array(as.numeric(trajectories$values),dim=shape)
+  out$source_constructor<-list(
+    data_matrix=canonical,
+    grid_points=as.numeric(trajectories$time),
+    dataset_name="eyetrajectoriespy trajectories",
+    coordinate_names=as.character(trajectories$dimension_names))
+  out$source_normalized_grid_points<-list(as.numeric(trajectories$time))
+  out$source_domain_range<-matrix(as.numeric(range(trajectories$time)),
+    nrow=1L,ncol=2L)
+  out$source_n_samples<-as.integer(shape[1L])
+  out$source_domain_dimension<-1L
+  out$source_codomain_dimension<-as.integer(shape[3L])
+  out$source_curve_indices<-as.integer(seq_len(shape[1L])-1L)
+  out$interpolation_performed<-FALSE
+  out$backend_object<-NULL
+  out$matplotlib_or_python_object_identity<-FALSE
+  out$source_scientific_geometry_scope<-
+    "source_constructor_data_matrix_grid_points_coordinate_names_only"
+  class(out)<-c("etr_skfda_fdatagrid_scientific_record",class(out))
+  out
 }
 
 #' Project one native functional channel onto an explicit R basis
@@ -136,8 +177,14 @@ etr_detect_functional_outliers_skfda<-function(
 #'   Python FDApy.IrregularFunctionalData instance.
 #' @param trajectories Native irregular trajectory collection.
 #' @param dimension Named irregular functional channel.
+#' @param strict_source_record Opt-in Python 1.2 FDApy constructor-shaped
+#'   zero-based irregular coordinates and values, not a Python backend object.
 #' @export
-etr_to_fdapy_irregular<-function(trajectories,dimension){
+etr_to_fdapy_irregular<-function(trajectories,dimension,
+    strict_source_record=FALSE){
+  .etr_assert(is.logical(strict_source_record)&&
+    length(strict_source_record)==1L&&!is.na(strict_source_record),
+    "strict_source_record must be a nonmissing logical scalar")
   .etr_assert(inherits(trajectories,"etr_irregular_trajectory_set"),
     "trajectories must be a native irregular trajectory collection")
   .etr_irregular_validate_samples(trajectories)
@@ -148,6 +195,47 @@ etr_to_fdapy_irregular<-function(trajectories,dimension){
   .etr_assert(all(vapply(trajectories$values,function(v)
     all(is.finite(v[,d])),logical(1L))),
     "selected irregular dimension must be finite and observed")
+  if(isTRUE(strict_source_record)){
+    # Frozen Python 1.2 sparse.py constructs IrregularArgvals as a dict
+    # of zero-based integer keys -> DenseArgvals(input_dim_0=time.copy())
+    # and IrregularValues with the same keys -> values[:,dimension].
+    # R named lists encode integer keys as character names, while their
+    # original Python integer identity is recorded explicitly.
+    n<-length(trajectories$curve_ids)
+    keys<-as.integer(seq_len(n)-1L)
+    keynames<-as.character(keys)
+    times<-lapply(trajectories$time,as.numeric)
+    vals<-lapply(trajectories$values,
+      function(v)as.numeric(v[,d]))
+    argvals<-setNames(lapply(times,function(t)
+      list(input_dim_0=t)),keynames)
+    data_values<-setNames(vals,keynames)
+    .etr_assert(identical(names(argvals),names(data_values))&&
+      all(vapply(seq_len(n),function(i)
+        identical(length(argvals[[i]]$input_dim_0),
+          length(data_values[[i]])),logical(1L))),
+      "source FDApy irregular argvals/values keys and lengths must agree")
+    return(structure(list(
+      argvals=argvals,values=data_values,
+      python_integer_keys=keys,
+      input_dimension_name="input_dim_0",
+      dimension=dimension,
+      dimension_index_zero_based=as.integer(d-1L),
+      curve_ids=trajectories$curve_ids,
+      source_sample_counts=as.integer(lengths(times)),
+      source_input_curve_order=as.character(trajectories$curve_ids),
+      source_constructor_classes=c(
+        argvals="FDApy.representation.IrregularArgvals",
+        argval_element="FDApy.representation.DenseArgvals",
+        values="FDApy.representation.IrregularValues",
+        result="FDApy.IrregularFunctionalData"),
+      backend_object=NULL,interpolation_performed=FALSE,
+      source_python_object_type="FDApy.IrregularFunctionalData_not_returned",
+      source_equivalent=FALSE,independently_source_certified=FALSE),
+      class=c("etr_fdapy_irregular_scientific_record","list")))
+  }
+  # Historical R adapter feeds fdapace and retains its >=3 visits
+  # requirement. The source scientific record above supports >=2.
   .etr_assert(all(lengths(trajectories$time)>=3L),
     "native fdapace container requires at least 3 samples per curve")
   out<-etr_sparse_curves(trajectories$time,

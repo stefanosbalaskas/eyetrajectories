@@ -27,6 +27,34 @@ by themselves prove source parity. The source-contract review queue is
 an unsigned author-side review artifact; it does not approve scientific
 contracts. All external approvals require genuine independent review.
 }
+\section{Optional Python FData source-constructor geometry in native R}{
+The opt-in \code{etr_to_skfda_grid(trajectories,
+strict_source_record=TRUE)} returns a typed R record of the frozen
+Python 1.2 scikit-fda constructor arguments: unmodified
+curve-by-time-by-coordinate values, source time grid, dataset name and
+coordinate names. It retains the one-domain normalized grid and
+zero-based source curve positions for scientific inspection.
+It does not return a real Python \code{skfda.FDataGrid} instance.
+
+The opt-in \code{etr_to_fdapy_irregular(trajectories,
+dimension, strict_source_record=TRUE)} returns separate irregular
+\code{input_dim_0} sample-time arrays and observed selected-channel
+value arrays under the source zero-based observation keys. Source
+mode accepts legitimate two-visit irregular curves and requires
+finite selected values; all other channels remain unaltered.
+It does not return a real Python \code{FDApy.IrregularFunctionalData}
+instance. The original native \code{fdapace} adapter is the default,
+with its distinct minimum-observation restrictions.
+
+Both opt-in modes preserve observations without interpolation,
+imputation or fitting. Frozen Python source-constructor equivalence
+is limited to these scientific arrays and labels. The actual
+scikit-fda/FDApy backend class methods, projected bases, PACE
+estimators and Python exception objects remain separately unqualified.
+Independent full-contract source certification is pending.
+See \code{docs/native-skfda-fdapy-source-constructor-records-20261112.md}.
+}
+
 \section{Exported entry points}{
 \describe{
 \item{\code{etr_detect_functional_outliers_skfda}}{\emph{detect functional outliers skfda} -- an explicit exported method; consult its R formal arguments and source-contract restrictions.}

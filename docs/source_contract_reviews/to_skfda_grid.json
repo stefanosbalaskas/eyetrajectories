@@ -1,0 +1,63 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "to_skfda_grid",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_NATIVE_SKFDA_FDATAGRID_CONSTRUCTOR_NUMERIC_GEOMETRY",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/backends.py::to_skfda_grid",
+  "native_signature": "etr_to_skfda_grid(trajectories,strict_source_record=TRUE)",
+  "reviewer_statement": "Developer-scoped native R lossless scientific FDataGrid constructor record from frozen Python 1.2: same observed source value array, evaluation grid, declared coordinate order and dataset name. Not skfda.FDataGrid class, backend methods or certified full Python contract.",
+  "native_language_semantic_policy": "Real native R retained scientific constructor arrays; Python optional backend class identity, attributes, methods, exceptions and estimator equivalence deliberately excluded. Original native R behavior remains default.",
+  "native_files": [
+    {
+      "path": "R/native-thirdparty-functional-analogues.R",
+      "sha256": "32c8cc49fa35ef9b9b9783301c083694b0c51ed302090b59af38a0ee9c56ad83"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Frozen public to_skfda_grid(trajectories) validates a common-grid TrajectorySet, imports optional skfda.FDataGrid, then passes unchanged data_matrix, grid_points, coordinate_names and exact source dataset_name.",
+      "path": "tests/testthat/test-native-skfda-fdapy-scientific-records-20261112.R",
+      "sha256": "521aa44f7bd38909dbf660a81427f1e2b5fff6797d3be28caa4708fc1d931262"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Bounded native R complete or explicitly missing common-grid trajectory input, nonempty curves/channels and finite increasing time; source optional dependency import and arbitrary NumPy/pandas class coercions not reproduced.",
+      "path": "tests/testthat/test-native-skfda-fdapy-scientific-records-20261112.R",
+      "sha256": "521aa44f7bd38909dbf660a81427f1e2b5fff6797d3be28caa4708fc1d931262"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "Exact curve-by-time-by-coordinate numerical values, original observation-time grid without resampling, original coordinate order and named dataset, explicit normalized singleton domain-grid and domain_range. Missing samples retained.",
+      "path": "tests/testthat/test-native-skfda-fdapy-scientific-records-20261112.R",
+      "sha256": "521aa44f7bd38909dbf660a81427f1e2b5fff6797d3be28caa4708fc1d931262"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "Reject invalid native trajectory collections, unsupported strict_source_record types and invalid source geometry; Python ImportError, NumPy warnings, FDataGrid construction errors are not equivalent in native R.",
+      "path": "tests/testthat/test-native-skfda-fdapy-scientific-records-20261112.R",
+      "sha256": "521aa44f7bd38909dbf660a81427f1e2b5fff6797d3be28caa4708fc1d931262"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Tagged native R etr_skfda_fdatagrid_scientific_record including source_constructor, normalized source grid, provenance, source indices and explicit backend_object=NULL; not Python skfda.FDataGrid.",
+      "path": "tests/testthat/test-native-skfda-fdapy-scientific-records-20261112.R",
+      "sha256": "521aa44f7bd38909dbf660a81427f1e2b5fff6797d3be28caa4708fc1d931262"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Identity-preserving finite-dimensional functional data conversion with no interpolation, smoothing, basis projection, imputation, fitting, outlier detection or changed observations.",
+      "path": "tests/testthat/test-native-skfda-fdapy-scientific-records-20261112.R",
+      "sha256": "521aa44f7bd38909dbf660a81427f1e2b5fff6797d3be28caa4708fc1d931262"
+    }
+  ],
+  "additional_regression_evidence": [],
+  "independent_review_status": "Provisional six-domain developer-authored scientific constructor audit. No independently certified full contract; executable exact-head R/Python qualification pending.",
+  "language_specific_limits": [
+    "No Python FDataGrid class/attribute methods or actual optional backend object.",
+    "No qualification of real scikit-fda evaluation, integration, metric functions or backend numerical errors.",
+    "Python exception classes and full acceptance/coercion domains remain distinct; independent certification zero."
+  ]
+}
