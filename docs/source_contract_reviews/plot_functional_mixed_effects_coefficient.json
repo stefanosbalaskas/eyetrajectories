@@ -1,0 +1,76 @@
+{
+  "audit_version": "source-contract-v1",
+  "python_name": "plot_functional_mixed_effects_coefficient",
+  "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
+  "scope": "SCOPED_NATIVE_MIXED_COEFFICIENT_POINTWISE_AND_SIMULTANEOUS_SCIENTIFIC_ARTISTS",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
+  "independently_certified": false,
+  "source_location": "src/eyetrajectoriespy/plotting.py::plot_functional_mixed_effects_coefficient",
+  "native_signature": "etr_plot_functional_mixed_effects_coefficient(result,coefficient,strict_source_record=TRUE,...)",
+  "reviewer_statement": "Developer-scoped six-domain source scientific geometry review, not full Python contract certification. Frozen public Python 1.2 differential source tests are authored but no exact-head executable success is witnessed. Underlying Python mixed-model numerical estimator/optimizer parity is outside this plot-only contract.",
+  "native_language_semantic_policy": "Native R typed scientific artist coordinates for supplied mixed coefficient estimates and already-calibrated bands, while preserving default legacy R plots and pointwise Wald numerical outputs.",
+  "native_files": [
+    {
+      "path": "R/native-functional-inference-visuals.R",
+      "sha256": "5176e7fe5c8058006dfb4b66bedeba1774c0f01f12358da754b7638a4b37905d"
+    },
+    {
+      "path": "R/native-mixed-coefficient-scientific-artist.R",
+      "sha256": "821e2236646b54ddf673753c932aed7bd4bda1fc560f8ee0a6faf44875b0d0c0"
+    },
+    {
+      "path": "R/native-eight-nonlinear-scientific-artists.R",
+      "sha256": "f599c9c9f61bb1cf06d8aac73198e7e16c251671c73eedba2484f8263e94d4b8"
+    }
+  ],
+  "case_evidence": [
+    {
+      "kind": "source_signature",
+      "description": "Frozen eyetrajectoriespy==1.2.0 plotting.py::plot_functional_mixed_effects_coefficient signature and two Python runtime branches inspected at commit c1cd95ad718327550f7e55393ff38582872f7a94. Native R adds strict_source_record=TRUE, preserving previous default R pointwise audit graph and numeric return.",
+      "path": "tests/testthat/test-native-mixed-coefficient-scientific-artist-20261112.R",
+      "sha256": "1ff47460688934b91b3c608db95b3aa2f6fddf9849905fa395fe61a70a2899d1"
+    },
+    {
+      "kind": "accepted_input_domain",
+      "description": "Explicit source-shaped native R finite ordered observed-grid mixed coefficient fits or supplied already-calibrated simultaneous-band records; exact coefficient names or zero-based R integer. Matrices must be coefficient-by-time with coherent shapes and source units. Arbitrary Python dataclass identity, injected Python Axes, full optimizer state or exception classes excluded.",
+      "path": "tests/testthat/test-native-mixed-coefficient-scientific-artist-20261112.R",
+      "sha256": "1ff47460688934b91b3c608db95b3aa2f6fddf9849905fa395fe61a70a2899d1"
+    },
+    {
+      "kind": "numerical_outputs",
+      "description": "The frozen source unbanded path uses pointwise z=1.959963984540054 times nonnegative standard errors; the supplied-band path uses its calibrated lower and upper directly, including source confidence percentage and scope. Alpha-0.2 fill is before the coefficient line and dashed zero reference, with original source title, units, labels and legend. New R numeric/domain regression tests and opt-in public frozen Python 1.2 Matplotlib fill polygon/line/legend differential tests are authored but not yet executed at exact head.",
+      "path": "tests/testthat/test-native-mixed-coefficient-scientific-artist-20261112.R",
+      "sha256": "1ff47460688934b91b3c608db95b3aa2f6fddf9849905fa395fe61a70a2899d1"
+    },
+    {
+      "kind": "exception_semantics",
+      "description": "R native errors reject invalid strict switches, noninteger/out-of-range indices, unknown coefficient names, duplicate or non-increasing observed grid, nonfinite estimates/SE/bounds, contradictory simultaneous intervals, missing/invalid confidence_level or scope. Equivalent Python error subclass object identity is intentionally not asserted.",
+      "path": "tests/testthat/test-native-mixed-coefficient-scientific-artist-20261112.R",
+      "sha256": "1ff47460688934b91b3c608db95b3aa2f6fddf9849905fa395fe61a70a2899d1"
+    },
+    {
+      "kind": "returned_schema",
+      "description": "Default native R pointwise 95 percent Wald data.frame and original base-R plot remain. Strict mode returns typed etr_nonlinear_scientific_artist_record with source Matplotlib scientific axes, bounded band endpoints, line/zero artist geometry and legend, not Python matplotlib.axes.Axes or pixel-identical plotting.",
+      "path": "tests/testthat/test-native-mixed-coefficient-scientific-artist-20261112.R",
+      "sha256": "1ff47460688934b91b3c608db95b3aa2f6fddf9849905fa395fe61a70a2899d1"
+    },
+    {
+      "kind": "scientific_estimand",
+      "description": "Plot-only presentation of a previously computed mixed-effects functional coefficient; unbanded pointwise Wald uncertainty is scientifically distinct from an externally supplied simultaneously calibrated band. No mixed likelihood optimizer, covariance model, bootstrap distribution, FPCA, or scientific fitting changes.",
+      "path": "tests/testthat/test-native-mixed-coefficient-scientific-artist-20261112.R",
+      "sha256": "1ff47460688934b91b3c608db95b3aa2f6fddf9849905fa395fe61a70a2899d1"
+    }
+  ],
+  "additional_regression_evidence": [
+    {
+      "path": "tests/testthat/test-native-functional-inference-visuals.R",
+      "sha256": "36154748325092f0e545e19aa88b4c575b7208b1e7aab4425ace3a22376dd8b0"
+    }
+  ],
+  "independent_review_status": "Provisional developer-scoped plotting scientific geometry; 0 independently certified full Python contracts; GitHub exact-head R and Python CI not yet observed green.",
+  "language_specific_limits": [
+    "No Python Matplotlib Axes/Figure object or pixel identity, Python dataclass/pandas full protocol, Python TypeError subclass or arbitrary Axes injection.",
+    "The supplied simultaneous band is not recalibrated; no claim that native mixed-model optimizer or covariance family matches frozen Python.",
+    "Default R estimator and numeric Wald plot behavior are unchanged; this is scientific visualization geometry only."
+  ]
+}
