@@ -2,7 +2,8 @@
 \alias{etr_plot_functional_trial_random_effects}
 \title{Plot nested functional trial random-intercept scientific source artists}
 \usage{
-etr_plot_functional_trial_random_effects(result, participant_id = NULL, max_trials = 12L, strict_source_record = FALSE)
+etr_plot_functional_trial_random_effects(result, participant_id = NULL,
+  max_trials = 12L, strict_source_record = FALSE)
 }
 \arguments{
 \item{result}{Native realized nested trial random-intercept record with first-seen trial IDs and source time values.}
