@@ -1,5 +1,4 @@
 \name{etr_plot_function_on_scalar_coefficients}
-\alias{etr_plot_function_on_scalar_coefficients}
 
 \alias{etr_function_on_scalar_reporting_text}
 
