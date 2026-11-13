@@ -5,15 +5,7 @@
 \description{Plot the native sparse univariate and planar multivariate FPCA fitted
 population objects and original irregular observations, retaining scientific
 coordinate values from the frozen Python 1.2 source. No estimator is refit.}
-\usage{
-etr_plot_sparse_fpca_covariance(result)
-etr_plot_sparse_fpca_component(result, component = 0L, sd_multiplier = 2)
-etr_plot_sparse_mfpca_component(result, component = 0L, sd_multiplier = 2)
-etr_plot_sparse_mfpca_covariance_blocks(result, source = "used")
-etr_plot_sparse_mfpca_cross_covariance(result, source = "used")
-etr_plot_sparse_mfpca_score_diagnostics(result)
-etr_plot_sparse_irregular_dimension(trajectories, dimension)
-}
+
 \arguments{
 \item{result}{Explicit native R-list fitted sparse FPCA or MFPCA record
 with grid, covariance, eigenfunctions, uncertainty and dimensions.}
