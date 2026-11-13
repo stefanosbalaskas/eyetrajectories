@@ -15,9 +15,8 @@ etr_fpca_wild_bootstrap_family_test_monte_carlo_diagnostics(
 bootstrap projections, studentized roots, observed family statistics,
 rejection decisions and precomputed intervals where required.}
 \item{confidence_level}{Diagnostic confidence level strictly inside (0,1).}
-\item{max_targets}{Positive integer number of fixed targets displayed.}
-\item{show_targetwise}{Nonmissing boolean: include unadjusted targetwise
-intervals or tail probabilities.}
+
+
 }
 \value{The numerical function returns an R scientific list of source-named
 raw exceedance counts, exceedances/B probabilities, Monte Carlo standard
