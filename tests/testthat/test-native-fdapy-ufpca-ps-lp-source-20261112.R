@@ -369,7 +369,7 @@ for smoother,kwm,kwc in (
     # then test true public frozen score numerical values.
     matches<-vapply(got$eigenvalues,function(value)
       which.min(abs(py_lambda-value)),integer(1L))
-    expect_false(anyDuplicated(matches),info=mode)
+    expect_identical(anyDuplicated(matches),0L,info=mode)
     for(k in seq_along(matches)){
       sign_k<-sign(sum(got$scores[,k]*py_scores[,matches[k]]))
       if(sign_k==0)sign_k<-1
