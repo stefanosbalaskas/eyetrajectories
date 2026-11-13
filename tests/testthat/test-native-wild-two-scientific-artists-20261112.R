@@ -78,7 +78,7 @@ test_that("Monte Carlo precision native artist preserves both fixed-family error
       max_targets=1L,show_targetwise=FALSE,strict_source_record=TRUE)
     expect_length(no$axes[[1L]]$artists,2L)
     expect_identical(no$axes[[1L]]$legend_labels,
-      c("maxT tail probability","alpha=0.05"))
+      c("alpha=0.05","maxT tail probability"))
     expect_equal(no$axes[[1L]]$artists[[1L]]$xdata,0)
     # Backward compatible default R numerical geometry.
     base<-etr_plot_fpca_wild_bootstrap_monte_carlo_diagnostics(mc,
