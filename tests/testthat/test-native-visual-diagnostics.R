@@ -31,7 +31,7 @@ test_that("registered public plotting names remain uncertified", {
   expect_gte(sum(z$native_implementation_started),211L)
   expect_gte(sum(z$named_native_candidate&z$is_python_function),236L)
   expect_lte(sum(z$is_python_function&!z$named_native_candidate),144L)
-  expect_equal(sum(z$contract_certification_candidate),4L)
+  expect_equal(sum(z$contract_certification_candidate),5L)
   expect_equal(sum(z$contract_numerical_fixture_pass),4L)
   expect_equal(sum(z$one_to_one_native_contract_complete),0L)
   expect_identical(started,reticulate::py_available(initialize=FALSE))
