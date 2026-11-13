@@ -108,11 +108,12 @@ def source_queue(packet: Path, head: str) -> list[dict[str, str]]:
     check(sum(r["kind"] == "function" for r in queue) == 380 and
           sum(r["kind"] != "function" for r in queue) == 128,
           "Expected 380 frozen callable + 128 nonfunction exports")
+    gap_counts = source_gap_inventory.read_inventory()
     check(sum(r["source_gap_open"] == "TRUE" and r["kind"] == "function"
-              for r in queue) == source_gap_inventory.read_inventory().active_callable and
+              for r in queue) == gap_counts.active_callable and
           sum(r["source_gap_open"] == "TRUE" and r["kind"] != "function"
-              for r in queue) == 1,
-          "Recorded 201 callable and 1 nonfunction differences changed")
+              for r in queue) == gap_counts.active_nonfunction,
+          "Callable/nonfunction author gap flags differ from live ledger")
     for row in queue:
         check(row["recorded_r_git_head"] == head and
               row["frozen_python_commit"] == baseline.FROZEN_PYTHON and
@@ -159,7 +160,8 @@ def build(packet_dir: str | Path, head: str):
             "r_git_head":head, "frozen_python_commit":baseline.FROZEN_PYTHON,
             "source_queue_sha256":baseline.sha256(packet / baseline.FILES[0]),
             "export_count":508, "function_count":380, "nonfunction_count":128,
-            "documented_callable_gaps":source_gap_inventory.read_inventory().active_callable, "documented_nonfunction_gaps":1,
+            "documented_callable_gaps":source_gap_inventory.read_inventory().active_callable,
+            "documented_nonfunction_gaps":source_gap_inventory.read_inventory().active_nonfunction,
             "wave_count":15, "review_criterion_count":508*len(baseline.CRITERIA),
             "signatures":"NONE", "independent_certifications":0,
             "registry_modified":False, "files_sha256":checksums,
@@ -193,7 +195,7 @@ def verify(packet_dir: str | Path, head: str):
           meta["export_count"] == 508 and meta["function_count"] == 380 and
           meta["nonfunction_count"] == 128 and
           meta["documented_callable_gaps"] == source_gap_inventory.read_inventory().active_callable and
-          meta["documented_nonfunction_gaps"] == 1 and
+          meta["documented_nonfunction_gaps"] == source_gap_inventory.read_inventory().active_nonfunction and
           meta["wave_count"] == 15 and
           meta["review_criterion_count"] == 508*len(baseline.CRITERIA) and
           meta["signatures"] == "NONE" and
