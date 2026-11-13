@@ -24,37 +24,37 @@
       "kind": "source_signature",
       "description": "Frozen Python 1.2 src/eyetrajectoriespy/workflows/_sparse_async.py::run_sparse_mfpca_async_workflow, 10-field Python SparseMFPCAAsyncWorkflowResult analogue with 21 ordered config fields, seven decisions, seven source provenance fields, truly measured R fit step, source score table and optional observation diagnostics. Python object/dataclass class identity not duplicated.",
       "path": "tests/testthat/test-native-sparse-mfpca-paired-async-w2-source-20261112.R",
-      "sha256": "da14caaf8ade3df5a4a6b4efdd3c5ff8483aa2f502545c0d60719b809dd24784"
+      "sha256": "e16187253ede7fbb209ba828cb532a2989648400e19b50511a5f5f12cc3ae96e"
     },
     {
       "kind": "accepted_input_domain",
       "description": "Native irregular union-time trajectories with coordinate-specific NaN missingness, finite observed scalar entries, explicit fixed bandwidths, joint PSD and score controls, same-time tolerance >= 0, diagonal/fixed-matrix noise; native_covariance backend only, optional observation-process candidate denominator.",
       "path": "tests/testthat/test-native-sparse-mfpca-paired-async-w2-source-20261112.R",
-      "sha256": "da14caaf8ade3df5a4a6b4efdd3c5ff8483aa2f502545c0d60719b809dd24784"
+      "sha256": "e16187253ede7fbb209ba828cb532a2989648400e19b50511a5f5f12cc3ae96e"
     },
     {
       "kind": "numerical_outputs",
       "description": "Direct frozen Python 1.2 async workflow comparison constructs full Python SparseMFPCAAsyncWorkflowConfig with real original union-time sparse samples, correlated measurement covariance and 24-curve source fit; compares source scientific outer fields, decisions/provenance, mean/eigenfunctions/scores and covariance blocks, and source score tables. Earlier direct fit differential covers support, same-time and noise; new CI not yet proven green.",
       "path": "tests/testthat/test-native-sparse-mfpca-paired-async-w2-source-20261112.R",
-      "sha256": "da14caaf8ade3df5a4a6b4efdd3c5ff8483aa2f502545c0d60719b809dd24784"
+      "sha256": "e16187253ede7fbb209ba828cb532a2989648400e19b50511a5f5f12cc3ae96e"
     },
     {
       "kind": "exception_semantics",
       "description": "Reject alternative marginal fdapace, malformed strict flag, unsupported source configurations, invalid empty union timestamp rows, nonfinite observations, negative same-time tolerance, invalid fixed noise covariance and unsupported analysis support. Python dataclass and exact exception class identity are not claimed.",
       "path": "tests/testthat/test-native-sparse-mfpca-paired-async-w2-source-20261112.R",
-      "sha256": "da14caaf8ade3df5a4a6b4efdd3c5ff8483aa2f502545c0d60719b809dd24784"
+      "sha256": "e16187253ede7fbb209ba828cb532a2989648400e19b50511a5f5f12cc3ae96e"
     },
     {
       "kind": "returned_schema",
       "description": "10-field Python SparseMFPCAAsyncWorkflowResult analogue with 21 ordered config fields, seven decisions, seven source provenance fields, truly measured R fit step, source score table and optional observation diagnostics. Python object/dataclass class identity not duplicated.",
       "path": "tests/testthat/test-native-sparse-mfpca-paired-async-w2-source-20261112.R",
-      "sha256": "da14caaf8ade3df5a4a6b4efdd3c5ff8483aa2f502545c0d60719b809dd24784"
+      "sha256": "e16187253ede7fbb209ba828cb532a2989648400e19b50511a5f5f12cc3ae96e"
     },
     {
       "kind": "scientific_estimand",
       "description": "Directional covariance smoothing from separate original x/y observation times on exact union timestamps; genuinely asynchronous sparse joint PACE, correlated measurement noise only for simultaneous observations, explicit same_time_tolerance, no raw resynchronization, binning or interpolation, no selector.",
       "path": "tests/testthat/test-native-sparse-mfpca-paired-async-w2-source-20261112.R",
-      "sha256": "da14caaf8ade3df5a4a6b4efdd3c5ff8483aa2f502545c0d60719b809dd24784"
+      "sha256": "e16187253ede7fbb209ba828cb532a2989648400e19b50511a5f5f12cc3ae96e"
     }
   ],
   "independent_review_status": "Developer provisional six-domain source scientific review only. CI tests pending/not observed green. No external independent certification.",
