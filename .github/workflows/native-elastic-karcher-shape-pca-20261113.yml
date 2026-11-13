@@ -7,6 +7,8 @@ on:
       - "DESCRIPTION"
       - "man/etr_fit_elastic_fpca.Rd"
       - "tests/testthat/test-native-elastic-fdasrvf-karcher-pca-20261113.R"
+      - "tests/testthat/test-native-elastic-source-normalization-ablation-20261113.R"
+      - "tests/testthat/test-native-elastic-final-second-pass-ablation-20261113.R"
       - "tests/testthat/test-native-final-sparse-elastic-analogues.R"
       - "docs/native-elastic-fdasrvf-karcher-source-20261113.md"
       - "docs/source_contract_reviews/fit_elastic_fpca.json"
@@ -175,6 +177,6 @@ jobs:
           stopifnot(identical(et_python_version(),"1.2.0"))
           stopifnot(utils::packageVersion("fdasrvf") >= package_version("2.5.1"))
           testthat::test_local(".",
-            filter="native-elastic-fdasrvf-karcher-pca-20261113|native-elastic-source-normalization-ablation-20261113",
+            filter="native-elastic-fdasrvf-karcher-pca-20261113|native-elastic-source-normalization-ablation-20261113|native-elastic-final-second-pass-ablation-20261113",
             reporter="summary",stop_on_failure=TRUE)
           RSCRIPT
