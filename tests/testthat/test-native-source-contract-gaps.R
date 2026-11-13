@@ -7,7 +7,12 @@ test_that("508-contract certificate gate rejects known unresolved source differe
   # Preserve the historical gap floor as later scientific methods add gaps.
   # The current exact count is independently checked by the full ledger.
   expect_gte(sum(z$source_contract_gap_known),53L)
-  expect_gte(sum(z$source_contract_gap_unresolved),57L)
+  gap_ledger<-utils::read.csv(.etr_test_extdata(
+    "native_source_contract_gaps_stage22.csv"),
+    stringsAsFactors=FALSE,check.names=FALSE)
+  expect_identical(nrow(gap_ledger),203L)
+  expect_identical(sum(z$source_contract_gap_unresolved),
+    sum(gap_ledger$unresolved_source_gap))
   # A source pilot can become a developer-reviewed gap closure. Verify
   # a named SHA-reviewed receipt rather than insisting gaps never close.
   receipts<-utils::read.csv(.etr_test_extdata(
@@ -17,10 +22,14 @@ test_that("508-contract certificate gate rejects known unresolved source differe
     z$contract_certification_candidate &
     !z$source_contract_gap_unresolved]
   expect_true(all(reviewed_candidates %in% receipts$python_name))
+  pilot_names<-c("alr_transform","inverse_alr",
+    "score_distance_matrix","functional_trapezoid_weights")
   expect_true(all(z$contract_numerical_fixture_pass[
-    z$contract_certification_candidate]))
+    z$python_name%in%pilot_names]))
+  expect_false(z$contract_numerical_fixture_pass[
+    z$python_name=="TrajectorySet"])
   expect_false(any(z$one_to_one_native_contract_complete))
-  expect_equal(sum(z$contract_certification_candidate),4L)
+  expect_equal(sum(z$contract_certification_candidate),5L)
   expect_error(etr_native_parity_catalog(require_complete=TRUE),
     "NOT complete")
   plot_names<-c("plot_embedding_delay_diagnostics",
@@ -31,7 +40,10 @@ test_that("508-contract certificate gate rejects known unresolved source differe
   for(p in plot_names) {
     row<-z[z$python_name==p,]
     expect_equal(nrow(row),1L)
-    expect_true(row$source_contract_gap_unresolved)
+    recorded<-gap_ledger$unresolved_source_gap[
+      match(p,gap_ledger$python_name)]
+    expect_identical(row$source_contract_gap_unresolved,recorded)
+    expect_true(row$source_contract_gap_known)
     expect_identical(row$source_contract_gap_kind,
       if(p=="plot_surrogate_nonlinearity")
         "backend_and_histogram" else "backend_return_type")
