@@ -1,5 +1,5 @@
-\name{etr_plot_reconstruction_curve}
-\alias{etr_plot_reconstruction_curve}
+\name{etr_functional_registration_plots}
+\alias{etr_functional_registration_plots}
 
 \title{Native functional reconstruction and landmark registration visualization}
 \description{
