@@ -153,3 +153,60 @@ testthat::test_local(".",
 ```
 
 The first test explicitly checks source input-q RMSE relative to the actual Python backend at <1e-10 **for this fixture only**. The ablation test retains independent historical unscaled R comparison and evaluates corrected production. Numerical differences beyond this source primitive must be reported; independent full source certification is still **FALSE**.
+
+## Post-fix native R strict-DP qualification — user-reported successful run (13 November 2026)
+
+The user updated to the corrected native R scientific branch and ran the source syntax audit and **both real Python/native R suites**. Output:
+
+- `R syntax audit: 587 files checked; 0 failures`.
+- Both `native-elastic-fdasrvf-karcher-pca-20261113` and `native-elastic-source-normalization-ablation-20261113` completed with no reported failures or skips.
+- Frozen Python `eyetrajectoriespy==1.2.0`/real `fdasrsf` logged three Karcher mean updates. Normalized input SRVF source test passed; Python versus R source-q RMSE remained `1.20896827424e-16`.
+- **Production `aligned` now uses original-coordinate reparameterization**, and the experimental parity check returned `production_matches_normalized_gamma = 1`.
+- These are **user-provided local console test results**, not an independent run or GitHub CI certification.
+
+### Source numerical discrepancies after the correction
+
+| Measure | Historical native (pre-fix) | Corrected native (post-fix) |
+| --- | ---: | ---: |
+| `warp_rmse` | 0.0919100238219 | **0.0278712543617** |
+| `warp_max_abs` | 0.15 | **0.047619047619** |
+| `aligned_centered_rmse` | 0.251928599932 | **0.0780389883486** |
+| `karcher_mean_centered_rmse` | 0.505506516285 | **0.0160952333561** |
+| `score_pairwise_distance_rmse` | 0.598456909462 | **0.0909911011504** |
+| Score-distance correlation | 0.74394476905 | **0.864297947803** |
+| Optimal single-score-scale factor (diagnostic only) | 0.394261201935 | 0.896141313567 |
+
+Additional post-fix user-observed decomposition:
+
+```text
+python_warp_deformation_rmse = 0.0716371422101
+r_warp_deformation_rmse = 0.0510606233319
+input_centered_coordinate_rms = 0.633874698048
+python_aligned_centered_coordinate_rms = 0.624634935802
+python_mean_centered_coordinate_rms = 0.129183035705
+python_score_pair_distance_rms = 0.397694347192
+optimally_rescaled_score_pair_distance_rmse = 0.0789860875754
+per_curve_warp_rmse = 0.02892314564, 0.0289275916, 0.02516808574, 0.02733904517, 0.02702166798, 0.02960507622
+per_curve_aligned_centered_rmse = 0.0856243615, 0.08185063172, 0.06895427762, 0.07375912535, 0.0721330376, 0.0843277471
+independently_numeric_parity_certified = FALSE
+```
+
+The corrected native R implementation now agrees with a *specific* Python source primitive (initial normalized SRVFs) and reduces numerical differences substantially. Nonetheless, a maximum normalized time-warp discrepancy of `0.047619047619` remains, and PCA distance correlation remains below 1. **Do not claim full numerical parity or independent certification.**
+
+## Next source ablation: final second SRVF alignment, not yet executed
+
+Frozen Python `fdasrsf.fdacurve.srvf_align` applies a fresh, final DP registration **after** Karcher mean fitting. The R `fdasrvf::multivariate_karcher_mean` returns the alignment reached in its last Karcher iteration. The upstream R package also provides the genuine `fdasrvf::multiple_align_multivariate(beta, mu, scale=TRUE, rotation=FALSE, ncores=1)` which aligns to an externally supplied mean.
+
+A new opt-in test `tests/testthat/test-native-elastic-final-second-pass-ablation-20261113.R` measures a true **second R registration against the converged Karcher mean**, comparing actual phase warps, centered original-coordinate-aligned trajectories, mean q and aligned q against the real frozen Python public result. It does not modify the production numerical path until the measured effect is known. It also preserves the critical source distinction that Python `shape_pca` uses Karcher-stage shooting vectors **before** the separate `srvf_align` final pass; native tangent covariance must not be silently recomputed after second registration.
+
+Run with `ET_RUN_PYTHON_ELASTIC_TESTS="true"` and a working managed Python environment:
+
+```r
+source("scripts/check_all_r_syntax.R")
+pkgload::load_all(".",quiet=TRUE)
+testthat::test_local(".",
+  filter="native-elastic-final-second-pass-ablation-20261113",
+  reporter="summary",stop_on_failure=TRUE)
+```
+
+Expected output heading: `ELASTIC_PYTHON12_NATIVE_R_FINAL_ALIGNMENT_ABLATION`. **No values from this experiment are yet known.**
