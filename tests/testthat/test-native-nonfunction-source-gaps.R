@@ -54,7 +54,14 @@ test_that("native TrajectorySet represented only as partial S3 class candidate",
   trajectory<-mapped[mapped$python_name=="TrajectorySet",,drop=FALSE]
   expect_identical(nrow(trajectory),1L)
   expect_identical(trajectory$native_representation,"etr_trajectory_set")
-  expect_true(all(mapped$evidence_state=="not_reviewed"))
+  # The TrajectorySet row has a bounded author-scoped review; the 31
+  # workflow representations remain unreviewed. Neither state means
+  # an independent source-contract approval.
+  expect_identical(trajectory$evidence_state,"author_scoped_reviewed")
+  expect_identical(sum(mapped$evidence_state=="author_scoped_reviewed"),1L)
+  expect_identical(sum(mapped$evidence_state=="not_reviewed"),31L)
+  expect_true(all(mapped$evidence_state%in%
+    c("not_reviewed","author_scoped_reviewed")))
   expect_false(any(mapped$numerical_or_value_approved))
   expect_false(any(mapped$schema_boundary_approved))
   expect_false(any(mapped$scientific_scope_approved))
