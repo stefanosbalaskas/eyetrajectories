@@ -2,7 +2,8 @@
 \alias{etr_plot_function_on_scalar_coefficients}
 \title{Plot function-on-scalar coefficient and optional source simultaneous-band artists}
 \usage{
-etr_plot_function_on_scalar_coefficients(result, coefficient, dimension = NULL, band = NULL, strict_source_record = FALSE, ...)
+etr_plot_function_on_scalar_coefficients(result, coefficient, dimension = NULL,
+  band = NULL, strict_source_record = FALSE, ...)
 }
 \arguments{
 \item{result}{Native precomputed observed-grid FoSR fit. In strict source mode a native simultaneous-band result may also be supplied as the primary result.}
