@@ -226,10 +226,14 @@ test_that("FDApy full-fit and earlier fixed-spectrum conditional-score paths rem
 test_that("native FDApy full fit rejects unvalidated modes instead of fabricating backend parity",{
   fx<-.etr_fdapy_native_fit_fixture()
   go<-function(...){
-    etr_fit_sparse_fpca_fdapy(fx$trajectories,"x",
+    args<-list(fx$trajectories,"x",
       n_components=1L,strict_source_record=TRUE,
       kwargs_mean=fx$kwargs_mean,
-      kwargs_covariance=fx$kwargs_covariance,...)
+      kwargs_covariance=fx$kwargs_covariance)
+    overrides<-list(...)
+    if(length(overrides))
+      args[names(overrides)]<-overrides
+    do.call(etr_fit_sparse_fpca_fdapy,args)
   }
   expect_error(go(normalize=TRUE),"normalize=FALSE")
   expect_error(go(fit_smoothing=NULL),"PS or LP")
