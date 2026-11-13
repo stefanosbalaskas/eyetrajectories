@@ -47,6 +47,24 @@ test_that("FDApy univariate PS basis matches source uniform unclamped B-spline g
   expect_error(.etr_fdapy_ps_basis(x,degree=0L),"degree")
 })
 
+test_that("FDApy irregular PS mean honors source last-write and zero-weight cells",{
+  # FDApy's _format_data overwrites earlier values at duplicate times.
+  # The final zero at t=.6 is a zero-weight cell, not an earlier-value
+  # fallback. The fit domain remains the FULL pooled observation grid.
+  x<-c(0,.2,.4,.6,.8,1,.2,.6)
+  y<-c(4,5,6,7,8,9,10,0)
+  grid<-seq(0,1,length.out=11L)
+  got<-.etr_fdapy_ps_irregular_mean(x,y,grid,
+    penalty=.4,n_segments=4L,degree=3L)
+  expected<-.etr_fdapy_ps_1d(c(0,.2,.4,.8,1),
+    c(4,10,6,8,9),grid,penalty=.4,n_segments=4L,degree=3L)
+  expect_equal(got,expected,tolerance=1e-12)
+  # A single observation per unique time must remain an ordinary PS fit.
+  expect_equal(.etr_fdapy_ps_irregular_mean(c(0,.2,.4,.8,1),
+    c(4,10,6,8,9),grid,penalty=.4,n_segments=4L,degree=3L),
+    expected,tolerance=1e-12)
+})
+
 test_that("source FDApy mean PS and local-polynomial smoothers reproduce known mathematical truths",{
   x<-seq(0,1,length.out=17L)
   y<-1+2*x
