@@ -68,7 +68,7 @@
   # Cache Git blob hashes to avoid re-running Git for every reviewer record.
   blob_hashes<-new.env(parent=emptyenv())
   blob_sha<-function(p){
-    key<-gsub("[^A-Za-z0-9]","_",p)
+    key<-p  # exact repository path is a valid environment key; no collisions
     if(exists(key,envir=blob_hashes,inherits=FALSE))
       return(get(key,envir=blob_hashes,inherits=FALSE))
     tmp<-tempfile("et_review_blob_")
