@@ -209,4 +209,32 @@ testthat::test_local(".",
   reporter="summary",stop_on_failure=TRUE)
 ```
 
-Expected output heading: `ELASTIC_PYTHON12_NATIVE_R_FINAL_ALIGNMENT_ABLATION`. **No values from this experiment are yet known.**
+Expected output heading: `ELASTIC_PYTHON12_NATIVE_R_FINAL_ALIGNMENT_ABLATION`. The experiment has now been executed locally; see the user-supplied observations immediately below.
+
+## Observed result — second-pass alignment does NOT improve Python agreement (13 November 2026)
+
+The user reports `R syntax audit: 588 files checked; 0 failures`, `pkgload::load_all(".",quiet=TRUE)` succeeded, and `testthat::test_local(...,filter="native-elastic-final-second-pass-ablation-20261113",stop_on_failure=TRUE)` completed **without reported failures**. This is local user-provided evidence and has not been independently reproduced in CI.
+
+```text
+ELASTIC_PYTHON12_NATIVE_R_FINAL_ALIGNMENT_ABLATION
+  r_karcher_vs_python_final_mean_q_rmse = 0.127250697308
+  r_first_pass_vs_python_warp_rmse = 0.0278712543617
+  r_second_pass_vs_python_warp_rmse = 0.0281859285091
+  r_first_pass_vs_python_warp_max = 0.047619047619
+  r_second_pass_vs_python_warp_max = 0.047619047619
+  r_first_vs_second_warp_rmse = 0.00107831617582
+  r_first_pass_vs_python_aligned_centered_rmse = 0.0780389883486
+  r_second_pass_vs_python_aligned_centered_rmse = 0.0793224563463
+  r_first_pass_vs_python_aligned_q_rmse = 0.129940615528
+  r_second_pass_vs_python_aligned_q_rmse = 0.131862700392
+  r_second_pass_mean_q_vs_python_rmse = 0.128039967147
+  r_second_pass_mean_curve_vs_python_centered_rmse = 0.0164804566255
+  per_curve_first_warp_rmse = 0.02892314564, 0.0289275916, 0.02516808574, 0.02733904517, 0.02702166798, 0.02960507622
+  per_curve_second_warp_rmse = 0.02971919334, 0.0289275916, 0.02516808574, 0.02733904517, 0.02702166798, 0.0305878557
+  python_pca_scores_remain_karcher_stage = TRUE
+  source_numeric_parity_certified = FALSE
+```
+
+**Decision from the observed numerical ablation:** **do not introduce an unconditional second `multiple_align_multivariate` pass into the public native R function.** On this fixture it produces a slightly worse phase-warp RMSE (0.0278713 → 0.0281859), centered aligned-coordinate RMSE (0.0780390 → 0.0793225) and SRVF RMSE (0.1299406 → 0.1318627). The second pass changes R warps very little (first-versus-second RMSE 0.0010783). Because the test does not isolate Karcher initialization, DP implementation or the exact mean-update trajectory, **it does not prove which source difference causes the residual discrepancy**.
+
+The remaining scientific target is a source-controlled test of Karcher first-curve versus medoid initialization and the DP optimizer, *or* well-defined independently validated scientific tolerances for algorithmic alternatives. Keep the passing bounded native R method unchanged until there is a numerical rationale and validation for changing it. Explicitly preserve the unclosed `Python_explicit_second_srvf_align_and_curve_reconstruction` and `full_numeric_qualification_and_broad_data_domain` subcontracts.
