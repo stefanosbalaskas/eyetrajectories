@@ -2,7 +2,8 @@
 \alias{etr_plot_windowed_rqa}
 \title{Plot selected time-varying RQA metrics using source scientific artists}
 \usage{
-etr_plot_windowed_rqa(result, metrics = c("recurrence_rate", "determinism", "laminarity"), strict_source_record = FALSE, ...)
+etr_plot_windowed_rqa(result, metrics = c("recurrence_rate", "determinism",
+  "laminarity"), strict_source_record = FALSE, ...)
 }
 \arguments{
 \item{result}{Native windowed recurrence quantification result on its physical time grid.}\item{metrics}{Character vector of selected, distinct existing metric columns in source order.}\item{strict_source_record}{Logical scalar for native source scientific artist geometry.}\item{...}{Legacy base R graphics options.}
