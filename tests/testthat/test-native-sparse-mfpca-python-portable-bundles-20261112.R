@@ -85,7 +85,9 @@ test_that("portable fixed-mode W2 workflow retains nested fitted scientific stat
     file.path(output,"result"))
   expect_identical(snapshot$result_type,
     "eyetrajectoriespy.workflows._sparse_mfpca.SparseMFPCAWorkflowResult")
-  expect_identical(names(snapshot$payload)[-1L],
+  # Frozen portable_results.py writes JSON with sort_keys=True;
+  # round-tripped mapping order is lexical, not dataclass field order.
+  expect_setequal(names(snapshot$payload)[-1L],
     names(f$workflow))
   expect_identical(snapshot$payload$fit[["__python_type__"]],
     "eyetrajectoriespy.types.SparseMFPCAResult")
@@ -102,7 +104,7 @@ test_that("portable fixed-mode W2 workflow retains nested fitted scientific stat
   expect_true(is.finite(snapshot$payload$steps[[1L]]$elapsed_seconds))
   expect_identical(snapshot$payload$config[["__python_type__"]],
     "eyetrajectoriespy.workflows._sparse_mfpca.SparseMFPCAWorkflowConfig")
-  expect_identical(names(snapshot$payload$config)[-1L],
+  expect_setequal(names(snapshot$payload$config)[-1L],
     names(f$workflow$config))
   expect_identical(snapshot$payload$provenance,
     f$workflow$provenance)
@@ -175,7 +177,8 @@ def _spm_validate_portable(fitdir,bundledir,score0,source_field_count):
     w=et.load_portable_result(root/manifest['portable_result_directory'])
     def assert_source(payload,cls):
         assert payload['__python_type__']==cls.__module__+'.'+cls.__qualname__
-        assert list(payload)[1:]==[field.name for field in fields(cls)]
+        assert set(payload)-{'__python_type__'}=={field.name for field in fields(cls)}
+        assert len(payload)==len(fields(cls))+1
     assert_source(f.payload,et.SparseMFPCAResult)
     assert len(fields(et.SparseMFPCAResult))==source_field_count==29
     assert np.isclose(f.payload['scores'][0,0],score0)
