@@ -9,18 +9,7 @@ wild-bootstrap projection intervals, future-outcome prediction,
 conditional-mean uncertainty, simultaneous and pointwise slope bands,
 and sparse PACE score-system conditioning.
 }
-\usage{
-etr_plot_fpca_wild_bootstrap_projection(result, max_targets = 30L)
-etr_plot_fpca_regression_future_prediction_interval(
-  result, max_targets = 30L
-)
-etr_plot_fpca_regression_mean_prediction_uncertainty(
-  result, max_targets = 30L
-)
-etr_plot_fpca_regression_slope_band(result, dimension = NULL)
-etr_plot_fpca_regression_slope_uncertainty(result, dimension = NULL)
-etr_plot_sparse_fpca_score_diagnostics(result)
-}
+
 \arguments{
 \item{result}{Named native record of previously computed source-compatible
 FPCR or sparse PACE quantities; no estimator is run.}
