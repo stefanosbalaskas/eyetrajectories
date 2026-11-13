@@ -117,16 +117,17 @@ def _validate_reviewed_closures(
         resolved: set[str]) -> set[str]:
     """Require separate full-domain author review; never infer approval."""
     git_sha_cache: dict[str, str | None] = {}
-    git_clean: list[bool | None] = [None]
+    git_diff_cache: dict[str, bool] = {}
 
     def verified_sha(path: Path, expected: str, message: str) -> None:
         """Hash real checkout bytes, except a clean, canonical Git CRLF checkout.
 
         On Windows with core.autocrlf, checkout text can have CRLF even while
         the signed review receipt pins LF Git HEAD bytes. Accept that *only*
-        when (1) CRLF->LF yields the exact SHA256, (2) the whole tracked
-        checkout is clean, and (3) HEAD:path bytes hash to the same pinned
-        SHA256. No stale/modified proof is silently repinned or approved.
+        when (1) CRLF->LF yields the exact SHA256, (2) this tracked file
+        differs from HEAD only by Git's checkout newline conversion, and
+        (3) HEAD:path bytes hash to the same pinned SHA256. Other unrelated
+        tracked changes cannot affect this independent file proof.
         """
         payload = path.read_bytes()
         if hashlib.sha256(payload).hexdigest() == expected:
@@ -135,23 +136,26 @@ def _validate_reviewed_closures(
         if (normalized == payload or
                 hashlib.sha256(normalized).hexdigest() != expected):
             raise SourceGapInventoryError(message)
-        if git_clean[0] is None:
-            try:
-                status = subprocess.run(
-                    ["git", "-C", str(root), "status", "--porcelain",
-                     "--untracked-files=no"],
-                    check=False, stdout=subprocess.PIPE,
-                    stderr=subprocess.PIPE, timeout=30)
-                git_clean[0] = status.returncode == 0 and not status.stdout
-            except (OSError, subprocess.TimeoutExpired):
-                git_clean[0] = False
-        if not git_clean[0]:
-            raise SourceGapInventoryError(message +
-                " (CRLF normalization cannot authorize a dirty checkout)")
         try:
             relative = path.relative_to(root).as_posix()
         except ValueError as error:
             raise SourceGapInventoryError(message) from error
+        if relative not in git_diff_cache:
+            try:
+                # --quiet compares canonical Git content, not worktree stats.
+                # On some Windows setups 'git status --porcelain' reports M
+                # for EOL-only files even while git diff HEAD is empty.
+                diff = subprocess.run(
+                    ["git", "-C", str(root), "diff", "--quiet",
+                     "HEAD", "--", relative],
+                    check=False, stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE, timeout=30)
+                git_diff_cache[relative] = diff.returncode == 0
+            except (OSError, subprocess.TimeoutExpired):
+                git_diff_cache[relative] = False
+        if not git_diff_cache[relative]:
+            raise SourceGapInventoryError(message +
+                " (Git HEAD comparison rejected changed source evidence)")
         if relative not in git_sha_cache:
             try:
                 blob = subprocess.run(
