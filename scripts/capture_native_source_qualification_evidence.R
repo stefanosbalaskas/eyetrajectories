@@ -442,6 +442,40 @@ if(any(failed_tooling)){
 message("Author-side Python reviewer integrity suites PASS: ",
   tooling_log_path," (this is NOT independent scientific certification).")
 
+# A PASS on intentionally synthetic tamper/signature packet tests does NOT
+# establish the real historical six-domain source evidence is current.
+# Run the unmocked authoritative ledger before expensive numerical replay.
+# Changed production/test bytes must keep this entire scientific gate red
+# until the original reviews are reconciled. Do not repin hashes here.
+live_review_script<-"scripts/verify_current_author_source_reviews.py"
+live_review_log<-file.path(output_dir,
+  "live_author_source_review_sha256_integrity.txt")
+live_review_output<-tryCatch(
+  suppressWarnings(system2(py_executable,args=live_review_script,
+    stdout=TRUE,stderr=TRUE)),
+  error=function(e)structure(
+    paste0("LIVE SOURCE REVIEW INVOCATION ERROR: ",conditionMessage(e)),
+    status=1L))
+live_review_code<-attr(live_review_output,"status")
+if(is.null(live_review_code))live_review_code<-0L
+writeLines(c(as.character(live_review_output),
+  paste0("LIVE_SOURCE_REVIEW_INTEGRITY_EXIT_CODE=",
+    as.integer(live_review_code))),live_review_log,useBytes=TRUE)
+if(!identical(as.integer(live_review_code),0L)){
+  message("===== CURRENT six-domain source-review receipt blocker =====")
+  for(line in tail(as.character(live_review_output),30L))message(line)
+  stop("LIVE source-review SHA256 evidence is stale/invalid. ",
+    "All synthetic reviewer packet integrity tests can still pass; ",
+    "the scientific candidate must remain BLOCKED until the changed ",
+    "R/test files receive fresh six-domain author review. ",
+    "Evidence: ",live_review_log,
+    ". No historical receipts or independent approvals were modified.",
+    call.=FALSE)
+}
+message("LIVE author source-review receipt integrity PASS (author-scoped; ",
+  "independent scientific certification=FALSE). Evidence: ",
+  live_review_log)
+
 results<-list(
   qualify_once(FALSE),
   qualify_once(TRUE)
@@ -478,6 +512,7 @@ source_files<-unique(c(
   "inst/extdata/native_workflow_28_class_field_schema_v1.csv",
   "NAMESPACE",
   "scripts/verify_508_certification_batch.py",
+  "scripts/verify_current_author_source_reviews.py",
   "tests/test_verify_508_certification_batch.py",
   "scripts/verify_508_external_attestation.py",
   "tests/test_verify_508_external_attestation.py",
