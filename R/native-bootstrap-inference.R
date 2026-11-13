@@ -400,7 +400,7 @@ etr_bootstrap_fpca_component_bands <- function(trajectories,
     lower[j,,]<-ref$components[j,,]-critical[j]*se[j,,]
     upper[j,,]<-ref$components[j,,]+critical[j]*se[j,,]
   }
-  structure(list(reference=ref,lower=lower,upper=upper,
+  structure(list(reference=ref,n_components=k,lower=lower,upper=upper,
     pointwise_se=se,critical_values=critical,
     max_statistics=maxstats,similarities=sims,
     confidence_level=level,simultaneous_scope=simultaneous_scope,
