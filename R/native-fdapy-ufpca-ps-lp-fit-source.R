@@ -224,6 +224,31 @@
   },numeric(1L))
 }
 
+# DGEEV is used rather than base::eigen(): base::eigen() reorders even
+# general eigenvalues by decreasing modulus, while NumPy keeps DGEEV order.
+# This helper deliberately returns the unsorted real LAPACK right eigenpairs.
+.etr_fdapy_unsorted_real_eig <- function(x) {
+  .etr_assert(is.matrix(x)&&is.numeric(x)&&nrow(x)==ncol(x)&&
+    all(is.finite(x)),"FDApy DGEEV needs a finite real square matrix")
+  n<-as.integer(nrow(x))
+  .etr_assert(n>=2L&&n<=.Machine$integer.max/8L,
+    "FDApy DGEEV dimension is outside the supported range")
+  work_n<-as.integer(max(1L,8L*n))
+  result<-tryCatch(.Fortran("dgeev",
+      jobvl="N",jobvr="V",n=n,a=as.double(x),lda=n,
+      wr=double(n),wi=double(n),vl=double(1L),ldvl=1L,
+      vr=double(n*n),ldvr=n,
+      work=double(work_n),lwork=work_n,info=integer(1L)),
+    error=function(e)stop("Native FDApy requires unsorted LAPACK DGEEV: ",
+      conditionMessage(e),call.=FALSE))
+  .etr_assert(identical(result$info,0L)&&
+    all(is.finite(result$wr))&&all(is.finite(result$wi))&&
+    all(abs(result$wi)<=1e-10),
+    "FDApy real covariance DGEEV failed or returned complex eigenpairs")
+  list(values=as.numeric(result$wr),
+    vectors=matrix(as.numeric(result$vr),n,n))
+}
+
 .etr_fdapy_fit_native_ufpca <- function(trajectories,dimension,
     n_components,fit_smoothing,score_smoothing,tol,normalize,
     evaluation_grid,kwargs_mean,kwargs_covariance) {
@@ -357,30 +382,13 @@
   # symmetric=TRUE instead sorts descending, changes the second
   # eigenpair (often a negative one), then propagates false positive
   # minor components into Mercer covariance and PACE scores.
-  # Base R eigen() *also sorts* the general DGEEV eigenpairs by
-  # modulus. Call DGEEV directly to retain its raw LAPACK order, as
-  # NumPy does. The selected first k raw eigenpairs may include a
-  # negative value, which frozen FDApy clips to zero.
-  nr<-as.integer(nrow(weighted))
-  workspace<-as.integer(max(1L,8L*nr))
-  raw_eig<-tryCatch(.Fortran("dgeev",
-      jobvl="N",jobvr="V",n=nr,a=as.double(weighted),lda=nr,
-      wr=double(nr),wi=double(nr),vl=double(1L),ldvl=1L,
-      vr=double(nr*nr),ldvr=nr,
-      work=double(workspace),lwork=workspace,info=integer(1L)),
-    error=function(e)stop("Native FDApy requires unsorted LAPACK DGEEV: ",
-      conditionMessage(e),call.=FALSE))
-  .etr_assert(identical(raw_eig$info,0L)&&
-    all(is.finite(raw_eig$wr))&&
-    all(is.finite(raw_eig$wi))&&
-    all(abs(raw_eig$wi)<=1e-10),
-    "FDApy real covariance DGEEV failed or returned complex eigenpairs")
-  eig_values<-as.numeric(raw_eig$wr)
-  eig_vectors<-matrix(as.numeric(raw_eig$vr),nr,nr)
-  lambda<-pmax(eig_values,0)
+  # Base R eigen() *also sorts* its general eigenpairs by modulus.
+  # FDApy uses NumPy's raw DGEEV order; do not sort before slicing.
+  eig<-.etr_fdapy_unsorted_real_eig(weighted)
+  lambda<-pmax(eig$values,0)
   .etr_assert(length(lambda)>=n_components&&all(is.finite(lambda)),
     "FDApy native covariance requires finite source eigenvalues")
-  phi<-t(sweep(eig_vectors[,seq_len(n_components),drop=FALSE],
+  phi<-t(sweep(eig$vectors[,seq_len(n_components),drop=FALSE],
     1L,sqrt(w),"/"))
   # Only sign conventions and platform-level unsorted LAPACK tie
   # ordering may differ from NumPy. Do not re-sort eigenpairs or
