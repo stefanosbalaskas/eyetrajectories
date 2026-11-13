@@ -106,8 +106,11 @@ test_that("portable fixed-mode W2 workflow retains nested fitted scientific stat
     "eyetrajectoriespy.workflows._sparse_mfpca.SparseMFPCAWorkflowConfig")
   expect_setequal(names(snapshot$payload$config)[-1L],
     names(f$workflow$config))
-  expect_identical(snapshot$payload$provenance,
-    f$workflow$provenance)
+  # Python 1.2 portable manifests sort nested JSON mapping keys too.
+  # Compare canonical source JSON values rather than R list insertion order.
+  expect_identical(
+    eyetrajectories:::.etr_python_json_encode(snapshot$payload$provenance),
+    eyetrajectories:::.etr_python_json_encode(f$workflow$provenance))
   expect_length(snapshot$nonportable_fields,0L)
   checks<-readLines(file.path(output,"SHA256SUMS"))
   expect_setequal(substring(checks,67L),
