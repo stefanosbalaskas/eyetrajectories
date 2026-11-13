@@ -160,6 +160,6 @@ test_that("same-draw FPCA evidence does not certify full Python exports",{
   r<-row[row$python_name=="bootstrap_fpca_component_envelopes"&
     row$is_python_function,,drop=FALSE]
   expect_equal(nrow(r),1L)
-  expect_true(r$source_contract_gap_unresolved)
+  .etr_expect_source_gap_matches_registry(r)
   expect_false(r$one_to_one_native_contract_complete)
 })
