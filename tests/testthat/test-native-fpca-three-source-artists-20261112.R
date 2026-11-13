@@ -176,7 +176,7 @@ def _etr_fpca_three_oracle(sim,folds,group,metric):
         return obj
     m=np.asarray(sim,dtype=float)
     stability=make(et.FPCAStabilityResult,
-       similarities=m,n_bootstrap=int(m.shape[0]),
+       similarities=m,
        reference=make(et.FPCAResult,
            components=np.zeros((int(m.shape[1]),2,1),dtype=float)))
     influence=make(et.FPCAInfluenceResult,
