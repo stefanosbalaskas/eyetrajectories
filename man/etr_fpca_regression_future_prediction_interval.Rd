@@ -5,7 +5,8 @@
 etr_fpca_regression_future_prediction_interval(
   result, outcome, confidence_level = 0.95,
   residual_method = "empirical_centered", random_state = 0L,
-  residual_indices = NULL, random_engine = "numpy"
+  residual_indices = NULL, random_engine = "numpy",
+  python_boundary_mode = FALSE
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ NumPy-compatible PCG64 stream. NULL uses the current R RNG stream.}
 allowing exact numerical replay of pinned Python residual draws.}
 \item{random_engine}{Use \code{"numpy"} for source-seeded residual draws
 or \code{"base_R"} to reproduce previous native seeded draws.}
+\item{python_boundary_mode}{If TRUE, apply the explicitly requested
+frozen Python 1.2 boundary semantics; FALSE retains strict native defaults.}
 }
 \value{Source-shaped marginal future-outcome predictive draws, limits,
 medians, pointwise sample standard deviations and scientific provenance.}
