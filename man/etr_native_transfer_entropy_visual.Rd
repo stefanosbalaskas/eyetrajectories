@@ -1,7 +1,6 @@
 \name{etr_plot_transfer_entropy_sensitivity}
 \alias{etr_plot_transfer_entropy_sensitivity}
-\alias{etr_plot_transfer_entropy_circular_shift_test}
-\alias{etr_plot_conditional_transfer_entropy_circular_shift_test}
+
 \title{Native source-aligned transfer-entropy sensitivity and circular-shift graphics}
 \description{
 Three independent Python-free native R graphics presenting already
