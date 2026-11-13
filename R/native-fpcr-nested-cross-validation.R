@@ -213,6 +213,12 @@ etr_nested_cross_validate_fpca_regression <- function(
     .etr_assert(all(source_fields%in%names(result$provenance)),
       "strict FPCR CV source provenance fields are incomplete")
     result$provenance<-result$provenance[source_fields]
+    # Python 1.2 provenance contains a list of covariate column names.
+    # The frozen reticulate conversion materializes nonempty string lists
+    # as character vectors, not R lists. Keep legacy R diagnostics intact.
+    if(length(result$provenance$covariates)>0L)
+      result$provenance$covariates<-
+        as.character(unlist(result$provenance$covariates,use.names=FALSE))
     .etr_assert(identical(names(result$provenance),source_fields),
       "strict FPCR CV source provenance order is invalid")
   }
