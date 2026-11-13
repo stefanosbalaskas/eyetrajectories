@@ -1,4 +1,5 @@
-\name{etr_plot_generalized_function_on_scalar_predictions}
+\name{etr_native_generalized_mixed_source_graphics}
+\alias{etr_native_generalized_mixed_source_graphics}
 
 \alias{etr_plot_covariance_sensitivity_band_widths}
 
@@ -7,15 +8,7 @@
 bands, coefficient functions, covariance sensitivity and mixed-effects
 residual dependence with explicit observed-grid numerical geometry.}
 \usage{
-etr_plot_generalized_function_on_scalar_predictions(result)
-etr_plot_generalized_function_on_scalar_mean_difference(result)
-etr_plot_generalized_function_on_scalar_coefficients(result, coefficient)
-etr_plot_covariance_sensitivity_coefficients(result, coefficient)
-etr_plot_covariance_sensitivity_band_widths(result, coefficient)
-etr_plot_functional_mixed_effects_residual_acf(
-  result, level = "overall", curve_id = NULL, participant_id = NULL)
-etr_plot_functional_mixed_effects_residual_variogram(
-  result, level = "overall", curve_id = NULL, participant_id = NULL)
+etr_plot_covariance_sensitivity_band_widths(result, coefficient, strict_source_record = FALSE)
 }
 \arguments{
 \item{result}{An explicitly declared scientific fitted R record or
