@@ -9,15 +9,7 @@ optional removed measurements, retained phase warps, and declared-versus-realize
 score-source variances. They do not simulate data, fit models, or calibrate
 statistical uncertainty.
 }
-\usage{
-etr_plot_functional_simulation_curve(
-  result, curve = 1L, dimension = 1L, show_pre_missing = FALSE
-)
-etr_plot_functional_simulation_phase_warps(
-  result, max_curves = 20L, alpha = 0.35
-)
-etr_plot_functional_simulation_score_variances(result)
-}
+
 \arguments{
 \item{result}{Named native R record containing observations with curve IDs and
 fully specified realized simulation truth, measurement schedules, score sources,
