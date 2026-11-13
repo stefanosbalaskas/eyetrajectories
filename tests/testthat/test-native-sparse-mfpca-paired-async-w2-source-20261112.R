@@ -155,7 +155,7 @@ test_that("strict paired/async W2 mode rejects alternative estimator and supplie
   p$bandwidth_selection<-list(mean_bandwidths=.5,
     covariance_bandwidths=.85,fold_assignments=rep(0L,24L))
   expect_error(etr_run_sparse_mfpca_workflow(x,p,
-    strict_source_record=TRUE),"fold_assignments")
+    strict_source_record=TRUE),"fold assignments")
 })
 
 test_that("direct Python 1.2 paired and async sparse W2 workflows match source scientific outputs",{
