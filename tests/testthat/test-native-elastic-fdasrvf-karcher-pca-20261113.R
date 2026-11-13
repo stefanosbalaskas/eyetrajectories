@@ -53,6 +53,27 @@ test_that("native R fdasrvf performs genuine elastic Karcher DP alignment and ta
   expect_s3_class(got,"etr_native_elastic_karcher_pca_scientific_record")
   expect_s3_class(got$native_backend_object,"fdacurve")
   expect_s3_class(got$native_pca_object,"curve_pca")
+  expect_identical(dim(got$native_srvf_reconstructed_aligned_curves),
+    c(7L,29L,2L))
+  expect_true(got$provenance$registration$source_input_srvfs_normalized)
+  expect_true(got$provenance$registration$native_original_coordinate_alignment)
+  expect_true(all(is.finite(got$native_srvf_reconstructed_aligned_curves)))
+  qnorm<-vapply(seq_len(7L),function(i)
+    sqrt(mean(colSums(got$source_original_srvfs[,,i]^2))),
+    numeric(1L))
+  expect_equal(qnorm,rep(1,7L),tolerance=1e-9)
+  # A different, original-coordinate reparameterization now returns
+  # source-appropriate curve amplitude, not q_to_curve normalized length.
+  for(i in seq_len(7L)){
+    b<-aperm(x$values,c(3L,2L,1L))[,,i]
+    orig_centered<-.etr_elastic_source_center_open_curve(b)
+    for(j in seq_len(2L)){
+      expected<-stats::approx(
+        seq(0,1,length.out=29L),orig_centered[j,],
+        xout=got$warping_functions[i,],ties="ordered",rule=2)$y
+      expect_equal(got$aligned$values[i,,j],expected,tolerance=1e-9)
+    }
+  }
   expect_identical(got$backend,"native_fdasrvf")
   expect_null(got$backend_object)
   expect_false(got$source_python_backend_object_identity)
@@ -121,6 +142,8 @@ test_that("native fdasrvf source Karcher supports single principal component and
   expect_identical(dim(got$scores),c(6L,1L))
   expect_identical(dim(got$principal_directions),c(2L,25L,1L,10L))
   expect_identical(dim(got$warping_functions),c(6L,25L))
+  expect_true(all(is.finite(got$aligned$values)))
+  expect_true(got$provenance$registration$source_input_srvfs_normalized)
   expect_identical(got$provenance$registration$rotation,TRUE)
   expect_identical(got$provenance$registration$scale_curves,TRUE)
   expect_true(all(is.finite(got$scores)))
@@ -193,6 +216,7 @@ py_elastic={
   'aligned':np.asarray(py_fit.aligned.values),
   'warps':np.asarray(py_fit.warping_functions),
   'scores':np.asarray(py_fit.scores),
+  'input_q':np.asarray(py_fit.backend_object.q),
   'principal':np.asarray(py_fit.principal_directions),
   'mean':np.asarray(py_fit.mean_curve),
   'time':np.asarray(py_fit.aligned.time),
@@ -210,6 +234,10 @@ py_elastic={
   expect_identical(dim(r$aligned$values),dim(as.array(py$aligned)))
   expect_identical(dim(r$warping_functions),dim(as.matrix(py$warps)))
   expect_identical(dim(r$scores),dim(as.matrix(py$scores)))
+  expect_identical(dim(r$source_original_srvfs),dim(as.array(py$input_q)))
+  # This is a genuinely source-equal mathematical primitive on the
+  # tested fixture; not equality of Karcher, phase or final PCA.
+  expect_lt(sqrt(mean((r$source_original_srvfs-py$input_q)^2)),1e-10)
   expect_identical(dim(r$principal_directions),dim(as.array(py$principal)))
   expect_identical(dim(r$mean_curve),dim(as.matrix(py$mean)))
   expect_equal(r$aligned$time,as.numeric(py$time),tolerance=0)
