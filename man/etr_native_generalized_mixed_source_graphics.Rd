@@ -1,11 +1,8 @@
 \name{etr_plot_generalized_function_on_scalar_predictions}
 \alias{etr_plot_generalized_function_on_scalar_predictions}
-\alias{etr_plot_generalized_function_on_scalar_mean_difference}
-\alias{etr_plot_generalized_function_on_scalar_coefficients}
-\alias{etr_plot_covariance_sensitivity_coefficients}
+
 \alias{etr_plot_covariance_sensitivity_band_widths}
-\alias{etr_plot_functional_mixed_effects_residual_acf}
-\alias{etr_plot_functional_mixed_effects_residual_variogram}
+
 \title{Native R graphics for generalized function-on-scalar and mixed-effects scientific inference}
 \description{Plot fitted generalized function-on-scalar predictions, contrast
 bands, coefficient functions, covariance sensitivity and mixed-effects
