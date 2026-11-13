@@ -337,6 +337,11 @@ stopifnot(file.exists(selection_file),length(readLines(
 # Capture real test_that outcomes in each mode without rerunning tests.
 # Static literals inside a completed case are *not* proof of a source call.
 source("scripts/capture_case_execution_evidence.R",local=TRUE)
+# The default summary reporter truncates the actionable failure list at ten.
+# Preserve a detailed offline/Python execution transcript for source review,
+# and never interpret a truncated list as a pass.
+options(testthat.progress.max_fails=200L)
+Sys.setenv(TESTTHAT_MAX_FAILS="200")
 qualify_once<-function(python=FALSE){
   label<-if(python)"python_1_2_direct_source" else "native_r_offline"
   if(python)Sys.setenv(ET_RUN_PYTHON_TESTS="true") else
@@ -348,7 +353,7 @@ qualify_once<-function(python=FALSE){
   tryCatch(
     capture.output(
       structured_results<-testthat::test_local(".",filter=filter,
-        reporter="summary",stop_on_failure=TRUE,stop_on_warning=TRUE),
+        reporter="progress",stop_on_failure=TRUE,stop_on_warning=TRUE),
       file=path,type="output"),
     error=function(e){failed<<-conditionMessage(e);invisible(NULL)})
   outcome<-if(is.null(failed)) {
