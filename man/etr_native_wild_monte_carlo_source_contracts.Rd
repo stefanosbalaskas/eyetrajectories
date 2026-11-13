@@ -9,10 +9,6 @@ graphics display fixed-family probabilities and projection intervals.}
 \usage{
 etr_fpca_wild_bootstrap_family_test_monte_carlo_diagnostics(
   result, confidence_level = 0.95)
-etr_plot_fpca_wild_bootstrap_monte_carlo_diagnostics(
-  result, max_targets = 30L, show_targetwise = FALSE)
-etr_plot_fpca_wild_bootstrap_simultaneous_interval(
-  result, max_targets = 30L, show_targetwise = TRUE)
 }
 \arguments{
 \item{result}{Explicit source-shaped native scientific list with retained
