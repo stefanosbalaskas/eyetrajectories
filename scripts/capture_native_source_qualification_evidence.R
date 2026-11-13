@@ -806,15 +806,14 @@ historical_gap_registry<-utils::read.csv(
   stringsAsFactors=FALSE,check.names=FALSE)
 historical_gap_count<-nrow(historical_gap_registry)
 source_gap_count<-sum(historical_gap_registry$unresolved_source_gap)
+# The recorded 203 historical source differences are an *inventory*,
+# not a permanent assertion that 201 remain open. The current ledger is
+# authoritative for author-scoped status; external review is separate.
 stopifnot(historical_gap_count==203L,
-  all(historical_gap_registry$unresolved_source_gap[
-    !historical_gap_registry$python_name%in%c(
-      "functional_recovery_metric_catalog_frame",
-      "mathematical_contract_frame")]),
-  identical(sort(historical_gap_registry$python_name[
-    !historical_gap_registry$unresolved_source_gap]),
-    sort(c("functional_recovery_metric_catalog_frame",
-      "mathematical_contract_frame"))))
+  !anyDuplicated(historical_gap_registry$python_name),
+  is.logical(historical_gap_registry$unresolved_source_gap),
+  !anyNA(historical_gap_registry$unresolved_source_gap),
+  source_gap_count>=0L&&source_gap_count<=historical_gap_count)
 fixture_attribution_path<-file.path(packet_root,
   "selected_111_fixture_static_attribution.csv")
 stopifnot(file.exists(fixture_attribution_path))
@@ -876,34 +875,52 @@ stopifnot(nrow(triage)==508L,
   sum(triage$selected_oracle_candidate)==nrow(queue),
   nrow(gap_review)==historical_gap_count,
   identical(sum(gap_review$gap_open),source_gap_count),
-  identical(sort(gap_review$python_name[!gap_review$gap_open]),
-    sort(c("functional_recovery_metric_catalog_frame",
-      "mathematical_contract_frame"))),
+  setequal(gap_review$python_name,
+    historical_gap_registry$python_name),
+  identical(as.logical(gap_review$gap_open),
+    as.logical(historical_gap_registry$unresolved_source_gap[
+      match(gap_review$python_name,
+        historical_gap_registry$python_name)])),
   all(!triage$independent_source_contract_approved),
   all(!gap_review$resolved),
+  all(!gap_review$independently_replayed),
   !anyDuplicated(gap_review$python_name))
-# The 201 function source gaps and the one native class source gap must
-# remain separately reviewable; no signed reviewer decisions are inferred.
+# All 203 historical callable records and the one bounded TrajectorySet
+# class record remain separately reviewable. Closed author-scoped gaps
+# never imply independent numerical or full-domain signoff.
 class_gap_file<-file.path(packet_root,
   "native_nonfunction_source_gap_resolution_queue.csv")
 stopifnot(file.exists(class_gap_file))
 class_gap_review<-utils::read.csv(class_gap_file,
   stringsAsFactors=FALSE,check.names=FALSE)
 traj_triage<-triage[triage$python_name=="TrajectorySet",,drop=FALSE]
-stopifnot(nrow(class_gap_review)==1L,
+class_ledger<-utils::read.csv(file.path("inst","extdata",
+  "native_nonfunction_source_gaps_v1.csv"),
+  stringsAsFactors=FALSE,check.names=FALSE)
+class_open<-as.logical(class_ledger$unresolved)
+stopifnot(nrow(class_ledger)==1L,
+  identical(class_ledger$python_name,"TrajectorySet"),
+  !anyNA(class_open),
+  nrow(class_gap_review)==1L,
   identical(class_gap_review$python_name,"TrajectorySet"),
-  isTRUE(class_gap_review$gap_open),
+  identical(as.logical(class_gap_review$gap_open),class_open),
   all(!class_gap_review$independently_replayed),
   all(!class_gap_review$scientific_scope_approved),
   all(!class_gap_review$independent_reviewer_approved),
   all(!class_gap_review$fully_certified),
   nrow(traj_triage)==1L,
-  isTRUE(traj_triage$unresolved_source_difference),
-  identical(traj_triage$review_lane,"nonfunction_open_source_gap"),
-  sum(triage$unresolved_source_difference)==source_gap_count+1L)
+  identical(as.logical(traj_triage$unresolved_source_difference),
+    class_open),
+  identical(traj_triage$review_lane,
+    if(class_open)"nonfunction_open_source_gap" else
+      "nonfunction_contract_review"),
+  sum(triage$unresolved_source_difference)==
+    source_gap_count+sum(class_open))
 message("Review triage: ",nrow(triage)," public exports; ",
-  nrow(gap_review)," callable source differences plus ",
-  nrow(class_gap_review)," unresolved nonfunction source difference; ",
+  nrow(gap_review)," historical callable source records (",
+  source_gap_count," currently author-open); ",
+  nrow(class_gap_review)," nonfunction source record (",
+  sum(class_open)," author-open); ",
   sum(triage$backend_or_estimand_distinct),
   " alternative backends/estimands; zero independent approvals.")
 stopifnot(nrow(missing_refs)==0L,
