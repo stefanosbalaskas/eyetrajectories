@@ -163,6 +163,12 @@ test_that("frozen real Python 1.2 public fdasrsf elastic contract vs true native
 import numpy as np
 import eyetrajectoriespy as et
 import fdasrsf as fs
+# fdasrsf 2.7 still calls joblib.Parallel(n_jobs=-1), even with
+# karcher_mean(parallel=False) and srvf_align(parallel=False).
+# In an embedded Windows R/reticulate session loky child processes may fail
+# with WinError 6 (invalid standard handle). Threads avoid process spawning;
+# this does not replace or mock the frozen Python SRVF/DP solver.
+from joblib import parallel_config
 T=np.linspace(0,1,25)
 ys=[]
 for i in range(1,7):
@@ -178,8 +184,9 @@ py_tr=et.TrajectorySet(
   dimension_names=('x','y'),
   coordinate_system='pixels',time_unit='ms',
   provenance={'source':'phase_perturbed_elastic_fixture'})
-py_fit=et.fit_elastic_fpca(py_tr,n_components=2,
-  rotation=False,scale_curves=False,lam=0.,method='DP')
+with parallel_config(backend='threading'):
+    py_fit=et.fit_elastic_fpca(py_tr,n_components=2,
+      rotation=False,scale_curves=False,lam=0.,method='DP')
 assert py_fit.backend=='fdasrsf'
 assert py_fit.backend_object is not None
 py_elastic={
