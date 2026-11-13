@@ -19,11 +19,14 @@ def write_csv(path, rows):
 
 def make_packet(folder):
     head = "a" * 40
+    gaps = v.source_gap_inventory.read_inventory()
     full = []
     for i in range(508):
         isfn = i < 380
-        gap = i < 201 or i == 383
-        class_gap = i == 383
+        is_trajectory = i == 383
+        gap = i < gaps.active_callable or (
+            is_trajectory and bool(gaps.active_nonfunction))
+        class_gap = is_trajectory and bool(gaps.active_nonfunction)
         backend = i < 19
         workflow_constants = {
             384: "WORKFLOW_SCHEMA_VERSION",
@@ -64,7 +67,7 @@ def make_packet(folder):
             390 + j: name for j, name in enumerate(schema_class_names)
         }
         name = (f"fn_{i:03d}" if isfn else
-                ("TrajectorySet" if class_gap else
+                ("TrajectorySet" if is_trajectory else
                  workflow_constants.get(i,
                      native_schema_classes.get(i, f"obj_{i - 380:03d}"))))
         lane = ("DIFFERENT_BACKEND_OR_ESTIMAND" if backend else
@@ -79,7 +82,7 @@ def make_packet(folder):
                          kind="function" if isfn else "other_export",
                          native_r_candidate=f"etr_{name}" if isfn else "",
                          native_nonfunction_representation=(
-                             "etr_trajectory_set" if class_gap else
+                             "etr_trajectory_set" if is_trajectory else
                              f"etr_frozen_workflow_values()${name}"
                              if i in workflow_constants else
                              "etr_frozen_py12_" + name
@@ -345,10 +348,11 @@ class TestUnsignedBatchIntegrity(unittest.TestCase):
         with self.assertRaisesRegex(v.ReviewBatchError, "criteria"):
             v.verify(self.root)
 
-    def test_forged_gap_closure_rehashed_fails(self):
+    def test_forged_author_gap_status_rehashed_fails(self):
         p = self.root / v.FILES[0]
         rows = v.read_csv(p)
-        rows[0]["source_gap_open"] = "FALSE"
+        rows[0]["source_gap_open"] = (
+            "TRUE" if rows[0]["source_gap_open"] == "FALSE" else "FALSE")
         write_csv(p, rows)
         self.update_manifest()
         with self.assertRaisesRegex(v.ReviewBatchError, "source-gap inventory"):
@@ -393,8 +397,11 @@ class TestUnsignedBatchIntegrity(unittest.TestCase):
         p = self.root / v.FILES[0]
         rows = v.read_csv(p)
         row = next(x for x in rows if x["python_name"] == "TrajectorySet")
-        row["source_gap_open"] = "FALSE"
-        row["native_nonfunction_source_gap_open"] = "FALSE"
+        row["source_gap_open"] = (
+            "TRUE" if row["source_gap_open"] == "FALSE" else "FALSE")
+        row["native_nonfunction_source_gap_open"] = (
+            "TRUE" if row["native_nonfunction_source_gap_open"] == "FALSE"
+            else "FALSE")
         write_csv(p, rows)
         self.update_manifest()
         with self.assertRaisesRegex(v.ReviewBatchError, "source-gap inventory"):
