@@ -1,8 +1,6 @@
 \name{etr_native_predictive_visual_audits}
-\alias{etr_plot_fpca_regression_cv}
-\alias{etr_plot_nested_fpca_regression_cv}
-\alias{etr_plot_functional_mixed_effects_bootstrap_comparison}
-\alias{etr_plot_fpca_wild_bootstrap_truncation_scan}
+\alias{etr_native_predictive_visual_audits}
+
 \title{Native diagnostic plots for FPCA predictive CV and bootstrap sensitivity}
 \description{
 Four independent, read-only R-graphics adapters for published
