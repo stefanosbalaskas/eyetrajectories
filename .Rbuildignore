@@ -5,3 +5,6 @@
 ^docs$
 ^scripts$
 ^LICENSE\.md$
+^\.venv-science$
+^\.venv([.-].*)?$
+^eyetrajectories_source_[0-9a-fA-F]+\.zip$
