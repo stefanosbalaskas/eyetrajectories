@@ -401,6 +401,7 @@ stopifnot(length(py_executable)==1L,nzchar(py_executable))
 tooling_log_path<-file.path(output_dir,
   "python_unsigned_review_packet_tooling_tests.txt")
 tooling_patterns<-c("test_verify_four_pilot_review_bundle.py",
+  "test_verify_current_author_source_reviews.py",
   "test_verify_508_certification_batch.py",
   "test_verify_508_external_attestation.py",
   "test_build_508_all_export_review_waves.py",
@@ -513,6 +514,7 @@ source_files<-unique(c(
   "NAMESPACE",
   "scripts/verify_508_certification_batch.py",
   "scripts/verify_current_author_source_reviews.py",
+  "tests/test_verify_current_author_source_reviews.py",
   "tests/test_verify_508_certification_batch.py",
   "scripts/verify_508_external_attestation.py",
   "tests/test_verify_508_external_attestation.py",
