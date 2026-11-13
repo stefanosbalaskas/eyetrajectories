@@ -3,10 +3,17 @@
  * from package namespaces, especially on Windows. It is intentionally not
  * exported as a public R function or used for any Python invocation.
  */
+#ifndef USE_FC_LEN_T
+#define USE_FC_LEN_T
+#endif
+#include <Rconfig.h>
 #include <R.h>
 #include <Rinternals.h>
 #include <R_ext/Lapack.h>
 #include <R_ext/RS.h>
+#ifndef FCONE
+#define FCONE
+#endif
 #include <math.h>
 #include <string.h>
 #include <limits.h>
