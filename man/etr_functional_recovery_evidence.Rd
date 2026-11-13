@@ -3,7 +3,7 @@
 \alias{etr_functional_recovery_frame}
 \alias{etr_functional_recovery_failure_frame}
 \alias{etr_functional_recovery_summary_frame}
-\alias{etr_plot_functional_recovery_summary}
+
 \title{Native functional recovery evidence and descriptive Monte Carlo diagnostics}
 \description{
 Independently validated recovery records, per-replicate source metric
