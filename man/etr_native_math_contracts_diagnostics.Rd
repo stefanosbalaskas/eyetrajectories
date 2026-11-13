@@ -24,15 +24,12 @@ dimensioned arrays, the joint sparse contract key and its public API
 name are accepted in a single cell. Other single-cell arrays signal a
 type error, and empty or multi-cell arrays signal an ambiguous-value
 error.}
-\item{result}{Existing native Kantz, Rosenstein or multiscale
-windowed-RQA sensitivity result; not a Python object.}
-\item{parameter}{One sensitivity parameter column to vary.}
-\item{response}{An explicitly supported numeric sensitivity statistic.}
-\item{filters}{Named list holding other varying sensitivity columns
-constant. Ambiguous duplicate parameter values cause errors instead of
-silent averaging.}
-\item{curve}{Exact curve identifier or zero-based source curve index.}
-\item{metric}{Named functional windowed-RQA metric.}
+
+
+
+
+
+
 \item{...}{For lookup, one positional name when \code{name} is omitted.
 For plotting, additional base R graphics arguments.}
 }
