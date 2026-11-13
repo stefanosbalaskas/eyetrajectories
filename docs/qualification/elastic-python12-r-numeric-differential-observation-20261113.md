@@ -62,3 +62,46 @@ The next unexecuted test extension in `test-native-elastic-fdasrvf-karcher-pca-2
 - Six individual per-curve warp RMSE values and six per-curve centered aligned-geometry RMSE values.
 
 This separates scale-related disagreement from shape/phase geometry and highlights possible curve-specific registration failures. The original five-metric values above remain the confirmed local observations. **No values from the new decomposition have been observed**, no scientific acceptance threshold was changed, and numerical parity remains unqualified.
+
+## Follow-up user-observed six-curve decomposition (2026-11-13)
+
+The local user-provided next diagnostic finished without reported errors. These are observed results, not guessed simulation numbers:
+
+```text
+ELASTIC_PYTHON12_NATIVE_R_DIFFERENTIAL_DECOMPOSITION
+  python_warp_deformation_rmse = 0.0716371422101
+  r_warp_deformation_rmse = 0.0500055723918
+  input_centered_coordinate_rms = 0.633874698048
+  python_aligned_centered_coordinate_rms = 0.624634935802
+  python_mean_centered_coordinate_rms = 0.129183035705
+  python_score_pair_distance_rms = 0.397694347192
+  optimally_rescaled_r_score_distance_factor = 0.394261201935
+  optimally_rescaled_score_pair_distance_rmse = 0.105653628396
+  score_pairwise_distance_correlation = 0.74394476905
+  per_curve_warp_rmse = 0.09155401327, 0.09249499486, 0.08609558872, 0.1001201696, 0.09160652188, 0.08898876251
+  per_curve_aligned_centered_rmse = 0.2655908901, 0.2599570157, 0.2295601224, 0.2711324981, 0.2417809643, 0.2408801151
+  independently_numeric_parity_certified = FALSE
+```
+
+Each of the six individual curves exhibits substantial phase and aligned-coordinate discrepancy; neither set of deviations is dominated by one curve. After a **post hoc optimal scalar** fit to the native-R score distances, RMSE decreases from 0.598456909462 to 0.105653628396. Pairwise score-distance correlation is only 0.74394476905. This demonstrates an important scale component *and* residual geometric disagreement. A fitted scalar is **diagnostic only**, not an accepted correction to native model predictions.
+
+### Newly identified source-level hypothesis: initial SRVF normalization
+
+The actual frozen Python public `fit_elastic_fpca` calls `fdasrsf.fdacurve(...,scale=scale_curves)`. In upstream Python `fdasrsf/curve_stats.py`, `fdacurve.__init__` always calls `curve_to_q(beta, mode)` with the default `scale=True` **regardless of the value of the fdacurve `scale` attribute**. This normalizes each original curve's SRVF before open-curve Karcher alignment, even if public `scale_curves=False`; the `scale` flag then affects covariance/shape amplitude treatment.
+
+In contrast, the present native R opt-in implementation forwards `scale_curves` directly to R `fdasrvf::multivariate_karcher_mean(...,scale=scale_curves)`. Its upstream R `curve_to_srvf(beta,scale=scale)` forwards that boolean into `curve_to_q`. Thus **when scale_curves=FALSE, Python begins with normalized SRVFs while R begins with unnormalized SRVFs**.
+
+This is a concrete, source-identified candidate for mean/phase/PCA discrepancies, potentially preceding the different medoid-vs-first-curve initializations. It must be empirically isolated, not assumed to explain all differences. The current native production method and its provisional reviewed-scope status are unchanged.
+
+A new **opt-in experimental ablation**, `tests/testthat/test-native-elastic-source-normalization-ablation-20261113.R`, measures the effect of fitting R `fdasrvf` with internally normalized SRVFs (`scale=TRUE`) while keeping the Python public scale flag `False`. It compares original input SRVF norms, source q values, warps, Karcher means, reconstructed versus original-coordinate-interpolated aligned curves, and score-distance geometry against the real frozen Python oracle, with `joblib.parallel_config(backend="threading")` for Windows. The new experiment is **not yet executed**, has no new numeric findings, and cannot by itself certify full source parity.
+
+Run from a fresh managed Python R session with `ET_RUN_PYTHON_ELASTIC_TESTS=true`:
+
+```r
+pkgload::load_all(".",quiet=TRUE)
+testthat::test_local(".",
+  filter="native-elastic-source-normalization-ablation-20261113",
+  reporter="summary",stop_on_failure=TRUE)
+```
+
+Expected diagnostic heading: `ELASTIC_PYTHON12_NATIVE_R_NORMALIZATION_ABLATION`. Any numeric change to the production mode should be based on the actual ablation output and independent source/domain review; **do not unilaterally relabel R's scale flag as Python's `scale_curves`**.
