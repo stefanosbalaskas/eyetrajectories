@@ -35,7 +35,15 @@ filters <- c(
   "native-mixed-residual-comparison",
   "native-sparse-fpca-w2-workflow-strict-20261112",
   "native-fpcr-two-cv-strict-source-20261112",
-  "native-five-nonlinear-te-sensitivity-artists-20261112"
+  "native-five-nonlinear-te-sensitivity-artists-20261112",
+  "native-three-fpcr-cv-truncation-artists-20261112",
+  "native-simulation-three-artist-source-20261112",
+  "native-wild-two-scientific-artists-20261112",
+  "native-fpca-three-source-artists-20261112",
+  "native-environment-scientific-crosswalk-20261112",
+  "native-source-contract-gaps",
+  "native-nine-scientific-plots",
+  "native-fdapy-ufpca-ps-lp-source-20261112"
 )
 cat("PATCH_SMOKE_MODE=", if (python_mode) "PYTHON_1_2" else "NATIVE_R",
     "\n", sep = "")
