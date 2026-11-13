@@ -8,11 +8,7 @@ integrated FPCA reconstruction error against retained component count,
 original versus registered complete functional curves, and source
 landmark time warping/displacement curves.
 }
-\usage{
-etr_plot_reconstruction_curve(reconstruction_summary, ...)
-etr_plot_registration(result, dimension = NULL, max_curves = 20L, ...)
-etr_plot_warping_functions(result, displacement = FALSE, ...)
-}
+
 \arguments{
 \item{reconstruction_summary}{An FPCA reconstruction result data frame
 with numeric \code{n_components} and \code{mean_integrated_rmse} columns.}
