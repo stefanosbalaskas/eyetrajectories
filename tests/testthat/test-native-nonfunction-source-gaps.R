@@ -1,7 +1,7 @@
 # A mapped native S3 scientific object is NOT a complete frozen Python
 # dataclass/schema contract. Nonfunction gaps are separate from the 203
 # recorded callable-function gaps and must block independent certification.
-test_that("TrajectorySet class source differences remain explicit, unsigned and blocking",{
+test_that("TrajectorySet bounded class review remains explicit, unsigned and blocking",{
   path<-.etr_test_extdata("native_nonfunction_source_gaps_v1.csv")
   expect_true(file.exists(path))
   gaps<-utils::read.csv(path,stringsAsFactors=FALSE,check.names=FALSE)
@@ -11,8 +11,8 @@ test_that("TrajectorySet class source differences remain explicit, unsigned and 
   expect_identical(gaps$native_r_candidate,"etr_trajectory_set")
   expect_identical(gaps$frozen_python_commit,
     "c1cd95ad718327550f7e55393ff38582872f7a94")
-  expect_true(gaps$unresolved)
-  expect_true(grepl("np.nan",gaps$known_source_difference,fixed=TRUE))
+  expect_false(gaps$unresolved)
+  expect_true(grepl("NaN",gaps$known_source_difference,fixed=TRUE))
   expect_true(grepl("zero-based",gaps$known_source_difference,fixed=TRUE))
   api<-etr_native_parity_catalog()
   expect_identical(nrow(api),508L)
@@ -23,19 +23,19 @@ test_that("TrajectorySet class source differences remain explicit, unsigned and 
     stringsAsFactors=FALSE,check.names=FALSE)
   expect_identical(sum(api$source_contract_gap_unresolved),
     as.integer(sum(witness$unresolved_source_gap)))
-  expect_identical(sum(api$nonfunction_source_gap_unresolved),1L)
+  expect_identical(sum(api$nonfunction_source_gap_unresolved),
+    as.integer(sum(gaps$unresolved)))
   row<-api[api$python_name=="TrajectorySet"&api$namespace=="root",,
     drop=FALSE]
   expect_equal(nrow(row),1L)
-  expect_true(row$nonfunction_source_gap_unresolved)
+  expect_false(row$nonfunction_source_gap_unresolved)
   expect_false(row$one_to_one_native_contract_complete)
   readiness<-etr_native_certification_readiness_frame()
   z<-readiness[readiness$python_name=="TrajectorySet"&
     readiness$namespace=="root",,drop=FALSE]
   expect_equal(nrow(z),1L)
-  expect_true(z$nonfunction_source_difference_open)
-  expect_identical(z$first_unresolved_requirement,
-    "unresolved_nonfunction_source_difference")
+  expect_false(z$nonfunction_source_difference_open)
+  expect_true(nzchar(z$first_unresolved_requirement))
   expect_false(z$fully_certified)
   expect_true(grepl("independent_review_approval_missing",
     z$all_unresolved_requirements,fixed=TRUE))
