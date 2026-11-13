@@ -1,6 +1,6 @@
 \name{etr_plot_fpca_component_envelope}
 \alias{etr_plot_fpca_component_envelope}
-\alias{etr_plot_fpca_wild_bootstrap_family_test}
+
 \title{Frozen-source FPCA matched-envelope and familywise inference graphics}
 \description{
 Native base-R visualization of precomputed matched bootstrap FPCA component
