@@ -248,8 +248,18 @@ etr_bootstrap_fpca_regression_uncertainty <- function(
     # in source order. The native lm is a model analogue, never a
     # Python statsmodels results wrapper.
     source_fit<-reference$fit
-    reference_regression<-source_fit[c("model","component_indices",
-      "coefficients","predictions","family","provenance")]
+    # The R scalar-FPCA fit is an S3 regression record, not the frozen
+    # FunctionalRegressionResult dataclass. Explicitly materialize the six
+    # source-scientific fields instead of subsetting nonexistent list keys.
+    source_coef<-as.numeric(stats::coef(source_fit$model))
+    names(source_coef)<-c("const",paste0("FPC",seq_len(k)))
+    reference_regression<-list(
+      model=source_fit$model,
+      component_indices=as.integer(seq_len(k)-1L),
+      coefficients=source_coef,
+      predictions=as.numeric(stats::fitted(source_fit$model)),
+      family="gaussian",
+      provenance=NULL)
     reference_regression$provenance<-list(
       method="scalar_on_function_via_fpca_scores",
       n_components=k,family="gaussian",covariates=list())
