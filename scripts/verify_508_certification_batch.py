@@ -137,18 +137,25 @@ def verify(packet_dir: str | Path, expected_r_head: str | None = None) -> dict[s
     check(sum(r["kind"] == "function" for r in full) == 380 and
           sum(r["kind"] != "function" for r in full) == 128,
           "Incorrect frozen 380-function/128-nonfunction inventory")
-    check(sum(r["source_gap_open"] == "TRUE" and r["kind"] == "function"
-              for r in full) == source_gap_inventory.read_inventory().active_callable and
+    gaps = source_gap_inventory.read_inventory()
+    # Every gap flag is an author-scoped ledger status, NOT an independent
+    # certification. The 203+1 historical records are retained even when
+    # their currently OPEN count reaches zero.
+    trajectory = [r for r in full if r["python_name"] == "TrajectorySet"
+                  and r["kind"] != "function"]
+    check(len(trajectory) == 1 and
+          sum(r["source_gap_open"] == "TRUE" and r["kind"] == "function"
+              for r in full) == gaps.active_callable and
           sum(r["source_gap_open"] == "TRUE" and r["kind"] != "function"
-              for r in full) == 1 and
+              for r in full) == gaps.active_nonfunction and
           sum(r["native_nonfunction_source_gap_open"] == "TRUE"
-              for r in full) == 1 and
+              for r in full) == gaps.active_nonfunction and
           all(r["source_gap_open"] == "TRUE"
               for r in full if r["native_nonfunction_source_gap_open"] == "TRUE") and
-          any(r["python_name"] == "TrajectorySet" and
-              r["kind"] != "function" and r["source_gap_open"] == "TRUE" and
-              r["native_nonfunction_source_gap_open"] == "TRUE"
-              for r in full),
+          trajectory[0]["source_gap_open"] ==
+              ("TRUE" if gaps.active_nonfunction else "FALSE") and
+          trajectory[0]["native_nonfunction_source_gap_open"] ==
+              ("TRUE" if gaps.active_nonfunction else "FALSE"),
           "Incorrect callable/nonfunction source-gap inventory")
     check(sum(r["backend_or_estimand_distinct"] == "TRUE" for r in full) == 19,
           "Incorrect alternative backend/estimand inventory")
@@ -378,7 +385,7 @@ def verify(packet_dir: str | Path, expected_r_head: str | None = None) -> dict[s
         "export_count": 508,
         "function_count": 380,
         "nonfunction_count": 128,
-        "open_source_gap_exports": source_gap_inventory.read_inventory().open_total,
+        "open_source_gap_exports": gaps.open_total,
         "first_review_batch": 36,
         "descriptive_source_interface_inventory_verified": attached,
         "independent_case_replays": 0,
