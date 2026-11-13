@@ -15,11 +15,9 @@ etr_plot_covariance_sensitivity_band_widths(
 \item{result}{An explicitly declared scientific fitted R record or
 pre-calibrated band/sensitivity/residual diagnostics R record.}
 \item{coefficient}{Exact declared source regression coefficient name.}
-\item{level}{One of \code{"overall"}, \code{"participant"} or
-\code{"trial"}, preserving the source summary level.}
-\item{curve_id}{Required source curve identifier for trial-level plots.}
-\item{participant_id}{Required source participant identifier for
-participant-level plots.}
+
+
+
 \item{strict_source_record}{If TRUE, return explicitly typed native
 source-scientific artist geometry rather than default base R plot output.}
 }
