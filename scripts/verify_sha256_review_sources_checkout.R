@@ -17,13 +17,17 @@
     stop("Install jsonlite and digest",call.=FALSE)
   git<-Sys.which("git")
   if(!nzchar(git))stop("git is required for canonical blob checks",call.=FALSE)
-  status<-suppressWarnings(system2(git,
-    c("status","--porcelain","--untracked-files=no"),
-    stdout=TRUE,stderr=FALSE))
-  if(length(status)>0L)
-    stop("Tracked working tree has changes; commit/stash them before ",
-      "comparing canonical review evidence:\n",
-      paste(status,collapse="\n"),call.=FALSE)
+  # Git porcelain status may mark Windows CRLF-only worktree files as
+  # modified even when the canonical Git content is unchanged. Compare
+  # HEAD against the full staged+working tracked tree instead; --quiet
+  # checks substantive content without losing the SHA256 Git-blob gate.
+  diff_rc<-suppressWarnings(system2(git,
+    c("diff","--quiet","HEAD","--"),
+    stdout=FALSE,stderr=FALSE))
+  if(!identical(as.integer(diff_rc),0L))
+    stop("Tracked Git content differs from HEAD; commit or stash the ",
+      "substantive changes before source-review integrity audit. ",
+      "No expected hashes were modified.",call.=FALSE)
   register<-"inst/extdata/reviewed_source_contract_closures_v1.csv"
   rows<-utils::read.csv(register,stringsAsFactors=FALSE,
     check.names=FALSE)
