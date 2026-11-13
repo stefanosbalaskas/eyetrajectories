@@ -31,20 +31,19 @@ for(file in files){
       sub("^\\\\alias\\{([^}]+)\\}$","\\1",alias_lines))
     alias_files<-c(alias_files,rep(file,length(alias_lines)))
   }
-  if(length(alias_lines)) {
-    this_aliases<-sub("^\\\\alias\\{([^}]+)\\}$","\\1",alias_lines)
-    usage_functions<-sub("\\(.*$","",grep("^etr_[A-Za-z0-9_]+\\(",lines,value=TRUE))
-    missing_usage_aliases<-setdiff(usage_functions,this_aliases)
-    if(length(missing_usage_aliases))issues<-c(issues,
-      paste(file,": \\usage functions without \\alias:",
-        paste(missing_usage_aliases,collapse=", ")))
-  }
   usage_open<-which(startsWith(lines,key("usage")))
   if(length(usage_open)){
     for(i in usage_open){
       tail_ix<-which(lines=="}" & seq_along(lines)>i)
       if(!length(tail_ix))next
       block<-seq.int(i,tail_ix[1L])
+      this_aliases<-sub("^\\\\alias\\{([^}]+)\\}$","\\1",alias_lines)
+      usage_functions<-sub("\\(.*$","",
+        grep("^etr_[A-Za-z0-9_]+\\(",lines[block],value=TRUE))
+      missing_usage_aliases<-setdiff(usage_functions,this_aliases)
+      if(length(missing_usage_aliases))issues<-c(issues,
+        paste(file,": \\usage functions without \\alias:",
+          paste(missing_usage_aliases,collapse=", ")))
       too_long<-block[nchar(lines[block],type="width")>90L]
       if(length(too_long))issues<-c(issues,
         paste0(file,": long \\usage lines ",
