@@ -350,17 +350,27 @@
   .etr_assert(all(is.finite(w))&&all(w>0),
     "FDApy covariance fitting requires strictly positive trapezoidal source weights")
   weighted<-C*outer(sqrt(w),sqrt(w))
-  eig<-eigen(weighted,symmetric=TRUE)
-  lambda<-pmax(as.numeric(eig$values),0)
+  # Frozen FDApy misc/utils.py::_compute_eigen calls numpy.linalg.eig,
+  # NOT eigh, on this symmetric-in-values matrix. Crucially it selects
+  # the FIRST n_components in LAPACK DGEEV's UNSORTED order and only
+  # afterwards clips negative eigenvalues to zero. Calling R eigen with
+  # symmetric=TRUE instead sorts descending, changes the second
+  # eigenpair (often a negative one), then propagates false positive
+  # minor components into Mercer covariance and PACE scores.
+  eig<-eigen(weighted,symmetric=FALSE)
+  .etr_assert(all(is.finite(Re(eig$values)))&&
+    all(abs(Im(eig$values))<=1e-10)&&
+    all(abs(Im(eig$vectors))<=1e-10),
+    "FDApy real covariance produced complex general eigensystem")
+  lambda<-pmax(as.numeric(Re(eig$values)),0)
   .etr_assert(length(lambda)>=n_components&&
-    all(is.finite(lambda))&&all(lambda[seq_len(n_components)]>0),
-    "FDApy native covariance requires positive source eigenvalues")
-  phi<-t(sweep(eig$vectors[,seq_len(n_components),drop=FALSE],
+    all(is.finite(lambda))&&all(lambda>=0),
+    "FDApy native covariance requires finite source eigenvalues")
+  phi<-t(sweep(Re(eig$vectors[,seq_len(n_components),drop=FALSE]),
     1L,sqrt(w),"/"))
-  # Native R's symmetric-eigen sorting and sign conventions are
-  # scientifically legitimate but numpy.linalg.eig in frozen FDApy
-  # does not enforce a descending order or deterministic signs.
-  # Both versions are compared in eigenspace after assignment.
+  # Only sign conventions and platform-level unsorted LAPACK tie
+  # ordering may differ from NumPy. Do not re-sort eigenpairs or
+  # replace zero-clipped source components with positive alternatives.
   # Frozen public source explicitly calls UFPCA.transform(data, ...)
   # rather than UFPCA.transform(NULL, ...). FDApy therefore calls
   # data.center(mean=self._mean,method_smoothing=score_smoothing).
@@ -396,7 +406,7 @@
   out$source_quadrature_weights<-w
   out$source_eigenfunctions<-phi
   out$source_eigenvalues_full<-lambda
-  out$source_eigenvalue_orientation<-"R_descending_sorted_sign_indeterminate"
+  out$source_eigenvalue_orientation<-"FDApy_numpy_general_eig_unsorted_negative_clipped"
   out$source_noise_estimator<-"FDApy_DIFFERENCE_SEQUENCE_order_2"
   out$source_covariance_estimator<-
     paste0("FDApy_irregular_1.0.x_",fit_smoothing,"_smoothing")
