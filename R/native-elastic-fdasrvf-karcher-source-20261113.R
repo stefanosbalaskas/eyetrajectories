@@ -3,6 +3,57 @@
 # Python scientific engine: fdasrsf>=2.7, fdacurve.karcher_mean,
 # srvf_align, shape_pca.
 #
+# Match the Python fdasrsf curve constructor's time-grid/arc-length
+# centroid without using reticulate, Python or non-exported fdasrvf symbols.
+# The frozen Python source subtracts this centroid BEFORE registering the
+# original curve's coordinates and interpolates those coordinates at gamma.
+.etr_elastic_source_center_open_curve <- function(beta) {
+  nd<-nrow(beta);nt<-ncol(beta)
+  .etr_assert(nd>=2L&&nt>=5L&&all(is.finite(beta)),
+    "native elastic input curve must be a complete finite open curve")
+  dt<-1/(nt-1L)
+  derivative<-matrix(0,nd,nt)
+  derivative[,1L]<-(beta[,2L]-beta[,1L])/dt
+  derivative[,nt]<-(beta[,nt]-beta[,nt-1L])/dt
+  derivative[,2L:(nt-1L)]<-
+    (beta[,3L:nt,drop=FALSE]-beta[,1L:(nt-2L),drop=FALSE])/(2*dt)
+  speed<-sqrt(colSums(derivative^2))
+  trapezoid<-rep(dt,nt)
+  trapezoid[c(1L,nt)]<-dt/2
+  length_curve<-sum(speed*trapezoid)
+  .etr_assert(is.finite(length_curve)&&length_curve>1e-12,
+    "native elastic arc-length centroid needs a nondegenerate curve")
+  centroid<-as.numeric((beta %*% (speed*trapezoid))/length_curve)
+  sweep(beta,1L,centroid,"-")
+}
+
+.etr_elastic_source_original_coordinate_align <- function(
+    beta,gamma,rotation_matrices,apply_rotation) {
+  shape<-dim(beta);nd<-shape[1L];nt<-shape[2L];n<-shape[3L]
+  .etr_assert(is.matrix(gamma)&&identical(dim(gamma),c(nt,n)),
+    "source original-coordinate alignment requires time-by-curve gamma")
+  .etr_assert(is.logical(apply_rotation)&&length(apply_rotation)==1L&&
+    !is.na(apply_rotation),"source elastic rotation must be Boolean")
+  if(apply_rotation)
+    .etr_assert(is.array(rotation_matrices)&&
+      identical(dim(rotation_matrices),c(nd,nd,n)),
+      "native elastic Karcher source rotation matrices missing")
+  grid<-seq(0,1,length.out=nt)
+  aligned<-array(NA_real_,c(n,nt,nd))
+  for(i in seq_len(n)){
+    centered<-.etr_elastic_source_center_open_curve(
+      beta[,,i,drop=FALSE][,,1L])
+    if(apply_rotation)
+      centered<-rotation_matrices[,,i]%*%centered
+    for(j in seq_len(nd))
+      aligned[i,,j]<-stats::approx(grid,centered[j,],
+        xout=gamma[,i],ties="ordered",rule=2)$y
+  }
+  .etr_assert(all(is.finite(aligned)),
+    "native elastic original-coordinate warping returned nonfinite values")
+  aligned
+}
+
 # This opt-in native-R mathematical implementation calls ONLY the
 # maintained independent fdasrvf R package (>=2.5.1) implementing true
 # SRVF Karcher mean with elastic dynamic-programming reparameterization
@@ -46,12 +97,16 @@
   # fdasrsf and fdasrvf both accept dimension x time x curves.
   beta<-aperm(trajectories$values,c(3L,2L,1L))
   dim(beta)<-c(nd,nt,n)
-  # TRUE nonidentity reparameterization via native R fdasrvf Karcher
-  # SRVF DP. The R backend computes its own alignment during Karcher
-  # fitting; the Python source invokes karcher_mean then srvf_align.
+  # Frozen fdasrsf fdacurve.__init__ ALWAYS calls curve_to_q with
+  # scale=TRUE, even when public scale_curves=FALSE. R fdasrvf passes
+  # scale to the *input SRVF* conversion, so passing public scale_curves
+  # verbatim (the previous implementation) changed the estimand.
+  # Use normalized input SRVFs in the Karcher source engine. The public
+  # scale_curves remains recorded as requested; Python's optional
+  # amplitude-length PCA for scale_curves=TRUE is still not source-parity.
   km<-fdasrvf::multivariate_karcher_mean(
     beta,mode="O",alignment=TRUE,
-    rotation=rotation,scale=scale_curves,
+    rotation=rotation,scale=TRUE,
     lambda=as.numeric(lam),maxit=20L,
     ms="mean",exact_medoid=FALSE,
     ncores=1L,verbose=FALSE)
@@ -107,8 +162,13 @@
   .etr_assert(all(vapply(seq_len(n),function(i)
     all(diff(gam[i,])>=-1e-5),logical(1L))),
     "native fdasrvf elastic warping must be nondecreasing")
-  aligned_values<-aperm(km$betan,c(3L,2L,1L))
-  dim(aligned_values)<-c(n,nt,nd)
+  # Python fdacurve.srvf_align is an independent second alignment:
+  # its betan curves are ORIGINAL arc-length-centered coordinates acted on
+  # by rotation and the final gamma, not q_to_curve(qn). Reconstructing
+  # from normalized qn loses the original coordinate amplitude.
+  # Preserve R q_to_curve results as explicit backend diagnostics only.
+  aligned_values<-.etr_elastic_source_original_coordinate_align(
+    beta,km$gamma,km$R,apply_rotation=rotation)
   provenance_note<-list(
     backend="fdasrvf_native_R",
     frozen_python_source_backend="fdasrsf",
@@ -116,6 +176,11 @@
     lam=as.numeric(lam),method=method,
     native_karcher_initialization="SRVF_medoid",
     frozen_python_karcher_initialization="first_curve",
+    source_input_srvfs_normalized=TRUE,
+    native_internal_karcher_scale=TRUE,
+    native_original_coordinate_alignment=TRUE,
+    native_aligned_curve_construction=
+      "center_original_then_rotate_then_linear_warp",
     independent_source_numeric_certification=FALSE,
     exact_python_backend_parity=FALSE)
   aligned<-etr_with_values(
@@ -139,6 +204,8 @@
     backend_object=NULL,
     native_backend_object=km,
     native_pca_object=pca,
+    native_srvf_reconstructed_aligned_curves=
+      aperm(km$betan,c(3L,2L,1L)),
     source_backend="Python_fdasrsf_not_loaded",
     source_python_backend_object_identity=FALSE,
     source_full_numeric_parity_certified=FALSE,
@@ -155,7 +222,7 @@
     source_scientific_scope=paste(
       "genuine_R_native_SRVF_elastic_Karcher_DP",
       "amplitude_phase_separation_tangent_covariance_shape_PCA",
-      "Python_seed_curve_reconstruction_and_backend_identity_NOT_equal"),
+      "Python_first_curve_seed_and_backend_identity_NOT_equal"),
     source_equivalent=FALSE,
     independently_source_certified=FALSE),
     class=c("etr_native_elastic_karcher_pca_scientific_record",
