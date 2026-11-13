@@ -117,7 +117,10 @@
   fit$model<-model
   .etr_assert(length(order)==47L&&setequal(names(fit),order),
     "strict GEE source record requires exactly 47 scientific fields")
-  fit<-fit[order]
+  # Base-R list subsetting drops the S3 class of a fitted native model.
+  # Keep the source field order without discarding the class required by
+  # the bootstrap and downstream strict GEE scientific workflows.
+  fit<-structure(fit[order],class="etr_generalized_function_on_scalar")
   # Preserve native convergence diagnostics as an attribute for downstream
   # R calculations, never impersonate an executed Python backend.
   attr(fit,"native_audit")<-audit
