@@ -49,7 +49,7 @@
   if(isTRUE(strict)){
     .etr_assert(inherits(result,"etr_joint_bspline_mixed")&&
       inherits(result$fitted_model,"lme"),
-      "strict mixed W3 source requires genuine native likelihood spline model")
+      "strict mixed W3 source requires genuine native joint spline likelihood model")
     .etr_assert(is.null(sampled_participant_indices),
       "strict Python source API does not accept externally supplied participant draws")
   }
