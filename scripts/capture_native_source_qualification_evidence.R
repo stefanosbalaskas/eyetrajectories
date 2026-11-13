@@ -159,9 +159,20 @@ queue_path<-file.path("artifacts","native_inference_contract_review",
   "python_1_2_scientific_contract_review_queue.csv")
 queue<-utils::read.csv(queue_path,stringsAsFactors=FALSE,
   check.names=FALSE)
+# The queue tracks all current author-scoped source-difference verdicts.
+# A previously closed difference must remain in the independent review
+# population, not be falsely reopened to satisfy a historical assertion.
+current_readiness<-etr_native_certification_readiness_frame()
+queue_idx<-match(queue$python_name,current_readiness$python_name)
 stopifnot(nrow(queue)==111L,!anyDuplicated(queue$python_name),
+  !anyNA(queue_idx),
+  is.logical(queue$source_difference_open),
+  !anyNA(queue$source_difference_open),
+  identical(as.logical(queue$source_difference_open),
+    as.logical(current_readiness$published_source_difference_open[queue_idx])),
+  all(queue$mapped),
+  all(queue$native_implementation_started),
   all(!queue$fully_certified),
-  all(queue$source_difference_open),
   all(file.exists(queue$oracle_test)))
 filter<-paste(c(
   "full-native-r-parity-ledger",
