@@ -75,6 +75,45 @@ testthat::test_local(
 
 The elastic Python test intentionally assesses scientific output layout, real phase warping and metadata; it **does not yet certify numerical equality**, as the R and Python solvers use different initialization and alignment code. FDApy tests attempt score/eigenspectrum matching and need careful review of numeric tolerances, component signs and permutations.
 
+## Windows RStudio: independently observed managed-Python and embedded fdasrsf joblib issue
+
+The initial Windows qualification resolved these specific environment failures **without modifying the native R mathematical implementation**:
+
+1. RStudio Terminal was **Git Bash** (`MINGW64`), not PowerShell. `py -3.11` was not on `PATH`; the Windows backslash command `.\\.venv-science\\Scripts\\python.exe` was invalid in Bash. Prefer `./.venv-science/Scripts/python.exe`, or avoid local virtualenvs and use managed Python.
+2. Windows Store Python 3.11 could execute Python packages but reticulate could not embed `C:/Program Files/WindowsApps/.../python311.dll` (`Access is denied`). Select `RETICULATE_PYTHON=managed` and `UV_PYTHON_PREFERENCE=only-managed` **before Python initialization**.
+3. The newest unpinned Matplotlib installation failed while importing `eyetrajectoriespy` (`AttributeError: module matplotlib has no attribute get_data_path`). Actual managed Python 3.11.16, frozen `eyetrajectoriespy==1.2.0`, `fdasrsf==2.7.4`, and `matplotlib==3.10.9` successfully imported in a fresh R session.
+4. The first real frozen-Python elastic test reached `fdasrsf` Karcher iteration and failed with a joblib `TerminatedWorkerError`, including `WinError 6: The handle is invalid` while spawning/cleaning up a loky subprocess. The frozen Python 1.2 code passes `parallel=False`, but upstream `fdasrsf` still uses `joblib.Parallel(n_jobs=-1)` in Karcher alignment. The **test only** now wraps the genuine `et.fit_elastic_fpca(...)` in `with joblib.parallel_config(backend='threading'):`; this keeps the same SRVF/DP/PCA algorithm and prevents loky process creation. A passing Python differential still requires a new local execution; SHA256 review hash refresh does not imply a test pass.
+
+Run a **fresh R session** from the exact-head branch:
+
+```r
+options(error = NULL)
+Sys.setenv(
+  RETICULATE_PYTHON = "managed",
+  UV_PYTHON_PREFERENCE = "only-managed",
+  MPLBACKEND = "Agg",
+  ET_RUN_PYTHON_ELASTIC_TESTS = "true",
+  ET_RUN_PYTHON_TESTS = "false"
+)
+reticulate::py_require(
+  packages = c("eyetrajectoriespy==1.2.0",
+               "fdasrsf==2.7.4",
+               "matplotlib==3.10.9"),
+  python_version = ">=3.11,<3.12",
+  action = "set"
+)
+reticulate::py_run_string(
+  "import matplotlib; import eyetrajectoriespy; import fdasrsf; import joblib"
+)
+pkgload::load_all(".", quiet = TRUE)
+testthat::test_local(
+  ".", filter = "native-elastic-fdasrvf-karcher-pca-20261113",
+  reporter = "summary", stop_on_failure = TRUE
+)
+```
+
+Only the elastic public frozen-Python differential is enabled. Do **not** set `ET_RUN_PYTHON_TESTS=true` until the other source suites have their optional Python dependencies and data environments qualified. The expected completion is zero test failures, not a claim of full Python numerical equality.
+
 ## Stage 3: Extend to three-OS CI, full check and independent scientific qualification
 
 1. Source-contract audit: all 198 reviewed record SHA256 pins and 508-row inventory, while explicitly retaining unqualified subcontracts in `native_scoped_fdapy_submethod_gaps_20261112.csv`, `native_scoped_elastic_submethod_gaps_20261113.csv`, and `native_scoped_environment_subcontracts_20261112.csv`.
