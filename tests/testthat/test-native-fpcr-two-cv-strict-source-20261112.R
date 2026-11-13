@@ -11,7 +11,7 @@
   for(i in seq_len(n))z[i,,1L]<-.2+a[i]*sin(pi*t)+b[i]*cos(2*pi*t)
   y<-if(family=="gaussian")
     1+.5*a-.2*b+.025*cv else
-    as.numeric(rep(c(0,1,1,0,1,0,0,1,0,1,1,0),3L))
+    as.numeric(((seq_len(n)*13L) %% 17L)<8L)
   x<-etr_trajectory_set(t,z,paste0("curve",seq_len(n)),"x",
     metadata=data.frame(participant=rep(sprintf("P%02d",1:6),each=6L)),
     coordinate_system="normalized",time_unit="normalized")
@@ -93,9 +93,9 @@ test_that("strict CV modes reject R-only fold replay and unsupported source RNG"
   expect_error(cv(strict_source_record=NA),"strict_source_record")
   expect_error(nc(strict_source_record=1L),"strict_source_record")
   expect_error(cv(shuffle=TRUE,random_state=19L,
-    strict_source_record=TRUE),"random_engine")
+    random_engine="base_R",strict_source_record=TRUE),"random_engine")
   expect_error(nc(shuffle=TRUE,random_state=19L,
-    strict_source_record=TRUE),"random_engine")
+    random_engine="base_R",strict_source_record=TRUE),"random_engine")
   expect_error(cv(fold_assignments=rep(0L,36L),
     strict_source_record=TRUE),"fold_assignments")
   expect_error(nc(outer_fold_assignments=rep(0L,36L),
@@ -128,7 +128,7 @@ _src_a=np.linspace(-2.,2.,36)
 _src_b=np.tile([1.,-1.,2.,-2.,1.5,-1.5,1.2,-1.2,2.2,-2.2,.7,-.7],3)
 _src_w=np.tile([.2,-.7,.9,0.,-.3,.5,1.2,-1.1,.4,-.9,.6,-.2],3)
 _src_y_gaussian=1.+.5*_src_a-.2*_src_b+.025*_src_w
-_src_y_binomial=np.tile([0.,1.,1.,0.,1.,0.,0.,1.,0.,1.,1.,0.],3)
+_src_y_binomial=((np.arange(1,37)*13)%17<8).astype(float)
 _src_values=np.array([.2+a*np.sin(np.pi*_src_t)+b*np.cos(2*np.pi*_src_t)
                     for a,b in zip(_src_a,_src_b)])[:,:,None]
 _src_x=et.TrajectorySet(time=_src_t,values=_src_values,
