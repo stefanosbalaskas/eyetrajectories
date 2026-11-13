@@ -72,6 +72,26 @@
   as.vector(X%*%beta)
 }
 
+# FDApy's IrregularFunctionalData.mean(..., method_smoothing="PS") first
+# calls _format_data: it constructs a unique-time grid, keeps the LAST
+# long-format observation at each repeated time, and gives a ZERO weight
+# to any cell whose last value is zero. This is not ordinary pooled least
+# squares across all irregular observations. Preserve the original pooled
+# evaluation domain even when a boundary cell has zero weight.
+.etr_fdapy_ps_irregular_mean <- function(x,y,points,
+    penalty=1,n_segments=10L,degree=3L,order_penalty=2L) {
+  .etr_assert(is.numeric(x)&&is.numeric(y)&&length(x)==length(y)&&
+    all(is.finite(x))&&all(is.finite(y)),
+    "FDApy PS irregular mean requires finite aligned source observations")
+  retained<-!duplicated(x,fromLast=TRUE)
+  weighted<-retained&(y!=0)
+  .etr_assert(sum(weighted)>=2L,
+    "FDApy PS irregular mean has insufficient nonzero unique-time cells")
+  .etr_fdapy_ps_1d(x[weighted],y[weighted],points,
+    penalty=penalty,n_segments=n_segments,degree=degree,
+    order_penalty=order_penalty)
+}
+
 .etr_fdapy_lp_design <- function(x,degree) {
   deg<-.etr_fdapy_fit_check_int(degree,"local polynomial degree",0L)
   .etr_assert(deg<=2L,
@@ -259,7 +279,8 @@
     pen<-if(is.null(meanopts$penalty))1 else meanopts$penalty
     .etr_assert(is.numeric(pen)&&length(pen)==1L,
       "FDApy PS mean penalty must be a scalar")
-    mu<-.etr_fdapy_ps_1d(unlist(time),unlist(values),grid,
+    mu<-.etr_fdapy_ps_irregular_mean(
+      unlist(time,use.names=FALSE),unlist(values,use.names=FALSE),grid,
       penalty=pen,n_segments=mean_segs,degree=mean_degree,
       order_penalty=mean_order)
     # Source data.center(mean=...,method_smoothing='PS',penalty=(0,))
