@@ -83,6 +83,19 @@
   .etr_assert(is.numeric(x)&&is.numeric(y)&&length(x)==length(y)&&
     all(is.finite(x))&&all(is.finite(y)),
     "FDApy PS irregular mean requires finite aligned source observations")
+  if(length(x)>2000L) {
+    # Source defaults to approx=TRUE. For >2000 original long-form
+    # samples, pandas.groupby(time).mean() is applied BEFORE _format_data.
+    # Preserve exact double-time grouping and source's zero-weight rule.
+    ord<-order(x)
+    sorted_x<-x[ord]
+    sorted_y<-y[ord]
+    starts<-which(c(TRUE,diff(sorted_x)!=0))
+    ends<-c(starts[-1L]-1L,length(sorted_x))
+    x<-sorted_x[starts]
+    y<-vapply(seq_along(starts),function(i)
+      mean(sorted_y[starts[i]:ends[i]]),numeric(1L))
+  }
   retained<-!duplicated(x,fromLast=TRUE)
   weighted<-retained&(y!=0)
   .etr_assert(sum(weighted)>=2L,
