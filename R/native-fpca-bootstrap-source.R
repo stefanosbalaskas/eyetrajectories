@@ -191,15 +191,17 @@ etr_fpca_component_band_reporting_text <- function(result,digits=2L) {
 .etr_validate_fpca_plot_component <- function(result,component,kind) {
   .etr_assert(inherits(result,kind),
     paste0("result must be a native ",kind," record"))
-  .etr_assert(is.numeric(result$n_components)&&
-    length(result$n_components)==1L&&
-    is.finite(result$n_components)&&result$n_components>=1&&
-    result$n_components==floor(result$n_components),
+  fitted <- result$n_components
+  # Bootstrap component bands carry retained rank in the fitted reference,
+  # not in a second top-level field. Do not mutate their public schema.
+  if(is.null(fitted)&&identical(kind,"etr_fpca_component_band"))
+    fitted <- result$reference$n_components
+  .etr_assert(is.numeric(fitted)&&length(fitted)==1L&&
+    is.finite(fitted)&&fitted>=1&&fitted==floor(fitted),
     "result must declare a positive fitted FPC count")
   .etr_assert(is.numeric(component)&&length(component)==1L&&
     !is.logical(component)&&is.finite(component)&&
-    component==floor(component)&&component>=0&&
-    component<result$n_components,
+    component==floor(component)&&component>=0&&component<fitted,
     "component must identify a zero-based fitted FPC")
   as.integer(component)+1L
 }
