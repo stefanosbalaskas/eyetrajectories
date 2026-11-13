@@ -67,8 +67,8 @@ test_that("source-scientific ordinary and nested FPCR CV return canonical fields
       .etr_fpcr_two_cv_source_keys$nested)
     expect_true(ordinary$provenance$fit_fpca_inside_fold)
     expect_true(nested$provenance$nested_selection)
-    expect_identical(ordinary$provenance$covariates,list("w"))
-    expect_identical(nested$provenance$covariates,list("w"))
+    expect_identical(ordinary$provenance$covariates,c("w"))
+    expect_identical(nested$provenance$covariates,c("w"))
     expect_identical(nrow(ordinary$fold_losses),6L)
     expect_identical(nrow(nested$outer_folds),3L)
     expect_identical(nrow(nested$inner_summaries),6L)
@@ -184,9 +184,11 @@ _src_cov=pd.DataFrame({'w':_src_w})
           expected_provenance[[key]],ignore_attr=TRUE,
           info=paste(family,"provenance",key))
     }
-    expect_equal(native_cv$component_counts,
-      et_to_r(py_cv$component_counts),ignore_attr=TRUE)
-    expect_equal(native_nc$component_counts,
-      et_to_r(py_nc$component_counts),ignore_attr=TRUE)
+    expect_equal(as.integer(native_cv$component_counts),
+      as.integer(unlist(et_to_r(py_cv$component_counts),use.names=FALSE)),
+      tolerance=0,ignore_attr=TRUE)
+    expect_equal(as.integer(native_nc$component_counts),
+      as.integer(unlist(et_to_r(py_nc$component_counts),use.names=FALSE)),
+      tolerance=0,ignore_attr=TRUE)
   }
 })
