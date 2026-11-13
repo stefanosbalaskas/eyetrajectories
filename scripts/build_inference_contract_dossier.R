@@ -133,10 +133,15 @@ if(length(not_implemented))
     paste(not_implemented,collapse=", "),
     ". Fix the implementation or authoritative inventory; never sign a",
     " missing scientific contract.",call.=FALSE)
+# The live ledger may resolve an AUTHOR-SCOPED source difference while
+# its full public-contract and independent review still remain unsigned.
+# Do not require the 111 selected records to retain obsolete OPEN flags.
+# Every OPEN/CLOSED value is retained verbatim in the reviewer worklist.
 stopifnot(!anyNA(idx),all(readiness$kind[idx]=="function"),
   all(readiness$native_mapping_present[idx]),
   all(readiness$native_implementation_started[idx]),
-  all(readiness$published_source_difference_open[idx]),
+  is.logical(readiness$published_source_difference_open),
+  !anyNA(readiness$published_source_difference_open[idx]),
   !any(readiness$fully_certified[idx]))
 source_idx<-match(source_names,api$python_name)
 stopifnot(!anyNA(source_idx),all(api$source_git_sha[source_idx]==
