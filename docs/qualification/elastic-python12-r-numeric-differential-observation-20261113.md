@@ -105,3 +105,51 @@ testthat::test_local(".",
 ```
 
 Expected diagnostic heading: `ELASTIC_PYTHON12_NATIVE_R_NORMALIZATION_ABLATION`. Any numeric change to the production mode should be based on the actual ablation output and independent source/domain review; **do not unilaterally relabel R's scale flag as Python's `scale_curves`**.
+
+## Corrective implementation after the source-normalization ablation — post-fix verification pending
+
+The user-reported ablation completed successfully with the following exact values:
+
+```text
+python_initial_srvf_norm_min = 1
+python_initial_srvf_norm_max = 1
+r_unscaled_initial_srvf_norm_min = 2.11799667881
+r_unscaled_initial_srvf_norm_max = 2.27462087215
+r_scaled_initial_srvf_norm_min = 1
+r_scaled_initial_srvf_norm_max = 1
+source_q_scaled_rmse = 1.20896827424e-16
+source_q_unscaled_rmse = 0.831659539438
+native_unscaled_warp_rmse = 0.0919100238219
+native_scaled_warp_rmse = 0.0278712543617
+native_unscaled_mean_centered_rmse = 0.505506516285
+native_scaled_mean_centered_rmse = 0.0160952333561
+native_unscaled_reconstructed_aligned_rmse = 0.251928599932
+native_scaled_reconstructed_aligned_rmse = 0.493742452123
+native_unscaled_original_coordinate_warp_rmse = 0.254281019748
+native_scaled_original_coordinate_warp_rmse = 0.0780389883486
+native_unscaled_score_distance_rmse = 0.598456909462
+native_scaled_score_distance_rmse = 0.0909911011504
+native_unscaled_rescaled_score_distance_rmse = 0.105653628396
+native_scaled_rescaled_score_distance_rmse = 0.0789860875754
+native_scaled_score_pair_distance_correlation = 0.864297947803
+source_numeric_parity_certified = FALSE
+```
+
+**Verified conceptual error:** frozen `fdasrsf.fdacurve.__init__` always converts its input to a unit SRVF with `curve_to_q(...,scale=True)`, regardless of public `scale_curves=False`. Previous R strict source forwarded `scale_curves` to R fdasrvf's *input* normalization flag, producing different geometric estimands. The corrected R strict DP path now explicitly normalizes the input SRVFs.
+
+**Verified source construction distinction:** frozen Python `fdacurve.srvf_align` interpolates original centered curves along gamma, not re-integrated, normalized aligned SRVFs. The corrected R strict DP output now applies arc-length centering, optional rotation and piecewise-linear coordinate interpolation at native R gamma. The previous R `q_to_curve` aligned reconstruction remains an explicit backend diagnostic; this is not the returned public `aligned` trajectory.
+
+**Preserved contracts:** `method="identity_only"` legacy path unchanged; public `scale_curves` value preserved in the result and provenance; no reticulate/Python run inside the production R method. Python's additional length coordinate when public `scale_curves=TRUE`, first-curve Karcher seed and second final DP alignment remain open numerical subcontracts.
+
+**Next verification, not yet observed:** From the corrected exact-head branch run `source("scripts/check_all_r_syntax.R")` and, in a fresh/working managed Python 3.11 R session with frozen `eyetrajectoriespy==1.2.0`, `fdasrsf==2.7.4`, `matplotlib==3.10.9`:
+
+```r
+Sys.setenv(ET_RUN_PYTHON_ELASTIC_TESTS="true",
+           ET_RUN_PYTHON_TESTS="false")
+pkgload::load_all(".",quiet=TRUE)
+testthat::test_local(".",
+  filter="native-elastic-fdasrvf-karcher-pca-20261113|native-elastic-source-normalization-ablation-20261113",
+  reporter="summary",stop_on_failure=TRUE)
+```
+
+The first test explicitly checks source input-q RMSE relative to the actual Python backend at <1e-10 **for this fixture only**. The ablation test retains independent historical unscaled R comparison and evaluates corrected production. Numerical differences beyond this source primitive must be reported; independent full source certification is still **FALSE**.
