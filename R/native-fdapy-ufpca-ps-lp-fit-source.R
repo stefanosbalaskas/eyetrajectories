@@ -357,16 +357,30 @@
   # symmetric=TRUE instead sorts descending, changes the second
   # eigenpair (often a negative one), then propagates false positive
   # minor components into Mercer covariance and PACE scores.
-  eig<-eigen(weighted,symmetric=FALSE)
-  .etr_assert(all(is.finite(Re(eig$values)))&&
-    all(abs(Im(eig$values))<=1e-10)&&
-    all(abs(Im(eig$vectors))<=1e-10),
-    "FDApy real covariance produced complex general eigensystem")
-  lambda<-pmax(as.numeric(Re(eig$values)),0)
-  .etr_assert(length(lambda)>=n_components&&
-    all(is.finite(lambda))&&all(lambda>=0),
+  # Base R eigen() *also sorts* the general DGEEV eigenpairs by
+  # modulus. Call DGEEV directly to retain its raw LAPACK order, as
+  # NumPy does. The selected first k raw eigenpairs may include a
+  # negative value, which frozen FDApy clips to zero.
+  nr<-as.integer(nrow(weighted))
+  workspace<-as.integer(max(1L,8L*nr))
+  raw_eig<-tryCatch(.Fortran("dgeev",
+      jobvl="N",jobvr="V",n=nr,a=as.double(weighted),lda=nr,
+      wr=double(nr),wi=double(nr),vl=double(1L),ldvl=1L,
+      vr=double(nr*nr),ldvr=nr,
+      work=double(workspace),lwork=workspace,info=integer(1L)),
+    error=function(e)stop("Native FDApy requires unsorted LAPACK DGEEV: ",
+      conditionMessage(e),call.=FALSE))
+  .etr_assert(identical(raw_eig$info,0L)&&
+    all(is.finite(raw_eig$wr))&&
+    all(is.finite(raw_eig$wi))&&
+    all(abs(raw_eig$wi)<=1e-10),
+    "FDApy real covariance DGEEV failed or returned complex eigenpairs")
+  eig_values<-as.numeric(raw_eig$wr)
+  eig_vectors<-matrix(as.numeric(raw_eig$vr),nr,nr)
+  lambda<-pmax(eig_values,0)
+  .etr_assert(length(lambda)>=n_components&&all(is.finite(lambda)),
     "FDApy native covariance requires finite source eigenvalues")
-  phi<-t(sweep(Re(eig$vectors[,seq_len(n_components),drop=FALSE]),
+  phi<-t(sweep(eig_vectors[,seq_len(n_components),drop=FALSE],
     1L,sqrt(w),"/"))
   # Only sign conventions and platform-level unsorted LAPACK tie
   # ordering may differ from NumPy. Do not re-sort eigenpairs or
