@@ -206,7 +206,7 @@ def _w2_make_irregular(times,values,ids,metadata):
       expect_identical(native$steps[[i]][["function"]],
         et_to_r(py$steps[[i-1L]][["function"]]))
       expect_identical(native$steps[[i]]$status,
-        et_to_r(py$steps[[i]]$status))
+        et_to_r(py$steps[[i-1L]]$status))
     }
     if(with_uncertainty){
       for(field in c("covariance","standard_errors","correlations"))
