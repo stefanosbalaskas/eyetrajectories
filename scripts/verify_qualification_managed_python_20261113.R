@@ -44,6 +44,17 @@ reticulate::py_require(
   python_version="3.12"
 )
 
+# Source checkout now includes a compiled LAPACK bridge to reproduce
+# NumPy DGEEV eigenpair order. On Windows, building it requires Rtools
+# matched to the running R installation (R 4.5/4.6 -> Rtools45).
+if(.Platform$OS.type=="windows" && dir.exists("src") &&
+   requireNamespace("pkgbuild",quietly=TRUE) &&
+   !pkgbuild::has_build_tools(debug=FALSE))
+  stop("EyeTrajectories now needs the compatible Windows Rtools compiler ",
+    "for its native LAPACK DGEEV bridge. See ",
+    "https://cran.r-project.org/bin/windows/Rtools/ ",
+    "and rerun after installing Rtools.",call.=FALSE)
+
 config<-tryCatch(reticulate::py_config(),error=function(e)
   stop("Managed Python initialization failed: ",conditionMessage(e),
     "\nIf Python was initialized before this launcher, restart R first. ",

@@ -233,20 +233,18 @@
   n<-as.integer(nrow(x))
   .etr_assert(n>=2L&&n<=.Machine$integer.max/8L,
     "FDApy DGEEV dimension is outside the supported range")
-  work_n<-as.integer(max(1L,8L*n))
-  result<-tryCatch(.Fortran("dgeev",
-      jobvl="N",jobvr="V",n=n,a=as.double(x),lda=n,
-      wr=double(n),wi=double(n),vl=double(1L),ldvl=1L,
-      vr=double(n*n),ldvr=n,
-      work=double(work_n),lwork=work_n,info=integer(1L)),
-    error=function(e)stop("Native FDApy requires unsorted LAPACK DGEEV: ",
+  # R does not expose LAPACK dgeev as a callable .Fortran symbol on
+  # Windows. Use the package's registered .Call routine linked against
+  # the standard R LAPACK/BLAS toolchain instead.
+  result<-tryCatch(.Call("etr_dgeev_unsorted",x,
+      PACKAGE="eyetrajectories"),
+    error=function(e)stop("Native FDApy registered LAPACK DGEEV failed: ",
       conditionMessage(e),call.=FALSE))
-  .etr_assert(identical(result$info,0L)&&
-    all(is.finite(result$wr))&&all(is.finite(result$wi))&&
-    all(abs(result$wi)<=1e-10),
-    "FDApy real covariance DGEEV failed or returned complex eigenpairs")
-  list(values=as.numeric(result$wr),
-    vectors=matrix(as.numeric(result$vr),n,n))
+  .etr_assert(is.list(result)&&
+    is.numeric(result$values)&&length(result$values)==n&&
+    is.matrix(result$vectors)&&identical(dim(result$vectors),c(n,n)),
+    "FDApy native unsorted eigensystem returned invalid registered result")
+  result
 }
 
 .etr_fdapy_fit_native_ufpca <- function(trajectories,dimension,
