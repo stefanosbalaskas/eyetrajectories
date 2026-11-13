@@ -8,12 +8,7 @@ envelopes and familywise fixed-target wild-bootstrap tail probabilities
 on their declared scientific scopes. Existing PACE score diagnostics retain
 separate prior documentation.
 }
-\usage{
-etr_plot_fpca_component_envelope(
-  result, component = 0L, dimension = NULL)
-etr_plot_fpca_wild_bootstrap_family_test(
-  result, max_targets = 30L, show_targetwise = TRUE)
-}
+
 \arguments{
 \item{result}{Declared native R scientific result record with source
 geometry, fitted population quantities and precomputed diagnostics.}
