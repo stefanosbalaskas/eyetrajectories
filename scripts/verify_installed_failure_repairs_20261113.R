@@ -2,11 +2,19 @@
 # R CMD check, before paying the cost of another package-wide source build.
 # This is an AUTHOR diagnostic gate, not independent 508-export certification.
 # Run in the repository root: source("scripts/verify_installed_failure_repairs_20261113.R")
+# For the frozen Python 1.2 oracles:
+#   Restart R
+#   source("scripts/verify_qualification_managed_python_20261113.R")
+#   Sys.setenv(ET_RUN_INSTALLED_REPAIRS_PYTHON="true")
+#   source("scripts/verify_installed_failure_repairs_20261113.R")
+# The separate mode flag avoids inadvertently enabling Python tests during
+# a CRAN-safe native-only regression check.
 if(!file.exists("DESCRIPTION")||!dir.exists("tests/testthat"))
   stop("Run this qualification script from the EyeTrajectories repository root",
     call.=FALSE)
+python_mode<-identical(Sys.getenv("ET_RUN_INSTALLED_REPAIRS_PYTHON"),"true")
 Sys.setenv(
-  ET_RUN_PYTHON_TESTS="false",
+  ET_RUN_PYTHON_TESTS=if(python_mode)"true" else "false",
   ET_RUN_PYTHON_ELASTIC_TESTS="false",
   ET_RUN_SCIENTIFIC_SLOW="false",
   TESTTHAT_MAX_FAILS="200")
@@ -16,6 +24,19 @@ if(!requireNamespace("pkgload",quietly=TRUE)||
    !requireNamespace("testthat",quietly=TRUE))
   stop("Install pkgload and testthat before source qualification",call.=FALSE)
 pkgload::load_all(".",quiet=TRUE)
+if(python_mode){
+  if(!requireNamespace("reticulate",quietly=TRUE)||
+     !nzchar(Sys.getenv("RETICULATE_PYTHON")))
+    stop("Python-mode repair qualification requires reticulate and the ",
+      "managed frozen Python launcher in a fresh R session",call.=FALSE)
+  version<-tryCatch(et_python_version(),error=function(e)
+    stop("Cannot access frozen Python 1.2: ",conditionMessage(e),
+      call.=FALSE))
+  if(!identical(version,"1.2.0"))
+    stop("Refuse differential qualification with Python version: ",
+      version,call.=FALSE)
+  cat("INSTALLED_REPAIR_FROZEN_PYTHON=1.2.0\n")
+}
 # Exact test-file names from the 53-failure installed-package transcript.
 implicated<-c(
   "native-certification",
@@ -52,8 +73,11 @@ if(!all(file.exists(files)))
   stop("Missing implicated source tests: ",
     paste(files[!file.exists(files)],collapse=", "),call.=FALSE)
 cat("INSTALLED_REPAIR_TEST_FILES=",length(files),"\n",sep="")
-cat("INSTALLED_REPAIR_SCOPE=NO_PYTHON_NATIVE_SOURCE_FIRST\n")
+cat("INSTALLED_REPAIR_SCOPE=",if(python_mode)
+  "FROZEN_PYTHON_1_2_DIFFERENTIAL" else "NO_PYTHON_NATIVE_SOURCE_FIRST",
+  "\n",sep="")
 testthat::test_local(".",
   filter=paste(implicated,collapse="|"),
   reporter="progress",stop_on_failure=TRUE,stop_on_warning=TRUE)
-cat("INSTALLED_REPAIR_REGRESSION_PASS; certification=FALSE\n")
+cat("INSTALLED_REPAIR_REGRESSION_PASS; python_mode=",python_mode,
+  "; certification=FALSE\n",sep="")
