@@ -113,9 +113,14 @@ test_that("only two additional record catalog gaps receive developer closure",{
   open_callable<-as.integer(sum(witness$unresolved_source_gap))
   expect_identical(sum(catalog$is_python_function&
     catalog$source_contract_gap_unresolved),open_callable)
-  expect_identical(sum(catalog$nonfunction_source_gap_unresolved),1L)
+  nonfun<-utils::read.csv(.etr_test_extdata(
+    "native_nonfunction_source_gaps_v1.csv"),
+    stringsAsFactors=FALSE,check.names=FALSE)
+  expected_nonfun<-as.integer(sum(nonfun$unresolved))
+  expect_identical(sum(catalog$nonfunction_source_gap_unresolved),
+    expected_nonfun)
   expect_identical(sum(!catalog$source_contract_gap_unresolved&
     !catalog$nonfunction_source_gap_unresolved),
-    as.integer(508L-open_callable-1L))
+    as.integer(508L-open_callable-expected_nonfun))
   expect_false(any(catalog$one_to_one_native_contract_complete))
 })
