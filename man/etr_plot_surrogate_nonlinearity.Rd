@@ -2,7 +2,8 @@
 \alias{etr_plot_surrogate_nonlinearity}
 \title{Plot source-consistent IAAFT surrogate histogram and observation marker}
 \usage{
-etr_plot_surrogate_nonlinearity(result, bins = 20L, python_boundary_mode = FALSE, strict_source_record = FALSE, ...)
+etr_plot_surrogate_nonlinearity(result, bins = 20L, python_boundary_mode = FALSE,
+  strict_source_record = FALSE, ...)
 }
 \arguments{
 \item{result}{Native precomputed surrogate nonlinearity diagnostic.}\item{bins}{Number of histogram bins. Strict mode requires an R integer scalar corresponding to a Python integer.}\item{python_boundary_mode}{Use NumPy-style equal-width, left-inclusive bin counts when TRUE. Automatically enabled by strict source artist mode.}\item{strict_source_record}{Logical scalar selecting native Matplotlib source histogram artist geometry.}\item{...}{Legacy base R graphics options.}
