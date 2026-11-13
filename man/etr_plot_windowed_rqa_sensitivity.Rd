@@ -2,7 +2,8 @@
 \alias{etr_plot_windowed_rqa_sensitivity}
 \title{Plot per-specification functional windowed RQA sensitivity source artists}
 \usage{
-etr_plot_windowed_rqa_sensitivity(result, curve, metric, strict_source_record = FALSE, ...)
+etr_plot_windowed_rqa_sensitivity(result, curve, metric, strict_source_record = FALSE,
+  ...)
 }
 \arguments{
 \item{result}{Native declared windowed-RQA sensitivity result with per-specification analyses.}
