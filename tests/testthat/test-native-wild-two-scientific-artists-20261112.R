@@ -52,7 +52,7 @@ test_that("Monte Carlo precision native artist preserves both fixed-family error
     expect_identical(ax$ylim,c(-.02,1.02))
     expect_identical(ax$ylabel,"Bootstrap exceedance probability")
     expect_identical(ax$legend_labels,c(
-      "maxT tail probability","target-wise tail probability","alpha=0.05"))
+      "alpha=0.05","maxT tail probability","target-wise tail probability"))
     for(k in 1:2){
       artist<-ax$artists[[k]]
       expect_identical(artist$kind,"errorbar")
