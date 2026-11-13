@@ -1,7 +1,6 @@
 \name{etr_fpca_wild_bootstrap_family_test_monte_carlo_diagnostics}
 \alias{etr_fpca_wild_bootstrap_family_test_monte_carlo_diagnostics}
-\alias{etr_plot_fpca_wild_bootstrap_monte_carlo_diagnostics}
-\alias{etr_plot_fpca_wild_bootstrap_simultaneous_interval}
+
 \title{Native fixed-family FPCR Monte Carlo precision and simultaneous graphics}
 \description{Read-only, source-derived Monte Carlo precision from precomputed
 wild-bootstrap roots and fixed-family maxT statistics. Exact Clopper-Pearson
