@@ -21,12 +21,11 @@ etr_fpca_component_band_reporting_text(result, digits = 2L)
 \item{result}{Corresponding audited native R score, spectrum,
 functional mean or component-band result class.}
 \item{digits}{Nonnegative integer numeric reporting precision, 0 to 12.}
-\item{component}{Source-compatible zero-based component index.}
-\item{max_targets}{Maximum finite number of target trajectories to plot.}
-\item{metric}{Source spectrum measure, one of \code{"eigenvalue"},
-\code{"explained_variance_ratio"} or \code{"cumulative_variance_ratio"}.}
-\item{dimension}{Optional fitted FPCA channel name.}
-\item{...}{Further base R graphics parameters.}
+
+
+
+
+
 }
 \value{
 Reporting methods return a character string. The plot methods render
