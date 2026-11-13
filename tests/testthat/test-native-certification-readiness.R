@@ -14,15 +14,28 @@ test_that("all 508 published exports receive a fail-closed evidence queue",{
     api$is_python_function]),332L)
   expect_gte(sum(readiness$native_implementation_started[
     api$is_python_function]),307L)
-  expect_gte(sum(readiness$published_source_difference_open),154L)
-  # Source gaps include 203 callable-function contracts and a separate
-  # frozen Python TrajectorySet constructor/method domain counterexample.
-  expect_equal(sum(readiness$nonfunction_source_difference_open),1L)
+  # Active source flags can be closed by bounded author-side review,
+  # but this must NEVER elevate independent full-contract certification.
+  callable<-utils::read.csv(.etr_test_extdata(
+    "native_source_contract_gaps_stage22.csv"),
+    stringsAsFactors=FALSE,check.names=FALSE)
+  other<-utils::read.csv(.etr_test_extdata(
+    "native_nonfunction_source_gaps_v1.csv"),
+    stringsAsFactors=FALSE,check.names=FALSE)
+  expect_identical(nrow(callable),203L)
+  expect_identical(nrow(other),1L)
+  expect_identical(sum(readiness$published_source_difference_open),
+    sum(callable$unresolved_source_gap))
+  expect_identical(sum(readiness$nonfunction_source_difference_open),
+    sum(other$unresolved))
   class_gap<-readiness[readiness$python_name=="TrajectorySet",,drop=FALSE]
   expect_identical(nrow(class_gap),1L)
-  expect_true(class_gap$nonfunction_source_difference_open)
+  expect_identical(class_gap$nonfunction_source_difference_open,
+    other$unresolved)
   expect_identical(class_gap$first_unresolved_requirement,
-    "unresolved_nonfunction_source_difference")
+    if(other$unresolved)
+      "unresolved_nonfunction_source_difference"
+    else "approved_numerical_oracle_missing")
   expect_false(class_gap$fully_certified)
   expect_equal(sum(readiness$fully_certified),0L)
   expect_true(all(nzchar(readiness$first_unresolved_requirement)))
@@ -34,9 +47,14 @@ test_that("all 508 published exports receive a fail-closed evidence queue",{
   expect_identical(nrow(mapped),4L)
   expect_true(all(mapped$native_mapping_present))
   expect_true(all(mapped$native_implementation_started))
-  expect_true(all(mapped$published_source_difference_open))
+  mapped_expected<-callable$unresolved_source_gap[
+    match(mapped$python_name,callable$python_name)]
+  expect_false(anyNA(mapped_expected))
+  expect_identical(mapped$published_source_difference_open,
+    mapped_expected)
   expect_true(all(mapped$first_unresolved_requirement==
-    "unresolved_published_source_difference"))
+    ifelse(mapped_expected,"unresolved_published_source_difference",
+      "approved_numerical_oracle_missing")))
   expect_true(all(grepl("independent_review_approval_missing",
     mapped$all_unresolved_requirements,fixed=TRUE)))
   # Every frozen Python function now has a real exported native R
@@ -98,9 +116,12 @@ test_that("all 508 published exports receive a fail-closed evidence queue",{
   expect_identical(nrow(simulated),1L)
   expect_true(simulated$native_mapping_present)
   expect_true(simulated$native_implementation_started)
-  expect_true(simulated$published_source_difference_open)
+  sim_open<-callable$unresolved_source_gap[
+    match(simulated$python_name,callable$python_name)]
+  expect_identical(simulated$published_source_difference_open,sim_open)
   expect_identical(simulated$first_unresolved_requirement,
-    "unresolved_published_source_difference")
+    if(sim_open)"unresolved_published_source_difference"
+    else "approved_numerical_oracle_missing")
   expect_false(simulated$fully_certified)
   expect_true(grepl("independent_review_approval_missing",
     simulated$all_unresolved_requirements,fixed=TRUE))
