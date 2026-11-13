@@ -19,7 +19,12 @@
     preprocessing=etr_preprocessing_plan(list(step)),
     select_components=FALSE,n_components=3L,
     weights=matrix(c(.25,.5,.75,1.0),nrow=2L,byrow=TRUE),
-    metadata=list(site="fish's β",path="fish/study",
+    # Frozen Python converts pathlib.Path("fish/study") to its native
+    # platform string: Windows backslashes, POSIX forward slashes.
+    # R has no pathlib Path object; supply the matching serialized string
+    # without weakening equality of the nested metadata or other fields.
+    metadata=list(site="fish's β",
+      path=if(.Platform$OS.type=="windows") "fish\\study" else "fish/study",
       notes=list("α","β")),empty=list())))
   if(case=="decision")return(etr_workflow_config(
     list(value=list("right","left"),source="audited_selector",
