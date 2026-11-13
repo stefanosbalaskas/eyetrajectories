@@ -7,9 +7,20 @@ from unittest.mock import patch
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1] / "scripts"))
 import build_508_all_export_review_waves as m
+from test_verify_508_certification_batch import synthetic_gap_counts
 
 
 class Full508Tests(unittest.TestCase):
+    def setUp(self):
+        # Exercise the real 508-wave validator against a synthetic count
+        # snapshot, not against currently stale author-side source receipts.
+        # Production builds still invoke the strict live read_inventory().
+        self.count_patch = patch.object(
+            m.source_gap_inventory, "read_inventory",
+            return_value=synthetic_gap_counts())
+        self.count_patch.start()
+        self.addCleanup(self.count_patch.stop)
+
     def test_source_gap_and_backend_gates(self):
         row={"namespace":"root","python_name":"f","kind":"function",
              "native_r_candidate":"etr_f","recorded_r_git_head":"a"*40,
