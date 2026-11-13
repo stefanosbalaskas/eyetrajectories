@@ -75,7 +75,8 @@ test_that("nine scientific visualization mappings are unique and unsigned",{
   expect_gte(sum(z$named_native_candidate&z$is_python_function),236L)
   expect_lte(sum(z$is_python_function&!z$named_native_candidate),144L)
   expect_gte(sum(z$native_implementation_started),211L)
-  expect_equal(sum(z$contract_certification_candidate),4L)
+  expect_equal(sum(z$contract_certification_candidate),5L)
+  expect_false(any(z$one_to_one_native_contract_complete))
   expect_lte(sum(z$source_contract_gap_unresolved),28L)
   # All nine Stage-24 graphics have provisional source-scientific
   # geometry reviews; independent full-contract certification remains open.
