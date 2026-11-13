@@ -1,6 +1,6 @@
 \name{etr_native_mixed_random_effects_plots}
-\alias{etr_plot_functional_random_effects}
-\alias{etr_plot_functional_trial_random_effects}
+\alias{etr_native_mixed_random_effects_plots}
+
 \title{Native participant and trial functional random-effect plots}
 \description{
 Read-only base R plotting of the realized participant-level functional random
