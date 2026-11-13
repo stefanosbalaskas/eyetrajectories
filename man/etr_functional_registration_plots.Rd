@@ -1,7 +1,6 @@
 \name{etr_plot_reconstruction_curve}
 \alias{etr_plot_reconstruction_curve}
-\alias{etr_plot_registration}
-\alias{etr_plot_warping_functions}
+
 \title{Native functional reconstruction and landmark registration visualization}
 \description{
 Three stable, unnumbered Python-free public scientific plotting methods:
