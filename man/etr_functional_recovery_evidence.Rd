@@ -35,12 +35,10 @@ constructor; not a Python dataclass.}
 \item{python_boundary_mode}{Use the frozen NumPy double-precision
 pairwise reductions and linear interpolation arithmetic for the
 group summary. The default uses R's native arithmetic.}
-\item{summary}{Native descriptive functional recovery summary data frame.}
-\item{metric}{Exact recovery metric name in the summary.}
-\item{statistic}{Numeric recovery summary field; median displays
-the observed IQR if q25 and q75 are present. Other scalar statistics
-are drawn without invented uncertainty intervals.}
-\item{...}{Further base R graphics parameters.}
+
+
+
+
 }
 \value{
 The constructor returns an explicit \code{etr_functional_recovery_result}
