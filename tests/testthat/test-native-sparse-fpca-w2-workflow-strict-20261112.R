@@ -204,7 +204,7 @@ def _w2_make_irregular(times,values,ids,metadata):
       expect_identical(native$steps[[i]]$name,
         et_to_r(py$steps[[i-1L]]$name))
       expect_identical(native$steps[[i]][["function"]],
-        et_to_r(py$steps[[i]][["function"]]))
+        et_to_r(py$steps[[i-1L]][["function"]]))
       expect_identical(native$steps[[i]]$status,
         et_to_r(py$steps[[i]]$status))
     }
