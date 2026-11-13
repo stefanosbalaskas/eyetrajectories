@@ -1,8 +1,7 @@
 \name{etr_multivariate_iaaft_diagnostics_frame}
 \alias{etr_multivariate_iaaft_diagnostics_frame}
 \alias{etr_functional_mixed_effects_variance_bootstrap_frame}
-\alias{etr_plot_multivariate_iaaft_diagnostics}
-\alias{etr_plot_multivariate_surrogate_nonlinearity}
+
 \title{Source-aligned native multivariate surrogate and mixed-effects diagnostic outputs}
 \description{
 Read-only diagnostic frames for multivariate IAAFT surrogates and complete
