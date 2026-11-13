@@ -2,9 +2,7 @@
 \alias{etr_list_mathematical_contracts}
 \alias{etr_get_mathematical_contract}
 \alias{etr_mathematical_contract_frame}
-\alias{etr_plot_kantz_sensitivity}
-\alias{etr_plot_lyapunov_sensitivity}
-\alias{etr_plot_windowed_rqa_sensitivity}
+
 \title{Published Python 1.2 mathematical contracts and native nonlinear sensitivity plots}
 \description{
 Read-only native metadata access to all 41 scientific mathematical
