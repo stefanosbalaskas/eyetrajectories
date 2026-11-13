@@ -107,7 +107,14 @@ test_that("all 128 nonfunction source symbols require independent review",{
   other <- utils::read.csv(path,stringsAsFactors=FALSE)
   expect_equal(nrow(other),128L)
   expect_equal(length(unique(paste(other$namespace,other$python_name))),128L)
-  expect_true(all(other$evidence_state=="not_reviewed"))
+  # TrajectorySet has a bounded author-scoped review. The remaining
+  # 127 source classes/constants are unreviewed; no independent approvals.
+  expect_identical(sum(other$evidence_state=="not_reviewed"),127L)
+  expect_identical(sum(other$evidence_state=="author_scoped_reviewed"),1L)
+  expect_identical(other$evidence_state[other$python_name=="TrajectorySet"],
+    "author_scoped_reviewed")
+  expect_true(all(other$evidence_state %in%
+    c("not_reviewed","author_scoped_reviewed")))
   for(key in c("numerical_or_value_approved","schema_boundary_approved",
                "scientific_scope_approved","independent_reviewer_approved"))
     expect_false(any(other[[key]]))
@@ -142,7 +149,12 @@ test_that("workflow integration stays uncertified until independent full review"
   queue <- etr_native_source_contract_review_queue()
   expect_equal(nrow(queue),508L)
   expect_gte(sum(queue$mapped & queue$kind=="function"),337L)
-  expect_equal(sum(queue$targeted_numerical_fixture_pass),4L)
+  # An expanding targeted fixture set is not independent certification.
+  # Its size changes as additional source oracles are implemented;
+  # test the validated boolean ledger, not a frozen historical count.
+  expect_type(queue$targeted_numerical_fixture_pass,"logical")
+  expect_false(anyNA(queue$targeted_numerical_fixture_pass))
+  expect_gte(sum(queue$targeted_numerical_fixture_pass),4L)
   expect_identical(sum(queue$source_gap_unresolved),
     sum(reviewed$unresolved_source_gap))
   expect_false(any(queue$full_numeric_approved))
