@@ -65,6 +65,31 @@ test_that("FDApy irregular PS mean honors source last-write and zero-weight cell
     expected,tolerance=1e-12)
 })
 
+test_that("FDApy irregular PS mean follows upstream approx switch above 2000 long samples",{
+  grid<-seq(0,1,length.out=11L)
+  n_per_time<-201L
+  x<-rep(grid,each=n_per_time)
+  y<-rep(seq_along(grid)/10,each=n_per_time)+
+    rep(seq_len(n_per_time)/1000,times=length(grid))
+  expect_gt(length(x),2000L)
+  means<-vapply(seq_along(grid),function(i)
+    mean(y[((i-1L)*n_per_time+1L):(i*n_per_time)]),numeric(1L))
+  expected<-.etr_fdapy_ps_1d(grid,means,grid,
+    penalty=.2,n_segments=5L,degree=3L)
+  got<-.etr_fdapy_ps_irregular_mean(x,y,grid,
+    penalty=.2,n_segments=5L,degree=3L)
+  expect_equal(got,expected,tolerance=1e-11)
+  # The boundary of 2000 source long-form samples retains last-write.
+  x0<-rep(grid[1:10],each=200L)
+  y0<-seq_along(x0)/1000
+  boundary<-.etr_fdapy_ps_irregular_mean(x0,y0,grid,
+    penalty=.2,n_segments=5L,degree=3L)
+  expected_last<-.etr_fdapy_ps_1d(grid[1:10],
+    y0[seq(200L,2000L,by=200L)],grid,
+    penalty=.2,n_segments=5L,degree=3L)
+  expect_equal(boundary,expected_last,tolerance=1e-11)
+})
+
 test_that("source FDApy mean PS and local-polynomial smoothers reproduce known mathematical truths",{
   x<-seq(0,1,length.out=17L)
   y<-1+2*x
