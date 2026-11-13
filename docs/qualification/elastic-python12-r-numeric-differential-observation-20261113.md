@@ -50,3 +50,15 @@ These distinctions can account for non-zero numerical discrepancies; their **cau
 5. Only close the `full_numeric_qualification_and_broad_data_domain` scoped gap after independent numerical evidence, method-domain review, and exact-head CI qualification. **The present gap remains OPEN.**
 
 The recorded **508/508 author-scoped native implementation coverage** is not equivalent to complete `eyetrajectoriespy` numerical parity; independent full Python-contract certification remains zero.
+
+## Follow-up diagnostic decomposition added (awaiting execution)
+
+The next unexecuted test extension in `test-native-elastic-fdasrvf-karcher-pca-20261113.R` prints `ELASTIC_PYTHON12_NATIVE_R_DIFFERENTIAL_DECOMPOSITION` and records:
+
+- Warp deformation RMSE **relative to identity** separately for Python and native R.
+- Centered input, Python aligned and Python mean coordinate RMS scales.
+- Relative score pairwise-distance scale, an optimized *single scalar* mapping native score distances to Python score distances, and residual pairwise-distance RMSE after that mapping.
+- Rank-preserving Pearson correlation of pairwise PCA score distances (a measure of score geometry concordance, not proof of eigenspace parity).
+- Six individual per-curve warp RMSE values and six per-curve centered aligned-geometry RMSE values.
+
+This separates scale-related disagreement from shape/phase geometry and highlights possible curve-specific registration failures. The original five-metric values above remain the confirmed local observations. **No values from the new decomposition have been observed**, no scientific acceptance threshold was changed, and numerical parity remains unqualified.
