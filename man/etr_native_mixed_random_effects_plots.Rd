@@ -8,14 +8,7 @@ intercepts or slopes and nested-trial functional random intercepts. The native
 plots expose ordered numerical line data for source qualification and do not
 fit a mixed model, bootstrap observations or select a scientific threshold.
 }
-\usage{
-etr_plot_functional_random_effects(
-  result, effect = "intercept", max_participants = NULL, alpha = 0.35
-)
-etr_plot_functional_trial_random_effects(
-  result, participant_id = NULL, max_trials = 12L
-)
-}
+
 \arguments{
 \item{result}{Explicit realized mixed-model source-compatible native
 record including random-effect arrays, names, time and time unit.}
