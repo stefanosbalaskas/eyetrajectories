@@ -8,7 +8,8 @@
 bands, coefficient functions, covariance sensitivity and mixed-effects
 residual dependence with explicit observed-grid numerical geometry.}
 \usage{
-etr_plot_covariance_sensitivity_band_widths(result, coefficient, strict_source_record = FALSE)
+etr_plot_covariance_sensitivity_band_widths(
+  result, coefficient, strict_source_record = FALSE)
 }
 \arguments{
 \item{result}{An explicitly declared scientific fitted R record or
@@ -19,6 +20,8 @@ pre-calibrated band/sensitivity/residual diagnostics R record.}
 \item{curve_id}{Required source curve identifier for trial-level plots.}
 \item{participant_id}{Required source participant identifier for
 participant-level plots.}
+\item{strict_source_record}{If TRUE, return explicitly typed native
+source-scientific artist geometry rather than default base R plot output.}
 }
 \value{Base-R graphics on the active device and invisible numeric plot
 geometry on the declared time grid. Python Matplotlib Axes output is
