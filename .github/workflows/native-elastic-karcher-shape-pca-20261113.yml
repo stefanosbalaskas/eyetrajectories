@@ -173,6 +173,6 @@ jobs:
           stopifnot(identical(et_python_version(),"1.2.0"))
           stopifnot(utils::packageVersion("fdasrvf") >= package_version("2.5.1"))
           testthat::test_local(".",
-            filter="native-elastic-fdasrvf-karcher-pca-20261113",
+            filter="native-elastic-fdasrvf-karcher-pca-20261113|native-elastic-source-normalization-ablation-20261113",
             reporter="summary",stop_on_failure=TRUE)
           RSCRIPT
