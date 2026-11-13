@@ -114,6 +114,30 @@ testthat::test_local(
 
 Only the elastic public frozen-Python differential is enabled. Do **not** set `ET_RUN_PYTHON_TESTS=true` until the other source suites have their optional Python dependencies and data environments qualified. The expected completion is zero test failures, not a claim of full Python numerical equality.
 
+## Local scientific validation result — user-reported 2026-11-13
+
+User supplied local Windows RStudio test output on the stacked scientific branch (previous differential test head `d86dc3f`):
+
+- `source("scripts/check_all_r_syntax.R")`: **586 files checked, zero parsing failures**.
+- Targeted native FPCA artist / functional mixed W3 / sparse MFPCA paired and async W2 suites: **no failures**, with three frozen-Python test cases opt-in/skipped.
+- Native R elastic `fdasrvf 2.5.1` suite: **no failures**, expected package-built-under-newer-R warning.
+- Real frozen Python `eyetrajectoriespy==1.2.0`, `fdasrsf==2.7.4`, Python 3.11.16, `matplotlib==3.10.9`: **elastic cross-language structural differential executed successfully**, Python logged three Karcher update steps; no failures or skips in the relevant suite. This was **local user-provided console evidence**, not CI verification or independent numerical certification.
+- Exact PR branch GitHub Actions workflows remain queued; do not extrapolate Windows local results to Linux/macOS.
+
+### New quantitative numerical audit (awaiting local execution)
+
+The elastic differential test now records five descriptive R/Python numerical discrepancies, each computed from the **real two backend outputs** and not from a mocked source:
+
+1. Normalized phase-warp RMSE.
+2. Maximum absolute phase-warp discrepancy.
+3. Per-trajectory translation-centered aligned-curve RMSE.
+4. Translation-centered Karcher mean-curve RMSE.
+5. PCA score pairwise-distance RMSE, invariant to common score-sign flips, component permutations and orthogonal score rotations.
+
+The Python warps must be finite, within normalized [0,1] and nondecreasing. These are **diagnostics**, not automatic proof of exact Python numerical parity; the medoid vs first-curve mean initialization and reconstruction policies still differ. No independent scientific contract is certified without separately reviewed tolerances/algorithms and real reference evidence.
+
+The test logs are expected to include the heading `ELASTIC_PYTHON12_NATIVE_R_DIFFERENTIAL_NUMERICAL_AUDIT` with actual metric values. Those values have not yet been observed.
+
 ## Stage 3: Extend to three-OS CI, full check and independent scientific qualification
 
 1. Source-contract audit: all 198 reviewed record SHA256 pins and 508-row inventory, while explicitly retaining unqualified subcontracts in `native_scoped_fdapy_submethod_gaps_20261112.csv`, `native_scoped_elastic_submethod_gaps_20261113.csv`, and `native_scoped_environment_subcontracts_20261112.csv`.
