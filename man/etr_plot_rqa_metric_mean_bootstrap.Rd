@@ -2,7 +2,8 @@
 \alias{etr_plot_rqa_metric_mean_bootstrap}
 \title{Plot RQA population bootstrap mean estimates with source percentile error bars}
 \usage{
-etr_plot_rqa_metric_mean_bootstrap(result, metrics = NULL, strict_source_record = FALSE, ...)
+etr_plot_rqa_metric_mean_bootstrap(result, metrics = NULL,
+  strict_source_record = FALSE, ...)
 }
 \arguments{
 \item{result}{Precomputed native whole-unit RQA mean bootstrap summary and unit label.}
