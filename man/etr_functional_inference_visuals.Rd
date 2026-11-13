@@ -1,11 +1,10 @@
 \name{etr_plot_function_on_scalar_coefficients}
 \alias{etr_plot_function_on_scalar_coefficients}
+
 \alias{etr_function_on_scalar_reporting_text}
-\alias{etr_plot_functional_mixed_effects_coefficient}
-\alias{etr_plot_conformal_fpca_anomaly}
+
 \alias{etr_conformal_fpca_anomaly_reporting_text}
-\alias{etr_plot_rqa_metric_mean_bootstrap}
-\alias{etr_plot_functional_variance_decomposition}
+
 \title{Native function-on-scalar, conformal, RQA and mixed-moments reporting and plots}
 \description{
 Seven scientifically named, Python-free R interfaces for fitted native
