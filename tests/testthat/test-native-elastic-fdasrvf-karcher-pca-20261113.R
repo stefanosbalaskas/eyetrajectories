@@ -265,8 +265,8 @@ py_elastic={
   # Emit values in the actual local test logs for later scientific audit.
   # The values are DESCRIPTIVE. Distinct optimizers are not certified
   # source-numerically equivalent by existence or small magnitudes alone.
-  cat("\\nELASTIC_PYTHON12_NATIVE_R_DIFFERENTIAL_NUMERICAL_AUDIT\\n")
+  cat("\nELASTIC_PYTHON12_NATIVE_R_DIFFERENTIAL_NUMERICAL_AUDIT\n")
   for(nm in names(comparisons))
-    cat(sprintf("  %s = %.12g\\n",nm,comparisons[[nm]]))
-  cat("  numerical_parity_certified = FALSE\\n")
+    cat(sprintf("  %s = %.12g\n",nm,comparisons[[nm]]))
+  cat("  numerical_parity_certified = FALSE\n")
 })
