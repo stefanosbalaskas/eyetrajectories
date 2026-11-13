@@ -1,4 +1,7 @@
 # Functional response models are optional R-native refund integrations.
+# Explicit sandwich="none" reproduces refund pffr historical behavior;
+# recent refund defaults to cluster-robust covariance and emits a NOTE.
+# This remains an experimental, non-certified model.
 #' Fit an experimental univariate functional-response mixed model
 #'
 #' Calls refund::pffr() for a univariate complete common-grid response, with
@@ -26,7 +29,7 @@ etr_fit_functional_mixed <- function(x, participant = NULL,
   data <- list(Y = unname(Y))
   if (is.null(participant)) {
     fit <- refund::pffr(Y ~ 1, yind = x$time, data = data,
-                        method = method,
+                        method = method, sandwich = "none",
                         bs.int = list(bs = "ps", k = as.integer(basis_k), m = c(2, 1)))
     grouping <- NULL
   } else {
@@ -42,6 +45,7 @@ etr_fit_functional_mixed <- function(x, participant = NULL,
     # Explicit refund syntax: s(g, bs='re') is a functional random intercept.
     fit <- refund::pffr(Y ~ s(participant, bs = "re"),
                         yind = x$time, data = data, method = method,
+                        sandwich = "none",
                         bs.int = list(bs = "ps", k = as.integer(basis_k), m = c(2, 1)))
     grouping <- ids
   }
