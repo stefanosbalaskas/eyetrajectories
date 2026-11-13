@@ -99,8 +99,10 @@ etr_prepare_independent_source_review<-function(
       names(gaps))&&!anyDuplicated(gaps$python_name),
     "Source-gap register malformed")
   gap_idx<-match(records$python_name,gaps$python_name)
-  .checked(!anyNA(gap_idx)&&all(gaps$unresolved_source_gap[gap_idx]),
-    "Every queued source contract needs an explicit unresolved difference")
+  .checked(!anyNA(gap_idx)&&
+    is.logical(gaps$unresolved_source_gap)&&
+    !anyNA(gaps$unresolved_source_gap[gap_idx]),
+    "Every selected source contract must retain an explicit current author review status")
   .checked(all(file.exists(file.path(root,records$fixture_test))),
     "A queued contract has no corresponding checked-in source oracle test")
 
@@ -560,8 +562,8 @@ etr_prepare_independent_source_review<-function(
     "Pilot contracts must not be silently auto-promoted")
   pilot_gap_idx<-match(pilot$python_name,gaps$python_name)
   .checked(!anyNA(pilot_gap_idx)&&
-    all(gaps$unresolved_source_gap[pilot_gap_idx]),
-    "Pilot review cannot proceed without its actual unresolved source gap")
+    !anyNA(gaps$unresolved_source_gap[pilot_gap_idx]),
+    "Numerical pilot review must reference the recorded current source-gap status")
   pilot_packet<-data.frame(
     priority=seq_len(nrow(pilot)),
     python_name=pilot$python_name,
