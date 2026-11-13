@@ -1,5 +1,5 @@
-\name{etr_plot_transfer_entropy_sensitivity}
-\alias{etr_plot_transfer_entropy_sensitivity}
+\name{etr_native_transfer_entropy_visual}
+\alias{etr_native_transfer_entropy_visual}
 
 \title{Native source-aligned transfer-entropy sensitivity and circular-shift graphics}
 \description{
