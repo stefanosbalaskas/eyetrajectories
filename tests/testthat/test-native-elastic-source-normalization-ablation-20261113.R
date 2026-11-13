@@ -67,23 +67,30 @@ ab_oracle={
   betas<-aperm(values,c(3L,2L,1L))
   base<-etr_fit_elastic_fpca(x,n_components=2L,rotation=FALSE,
     scale_curves=FALSE,lam=0,method="DP",strict_source_record=TRUE)
-  k0<-base$native_backend_object
-  # This is an ABLATION: scale=TRUE here normalizes the internal SRVF
-  # geometry; it is NOT silently substituted into the public scale option.
-  k1<-fdasrvf::multivariate_karcher_mean(betas,
-    mode="O",alignment=TRUE,rotation=FALSE,scale=TRUE,
+  # Preserve a separate HISTORICAL R unnormalized-source control,
+  # since the corrected strict native R path now always normalizes q.
+  # This original scale=FALSE control is deliberately not a production API.
+  k0<-fdasrvf::multivariate_karcher_mean(betas,
+    mode="O",alignment=TRUE,rotation=FALSE,scale=FALSE,
     lambda=0,maxit=20L,ms="mean",exact_medoid=FALSE,
     ncores=1L,verbose=FALSE)
+  k1<-base$native_backend_object
+  expect_true(base$provenance$registration$source_input_srvfs_normalized)
   expect_s3_class(k1,"fdacurve")
   expect_identical(dim(k1$q),c(2L,nt,n))
   expect_true(all(is.finite(k1$betan)))
   expect_true(all(is.finite(k1$gamma)))
-  pca1<-fdasrvf::multivariate_pca(k1,no=2L,
+  pca0<-fdasrvf::multivariate_pca(k0,no=2L,
     ci=seq(-2,2.5,by=.5),mode="O",showplot=FALSE)
+  pca1<-base$native_pca_object
+  expect_true(all(is.finite(pca0$coef)))
   expect_true(all(is.finite(pca1$coef)))
+  gamma0<-t(k0$gamma)
   gamma1<-t(k1$gamma)
+  aligned0<-aperm(k0$betan,c(3L,2L,1L))
   aligned1<-aperm(k1$betan,c(3L,2L,1L))
-  scores1<-t(pca1$coef[1:2,,drop=FALSE])
+  scores0<-t(pca0$coef[1:2,,drop=FALSE])
+  scores1<-base$scores
   centered<-function(v){
     for(i in seq_len(dim(v)[1L]))
       for(j in seq_len(dim(v)[3L]))
@@ -114,7 +121,7 @@ ab_oracle={
   norm_r_scaled<-norm_sq(k1$q)
   score_dist<-function(s)as.numeric(stats::dist(s))
   d_py<-score_dist(py$scores)
-  d_base<-score_dist(base$scores)
+  d_base<-score_dist(scores0)
   d_scaled<-score_dist(scores1)
   score_d_rmse<-function(v)rmse(v,d_py)
   scale_fit<-function(v)sum(v*d_py)/sum(v^2)
@@ -133,22 +140,26 @@ ab_oracle={
     r_scaled_initial_srvf_norm_max=max(norm_r_scaled),
     source_q_scaled_rmse=rmse(k1$q,py$original_q),
     source_q_unscaled_rmse=rmse(k0$q,py$original_q),
-    native_unscaled_warp_rmse=rmse(base$warping_functions,py$warp),
+    native_unscaled_warp_rmse=rmse(gamma0,py$warp),
     native_scaled_warp_rmse=rmse(gamma1,py$warp),
     native_unscaled_mean_centered_rmse=rmse(
-      cmean(base$mean_curve),cmean(py$mean)),
+      cmean(k0$betamean),cmean(py$mean)),
     native_scaled_mean_centered_rmse=rmse(
       cmean(k1$betamean),cmean(py$mean)),
     native_unscaled_reconstructed_aligned_rmse=rmse(
-      centered(base$aligned$values),centered(py$aligned)),
+      centered(aligned0),centered(py$aligned)),
     native_scaled_reconstructed_aligned_rmse=rmse(
       centered(aligned1),centered(py$aligned)),
     native_unscaled_original_coordinate_warp_rmse=rmse(
-      centered(interpolate_original(base$warping_functions)),
+      centered(interpolate_original(gamma0)),
       centered(py$aligned)),
     native_scaled_original_coordinate_warp_rmse=rmse(
       centered(interpolate_original(gamma1)),
       centered(py$aligned)),
+    corrected_public_original_coordinate_warp_rmse=rmse(
+      centered(base$aligned$values),centered(py$aligned)),
+    production_matches_normalized_gamma=as.numeric(
+      isTRUE(all.equal(base$warping_functions,gamma1,tolerance=1e-10))),
     native_unscaled_score_distance_rmse=score_d_rmse(d_base),
     native_scaled_score_distance_rmse=score_d_rmse(d_scaled),
     native_unscaled_rescaled_score_distance_rmse=rel_score_rmse(d_base),
