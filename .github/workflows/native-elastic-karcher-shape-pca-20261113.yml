@@ -55,7 +55,9 @@ jobs:
           s={r["source_submethod"]:r for r in subs}
           for key in ("true_open_curve_SRVF_Karcher_time_registration",
                       "true_elastic_tangent_geodesic_shape_PCA",
-                      "source_trajectory_schema_and_phase_outputs"):
+                      "source_trajectory_schema_and_phase_outputs",
+                      "source_normalized_initial_SRVFs",
+                      "source_original_coordinate_gamma_interpolation"):
               assert s[key]["source_gap_open"]=="FALSE",key
               assert s[key]["native_scientific_implementation"]=="TRUE",key
           for key in ("Python_first_curve_Karcher_initialization",
