@@ -11,9 +11,6 @@ diagnostic visualizations. Python source frozen at eyetrajectoriespy 1.2.0.
 \usage{
 etr_multivariate_iaaft_diagnostics_frame(result)
 etr_functional_mixed_effects_variance_bootstrap_frame(bootstrap)
-etr_plot_multivariate_iaaft_diagnostics(result, ...)
-etr_plot_multivariate_surrogate_nonlinearity(result, bins = 20L,
-  python_boundary_mode = FALSE, ...)
 }
 \arguments{
 \item{result}{Explicit R list with the relevant multivariate surrogate or
