@@ -1,12 +1,6 @@
 \name{etr_plot_embedding_delay_diagnostics}
 \alias{etr_plot_embedding_delay_diagnostics}
-\alias{etr_plot_embedding_dimension_diagnostics}
-\alias{etr_plot_recurrence_network_degree}
-\alias{etr_plot_recurrence_rate_curve}
-\alias{etr_plot_windowed_rqa}
-\alias{etr_plot_local_divergence}
-\alias{etr_plot_surrogate_nonlinearity}
-\alias{etr_plot_poincare_return_map}
+
 \title{Native R embedding, recurrence and nonlinear-dynamics visual diagnostics}
 \description{
 Eight Python-free native R descriptive graphics plotting the exact
