@@ -154,6 +154,13 @@ test_that("workflow integration stays uncertified until independent full review"
   # test the validated boolean ledger, not a frozen historical count.
   expect_type(queue$targeted_numerical_fixture_pass,"logical")
   expect_false(anyNA(queue$targeted_numerical_fixture_pass))
+  # Retain all four established Python-1.2 fixture witnesses exactly,
+  # even when new unsigned fixtures expand the review population.
+  established<-c("alr_transform","inverse_alr",
+    "score_distance_matrix","functional_trapezoid_weights")
+  existing<-match(established,queue$python_name)
+  expect_false(anyNA(existing))
+  expect_true(all(queue$targeted_numerical_fixture_pass[existing]))
   expect_gte(sum(queue$targeted_numerical_fixture_pass),4L)
   expect_identical(sum(queue$source_gap_unresolved),
     sum(reviewed$unresolved_source_gap))
