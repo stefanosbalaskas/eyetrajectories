@@ -1,7 +1,6 @@
 \name{etr_native_functional_simulation_plots}
-\alias{etr_plot_functional_simulation_curve}
-\alias{etr_plot_functional_simulation_phase_warps}
-\alias{etr_plot_functional_simulation_score_variances}
+\alias{etr_native_functional_simulation_plots}
+
 \title{Native functional simulation truth and score-source audit plots}
 \description{
 Three source-pinned Python-independent R graphics methods for realized
