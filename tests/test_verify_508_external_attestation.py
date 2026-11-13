@@ -8,11 +8,20 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import verify_508_certification_batch as base
 import verify_508_external_attestation as att
-from test_verify_508_certification_batch import make_packet, write_csv
+from test_verify_508_certification_batch import (make_packet, write_csv,
+                                                 synthetic_gap_counts)
 
 
 class TestSignedReceiptStructure(unittest.TestCase):
     def setUp(self):
+        # Synthetic signed-submission structure tests require their own
+        # synthetic gap counts; a real stale author receipt must not prevent
+        # testing forged GPG and reviewer-approval safeguards.
+        self.count_patch = patch.object(
+            base.source_gap_inventory, "read_inventory",
+            return_value=synthetic_gap_counts())
+        self.count_patch.start()
+        self.addCleanup(self.count_patch.stop)
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name)
         make_packet(self.root)
