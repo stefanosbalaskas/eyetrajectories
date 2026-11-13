@@ -1,11 +1,6 @@
 \name{etr_plot_sparse_fpca_covariance}
 \alias{etr_plot_sparse_fpca_covariance}
-\alias{etr_plot_sparse_fpca_component}
-\alias{etr_plot_sparse_mfpca_component}
-\alias{etr_plot_sparse_mfpca_covariance_blocks}
-\alias{etr_plot_sparse_mfpca_cross_covariance}
-\alias{etr_plot_sparse_mfpca_score_diagnostics}
-\alias{etr_plot_sparse_irregular_dimension}
+
 \title{Scientific sparse FPCA and multivariate PACE diagnostics in native R graphics}
 \description{Plot the native sparse univariate and planar multivariate FPCA fitted
 population objects and original irregular observations, retaining scientific
