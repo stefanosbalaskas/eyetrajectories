@@ -61,7 +61,7 @@ test_that("strict FPCR prediction artists preserve calibrated source asymmetric 
       "Gaussian FPCR future-outcome prediction")
     expect_identical(a$axes[[1L]]$ylabel,"Scalar response")
     expect_identical(a$axes[[1L]]$legend_labels,
-      c("future-outcome predictive interval","full-sample conditional mean"))
+      c("full-sample conditional mean","future-outcome predictive interval"))
     expect_equal(a$axes[[1L]]$artists[[1L]]$lower,c(.4,-.7))
     expect_equal(a$axes[[1L]]$artists[[1L]]$upper,c(1,-.1))
     expect_identical(b$source_export,
