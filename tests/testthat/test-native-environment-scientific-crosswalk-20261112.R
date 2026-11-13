@@ -110,7 +110,7 @@ test_that("source Python snapshot excludes missing source keys and fabricated Py
     "only accepted")
   bad<-src;bad$python<-NULL
   expect_error(etr_capture_environment(strict_source_record=TRUE,
-    python_source_snapshot=bad),"source Python runtime")
+    python_source_snapshot=bad),"exact ordered")
   bad<-src;bad$package$name<-"eyetrajectories"
   expect_error(etr_capture_environment(strict_source_record=TRUE,
     python_source_snapshot=bad),"eyetrajectoriespy")
