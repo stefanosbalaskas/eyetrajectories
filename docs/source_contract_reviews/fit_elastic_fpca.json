@@ -76,6 +76,12 @@
       "sha256": "f7232d406393e86f49cb75434d9fda7ec41ea850d47a58423d70b2eb386b4f0a",
       "kind": "controlled_source_srvf_normalization_ablation",
       "description": "Controlled genuine frozen Python 1.2 R 2.5.1 source-normalization and original-coordinate phase interpolation ablation. Real pre-fix user-reported output verified evidence for change; post-change rerun required."
+    },
+    {
+      "path": "tests/testthat/test-native-elastic-final-second-pass-ablation-20261113.R",
+      "sha256": "b99ee5f01912389c2af151819bc40874d9943b910a6aec82b8e8044d90b3645a",
+      "kind": "genuine_source_final_mean_alignment_ablation",
+      "description": "Frozen Python 1.2 fdasrsf final separate srvf_align versus genuine native R fdasrvf multiple_align_multivariate to the converged Karcher mean; observational only, with 12 numerical contrasts. Python PCA remains based on Karcher-stage shooting vectors. Exact-head execution pending."
     }
   ],
   "independent_review_status": "Author-scoped real native R elastic Karcher DP/PCA scientific method with true Python fdasrsf source code audited and real Python public schema differential authored; exact-head 3 OS/native package CI and Python differential not witnessed passing; zero independent full source certifications.",
