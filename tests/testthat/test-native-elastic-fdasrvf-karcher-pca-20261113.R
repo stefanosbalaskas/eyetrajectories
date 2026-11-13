@@ -269,4 +269,49 @@ py_elastic={
   for(nm in names(comparisons))
     cat(sprintf("  %s = %.12g\n",nm,comparisons[[nm]]))
   cat("  numerical_parity_certified = FALSE\n")
+  # Diagnostic decomposition: report whether differences are dominated by
+  # a single trajectory, mean alignment scale or the PCA score scale.
+  # These are unqualified measurements, not post-hoc acceptance tolerances.
+  ncurves<-dim(fx$values)[1L]
+  identity_gamma<-matrix(rep(fx$time,each=ncurves),nrow=ncurves)
+  r_centered<-center_trajectories(r$aligned$values)
+  py_centered<-center_trajectories(py_aligned)
+  individual_warp_rmse<-sqrt(rowMeans(
+    (r$warping_functions-py_warp)^2))
+  individual_curve_rmse<-sqrt(rowMeans(matrix(
+    (r_centered-py_centered)^2,nrow=ncurves)))
+  r_score_dist<-as.numeric(stats::dist(r$scores))
+  py_score_dist<-as.numeric(stats::dist(py_scores))
+  score_scale_factor<-sum(r_score_dist*py_score_dist)/
+    sum(r_score_dist^2)
+  diagnostics<-c(
+    python_warp_deformation_rmse=rmse(py_warp,identity_gamma),
+    r_warp_deformation_rmse=rmse(r$warping_functions,identity_gamma),
+    input_centered_coordinate_rms=sqrt(mean(
+      center_trajectories(fx$values)^2)),
+    python_aligned_centered_coordinate_rms=sqrt(mean(py_centered^2)),
+    python_mean_centered_coordinate_rms=sqrt(mean(
+      center_mean(py_mean)^2)),
+    python_score_pair_distance_rms=sqrt(mean(py_score_dist^2)),
+    optimally_rescaled_r_score_distance_factor=score_scale_factor,
+    optimally_rescaled_score_pair_distance_rmse=rmse(
+      score_scale_factor*r_score_dist,py_score_dist),
+    score_pairwise_distance_correlation=stats::cor(
+      r_score_dist,py_score_dist))
+  expect_identical(length(individual_warp_rmse),ncurves)
+  expect_identical(length(individual_curve_rmse),ncurves)
+  expect_true(all(is.finite(individual_warp_rmse)))
+  expect_true(all(is.finite(individual_curve_rmse)))
+  expect_true(all(is.finite(diagnostics)))
+  expect_true(all(diagnostics[names(diagnostics)!=
+    "score_pairwise_distance_correlation"]>=0))
+  cat("ELASTIC_PYTHON12_NATIVE_R_DIFFERENTIAL_DECOMPOSITION\n")
+  for(nm in names(diagnostics))
+    cat(sprintf("  %s = %.12g\n",nm,diagnostics[[nm]]))
+  cat("  per_curve_warp_rmse = ",
+    paste(sprintf("%.10g",individual_warp_rmse),collapse=", "), "\n",sep="")
+  cat("  per_curve_aligned_centered_rmse = ",
+    paste(sprintf("%.10g",individual_curve_rmse),collapse=", "),
+    "\n",sep="")
+  cat("  independently_numeric_parity_certified = FALSE\n")
 })
