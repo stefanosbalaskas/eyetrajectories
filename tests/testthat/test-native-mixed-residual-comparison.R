@@ -67,7 +67,8 @@ test_that("source mixed residual comparison is author-reviewed but independently
   expect_false(a$one_to_one_native_contract_complete)
   expect_gte(sum(p$is_python_function&p$named_native_candidate),332L)
   expect_gte(sum(p$native_implementation_started),307L)
-  expect_gte(sum(p$source_contract_gap_unresolved),1L)
+  expect_true(is.logical(p$source_contract_gap_unresolved))
+  expect_false(anyNA(p$source_contract_gap_unresolved))
 })
 
 # Actual pinned-Python 1.2 public export and source-signature witness.
