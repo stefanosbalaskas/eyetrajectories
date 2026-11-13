@@ -141,7 +141,7 @@ jobs:
           pkgload::load_all(".",quiet=TRUE)
           stopifnot(identical(et_python_version(),"1.2.0"))
           np<-reticulate::import("numpy")
-          stopifnot(identical(as.character(np$__version__),"2.3.5"))
+          stopifnot(identical(as.character(reticulate::py_get_attr(np, "__version__")), "2.3.5"))
           testthat::test_local(".",
             filter="native-five-nonlinear-te-sensitivity-artists-20261112",
             reporter="summary",stop_on_failure=TRUE)
