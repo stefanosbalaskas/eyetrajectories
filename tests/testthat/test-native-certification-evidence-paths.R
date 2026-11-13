@@ -19,8 +19,18 @@ test_that("every pinned numerical pilot oracle resolves to an actual test",{
       paste(register$independent_oracle_suite[!paths_resolve],
         collapse=", ")))
   api<-etr_native_parity_catalog()
-  expect_equal(sum(api$contract_certification_candidate),4L)
-  expect_equal(sum(api$contract_numerical_fixture_pass),4L)
+  # Four published numerical pilot records remain pinned. A fifth,
+  # TrajectorySet, is a bounded author-scoped nonfunction candidate,
+  # NOT a passed numerical fixture or independent certificate.
+  pilots<-api[api$python_name%in%register$python_name,,drop=FALSE]
+  expect_identical(nrow(pilots),nrow(register))
+  expect_true(all(pilots$contract_certification_candidate))
+  expect_true(all(pilots$contract_numerical_fixture_pass))
+  expect_identical(sum(api$contract_numerical_fixture_pass),4L)
+  extra<-api[api$contract_certification_candidate &
+    !api$python_name%in%register$python_name,,drop=FALSE]
+  expect_setequal(extra$python_name,"TrajectorySet")
+  expect_false(any(extra$contract_numerical_fixture_pass))
   expect_false(any(api$one_to_one_native_contract_complete))
   # A numerical pilot can be promoted after a SHA256-pinned
   # full-source author review; keep unsigned independent gates closed.
