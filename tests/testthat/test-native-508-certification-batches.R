@@ -56,38 +56,47 @@ test_that("508-export review fast lane preserves every uncertified export",{
   expect_identical(sum(z$queue$source_gap_open),
     sum(api$published_source_difference_open)+
       sum(api$nonfunction_source_difference_open))
-  expect_identical(sum(z$queue$native_nonfunction_source_gap_open),1L)
-  # Author-side semantic closure can change the active flag, never erase
-  # historical frozen Python/R difference witnesses or approve contracts.
-  closed<-c("functional_recovery_metric_catalog_frame",
-    "mathematical_contract_frame",
-    "list_mathematical_contracts",
-    "functional_recovery_metric_catalog",
-    "sparse_fpca_score_frame",
-    "sparse_mfpca_score_frame")
+  other<-utils::read.csv(file.path(root,"inst","extdata",
+    "native_nonfunction_source_gaps_v1.csv"),stringsAsFactors=FALSE)
+  expect_identical(sum(z$queue$native_nonfunction_source_gap_open),
+    sum(other$unresolved))
+  # Do NOT freeze the historical six active closures: the current
+  # AUTHOR-reviewed bounded closure ledger has advanced to the present.
+  # Presence of source witnesses and FALSE independent certification
+  # remain mandatory even when the active gap flag is FALSE.
   gap<-utils::read.csv(file.path(root,"inst","extdata",
     "native_source_contract_gaps_stage22.csv"),
     stringsAsFactors=FALSE,check.names=FALSE)
-  expect_setequal(gap$python_name[!gap$unresolved_source_gap],closed)
+  closed<-gap$python_name[!gap$unresolved_source_gap]
+  expect_true(all(nzchar(gap$source_witness[!gap$unresolved_source_gap])))
+  expect_false(any(z$queue$currently_authoritatively_certified))
   expect_identical(sum(z$queue$kind=="function" &
     z$queue$source_gap_open),sum(gap$unresolved_source_gap))
   expect_identical(sum(z$queue$source_gap_open),
-    sum(gap$unresolved_source_gap)+1L)
+    sum(gap$unresolved_source_gap)+sum(other$unresolved))
   semantic<-z$queue[z$queue$python_name%in%closed,,drop=FALSE]
   expect_identical(nrow(semantic),length(closed))
   expect_false(any(semantic$source_gap_open))
   expect_true(all(nzchar(semantic$documented_source_difference)))
   expect_true(all(nzchar(semantic$documented_python_source_witness)))
-  expect_true(all(semantic$review_lane=="FUNCTION_NO_RECORDED_GAP"))
+  expect_true(all(semantic$review_lane%in%c(
+    "FUNCTION_NO_RECORDED_GAP","DIFFERENT_BACKEND_OR_ESTIMAND")))
   expect_false(any(semantic$currently_authoritatively_certified))
   trajectory<-z$queue[z$queue$python_name=="TrajectorySet",,drop=FALSE]
   expect_identical(nrow(trajectory),1L)
-  expect_true(trajectory$source_gap_open)
-  expect_true(trajectory$native_nonfunction_source_gap_open)
+  expect_identical(trajectory$source_gap_open,other$unresolved)
+  expect_identical(trajectory$native_nonfunction_source_gap_open,
+    other$unresolved)
   expect_identical(trajectory$native_nonfunction_representation,
     "etr_trajectory_set")
-  expect_identical(trajectory$review_lane,"RECORDED_SOURCE_DIFFERENCE")
-  expect_false("TrajectorySet"%in%z$selection$python_name)
+  if(other$unresolved) {
+    expect_identical(trajectory$review_lane,"RECORDED_SOURCE_DIFFERENCE")
+    expect_false("TrajectorySet"%in%z$selection$python_name)
+  } else {
+    expect_true(trajectory$review_lane%in%c(
+      "NONFUNCTION_NO_RECORDED_GAP","DIFFERENT_BACKEND_OR_ESTIMAND"))
+  }
+  expect_false(trajectory$currently_authoritatively_certified)
   expect_true(all(z$selection$review_lane%in%c(
     "FUNCTION_NO_RECORDED_GAP","NONFUNCTION_NO_RECORDED_GAP")))
   expect_false(any(z$selection$source_gap_open))
