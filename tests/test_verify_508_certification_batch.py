@@ -18,23 +18,26 @@ def write_csv(path, rows):
         writer.writerows(rows)
 
 
-def synthetic_gap_counts():
-    """Unit-fixture counts: 2 author-open callable and 1 class gap.
+def synthetic_gap_counts(callable_open=2, nonfunction_open=1):
+    """Independent synthetic author-gap counts (never real review evidence).
 
-    This is entirely synthetic; do not read live six-domain SHA256 receipts
-    while constructing a forged/tampered reviewer packet. Production
-    read_inventory() continues to validate every real receipt fail-closed.
+    Exercise both historical-open and author-closed statuses without querying
+    stale live receipts. The true source_gap_inventory.read_inventory() still
+    verifies all real SHA256 pins and rejects modified scientific evidence.
     """
+    assert 0 <= callable_open <= 203
+    assert nonfunction_open in (0, 1)
     return v.source_gap_inventory.SourceGapCounts(
-        historical_callable=203, active_callable=2,
+        historical_callable=203, active_callable=callable_open,
         resolved_semantic=tuple(f"synthetic_author_closed_{i:03d}"
-                                for i in range(201)),
-        historical_nonfunction=1, active_nonfunction=1)
+                                for i in range(203 - callable_open)),
+        historical_nonfunction=1, active_nonfunction=nonfunction_open)
 
 
-def make_packet(folder):
+def make_packet(folder, gaps=None):
     head = "a" * 40
-    gaps = synthetic_gap_counts()
+    if gaps is None:
+        gaps = synthetic_gap_counts()
     full = []
     for i in range(508):
         isfn = i < 380
@@ -293,6 +296,20 @@ class TestUnsignedBatchIntegrity(unittest.TestCase):
         result = v.verify(self.root, expected_r_head="a" * 40)
         self.assertEqual(result["export_count"], 508)
         self.assertEqual(result["first_review_batch"], 36)
+        self.assertEqual(result["independently_certified_full_domain_contracts"], 0)
+
+    def test_all_author_gaps_closed_still_has_zero_independent_certificates(self):
+        # The original 508 verifier failed when real author-side gap counts
+        # reached zero. The synthetic 0+0 case now exercises that boundary
+        # without taking a shortcut around strict production SHA256 checks.
+        closed = synthetic_gap_counts(callable_open=0, nonfunction_open=0)
+        with tempfile.TemporaryDirectory() as folder:
+            packet = Path(folder)
+            make_packet(packet, gaps=closed)
+            with patch.object(v.source_gap_inventory, "read_inventory",
+                              return_value=closed):
+                result = v.verify(packet, expected_r_head="a" * 40)
+        self.assertEqual(result["export_count"], 508)
         self.assertEqual(result["independently_certified_full_domain_contracts"], 0)
 
     def test_expected_head_mismatch_fails(self):
