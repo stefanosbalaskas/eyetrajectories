@@ -1,13 +1,6 @@
 \name{etr_plot_fpca_stability}
 \alias{etr_plot_fpca_stability}
-\alias{etr_plot_fpca_influence}
-\alias{etr_plot_fpca_outlier_diagnostics}
-\alias{etr_plot_fpca_cross_validation}
-\alias{etr_plot_fpca_subspace_stability}
-\alias{etr_plot_functional_mean_band}
-\alias{etr_plot_joint_recurrence}
-\alias{etr_plot_windowed_rqa_trajectories}
-\alias{etr_plot_rqa_sensitivity}
+
 \title{Native R FPCA, simultaneous-band and recurrence visualizations}
 \description{
 Nine Python-free native R scientific plots derived from the explicitly
