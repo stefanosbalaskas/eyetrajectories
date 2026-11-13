@@ -32,37 +32,37 @@
       "kind": "source_signature",
       "description": "Frozen public fit_elastic_fpca validates complete trajectories with >=2 channels, produces fdasrsf fdacurve beta (channels,time,curves), calls karcher_mean(rotation,lam,method), srvf_align then shape_pca. Native source opts into actual R fdasrvf Karcher DP and shape PCA; original identity_only mode retained by default.",
       "path": "tests/testthat/test-native-elastic-fdasrvf-karcher-pca-20261113.R",
-      "sha256": "30268ea271d46813e524dab3c17156d8e22ec4f093f62caa540445ea2b2d2a91"
+      "sha256": "4c08a30b34b15a3e1b49cc7dcf63a1592be97d46df9114faa6a18b3b46254ff0"
     },
     {
       "kind": "accepted_input_domain",
       "description": "Native source supports finite numeric common-grid 3D trajectory sets with >=2 channels, >=5 times, >=3 curves, 1..ncurves-1 principal directions, Boolean rotation and scale_curves, finite lam>=0, exactly method='DP' and R fdasrvf>=2.5.1. Full Python rank, degenerate curves, method RBFGS and unvalidated class coercions are excluded.",
       "path": "tests/testthat/test-native-elastic-fdasrvf-karcher-pca-20261113.R",
-      "sha256": "30268ea271d46813e524dab3c17156d8e22ec4f093f62caa540445ea2b2d2a91"
+      "sha256": "4c08a30b34b15a3e1b49cc7dcf63a1592be97d46df9114faa6a18b3b46254ff0"
     },
     {
       "kind": "numerical_outputs",
-      "description": "True nonidentity native R elastic Karcher phase-registration gamma, aligned multivariate curves, mean SRVF/curve, tangent-shooting vectors and PCA scores from Karcher covariance/SVD; explicitly ten geodesic source std directions ci=[-2,-1.5,...,2.5]. Required scientific R/Python output dimensional geometries: aligned n×time×channels, warps n×time, scores n×k, principal channels×time×k×10, mean channels×time. Exact numerical values of distinct R/Python solvers are NOT declared equal.",
+      "description": "True nonidentity native R elastic Karcher phase-registration gamma, aligned multivariate curves, mean SRVF/curve, tangent-shooting vectors and PCA scores from Karcher covariance/SVD; explicitly ten geodesic source std directions ci=[-2,-1.5,...,2.5]. Required scientific R/Python output dimensional geometries: aligned n×time×channels, warps n×time, scores n×k, principal channels×time×k×10, mean channels×time. Real Python 1.2/R differential checks Python phase-warp monotonicity and emits five descriptive numerical discrepancy metrics (warp RMSE/max deviation, centered aligned-curve and mean RMSE, sign- and rotation-invariant score-pair distance RMSE). Exact numerical values of distinct R/Python solvers are NOT declared equal.",
       "path": "tests/testthat/test-native-elastic-fdasrvf-karcher-pca-20261113.R",
-      "sha256": "30268ea271d46813e524dab3c17156d8e22ec4f093f62caa540445ea2b2d2a91"
+      "sha256": "4c08a30b34b15a3e1b49cc7dcf63a1592be97d46df9114faa6a18b3b46254ff0"
     },
     {
       "kind": "exception_semantics",
       "description": "Native strict source mode requires fdasrvf>=2.5.1 and rejects missing data, invalid rank/dimensions, negative or infinite lam, non-boolean rotation/scale, no explicit DP, unsupported RBFGS and unsuccessful/nonfinite/nonmonotone warping or PCA results. Exact Python ImportError, TypeError/ValueError and fdasrsf optimizer error classes are not equivalent.",
       "path": "tests/testthat/test-native-elastic-fdasrvf-karcher-pca-20261113.R",
-      "sha256": "30268ea271d46813e524dab3c17156d8e22ec4f093f62caa540445ea2b2d2a91"
+      "sha256": "4c08a30b34b15a3e1b49cc7dcf63a1592be97d46df9114faa6a18b3b46254ff0"
     },
     {
       "kind": "returned_schema",
       "description": "New source-scientific typed etr_native_elastic_karcher_pca_scientific_record containing genuine aligned native etr_trajectory_set with shallow elastic_registration provenance, actual R gamma, tangent PCA scores and ten-direction numeric array, mean curve, phase/amplitude warning and genuine R fdacurve/curve_pca audit objects. Python source backend_object deliberately NULL and no Python ElasticFPCAResult class identity claimed.",
       "path": "tests/testthat/test-native-elastic-fdasrvf-karcher-pca-20261113.R",
-      "sha256": "30268ea271d46813e524dab3c17156d8e22ec4f093f62caa540445ea2b2d2a91"
+      "sha256": "4c08a30b34b15a3e1b49cc7dcf63a1592be97d46df9114faa6a18b3b46254ff0"
     },
     {
       "kind": "scientific_estimand",
       "description": "Elastic open-curve SRVF Karcher mean/phase alignment and tangent-space shape principal components for the scientific purpose of separating variability in traversal timing from geometric amplitude. Native DP is genuine, unlike identity registration; the R independent Karcher medoid versus Python first curve and optional scaled length-coordinate differences remain full source subcontracts.",
       "path": "tests/testthat/test-native-elastic-fdasrvf-karcher-pca-20261113.R",
-      "sha256": "30268ea271d46813e524dab3c17156d8e22ec4f093f62caa540445ea2b2d2a91"
+      "sha256": "4c08a30b34b15a3e1b49cc7dcf63a1592be97d46df9114faa6a18b3b46254ff0"
     }
   ],
   "additional_regression_evidence": [
