@@ -331,13 +331,16 @@ etr_plot_fpca_component_band <- function(result,component=0L,
     !is.na(dimension)&&dimension%in%ref$dimension_names,
     "dimension must identify a fitted FPCA channel")
   j<-match(dimension,ref$dimension_names)
+  # Genuine bootstrap component bands store retained rank on the fitted
+  # reference; the top-level result has no n_components field.
+  expected_shape<-c(ref$n_components,length(ref$time),
+    length(ref$dimension_names))
   .etr_assert(is.array(ref$components)&&
     length(dim(ref$components))==3L&&
+    identical(dim(ref$components),expected_shape)&&
     is.array(result$lower)&&is.array(result$upper)&&
     identical(dim(result$lower),dim(result$upper))&&
-    identical(dim(result$lower),
-      c(result$n_components,length(ref$time),
-        length(ref$dimension_names))),
+    identical(dim(result$lower),expected_shape),
     "component bootstrap bands must have matching 3D shapes")
   out<-data.frame(time=ref$time,
     estimate=as.numeric(ref$components[k,,j]),
