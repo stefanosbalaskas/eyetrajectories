@@ -24,37 +24,37 @@
       "kind": "source_signature",
       "description": "Frozen Python 1.2 workflows/_dense_regression.py::run_functional_mixed_effects_workflow accepts a real dense TrajectorySet, aligned scalar design, and FunctionalMixedEffectsWorkflowConfig; performs one Gaussian functional mixed-effects fit and returns a nine-field FunctionalMixedEffectsWorkflowResult. Native strict opt-in etr_run_functional_mixed_effects_workflow(...,strict_source_record=TRUE) refuses the distinct native moments estimator and uses real native joint spline likelihood.",
       "path": "tests/testthat/test-native-functional-mixed-w3-scientific-20261112.R",
-      "sha256": "1b0aa6123329802a276cadc43823779f7bad0f33d6ebc9c1f4f9ee856dbe9c0d"
+      "sha256": "6e77013b5408a15e07a8ee603541aa5e2ef585a03157bcacbdb9f11d50f2b24a"
     },
     {
       "kind": "accepted_input_domain",
       "description": "The native strict source-scientific domain requires complete shared-grid native trajectories, a curve-aligned design, explicit named predictors/participant_column/dimension and native_joint_bspline_gaussian, native nlme::lme optimizer, declared fixed and random B-spline bases, supported Gaussian participant random effects with optional nested trials or random slopes, declared iid/AR1/exponential family in supported native combinations, no transformations or hidden optimizer fallback. Strict Python model default trial_random_basis_size 3 is retained where identifiable; spline degree and basis constraints reject unsupported instead of autoselecting.",
       "path": "tests/testthat/test-native-functional-mixed-w3-scientific-20261112.R",
-      "sha256": "1b0aa6123329802a276cadc43823779f7bad0f33d6ebc9c1f4f9ee856dbe9c0d"
+      "sha256": "6e77013b5408a15e07a8ee603541aa5e2ef585a03157bcacbdb9f11d50f2b24a"
     },
     {
       "kind": "numerical_outputs",
       "description": "The actual R nlme likelihood optimizer executes exactly one Gaussian fixed/random spline model and stores its real finite variance, fitted/residual functions, random covariance, fixed functional coefficient matrix and standard errors. New deterministic 24-curve eight-participant tests compare coefficient table estimates to native fit, validate Wald limits, fitted + residual identities, positive residual variance, source ordering, measured elapsed and warnings. Existing source joint-fit tests exercise estimator routes and source column ordering. Direct frozen Python 1.2 dataclass field-order tests added, but independent Python statsmodels optimizer numerical equivalence is NOT established or claimed; current CI not observed green.",
       "path": "tests/testthat/test-native-functional-mixed-w3-scientific-20261112.R",
-      "sha256": "1b0aa6123329802a276cadc43823779f7bad0f33d6ebc9c1f4f9ee856dbe9c0d"
+      "sha256": "6e77013b5408a15e07a8ee603541aa5e2ef585a03157bcacbdb9f11d50f2b24a"
     },
     {
       "kind": "exception_semantics",
       "description": "Strict rejects nonlogical opt-in flag, moments substitutions, Python lbfgs string masquerading as native method, unrecorded preprocessing, unsupported serial/participant design structures and undeclared covariance parameters. Actual native nlme fit errors and warnings propagate, rather than silently falling back to R moment methods. Python-specific TypeError, ValueError, warnings and third-party optimizer exceptions cannot be source-identical to R.",
       "path": "tests/testthat/test-native-functional-mixed-w3-scientific-20261112.R",
-      "sha256": "1b0aa6123329802a276cadc43823779f7bad0f33d6ebc9c1f4f9ee856dbe9c0d"
+      "sha256": "6e77013b5408a15e07a8ee603541aa5e2ef585a03157bcacbdb9f11d50f2b24a"
     },
     {
       "kind": "returned_schema",
       "description": "Exactly nine ordered FunctionalMixedEffectsWorkflowResult scientific fields: workflow_schema_version, workflow_contract functional_mixed_effects:v1, config with fifteen source-ordered scientific fields and explicit native optimizer name, actual R fitted joint Gaussian mixed model, one true measured six-field WorkflowStepRecord with actual native function name, fourteen source=analyst decision records, six no-automatic-selection/provenance facts, truthful R/native likelihood fit text, and seven-column coefficient frame with Python source coefficient/time/dimension/estimate/standard_error/lower_95_wald/upper_95_wald ordering. Native fit remains an R class and report describes its nlme engine, not Python statsmodels.",
       "path": "tests/testthat/test-native-functional-mixed-w3-scientific-20261112.R",
-      "sha256": "1b0aa6123329802a276cadc43823779f7bad0f33d6ebc9c1f4f9ee856dbe9c0d"
+      "sha256": "6e77013b5408a15e07a8ee603541aa5e2ef585a03157bcacbdb9f11d50f2b24a"
     },
     {
       "kind": "scientific_estimand",
       "description": "Functional mixed-effects regression of common-grid scalar-design functional responses under real joint Gaussian B-spline marginal likelihood with fitted fixed functional coefficient curves, participant random effects and residual variance, respecting fit's declared random-slope, trial-nesting and serial covariance structure. Explicit no automatic covariance model selection, optimizer fallback, preprocessing or rank switch; previous unrelated two-level functional moments workflow remains separate.",
       "path": "tests/testthat/test-native-functional-mixed-w3-scientific-20261112.R",
-      "sha256": "1b0aa6123329802a276cadc43823779f7bad0f33d6ebc9c1f4f9ee856dbe9c0d"
+      "sha256": "6e77013b5408a15e07a8ee603541aa5e2ef585a03157bcacbdb9f11d50f2b24a"
     }
   ],
   "independent_review_status": "Provisional scoped scientific author review; exact-head native and Python CI committed but not observed passing; independent scientific certification count zero.",
