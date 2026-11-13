@@ -1,4 +1,5 @@
-\name{etr_functional_recovery_result}
+\name{etr_functional_recovery_evidence}
+\alias{etr_functional_recovery_evidence}
 \alias{etr_functional_recovery_result}
 \alias{etr_functional_recovery_frame}
 \alias{etr_functional_recovery_failure_frame}
@@ -16,9 +17,7 @@ or infer scientific qualification cutoffs.
 etr_functional_recovery_result(records, metric_definitions = list())
 etr_functional_recovery_frame(result)
 etr_functional_recovery_failure_frame(result)
-etr_functional_recovery_summary_frame(result, python_boundary_mode = FALSE)
-etr_plot_functional_recovery_summary(summary, metric,
-  statistic = "median", ...)
+etr_functional_recovery_summary_frame(result, python_boundary_mode = TRUE)
 }
 \arguments{
 \item{records}{Nonempty list of explicit scenario replicate records:
