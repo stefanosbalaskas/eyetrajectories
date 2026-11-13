@@ -119,10 +119,18 @@ jobs:
             reporter="summary",stop_on_failure=TRUE)
           RSCRIPT
   frozen-Python-actual-fdasrsf-source-differential:
-    runs-on: ubuntu-latest
+    # Exercise the exact frozen Python oracle on Windows as well as Linux;
+    # joblib's default loky worker spawning is incompatible with some
+    # embedded Windows reticulate consoles, so the test uses threading.
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     env:
       ET_RUN_PYTHON_ELASTIC_TESTS: "true"
       ET_RUN_PYTHON_TESTS: "true"
+      MPLBACKEND: "Agg"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -130,7 +138,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install real frozen Python 1.2 and real optional fdasrsf 2.7
-        run: python -m pip install "eyetrajectoriespy==1.2.0" "fdasrsf>=2.7,<2.8"
+        run: python -m pip install "eyetrajectoriespy==1.2.0" "fdasrsf>=2.7,<2.8" "matplotlib==3.10.9"
       - name: Assert genuine public frozen Python elastic function and backend
         shell: bash
         run: |
