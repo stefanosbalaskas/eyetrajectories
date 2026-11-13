@@ -3,9 +3,7 @@
 \alias{etr_fpca_spectrum_uncertainty_reporting_text}
 \alias{etr_functional_mean_band_reporting_text}
 \alias{etr_fpca_component_band_reporting_text}
-\alias{etr_plot_fpca_score_uncertainty}
-\alias{etr_plot_fpca_spectrum_uncertainty}
-\alias{etr_plot_fpca_component_band}
+
 \title{Native Python 1.2 source-aligned FPCA uncertainty reporting and graphics}
 \description{
 Seven Python-free native R API methods presenting matched-bootstrap
