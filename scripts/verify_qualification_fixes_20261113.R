@@ -48,10 +48,17 @@ filters <- c(
 cat("PATCH_SMOKE_MODE=", if (python_mode) "PYTHON_1_2" else "NATIVE_R",
     "\n", sep = "")
 cat("PATCH_SMOKE_FILTER=", paste(filters, collapse = "|"), "\n", sep = "")
+if(python_mode) {
+  # SummaryReporter reports only the first ten failures. Use a reporter
+  # honoring the configurable failure limit for scientific diagnostics.
+  options(testthat.progress.max_fails=200L)
+  Sys.setenv(TESTTHAT_MAX_FAILS="200")
+  cat("PATCH_SMOKE_FAILURE_CAP=200; reporter=progress\n")
+}
 testthat::test_local(
   ".",
   filter = paste(filters, collapse = "|"),
-  reporter = "summary",
+  reporter = if(python_mode) "progress" else "summary",
   stop_on_failure = TRUE
 )
 cat("PATCH_SMOKE_PASS; independent_scientific_certification=FALSE\n")
