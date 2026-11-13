@@ -17,14 +17,9 @@ etr_functional_mixed_effects_variance_bootstrap_frame(bootstrap)
 nonlinearity scientific quantities, including diagnostic spectral errors.}
 \item{bootstrap}{Full-refit participant-bootstrap R list with coefficient
 draws, covariance arrays, variance/eigenvalue summaries, flags and warnings.}
-\item{bins}{Number of equally spaced surrogate-statistic histogram bins,
-an integer at least two. Python boundary mode requires an R integer scalar
-from 2 through a native safety limit of 10000.}
-\item{python_boundary_mode}{If TRUE, reproduce NumPy integer-bin
-breaks including fixed half-unit constant-data expansion and left-inclusive
-counts with a closed final right edge. FALSE retains existing base R
-histogram semantics. This does not emulate Python Matplotlib Axes.}
-\item{...}{Additional arguments passed to the base R plotting function.}
+
+
+
 }
 \value{
 The two data-frame functions return source-column-ordered R
