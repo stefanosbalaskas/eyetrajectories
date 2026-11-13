@@ -1,6 +1,6 @@
 \name{etr_native_release_source_bridge_reporting}
 \alias{etr_detect_functional_outliers_skfda}
-\alias{etr_export_python_portable_result}
+
 \alias{etr_fit_sparse_fpca_fdapy}
 \alias{etr_native_source_contract_review_queue}
 \alias{etr_to_fdapy_irregular}
@@ -157,7 +157,7 @@ and with eigenfunctions on the exact sorted pooled observation times.
 The native score estimator follows source FDApy's actual internal
 \code{np.interp} pooled-grid interpolation, including constant endpoint
 extension, spectral covariance reconstruction and pseudoinverse
-\code{(Phi' diag(lambda) Phi + max(tol, noise_variance)*I)^+};
+\code{(t(Phi) diag(lambda) Phi + max(tol, noise_variance)*I)^+};
 the scores are reconstructed with the supplied eigenfunctions and mean.
 
 This stage does NOT fit FDApy's penalized B-spline or local-polynomial
