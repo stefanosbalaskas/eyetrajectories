@@ -198,8 +198,11 @@ def _spm_validate_portable(fitdir,bundledir,score0,source_field_count):
     assert w.payload['steps'][0]['elapsed_seconds']>=0
     assert w.payload['decisions']['psd_action']['source']=='analyst'
     lines=(root/'SHA256SUMS').read_text(encoding='utf-8').splitlines()
-    actual={str(p.relative_to(root)) for p in root.rglob('*') if p.is_file()}
-    assert {line.split('  ',1)[1] for line in lines}==actual-{'SHA256SUMS'}
+    # WindowsPath.__str__ uses backslashes; frozen Python exporter hashes
+    # POSIX-form relative archive paths (Path.as_posix()).
+    actual={p.relative_to(root).as_posix() for p in root.rglob('*') if p.is_file()}
+    checksum_names={line.split('  ',1)[1] for line in lines}
+    assert checksum_names==actual-{'SHA256SUMS'}, (sorted(checksum_names),sorted(actual))
     for line in lines:
         sha,path=line.split('  ',1)
         assert sha256((root/path).read_bytes()).hexdigest()==sha,path
