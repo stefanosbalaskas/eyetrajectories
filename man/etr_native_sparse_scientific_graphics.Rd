@@ -1,5 +1,5 @@
-\name{etr_plot_sparse_fpca_covariance}
-\alias{etr_plot_sparse_fpca_covariance}
+\name{etr_native_sparse_scientific_graphics}
+\alias{etr_native_sparse_scientific_graphics}
 
 \title{Scientific sparse FPCA and multivariate PACE diagnostics in native R graphics}
 \description{Plot the native sparse univariate and planar multivariate FPCA fitted
