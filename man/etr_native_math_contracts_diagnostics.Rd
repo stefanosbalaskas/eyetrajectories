@@ -14,11 +14,6 @@ parameter sensitivity results. No estimator is invoked by the catalog.
 etr_list_mathematical_contracts()
 etr_get_mathematical_contract(..., name, python_boundary_mode = FALSE)
 etr_mathematical_contract_frame()
-etr_plot_kantz_sensitivity(result, parameter,
-  response = "exponent", filters = NULL, ...)
-etr_plot_lyapunov_sensitivity(result, parameter,
-  response = "exponent", filters = NULL, ...)
-etr_plot_windowed_rqa_sensitivity(result, curve, metric, ...)
 }
 \arguments{
 \item{name}{An exact mathematical source contract key or registered
