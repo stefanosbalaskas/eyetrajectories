@@ -1,5 +1,5 @@
-\name{etr_plot_fpca_component_envelope}
-\alias{etr_plot_fpca_component_envelope}
+\name{etr_native_fpca_inference_source_graphics}
+\alias{etr_native_fpca_inference_source_graphics}
 
 \title{Frozen-source FPCA matched-envelope and familywise inference graphics}
 \description{
