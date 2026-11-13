@@ -1,10 +1,6 @@
 \name{etr_native_fpcr_inference_plots}
-\alias{etr_plot_fpca_wild_bootstrap_projection}
-\alias{etr_plot_fpca_regression_future_prediction_interval}
-\alias{etr_plot_fpca_regression_mean_prediction_uncertainty}
-\alias{etr_plot_fpca_regression_slope_band}
-\alias{etr_plot_fpca_regression_slope_uncertainty}
-\alias{etr_plot_sparse_fpca_score_diagnostics}
+\alias{etr_native_fpcr_inference_plots}
+
 \title{Native FPCR inference and sparse PACE source diagnostic plots}
 \description{
 Six Python-independent, read-only native R diagnostic plots for
