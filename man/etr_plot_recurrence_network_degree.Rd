@@ -2,7 +2,8 @@
 \alias{etr_plot_recurrence_network_degree}
 \title{Plot normalized or raw recurrence network degree source artists}
 \usage{
-etr_plot_recurrence_network_degree(result, normalized = TRUE, strict_source_record = FALSE, ...)
+etr_plot_recurrence_network_degree(result, normalized = TRUE,
+  strict_source_record = FALSE, ...)
 }
 \arguments{
 \item{result}{Native precomputed recurrence network.}\item{normalized}{Logical: normalized degree rather than raw vertex degree.}\item{strict_source_record}{Logical scalar selecting source scientific artist coordinates.}\item{...}{Legacy base R graphics options.}
