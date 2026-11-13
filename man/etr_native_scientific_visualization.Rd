@@ -1,5 +1,5 @@
-\name{etr_plot_embedding_delay_diagnostics}
-\alias{etr_plot_embedding_delay_diagnostics}
+\name{etr_native_scientific_visualization}
+\alias{etr_native_scientific_visualization}
 
 \title{Native R embedding, recurrence and nonlinear-dynamics visual diagnostics}
 \description{
