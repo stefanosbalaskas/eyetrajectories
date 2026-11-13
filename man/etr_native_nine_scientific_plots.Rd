@@ -1,5 +1,5 @@
-\name{etr_plot_fpca_stability}
-\alias{etr_plot_fpca_stability}
+\name{etr_native_nine_scientific_plots}
+\alias{etr_native_nine_scientific_plots}
 
 \title{Native R FPCA, simultaneous-band and recurrence visualizations}
 \description{
