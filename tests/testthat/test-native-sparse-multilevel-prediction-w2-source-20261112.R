@@ -316,12 +316,14 @@ def _w2_irregular(time,values,ids,field,metadata,dimensions):
   }
   expect_length(rpred$steps,length(et_to_r(pp$steps)))
   for(i in seq_along(rpred$steps)){
+    # R indexes from 1, but reticulate retains Python tuple indexing from 0.
+    py_step<-pp$steps[[i-1L]]
     expect_identical(rpred$steps[[i]]$name,
-      et_to_r(pp$steps[[i]]$name))
+      et_to_r(py_step$name))
     expect_identical(rpred$steps[[i]][["function"]],
-      et_to_r(pp$steps[[i]][["function"]]))
+      et_to_r(py_step[["function"]]))
     expect_identical(rpred$steps[[i]]$status,
-      et_to_r(pp$steps[[i]]$status))
+      et_to_r(py_step$status))
     expect_true(is.finite(rpred$steps[[i]]$elapsed_seconds))
   }
 })
