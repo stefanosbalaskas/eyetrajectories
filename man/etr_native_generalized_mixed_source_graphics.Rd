@@ -1,5 +1,4 @@
 \name{etr_plot_generalized_function_on_scalar_predictions}
-\alias{etr_plot_generalized_function_on_scalar_predictions}
 
 \alias{etr_plot_covariance_sensitivity_band_widths}
 
