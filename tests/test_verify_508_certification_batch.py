@@ -4,6 +4,7 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import verify_508_certification_batch as v
@@ -17,9 +18,23 @@ def write_csv(path, rows):
         writer.writerows(rows)
 
 
+def synthetic_gap_counts():
+    """Unit-fixture counts: 2 author-open callable and 1 class gap.
+
+    This is entirely synthetic; do not read live six-domain SHA256 receipts
+    while constructing a forged/tampered reviewer packet. Production
+    read_inventory() continues to validate every real receipt fail-closed.
+    """
+    return v.source_gap_inventory.SourceGapCounts(
+        historical_callable=203, active_callable=2,
+        resolved_semantic=tuple(f"synthetic_author_closed_{i:03d}"
+                                for i in range(201)),
+        historical_nonfunction=1, active_nonfunction=1)
+
+
 def make_packet(folder):
     head = "a" * 40
-    gaps = v.source_gap_inventory.read_inventory()
+    gaps = synthetic_gap_counts()
     full = []
     for i in range(508):
         isfn = i < 380
@@ -153,7 +168,16 @@ def make_packet(folder):
 
 class TestUnsignedBatchIntegrity(unittest.TestCase):
     def setUp(self):
+        # Isolate ONLY synthetic packet tests from the live source-review
+        # ledger. The production verifier still checks flags, manifest
+        # hashes, forged signoffs and recorded R/Python source identity.
+        self.count_patch = patch.object(
+            v.source_gap_inventory, "read_inventory",
+            return_value=synthetic_gap_counts())
+        self.count_patch.start()
+        self.addCleanup(self.count_patch.stop)
         self.t = tempfile.TemporaryDirectory()
+        self.addCleanup(self.t.cleanup)
         self.root = Path(self.t.name)
         make_packet(self.root)
 
