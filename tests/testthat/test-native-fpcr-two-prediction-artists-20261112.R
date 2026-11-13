@@ -69,8 +69,8 @@ test_that("strict FPCR prediction artists preserve calibrated source asymmetric 
     expect_identical(b$axes[[1L]]$title,"FPCR conditional-mean uncertainty")
     expect_identical(b$axes[[1L]]$ylabel,"Conditional mean response")
     expect_identical(b$axes[[1L]]$legend_labels,
-      c("bootstrap median + conditional-mean envelope",
-        "full-sample conditional mean"))
+      c("full-sample conditional mean",
+        "bootstrap median + conditional-mean envelope"))
     expect_equal(b$axes[[1L]]$artists[[1L]]$lower,c(.5,-.65))
     expect_equal(b$axes[[1L]]$artists[[1L]]$upper,c(.9,-.15))
     one<-etr_plot_fpca_regression_future_prediction_interval(z$future,
