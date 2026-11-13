@@ -45,8 +45,7 @@ test_that("508-contract certificate gate rejects known unresolved source differe
     expect_identical(row$source_contract_gap_unresolved,recorded)
     expect_true(row$source_contract_gap_known)
     expect_identical(row$source_contract_gap_kind,
-      if(p=="plot_surrogate_nonlinearity")
-        "backend_and_histogram" else "backend_return_type")
+      gap_ledger$gap_kind[match(p,gap_ledger$python_name)])
     expect_false(row$one_to_one_native_contract_complete)
   }
   row<-z[z$python_name=="functional_trapezoid_weights",]
