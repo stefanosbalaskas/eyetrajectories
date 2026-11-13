@@ -1,15 +1,13 @@
 \name{etr_native_release_workflow_exports}
-\alias{etr_export_workflow_bundle}
+\alias{etr_native_release_workflow_exports}
+
 \alias{etr_run_fpca_workflow}
 \alias{etr_run_function_on_scalar_workflow}
-\alias{etr_run_functional_mixed_effects_workflow}
+
 \alias{etr_run_generalized_functional_workflow}
 \alias{etr_run_recurrence_workflow}
 \alias{etr_run_sparse_fpca_workflow}
-\alias{etr_run_sparse_mfpca_async_workflow}
-\alias{etr_run_sparse_mfpca_workflow}
-\alias{etr_run_sparse_multilevel_workflow}
-\alias{etr_run_sparse_prediction_workflow}
+
 \alias{etr_plot_workflow_result}
 \alias{etr_save_workflow_figure}
 \title{Explicit native functional-data analysis workflow exports}
