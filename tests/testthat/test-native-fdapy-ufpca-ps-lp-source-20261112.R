@@ -27,6 +27,18 @@
       n_segments=4L,degree=3L,penalty=c(.3,.3)))
 }
 
+test_that("FDApy raw DGEEV preserves unsorted eigenpairs and source zero clipping",{
+  # np.linalg.eig(diag(c(-.2, 2, .1))) returns eigenvalues IN
+  # DIAGONAL INPUT ORDER. base::eigen() sorts, even symmetric=FALSE.
+  A<-diag(c(-.2,2,.1))
+  eig<-.etr_fdapy_unsorted_real_eig(A)
+  expect_identical(dim(eig$vectors),c(3L,3L))
+  expect_equal(eig$values,c(-.2,2,.1),tolerance=1e-12)
+  expect_equal(A%*%eig$vectors,
+    sweep(eig$vectors,2L,eig$values,"*"),tolerance=1e-12)
+  expect_equal(pmax(eig$values[1:2],0),c(0,2),tolerance=0)
+})
+
 test_that("FDApy univariate PS basis matches source uniform unclamped B-spline geometry",{
   x<-seq(0,1,length.out=17L)
   for(degree in 1:3){
