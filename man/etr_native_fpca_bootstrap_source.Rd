@@ -1,4 +1,5 @@
-\name{etr_fpca_score_uncertainty_reporting_text}
+\name{etr_native_fpca_bootstrap_source}
+\alias{etr_native_fpca_bootstrap_source}
 \alias{etr_fpca_score_uncertainty_reporting_text}
 \alias{etr_fpca_spectrum_uncertainty_reporting_text}
 \alias{etr_functional_mean_band_reporting_text}
@@ -15,12 +16,6 @@ etr_fpca_score_uncertainty_reporting_text(result, digits = 3L)
 etr_fpca_spectrum_uncertainty_reporting_text(result, digits = 3L)
 etr_functional_mean_band_reporting_text(result, digits = 3L)
 etr_fpca_component_band_reporting_text(result, digits = 2L)
-etr_plot_fpca_score_uncertainty(result, component = 0L,
-  max_targets = 30L, ...)
-etr_plot_fpca_spectrum_uncertainty(result,
-  metric = "explained_variance_ratio", ...)
-etr_plot_fpca_component_band(result, component = 0L,
-  dimension = NULL, ...)
 }
 \arguments{
 \item{result}{Corresponding audited native R score, spectrum,
