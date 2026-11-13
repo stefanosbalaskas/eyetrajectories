@@ -135,7 +135,7 @@ test_that("actual native joint-likelihood source integration retains audited pai
     fixed_basis_size=2L,random_basis_size=2L,
     spline_degree=1L,reml=TRUE)
   bootstrap<-etr_bootstrap_functional_mixed_effects_coefficients(
-    fit,n_bootstrap=12L,random_state=11L)
+    fit,n_bootstrap=100L,random_state=11L)
   band<-etr_functional_mixed_effects_simultaneous_bands(
     bootstrap,confidence_level=.9,simultaneous_scope="family")
   source<-etr_functional_mixed_effects_covariance_sensitivity(
