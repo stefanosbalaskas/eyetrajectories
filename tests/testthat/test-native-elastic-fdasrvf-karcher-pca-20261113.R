@@ -221,4 +221,52 @@ py_elastic={
   expect_false(r$source_equivalent)
   expect_false(r$source_full_numeric_parity_certified)
   expect_false(r$independently_source_certified)
+  # Quantitative DIFFERENTIAL DIAGNOSTICS, not numerical parity assertions:
+  # native fdasrvf uses a Karcher medoid and R tangent PCA, while frozen
+  # Python fdasrsf uses the first curve as its mean seed and a different
+  # aligned-curve reconstruction. No unvalidated shared-value tolerance.
+  py_warp<-as.matrix(py$warps)
+  py_aligned<-as.array(py$aligned)
+  py_mean<-as.matrix(py$mean)
+  py_scores<-as.matrix(py$scores)
+  expect_true(all(is.finite(py_aligned)))
+  expect_true(all(is.finite(py_mean)))
+  expect_true(all(is.finite(py$principal)))
+  expect_true(all(py_warp>=-1e-5 & py_warp<=1+1e-5))
+  expect_true(all(vapply(seq_len(nrow(py_warp)),function(i)
+    all(diff(py_warp[i,])>=-1e-5),logical(1L))))
+  center_trajectories<-function(v){
+    for(i in seq_len(dim(v)[1L]))
+      for(j in seq_len(dim(v)[3L]))
+        v[i,,j]<-v[i,,j]-mean(v[i,,j])
+    v
+  }
+  center_mean<-function(m)
+    sweep(m,1L,rowMeans(m),"-")
+  rmse<-function(a,b)sqrt(mean((a-b)^2))
+  # Score-pair distances are invariant to simultaneous sign flips,
+  # rotations and component permutations within the retained subspace.
+  score_distance_rmse<-rmse(
+    as.numeric(stats::dist(r$scores)),
+    as.numeric(stats::dist(py_scores)))
+  comparisons<-c(
+    warp_rmse=rmse(r$warping_functions,py_warp),
+    warp_max_abs=max(abs(r$warping_functions-py_warp)),
+    aligned_centered_rmse=rmse(
+      center_trajectories(r$aligned$values),
+      center_trajectories(py_aligned)),
+    karcher_mean_centered_rmse=rmse(
+      center_mean(r$mean_curve),
+      center_mean(py_mean)),
+    score_pairwise_distance_rmse=score_distance_rmse)
+  expect_identical(length(comparisons),5L)
+  expect_true(all(is.finite(comparisons)))
+  expect_true(all(comparisons>=0))
+  # Emit values in the actual local test logs for later scientific audit.
+  # The values are DESCRIPTIVE. Distinct optimizers are not certified
+  # source-numerically equivalent by existence or small magnitudes alone.
+  cat("\\nELASTIC_PYTHON12_NATIVE_R_DIFFERENTIAL_NUMERICAL_AUDIT\\n")
+  for(nm in names(comparisons))
+    cat(sprintf("  %s = %.12g\\n",nm,comparisons[[nm]]))
+  cat("  numerical_parity_certified = FALSE\\n")
 })
