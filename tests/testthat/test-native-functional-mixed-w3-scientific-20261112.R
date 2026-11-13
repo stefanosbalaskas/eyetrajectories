@@ -130,14 +130,14 @@ test_that("mixed W3 strict mode refuses moments, Python optimizer impersonation 
   expect_error(check(utils::modifyList(cfg,list(method="lbfgs"))),
     "Python lbfgs")
   expect_error(check(utils::modifyList(cfg,list(
-    preprocessing=list(list(kind="smooth")))))),
+    preprocessing=list(list(kind="smooth"))))),
     "empty preprocessing")
   expect_error(check(utils::modifyList(cfg,list(
     residual_correlation="ar1"))),
     "requires.*nested trial")
   expect_error(check(utils::modifyList(cfg,list(
     trial_column="trial_id"))),
-    "trial_random_effect")
+    "trial_column must name distinct trajectory metadata")
   expect_error(check(utils::modifyList(cfg,list(
     covariance_ridge=1e-6))),
     "unsupported fields")

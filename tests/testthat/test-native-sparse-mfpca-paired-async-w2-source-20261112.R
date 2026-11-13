@@ -155,7 +155,7 @@ test_that("strict paired/async W2 mode rejects alternative estimator and supplie
   p$bandwidth_selection<-list(mean_bandwidths=.5,
     covariance_bandwidths=.85,fold_assignments=rep(0L,24L))
   expect_error(etr_run_sparse_mfpca_workflow(x,p,
-    strict_source_record=TRUE),"fold_assignments")
+    strict_source_record=TRUE),"fold assignments")
 })
 
 test_that("direct Python 1.2 paired and async sparse W2 workflows match source scientific outputs",{
@@ -179,11 +179,11 @@ def _w2_mfpca_input(times,values,ids,group_column,groups):
   make<-reticulate::py_eval("_w2_mfpca_input",convert=FALSE)
   for(which in c("paired","async")){
     is_async<-identical(which,"async")
-    x<-if(is_async).etr_spna_fixture()else.etr_spnm_fixture()
+    x<-if (is_async) .etr_spna_fixture() else .etr_spnm_fixture()
     cfg<-c(list(backend="native_covariance"),
-      if(is_async).etr_spna_options()else.etr_spnm_args())
+      if (is_async) .etr_spna_options() else .etr_spnm_args())
     if(!is_async)cfg$score_uncertainty<-list(condition_limit=1e10)
-    group<-if(is_async)"batch"else"block"
+    group<-if (is_async) "batch" else "block"
     pyx<-reticulate::py_call(make,
       times=reticulate::r_to_py(x$time),
       values=reticulate::r_to_py(x$values),
@@ -205,27 +205,27 @@ def _w2_mfpca_input(times,values,ids,group_column,groups):
       pycfg$score_uncertainty<-reticulate::py_call(
         wf$ScoreUncertaintyConfig,condition_limit=1e10)
     source_config<-do.call(reticulate::py_call,c(
-      list(if(is_async)wf$SparseMFPCAAsyncWorkflowConfig
+      list(if (is_async) wf$SparseMFPCAAsyncWorkflowConfig
         else wf$SparseMFPCAWorkflowConfig),pycfg))
     source<-reticulate::py_call(
-      if(is_async)wf$run_sparse_mfpca_async_workflow
+      if (is_async) wf$run_sparse_mfpca_async_workflow
         else wf$run_sparse_mfpca_workflow,
       trajectories=pyx,config=source_config)
-    native<-if(is_async)etr_run_sparse_mfpca_async_workflow(
+    native<-if (is_async) etr_run_sparse_mfpca_async_workflow(
       x,cfg,strict_source_record=TRUE)else
         etr_run_sparse_mfpca_workflow(x,cfg,strict_source_record=TRUE)
     expect_identical(names(native),
-      if(is_async).etr_mfpca_w2_async_keys
+      if (is_async) .etr_mfpca_w2_async_keys
       else .etr_mfpca_w2_paired_keys)
     expect_identical(native$workflow_contract,
       et_to_r(source$workflow_contract))
     source_keys<-reticulate::py_to_r(reticulate::py_eval(
-      if(is_async)"tuple(wf.SparseMFPCAAsyncWorkflowResult.__dataclass_fields__)"
+      if (is_async) "tuple(wf.SparseMFPCAAsyncWorkflowResult.__dataclass_fields__)"
       else"tuple(wf.SparseMFPCAWorkflowResult.__dataclass_fields__)",
       convert=FALSE))
     expect_identical(names(native),as.character(source_keys))
     config_keys<-reticulate::py_to_r(reticulate::py_eval(
-      if(is_async)"tuple(wf.SparseMFPCAAsyncWorkflowConfig.__dataclass_fields__)"
+      if (is_async) "tuple(wf.SparseMFPCAAsyncWorkflowConfig.__dataclass_fields__)"
       else"tuple(wf.SparseMFPCAWorkflowConfig.__dataclass_fields__)",
       convert=FALSE))
     expect_identical(names(native$config),as.character(config_keys))

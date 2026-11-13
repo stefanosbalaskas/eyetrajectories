@@ -24,37 +24,37 @@
       "kind": "source_signature",
       "description": "Frozen Python 1.2 src/eyetrajectoriespy/workflows/_sparse_mfpca.py::run_sparse_mfpca_workflow, 12-field Python SparseMFPCAWorkflowResult analogue with 22 ordered config fields, seven decisions, four source provenance fields, true measured R steps, source score tables, optional selected bandwidths, conditional score uncertainty and observation-process diagnostics.",
       "path": "tests/testthat/test-native-sparse-mfpca-paired-async-w2-source-20261112.R",
-      "sha256": "6c585e984bb7c97932c8085dd917b1b4a4bfa255d2b5de20e57be99bb89d00fd"
+      "sha256": "e16187253ede7fbb209ba828cb532a2989648400e19b50511a5f5f12cc3ae96e"
     },
     {
       "kind": "accepted_input_domain",
       "description": "Paired finite irregular planar samples on named x/y channels, 1+ FPC components, native_covariance source backend only, finite analysis grid, analyst-fixed or audited selected bandwidths, explicit PSD and score conditioning, diagonal/fixed-matrix measurement noise; optional genuine source posterior score uncertainty and observation-process diagnostics. Strict grouped selectors require explicit NumPy tie profile and no R-only supplied fold assignments.",
       "path": "tests/testthat/test-native-sparse-mfpca-paired-async-w2-source-20261112.R",
-      "sha256": "6c585e984bb7c97932c8085dd917b1b4a4bfa255d2b5de20e57be99bb89d00fd"
+      "sha256": "e16187253ede7fbb209ba828cb532a2989648400e19b50511a5f5f12cc3ae96e"
     },
     {
       "kind": "numerical_outputs",
       "description": "Direct frozen Python 1.2 workflow comparison uses the actual public workflow constructor with paired 24-curve two-component data, posterior uncertainty, fixed bandwidths, measurement noise, score tables, mean/eigenvalue/eigenfunction/scores, covariance blocks, step and provenance. Earlier direct paired fit and source-selection tests cover diagonal/correlated noise, groups and score covariance; new CI not yet proven green.",
       "path": "tests/testthat/test-native-sparse-mfpca-paired-async-w2-source-20261112.R",
-      "sha256": "6c585e984bb7c97932c8085dd917b1b4a4bfa255d2b5de20e57be99bb89d00fd"
+      "sha256": "e16187253ede7fbb209ba828cb532a2989648400e19b50511a5f5f12cc3ae96e"
     },
     {
       "kind": "exception_semantics",
       "description": "Reject R-only fdapace alternative, invalid strict flag, supplied selection fold indices, unsupported score configuration, impossible PSD/covariance support, invalid measurement-error covariance. Source-specific typed errors and Python class identity not claimed; low-support, rank and NumPy GroupKFold ties remain qualified domains.",
       "path": "tests/testthat/test-native-sparse-mfpca-paired-async-w2-source-20261112.R",
-      "sha256": "6c585e984bb7c97932c8085dd917b1b4a4bfa255d2b5de20e57be99bb89d00fd"
+      "sha256": "e16187253ede7fbb209ba828cb532a2989648400e19b50511a5f5f12cc3ae96e"
     },
     {
       "kind": "returned_schema",
       "description": "12-field Python SparseMFPCAWorkflowResult analogue with 22 ordered config fields, seven decisions, four source provenance fields, true measured R steps, source score tables, optional selected bandwidths, conditional score uncertainty and observation-process diagnostics.",
       "path": "tests/testthat/test-native-sparse-mfpca-paired-async-w2-source-20261112.R",
-      "sha256": "6c585e984bb7c97932c8085dd917b1b4a4bfa255d2b5de20e57be99bb89d00fd"
+      "sha256": "e16187253ede7fbb209ba828cb532a2989648400e19b50511a5f5f12cc3ae96e"
     },
     {
       "kind": "scientific_estimand",
       "description": "Paired sparse planar x/y joint covariance PACE from original coincident observation grids. Local mean and covariance smoothing, cross-channel covariance and channel-specific or correlated measurement errors retained, no original observations interpolated to a synthetic common grid. Model selection only through declared audited selector.",
       "path": "tests/testthat/test-native-sparse-mfpca-paired-async-w2-source-20261112.R",
-      "sha256": "6c585e984bb7c97932c8085dd917b1b4a4bfa255d2b5de20e57be99bb89d00fd"
+      "sha256": "e16187253ede7fbb209ba828cb532a2989648400e19b50511a5f5f12cc3ae96e"
     }
   ],
   "independent_review_status": "Developer provisional six-domain source scientific review only. CI tests pending/not observed green. No external independent certification.",

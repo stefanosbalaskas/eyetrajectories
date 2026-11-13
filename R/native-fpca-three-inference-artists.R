@@ -34,7 +34,7 @@
       kind="scatter",marker="o",
       offsets=unname(cbind(
         as.numeric(frame$reconstruction_robust_z),
-        as.numeric(frame$score_mahalanobis_sq)))),
+        as.numeric(frame$score_mahalanobis_sq))))),
     lines=lines,legend=FALSE)
   .etr_fpca_three_record(
     "plot_fpca_outlier_diagnostics",axis,
