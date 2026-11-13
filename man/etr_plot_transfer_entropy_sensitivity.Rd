@@ -2,7 +2,8 @@
 \alias{etr_plot_transfer_entropy_sensitivity}
 \title{Plot explicit transfer-entropy parameter sensitivity without hidden averaging}
 \usage{
-etr_plot_transfer_entropy_sensitivity(result, parameter, metric = "transfer_entropy_bits", filters = NULL, strict_source_record = FALSE, ...)
+etr_plot_transfer_entropy_sensitivity(result, parameter,
+  metric = "transfer_entropy_bits", filters = NULL, strict_source_record = FALSE, ...)
 }
 \arguments{
 \item{result}{Native precomputed transfer-entropy parameter sensitivity grid.}
