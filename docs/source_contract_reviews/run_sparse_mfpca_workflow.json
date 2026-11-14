@@ -12,7 +12,7 @@
   "native_files": [
     {
       "path": "R/native-sparse-joint-score-workflows.R",
-      "sha256": "4ddcdd094146a4dca8708e621319ea148c40a680e805dddaa3fc51f34f927719"
+      "sha256": "77ca323dfc37563817c1c4c964ab73eab4932698554a01ebb444b43ef1524b46"
     },
     {
       "path": "R/native-sparse-mfpca-w2-source-workflow-record.R",
@@ -24,37 +24,37 @@
       "kind": "source_signature",
       "description": "Frozen Python 1.2 src/eyetrajectoriespy/workflows/_sparse_mfpca.py::run_sparse_mfpca_workflow, 12-field Python SparseMFPCAWorkflowResult analogue with 22 ordered config fields, seven decisions, four source provenance fields, true measured R steps, source score tables, optional selected bandwidths, conditional score uncertainty and observation-process diagnostics.",
       "path": "tests/testthat/test-native-sparse-mfpca-paired-async-w2-source-20261112.R",
-      "sha256": "e16187253ede7fbb209ba828cb532a2989648400e19b50511a5f5f12cc3ae96e"
+      "sha256": "d215695293bb22c8d80021f150d2f6416602fd48b960cd2ca31cfc637171f606"
     },
     {
       "kind": "accepted_input_domain",
       "description": "Paired finite irregular planar samples on named x/y channels, 1+ FPC components, native_covariance source backend only, finite analysis grid, analyst-fixed or audited selected bandwidths, explicit PSD and score conditioning, diagonal/fixed-matrix measurement noise; optional genuine source posterior score uncertainty and observation-process diagnostics. Strict grouped selectors require explicit NumPy tie profile and no R-only supplied fold assignments.",
       "path": "tests/testthat/test-native-sparse-mfpca-paired-async-w2-source-20261112.R",
-      "sha256": "e16187253ede7fbb209ba828cb532a2989648400e19b50511a5f5f12cc3ae96e"
+      "sha256": "d215695293bb22c8d80021f150d2f6416602fd48b960cd2ca31cfc637171f606"
     },
     {
       "kind": "numerical_outputs",
       "description": "Direct frozen Python 1.2 workflow comparison uses the actual public workflow constructor with paired 24-curve two-component data, posterior uncertainty, fixed bandwidths, measurement noise, score tables, mean/eigenvalue/eigenfunction/scores, covariance blocks, step and provenance. Earlier direct paired fit and source-selection tests cover diagonal/correlated noise, groups and score covariance; new CI not yet proven green.",
       "path": "tests/testthat/test-native-sparse-mfpca-paired-async-w2-source-20261112.R",
-      "sha256": "e16187253ede7fbb209ba828cb532a2989648400e19b50511a5f5f12cc3ae96e"
+      "sha256": "d215695293bb22c8d80021f150d2f6416602fd48b960cd2ca31cfc637171f606"
     },
     {
       "kind": "exception_semantics",
       "description": "Reject R-only fdapace alternative, invalid strict flag, supplied selection fold indices, unsupported score configuration, impossible PSD/covariance support, invalid measurement-error covariance. Source-specific typed errors and Python class identity not claimed; low-support, rank and NumPy GroupKFold ties remain qualified domains.",
       "path": "tests/testthat/test-native-sparse-mfpca-paired-async-w2-source-20261112.R",
-      "sha256": "e16187253ede7fbb209ba828cb532a2989648400e19b50511a5f5f12cc3ae96e"
+      "sha256": "d215695293bb22c8d80021f150d2f6416602fd48b960cd2ca31cfc637171f606"
     },
     {
       "kind": "returned_schema",
       "description": "12-field Python SparseMFPCAWorkflowResult analogue with 22 ordered config fields, seven decisions, four source provenance fields, true measured R steps, source score tables, optional selected bandwidths, conditional score uncertainty and observation-process diagnostics.",
       "path": "tests/testthat/test-native-sparse-mfpca-paired-async-w2-source-20261112.R",
-      "sha256": "e16187253ede7fbb209ba828cb532a2989648400e19b50511a5f5f12cc3ae96e"
+      "sha256": "d215695293bb22c8d80021f150d2f6416602fd48b960cd2ca31cfc637171f606"
     },
     {
       "kind": "scientific_estimand",
       "description": "Paired sparse planar x/y joint covariance PACE from original coincident observation grids. Local mean and covariance smoothing, cross-channel covariance and channel-specific or correlated measurement errors retained, no original observations interpolated to a synthetic common grid. Model selection only through declared audited selector.",
       "path": "tests/testthat/test-native-sparse-mfpca-paired-async-w2-source-20261112.R",
-      "sha256": "e16187253ede7fbb209ba828cb532a2989648400e19b50511a5f5f12cc3ae96e"
+      "sha256": "d215695293bb22c8d80021f150d2f6416602fd48b960cd2ca31cfc637171f606"
     }
   ],
   "independent_review_status": "Developer provisional six-domain source scientific review only. CI tests pending/not observed green. No external independent certification.",
@@ -64,5 +64,20 @@
     "Unseeded/grouped NumPy tie-order behavior outside documented profiles remains unverified.",
     "No guarantee of bitwise equal reports or all optional observation-process strings and tables beyond tested source domains.",
     "Frozen Python 1.2 pinned source tests are committed but not verified passing on this exact head; independent review and CRAN qualification remain pending."
-  ]
+  ],
+  "sparse_mfpca_w2_scientific_revalidation_20261114": {
+    "scope": "AUTHOR_SOURCE_DOMAIN_NATIVE_COVARIANCE_STRICT_W2",
+    "reviewed_git_head": "05c3ab0df31a0fd81814c87fa4b92430a26d3499",
+    "old_source_commit": "733f71463b89",
+    "old_source_sha256": "4ddcdd094146a4dca8708e621319ea148c40a680e805dddaa3fc51f34f927719",
+    "current_source_sha256": "77ca323dfc37563817c1c4c964ab73eab4932698554a01ebb444b43ef1524b46",
+    "old_test_commit": "ff3544b7d77a",
+    "old_test_sha256": "e16187253ede7fbb209ba828cb532a2989648400e19b50511a5f5f12cc3ae96e",
+    "current_test_sha256": "d215695293bb22c8d80021f150d2f6416602fd48b960cd2ca31cfc637171f606",
+    "prior_review_sha256": "3efb426202434cca1815838bb7e6da9a59a2760e5f4ad2564c037cc866df2c2c",
+    "scientific_review": "Native joint covariance/PACE branch now has explicit strict_source_record argument, mandatory Python controls, exact source ordered 29-field scientific output without Python class identity, and preserved opt-in default alternative. Frozen Python paired/async W2 tests now correctly index Python tuples from zero and check exact workflow name/function/status in addition to numerical eigenspectra, covariance, scores and provenance.",
+    "run_evidence": "User-confirmed 187 direct frozen Python 1.2 paired/async W2 assertions passed, with zero fail/warn/skip across all 4866 changed-test assertions.",
+    "full_optimizer_identity_claimed": false,
+    "independent_certification": false
+  }
 }
