@@ -12,48 +12,48 @@
   "native_files": [
     {
       "path": "R/native-fpcr-nested-cross-validation.R",
-      "sha256": "e4a06888e9a7dc81e53bdf73745b2a7b924295aa83272e7515435762772099fc"
+      "sha256": "6c7eea2cada47064f0f8c07a9ca8722dc5def6e6e9e1df609a576c58473b6898"
     },
     {
       "path": "R/native-fpcr-regression-cross-validation.R",
-      "sha256": "931426190fcd0b197e13edef31b244a29593539e83a4716e39bddcb9ac4812f3"
+      "sha256": "cfc48d38170ab1aa51e62b3fe9feba422ed1683a11c974c2d2a283b7f5362048"
     }
   ],
   "case_evidence": [
     {
       "kind": "source_signature",
       "path": "tests/testthat/test-native-fpcr-two-cv-strict-source-20261112.R",
-      "sha256": "786375b52869e5fa1d2975d4ea7ee0e85bc85fccd18f7e86e359496cd8496ec4",
+      "sha256": "fd0a7602c78c4d6b784b20acb043ca7b77e83b033322b62f72d0f8b890cbadf2",
       "description": "Frozen eyetrajectoriespy Python 1.2 prediction.py::nested_cross_validate_fpca_regression with explicit 1-2 FPC candidate counts, train-only FPCA, Gaussian OLS or Bernoulli statsmodels-GLM scientific equivalent, complete held-out prediction and fold assessments. Supports declared curve shuffle and grouped CV."
     },
     {
       "kind": "accepted_input_domain",
       "path": "tests/testthat/test-native-fpcr-two-cv-strict-source-20261112.R",
-      "sha256": "786375b52869e5fa1d2975d4ea7ee0e85bc85fccd18f7e86e359496cd8496ec4",
+      "sha256": "fd0a7602c78c4d6b784b20acb043ca7b77e83b033322b62f72d0f8b890cbadf2",
       "description": "Complete common-grid trajectories, numeric aligned optional scalar covariates, candidate FPC counts, explicit Gaussian or 0/1 binomial response, explicit curve KFold / group GroupKFold, source-compatible shuffled MT19937 and declared NumPy tie-order profile. R-only explicit fold assignments/text parsing are excluded in strict mode."
     },
     {
       "kind": "numerical_outputs",
       "path": "tests/testthat/test-native-fpcr-two-cv-strict-source-20261112.R",
-      "sha256": "786375b52869e5fa1d2975d4ea7ee0e85bc85fccd18f7e86e359496cd8496ec4",
+      "sha256": "fd0a7602c78c4d6b784b20acb043ca7b77e83b033322b62f72d0f8b890cbadf2",
       "description": "Frozen Python 1.2 public-export direct tests compare expected fold assignments, Gaussian or binomial held-out probabilities, fold losses, nested component selection and outer predictions with numeric tolerance 1e-5 on independent inputs. Python 1.2 oracle tests are committed but not yet confirmed green in exact-head CI."
     },
     {
       "kind": "exception_semantics",
       "path": "tests/testthat/test-native-fpcr-two-cv-strict-source-20261112.R",
-      "sha256": "786375b52869e5fa1d2975d4ea7ee0e85bc85fccd18f7e86e359496cd8496ec4",
+      "sha256": "fd0a7602c78c4d6b784b20acb043ca7b77e83b033322b62f72d0f8b890cbadf2",
       "description": "Strict mode rejects malformed strict flag, R-only supplied fold indices, R-only optional pandas numeric-text coercions, native base-R shuffled RNG, missing group tie-order profile. Underlying source-compatible validations reject malformed group columns, candidate support, invalid binomial outcomes and underdetermined folds, but Python exception class identity is excluded."
     },
     {
       "kind": "returned_schema",
       "path": "tests/testthat/test-native-fpcr-two-cv-strict-source-20261112.R",
-      "sha256": "786375b52869e5fa1d2975d4ea7ee0e85bc85fccd18f7e86e359496cd8496ec4",
+      "sha256": "fd0a7602c78c4d6b784b20acb043ca7b77e83b033322b62f72d0f8b890cbadf2",
       "description": "Canonical 14-field scientific FPCANestedRegressionCVResult analogue with outer_folds, inner_summaries, predictions, and exactly six frozen Python provenance fields (method, nested_selection, outer_performance_unseen_by_inner_selection, group_leakage_prevented, covariates, scientific_warning)."
     },
     {
       "kind": "scientific_estimand",
       "path": "tests/testthat/test-native-fpcr-two-cv-strict-source-20261112.R",
-      "sha256": "786375b52869e5fa1d2975d4ea7ee0e85bc85fccd18f7e86e359496cd8496ec4",
+      "sha256": "fd0a7602c78c4d6b784b20acb043ca7b77e83b033322b62f72d0f8b890cbadf2",
       "description": "Nested train-only FPC-count selection and independent outer held-out performance for the full prediction pipeline; inner losses and selected component count must not use the corresponding outer outcomes; grouped partitions retain participant independence where declared."
     }
   ],
@@ -64,5 +64,31 @@
     "GroupKFold tie order depends on NumPy build; larger tied cohorts need further qualification. Strict mode requires an explicit documented NumPy tie-order policy.",
     "Optional R-specific explicit fold assignments and numeric-text covariate parsing are not frozen Python public-call inputs; strict mode forbids them.",
     "Source tests and six-domain receipt are developer-prepared, not an independent certification; no R CMD check or CRAN claim."
-  ]
+  ],
+  "fpcr_cross_validation_source_revalidation_20261114": {
+    "scope": "AUTHOR_FROZEN_PYTHON_FPCR_CV_ESTIMAND_AND_SCHEMA_REVIEW",
+    "reviewed_git_head": "6d9681dfc485ef330c39f344c1ab6c13758dd12b",
+    "native_sources": [
+      {
+        "path": "R/native-fpcr-nested-cross-validation.R",
+        "oldSha": "e4a06888e9a7dc81e53bdf73745b2a7b924295aa83272e7515435762772099fc",
+        "newSha": "6c7eea2cada47064f0f8c07a9ca8722dc5def6e6e9e1df609a576c58473b6898",
+        "oldCommit": "ed1deb15b0e2"
+      },
+      {
+        "path": "R/native-fpcr-regression-cross-validation.R",
+        "oldSha": "931426190fcd0b197e13edef31b244a29593539e83a4716e39bddcb9ac4812f3",
+        "newSha": "cfc48d38170ab1aa51e62b3fe9feba422ed1683a11c974c2d2a283b7f5362048",
+        "oldCommit": "69df1394b5d8"
+      }
+    ],
+    "test_source": "tests/testthat/test-native-fpcr-two-cv-strict-source-20261112.R",
+    "historical_test_rev": "065af714048b",
+    "previous_test_sha256": "786375b52869e5fa1d2975d4ea7ee0e85bc85fccd18f7e86e359496cd8496ec4",
+    "current_test_sha256": "fd0a7602c78c4d6b784b20acb043ca7b77e83b033322b62f72d0f8b890cbadf2",
+    "prior_review_record_sha256": "657fc5b6a0a615c7a6cc9e45e2ba71bb1cdd4aef92f3e6b47b1b54732f829712",
+    "change_review": "Ordinary and nested FPCR CV now return nonempty covariate provenance as R character vectors matching frozen reticulate source conversion. Frozen-Python binomial fixture was made deterministic and nondegenerate, explicit base_R engine negative cases were corrected, and component_counts are compared as integer sequences with no numerical tolerance. Gaussian/logistic CV estimands and predictions unchanged.",
+    "replay": "User-confirmed exact frozen Python 1.2 FPCR CV suite PASS 158 assertions; complete changed 25-source-suite PASS 4866 with no failures/warnings/skips.",
+    "independently_certified": false
+  }
 }
