@@ -1,39 +1,70 @@
 # eyetrajectories
 
-## Current development status (2 November 2026)
+## Current release-candidate status (15 November 2026)
 
-`eyetrajectories` is a **development-stage R scientific package**, currently
-`0.4.1.9000`. It contains executable Python-free R methods for common-grid
-functional-data analysis, gaze trajectories, recurrence/RQA, nonlinear
-divergence, functional regression and explicit uncertainty workflows.
-A separate optional Python 1.2 bridge is provided for selected source calls.
+`eyetrajectories` is an experimental **native R scientific package** with an
+optional Python integration layer. The checked development package is
+`0.4.1.9000`; the proposed limited-scope release version is **`0.4.2`**.
+Neither a GitHub release nor a CRAN submission has been made.
 
-**A Python callable-name mapping is not a guarantee of numerical
-equivalence.** The inventory lists 380 mapped names; 203 callable source
-differences and one class difference remain explicitly documented. Thirty-two
-nonfunction representations are provisional. No independent full-domain
-certifications have yet been signed (0/508). These stringent reviewer
-approvals are separate from whether a **limited experimental native R
-release** can pass R package checks.
+The package provides Python-free native methods for common-grid
+eye-tracking trajectories, preprocessing, functional analysis, recurrence/RQA,
+kinematics, plots, and specific documented inference workflows. Optional
+Python-backed methods depend on `eyetrajectoriespy==1.2.0` and its
+appropriate Python environment. **Using the native R methods does not require
+Python**.
 
-The current research branch has a source-only experimental release gate.
-From an exact checked-out Git commit, in RStudio:
+### Verified local qualification and limitations
+
+The maintainer's exact-head Windows 11 / R 4.6.1 qualification at
+`7f1f2a8440ec049bd9104eeb93f5d0de3cfaaa5e` passed:
+
+- `R CMD check --as-cran`: **0 errors, 0 warnings, 1 NOTE**. The NOTE
+  concerns incoming first-submission and development-version metadata;
+  it does not constitute CRAN acceptance.
+- Both native R offline and direct pinned Python 1.2 scientific test
+  suites: **PASS**.
+- Developer reconciliation and SHA256 author-evidence checks: **PASS**.
+
+The frozen interface inventory covers 508 public Python symbols:
+**380 functions and 128 nonfunctions**. All 380 native R function-name
+candidates were observed, and the historical author-reviewed gap ledger
+currently reports **zero open** source-gap records. This is not
+full scientific equivalence. Of the 128 nonfunctions, 32 have explicit
+native representation mappings and **96 have blank mapping fields
+pending audit**. There are 19 documented alternative-backend/estimand
+cases. **Independent full-domain certifications remain 0/508**.
+The selected source domain, numerical equivalence, object semantics,
+and scientific calibration must not be inferred from matching function names
+or a successful author test.
+
+**Release remains on hold:** the final `0.4.2` tarball has not been checked,
+Linux/macOS portability has not been verified, GitHub Actions jobs have not
+executed, and the remaining NOTE/metadata and scientific-claim review
+must be completed.
+
+### Maintainer release commands
+
+From a clean checkout at the intended Git commit, in RStudio with
+the package root as the working directory:
 
 ```r
+# Full source qualification, including the optional pinned Python oracle.
+source("scripts/verify_qualification_managed_python_20261113.R")
 source("scripts/qualify_experimental_candidate.R")
+
+# Produce and R CMD check an isolated 0.4.2 source candidate.
+# This DOES NOT merge, tag, upload, or publish anything.
+source("scripts/stage_local_release_candidate.R")
 ```
 
-It executes an actual `R CMD check --as-cran`, checks installed native
-scientific usage, and separately runs native/Python 1.2 author qualification.
-It cannot publish, certify unseen scientific domains, or replace independent
-review. The package's GitHub Actions runner-admission problem remains a
-separate external release dependency. See `NEWS.md` for recent changes and
-the `docs/experimental-release-scope.md` document in the research checkout
-for the bounded release plan.
-
-A local cross-platform qualification runner and isolated 0.4.2 candidate staging
-workflow are described in docs/local-release-qualification.md. The tooling
-never grants independent certifications or automatically publishes releases.
+The staging command builds a new source archive outside the development
+checkout and runs `R CMD check --as-cran` on the **staged version**.
+See [the exact release gates](docs/release-0.4.2-acceptance.md),
+[local platform qualification](docs/local-release-qualification.md), and
+[the bounded native R scope](docs/experimental-release-scope.md).
+The frozen Python 1.2 interface census is research evidence, **not** a
+claim that 508 native R contracts are independently certified.
 
 ### Historical research progress (not the current release specification)
 
