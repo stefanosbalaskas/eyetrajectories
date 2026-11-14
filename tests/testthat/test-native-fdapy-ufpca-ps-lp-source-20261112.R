@@ -27,6 +27,18 @@
       n_segments=4L,degree=3L,penalty=c(.3,.3)))
 }
 
+test_that("FDApy raw DGEEV preserves unsorted eigenpairs and source zero clipping",{
+  # np.linalg.eig(diag(c(-.2, 2, .1))) returns eigenvalues IN
+  # DIAGONAL INPUT ORDER. base::eigen() sorts, even symmetric=FALSE.
+  A<-diag(c(-.2,2,.1))
+  eig<-.etr_fdapy_unsorted_real_eig(A)
+  expect_identical(dim(eig$vectors),c(3L,3L))
+  expect_equal(eig$values,c(-.2,2,.1),tolerance=1e-12)
+  expect_equal(A%*%eig$vectors,
+    sweep(eig$vectors,2L,eig$values,"*"),tolerance=1e-12)
+  expect_equal(pmax(eig$values[1:2],0),c(0,2),tolerance=0)
+})
+
 test_that("FDApy univariate PS basis matches source uniform unclamped B-spline geometry",{
   x<-seq(0,1,length.out=17L)
   for(degree in 1:3){
@@ -45,6 +57,49 @@ test_that("FDApy univariate PS basis matches source uniform unclamped B-spline g
   expect_error(.etr_fdapy_ps_basis(x,n_segments=0L),
     "n_segments")
   expect_error(.etr_fdapy_ps_basis(x,degree=0L),"degree")
+})
+
+test_that("FDApy irregular PS mean honors source last-write and zero-weight cells",{
+  # FDApy's _format_data overwrites earlier values at duplicate times.
+  # The final zero at t=.6 is a zero-weight cell, not an earlier-value
+  # fallback. The fit domain remains the FULL pooled observation grid.
+  x<-c(0,.2,.4,.6,.8,1,.2,.6)
+  y<-c(4,5,6,7,8,9,10,0)
+  grid<-seq(0,1,length.out=11L)
+  got<-.etr_fdapy_ps_irregular_mean(x,y,grid,
+    penalty=.4,n_segments=4L,degree=3L)
+  expected<-.etr_fdapy_ps_1d(c(0,.2,.4,.8,1),
+    c(4,10,6,8,9),grid,penalty=.4,n_segments=4L,degree=3L)
+  expect_equal(got,expected,tolerance=1e-12)
+  # A single observation per unique time must remain an ordinary PS fit.
+  expect_equal(.etr_fdapy_ps_irregular_mean(c(0,.2,.4,.8,1),
+    c(4,10,6,8,9),grid,penalty=.4,n_segments=4L,degree=3L),
+    expected,tolerance=1e-12)
+})
+
+test_that("FDApy irregular PS mean follows upstream approx switch above 2000 long samples",{
+  grid<-seq(0,1,length.out=11L)
+  n_per_time<-201L
+  x<-rep(grid,each=n_per_time)
+  y<-rep(seq_along(grid)/10,each=n_per_time)+
+    rep(seq_len(n_per_time)/1000,times=length(grid))
+  expect_gt(length(x),2000L)
+  means<-vapply(seq_along(grid),function(i)
+    mean(y[((i-1L)*n_per_time+1L):(i*n_per_time)]),numeric(1L))
+  expected<-.etr_fdapy_ps_1d(grid,means,grid,
+    penalty=.2,n_segments=5L,degree=3L)
+  got<-.etr_fdapy_ps_irregular_mean(x,y,grid,
+    penalty=.2,n_segments=5L,degree=3L)
+  expect_equal(got,expected,tolerance=1e-11)
+  # The boundary of 2000 source long-form samples retains last-write.
+  x0<-rep(grid[1:10],each=200L)
+  y0<-seq_along(x0)/1000
+  boundary<-.etr_fdapy_ps_irregular_mean(x0,y0,grid,
+    penalty=.2,n_segments=5L,degree=3L)
+  expected_last<-.etr_fdapy_ps_1d(grid[1:10],
+    y0[seq(200L,2000L,by=200L)],grid,
+    penalty=.2,n_segments=5L,degree=3L)
+  expect_equal(boundary,expected_last,tolerance=1e-11)
 })
 
 test_that("source FDApy mean PS and local-polynomial smoothers reproduce known mathematical truths",{
@@ -226,10 +281,14 @@ test_that("FDApy full-fit and earlier fixed-spectrum conditional-score paths rem
 test_that("native FDApy full fit rejects unvalidated modes instead of fabricating backend parity",{
   fx<-.etr_fdapy_native_fit_fixture()
   go<-function(...){
-    etr_fit_sparse_fpca_fdapy(fx$trajectories,"x",
+    args<-list(fx$trajectories,"x",
       n_components=1L,strict_source_record=TRUE,
       kwargs_mean=fx$kwargs_mean,
-      kwargs_covariance=fx$kwargs_covariance,...)
+      kwargs_covariance=fx$kwargs_covariance)
+    overrides<-list(...)
+    if(length(overrides))
+      args[names(overrides)]<-overrides
+    do.call(etr_fit_sparse_fpca_fdapy,args)
   }
   expect_error(go(normalize=TRUE),"normalize=FALSE")
   expect_error(go(fit_smoothing=NULL),"PS or LP")
@@ -322,7 +381,7 @@ for smoother,kwm,kwc in (
     # then test true public frozen score numerical values.
     matches<-vapply(got$eigenvalues,function(value)
       which.min(abs(py_lambda-value)),integer(1L))
-    expect_false(anyDuplicated(matches),info=mode)
+    expect_identical(anyDuplicated(matches),0L,info=mode)
     for(k in seq_along(matches)){
       sign_k<-sign(sum(got$scores[,k]*py_scores[,matches[k]]))
       if(sign_k==0)sign_k<-1

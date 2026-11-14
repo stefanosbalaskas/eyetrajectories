@@ -2,7 +2,8 @@
 \alias{etr_plot_generalized_function_on_scalar_coefficients}
 \title{Plot generalized FoSR link-scale coefficient scientific source geometry}
 \usage{
-etr_plot_generalized_function_on_scalar_coefficients(result, coefficient, strict_source_record = FALSE)
+etr_plot_generalized_function_on_scalar_coefficients(result, coefficient,
+  strict_source_record = FALSE)
 }
 \arguments{
 \item{result}{A precomputed generalized function-on-scalar coefficient fit or simultaneous coefficient-band record.}

@@ -192,6 +192,6 @@ test_that("same-draw scientific evidence does not independently certify exports"
   row<-d[d$python_name=="windowed_rqa_functional_mean_band" &
     d$is_python_function,,drop=FALSE]
   expect_equal(nrow(row),1L)
-  expect_true(row$source_contract_gap_unresolved)
+  .etr_expect_source_gap_matches_registry(row)
   expect_false(row$one_to_one_native_contract_complete)
 })

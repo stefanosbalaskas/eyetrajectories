@@ -54,6 +54,35 @@
     time_unit=x$time_unit,provenance=provenance)
 }
 
+# Match sklearn.decomposition.PCA(svd_solver="full")'s v-based svd_flip
+# without modifying the native R fit or its estimands. sklearn orients every
+# right-singular-vector row so its largest absolute entry is nonnegative;
+# base R svd() does not impose that deterministic source-label convention.
+# Reconstruct the weighted flattened right vector in Python's (time,channel)
+# C order, then flip BOTH score and component labels consistently.
+.etr_fpcr_source_oriented_reference<-function(fpca){
+  k<-dim(fpca$components)[1L]
+  nt<-length(fpca$time)
+  nd<-length(fpca$dimension_names)
+  signs<-vapply(seq_len(k),function(j){
+    right<-unlist(lapply(seq_len(nt),function(t)
+      vapply(seq_len(nd),function(d)
+        fpca$components[j,t,d]/
+          fpca$scale[d]*sqrt(fpca$weights[t]),numeric(1L))),
+      use.names=FALSE)
+    pivot<-right[[which.max(abs(right))]]
+    .etr_assert(is.finite(pivot)&&abs(pivot)>.Machine$double.eps,
+      "FPCR source component sign pivot is degenerate")
+    if(pivot<0) -1 else 1
+  },numeric(1L))
+  oriented<-fpca
+  for(j in seq_len(k)){
+    oriented$components[j,,]<-fpca$components[j,,]*signs[j]
+    oriented$scores[,j]<-fpca$scores[,j]*signs[j]
+  }
+  list(fpca=oriented,signs=signs)
+}
+
 # Verify that an external zero-based source-row draw is the concatenation
 # of exactly one complete original participant group per independent group draw.
 # This preserves Python's _participant_bootstrap_indices sampling unit even
@@ -248,8 +277,24 @@ etr_bootstrap_fpca_regression_uncertainty <- function(
     # in source order. The native lm is a model analogue, never a
     # Python statsmodels results wrapper.
     source_fit<-reference$fit
-    reference_regression<-source_fit[c("model","component_indices",
-      "coefficients","predictions","family","provenance")]
+    # The R scalar-FPCA fit is an S3 regression record, not the frozen
+    # FunctionalRegressionResult dataclass. Explicitly materialize the six
+    # source-scientific fields instead of subsetting nonexistent list keys.
+    aligned<-.etr_fpcr_source_oriented_reference(reference$fpca)
+    source_reference_fpca<-aligned$fpca
+    source_coef<-as.numeric(stats::coef(source_fit$model))
+    # The slope is basis-sign invariant, but raw FPC coefficients are not.
+    # Convert the nested source regression coefficients to sklearn's
+    # deterministic Vt sign convention, not a data-specific hard-coded sign.
+    source_coef[-1L]<-source_coef[-1L]*aligned$signs
+    names(source_coef)<-c("const",paste0("FPC",seq_len(k)))
+    reference_regression<-list(
+      model=source_fit$model,
+      component_indices=as.integer(seq_len(k)-1L),
+      coefficients=source_coef,
+      predictions=as.numeric(stats::fitted(source_fit$model)),
+      family="gaussian",
+      provenance=NULL)
     reference_regression$provenance<-list(
       method="scalar_on_function_via_fpca_scores",
       n_components=k,family="gaussian",covariates=list())
@@ -271,7 +316,8 @@ etr_bootstrap_fpca_regression_uncertainty <- function(
         "slope_and_mean_prediction_reconstructed_from_each_complete_refit",
       operator_scaled_fpcr_test=FALSE,random_state=random_state)
   }
-  result<-structure(list(reference_fpca=reference$fpca,
+  result<-structure(list(reference_fpca=if(isTRUE(python_boundary_mode))
+      source_reference_fpca else reference$fpca,
     reference_regression=reference_regression,
     reference_slope=reference$slope,
     bootstrap_slopes=bslope,

@@ -1,8 +1,6 @@
 \name{etr_native_predictive_visual_audits}
-\alias{etr_plot_fpca_regression_cv}
-\alias{etr_plot_nested_fpca_regression_cv}
-\alias{etr_plot_functional_mixed_effects_bootstrap_comparison}
-\alias{etr_plot_fpca_wild_bootstrap_truncation_scan}
+\alias{etr_native_predictive_visual_audits}
+
 \title{Native diagnostic plots for FPCA predictive CV and bootstrap sensitivity}
 \description{
 Four independent, read-only R-graphics adapters for published
@@ -11,16 +9,7 @@ cross-validation, nested outer-fold loss, full-refit versus fixed-covariance
 mixed-effects simultaneous band-width ratios, and target-specific FPCA
 wild-bootstrap truncation width or center.
 }
-\usage{
-etr_plot_fpca_regression_cv(result)
-etr_plot_nested_fpca_regression_cv(result)
-etr_plot_functional_mixed_effects_bootstrap_comparison(
-  comparison, coefficient
-)
-etr_plot_fpca_wild_bootstrap_truncation_scan(
-  result, target = 1L, metric = "width"
-)
-}
+
 \arguments{
 \item{result}{Explicit native R record of already-computed fold losses,
 outer-fold losses, or FPCA wild-bootstrap scan/selection values.}

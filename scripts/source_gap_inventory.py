@@ -12,6 +12,7 @@ import csv
 from dataclasses import dataclass
 import hashlib
 import json
+import subprocess
 from pathlib import Path, PurePosixPath
 
 CLOSED_SEMANTIC_SCOPE = frozenset({
@@ -95,12 +96,19 @@ def _read(path: Path, required: tuple[str, ...]) -> list[dict[str, str]]:
 
 
 
-def _source_file(root: Path, name: str, *, expected_prefix: str) -> Path:
-    """Reject path traversal, symlinks, and missing or out-of-repo proof."""
+def _source_file(root: Path, name: str, *, expected_prefix: str,
+                 allow_native_metadata: bool = False) -> Path:
+    """Accept canonical R source or narrowly scoped, pinned package metadata."""
     parsed = PurePosixPath(name)
+    native_metadata = (allow_native_metadata and expected_prefix == "R/" and
+        (name in ("NAMESPACE", "DESCRIPTION") or
+         (len(parsed.parts) == 2 and parsed.parts[0] == "man" and
+          parsed.suffix == ".Rd")))
     if (not name or parsed.is_absolute() or
-            ".." in parsed.parts or "." in parsed.parts or
-            not name.startswith(expected_prefix) or "\\" in name):
+            str(parsed) != name or ".." in parsed.parts or
+            "." in parsed.parts or
+            not (name.startswith(expected_prefix) or native_metadata) or
+            "\\" in name):
         raise SourceGapInventoryError(
             f"Unsafe or out-of-scope source-review evidence path: {name!r}")
     target = root.joinpath(*parsed.parts)
@@ -115,6 +123,61 @@ def _validate_reviewed_closures(
         root: Path, historical: list[dict[str, str]],
         resolved: set[str]) -> set[str]:
     """Require separate full-domain author review; never infer approval."""
+    git_sha_cache: dict[str, str | None] = {}
+    git_diff_cache: dict[str, bool] = {}
+
+    def verified_sha(path: Path, expected: str, message: str) -> None:
+        """Hash real checkout bytes, except a clean, canonical Git CRLF checkout.
+
+        On Windows with core.autocrlf, checkout text can have CRLF even while
+        the signed review receipt pins LF Git HEAD bytes. Accept that *only*
+        when (1) CRLF->LF yields the exact SHA256, (2) this tracked file
+        differs from HEAD only by Git's checkout newline conversion, and
+        (3) HEAD:path bytes hash to the same pinned SHA256. Other unrelated
+        tracked changes cannot affect this independent file proof.
+        """
+        payload = path.read_bytes()
+        if hashlib.sha256(payload).hexdigest() == expected:
+            return
+        normalized = payload.replace(b"\r\n", b"\n")
+        if (normalized == payload or
+                hashlib.sha256(normalized).hexdigest() != expected):
+            raise SourceGapInventoryError(message)
+        try:
+            relative = path.relative_to(root).as_posix()
+        except ValueError as error:
+            raise SourceGapInventoryError(message) from error
+        if relative not in git_diff_cache:
+            try:
+                # --quiet compares canonical Git content, not worktree stats.
+                # On some Windows setups 'git status --porcelain' reports M
+                # for EOL-only files even while git diff HEAD is empty.
+                diff = subprocess.run(
+                    ["git", "-C", str(root), "diff", "--quiet",
+                     "HEAD", "--", relative],
+                    check=False, stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE, timeout=30)
+                git_diff_cache[relative] = diff.returncode == 0
+            except (OSError, subprocess.TimeoutExpired):
+                git_diff_cache[relative] = False
+        if not git_diff_cache[relative]:
+            raise SourceGapInventoryError(message +
+                " (Git HEAD comparison rejected changed source evidence)")
+        if relative not in git_sha_cache:
+            try:
+                blob = subprocess.run(
+                    ["git", "-C", str(root), "show", "HEAD:" + relative],
+                    check=False, stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE, timeout=30)
+                git_sha_cache[relative] = (
+                    hashlib.sha256(blob.stdout).hexdigest()
+                    if blob.returncode == 0 else None)
+            except (OSError, subprocess.TimeoutExpired):
+                git_sha_cache[relative] = None
+        if git_sha_cache[relative] != expected:
+            raise SourceGapInventoryError(message +
+                " (canonical Git HEAD blob does not match pinned SHA256)")
+
     catalog = _read(root / "inst" / "extdata" / REVIEWED_CLOSURES,
                     REVIEWED_FIELDS)
     seen: set[str] = set()
@@ -135,17 +198,22 @@ def _validate_reviewed_closures(
         if row["frozen_python_commit"] != FROZEN_PYTHON:
             raise SourceGapInventoryError(
                 f"Stale Python source pin in reviewed closure: {name}")
-        if (row["author_full_contract_decision"] !=
-                "AUTHOR_FULL_CONTRACT_REVIEWED" or
+        author_tier = row["author_full_contract_decision"]
+        if (author_tier not in (
+                "AUTHOR_FULL_CONTRACT_REVIEWED",
+                "AUTHOR_SCOPED_CONTRACT_REVIEWED") or
                 row["independently_certified"] != "FALSE"):
             raise SourceGapInventoryError(
                 f"Unapproved or forged independent closure: {name}")
+        # A source-limited R review must remain source-limited. Its SHA256
+        # validation can establish a legitimate author-side recorded gap
+        # resolution, but never establish unrestricted 508/508 Python parity.
+        declared_full = author_tier == "AUTHOR_FULL_CONTRACT_REVIEWED"
         review = _source_file(root, row["review_record_path"],
                               expected_prefix="docs/source_contract_reviews/")
-        digest = hashlib.sha256(review.read_bytes()).hexdigest()
-        if row["review_record_sha256"] != digest:
-            raise SourceGapInventoryError(
-                f"Wrong digest for full source-contract review: {name}")
+        verified_sha(
+            review, row["review_record_sha256"],
+            f"Wrong digest for full source-contract review: {name}")
         try:
             data = json.loads(review.read_text(encoding="utf-8"))
         except (ValueError, UnicodeError) as error:
@@ -155,13 +223,26 @@ def _validate_reviewed_closures(
                 data.get("audit_version") != "source-contract-v1" or
                 data.get("python_name") != name or
                 data.get("frozen_python_commit") != FROZEN_PYTHON or
-                data.get("scope") != "FULL_SOURCE_CONTRACT" or
-                data.get("author_decision") != "FULL_CONTRACT_REVIEWED" or
                 data.get("independently_certified") is not False or
                 not isinstance(data.get("reviewer_statement"), str) or
                 len(data["reviewer_statement"].strip()) < 40):
             raise SourceGapInventoryError(
-                f"Unsubstantiated full source-contract decision: {name}")
+                f"Unsubstantiated author source-contract decision: {name}")
+        scope = data.get("scope")
+        if declared_full:
+            valid_scope = (scope == "FULL_SOURCE_CONTRACT" and
+                           data.get("author_decision") == "FULL_CONTRACT_REVIEWED")
+        else:
+            limits = data.get("language_specific_limits")
+            valid_scope = (
+                isinstance(scope, str) and scope.startswith("SCOPED_") and
+                data.get("author_decision") == "SCOPED_CONTRACT_REVIEWED" and
+                isinstance(limits, list) and len(limits) >= 1 and
+                all(isinstance(limit, str) and len(limit.strip()) >= 20
+                    for limit in limits))
+        if not valid_scope:
+            raise SourceGapInventoryError(
+                f"Forged/misclassified full versus scoped review decision: {name}")
         implementation = data.get("native_files")
         if not isinstance(implementation, list) or not implementation:
             raise SourceGapInventoryError(
@@ -173,11 +254,12 @@ def _validate_reviewed_closures(
                 raise SourceGapInventoryError(
                     f"Malformed pinned native source: {name}")
             file = _source_file(root, native.get("path", ""),
-                                expected_prefix="R/")
-            if hashlib.sha256(file.read_bytes()).hexdigest() != native.get("sha256"):
-                raise SourceGapInventoryError(
-                    f"Native implementation changed after full-contract review: {name}")
-            if declared_candidate in file.read_text(encoding="utf-8"):
+                                expected_prefix="R/", allow_native_metadata=True)
+            verified_sha(
+                file, native.get("sha256"),
+                f"Native implementation changed after full-contract review: {name}")
+            if (native.get("path", "").startswith("R/") and
+                    declared_candidate in file.read_text(encoding="utf-8")):
                 candidate_witnessed = True
         if not candidate_witnessed:
             raise SourceGapInventoryError(
@@ -197,9 +279,9 @@ def _validate_reviewed_closures(
                     f"Invalid full-contract evidence type: {name}/{kind}")
             file = _source_file(
                 root, case.get("path", ""), expected_prefix="tests/")
-            if hashlib.sha256(file.read_bytes()).hexdigest() != case.get("sha256"):
-                raise SourceGapInventoryError(
-                    f"Wrong source test evidence digest: {name}/{kind}")
+            verified_sha(
+                file, case.get("sha256"),
+                f"Wrong source test evidence digest: {name}/{kind}")
             kinds.add(kind)
         if kinds != REQUIRED_REVIEW_KINDS:
             raise SourceGapInventoryError(

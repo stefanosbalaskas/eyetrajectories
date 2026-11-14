@@ -24,37 +24,37 @@
       "kind": "source_signature",
       "description": "Pinned Python 1.2 src/eyetrajectoriespy/functional_mixed_effects_covariance_sensitivity.py::plot_functional_variance_decomposition, matched by native strict scientific plot mode rather than replacing actual statistical calculations.",
       "path": "tests/testthat/test-native-mixed-four-diagnostic-artists-20261112.R",
-      "sha256": "04a0a55a98b5a253a4b2503f830c06a7b09eee887046f77a06e0aeb79069ca3f"
+      "sha256": "b49e77302a5f5c1432f99a7104a4b907b11f6474827e299c6914eb7cd5c3034f"
     },
     {
       "kind": "accepted_input_domain",
       "description": "Native R strict mode supports genuinely converged nlme Gaussian joint B-spline model directly with model=NULL, or prior W3 Gaussian covariance-sensitivity scientific result and explicitly successful model label; rejects moments-only model, unlabelled sensitivity, failed/unknown model and automatically selected response. Legacy native moments visualization remains only nonstrict.",
       "path": "tests/testthat/test-native-mixed-four-diagnostic-artists-20261112.R",
-      "sha256": "04a0a55a98b5a253a4b2503f830c06a7b09eee887046f77a06e0aeb79069ca3f"
+      "sha256": "b49e77302a5f5c1432f99a7104a4b907b11f6474827e299c6914eb7cd5c3034f"
     },
     {
       "kind": "numerical_outputs",
       "description": "Native variance component curves derive from real joint random covariance and B-spline basis, optional nested trial covariance/residual component; source-ordered variance_decomposition table from existing native Gaussian scientific calculations, retained time grid, unique component labels and horizontal y=0 reference. Direct pinned Python 1.2 Matplotlib get_ydata matched to native fit/sensitivity scientific arrays in new regression; no exact-head successful CI witnessed.",
       "path": "tests/testthat/test-native-mixed-four-diagnostic-artists-20261112.R",
-      "sha256": "04a0a55a98b5a253a4b2503f830c06a7b09eee887046f77a06e0aeb79069ca3f"
+      "sha256": "b49e77302a5f5c1432f99a7104a4b907b11f6474827e299c6914eb7cd5c3034f"
     },
     {
       "kind": "exception_semantics",
       "description": "Requires genuine native Gaussian source model or sensitivity, fails for unqualified moments or missing/failed/unknown model; no false zero covariance or extrapolated component replacement. Python TypeError and Matplotlib Axes injection unsupported.",
       "path": "tests/testthat/test-native-mixed-four-diagnostic-artists-20261112.R",
-      "sha256": "04a0a55a98b5a253a4b2503f830c06a7b09eee887046f77a06e0aeb79069ca3f"
+      "sha256": "b49e77302a5f5c1432f99a7104a4b907b11f6474827e299c6914eb7cd5c3034f"
     },
     {
       "kind": "returned_schema",
       "description": "Strict native R one-panel scientific Matplotlib geometry of component lines grouped in first-seen order with source labels, zero reference, source Time (unit), Variance / cross-covariance, source title Functional variance decomposition: model or named sensitivity model, and legend labels. Native base R is not Matplotlib; default restricted R moments source frame unchanged.",
       "path": "tests/testthat/test-native-mixed-four-diagnostic-artists-20261112.R",
-      "sha256": "04a0a55a98b5a253a4b2503f830c06a7b09eee887046f77a06e0aeb79069ca3f"
+      "sha256": "b49e77302a5f5c1432f99a7104a4b907b11f6474827e299c6914eb7cd5c3034f"
     },
     {
       "kind": "scientific_estimand",
       "description": "Descriptive actual fitted functional participant/trial random-effect covariance, residual variance and cross-covariance component curves on the original Gaussian mixed-effect observation grid, conditional on declared model without refit or ranking.",
       "path": "tests/testthat/test-native-mixed-four-diagnostic-artists-20261112.R",
-      "sha256": "04a0a55a98b5a253a4b2503f830c06a7b09eee887046f77a06e0aeb79069ca3f"
+      "sha256": "b49e77302a5f5c1432f99a7104a4b907b11f6474827e299c6914eb7cd5c3034f"
     }
   ],
   "additional_regression_evidence": [
@@ -70,5 +70,17 @@
     "Accepted source plot data reflect the exact already-fitted native scientific model, not independently proved end-to-end optimizer parity.",
     "The band-width ratio plot remains OPEN because current joint likelihood sensitivity intentionally refuses unqualified simultaneous bands; it is NOT counted as closed.",
     "Independent Python exception type/state parity and external reviewer sign-off are outstanding."
-  ]
+  ],
+  "test_evidence_revalidation_20261114": {
+    "scope": "AUTHOR_SIX_DOMAIN_DIRECT_TEST_REVALIDATION",
+    "source_head": "50006e3979937c277ff5dd2a72707fe427cbd130",
+    "test_git_commit": "bd8365bec71f",
+    "old_test_sha256": "04a0a55a98b5a253a4b2503f830c06a7b09eee887046f77a06e0aeb79069ca3f",
+    "current_test_sha256": "b49e77302a5f5c1432f99a7104a4b907b11f6474827e299c6914eb7cd5c3034f",
+    "previous_review_record_sha256": "71dcc4902855fee8d87a4becba0a5b70cec631aa804ebc27f78c6905e747e045",
+    "reviewed_difference": "One-line correction of expected explicit failure message; actual calibration precondition and all native/Python scientific plot cases unchanged.",
+    "verified_changed_hunks": 1,
+    "replay": "2026-11-14 user-confirmed frozen Python 1.2 replay: 95 passing assertions in this affected test file, 4866 passing across all changed source-test files, 0 fail/warn/skip",
+    "independent_certification": false
+  }
 }

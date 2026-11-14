@@ -60,7 +60,7 @@
   "additional_regression_evidence": [
     {
       "path": "tests/testthat/test-native-functional-registration-plots.R",
-      "sha256": "69a683fd3e1e89498b6753b5e9a44b789292abd89f44e0cff984e8784d4cce53"
+      "sha256": "4578b467fc2c8dff8f2f8c8c2d9f29e2a9f09dc462b960405fa25c44e9262c2d"
     }
   ],
   "independent_review_status": "Author-scoped provisional scientific-geometry review; pinned Python exact-head tests queued/unverified, zero independent certifications.",
@@ -68,5 +68,20 @@
     "R base graphics and source data do not recreate Python Figure/Axes runtime object identity, exceptions, or pixel-equivalent rendering.",
     "Supported source-scientific geometry scope is restricted to complete native registration and original observed reconstruction summary; full Python input/ax domain remains different.",
     "No independently checked numerical end-to-end registration certification, main-branch merge or CRAN qualification asserted."
-  ]
+  ],
+  "test_evidence_revalidation_20261114": {
+    "scope": "AUTHOR_UNCHANGED_SCIENTIFIC_TEST_PROOF_RENEWAL_ONLY",
+    "review_git_head": "ceb7fe0f141b46c2d958d7d560b2ba475de78a61",
+    "test_path": "tests/testthat/test-native-functional-registration-plots.R",
+    "previous_sha256": "69a683fd3e1e89498b6753b5e9a44b789292abd89f44e0cff984e8784d4cce53",
+    "current_sha256": "4578b467fc2c8dff8f2f8c8c2d9f29e2a9f09dc462b960405fa25c44e9262c2d",
+    "original_git_commit": "647a5ffbb970",
+    "prior_review_record_sha256": "d14387690aa2abc14d8ec8a5ad93133ff6234b76baddcee23cf76768565f1fc0",
+    "exact_changed_line": 105,
+    "diff_review": "Changed only the release-catalog stale numeric gap-bound assertion to a shared source-gap count assertion; native plot geometry and frozen Python comparisons remain byte-identical.",
+    "frozen_python_replay": "User-confirmed full changed-25-suite PASS 4866 assertions, 0 failures/warnings/skips, on source-equivalent R and test files at prior head 41e38afc; this specific test suite PASSED 55 assertions.",
+    "author_review_scope": "SCOPED_NATIVE_FUNCTIONAL_REGISTRATION_ARTIST_GEOMETRY_REVIEW",
+    "independently_certified": false,
+    "independently_replayed": false
+  }
 }

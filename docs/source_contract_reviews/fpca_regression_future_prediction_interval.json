@@ -16,7 +16,7 @@
     },
     {
       "path": "R/native-fpcr-bootstrap-uncertainty.R",
-      "sha256": "445e75d2255d8b84313f045341e0eaf5f93552899bfec3c92646c37265c00bb0"
+      "sha256": "58b552a28d6e2c4a3e87459ae15e4b32f325e6bfd1c7046e04d56ed2a487e6a1"
     }
   ],
   "case_evidence": [
@@ -64,5 +64,19 @@
     "Native R requires numeric response while Python permits additional float-coercible inputs; no promise of identical Python exception classes or arbitrary object coercion.",
     "Native seeded PCG64 implementation is bounded by exactly representable numeric integer seeds; arbitrary 128-bit Python SeedSequence seeds are beyond the native input domain.",
     "Native-only fixed source residual indices and legacy R random engine remain supported by default, but are forbidden in strict source mode."
-  ]
+  ],
+  "fpcr_bootstrap_orientation_revalidation_20261114": {
+    "scope": "AUTHOR_FROZEN_SKLEARN_SVD_SIGN_CONVENTION_SOURCE_REVIEW",
+    "reviewed_git_head": "178a85da91b1c810de87770452be84b6b6505c72",
+    "original_source_commit": "adac5474cb07",
+    "old_source_sha256": "445e75d2255d8b84313f045341e0eaf5f93552899bfec3c92646c37265c00bb0",
+    "new_source_sha256": "58b552a28d6e2c4a3e87459ae15e4b32f325e6bfd1c7046e04d56ed2a487e6a1",
+    "original_test_commit": null,
+    "old_test_sha256": null,
+    "new_test_sha256": null,
+    "previous_record_sha256": "faaec9a655c848b4c48187e1d4cc308aafaddc2a45bc0278daefa846961a233a",
+    "scientific_review": "New native source-orientation routine exactly applies sklearn full-SVD largest-absolute-right-vector pivot sign to BOTH FPCA component and score, retaining original fitted rank/estimand and component score product. The bootstrap source oracle now directly compares Python reference FPCA components and scores, preventing visually plausible sign-inverted estimates. This source helper is shared by future interval generation; source calculations otherwise remain unchanged.",
+    "runtime_witness": "User-confirmed frozen Python 1.2 FPCR full bootstrap scientific tests PASS 249 assertions, and entire frozen 25-file review PASS 4866; local previously full R CMD check 0 errors/warnings, 1 NOTE.",
+    "independent_certification": false
+  }
 }

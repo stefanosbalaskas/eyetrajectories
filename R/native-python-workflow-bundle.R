@@ -3,8 +3,14 @@
   for(i in seq_along(table)) {
     column <- table[[i]]
     if(is.logical(column)) table[[i]] <- ifelse(column,"True","False")
+    else if(is.character(column)) table[[i]] <- enc2utf8(column)
   }
-  utils::write.csv(table,path,row.names=FALSE,na="",fileEncoding="UTF-8")
+  # Windows text-mode CSV writes can turn embedded LF in a quoted warnings
+  # field into CRLF. Python's pandas round-trip preserves the original LF.
+  # A binary UTF-8 connection retains literal scientific text in the CSV.
+  con <- file(path,open="wb")
+  on.exit(close(con),add=TRUE)
+  utils::write.csv(table,con,row.names=FALSE,na="")
 }
 
 .etr_portable_writer_fpca_workflow <- function(result, config, add_array) {

@@ -24,37 +24,37 @@
       "kind": "source_signature",
       "description": "Frozen Python 1.2 src/eyetrajectoriespy/plotting.py::plot_fpca_regression_slope_uncertainty inspected against native public signature with optional strict_source_record=TRUE; existing native returns preserved.",
       "path": "tests/testthat/test-native-fpcr-slope-pace-three-artists-20261112.R",
-      "sha256": "bb37c0a722d03ce9434d676057d6216ad6bf99596dbee3d71e86ea5f44d44f9c"
+      "sha256": "62f5eee87b81c49311a3b368d4bff7c3e10b06f90cf65e0a6d143198e4d00edb"
     },
     {
       "kind": "accepted_input_domain",
       "description": "Native validated fitted-slope time grid and dimension names, finite precomputed uncertainty arrays, or native sparse FPCA score_diagnostics frame with status masks. Arbitrary Python pandas/dataclass and injected Matplotlib axes protocols are explicitly out of scope.",
       "path": "tests/testthat/test-native-fpcr-slope-pace-three-artists-20261112.R",
-      "sha256": "bb37c0a722d03ce9434d676057d6216ad6bf99596dbee3d71e86ea5f44d44f9c"
+      "sha256": "62f5eee87b81c49311a3b368d4bff7c3e10b06f90cf65e0a6d143198e4d00edb"
     },
     {
       "kind": "numerical_outputs",
       "description": "Pointwise percentile FPCR slope uncertainty at observed grid, source fill_between alpha 0.2, fitted slope, zero reference, titles, axis labeling and source confidence label. Committed native numerical and direct frozen Python Matplotlib source artist comparisons use pinned 1.2 public exports. Exact-head CI execution has not been witnessed.",
       "path": "tests/testthat/test-native-fpcr-slope-pace-three-artists-20261112.R",
-      "sha256": "bb37c0a722d03ce9434d676057d6216ad6bf99596dbee3d71e86ea5f44d44f9c"
+      "sha256": "62f5eee87b81c49311a3b368d4bff7c3e10b06f90cf65e0a6d143198e4d00edb"
     },
     {
       "kind": "exception_semantics",
       "description": "Invalid R strict flags, unknown dimension, malformed numerical shape, nonfinite bounds, missing diagnostics and nonpositive conditioning fail explicitly. Native R errors need not match Python exception class identity.",
       "path": "tests/testthat/test-native-fpcr-slope-pace-three-artists-20261112.R",
-      "sha256": "bb37c0a722d03ce9434d676057d6216ad6bf99596dbee3d71e86ea5f44d44f9c"
+      "sha256": "62f5eee87b81c49311a3b368d4bff7c3e10b06f90cf65e0a6d143198e4d00edb"
     },
     {
       "kind": "returned_schema",
       "description": "Default R plots and invisible source numerical returns unchanged. Strict mode yields a typed native R source scientific record with ordered source artist geometry, original plot labels and metadata. Does not return a live Matplotlib Axes or pixel image.",
       "path": "tests/testthat/test-native-fpcr-slope-pace-three-artists-20261112.R",
-      "sha256": "bb37c0a722d03ce9434d676057d6216ad6bf99596dbee3d71e86ea5f44d44f9c"
+      "sha256": "62f5eee87b81c49311a3b368d4bff7c3e10b06f90cf65e0a6d143198e4d00edb"
     },
     {
       "kind": "scientific_estimand",
       "description": "Pointwise bootstrap percentile uncertainty around an already-fitted FPCR Gaussian slope. No refitting or familywise coverage is invented.",
       "path": "tests/testthat/test-native-fpcr-slope-pace-three-artists-20261112.R",
-      "sha256": "bb37c0a722d03ce9434d676057d6216ad6bf99596dbee3d71e86ea5f44d44f9c"
+      "sha256": "62f5eee87b81c49311a3b368d4bff7c3e10b06f90cf65e0a6d143198e4d00edb"
     }
   ],
   "additional_regression_evidence": [
@@ -68,5 +68,16 @@
     "No Python Matplotlib Axes/Figure identity, arbitrary existing ax parameter injection or pixel-level guarantees.",
     "R validators accept a bounded native numeric domain and R condition classes; Python's dynamic dataclass/pandas exception behavior is not reproduced.",
     "No scientific estimation, bootstrap design, covariance estimation or sparse diagnostic data are modified."
-  ]
+  ],
+  "test_evidence_revalidation_20261114": {
+    "scope": "AUTHOR_CURRENT_SIX_DOMAIN_TEST_PROOF_REPLAY",
+    "head_reviewed": "203c5aee077fcfcdb18a295c60a323db336e6cf5",
+    "original_git_revision": "92384e75da41",
+    "previous_test_sha256": "bb37c0a722d03ce9434d676057d6216ad6bf99596dbee3d71e86ea5f44d44f9c",
+    "current_test_sha256": "62f5eee87b81c49311a3b368d4bff7c3e10b06f90cf65e0a6d143198e4d00edb",
+    "previous_record_sha256": "ccc8bd8f2c10fe9abe81edf9cf6bdedab4d11c3a894c7855cf15c832cf1b55d2",
+    "reviewed_test_change": "Only the strict invalid-input test assertion was tightened to the precise implemented finite matrix shape guard; no source implementation, numerical comparison or valid-input test altered.",
+    "replay_witness": "User-confirmed frozen Python 1.2 25-file replay passed this file's 108 assertions; aggregate 4866 PASS, FAIL/WARN/SKIP 0.",
+    "independent_reviewer_signoff": false
+  }
 }

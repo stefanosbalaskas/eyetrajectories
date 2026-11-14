@@ -142,6 +142,14 @@ test_that("frozen typed Python source matches both resampling units and external
     expect_identical(actual$target_curve_ids,
       unname(as.character(et_to_r(reticulate::py_get_attr(
         py,"target_curve_ids")))))
+    # A coefficient sign match is meaningful only if the corresponding
+    # PCA component AND score labels have the same source orientation.
+    source_fpca<-reticulate::py_get_attr(py,"reference_fpca")
+    for(field in c("components","scores"))
+      expect_equal(actual$reference_fpca[[field]],
+        et_to_r(reticulate::py_get_attr(source_fpca,field)),
+        tolerance=1e-6,ignore_attr=TRUE,
+        info=paste("FPCR source PCA orientation",case$unit,case$seed,field))
     source_fit<-reticulate::py_get_attr(py,"reference_regression")
     expect_equal(actual$reference_regression$component_indices,
       as.integer(et_to_r(reticulate::py_get_attr(

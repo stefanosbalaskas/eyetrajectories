@@ -16,7 +16,7 @@
     },
     {
       "path": "R/native-generalized-gee-source-scientific-record.R",
-      "sha256": "2bf1ca1b94381bb67e371556a184a628f7ac0197ddf9133df0533d33ab5ed3e1"
+      "sha256": "5279f204efe3889d4727231d1a04e6f2174a60c533c94efc5afa2da8fe5af01c"
     },
     {
       "path": "R/native-generalized-gee-workflow.R",
@@ -27,37 +27,37 @@
     {
       "kind": "source_signature",
       "path": "tests/testthat/test-native-generalized-gee-fit-workflow-full-source-20261112.R",
-      "sha256": "1e2d1c5394ce33adb5e62482504ffd0a5a2b4957e0acf99b6ca2140bd7729514",
+      "sha256": "190716a65446457402e2637b99f8a7b453d529176aa540bad21ebaa619deb802",
       "description": "Pinned Python 1.2 generalized_function_on_scalar.py and workflows/_dense_regression.py: explicit Gaussian-free marginal Poisson/log or binomial/logit participant-clustered GEE, clamped B-spline coefficients, fixed declared basis, independence working correlation, robust sandwich, optional observed fixed exposure/grouped trials, exact aligned numeric design and no model/response automatic selection."
     },
     {
       "kind": "accepted_input_domain",
       "path": "tests/testthat/test-native-generalized-gee-fit-workflow-full-source-20261112.R",
-      "sha256": "1e2d1c5394ce33adb5e62482504ffd0a5a2b4957e0acf99b6ca2140bd7729514",
+      "sha256": "190716a65446457402e2637b99f8a7b453d529176aa540bad21ebaa619deb802",
       "description": "Thirty-six source curves from twelve participants with three trials each, seven equally spaced observed times, explicitly declared numeric treatment. Four source families/modes: Poisson count, Poisson count with fixed curve exposure, grouped integer-success binomial with explicit denominators, and Bernoulli 0/1; four-knot clamped cubic B-splines with eight expanded parameters and 12 independent clusters."
     },
     {
       "kind": "numerical_outputs",
       "path": "tests/testthat/test-native-generalized-gee-fit-workflow-full-source-20261112.R",
-      "sha256": "1e2d1c5394ce33adb5e62482504ffd0a5a2b4957e0acf99b6ca2140bd7729514",
+      "sha256": "190716a65446457402e2637b99f8a7b453d529176aa540bad21ebaa619deb802",
       "description": "Real paired source-scientific generalized W3 workflow comparisons against frozen Python 1.2 cover Poisson counts, explicit exposure and grouped binomial with robust coefficient functions and standard errors; canonical workflow schema, source empty preprocessing, genuine measured fit step, eleven analyst decisions, source report string and seven-column long coefficient table are compared directly."
     },
     {
       "kind": "exception_semantics",
       "path": "tests/testthat/test-native-generalized-gee-fit-workflow-full-source-20261112.R",
-      "sha256": "1e2d1c5394ce33adb5e62482504ffd0a5a2b4957e0acf99b6ca2140bd7729514",
+      "sha256": "190716a65446457402e2637b99f8a7b453d529176aa540bad21ebaa619deb802",
       "description": "Strict source record requires python_boundary_mode=TRUE and a valid boolean strict flag, explicit source-ordered design with unique curve IDs, finite complete responses and predictors, full rank expanded B-spline design and more independent clusters than model parameters, valid family, positive exposure and grouped denominator constraints, working independence and robust sandwich, and declared GEE convergence. Python exception classes and opaque objects are not native R runtime constructs."
     },
     {
       "kind": "returned_schema",
       "path": "tests/testthat/test-native-generalized-gee-fit-workflow-full-source-20261112.R",
-      "sha256": "1e2d1c5394ce33adb5e62482504ffd0a5a2b4957e0acf99b6ca2140bd7729514",
+      "sha256": "190716a65446457402e2637b99f8a7b453d529176aa540bad21ebaa619deb802",
       "description": "Complete 47 ordered scientific GeneralizedFunctionOnScalarResult fields and 58 ordered nested source provenance semantics, with native R model field comprising genuinely fitted coefficient parameters, parameter covariance, scale, link and convergence; not a fabricated statsmodels object. A source-conforming outer workflow returns nine canonical fields with preprocessing steps explicitly empty, source step naming, decisions, reports and coefficient table. Native backend audit remains in an R attribute for downstream refits."
     },
     {
       "kind": "scientific_estimand",
       "path": "tests/testthat/test-native-generalized-gee-fit-workflow-full-source-20261112.R",
-      "sha256": "1e2d1c5394ce33adb5e62482504ffd0a5a2b4957e0acf99b6ca2140bd7729514",
+      "sha256": "190716a65446457402e2637b99f8a7b453d529176aa540bad21ebaa619deb802",
       "description": "Independent-participant marginal generalized functional regression with working-independence GEE and cluster-robust sandwich coefficient inference; Poisson log expected counts or observed-exposure-adjusted rates, Bernoulli/grouped binomial marginal log-odds, source-fit covariance, no latent random-effects interpretation, automatic family choice or smoothing penalty. Native source score equations are tested against frozen Statsmodels rather than asserting the same software ran."
     }
   ],
@@ -68,5 +68,20 @@
     "Exact source physical model fields (coefficient functions, sandwich uncertainty, link means and declared exposure/denominator outcomes) are tested for supported family domains; arbitrary ill-conditioned convergence and dynamic Python coercions remain unreviewed.",
     "The model's native convergence audit is preserved as an R attribute for whole-participant refits; this is an R-only representation outside the Python dataclass surface.",
     "Source workflow elapsed_seconds are genuinely measured R timings and cannot be asserted equal to Python wall-clock timings."
-  ]
+  ],
+  "generalized_gee_source_review_20261114": {
+    "scope": "AUTHOR_SCOPED_NATIVE_GEE_SOURCE_FIELD_AND_MODEL_CLASS_REVALIDATION",
+    "head": "b840e42b1bb6c5096af47e8625e53ec805fe9cb6",
+    "old_native_sha256": "2bf1ca1b94381bb67e371556a184a628f7ac0197ddf9133df0533d33ab5ed3e1",
+    "current_native_sha256": "5279f204efe3889d4727231d1a04e6f2174a60c533c94efc5afa2da8fe5af01c",
+    "source_historical_revision": "e9b354165745",
+    "old_test_sha256": "1e2d1c5394ce33adb5e62482504ffd0a5a2b4957e0acf99b6ca2140bd7729514",
+    "current_test_sha256": "190716a65446457402e2637b99f8a7b453d529176aa540bad21ebaa619deb802",
+    "test_historical_revision": "3b29b8ffc5b7",
+    "prior_review_record_sha256": "12fd87aa457dc43610f4a67c8a5531e77100f9e67d36606aec81b444d2caa163",
+    "review": "R record uses character-vector predictors/coefficient names and integer shape arrays, matching frozen Python 1.2 reticulate field semantics; restored S3 class during source field ordering so native GEE bootstrap methods are callable. Frozen Python test fixture now constructs tuple with reticulate::tuple. No GEE working correlation, covariance estimator or scientific estimand was changed.",
+    "frozen_python_replay": "User-confirmed direct frozen Python GEE fit/workflow source suite PASS 477 assertions with no failures; full changed-suite 4866 PASS, and earlier CRAN-style R build 0 errors/warnings.",
+    "full_backend_python_identity": false,
+    "independently_certified": false
+  }
 }

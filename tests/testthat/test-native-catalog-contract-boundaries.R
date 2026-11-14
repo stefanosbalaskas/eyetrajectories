@@ -138,8 +138,10 @@ test_that("catalog author review exposes native representation and lookup bounda
   expect_error(call(lookup,np$array(matrix("quadrature"),dtype="str")),"TypeError")
   expect_error(call(lookup,np$array(as.list(c("fpca","quadrature")),dtype="str")),
     "truth value of an array")
+  # Frozen Python 1.2 checks lookup membership, so a zero-length ndarray
+  # fails the string-key type check rather than invoking NumPy truthiness.
   expect_error(call(lookup,np$empty(0L,dtype="str")),
-    "truth value of an empty array")
+    "name must be a string")
   source_joint<-call(lookup,np$array(matrix("fit_sparse_mfpca"),dtype="str"))
   expect_identical(et_to_r(source_joint$key),"sparse-mfpca-joint-pace")
   source_joint_key<-call(lookup,np$array(matrix("sparse-mfpca-joint-pace"),dtype="str"))

@@ -7,8 +7,13 @@ test_that("source-contract approval cannot be inferred from numeric fixtures",{
   candidates<-z[z$contract_certification_candidate,,drop=FALSE]
   expect_setequal(candidates$python_name,
     c("alr_transform","inverse_alr","score_distance_matrix",
-      "functional_trapezoid_weights"))
-  expect_true(all(candidates$contract_numerical_fixture_pass))
+      "functional_trapezoid_weights","TrajectorySet"))
+  numeric_pilots<-c("alr_transform","inverse_alr",
+    "score_distance_matrix","functional_trapezoid_weights")
+  expect_true(all(candidates$contract_numerical_fixture_pass[
+    candidates$python_name%in%numeric_pilots]))
+  expect_false(candidates$contract_numerical_fixture_pass[
+    candidates$python_name=="TrajectorySet"])
   expect_false(any(candidates$independent_numeric_parity_pass))
   expect_false(any(candidates$behavioral_schema_parity_pass))
   expect_false(any(candidates$independent_contract_review_pass))

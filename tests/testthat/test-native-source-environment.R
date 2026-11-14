@@ -20,6 +20,6 @@ test_that("native R environment has explicit pinned-source ancestry",{
   expect_identical(row$native_r_candidate,"etr_capture_environment")
   expect_true(row$named_native_candidate)
   expect_true(row$native_implementation_started)
-  expect_true(row$source_contract_gap_unresolved)
+  .etr_expect_source_gap_matches_registry(row)
   expect_false(row$one_to_one_native_contract_complete)
 })

@@ -24,43 +24,43 @@
     },
     {
       "path": "R/native-functional-recovery-orchestration.R",
-      "sha256": "12afe380f78fa61f02819252bfd913ccc94e7bc5e91e9bfea855f7fec79d21de"
+      "sha256": "4c56bfead752a2a5dfdd4d4a30bd128fad065fb2090bf882658e2b24bbb58348"
     }
   ],
   "case_evidence": [
     {
       "kind": "source_signature",
-      "path": "tests/testthat/test-native-functional-simulation-process-scenario-full-source-20261111.R",
+      "path": "tests/testthat/test-native-functional-sim-scenario-source.R",
       "sha256": "5d8fdaeee8bf6923d66970138cde3ca25d3cb951f9311abb2ad0890bf06936cd",
       "description": "Frozen eyetrajectoriespy==1.2.0 public source domain with generating mean and eigenfunctions, ordered positive eigenvalues, truth_grid, participant/trial design, coordinate and time units, dense/irregular observations, component score distributions, phase, missingness, Gaussian measurement covariance, and seeded random_state. R explicit python_boundary_mode requires native NumPy PCG64 and forbids native-only source_draws."
     },
     {
       "kind": "accepted_input_domain",
-      "path": "tests/testthat/test-native-functional-simulation-process-scenario-full-source-20261111.R",
+      "path": "tests/testthat/test-native-functional-sim-scenario-source.R",
       "sha256": "5d8fdaeee8bf6923d66970138cde3ca25d3cb951f9311abb2ad0890bf06936cd",
       "description": "Two-dimensional nine-time quadrature-orthonormal score basis, four participants and two trials per participant, dense normal independent noise, MCAR power-phase, Student-t finite-variance curve scores and correlated covariance noise, explicitly declared irregular schedules or generated irregular boundary-poor schedules, seeded NumPy random generators and real scenario replicate 1 of 2."
     },
     {
       "kind": "numerical_outputs",
-      "path": "tests/testthat/test-native-functional-simulation-process-scenario-full-source-20261111.R",
+      "path": "tests/testthat/test-native-functional-sim-scenario-source.R",
       "sha256": "5d8fdaeee8bf6923d66970138cde3ca25d3cb951f9311abb2ad0890bf06936cd",
       "description": "Frozen NumPy PCG64 curve/participant/trial scores, finite-variance Student-t gamma draws, phase power exponents, warp and latent values evaluated at real scheduled times without interpolation, Gaussian multi-channel noise, MCAR/block missingness, pre-missing and output schedules, complete 31-field realized truth and observations. Direct typed Python differential compares all generated score, noise, time and functional truth fields."
     },
     {
       "kind": "exception_semantics",
-      "path": "tests/testthat/test-native-functional-simulation-process-scenario-full-source-20261111.R",
+      "path": "tests/testthat/test-native-functional-sim-scenario-source.R",
       "sha256": "5d8fdaeee8bf6923d66970138cde3ca25d3cb951f9311abb2ad0890bf06936cd",
       "description": "Fail closed on invalid source mode scalar, native-only fixed numerical score/phase/noise replay, unsupported base-R source RNG, unknown observation domain, non-orthonormal mode geometry, non-finite eigenvalues, invalid missingness/phase parameters, unsupported irregular sampling schedules and incompatible measurement-noise covariance. Exact Python exception class identity is not asserted."
     },
     {
       "kind": "returned_schema",
-      "path": "tests/testthat/test-native-functional-simulation-process-scenario-full-source-20261111.R",
+      "path": "tests/testthat/test-native-functional-sim-scenario-source.R",
       "sha256": "5d8fdaeee8bf6923d66970138cde3ca25d3cb951f9311abb2ad0890bf06936cd",
       "description": "FunctionalSimulationResult canonical observations and truth fields, 31 ordered FunctionalSimulationTruth scientific fields and identical canonical 19-field provenance mapping for generated observations and truth. The source result carries true realized curves, not a fabricated synthetic practice proxy; R S3 and Python dataclass classes differ."
     },
     {
       "kind": "scientific_estimand",
-      "path": "tests/testthat/test-native-functional-simulation-process-scenario-full-source-20261111.R",
+      "path": "tests/testthat/test-native-functional-sim-scenario-source.R",
       "sha256": "5d8fdaeee8bf6923d66970138cde3ca25d3cb951f9311abb2ad0890bf06936cd",
       "description": "Known-generating-truth synthetic functional process with explicit independent curve modes, participant/trial hierarchy, measurement error, declared dropout, phase misregistration and irregular observation designs. This simulator is not an inferential estimator, confidence interval, or claim that observed data are real participants."
     }
@@ -72,5 +72,40 @@
     "Native simulation requires R numeric callable return arrays and eigenvalue inputs; arbitrary Python float-coercible objects/exception classes are not claimed identical.",
     "Caller-supplied retained source draw arrays and irregular scenario schedule replay are R-only native options, rejected in strict Python source mode.",
     "Scenario class is a native R scientific S3 record, not a Python FunctionalSimulationScenario frozen dataclass runtime identity."
-  ]
+  ],
+  "administrative_evidence_path_relocation": {
+    "administrative_only": true,
+    "original_evidence_path": "tests/testthat/test-native-functional-simulation-process-scenario-full-source-20261111.R",
+    "current_evidence_path": "tests/testthat/test-native-functional-sim-scenario-source.R",
+    "original_evidence_commit": "f6be98cdbbee04ca10ec05e04f54f14d24b10326",
+    "rename_commit": "d3dba7f592678d735b9686514f5e92f8648547a2",
+    "original_git_blob_sha1": "6913016043b36ba43cea8da78f43bcadffffa2f5",
+    "current_git_blob_sha1": "6913016043b36ba43cea8da78f43bcadffffa2f5",
+    "unchanged_evidence_sha256": "5d8fdaeee8bf6923d66970138cde3ca25d3cb951f9311abb2ad0890bf06936cd",
+    "prior_review_record_sha256": "673df78f6bae4b2a4424534e0e1e9f345b40c210e17280e45cf27deac8a05168",
+    "independent_certification_granted": false
+  },
+  "source_pin_revalidation_20261114": {
+    "scope": "AUTHOR_SIDE_SOURCE_BOUNDARY_ONLY_NO_INDEPENDENT_CERTIFICATION",
+    "reviewed_original_commit": "cc0cbfd215a03c7649876cdbc7cb11bad76d7181",
+    "audited_exact_head": "41d6088ea4a50c3f90db9af65562ecdfb033dbf7",
+    "source_path": "R/native-functional-recovery-orchestration.R",
+    "previous_pinned_sha256": "12afe380f78fa61f02819252bfd913ccc94e7bc5e91e9bfea855f7fec79d21de",
+    "current_canonical_git_sha256": "4c56bfead752a2a5dfdd4d4a30bd128fad065fb2090bf882658e2b24bbb58348",
+    "changed_scope": "Adjacent etr_run_functional_recovery_scenarios gained explicit opt-in python_boundary_mode, source-only draw/schedule restrictions, boundary argument forwarding and ordered recovery result records. The complete etr_simulate_functional_scenario function block is byte-for-byte identical to the originally pinned source.",
+    "unchanged_contract_body_verified": true,
+    "existing_frozen_python_oracle_test": "tests/testthat/test-native-functional-sim-scenario-source.R",
+    "existing_frozen_python_oracle_test_sha256": "5d8fdaeee8bf6923d66970138cde3ca25d3cb951f9311abb2ad0890bf06936cd",
+    "review_dimensions": [
+      "source_signature",
+      "accepted_input_domain",
+      "numerical_outputs",
+      "exception_semantics",
+      "returned_schema",
+      "scientific_estimand"
+    ],
+    "classification": "OUT_OF_SCOPE_ADJACENT_FUNCTION_CHANGE_NO_SIMULATE_FUNCTION_SEMANTIC_DELTA",
+    "runtime_test_status": "Latest exact-head R/Python differential and release CI still required; this scoped pin reconciliation does not claim they passed.",
+    "independently_certified": false
+  }
 }

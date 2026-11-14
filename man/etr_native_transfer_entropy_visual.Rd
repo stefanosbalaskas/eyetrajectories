@@ -1,7 +1,6 @@
-\name{etr_plot_transfer_entropy_sensitivity}
-\alias{etr_plot_transfer_entropy_sensitivity}
-\alias{etr_plot_transfer_entropy_circular_shift_test}
-\alias{etr_plot_conditional_transfer_entropy_circular_shift_test}
+\name{etr_native_transfer_entropy_visual}
+\alias{etr_native_transfer_entropy_visual}
+
 \title{Native source-aligned transfer-entropy sensitivity and circular-shift graphics}
 \description{
 Three independent Python-free native R graphics presenting already
@@ -9,15 +8,7 @@ estimated discrete transfer-entropy sensitivity, source-only
 circular-shift null distributions, and conditional transfer entropy.
 No TE estimator is rerun or adjusted by the plots.
 }
-\usage{
-etr_plot_transfer_entropy_sensitivity(result, parameter,
-  metric = "transfer_entropy_bits", filters = NULL, ...)
-etr_plot_transfer_entropy_circular_shift_test(result, bins = "auto",
-  python_boundary_mode = FALSE, numpy_auto_policy = "relaxed", ...)
-etr_plot_conditional_transfer_entropy_circular_shift_test(result,
-  bins = "auto", python_boundary_mode = FALSE,
-  numpy_auto_policy = "relaxed", ...)
-}
+
 \arguments{
 \item{result}{Native TE parameter sensitivity or circular source-shift
 test result, including a complete observed statistic and surrogate

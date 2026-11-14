@@ -24,7 +24,7 @@
     },
     {
       "path": "NAMESPACE",
-      "sha256": "469de6cebb76d136bc6391ae653d2e11a5fccbe5d7c0b7336930e8f569c265b0"
+      "sha256": "924b0999dc5ccc504ac6fffffc22109b65ef6b7585e548edfe6545231900cd2b"
     }
   ],
   "case_evidence": [
@@ -72,5 +72,17 @@
     "Source class reflection, direct immutable object identity, pandas arbitrary or duplicate index values, NumPy broad coercion, Python warning and exact exception class identities are not certified.",
     "Only source-scientific numerical array/data class fields and named methods are reviewed; general Python object graph parity remains unqualified.",
     "No exact-head R/Python CI success or independent certification claimed."
-  ]
+  ],
+  "production_source_revalidation_20261114": {
+    "scope": "AUTHOR_NONFUNCTION_NATIVE_BUILD_PROVENANCE",
+    "reviewed_source_head": "8328cd9f7f5dc10275baf4d7be5fdcf02fa612a0",
+    "path": "NAMESPACE",
+    "previous_source_sha256": "469de6cebb76d136bc6391ae653d2e11a5fccbe5d7c0b7336930e8f569c265b0",
+    "current_source_sha256": "924b0999dc5ccc504ac6fffffc22109b65ef6b7585e548edfe6545231900cd2b",
+    "original_git_revision": "3214675babfc",
+    "prior_review_record_sha256": "726c06ea2be1fe87257fc7ea900a27889afaa9cf4c0161a083166feefea104e0",
+    "reviewed_source_difference": "CRAN build adds required useDynLib(eyetrajectories,.registration=TRUE) at start of NAMESPACE, preserving all prior class and S3 exports. The user-confirmed complete R CMD check installed and loaded correctly with zero errors/warnings; this is not Python dataclass identity.",
+    "scientific_approval": "Existing author-scoped/full contract tier preserved; no independent scientific certification or newly claimed 508-export parity",
+    "independently_certified": false
+  }
 }

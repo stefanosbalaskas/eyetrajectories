@@ -72,6 +72,39 @@
   as.vector(X%*%beta)
 }
 
+# FDApy's IrregularFunctionalData.mean(..., method_smoothing="PS") first
+# calls _format_data: it constructs a unique-time grid, keeps the LAST
+# long-format observation at each repeated time, and gives a ZERO weight
+# to any cell whose last value is zero. This is not ordinary pooled least
+# squares across all irregular observations. Preserve the original pooled
+# evaluation domain even when a boundary cell has zero weight.
+.etr_fdapy_ps_irregular_mean <- function(x,y,points,
+    penalty=1,n_segments=10L,degree=3L,order_penalty=2L) {
+  .etr_assert(is.numeric(x)&&is.numeric(y)&&length(x)==length(y)&&
+    all(is.finite(x))&&all(is.finite(y)),
+    "FDApy PS irregular mean requires finite aligned source observations")
+  if(length(x)>2000L) {
+    # Source defaults to approx=TRUE. For >2000 original long-form
+    # samples, pandas.groupby(time).mean() is applied BEFORE _format_data.
+    # Preserve exact double-time grouping and source's zero-weight rule.
+    ord<-order(x)
+    sorted_x<-x[ord]
+    sorted_y<-y[ord]
+    starts<-which(c(TRUE,diff(sorted_x)!=0))
+    ends<-c(starts[-1L]-1L,length(sorted_x))
+    x<-sorted_x[starts]
+    y<-vapply(seq_along(starts),function(i)
+      mean(sorted_y[starts[i]:ends[i]]),numeric(1L))
+  }
+  retained<-!duplicated(x,fromLast=TRUE)
+  weighted<-retained&(y!=0)
+  .etr_assert(sum(weighted)>=2L,
+    "FDApy PS irregular mean has insufficient nonzero unique-time cells")
+  .etr_fdapy_ps_1d(x[weighted],y[weighted],points,
+    penalty=penalty,n_segments=n_segments,degree=degree,
+    order_penalty=order_penalty)
+}
+
 .etr_fdapy_lp_design <- function(x,degree) {
   deg<-.etr_fdapy_fit_check_int(degree,"local polynomial degree",0L)
   .etr_assert(deg<=2L,
@@ -191,6 +224,29 @@
   },numeric(1L))
 }
 
+# DGEEV is used rather than base::eigen(): base::eigen() reorders even
+# general eigenvalues by decreasing modulus, while NumPy keeps DGEEV order.
+# This helper deliberately returns the unsorted real LAPACK right eigenpairs.
+.etr_fdapy_unsorted_real_eig <- function(x) {
+  .etr_assert(is.matrix(x)&&is.numeric(x)&&nrow(x)==ncol(x)&&
+    all(is.finite(x)),"FDApy DGEEV needs a finite real square matrix")
+  n<-as.integer(nrow(x))
+  .etr_assert(n>=2L&&n<=.Machine$integer.max/8L,
+    "FDApy DGEEV dimension is outside the supported range")
+  # R does not expose LAPACK dgeev as a callable .Fortran symbol on
+  # Windows. Use the package's registered .Call routine linked against
+  # the standard R LAPACK/BLAS toolchain instead.
+  result<-tryCatch(.Call("etr_dgeev_unsorted",x,
+      PACKAGE="eyetrajectories"),
+    error=function(e)stop("Native FDApy registered LAPACK DGEEV failed: ",
+      conditionMessage(e),call.=FALSE))
+  .etr_assert(is.list(result)&&
+    is.numeric(result$values)&&length(result$values)==n&&
+    is.matrix(result$vectors)&&identical(dim(result$vectors),c(n,n)),
+    "FDApy native unsorted eigensystem returned invalid registered result")
+  result
+}
+
 .etr_fdapy_fit_native_ufpca <- function(trajectories,dimension,
     n_components,fit_smoothing,score_smoothing,tol,normalize,
     evaluation_grid,kwargs_mean,kwargs_covariance) {
@@ -259,7 +315,8 @@
     pen<-if(is.null(meanopts$penalty))1 else meanopts$penalty
     .etr_assert(is.numeric(pen)&&length(pen)==1L,
       "FDApy PS mean penalty must be a scalar")
-    mu<-.etr_fdapy_ps_1d(unlist(time),unlist(values),grid,
+    mu<-.etr_fdapy_ps_irregular_mean(
+      unlist(time,use.names=FALSE),unlist(values,use.names=FALSE),grid,
       penalty=pen,n_segments=mean_segs,degree=mean_degree,
       order_penalty=mean_order)
     # Source data.center(mean=...,method_smoothing='PS',penalty=(0,))
@@ -316,17 +373,24 @@
   .etr_assert(all(is.finite(w))&&all(w>0),
     "FDApy covariance fitting requires strictly positive trapezoidal source weights")
   weighted<-C*outer(sqrt(w),sqrt(w))
-  eig<-eigen(weighted,symmetric=TRUE)
-  lambda<-pmax(as.numeric(eig$values),0)
-  .etr_assert(length(lambda)>=n_components&&
-    all(is.finite(lambda))&&all(lambda[seq_len(n_components)]>0),
-    "FDApy native covariance requires positive source eigenvalues")
+  # Frozen FDApy misc/utils.py::_compute_eigen calls numpy.linalg.eig,
+  # NOT eigh, on this symmetric-in-values matrix. Crucially it selects
+  # the FIRST n_components in LAPACK DGEEV's UNSORTED order and only
+  # afterwards clips negative eigenvalues to zero. Calling R eigen with
+  # symmetric=TRUE instead sorts descending, changes the second
+  # eigenpair (often a negative one), then propagates false positive
+  # minor components into Mercer covariance and PACE scores.
+  # Base R eigen() *also sorts* its general eigenpairs by modulus.
+  # FDApy uses NumPy's raw DGEEV order; do not sort before slicing.
+  eig<-.etr_fdapy_unsorted_real_eig(weighted)
+  lambda<-pmax(eig$values,0)
+  .etr_assert(length(lambda)>=n_components&&all(is.finite(lambda)),
+    "FDApy native covariance requires finite source eigenvalues")
   phi<-t(sweep(eig$vectors[,seq_len(n_components),drop=FALSE],
     1L,sqrt(w),"/"))
-  # Native R's symmetric-eigen sorting and sign conventions are
-  # scientifically legitimate but numpy.linalg.eig in frozen FDApy
-  # does not enforce a descending order or deterministic signs.
-  # Both versions are compared in eigenspace after assignment.
+  # Only sign conventions and platform-level unsorted LAPACK tie
+  # ordering may differ from NumPy. Do not re-sort eigenpairs or
+  # replace zero-clipped source components with positive alternatives.
   # Frozen public source explicitly calls UFPCA.transform(data, ...)
   # rather than UFPCA.transform(NULL, ...). FDApy therefore calls
   # data.center(mean=self._mean,method_smoothing=score_smoothing).
@@ -362,7 +426,7 @@
   out$source_quadrature_weights<-w
   out$source_eigenfunctions<-phi
   out$source_eigenvalues_full<-lambda
-  out$source_eigenvalue_orientation<-"R_descending_sorted_sign_indeterminate"
+  out$source_eigenvalue_orientation<-"FDApy_numpy_general_eig_unsorted_negative_clipped"
   out$source_noise_estimator<-"FDApy_DIFFERENCE_SEQUENCE_order_2"
   out$source_covariance_estimator<-
     paste0("FDApy_irregular_1.0.x_",fit_smoothing,"_smoothing")

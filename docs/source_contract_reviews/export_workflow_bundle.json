@@ -17,6 +17,10 @@
     {
       "path": "R/native-workflow-bundle-export.R",
       "sha256": "03f9867ec1d9a29beee26c06ccc3bb64ea9ed41db46ece3969ac8ce9d336b343"
+    },
+    {
+      "path": "R/native-python-workflow-bundle.R",
+      "sha256": "a089bf92955b93e1e2622fc8752ebaf73044e5ec4895fb7f180f13f556aaefcc"
     }
   ],
   "case_evidence": [
@@ -24,37 +28,37 @@
       "kind": "source_signature",
       "description": "Frozen Python 1.2 src/eyetrajectoriespy/workflows/_core.py::export_workflow_bundle; Native Python 1.2 checksummed workflow bundle exporter extended from dense FPCA to strict fixed-bandwidth paired sparse multivariate PACE source-scientific workflows with actual R estimator, canonical typed portable nested fit and measured native scientific audit.",
       "path": "tests/testthat/test-native-sparse-mfpca-python-portable-bundles-20261112.R",
-      "sha256": "09875a9679c4a1309bd90d51cf1d8e856b0438f574b38478f42dd447e214d435"
+      "sha256": "58122493d0508ef384838ee354610544946e7b450a4574d23789eda7ab7b5082"
     },
     {
       "kind": "accepted_input_domain",
       "description": "Source-scientific Python W2 12-field paired sparse MFPCA workflow with 22 ordered configuration fields; strict paired real native covariance PACE fit, one genuine timed fit step, no optional selector, score-uncertainty or observation diagnostics; existing dense FPCA workflow remains supported. Rejects native RDS-only alternatives under python_1_2, noncanonical result, unsupported optional mode, destination overwrite and path collisions.",
       "path": "tests/testthat/test-native-sparse-mfpca-python-portable-bundles-20261112.R",
-      "sha256": "09875a9679c4a1309bd90d51cf1d8e856b0438f574b38478f42dd447e214d435"
+      "sha256": "58122493d0508ef384838ee354610544946e7b450a4574d23789eda7ab7b5082"
     },
     {
       "kind": "numerical_outputs",
       "description": "New source-pinned Python 1.2 test opens exported Python workflow.json and JSON+NPZ portable result with Python `load_portable_result`, verifies Python dataclass outer and nested scientific type field order, covariance numerical arrays, score metadata and native step payload, and recursively SHA256 checks the bundle; R standalone source tests compare nested real scientific arrays and all file integrity hashes. CI is queued/not observed green.",
       "path": "tests/testthat/test-native-sparse-mfpca-python-portable-bundles-20261112.R",
-      "sha256": "09875a9679c4a1309bd90d51cf1d8e856b0438f574b38478f42dd447e214d435"
+      "sha256": "58122493d0508ef384838ee354610544946e7b450a4574d23789eda7ab7b5082"
     },
     {
       "kind": "exception_semantics",
       "description": "Refuses unsupported workflow classes, unmeasured source step, mandatory scientific fields missing, unsupported score modes, unsafe filenames, overwrite, arbitrary Python runtime types; distinct R-specific exceptions and runtime class identity are recorded as limitations.",
       "path": "tests/testthat/test-native-sparse-mfpca-python-portable-bundles-20261112.R",
-      "sha256": "09875a9679c4a1309bd90d51cf1d8e856b0438f574b38478f42dd447e214d435"
+      "sha256": "58122493d0508ef384838ee354610544946e7b450a4574d23789eda7ab7b5082"
     },
     {
       "kind": "returned_schema",
       "description": "Published frozen Python 1.2 WORKFLOW_BUNDLE_FORMAT, schema version, workflow contract, result_type, figure-export-deferred status, config.json, provenance.json, environment.json with explicit R rather than fake Python identity, source tables/reports, steps.csv, decisions.csv, result/arrays.npz, result/manifest.json and recursive SHA256SUMS. Serialized nested source workflow dataclasses, source fit, decisions, provenance and score table are recoverable in pinned Python reader.",
       "path": "tests/testthat/test-native-sparse-mfpca-python-portable-bundles-20261112.R",
-      "sha256": "09875a9679c4a1309bd90d51cf1d8e856b0438f574b38478f42dd447e214d435"
+      "sha256": "58122493d0508ef384838ee354610544946e7b450a4574d23789eda7ab7b5082"
     },
     {
       "kind": "scientific_estimand",
       "description": "Workflow bundle carries genuine paired sparse planar joint covariance and PACE score estimates with source scientific steps, decisions, fixed-bandwidth analyst choices, source score reports and tables, no substitute marginal interpolation estimator or raw Python object rehydration.",
       "path": "tests/testthat/test-native-sparse-mfpca-python-portable-bundles-20261112.R",
-      "sha256": "09875a9679c4a1309bd90d51cf1d8e856b0438f574b38478f42dd447e214d435"
+      "sha256": "58122493d0508ef384838ee354610544946e7b450a4574d23789eda7ab7b5082"
     }
   ],
   "independent_review_status": "Scoped developer review only; exact-head native and Python 1.2 CI queued/not verified; independent scientific certification remains zero.",
@@ -63,5 +67,33 @@
     "R runtime result classes and Python dataclass objects are distinct. Portable snapshots intentionally do not reconstruct opaque backend fits.",
     "Python and R report strings, csv bytes, path objects and exception class identity need not be identical; source reader compatibility and scientific values are primary bounded target.",
     "Python workflow export supports further optional report and selector families not yet included. This author review is provisional and not independent certification."
-  ]
+  ],
+  "portable_source_test_revalidation_20261114": {
+    "scope": "AUTHOR_SCOPED_PYTHON_1_2_PORTABLE_JSON_PROOF",
+    "reviewed_git_head": "2363383c1ab006986cc1bf81b4e2cd5d3283d76b",
+    "old_source_test_sha256": "09875a9679c4a1309bd90d51cf1d8e856b0438f574b38478f42dd447e214d435",
+    "new_source_test_sha256": "58122493d0508ef384838ee354610544946e7b450a4574d23789eda7ab7b5082",
+    "original_test_commit": "98ad9594b0b0",
+    "original_review_json_sha256": "e1d9017470f8e496beb5538e1ed93e65db50cda7128a010fd6a1b6de7922b2a7",
+    "change_summary": "Frozen Python portable_results.py writes JSON with sort_keys=True; Python JSON mapping order and WindowsPath display must not be mistaken for field/schema errors. Verify complete key membership and count, compare canonical nested JSON provenance contents, and use Path.as_posix for SHA256SUMS relative paths. Source numerical payload and export SHA256 checks remain strict.",
+    "test_pass": "User-confirmed frozen Python 1.2 changed-25 tests PASS 4866 assertions total, including portable bundle suite PASS 63 assertions, 0 fail/warn/skip.",
+    "independent_certification": false
+  },
+  "additional_regression_evidence": [
+    {
+      "path": "tests/testthat/test-native-workflow-bundle-export.R",
+      "sha256": "1420d951b666a201ea5d2e07effe8d38f9e718e776cfebedd039bb90b706bcdf",
+      "kind": "source_utf8_csv_newline_roundtrip",
+      "description": "Windows UTF-8 workflow CSV warnings retain literal LF; frozen Python pandas scientific roundtrip comparison"
+    }
+  ],
+  "workflow_csv_byte_semantics_revalidation_20261114": {
+    "scope": "AUTHOR_WINDOWS_PORTABLE_WORKFLOW_CSV_LF_CORRECTION",
+    "source_file": "R/native-python-workflow-bundle.R",
+    "sha256": "a089bf92955b93e1e2622fc8752ebaf73044e5ec4895fb7f180f13f556aaefcc",
+    "test_file": "tests/testthat/test-native-workflow-bundle-export.R",
+    "test_sha256": "1420d951b666a201ea5d2e07effe8d38f9e718e776cfebedd039bb90b706bcdf",
+    "reason": "Use explicit binary CSV stream plus UTF-8 character fields to preserve embedded LF, replacing platform-specific text-mode newline conversion. No mathematical or scientific estimand changed. Exact-head Python pandas re-export replay remains pending.",
+    "independently_certified": false
+  }
 }

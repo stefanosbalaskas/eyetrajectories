@@ -8,7 +8,7 @@
   .etr_assert(is.list(value)&&!is.data.frame(value),
     "bandwidth_selection must be an explicit source configuration")
   .etr_assert(is.null(value$fold_assignments),
-    "strict sparse W2 source cannot use R-only supplied fold assignments")
+    "strict sparse W2 source cannot use R-only supplied fold_assignments")
   defaults<-list(mean_bandwidths=NULL,covariance_bandwidths=NULL,
     n_splits=5L,resampling_unit="curve",group_column=NULL,
     shuffle=TRUE,random_state=0L,min_valid_folds=NULL,

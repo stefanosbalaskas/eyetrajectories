@@ -108,9 +108,9 @@
     xticks=as.numeric(seq_len(k)-1L),
     xticklabels=paste("component",seq_len(k)),
     patches=patches,
-    legend_labels=c("curve declared","participant declared",
-      "trial declared","curve realized","participant realized",
-      "trial realized"),
+    legend_labels=c("curve declared","curve realized",
+      "participant declared","participant realized",
+      "trial declared","trial realized"),
     variance_ddof=0L,
     legend=TRUE)
   .etr_sim_artist_record("plot_functional_simulation_score_variances",

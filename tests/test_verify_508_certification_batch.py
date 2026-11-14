@@ -4,6 +4,7 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import verify_508_certification_batch as v
@@ -17,13 +18,33 @@ def write_csv(path, rows):
         writer.writerows(rows)
 
 
-def make_packet(folder):
+def synthetic_gap_counts(callable_open=2, nonfunction_open=1):
+    """Independent synthetic author-gap counts (never real review evidence).
+
+    Exercise both historical-open and author-closed statuses without querying
+    stale live receipts. The true source_gap_inventory.read_inventory() still
+    verifies all real SHA256 pins and rejects modified scientific evidence.
+    """
+    assert 0 <= callable_open <= 203
+    assert nonfunction_open in (0, 1)
+    return v.source_gap_inventory.SourceGapCounts(
+        historical_callable=203, active_callable=callable_open,
+        resolved_semantic=tuple(f"synthetic_author_closed_{i:03d}"
+                                for i in range(203 - callable_open)),
+        historical_nonfunction=1, active_nonfunction=nonfunction_open)
+
+
+def make_packet(folder, gaps=None):
     head = "a" * 40
+    if gaps is None:
+        gaps = synthetic_gap_counts()
     full = []
     for i in range(508):
         isfn = i < 380
-        gap = i < 201 or i == 383
-        class_gap = i == 383
+        is_trajectory = i == 383
+        gap = i < gaps.active_callable or (
+            is_trajectory and bool(gaps.active_nonfunction))
+        class_gap = is_trajectory and bool(gaps.active_nonfunction)
         backend = i < 19
         workflow_constants = {
             384: "WORKFLOW_SCHEMA_VERSION",
@@ -64,7 +85,7 @@ def make_packet(folder):
             390 + j: name for j, name in enumerate(schema_class_names)
         }
         name = (f"fn_{i:03d}" if isfn else
-                ("TrajectorySet" if class_gap else
+                ("TrajectorySet" if is_trajectory else
                  workflow_constants.get(i,
                      native_schema_classes.get(i, f"obj_{i - 380:03d}"))))
         lane = ("DIFFERENT_BACKEND_OR_ESTIMAND" if backend else
@@ -79,7 +100,7 @@ def make_packet(folder):
                          kind="function" if isfn else "other_export",
                          native_r_candidate=f"etr_{name}" if isfn else "",
                          native_nonfunction_representation=(
-                             "etr_trajectory_set" if class_gap else
+                             "etr_trajectory_set" if is_trajectory else
                              f"etr_frozen_workflow_values()${name}"
                              if i in workflow_constants else
                              "etr_frozen_py12_" + name
@@ -150,7 +171,16 @@ def make_packet(folder):
 
 class TestUnsignedBatchIntegrity(unittest.TestCase):
     def setUp(self):
+        # Isolate ONLY synthetic packet tests from the live source-review
+        # ledger. The production verifier still checks flags, manifest
+        # hashes, forged signoffs and recorded R/Python source identity.
+        self.count_patch = patch.object(
+            v.source_gap_inventory, "read_inventory",
+            return_value=synthetic_gap_counts())
+        self.count_patch.start()
+        self.addCleanup(self.count_patch.stop)
         self.t = tempfile.TemporaryDirectory()
+        self.addCleanup(self.t.cleanup)
         self.root = Path(self.t.name)
         make_packet(self.root)
 
@@ -268,6 +298,20 @@ class TestUnsignedBatchIntegrity(unittest.TestCase):
         self.assertEqual(result["first_review_batch"], 36)
         self.assertEqual(result["independently_certified_full_domain_contracts"], 0)
 
+    def test_all_author_gaps_closed_still_has_zero_independent_certificates(self):
+        # The original 508 verifier failed when real author-side gap counts
+        # reached zero. The synthetic 0+0 case now exercises that boundary
+        # without taking a shortcut around strict production SHA256 checks.
+        closed = synthetic_gap_counts(callable_open=0, nonfunction_open=0)
+        with tempfile.TemporaryDirectory() as folder:
+            packet = Path(folder)
+            make_packet(packet, gaps=closed)
+            with patch.object(v.source_gap_inventory, "read_inventory",
+                              return_value=closed):
+                result = v.verify(packet, expected_r_head="a" * 40)
+        self.assertEqual(result["export_count"], 508)
+        self.assertEqual(result["independently_certified_full_domain_contracts"], 0)
+
     def test_expected_head_mismatch_fails(self):
         with self.assertRaisesRegex(v.ReviewBatchError, "separately trusted"):
             v.verify(self.root, expected_r_head="b" * 40)
@@ -345,10 +389,11 @@ class TestUnsignedBatchIntegrity(unittest.TestCase):
         with self.assertRaisesRegex(v.ReviewBatchError, "criteria"):
             v.verify(self.root)
 
-    def test_forged_gap_closure_rehashed_fails(self):
+    def test_forged_author_gap_status_rehashed_fails(self):
         p = self.root / v.FILES[0]
         rows = v.read_csv(p)
-        rows[0]["source_gap_open"] = "FALSE"
+        rows[0]["source_gap_open"] = (
+            "TRUE" if rows[0]["source_gap_open"] == "FALSE" else "FALSE")
         write_csv(p, rows)
         self.update_manifest()
         with self.assertRaisesRegex(v.ReviewBatchError, "source-gap inventory"):
@@ -393,8 +438,11 @@ class TestUnsignedBatchIntegrity(unittest.TestCase):
         p = self.root / v.FILES[0]
         rows = v.read_csv(p)
         row = next(x for x in rows if x["python_name"] == "TrajectorySet")
-        row["source_gap_open"] = "FALSE"
-        row["native_nonfunction_source_gap_open"] = "FALSE"
+        row["source_gap_open"] = (
+            "TRUE" if row["source_gap_open"] == "FALSE" else "FALSE")
+        row["native_nonfunction_source_gap_open"] = (
+            "TRUE" if row["native_nonfunction_source_gap_open"] == "FALSE"
+            else "FALSE")
         write_csv(p, rows)
         self.update_manifest()
         with self.assertRaisesRegex(v.ReviewBatchError, "source-gap inventory"):

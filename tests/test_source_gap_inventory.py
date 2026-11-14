@@ -115,8 +115,8 @@ class SourceGapInventoryTests(unittest.TestCase):
                                     "semantic closure evidence"):
             ledger.read_inventory(self.root)
 
-    def _add_reviewed_full_contract_fixture(self, name):
-        """Synthetic *test-only* complete review demonstrates dynamic count."""
+    def _add_reviewed_full_contract_fixture(self, name, *, scoped=False):
+        """Synthetic-only receipt, full or explicitly limited author scope."""
         code = self.root / "R" / "reviewed-native-implementation.R"
         code.parent.mkdir(parents=True, exist_ok=True)
         candidate = ("etr_trajectory_set" if name == "TrajectorySet"
@@ -136,9 +136,15 @@ class SourceGapInventoryTests(unittest.TestCase):
             "audit_version": "source-contract-v1",
             "python_name": name,
             "frozen_python_commit": ledger.FROZEN_PYTHON,
-            "scope": "FULL_SOURCE_CONTRACT",
-            "author_decision": "FULL_CONTRACT_REVIEWED",
+            "scope": ("SCOPED_TEST_NATIVE_REVIEW" if scoped
+                      else "FULL_SOURCE_CONTRACT"),
+            "author_decision": ("SCOPED_CONTRACT_REVIEWED" if scoped
+                                else "FULL_CONTRACT_REVIEWED"),
             "independently_certified": False,
+            "language_specific_limits": ([
+                "Synthetic limited R source review cannot establish complete "
+                "Python optimizer semantics or independent certification."
+            ] if scoped else []),
             "native_files": [{
                 "path": "R/reviewed-native-implementation.R",
                 "sha256": native_sha,
@@ -166,8 +172,9 @@ class SourceGapInventoryTests(unittest.TestCase):
                     f"docs/source_contract_reviews/{name}.json",
                 "review_record_sha256":
                     hashlib.sha256(record.read_bytes()).hexdigest(),
-                "author_full_contract_decision":
-                    "AUTHOR_FULL_CONTRACT_REVIEWED",
+                "author_full_contract_decision": (
+                    "AUTHOR_SCOPED_CONTRACT_REVIEWED" if scoped
+                    else "AUTHOR_FULL_CONTRACT_REVIEWED"),
                 "independently_certified": "FALSE",
             })
         if name == "TrajectorySet":
@@ -205,6 +212,91 @@ class SourceGapInventoryTests(unittest.TestCase):
                          stats.active_callable)
         # Synthetic test only: no production nonfunction gap was closed.
 
+    def test_exact_package_metadata_allowed_only_as_native_evidence(self):
+        (self.root / "man").mkdir()
+        fixtures = {
+            "NAMESPACE": "export(etr_trajectory_set)\n",
+            "DESCRIPTION": "Package: eyetrajectories\n",
+            "man/etr_trajectory_set.Rd": "\\name{etr_trajectory_set}\n",
+        }
+        for name, value in fixtures.items():
+            target = self.root / name
+            target.write_text(value, encoding="utf-8")
+            with self.subTest(accepted=name):
+                self.assertEqual(ledger._source_file(self.root, name,
+                    expected_prefix="R/", allow_native_metadata=True),
+                    target)
+        for name, prefix, allow in (
+            ("NAMESPACE", "R/", False),
+            ("DESCRIPTION", "R/", False),
+            ("man/etr_trajectory_set.Rd", "R/", False),
+            ("NAMESPACE", "tests/", True),
+            ("DESCRIPTION", "tests/", True),
+            ("man/etr_trajectory_set.Rd", "tests/", True),
+            ("man/not-a-manual.txt", "R/", True),
+            ("man/subdir/bad.Rd", "R/", True),
+            ("NAMESPACE/../DESCRIPTION", "R/", True),
+            ("../NAMESPACE", "R/", True),
+            ("R/../NAMESPACE", "R/", True),
+            ("man/../DESCRIPTION", "R/", True),
+        ):
+            with self.subTest(rejected=name, prefix=prefix, allow=allow):
+                with self.assertRaisesRegex(
+                        ledger.SourceGapInventoryError, "Unsafe or out-of-scope"):
+                    ledger._source_file(self.root, name,
+                        expected_prefix=prefix, allow_native_metadata=allow)
+
+    def test_trajectory_receipt_may_pin_metadata_but_requires_r_implementation(self):
+        _, record, receipt = self._add_reviewed_full_contract_fixture(
+            "TrajectorySet", scoped=True)
+        (self.root / "man").mkdir()
+        fixtures = {
+            "NAMESPACE": "export(etr_trajectory_set)\n",
+            "DESCRIPTION": "Package: eyetrajectories\n",
+            "man/etr_trajectory_set.Rd": "\\alias{etr_trajectory_set}\n",
+        }
+        payload = json.loads(record.read_text(encoding="utf-8"))
+        original_r = list(payload["native_files"])
+        metadata = []
+        for name, value in fixtures.items():
+            target = self.root / name
+            target.write_text(value, encoding="utf-8")
+            metadata.append({
+                "path": name,
+                "sha256": hashlib.sha256(target.read_bytes()).hexdigest(),
+            })
+        payload["native_files"].extend(metadata)
+
+        def save_receipt():
+            record.write_text(json.dumps(payload, indent=2),
+                              encoding="utf-8")
+            with receipt.open(encoding="utf-8", newline="") as stream:
+                reader = csv.DictReader(stream)
+                fields, rows = reader.fieldnames, list(reader)
+            rows[0]["review_record_sha256"] = hashlib.sha256(
+                record.read_bytes()).hexdigest()
+            with receipt.open("w", encoding="utf-8", newline="") as stream:
+                writer = csv.DictWriter(stream, fieldnames=fields)
+                writer.writeheader()
+                writer.writerows(rows)
+
+        save_receipt()
+        result = ledger.read_inventory(self.root)
+        self.assertEqual(result.active_nonfunction, 0)
+        metadata_only = list(metadata)
+        (self.root / "DESCRIPTION").write_text(
+            "Package: altered\n", encoding="utf-8")
+        with self.assertRaisesRegex(ledger.SourceGapInventoryError,
+                                    "Native implementation changed"):
+            ledger.read_inventory(self.root)
+        (self.root / "DESCRIPTION").write_text(
+            fixtures["DESCRIPTION"], encoding="utf-8")
+        payload["native_files"] = metadata_only
+        save_receipt()
+        with self.assertRaisesRegex(ledger.SourceGapInventoryError,
+                                    "Reviewed native candidate not found"):
+            ledger.read_inventory(self.root)
+
     def test_test_only_full_contract_receipt_allows_nonlegacy_gap_count_to_change(self):
         self._add_reviewed_full_contract_fixture("alr_transform")
         result = ledger.read_inventory(self.root)
@@ -212,6 +304,59 @@ class SourceGapInventoryTests(unittest.TestCase):
         self.assertEqual(result.open_total, 201)
         self.assertIn("alr_transform", result.resolved_semantic)
         # No independent sign-off was produced by developer review.
+
+    def test_exact_scope_limited_author_review_is_allowed_but_not_full_parity(self):
+        # Existing production registry has separately authored full and scoped
+        # source records. This synthetic case must validate author-side SHA256,
+        # not claim Python optimizer or independent source equivalence.
+        self._add_reviewed_full_contract_fixture("alr_transform", scoped=True)
+        result = ledger.read_inventory(self.root)
+        self.assertIn("alr_transform", result.resolved_semantic)
+        self.assertEqual(result.active_callable, 200)
+        with (self.root / "inst/extdata/reviewed_source_contract_closures_v1.csv").open(
+                newline="", encoding="utf-8") as stream:
+            rows = list(csv.DictReader(stream))
+        self.assertEqual(rows[0]["author_full_contract_decision"],
+                         "AUTHOR_SCOPED_CONTRACT_REVIEWED")
+        self.assertEqual(rows[0]["independently_certified"], "FALSE")
+
+    def test_scoped_receipt_cannot_be_relabelled_as_full_source_parity(self):
+        _, record, receipt = self._add_reviewed_full_contract_fixture(
+            "alr_transform", scoped=True)
+        payload = json.loads(record.read_text(encoding="utf-8"))
+        payload["scope"] = "FULL_SOURCE_CONTRACT"
+        record.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        with receipt.open(encoding="utf-8", newline="") as stream:
+            reader = csv.DictReader(stream)
+            fields, rows = reader.fieldnames, list(reader)
+        rows[0]["review_record_sha256"] = hashlib.sha256(
+            record.read_bytes()).hexdigest()
+        with receipt.open("w", encoding="utf-8", newline="") as stream:
+            writer = csv.DictWriter(stream, fieldnames=fields)
+            writer.writeheader()
+            writer.writerows(rows)
+        with self.assertRaisesRegex(ledger.SourceGapInventoryError,
+                                    "misclassified full versus scoped"):
+            ledger.read_inventory(self.root)
+
+    def test_scoped_receipt_requires_explicit_native_language_limits(self):
+        _, record, receipt = self._add_reviewed_full_contract_fixture(
+            "alr_transform", scoped=True)
+        payload = json.loads(record.read_text(encoding="utf-8"))
+        payload["language_specific_limits"] = []
+        record.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+        with receipt.open(encoding="utf-8", newline="") as stream:
+            reader = csv.DictReader(stream)
+            fields, rows = reader.fieldnames, list(reader)
+        rows[0]["review_record_sha256"] = hashlib.sha256(
+            record.read_bytes()).hexdigest()
+        with receipt.open("w", encoding="utf-8", newline="") as stream:
+            writer = csv.DictWriter(stream, fieldnames=fields)
+            writer.writeheader()
+            writer.writerows(rows)
+        with self.assertRaisesRegex(ledger.SourceGapInventoryError,
+                                    "misclassified full versus scoped"):
+            ledger.read_inventory(self.root)
 
     def test_review_record_digest_tampering_blocks_closure(self):
         _, record, _ = self._add_reviewed_full_contract_fixture(

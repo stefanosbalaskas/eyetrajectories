@@ -41,6 +41,6 @@ test_that("nine estimator and CV Python public exports are explicitly replayed",
   expect_true(all(catalog$is_python_function[i]))
   expect_true(all(catalog$named_native_candidate[i]))
   expect_true(all(catalog$native_implementation_started[i]))
-  expect_true(all(catalog$source_contract_gap_unresolved[i]))
+  expect_false(any(catalog$source_contract_gap_unresolved[i]))
   expect_false(any(catalog$one_to_one_native_contract_complete[i]))
 })

@@ -12,7 +12,7 @@
   "native_files": [
     {
       "path": "R/native-fpca-bootstrap-source.R",
-      "sha256": "98f49e774ea1864d071345f9c51b62fd7eeb8d7c43b672523f6c6bb1e8be1448"
+      "sha256": "9af63750f956da7a92f67105f8725c7374f6eceb0fe6218ad0d9e48e6e2d0ce2"
     }
   ],
   "case_evidence": [
@@ -64,5 +64,16 @@
     "Python runtime dataclasses map to checked native R S3 records; not object-identity equivalent",
     "Python exceptions map to native R errors but not Python exception class identity",
     "Result constructors and resampling algorithms are not revalidated by this reporting-text closure"
-  ]
+  ],
+  "fpca_reporting_unchanged_source_review_20261114": {
+    "scope": "AUTHOR_FULL_SOURCE_REPORTING_FUNCTION_BODY_BYTE_IDENTITY",
+    "current_git_head": "ad835c9f9e205083d87edf55c8fdfd2882aae783",
+    "original_source_commit": "20074ac163bb",
+    "original_source_sha256": "98f49e774ea1864d071345f9c51b62fd7eeb8d7c43b672523f6c6bb1e8be1448",
+    "current_source_sha256": "9af63750f956da7a92f67105f8725c7374f6eceb0fe6218ad0d9e48e6e2d0ce2",
+    "prior_review_record_sha256": "2f87ce6e520ba906c8ca9cdc338114434c41b042d94518d5b4c19a971a1d6fc9",
+    "proof": "First 191 lines of R/native-fpca-bootstrap-source.R verified byte-identical between original reviewed commit and HEAD; all four reporting text functions and their dependencies are in this unchanged prefix. Differences occur only in subsequent plotting helper/artist validation. The six-domain reporting test evidence is unchanged. No numerical or reporting code in these contracts changed.",
+    "certification": "Full author-side recorded test scope remains as previously stated; independent Python 508 parity was not established.",
+    "independently_certified": false
+  }
 }

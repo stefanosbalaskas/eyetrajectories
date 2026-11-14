@@ -1,6 +1,6 @@
-\name{etr_plot_fpca_component_envelope}
-\alias{etr_plot_fpca_component_envelope}
-\alias{etr_plot_fpca_wild_bootstrap_family_test}
+\name{etr_native_fpca_inference_source_graphics}
+\alias{etr_native_fpca_inference_source_graphics}
+
 \title{Frozen-source FPCA matched-envelope and familywise inference graphics}
 \description{
 Native base-R visualization of precomputed matched bootstrap FPCA component
@@ -8,12 +8,7 @@ envelopes and familywise fixed-target wild-bootstrap tail probabilities
 on their declared scientific scopes. Existing PACE score diagnostics retain
 separate prior documentation.
 }
-\usage{
-etr_plot_fpca_component_envelope(
-  result, component = 0L, dimension = NULL)
-etr_plot_fpca_wild_bootstrap_family_test(
-  result, max_targets = 30L, show_targetwise = TRUE)
-}
+
 \arguments{
 \item{result}{Declared native R scientific result record with source
 geometry, fitted population quantities and precomputed diagnostics.}

@@ -42,15 +42,15 @@ test_that("source certification remains strict despite repaired fixture",{
   expect_equal(nrow(row),1L)
   expect_true(row$contract_certification_candidate)
   expect_true(row$contract_numerical_fixture_pass)
-  expect_true(row$source_contract_gap_unresolved)
+  .etr_expect_source_gap_matches_registry(row)
   expect_false(row$independent_numeric_parity_pass)
   expect_false(row$behavioral_schema_parity_pass)
   expect_false(row$scientific_inference_qualified)
   expect_false(row$independent_contract_review_pass)
   expect_false(row$one_to_one_native_contract_complete)
   expect_equal(sum(z$one_to_one_native_contract_complete),0L)
-  expect_gte(sum(z$source_contract_gap_unresolved),57L)
-  expect_equal(sum(z$contract_certification_candidate),4L)
+  .etr_expect_source_gap_count(z)
+  expect_equal(sum(z$contract_certification_candidate),5L)
   expect_identical(before,reticulate::py_available(initialize=FALSE))
 })
 
@@ -105,8 +105,8 @@ test_that("Boolean score matrices coerce like frozen Python sklearn input",{
     etpy_get_export("score_distance_matrix"),fpca=source_fit)
   expect_equal(unname(native),unname(et_to_r(published)),
     tolerance=1e-12)
-  expect_true(etr_native_parity_catalog()$source_contract_gap_unresolved[
-    etr_native_parity_catalog()$python_name=="score_distance_matrix"])
+  .etr_expect_source_gap_matches_registry(etr_native_parity_catalog()[
+    etr_native_parity_catalog()$python_name=="score_distance_matrix",,drop=FALSE])
 })
 
 
@@ -143,6 +143,6 @@ test_that("bounded sparse FPCA scores support sklearn Euclidean source subset",{
       n_components=k,python_boundary_mode=TRUE)),
       unname(et_to_r(published)),tolerance=1e-12)
   }
-  expect_true(etr_native_parity_catalog()$source_contract_gap_unresolved[
-    etr_native_parity_catalog()$python_name=="score_distance_matrix"])
+  .etr_expect_source_gap_matches_registry(etr_native_parity_catalog()[
+    etr_native_parity_catalog()$python_name=="score_distance_matrix",,drop=FALSE])
 })

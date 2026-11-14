@@ -7,9 +7,20 @@ from unittest.mock import patch
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1] / "scripts"))
 import build_508_all_export_review_waves as m
+from test_verify_508_certification_batch import synthetic_gap_counts
 
 
 class Full508Tests(unittest.TestCase):
+    def setUp(self):
+        # Exercise the real 508-wave validator against a synthetic count
+        # snapshot, not against currently stale author-side source receipts.
+        # Production builds still invoke the strict live read_inventory().
+        self.count_patch = patch.object(
+            m.source_gap_inventory, "read_inventory",
+            return_value=synthetic_gap_counts())
+        self.count_patch.start()
+        self.addCleanup(self.count_patch.stop)
+
     def test_source_gap_and_backend_gates(self):
         row={"namespace":"root","python_name":"f","kind":"function",
              "native_r_candidate":"etr_f","recorded_r_git_head":"a"*40,
@@ -38,6 +49,7 @@ class Full508Tests(unittest.TestCase):
             packet = Path(tmp)
             source = packet / m.baseline.FILES[0]
             head = "c"*40
+            gaps = m.source_gap_inventory.read_inventory()
             q=[]
             for i in range(508):
                 kind = "function" if i < 380 else "nonfunction"
@@ -48,10 +60,15 @@ class Full508Tests(unittest.TestCase):
                     "native_r_candidate":f"etr_export_{i:03d}",
                     "recorded_r_git_head":head,
                     "frozen_python_commit":m.baseline.FROZEN_PYTHON,
-                    "review_lane":("RECORDED_SOURCE_DIFFERENCE" if (i<201 or i==380)
-                                   else "FUNCTION_NO_RECORDED_GAP" if i<380
+                    "review_lane":("RECORDED_SOURCE_DIFFERENCE"
+                                   if (i < gaps.active_callable or
+                                       (i == 380 and gaps.active_nonfunction))
+                                   else "FUNCTION_NO_RECORDED_GAP" if i < 380
                                    else "NONFUNCTION_NO_RECORDED_GAP"),
-                    "source_gap_open":"TRUE" if i<201 or i==380 else "FALSE",
+                    "source_gap_open":"TRUE"
+                                   if (i < gaps.active_callable or
+                                       (i == 380 and gaps.active_nonfunction))
+                                   else "FALSE",
                     "backend_or_estimand_distinct":"FALSE",
                     "native_implementation_started":"TRUE",
                     "native_nonfunction_representation":"R equivalent" if i>=380 else "",

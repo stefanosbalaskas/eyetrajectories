@@ -2,9 +2,7 @@
 \alias{etr_list_mathematical_contracts}
 \alias{etr_get_mathematical_contract}
 \alias{etr_mathematical_contract_frame}
-\alias{etr_plot_kantz_sensitivity}
-\alias{etr_plot_lyapunov_sensitivity}
-\alias{etr_plot_windowed_rqa_sensitivity}
+
 \title{Published Python 1.2 mathematical contracts and native nonlinear sensitivity plots}
 \description{
 Read-only native metadata access to all 41 scientific mathematical
@@ -16,11 +14,6 @@ parameter sensitivity results. No estimator is invoked by the catalog.
 etr_list_mathematical_contracts()
 etr_get_mathematical_contract(..., name, python_boundary_mode = FALSE)
 etr_mathematical_contract_frame()
-etr_plot_kantz_sensitivity(result, parameter,
-  response = "exponent", filters = NULL, ...)
-etr_plot_lyapunov_sensitivity(result, parameter,
-  response = "exponent", filters = NULL, ...)
-etr_plot_windowed_rqa_sensitivity(result, curve, metric, ...)
 }
 \arguments{
 \item{name}{An exact mathematical source contract key or registered
@@ -31,15 +24,12 @@ dimensioned arrays, the joint sparse contract key and its public API
 name are accepted in a single cell. Other single-cell arrays signal a
 type error, and empty or multi-cell arrays signal an ambiguous-value
 error.}
-\item{result}{Existing native Kantz, Rosenstein or multiscale
-windowed-RQA sensitivity result; not a Python object.}
-\item{parameter}{One sensitivity parameter column to vary.}
-\item{response}{An explicitly supported numeric sensitivity statistic.}
-\item{filters}{Named list holding other varying sensitivity columns
-constant. Ambiguous duplicate parameter values cause errors instead of
-silent averaging.}
-\item{curve}{Exact curve identifier or zero-based source curve index.}
-\item{metric}{Named functional windowed-RQA metric.}
+
+
+
+
+
+
 \item{...}{For lookup, one positional name when \code{name} is omitted.
 For plotting, additional base R graphics arguments.}
 }
