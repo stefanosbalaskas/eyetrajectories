@@ -212,37 +212,60 @@ class SourceGapInventoryTests(unittest.TestCase):
                          stats.active_callable)
         # Synthetic test only: no production nonfunction gap was closed.
 
-    def test_exact_top_level_namespace_allowed_only_as_native_evidence(self):
-        namespace = self.root / "NAMESPACE"
-        namespace.write_text("export(etr_trajectory_set)\n",
-                             encoding="utf-8")
-        accepted = ledger._source_file(self.root, "NAMESPACE",
-            expected_prefix="R/", allow_namespace=True)
-        self.assertEqual(accepted, namespace)
+    def test_exact_package_metadata_allowed_only_as_native_evidence(self):
+        (self.root / "man").mkdir()
+        fixtures = {
+            "NAMESPACE": "export(etr_trajectory_set)\n",
+            "DESCRIPTION": "Package: eyetrajectories\n",
+            "man/etr_trajectory_set.Rd": "\\name{etr_trajectory_set}\n",
+        }
+        for name, value in fixtures.items():
+            target = self.root / name
+            target.write_text(value, encoding="utf-8")
+            with self.subTest(accepted=name):
+                self.assertEqual(ledger._source_file(self.root, name,
+                    expected_prefix="R/", allow_native_metadata=True),
+                    target)
         for name, prefix, allow in (
             ("NAMESPACE", "R/", False),
+            ("DESCRIPTION", "R/", False),
+            ("man/etr_trajectory_set.Rd", "R/", False),
             ("NAMESPACE", "tests/", True),
-            ("DESCRIPTION", "R/", True),
+            ("DESCRIPTION", "tests/", True),
+            ("man/etr_trajectory_set.Rd", "tests/", True),
+            ("man/not-a-manual.txt", "R/", True),
+            ("man/subdir/bad.Rd", "R/", True),
             ("NAMESPACE/../DESCRIPTION", "R/", True),
             ("../NAMESPACE", "R/", True),
             ("R/../NAMESPACE", "R/", True),
+            ("man/../DESCRIPTION", "R/", True),
         ):
-            with self.subTest(name=name, prefix=prefix, allow=allow):
+            with self.subTest(rejected=name, prefix=prefix, allow=allow):
                 with self.assertRaisesRegex(
                         ledger.SourceGapInventoryError, "Unsafe or out-of-scope"):
                     ledger._source_file(self.root, name,
-                        expected_prefix=prefix, allow_namespace=allow)
+                        expected_prefix=prefix, allow_native_metadata=allow)
 
-    def test_trajectory_receipt_may_pin_namespace_but_not_substitute_for_r(self):
+    def test_trajectory_receipt_may_pin_metadata_but_requires_r_implementation(self):
         _, record, receipt = self._add_reviewed_full_contract_fixture(
             "TrajectorySet", scoped=True)
-        namespace = self.root / "NAMESPACE"
-        namespace.write_text("export(etr_trajectory_set)\n",
-                             encoding="utf-8")
+        (self.root / "man").mkdir()
+        fixtures = {
+            "NAMESPACE": "export(etr_trajectory_set)\n",
+            "DESCRIPTION": "Package: eyetrajectories\n",
+            "man/etr_trajectory_set.Rd": "\\alias{etr_trajectory_set}\n",
+        }
         payload = json.loads(record.read_text(encoding="utf-8"))
-        native = {"path": "NAMESPACE",
-                  "sha256": hashlib.sha256(namespace.read_bytes()).hexdigest()}
-        payload["native_files"].append(native)
+        original_r = list(payload["native_files"])
+        metadata = []
+        for name, value in fixtures.items():
+            target = self.root / name
+            target.write_text(value, encoding="utf-8")
+            metadata.append({
+                "path": name,
+                "sha256": hashlib.sha256(target.read_bytes()).hexdigest(),
+            })
+        payload["native_files"].extend(metadata)
 
         def save_receipt():
             record.write_text(json.dumps(payload, indent=2),
@@ -260,7 +283,15 @@ class SourceGapInventoryTests(unittest.TestCase):
         save_receipt()
         result = ledger.read_inventory(self.root)
         self.assertEqual(result.active_nonfunction, 0)
-        payload["native_files"] = [native]
+        metadata_only = list(metadata)
+        (self.root / "DESCRIPTION").write_text(
+            "Package: altered\n", encoding="utf-8")
+        with self.assertRaisesRegex(ledger.SourceGapInventoryError,
+                                    "Native implementation changed"):
+            ledger.read_inventory(self.root)
+        (self.root / "DESCRIPTION").write_text(
+            fixtures["DESCRIPTION"], encoding="utf-8")
+        payload["native_files"] = metadata_only
         save_receipt()
         with self.assertRaisesRegex(ledger.SourceGapInventoryError,
                                     "Reviewed native candidate not found"):
