@@ -25,7 +25,9 @@ class StageTests(unittest.TestCase):
             (root/"scripts/qualify_experimental_candidate.R").write_text("# green only if executed\n")
             (root/"DESCRIPTION").write_text("Package: eyetrajectories\nVersion: 0.4.1.9000\nAuthors@R: person(\"Tester\", \"One\")\n")
             (root/"NEWS.md").write_text("# eyetrajectories 0.4.1.9000 (development)\n")
-            (root/"README.md").write_text("currently\n" + chr(96) + "0.4.1.9000" + chr(96) + "\n")
+            (root/"README.md").write_text(
+                "Last qualified development version `0.4.1.9000`; "
+                "proposed candidate **`0.4.2`** (not yet checked).\n")
             def cmd(*args):
                 return subprocess.run(["git", *args], cwd=root, check=True, capture_output=True)
             cmd("init", "-q")
@@ -36,6 +38,18 @@ class StageTests(unittest.TestCase):
             content = (stage_dir/"eyetrajectories"/"DESCRIPTION").read_text()
             self.assertIn("Version: 0.4.2\nAuthors@R:",content)
             self.assertIn("Version: 0.4.1.9000",(root/"DESCRIPTION").read_text())
+            staged_readme = (stage_dir/"eyetrajectories"/"README.md").read_text()
+            self.assertIn("`0.4.1.9000`", staged_readme)
+            self.assertIn("proposed candidate **`0.4.2`**", staged_readme)
+            self.assertEqual(staged_readme, (root/"README.md").read_text())
+            staged_news = (stage_dir/"eyetrajectories"/"NEWS.md").read_text()
+            self.assertTrue(staged_news.startswith(
+                "# eyetrajectories 0.4.2 (candidate, not published)\n"))
+            self.assertNotIn("# eyetrajectories 0.4.1.9000", staged_news)
+            self.assertEqual(staged_news.count("# eyetrajectories "), 1)
+            self.assertIn(sha, staged_news)
+            self.assertTrue((root/"NEWS.md").read_text().startswith(
+                "# eyetrajectories 0.4.1.9000"))
             manifest = (stage_dir/"STAGING_MANIFEST.json").read_text()
             self.assertIn(sha, manifest)
             self.assertIn('"candidate_check": "NOT EXECUTED"', manifest)
@@ -140,6 +154,16 @@ class StageTests(unittest.TestCase):
             self.assertIn("STAGED_R_CHILD_FAILURE_PHASE=build", err.getvalue())
             self.assertIn("error: missing installed R package", err.getvalue())
             self.assertIn("error: missing installed R package", (folder/"STAGED_R_CMD_CHECK.log").read_text())
+
+    def test_cli_rejects_pre_312_python_before_archive_extraction(self):
+        # Never downgrade to unsafe tar extraction merely to support an
+        # interpreter older than the documented safe staging runtime.
+        stderr = io.StringIO()
+        with patch.object(stage.sys, "version_info", (3, 11, 9)):
+            with contextlib.redirect_stderr(stderr):
+                result = stage.main([])
+        self.assertEqual(result, 1)
+        self.assertIn("Python 3.12 or later is required", stderr.getvalue())
 
     def test_invalid_version_fails(self):
         with self.assertRaises(ValueError):

@@ -59,18 +59,39 @@ def prepare(root: Path, out: Path, version: str) -> Path:
         desc = package / "DESCRIPTION"
         desc.write_text(re.sub(r"^Version:[ \t]*[^\r\n]+$", "Version: " + version,
             desc.read_text(encoding="utf-8"), count=1, flags=re.M), encoding="utf-8")
-        # Correct only stage documentation; leave research README/NEWS untouched.
+        # The STAGED source package must describe its actual candidate
+        # version. Never ship a NEWS file with two competing current
+        # version headings or a README that still presents the dev version
+        # as the installed release. No development checkout files change.
         news = package / "NEWS.md"
         if news.exists():
             content = news.read_text(encoding="utf-8")
-            news.write_text("# eyetrajectories " + version + " (candidate, not published)\n\n"
-                + "Local source candidate derived from " + sha + ".\n"
-                + "No 508-export parity or independent certification is asserted.\n\n"
-                + content, encoding="utf-8")
+            heading, separator, remainder = content.partition("\n")
+            if not heading.startswith("# eyetrajectories " + old + " "):
+                raise ValueError("NEWS heading must identify the exact source version " + old)
+            news.write_text(
+                "# eyetrajectories " + version + " (candidate, not published)\n\n"
+                + "Staged source derived from Git " + sha + "; it is not a CRAN "
+                + "submission, GitHub release or scientific certification.\n\n"
+                + remainder.lstrip("\n"),
+                encoding="utf-8")
         readme = package / "README.md"
         if readme.exists():
             content = readme.read_text(encoding="utf-8")
-            content = content.replace("currently\n" + chr(96) + old + chr(96), "staged as release candidate\n" + chr(96) + version + chr(96) + " (not published)", 1)
+            dev_version = "`" + old + "`"
+            candidate_version = "`" + version + "`"
+            intro = content[:6000]
+            if dev_version not in intro:
+                raise ValueError("README introduction must mention the source version " + old)
+            # New release-ready README text explicitly distinguishes the last
+            # QUALIFIED development version from the proposed candidate.
+            # Preserve that provenance; replacing it would falsely claim
+            # that the staged candidate had already passed the source check.
+            if candidate_version not in intro:
+                # Legacy README format mentions only the development version.
+                content = content.replace(
+                    dev_version,
+                    candidate_version + " (staged candidate; not published)", 1)
             readme.write_text(content, encoding="utf-8")
         changes = {}
         for rel in ("DESCRIPTION", "NEWS.md", "README.md"):
@@ -198,6 +219,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--build-check", action="store_true", help="Run real R CMD build and --as-cran check on staged tarball")
     parser.add_argument("--r-command", default="R", help="R executable, or explicit path to R.exe on Windows")
     args = parser.parse_args(argv)
+    # TarFile.extractall(filter="data") is an important safety guard and
+    # requires a compatible Python runtime. Fail explicitly rather than
+    # silently falling back to extraction without a safety filter.
+    if sys.version_info < (3, 12):
+        print("STAGING_FAIL: Python 3.12 or later is required; "
+              "set ET_LOCAL_MATRIX_PYTHON to a managed Python 3.12+ interpreter.",
+              file=sys.stderr)
+        return 1
     root = Path(args.root).resolve()
     # Each default invocation gets a fresh isolated attempt; never overwrite
     # an earlier failed candidate or its diagnostic logs.

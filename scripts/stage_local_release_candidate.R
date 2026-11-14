@@ -14,9 +14,21 @@ source("scripts/preflight_scientific_pr.R", local = TRUE)
 # malformed or two pages advertise the same alias. Do not suppress warnings.
 source("scripts/preflight_rd_manuals.R", local = TRUE)
 py <- Sys.getenv("ET_LOCAL_MATRIX_PYTHON", unset = "")
+# Reuse the explicitly pinned managed Python from the already-qualified
+# RStudio session when one is initialized. Do not initialize Python merely
+# to stage a native R package, and do not override an explicit interpreter.
+if (!nzchar(py) && requireNamespace("reticulate", quietly = TRUE)) {
+  managed_py <- tryCatch({
+    if (isTRUE(reticulate::py_available(initialize = FALSE)))
+      reticulate::py_config()$python else ""
+  }, error = function(e) "")
+  if (is.character(managed_py) && length(managed_py) == 1L &&
+      nzchar(managed_py)) py <- managed_py
+}
 if (!nzchar(py)) py <- Sys.which("python")
 if (!nzchar(py))
-  stop("Python 3.12+ executable not found.", call. = FALSE)
+  stop("Python 3.12+ executable not found; set ET_LOCAL_MATRIX_PYTHON.",
+       call. = FALSE)
 r_command <- file.path(R.home(), "bin",
   if (.Platform$OS.type == "windows") "R.exe" else "R")
 if (!file.exists(r_command))
