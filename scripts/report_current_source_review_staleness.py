@@ -33,7 +33,9 @@ def resolve_path(root: Path, relative: str) -> Path:
     p = PurePosixPath(relative)
     if (not relative or p.is_absolute() or ".." in p.parts
             or "." in p.parts or "\\" in relative
-            or not relative.startswith(("R/", "tests/", "docs/source_contract_reviews/"))):
+            or not (relative == "NAMESPACE" or
+                    relative.startswith(("R/", "tests/",
+                                         "docs/source_contract_reviews/")))):
         raise ValueError("Unsafe scientific evidence path " + repr(relative))
     target = root.joinpath(*p.parts)
     if target.is_symlink() or not target.resolve().is_relative_to(root.resolve()):
