@@ -19,6 +19,6 @@ test_that("three typed recovery frames have explicit Python source witnesses",{
   expect_true(all(api$is_python_function[at]))
   expect_true(all(api$named_native_candidate[at]))
   expect_true(all(api$native_implementation_started[at]))
-  expect_true(all(api$source_contract_gap_unresolved[at]))
+  expect_false(any(api$source_contract_gap_unresolved[at]))
   expect_false(any(api$one_to_one_native_contract_complete[at]))
 })
