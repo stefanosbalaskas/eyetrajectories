@@ -35,6 +35,8 @@ class LiveReviewStalenessTests(unittest.TestCase):
 
         original_code = b"source_value <- function(x) x + 1\n"
         original_test = b"testthat::expect_equal(source_value(2),3)\n"
+        original_namespace = b"export(source_value)\n"
+        (self.root / "NAMESPACE").write_bytes(original_namespace)
         (self.root / "R" / "source.R").write_bytes(original_code)
         (self.root / "tests" / "source_test.R").write_bytes(original_test)
         self.test_pin = digest(original_test)
@@ -47,6 +49,10 @@ class LiveReviewStalenessTests(unittest.TestCase):
                  "sha256": self.test_pin} for domain in
                 ("source_signature", "accepted_input_domain", "numerical_outputs",
                  "exception_semantics", "returned_schema", "scientific_estimand")
+            ],
+            "additional_regression_evidence": [
+                {"kind": "namespace_export", "path": "NAMESPACE",
+                 "sha256": digest(original_namespace)}
             ],
         }
         record_bytes = (json.dumps(record, sort_keys=True) + "\n").encode()
@@ -80,7 +86,7 @@ class LiveReviewStalenessTests(unittest.TestCase):
         self.git("commit", "-m", "test evidence changed since author review")
         report, counts = audit.report(self.root)
         self.assertEqual(counts["FAIL_STALE_PIN_VERSUS_GIT_HEAD"], 6)
-        self.assertEqual(counts["PASS_ORIGINAL_PIN_MATCHES_CURRENT_CANONICAL_SOURCE"], 2)
+        self.assertEqual(counts["PASS_ORIGINAL_PIN_MATCHES_CURRENT_CANONICAL_SOURCE"], 3)
         with report.open("r", newline="", encoding="utf-8") as handle:
             lines = list(csv.DictReader(handle))
         self.assertEqual(len(lines), 6)
@@ -98,9 +104,29 @@ class LiveReviewStalenessTests(unittest.TestCase):
         self.assertEqual(counts["FAIL_WORKTREE_BYTES_DIFFER_FROM_GIT_HEAD"], 1)
         self.assertTrue(report.is_file())
 
+    def test_namespace_is_a_valid_root_evidence_file_with_strict_sha256(self):
+        # Reproduces a real repository receipt referencing exact NAMESPACE.
+        # The accepted path is NOT a prefix allowing other root files.
+        self.assertEqual(audit.resolve_path(self.root, "NAMESPACE"),
+                         self.root / "NAMESPACE")
+        (self.root / "NAMESPACE").write_bytes(b"export(source_value)\nexport(new_function)\n")
+        self.git("add", "NAMESPACE")
+        self.git("commit", "-m", "namespace changed since original review")
+        output, counts = audit.report(self.root)
+        self.assertEqual(counts["FAIL_STALE_PIN_VERSUS_GIT_HEAD"], 1)
+        self.assertEqual(counts["PASS_ORIGINAL_PIN_MATCHES_CURRENT_CANONICAL_SOURCE"], 8)
+        with output.open("r", encoding="utf-8", newline="") as stream:
+            findings = list(csv.DictReader(stream))
+        self.assertEqual(len(findings), 1)
+        self.assertEqual(findings[0]["path"], "NAMESPACE")
+        self.assertEqual(findings[0]["independent_certification"], "FALSE")
+
     def test_missing_or_unsafe_path_stops_diagnostics(self):
-        with self.assertRaisesRegex(ValueError, "Unsafe"):
-            audit.resolve_path(self.root, "../out-of-scope")
+        for path in ("../out-of-scope", "NAMESPACE/private",
+                     "NAMESPACE.bak", "R/../NAMESPACE"):
+            with self.subTest(path=path):
+                with self.assertRaisesRegex(ValueError, "Unsafe"):
+                    audit.resolve_path(self.root, path)
 
 
 if __name__ == "__main__":
