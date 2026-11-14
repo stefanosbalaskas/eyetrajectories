@@ -35,37 +35,37 @@
     {
       "kind": "source_signature",
       "path": "tests/testthat/test-native-recurrence-workflow-full-source-20261111.R",
-      "sha256": "ba8091db9f26f0d273ab871cc39e7d3ea72686c694e6fd806d4c7d4800c458b6",
+      "sha256": "f21064f424a7010989ec62bc5ab0bc7f19c73caa3375977091b32a24b14747a6",
       "description": "Source eyetrajectoriespy 1.2 workflows/_recurrence.py run_recurrence_workflow(trajectories,config=RecurrenceWorkflowConfig): complete common-grid TrajectorySet, explicit fixed-radius/embedding, supported cityblock/euclidean/chebyshev distances, source time unit conversions and no implicit preprocessing. Native explicit python_boundary_mode=TRUE returns canonical R scientific source field representation while the prior default remains untouched."
     },
     {
       "kind": "accepted_input_domain",
       "path": "tests/testthat/test-native-recurrence-workflow-full-source-20261111.R",
-      "sha256": "ba8091db9f26f0d273ab871cc39e7d3ea72686c694e6fd806d4c7d4800c458b6",
+      "sha256": "f21064f424a7010989ec62bc5ab0bc7f19c73caa3375977091b32a24b14747a6",
       "description": "Four complete curves with 25 common-grid times, two named dimensions, m=2 delayed-state embedding, fixed radius .6, Theiler=1, line-minimums 2, zero-based curve selection and named curve-ID variant, all three source metrics and physically equivalent time-units conversions. Negative tests check invalid source mode, invalid metric and nonempty preprocessing."
     },
     {
       "kind": "numerical_outputs",
       "path": "tests/testthat/test-native-recurrence-workflow-full-source-20261111.R",
-      "sha256": "ba8091db9f26f0d273ab871cc39e7d3ea72686c694e6fd806d4c7d4800c458b6",
+      "sha256": "f21064f424a7010989ec62bc5ab0bc7f19c73caa3375977091b32a24b14747a6",
       "description": "Direct frozen Python 1.2 typed W4 workflow compares all embedded state coordinates, exact dense logical counterpart of CSR recurrence adjacency, full fourteen RQA numerical fields, RQA table columns and data, fixed-radius recurrence and corresponding scientific decisions. Source-line-based recurrence metrics use the actual R kernel and real measured elapsed seconds; wall-clock timings differ naturally across runtimes."
     },
     {
       "kind": "exception_semantics",
       "path": "tests/testthat/test-native-recurrence-workflow-full-source-20261111.R",
-      "sha256": "ba8091db9f26f0d273ab871cc39e7d3ea72686c694e6fd806d4c7d4800c458b6",
+      "sha256": "f21064f424a7010989ec62bc5ab0bc7f19c73caa3375977091b32a24b14747a6",
       "description": "Strict mode validates scalar logical flag, complete finite source trajectories, named unique source channels, positive m and line minima, fixed positive radius, supported metrics, zero-based curve indices or IDs, exact integral sample/time conversion and empty explicit preprocessing. Exact Python exception classes and arbitrary Python callable/coercion behavior remain language-dependent."
     },
     {
       "kind": "returned_schema",
       "path": "tests/testthat/test-native-recurrence-workflow-full-source-20261111.R",
-      "sha256": "ba8091db9f26f0d273ab871cc39e7d3ea72686c694e6fd806d4c7d4800c458b6",
+      "sha256": "f21064f424a7010989ec62bc5ab0bc7f19c73caa3375977091b32a24b14747a6",
       "description": "Eleven ordered Python RecurrenceWorkflowResult scientific fields; RecurrenceWorkflowConfig twelve source fields; RecurrenceResult thirteen ordered fields; RQAResult fifteen ordered fields including provenance; original DelayEmbeddingResult science; three source-named real workflow steps, thirteen analyst/derived decisions with source criteria; seven exact workflow provenance keys; one-source-curve fourteen-column RQA table and source reporting prose."
     },
     {
       "kind": "scientific_estimand",
       "path": "tests/testthat/test-native-recurrence-workflow-full-source-20261111.R",
-      "sha256": "ba8091db9f26f0d273ab871cc39e7d3ea72686c694e6fd806d4c7d4800c458b6",
+      "sha256": "f21064f424a7010989ec62bc5ab0bc7f19c73caa3375977091b32a24b14747a6",
       "description": "One fixed analyst-declared delay-embedded state-space recurrence and line-based RQA analysis of a complete independent source curve, inclusive radius <=, Theiler exclusion, no automatic recurrence radius selection, no resampling, no hidden preprocessing and no parameter optimization; source metric 0-to-1 scale and eligible off-diagonal recurrence denominator preserved."
     }
   ],
@@ -76,5 +76,13 @@
     "Source RecurrenceWorkflowConfig and all other nested Python frozen dataclasses are represented by ordered R scientific list/record types; this does not assert Python class identity.",
     "The direct source regression suite tests three norms, complete grids and the specified physical-time domain; arbitrary Python coercion, backend degeneracies and Python exception inheritance remain unreviewed.",
     "Source decisions, tables and reporting prose are compared by semantic content; exact byte-for-byte Python pandas object/dataframe identities are not claimed."
-  ]
+  ],
+  "source_container_normalization_review_20261114": {
+    "scope": "AUTHOR_PYTHON_MAPPINGPROXY_TUPLE_SCIENTIFIC_VALUES_REPLAY",
+    "test_source": "tests/testthat/test-native-recurrence-workflow-full-source-20261111.R",
+    "new_test_sha256": "f21064f424a7010989ec62bc5ab0bc7f19c73caa3375977091b32a24b14747a6",
+    "reason": "Frozen Python mappingproxy and tuple typed field containers are normalized into R named list and atomic-vector form before comparing scientific values; no native recurrence estimator, results, losses or provenance computation changed.",
+    "exact_head_test_run": "PENDING",
+    "independently_certified": false
+  }
 }
