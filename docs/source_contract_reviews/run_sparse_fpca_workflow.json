@@ -12,7 +12,7 @@
   "native_files": [
     {
       "path": "R/native-bounded-model-workflows.R",
-      "sha256": "5314cfaccc65dc1a4bba76ed56ba37d251def522059a3ee81fcbaeb251e795bb"
+      "sha256": "e0d54a6b3c4295e61ed2b2259f95e22b5ace53b199858f36416763eda105433e"
     },
     {
       "path": "R/native-sparse-fpca-w2-source-workflow-record.R",
@@ -64,5 +64,17 @@
     "The native source model retains local smoothing and score-conditioning numeric thresholds, but all ill-conditioned domains and unseeded/grouped permutations are not independently verified.",
     "Runtime elapsed_seconds are actually measured separately in R and Python and cannot be expected byte-identical.",
     "No guarantee of numerical agreement until GitHub CI and independent external review have passed; no merge into main or CRAN qualification asserted."
-  ]
+  ],
+  "production_source_revalidation_20261114": {
+    "scope": "AUTHOR_UNRELATED_SPARSE_FUNCTION_SOURCE_PROOF",
+    "reviewed_source_head": "8328cd9f7f5dc10275baf4d7be5fdcf02fa612a0",
+    "path": "R/native-bounded-model-workflows.R",
+    "previous_source_sha256": "5314cfaccc65dc1a4bba76ed56ba37d251def522059a3ee81fcbaeb251e795bb",
+    "current_source_sha256": "e0d54a6b3c4295e61ed2b2259f95e22b5ace53b199858f36416763eda105433e",
+    "original_git_revision": "07abc577544a",
+    "prior_review_record_sha256": "025e2890826e8868d26497cd594761a232d1497eb683c1ec8b5de8de1dc8676d",
+    "reviewed_source_difference": "File changed only in mixed-effects workflow to opt-in strict joint Gaussian spline record; no sparse FPCA workflow function source statements changed. Bound native source pin updated to actual HEAD without claiming additional optimizer parity.",
+    "scientific_approval": "Existing author-scoped/full contract tier preserved; no independent scientific certification or newly claimed 508-export parity",
+    "independently_certified": false
+  }
 }

@@ -16,7 +16,7 @@
     },
     {
       "path": "R/native-functional-simulation-artist-source.R",
-      "sha256": "c6b02d98e186ae98e409fbd180f69bd988e0f0ba1c5b4751c4b09943fddd5b62"
+      "sha256": "81279b37d8c56a66a671b9f428dbc67e23bb930ea20d7ff1ddfde28289f27bd3"
     }
   ],
   "case_evidence": [
@@ -69,5 +69,17 @@
     "Strict result is a genuine native R simulated object with source artist data, not a Python FunctionalSimulationResult dataclass instance.",
     "Python and R exceptions, plot legend backend state and Matplotlib figure event machinery remain different.",
     "New tests have not been observed executing green, and no independent source-contract approval, main-branch merge or CRAN qualification is claimed."
-  ]
+  ],
+  "production_source_revalidation_20261114": {
+    "scope": "AUTHOR_FROZEN_PYTHON_FIGURE_LEGEND_GEOMETRY_PROOF",
+    "reviewed_source_head": "8328cd9f7f5dc10275baf4d7be5fdcf02fa612a0",
+    "path": "R/native-functional-simulation-artist-source.R",
+    "previous_source_sha256": "c6b02d98e186ae98e409fbd180f69bd988e0f0ba1c5b4751c4b09943fddd5b62",
+    "current_source_sha256": "81279b37d8c56a66a671b9f428dbc67e23bb930ea20d7ff1ddfde28289f27bd3",
+    "original_git_revision": "81c36c53d71c",
+    "prior_review_record_sha256": "6698d1b93a8b357b4714600b028e14f60a4cead6b490dff1d2ee54eac88521e7",
+    "reviewed_source_difference": "Legend labels reordered to interleave declared and realized curve, participant, and trial variance components, matching source Python artist order. Scientific graphical values, simulation estimands, plots and source API unchanged; user-confirmed 78 Python 1.2 source-artist assertions passed.",
+    "scientific_approval": "Existing author-scoped/full contract tier preserved; no independent scientific certification or newly claimed 508-export parity",
+    "independently_certified": false
+  }
 }
