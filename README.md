@@ -60,9 +60,11 @@ source("scripts/stage_local_release_candidate.R")
 
 The staging command builds a new source archive outside the development
 checkout and runs `R CMD check --as-cran` on the **staged version**.
-See [the exact release gates](docs/release-0.4.2-acceptance.md),
-[local platform qualification](docs/local-release-qualification.md), and
-[the bounded native R scope](docs/experimental-release-scope.md).
+Maintainer-only runbooks in the source repository are
+`docs/release-0.4.2-acceptance.md`,
+`docs/local-release-qualification.md` and
+`docs/experimental-release-scope.md`. These development documents are
+excluded from the installed R source package by `.Rbuildignore`.
 The frozen Python 1.2 interface census is research evidence, **not** a
 claim that 508 native R contracts are independently certified.
 
