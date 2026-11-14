@@ -219,6 +219,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--build-check", action="store_true", help="Run real R CMD build and --as-cran check on staged tarball")
     parser.add_argument("--r-command", default="R", help="R executable, or explicit path to R.exe on Windows")
     args = parser.parse_args(argv)
+    # TarFile.extractall(filter="data") is an important safety guard and
+    # requires a compatible Python runtime. Fail explicitly rather than
+    # silently falling back to extraction without a safety filter.
+    if sys.version_info < (3, 12):
+        print("STAGING_FAIL: Python 3.12 or later is required; "
+              "set ET_LOCAL_MATRIX_PYTHON to a managed Python 3.12+ interpreter.",
+              file=sys.stderr)
+        return 1
     root = Path(args.root).resolve()
     # Each default invocation gets a fresh isolated attempt; never overwrite
     # an earlier failed candidate or its diagnostic logs.
