@@ -15,9 +15,10 @@ test_that("wild FPCA selection rejects huge source integer before R coercion",{
       width_threshold=.1,center_threshold=.1,
       stability_run=.Machine$integer.max),
     "more consecutive stable transitions")
-  # The very same source contract remains valid for small admissible counts.
+  # The same source contract remains valid for small admissible counts.
+  # Match the published selector's actual zero-based output field.
   chosen<-etr_select_fpca_wild_bootstrap_truncation(scan,
     width_threshold=.1,center_threshold=.1,stability_run=0L)
   expect_identical(chosen$selected_components,1)
-  expect_identical(chosen$selection_idx,0L)
+  expect_identical(chosen$selected_candidate_indices,0L)
 })
