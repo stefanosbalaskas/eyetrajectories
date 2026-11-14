@@ -24,7 +24,7 @@
     },
     {
       "path": "R/native-functional-recovery-orchestration.R",
-      "sha256": "12afe380f78fa61f02819252bfd913ccc94e7bc5e91e9bfea855f7fec79d21de"
+      "sha256": "4c56bfead752a2a5dfdd4d4a30bd128fad065fb2090bf882658e2b24bbb58348"
     }
   ],
   "case_evidence": [
@@ -84,5 +84,28 @@
     "unchanged_evidence_sha256": "5d8fdaeee8bf6923d66970138cde3ca25d3cb951f9311abb2ad0890bf06936cd",
     "prior_review_record_sha256": "673df78f6bae4b2a4424534e0e1e9f345b40c210e17280e45cf27deac8a05168",
     "independent_certification_granted": false
+  },
+  "source_pin_revalidation_20261114": {
+    "scope": "AUTHOR_SIDE_SOURCE_BOUNDARY_ONLY_NO_INDEPENDENT_CERTIFICATION",
+    "reviewed_original_commit": "cc0cbfd215a03c7649876cdbc7cb11bad76d7181",
+    "audited_exact_head": "41d6088ea4a50c3f90db9af65562ecdfb033dbf7",
+    "source_path": "R/native-functional-recovery-orchestration.R",
+    "previous_pinned_sha256": "12afe380f78fa61f02819252bfd913ccc94e7bc5e91e9bfea855f7fec79d21de",
+    "current_canonical_git_sha256": "4c56bfead752a2a5dfdd4d4a30bd128fad065fb2090bf882658e2b24bbb58348",
+    "changed_scope": "Adjacent etr_run_functional_recovery_scenarios gained explicit opt-in python_boundary_mode, source-only draw/schedule restrictions, boundary argument forwarding and ordered recovery result records. The complete etr_simulate_functional_scenario function block is byte-for-byte identical to the originally pinned source.",
+    "unchanged_contract_body_verified": true,
+    "existing_frozen_python_oracle_test": "tests/testthat/test-native-functional-sim-scenario-source.R",
+    "existing_frozen_python_oracle_test_sha256": "5d8fdaeee8bf6923d66970138cde3ca25d3cb951f9311abb2ad0890bf06936cd",
+    "review_dimensions": [
+      "source_signature",
+      "accepted_input_domain",
+      "numerical_outputs",
+      "exception_semantics",
+      "returned_schema",
+      "scientific_estimand"
+    ],
+    "classification": "OUT_OF_SCOPE_ADJACENT_FUNCTION_CHANGE_NO_SIMULATE_FUNCTION_SEMANTIC_DELTA",
+    "runtime_test_status": "Latest exact-head R/Python differential and release CI still required; this scoped pin reconciliation does not claim they passed.",
+    "independently_certified": false
   }
 }
