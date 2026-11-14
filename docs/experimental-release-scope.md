@@ -3,6 +3,26 @@
 This document describes a scoped experimental 0.x release, NOT full frozen
 Python 1.2 parity and NOT a completed CRAN submission.
 
+## Current evidence and release position (15 November 2026)
+
+The latest maintainer-executed development qualification, at commit
+`7f1f2a8440ec049bd9104eeb93f5d0de3cfaaa5e`, completed with
+`R CMD check --as-cran` **0 errors / 0 warnings / 1 NOTE**, and both
+native R offline and pinned Python 1.2 scientific author suites passed.
+The 508-export developer reconciliation also passed. This is evidence
+for the precise tested development commit and explicitly **not**
+for an already checked `eyetrajectories_0.4.2.tar.gz`.
+
+A separate draft release-preparation PR #179 tracks the scoped 0.4.2
+candidate, package metadata and staging consistency. Refer to
+`docs/release-0.4.2-acceptance.md` for the release checklist and the
+latest outstanding gates. GitHub Actions runner allocation remains
+blocked (#3); 0 independent full-domain certifications exist; the
+96 blank nonfunction native representation mappings remain a distinct
+full-parity workstream. Do not treat historical review counts below
+as the current source-gap open count; the author-reviewed source ledger
+currently has **zero open** documented source gaps.
+
 ## Native scientific scope
 
 The package provides Python-free native R trajectories, validation,
