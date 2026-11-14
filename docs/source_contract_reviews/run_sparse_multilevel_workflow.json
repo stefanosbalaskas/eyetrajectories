@@ -24,37 +24,37 @@
       "kind": "source_signature",
       "description": "Frozen Python 1.2 src/eyetrajectoriespy/workflows/_sparse_multilevel.py::run_sparse_multilevel_workflow. Frozen Python 1.2 W2 10 outer scientific fields, 30 ordered configuration fields, eight workflow decisions, five source provenance fields and native genuine timed steps; R hierarchical BLUP estimator output and scientific participant/trial tables remain in native R classes.",
       "path": "tests/testthat/test-native-sparse-multilevel-prediction-w2-source-20261112.R",
-      "sha256": "cedf1d70f4939460d8fdb4cc958ec87ef5ecacc04752b6741c87740da4a0a5e1"
+      "sha256": "0ad541ef0b9311c5daed027332acea30746886aafdfe0245214bf386556600cf"
     },
     {
       "kind": "accepted_input_domain",
       "description": "Source-backed irregular one-dimensional observations grouped by repeated participant, fixed local-linear sparse mean, total/between covariance bandwidths, diagonal-difference or fixed measurement error, declared weighting observation, PSD/smoothing and score controls, native_covariance backend only. No implicit raw interpolation, CV selector or hidden model selection.",
       "path": "tests/testthat/test-native-sparse-multilevel-prediction-w2-source-20261112.R",
-      "sha256": "cedf1d70f4939460d8fdb4cc958ec87ef5ecacc04752b6741c87740da4a0a5e1"
+      "sha256": "0ad541ef0b9311c5daed027332acea30746886aafdfe0245214bf386556600cf"
     },
     {
       "kind": "numerical_outputs",
       "description": "Existing directly pinned Python 1.2 joint sparse multilevel BLUP tests compare mean, total/between/within covariance, eigenfunctions/eigenvalues, participant/trial scores and diagnostics on 6 participant x 4 trials. New direct Python W2 workflow test compares typed dataclass field order, real model numerical arrays, workflow tables, decisions, provenance and timed-step semantics. Test committed, not yet witnessed passing.",
       "path": "tests/testthat/test-native-sparse-multilevel-prediction-w2-source-20261112.R",
-      "sha256": "cedf1d70f4939460d8fdb4cc958ec87ef5ecacc04752b6741c87740da4a0a5e1"
+      "sha256": "0ad541ef0b9311c5daed027332acea30746886aafdfe0245214bf386556600cf"
     },
     {
       "kind": "exception_semantics",
       "description": "Strict mode rejects descriptive interpolated-grid model, nonlogical flag, malformed config and incompatible source domains. Source covariance and hierarchical Gaussian BLUP failures retain explicit error propagation; Python-specific exception classes and arbitrary source Python dataclass identity are not reproduced.",
       "path": "tests/testthat/test-native-sparse-multilevel-prediction-w2-source-20261112.R",
-      "sha256": "cedf1d70f4939460d8fdb4cc958ec87ef5ecacc04752b6741c87740da4a0a5e1"
+      "sha256": "0ad541ef0b9311c5daed027332acea30746886aafdfe0245214bf386556600cf"
     },
     {
       "kind": "returned_schema",
       "description": "Frozen Python 1.2 W2 10 outer scientific fields, 30 ordered configuration fields, eight workflow decisions, five source provenance fields and native genuine timed steps; R hierarchical BLUP estimator output and scientific participant/trial tables remain in native R classes.",
       "path": "tests/testthat/test-native-sparse-multilevel-prediction-w2-source-20261112.R",
-      "sha256": "cedf1d70f4939460d8fdb4cc958ec87ef5ecacc04752b6741c87740da4a0a5e1"
+      "sha256": "0ad541ef0b9311c5daed027332acea30746886aafdfe0245214bf386556600cf"
     },
     {
       "kind": "scientific_estimand",
       "description": "Hierarchical sparse functional participant/trial decomposition Y_ij(t)=mu(t)+U_i(t)+V_ij(t)+epsilon_ij(t), participant covariance pooled over distinct trials and trial covariance from total minus participant covariance; joint Gaussian BLUP on observed irregular times, not dense interpolation or separate participant means.",
       "path": "tests/testthat/test-native-sparse-multilevel-prediction-w2-source-20261112.R",
-      "sha256": "cedf1d70f4939460d8fdb4cc958ec87ef5ecacc04752b6741c87740da4a0a5e1"
+      "sha256": "0ad541ef0b9311c5daed027332acea30746886aafdfe0245214bf386556600cf"
     }
   ],
   "independent_review_status": "Provisional author-reviewed source-scientific domain; exact-head CI not observed passing, no independently certified contract.",
@@ -63,5 +63,16 @@
     "Measured step elapsed_seconds genuinely differ between independent Python/R runs.",
     "Extreme ill-conditioning, omitted group metadata and untested source numerical boundary cases require further direct differential coverage.",
     "New workflow comparisons have been committed but not confirmed passing; no certification, integration merge or CRAN readiness is claimed."
-  ]
+  ],
+  "source_test_revalidation_20261114": {
+    "scope": "AUTHOR_SIX_DOMAIN_TEST_PROOF_UPDATE",
+    "git_head": "b9d65b212c6ec7654cce29523b032f7cf212c2f7",
+    "original_test_git_revision": "a6adeeb51449",
+    "prior_sha256": "cedf1d70f4939460d8fdb4cc958ec87ef5ecacc04752b6741c87740da4a0a5e1",
+    "current_sha256": "0ad541ef0b9311c5daed027332acea30746886aafdfe0245214bf386556600cf",
+    "previous_review_record_sha256": "be27fdfb757ae133448cc216ac98a34e576c40c149439fe0b8929a2fec7657bc",
+    "scientific_review": "Three misnamed safe-fixture helper calls corrected; Python W2 workflow step tuple comparison now indexes the frozen Python sequence from zero, preserving the source name/function/status comparisons and actual scientific output assertions.",
+    "confirmed_differential_suite": "Frozen Python 1.2 R replay PASS: 152 assertions in affected file; 4866 passing aggregate / 0 failure/warnings/skips on unchanged R scientific source",
+    "independent_certification": false
+  }
 }
