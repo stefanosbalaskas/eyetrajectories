@@ -12,8 +12,8 @@
 #' @param max_points Maximum dense recurrence matrix points.
 #' @param ax,axes Must be NULL; Matplotlib axes cannot be used in R.
 #' @return Invisibly the plotted scientific source geometry (not Matplotlib axes).
-#' @export
-etr_plot_workflow_result<-function(result,plot,component=NULL,dimension=NULL,
+#' @noRd
+.etr_workflow_legacy_plot<-function(result,plot,component=NULL,dimension=NULL,
     coefficient=NULL,sd_multiplier=2,max_points=200000L,
     ax=NULL,axes=NULL){
   .etr_assert(is.character(plot)&&length(plot)==1L&&
@@ -113,8 +113,8 @@ etr_plot_workflow_result<-function(result,plot,component=NULL,dimension=NULL,
 #' @param close Must be TRUE; R devices are always closed after output.
 #' @param ... Explicit options forwarded to etr_plot_workflow_result().
 #' @return Existing normalized file path, not Python pathlib.Path.
-#' @export
-etr_save_workflow_figure<-function(result,path,plot,dpi=150L,
+#' @noRd
+.etr_workflow_legacy_save<-function(result,path,plot,dpi=150L,
     close=TRUE,...){
   .etr_assert(is.character(path)&&length(path)==1L&&!is.na(path)&&
     nzchar(trimws(path)),
@@ -150,8 +150,6 @@ etr_save_workflow_figure<-function(result,path,plot,dpi=150L,
 # Source-scientific W4 extension (frozen Python 1.2, c1cd95ad).
 # The historical native plotting and safe-no-overwrite file behavior above
 # remain the exact default. Source mode is an explicit, bounded extension.
-.etr_workflow_legacy_plot <- etr_plot_workflow_result
-.etr_workflow_legacy_save <- etr_save_workflow_figure
 
 .etr_workflow_required_component <- function(x) {
   .etr_assert(!is.null(x),
