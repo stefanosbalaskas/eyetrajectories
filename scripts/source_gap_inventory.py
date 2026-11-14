@@ -96,12 +96,15 @@ def _read(path: Path, required: tuple[str, ...]) -> list[dict[str, str]]:
 
 
 
-def _source_file(root: Path, name: str, *, expected_prefix: str) -> Path:
-    """Reject path traversal, symlinks, and missing or out-of-repo proof."""
+def _source_file(root: Path, name: str, *, expected_prefix: str,
+                 allow_namespace: bool = False) -> Path:
+    """Reject unsafe evidence; allow only exact top-level NAMESPACE as native proof."""
     parsed = PurePosixPath(name)
     if (not name or parsed.is_absolute() or
             ".." in parsed.parts or "." in parsed.parts or
-            not name.startswith(expected_prefix) or "\\" in name):
+            not (name.startswith(expected_prefix) or
+                 (allow_namespace and expected_prefix == "R/" and
+                  name == "NAMESPACE")) or "\\" in name):
         raise SourceGapInventoryError(
             f"Unsafe or out-of-scope source-review evidence path: {name!r}")
     target = root.joinpath(*parsed.parts)
@@ -247,11 +250,12 @@ def _validate_reviewed_closures(
                 raise SourceGapInventoryError(
                     f"Malformed pinned native source: {name}")
             file = _source_file(root, native.get("path", ""),
-                                expected_prefix="R/")
+                                expected_prefix="R/", allow_namespace=True)
             verified_sha(
                 file, native.get("sha256"),
                 f"Native implementation changed after full-contract review: {name}")
-            if declared_candidate in file.read_text(encoding="utf-8"):
+            if (native.get("path", "").startswith("R/") and
+                    declared_candidate in file.read_text(encoding="utf-8")):
                 candidate_witnessed = True
         if not candidate_witnessed:
             raise SourceGapInventoryError(
