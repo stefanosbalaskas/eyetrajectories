@@ -59,18 +59,31 @@ def prepare(root: Path, out: Path, version: str) -> Path:
         desc = package / "DESCRIPTION"
         desc.write_text(re.sub(r"^Version:[ \t]*[^\r\n]+$", "Version: " + version,
             desc.read_text(encoding="utf-8"), count=1, flags=re.M), encoding="utf-8")
-        # Correct only stage documentation; leave research README/NEWS untouched.
+        # The STAGED source package must describe its actual candidate
+        # version. Never ship a NEWS file with two competing current
+        # version headings or a README that still presents the dev version
+        # as the installed release. No development checkout files change.
         news = package / "NEWS.md"
         if news.exists():
             content = news.read_text(encoding="utf-8")
-            news.write_text("# eyetrajectories " + version + " (candidate, not published)\n\n"
-                + "Local source candidate derived from " + sha + ".\n"
-                + "No 508-export parity or independent certification is asserted.\n\n"
-                + content, encoding="utf-8")
+            heading, separator, remainder = content.partition("\n")
+            if not heading.startswith("# eyetrajectories " + old + " "):
+                raise ValueError("NEWS heading must identify the exact source version " + old)
+            news.write_text(
+                "# eyetrajectories " + version + " (candidate, not published)\n\n"
+                + "Staged source derived from Git " + sha + "; it is not a CRAN "
+                + "submission, GitHub release or scientific certification.\n\n"
+                + remainder.lstrip("\n"),
+                encoding="utf-8")
         readme = package / "README.md"
         if readme.exists():
             content = readme.read_text(encoding="utf-8")
-            content = content.replace("currently\n" + chr(96) + old + chr(96), "staged as release candidate\n" + chr(96) + version + chr(96) + " (not published)", 1)
+            dev_version = "`" + old + "`"
+            if dev_version not in content[:6000]:
+                raise ValueError("README introduction must mention the source version " + old)
+            content = content.replace(
+                dev_version,
+                "`" + version + "` (staged candidate; not published)", 1)
             readme.write_text(content, encoding="utf-8")
         changes = {}
         for rel in ("DESCRIPTION", "NEWS.md", "README.md"):
