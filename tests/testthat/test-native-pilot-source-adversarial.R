@@ -159,7 +159,10 @@ test_that("frozen Python 1.2 first-pilot boundary differences remain explicit",{
   differences<-etr_native_parity_catalog()
   pilot_names<-c("functional_trapezoid_weights","inverse_alr",
     "score_distance_matrix","alr_transform")
-  expect_true(all(differences$source_contract_gap_unresolved[
+  expect_true(all(pilot_names %in% differences$python_name))
+  # All four recorded gaps are now author-reviewed closed; independent
+  # full-domain certification is separately and explicitly still FALSE.
+  expect_false(any(differences$source_contract_gap_unresolved[
     differences$python_name %in% pilot_names]))
   expect_false(any(differences$one_to_one_native_contract_complete))
 })
@@ -186,8 +189,8 @@ test_that("finite numeric-string inverse-ALR arrays retain NumPy geometry",{
     reference_dimension=as.integer(0L),n_dimensions=as.integer(3L))
   expect_equal(unname(native),unname(et_to_r(published)),
     tolerance=1e-12)
-  expect_true(etr_native_parity_catalog()$source_contract_gap_unresolved[
-    etr_native_parity_catalog()$python_name=="inverse_alr"])
+  expect_false(any(etr_native_parity_catalog()$source_contract_gap_unresolved[
+    etr_native_parity_catalog()$python_name=="inverse_alr"]))
 })
 
 test_that("finite numeric-string simplex arrays match the source ALR contract",{
@@ -222,8 +225,8 @@ test_that("finite numeric-string simplex arrays match the source ALR contract",{
     expect_equal(unname(native),unname(et_to_r(published)),
       tolerance=1e-12)
   }
-  expect_true(etr_native_parity_catalog()$source_contract_gap_unresolved[
-    etr_native_parity_catalog()$python_name=="alr_transform"])
+  expect_false(any(etr_native_parity_catalog()$source_contract_gap_unresolved[
+    etr_native_parity_catalog()$python_name=="alr_transform"]))
 })
 
 test_that("Boolean ALR and inverse arrays match published numeric coercion",{
