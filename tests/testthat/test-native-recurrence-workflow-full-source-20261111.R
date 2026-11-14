@@ -36,6 +36,25 @@
   "n_diagonal_lines","n_vertical_lines",
   "min_diagonal_length","min_vertical_length","provenance")
 
+# Normalize frozen Python container representations, never scientific values.
+# reticulate leaves MappingProxyType as a Python object and converts tuples
+# to lists even where the native R scientific record uses an atomic vector.
+.etr_w4_oracle_container_like <- function(native,source) {
+  if(inherits(source,"python.builtin.mappingproxy"))
+    source<-reticulate::import_builtins(convert=FALSE)$dict(source)
+  if(inherits(source,"python.builtin.object"))
+    source<-et_to_r(source)
+  if(is.atomic(native)&&is.list(source)&&!is.data.frame(source)&&
+     is.null(names(source))&&is.null(dim(source)))
+    return(unlist(source,use.names=FALSE))
+  if(is.list(native)&&is.list(source)&&!is.data.frame(native)&&
+     !is.data.frame(source)&&!is.null(names(source))) {
+    for(nm in intersect(names(native),names(source)))
+      source[[nm]]<-.etr_w4_oracle_container_like(native[[nm]],source[[nm]])
+  }
+  source
+}
+
 test_that("source W4 returns 11 field top-level and complete nested result",{
   x<-.etr_w4_full_source_fixture();base<-.etr_w4_full_source_config()
   for(metric in c("euclidean","cityblock","chebyshev")){
@@ -177,7 +196,8 @@ w4_x=et.TrajectorySet(
     for(nm in names(native$decisions)){
       target<-py$decisions[[nm]]
       expect_identical(native$decisions[[nm]]$source,et_to_r(target$source))
-      expect_equal(native$decisions[[nm]]$value,et_to_r(target$value),
+      expect_equal(native$decisions[[nm]]$value,
+        .etr_w4_oracle_container_like(native$decisions[[nm]]$value,target$value),
         ignore_attr=TRUE,info=paste(metric,"decision",nm))
       expect_equal(native$decisions[[nm]]$criterion,
         et_to_r(target$criterion),ignore_attr=TRUE,
@@ -190,7 +210,8 @@ w4_x=et.TrajectorySet(
         et_to_r(reticulate::py_get_attr(step,"function")))
       expect_identical(native$steps[[j]]$status,et_to_r(step$status))
       expect_equal(native$steps[[j]]$parameters,
-        et_to_r(step$parameters),ignore_attr=TRUE)
+        .etr_w4_oracle_container_like(native$steps[[j]]$parameters,
+          step$parameters),ignore_attr=TRUE)
       expect_true(is.finite(native$steps[[j]]$elapsed_seconds))
     }
     py_rec_prov<-et_to_r(py$recurrence$provenance)
@@ -198,7 +219,8 @@ w4_x=et.TrajectorySet(
     for(nm in names(py_rec_prov)){
       if(nm=="source_provenance")next
       expect_equal(native$recurrence$provenance[[nm]],
-        py_rec_prov[[nm]],tolerance=1e-12,ignore_attr=TRUE,
+         .etr_w4_oracle_container_like(native$recurrence$provenance[[nm]],
+          py_rec_prov[[nm]]),tolerance=1e-12,ignore_attr=TRUE,
         info=paste(metric,"recurrence provenance",nm))
     }
     py_metric_prov<-et_to_r(py$metrics$provenance)
@@ -206,7 +228,8 @@ w4_x=et.TrajectorySet(
     for(nm in names(py_metric_prov)){
       if(nm=="recurrence_provenance")next
       expect_equal(native$metrics$provenance[[nm]],
-        py_metric_prov[[nm]],tolerance=1e-12,ignore_attr=TRUE,
+        .etr_w4_oracle_container_like(native$metrics$provenance[[nm]],
+          py_metric_prov[[nm]]),tolerance=1e-12,ignore_attr=TRUE,
         info=paste(metric,"metric provenance",nm))
     }
   }
