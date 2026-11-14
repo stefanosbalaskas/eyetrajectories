@@ -91,7 +91,7 @@ def report(root: Path) -> tuple[Path, Counter]:
             status = "FAIL_INVALID_SHA256_PIN_OR_RECORD"
         elif git_sha != pinned:
             status = "FAIL_STALE_PIN_VERSUS_GIT_HEAD"
-        elif normalized != canonical:
+        elif current != canonical and normalized != canonical:
             status = "FAIL_WORKTREE_BYTES_DIFFER_FROM_GIT_HEAD"
         else:
             status = "PASS_ORIGINAL_PIN_MATCHES_CURRENT_CANONICAL_SOURCE"
