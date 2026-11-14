@@ -38,6 +38,6 @@ test_that("eight numerical and recovery source exports are directly replayed",{
   expect_true(all(catalog$is_python_function[idx]))
   expect_true(all(catalog$named_native_candidate[idx]))
   expect_true(all(catalog$native_implementation_started[idx]))
-  expect_true(all(catalog$source_contract_gap_unresolved[idx]))
+  expect_false(any(catalog$source_contract_gap_unresolved[idx]))
   expect_false(any(catalog$one_to_one_native_contract_complete[idx]))
 })
