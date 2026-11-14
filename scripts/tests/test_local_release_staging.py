@@ -36,6 +36,17 @@ class StageTests(unittest.TestCase):
             content = (stage_dir/"eyetrajectories"/"DESCRIPTION").read_text()
             self.assertIn("Version: 0.4.2\nAuthors@R:",content)
             self.assertIn("Version: 0.4.1.9000",(root/"DESCRIPTION").read_text())
+            staged_readme = (stage_dir/"eyetrajectories"/"README.md").read_text()
+            self.assertIn("`0.4.2` (staged candidate; not published)", staged_readme)
+            self.assertIn("`0.4.1.9000`", (root/"README.md").read_text())
+            staged_news = (stage_dir/"eyetrajectories"/"NEWS.md").read_text()
+            self.assertTrue(staged_news.startswith(
+                "# eyetrajectories 0.4.2 (candidate, not published)\n"))
+            self.assertNotIn("# eyetrajectories 0.4.1.9000", staged_news)
+            self.assertEqual(staged_news.count("# eyetrajectories "), 1)
+            self.assertIn(sha, staged_news)
+            self.assertTrue((root/"NEWS.md").read_text().startswith(
+                "# eyetrajectories 0.4.1.9000"))
             manifest = (stage_dir/"STAGING_MANIFEST.json").read_text()
             self.assertIn(sha, manifest)
             self.assertIn('"candidate_check": "NOT EXECUTED"', manifest)
