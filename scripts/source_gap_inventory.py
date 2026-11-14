@@ -191,11 +191,17 @@ def _validate_reviewed_closures(
         if row["frozen_python_commit"] != FROZEN_PYTHON:
             raise SourceGapInventoryError(
                 f"Stale Python source pin in reviewed closure: {name}")
-        if (row["author_full_contract_decision"] !=
-                "AUTHOR_FULL_CONTRACT_REVIEWED" or
+        author_tier = row["author_full_contract_decision"]
+        if (author_tier not in (
+                "AUTHOR_FULL_CONTRACT_REVIEWED",
+                "AUTHOR_SCOPED_CONTRACT_REVIEWED") or
                 row["independently_certified"] != "FALSE"):
             raise SourceGapInventoryError(
                 f"Unapproved or forged independent closure: {name}")
+        # A source-limited R review must remain source-limited. Its SHA256
+        # validation can establish a legitimate author-side recorded gap
+        # resolution, but never establish unrestricted 508/508 Python parity.
+        declared_full = author_tier == "AUTHOR_FULL_CONTRACT_REVIEWED"
         review = _source_file(root, row["review_record_path"],
                               expected_prefix="docs/source_contract_reviews/")
         verified_sha(
@@ -210,13 +216,26 @@ def _validate_reviewed_closures(
                 data.get("audit_version") != "source-contract-v1" or
                 data.get("python_name") != name or
                 data.get("frozen_python_commit") != FROZEN_PYTHON or
-                data.get("scope") != "FULL_SOURCE_CONTRACT" or
-                data.get("author_decision") != "FULL_CONTRACT_REVIEWED" or
                 data.get("independently_certified") is not False or
                 not isinstance(data.get("reviewer_statement"), str) or
                 len(data["reviewer_statement"].strip()) < 40):
             raise SourceGapInventoryError(
-                f"Unsubstantiated full source-contract decision: {name}")
+                f"Unsubstantiated author source-contract decision: {name}")
+        scope = data.get("scope")
+        if declared_full:
+            valid_scope = (scope == "FULL_SOURCE_CONTRACT" and
+                           data.get("author_decision") == "FULL_CONTRACT_REVIEWED")
+        else:
+            limits = data.get("language_specific_limits")
+            valid_scope = (
+                isinstance(scope, str) and scope.startswith("SCOPED_") and
+                data.get("author_decision") == "SCOPED_CONTRACT_REVIEWED" and
+                isinstance(limits, list) and len(limits) >= 1 and
+                all(isinstance(limit, str) and len(limit.strip()) >= 20
+                    for limit in limits))
+        if not valid_scope:
+            raise SourceGapInventoryError(
+                f"Forged/misclassified full versus scoped review decision: {name}")
         implementation = data.get("native_files")
         if not isinstance(implementation, list) or not implementation:
             raise SourceGapInventoryError(
