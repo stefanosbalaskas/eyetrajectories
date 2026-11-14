@@ -97,14 +97,18 @@ def _read(path: Path, required: tuple[str, ...]) -> list[dict[str, str]]:
 
 
 def _source_file(root: Path, name: str, *, expected_prefix: str,
-                 allow_namespace: bool = False) -> Path:
-    """Reject unsafe evidence; allow only exact top-level NAMESPACE as native proof."""
+                 allow_native_metadata: bool = False) -> Path:
+    """Accept canonical R source or narrowly scoped, pinned package metadata."""
     parsed = PurePosixPath(name)
+    native_metadata = (allow_native_metadata and expected_prefix == "R/" and
+        (name in ("NAMESPACE", "DESCRIPTION") or
+         (len(parsed.parts) == 2 and parsed.parts[0] == "man" and
+          parsed.suffix == ".Rd")))
     if (not name or parsed.is_absolute() or
-            ".." in parsed.parts or "." in parsed.parts or
-            not (name.startswith(expected_prefix) or
-                 (allow_namespace and expected_prefix == "R/" and
-                  name == "NAMESPACE")) or "\\" in name):
+            str(parsed) != name or ".." in parsed.parts or
+            "." in parsed.parts or
+            not (name.startswith(expected_prefix) or native_metadata) or
+            "\\" in name):
         raise SourceGapInventoryError(
             f"Unsafe or out-of-scope source-review evidence path: {name!r}")
     target = root.joinpath(*parsed.parts)
@@ -250,7 +254,7 @@ def _validate_reviewed_closures(
                 raise SourceGapInventoryError(
                     f"Malformed pinned native source: {name}")
             file = _source_file(root, native.get("path", ""),
-                                expected_prefix="R/", allow_namespace=True)
+                                expected_prefix="R/", allow_native_metadata=True)
             verified_sha(
                 file, native.get("sha256"),
                 f"Native implementation changed after full-contract review: {name}")
