@@ -212,6 +212,60 @@ class SourceGapInventoryTests(unittest.TestCase):
                          stats.active_callable)
         # Synthetic test only: no production nonfunction gap was closed.
 
+    def test_exact_top_level_namespace_allowed_only_as_native_evidence(self):
+        namespace = self.root / "NAMESPACE"
+        namespace.write_text("export(etr_trajectory_set)\\n",
+                             encoding="utf-8")
+        accepted = ledger._source_file(self.root, "NAMESPACE",
+            expected_prefix="R/", allow_namespace=True)
+        self.assertEqual(accepted, namespace)
+        for name, prefix, allow in (
+            ("NAMESPACE", "R/", False),
+            ("NAMESPACE", "tests/", True),
+            ("DESCRIPTION", "R/", True),
+            ("NAMESPACE/../DESCRIPTION", "R/", True),
+            ("../NAMESPACE", "R/", True),
+            ("R/../NAMESPACE", "R/", True),
+        ):
+            with self.subTest(name=name, prefix=prefix, allow=allow):
+                with self.assertRaisesRegex(
+                        ledger.SourceGapInventoryError, "Unsafe or out-of-scope"):
+                    ledger._source_file(self.root, name,
+                        expected_prefix=prefix, allow_namespace=allow)
+
+    def test_trajectory_receipt_may_pin_namespace_but_not_substitute_for_r(self):
+        _, record, receipt = self._add_reviewed_full_contract_fixture(
+            "TrajectorySet", scoped=True)
+        namespace = self.root / "NAMESPACE"
+        namespace.write_text("export(etr_trajectory_set)\\n",
+                             encoding="utf-8")
+        payload = json.loads(record.read_text(encoding="utf-8"))
+        native = {"path": "NAMESPACE",
+                  "sha256": hashlib.sha256(namespace.read_bytes()).hexdigest()}
+        payload["native_files"].append(native)
+
+        def save_receipt():
+            record.write_text(json.dumps(payload, indent=2),
+                              encoding="utf-8")
+            with receipt.open(encoding="utf-8", newline="") as stream:
+                reader = csv.DictReader(stream)
+                fields, rows = reader.fieldnames, list(reader)
+            rows[0]["review_record_sha256"] = hashlib.sha256(
+                record.read_bytes()).hexdigest()
+            with receipt.open("w", encoding="utf-8", newline="") as stream:
+                writer = csv.DictWriter(stream, fieldnames=fields)
+                writer.writeheader()
+                writer.writerows(rows)
+
+        save_receipt()
+        result = ledger.read_inventory(self.root)
+        self.assertEqual(result.active_nonfunction, 0)
+        payload["native_files"] = [native]
+        save_receipt()
+        with self.assertRaisesRegex(ledger.SourceGapInventoryError,
+                                    "Reviewed native candidate not found"):
+            ledger.read_inventory(self.root)
+
     def test_test_only_full_contract_receipt_allows_nonlegacy_gap_count_to_change(self):
         self._add_reviewed_full_contract_fixture("alr_transform")
         result = ledger.read_inventory(self.root)
