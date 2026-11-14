@@ -12,51 +12,51 @@
   "native_files": [
     {
       "path": "R/native-functional-rqa-recovery.R",
-      "sha256": "1fd0358e4c4adbb424262fc2895608a00369a9573f02326909b91c2ad3b1a463"
+      "sha256": "a17af98ffca6547ecefa95ed7383bc3f3740ce4018ef67bf914eed5b89983aed"
     }
   ],
   "case_evidence": [
     {
       "kind": "source_signature",
       "path": "tests/testthat/test-native-two-rqa-source-contracts-20261111.R",
-      "sha256": "5c720bc18bf192061fc5e8d30860fdd48604ed0367a6c01631d6eabfa008c71f",
+      "sha256": "94bab97360bf51b257a1fc04d15ba1f797f31fff1d51356efa40b0d5e6fa2a47",
       "description": "Frozen published eyetrajectoriespy==1.2.0 src/eyetrajectoriespy/functional_rqa.py::windowed_rqa_sensitivity; source typed windowed RQA results and native R semantic list counterpart."
     },
     {
       "kind": "accepted_input_domain",
       "path": "tests/testthat/test-native-two-rqa-source-contracts-20261111.R",
-      "sha256": "5c720bc18bf192061fc5e8d30860fdd48604ed0367a6c01631d6eabfa008c71f",
+      "sha256": "94bab97360bf51b257a1fc04d15ba1f797f31fff1d51356efa40b0d5e6fa2a47",
       "description": "Four scientifically distinct sensitivity source inputs (single sample specification, two sample specifications with multiple RQA metrics, physical-time windows with multi-channel selected dimension, target-density resolution), and three unit-level seeded band inputs (curve, participant and retained caller participant column under curve unit)."
     },
     {
       "kind": "numerical_outputs",
       "path": "tests/testthat/test-native-two-rqa-source-contracts-20261111.R",
-      "sha256": "5c720bc18bf192061fc5e8d30860fdd48604ed0367a6c01631d6eabfa008c71f",
+      "sha256": "94bab97360bf51b257a1fc04d15ba1f797f31fff1d51356efa40b0d5e6fa2a47",
       "description": "Full source design, descriptive summary and pairwise tables including the 0x0 single-specification empty pairwise pandas frame; entire derived functional RQA values and time grids, provenance, curve/participant band means, standard errors, 100-draw seeded PCG64 maximum statistics, critical values, bounds, per-unit counts and unique unit identities."
     },
     {
       "kind": "exception_semantics",
       "path": "tests/testthat/test-native-two-rqa-source-contracts-20261111.R",
-      "sha256": "5c720bc18bf192061fc5e8d30860fdd48604ed0367a6c01631d6eabfa008c71f",
+      "sha256": "94bab97360bf51b257a1fc04d15ba1f797f31fff1d51356efa40b0d5e6fa2a47",
       "description": "Native R rejects Boolean, malformed and duplicate resolved window-step specifications, ambiguous radius vs target-rate contracts, wrong inference unit, unsupported independent-block claims; original source type/exception identities remain language-specific."
     },
     {
       "kind": "returned_schema",
       "path": "tests/testthat/test-native-two-rqa-source-contracts-20261111.R",
-      "sha256": "5c720bc18bf192061fc5e8d30860fdd48604ed0367a6c01631d6eabfa008c71f",
+      "sha256": "94bab97360bf51b257a1fc04d15ba1f797f31fff1d51356efa40b0d5e6fa2a47",
       "description": "Python WindowedRQASensitivityResult and WindowedRQAMeanBandResult dataclasses map to ordered native R S3 source result lists; three source-ordered data.frame schemas (with 0x0 empty pairwise condition) plus full functional trajectory grid and nested inference-band provenance."
     },
     {
       "kind": "scientific_estimand",
       "path": "tests/testthat/test-native-two-rqa-source-contracts-20261111.R",
-      "sha256": "5c720bc18bf192061fc5e8d30860fdd48604ed0367a6c01631d6eabfa008c71f",
+      "sha256": "94bab97360bf51b257a1fc04d15ba1f797f31fff1d51356efa40b0d5e6fa2a47",
       "description": "Multi-configuration windowed recurrence-quantification analysis of declared sliding-window specifications, exact shared temporal centres, sample-reuse diagnostics, descriptive curve/metric summaries and no automatic specification selection or row-wise independence claims."
     }
   ],
   "extra_source_evidence": [
     {
       "path": "tests/testthat/test-native-functional-rqa-recovery.R",
-      "sha256": "1e1b2cf76d6c7e7273ef51967a23143e7dc582ca943fe50284bed3c7dcab7111"
+      "sha256": "a2a961471d27c2e6123e7efd0df5f90012193e70eeff5d8ba7489b22194807ab"
     }
   ],
   "independent_review_status": "Provisional author full-source semantic review only; frozen Python 1.2 and Linux/macOS/Windows exact-head CI pending; zero independent certifications.",
@@ -65,5 +65,33 @@
     "Temporal sliding-window dependence is not removed by duplicate-sample reuse accounting; mean-band inference depends on independent curve or participant units",
     "NumPy/random generator compatibility for arbitrary seeds and all platforms requires full exact-head CI and additional certification beyond seeded 100-draw tests",
     "No RQA automatic specification selection, false independent-window resampling or mathematical inferential guarantee is claimed"
-  ]
+  ],
+  "rqa_source_revalidation_20261114": {
+    "scope": "AUTHOR_FULL_SOURCE_RQA_RECOVERY_AND_BOOTSTRAP_REPLAY",
+    "reviewed_git_head": "df42ed5988e83c822b64183b3bab1dc77be1135e",
+    "historical_versions": [
+      {
+        "path": "R/native-functional-rqa-recovery.R",
+        "original_git_revision": "5c42629c937a",
+        "previous_sha256": "1fd0358e4c4adbb424262fc2895608a00369a9573f02326909b91c2ad3b1a463",
+        "current_sha256": "a17af98ffca6547ecefa95ed7383bc3f3740ce4018ef67bf914eed5b89983aed"
+      },
+      {
+        "path": "tests/testthat/test-native-functional-rqa-recovery.R",
+        "original_git_revision": "073dc6bc6766",
+        "previous_sha256": "1e1b2cf76d6c7e7273ef51967a23143e7dc582ca943fe50284bed3c7dcab7111",
+        "current_sha256": "a2a961471d27c2e6123e7efd0df5f90012193e70eeff5d8ba7489b22194807ab"
+      },
+      {
+        "path": "tests/testthat/test-native-two-rqa-source-contracts-20261111.R",
+        "original_git_revision": "848316f3e856",
+        "previous_sha256": "5c720bc18bf192061fc5e8d30860fdd48604ed0367a6c01631d6eabfa008c71f",
+        "current_sha256": "94bab97360bf51b257a1fc04d15ba1f797f31fff1d51356efa40b0d5e6fa2a47"
+      }
+    ],
+    "previous_review_record_sha256": "6094bd9d3ce7e7242fc1825365bcef2c1001762d2026a741cffde24498dccc97",
+    "scientific_review": "Source windowed-RQA curve-level Gaussian/multiplier band requires participant_column=NULL; participant-level resampling still consumes grouping correctly. Tests now reject curve-level non-NULL participant, compare Python/R source provenance by named source keys while retaining additional R-only RNG identifiers, normalize scalar list conversion, correct Python band curves_per_unit nesting and direct numerical evidence. Shared recovery assessment function bodies are unchanged. Supplemental extra_source_evidence hashes also updated.",
+    "replay": "User-confirmed frozen Python 1.2 native-functional-rqa-recovery 475 PASS and native-two-rqa-source-contracts 735 PASS, complete 25-suite 4866 PASS/0 FAIL-WARN-SKIP.",
+    "independently_certified": false
+  }
 }
