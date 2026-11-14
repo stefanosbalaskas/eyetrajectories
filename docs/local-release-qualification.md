@@ -2,15 +2,24 @@
 
 ## Verified baseline and limits
 
-The maintainer's Windows 11 / R 4.6.1 run at
-e58b0246c3e9fabb25ba68318a137322d2d6a9c8 passed an actual
-R CMD check --as-cran with **0 errors / 0 warnings / 1 NOTE**, native smoke,
-native offline scientific qualification and pinned Python 1.2 direct-source
-scientific qualification. This baseline DOES NOT automatically apply to later
-commits. Repository issue #3 still blocks hosted GitHub Actions jobs.
+The maintainer's latest verified Windows 11 / R 4.6.1 exact-head
+qualification at `7f1f2a8440ec049bd9104eeb93f5d0de3cfaaa5e`
+passed `R CMD check --as-cran` with **0 errors / 0 warnings / 1 NOTE**,
+native scientific smoke, `native_r_offline` and
+`python_1_2_direct_source` suites, frozen Python 1.2 source-review
+integrity and 508 developer reconciliation. This qualifies that
+**development source only**, not an edited `0.4.2` source tarball.
+All later commits require their own exact-head checks.
 
-This tooling never merges PR #48, tags, publishes, submits to CRAN, or creates
-independent 508-export certification approvals.
+Release-preparation draft PR #179 contains staged NEWS/README version
+consistency and an explicit `docs/release-0.4.2-acceptance.md`
+checklist. The source package `0.4.2` has **not been built and
+checked at that PR head**. The latest sampled hosted GitHub Actions
+runs are QUEUED with zero executed steps (repository issue #3);
+these are infrastructure problems, not recorded scientific test fails.
+
+This tooling never merges a PR, tags, publishes, submits to CRAN or
+creates independent 508-export scientific certification approvals.
 
 ## Windows RStudio: exact-head host qualification
 
