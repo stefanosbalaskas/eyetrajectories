@@ -60,7 +60,7 @@
   "additional_regression_evidence": [
     {
       "path": "tests/testthat/test-native-nine-scientific-plots.R",
-      "sha256": "d12da90bfe0983442569fa6311cdd0dd18e6fad730ad1149af85b455ffa855c8"
+      "sha256": "b52ae70bbb4135f5b9d5ecd22abd441a7ff761cd3b2f227860a9126ae3949be7"
     }
   ],
   "independent_review_status": "Developer source-scientific geometry review; exact-head native/Python test run not yet confirmed green, no independent reviewer signed off.",
@@ -69,5 +69,18 @@
     "No end-to-end bootstrap/random-replication parity is asserted beyond native scientific source arrays used as plotting inputs.",
     "Python exception classes, dtype/protocol acceptance and optional ax injection remain outside bounded source geometry review.",
     "Zero independent source-contract certification remains; no promise of merged branch or CRAN readiness."
-  ]
+  ],
+  "additional_test_evidence_revalidation_20261114": {
+    "scope": "AUTHOR_SCOPED_ADDITIONAL_REGRESSION_PROOF_RENEWAL_ONLY",
+    "reviewed_git_head": "07694e4619e663b7cd0e5d14c7dcd775203ed874",
+    "historical_test_git_commit": "b763f5006e65",
+    "test_evidence_path": "tests/testthat/test-native-nine-scientific-plots.R",
+    "prior_test_sha256": "d12da90bfe0983442569fa6311cdd0dd18e6fad730ad1149af85b455ffa855c8",
+    "current_test_sha256": "b52ae70bbb4135f5b9d5ecd22abd441a7ff761cd3b2f227860a9126ae3949be7",
+    "prior_review_record_sha256": "5102fe0bbfcffc530639e223fbaa08ef5a15ebb35f483e32c01872fccf6ebc3c",
+    "diff_description": "Test-only strengthening: update expected count of contract-certification candidates 4->5, and add assertion that no native contract falsely claims one-to-one source completeness; all existing scientific test cases retained unchanged.",
+    "replay_witness": "User-reported 2026-11-14 frozen-Python-1.2 25-file evidence replay PASS 4866 assertions, no fail/warn/skip; this file alone PASS 95 assertions. Package source and other six-domain evidence pinned in this record are unchanged by this renewal.",
+    "full_source_parity_granted": false,
+    "independent_certification_granted": false
+  }
 }
