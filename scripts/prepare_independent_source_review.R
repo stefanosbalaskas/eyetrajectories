@@ -526,10 +526,19 @@ etr_prepare_independent_source_review<-function(
     row.names=FALSE,na="")
   # Closed semantic rows stay in known_source_gap_resolution_queue.csv,
   # but must NEVER inflate the open-source-gap totals in lane summaries.
-  gap_lane_counts<-as.data.frame(table(
-    gap_resolution$scientific_resolution_lane[gap_resolution$gap_open]),
-    stringsAsFactors=FALSE)
-  names(gap_lane_counts)<-c("scientific_resolution_lane","open_source_gaps")
+  # With all 203 historical differences author-closed, table(character(0))
+  # has no category dimension. Keep a two-column, zero-row CSV rather than
+  # assigning two names to its one-column Freq-only data frame.
+  open_lanes<-gap_resolution$scientific_resolution_lane[
+    gap_resolution$gap_open]
+  if(length(open_lanes)){
+    gap_lane_counts<-as.data.frame(table(open_lanes),
+      stringsAsFactors=FALSE)
+    names(gap_lane_counts)<-c("scientific_resolution_lane","open_source_gaps")
+  }else{
+    gap_lane_counts<-data.frame(scientific_resolution_lane=character(),
+      open_source_gaps=integer(),stringsAsFactors=FALSE)
+  }
   utils::write.csv(gap_lane_counts,file.path(output_dir,
     "source_gap_resolution_lane_counts.csv"),row.names=FALSE)
 
