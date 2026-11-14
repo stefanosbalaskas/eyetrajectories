@@ -25,7 +25,9 @@ class StageTests(unittest.TestCase):
             (root/"scripts/qualify_experimental_candidate.R").write_text("# green only if executed\n")
             (root/"DESCRIPTION").write_text("Package: eyetrajectories\nVersion: 0.4.1.9000\nAuthors@R: person(\"Tester\", \"One\")\n")
             (root/"NEWS.md").write_text("# eyetrajectories 0.4.1.9000 (development)\n")
-            (root/"README.md").write_text("currently\n" + chr(96) + "0.4.1.9000" + chr(96) + "\n")
+            (root/"README.md").write_text(
+                "Last qualified development version `0.4.1.9000`; "
+                "proposed candidate **`0.4.2`** (not yet checked).\n")
             def cmd(*args):
                 return subprocess.run(["git", *args], cwd=root, check=True, capture_output=True)
             cmd("init", "-q")
@@ -37,8 +39,9 @@ class StageTests(unittest.TestCase):
             self.assertIn("Version: 0.4.2\nAuthors@R:",content)
             self.assertIn("Version: 0.4.1.9000",(root/"DESCRIPTION").read_text())
             staged_readme = (stage_dir/"eyetrajectories"/"README.md").read_text()
-            self.assertIn("`0.4.2` (staged candidate; not published)", staged_readme)
-            self.assertIn("`0.4.1.9000`", (root/"README.md").read_text())
+            self.assertIn("`0.4.1.9000`", staged_readme)
+            self.assertIn("proposed candidate **`0.4.2`**", staged_readme)
+            self.assertEqual(staged_readme, (root/"README.md").read_text())
             staged_news = (stage_dir/"eyetrajectories"/"NEWS.md").read_text()
             self.assertTrue(staged_news.startswith(
                 "# eyetrajectories 0.4.2 (candidate, not published)\n"))
