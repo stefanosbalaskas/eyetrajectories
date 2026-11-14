@@ -2,8 +2,8 @@
   "audit_version": "source-contract-v1",
   "python_name": "cross_validate_fpca_regression",
   "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
-  "scope": "FULL_SOURCE_SCIENTIFIC_CONTRACT_REVIEW_ON_DECLARED_DOMAIN",
-  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "scope": "SCOPED_FPCA_CV_SOURCE_SCIENCE_ON_DECLARED_DOMAIN",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
   "independently_certified": false,
   "source_location": "src/eyetrajectoriespy/prediction.py::cross_validate_fpca_regression",
   "native_signature": "etr_cross_validate_fpca_regression(trajectories,outcome,candidate_components,family,loss,covariates,n_splits,scaling,cv_unit,group_column,shuffle,random_state,fold_assignments,coerce_numeric_text_covariates,random_engine,group_tie_order,strict_source_record=TRUE)",
@@ -89,6 +89,18 @@
     "prior_review_record_sha256": "ca551098b6fc24eb09544e1f5a5ecb3f1d379527e6fa54481333696cfab4388c",
     "change_review": "Ordinary and nested FPCR CV now return nonempty covariate provenance as R character vectors matching frozen reticulate source conversion. Frozen-Python binomial fixture was made deterministic and nondegenerate, explicit base_R engine negative cases were corrected, and component_counts are compared as integer sequences with no numerical tolerance. Gaussian/logistic CV estimands and predictions unchanged.",
     "replay": "User-confirmed exact frozen Python 1.2 FPCR CV suite PASS 158 assertions; complete changed 25-source-suite PASS 4866 with no failures/warnings/skips.",
+    "independently_certified": false
+  },
+  "classification_reconciliation_20261114": {
+    "previous_classification": {
+      "scope": "FULL_SOURCE_SCIENTIFIC_CONTRACT_REVIEW_ON_DECLARED_DOMAIN",
+      "author_decision": "FULL_CONTRACT_REVIEWED"
+    },
+    "new_classification": {
+      "scope": "SCOPED_FPCA_CV_SOURCE_SCIENCE_ON_DECLARED_DOMAIN",
+      "author_decision": "SCOPED_CONTRACT_REVIEWED"
+    },
+    "reason": "The reviewed domain covers finite native Gaussian/binomial FPCA regression CV and documented fold/provenance behavior, but not the full arbitrary Python public input and Statsmodels/NumPy object/exception domains. Explicit limitations preclude a full-contract author declaration. The six-domain scientific evidence and prior test pins are retained; no underlying numerical implementation, test, or statistical estimand was changed.",
     "independently_certified": false
   }
 }
