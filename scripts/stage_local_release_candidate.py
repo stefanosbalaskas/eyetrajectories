@@ -79,11 +79,19 @@ def prepare(root: Path, out: Path, version: str) -> Path:
         if readme.exists():
             content = readme.read_text(encoding="utf-8")
             dev_version = "`" + old + "`"
-            if dev_version not in content[:6000]:
+            candidate_version = "`" + version + "`"
+            intro = content[:6000]
+            if dev_version not in intro:
                 raise ValueError("README introduction must mention the source version " + old)
-            content = content.replace(
-                dev_version,
-                "`" + version + "` (staged candidate; not published)", 1)
+            # New release-ready README text explicitly distinguishes the last
+            # QUALIFIED development version from the proposed candidate.
+            # Preserve that provenance; replacing it would falsely claim
+            # that the staged candidate had already passed the source check.
+            if candidate_version not in intro:
+                # Legacy README format mentions only the development version.
+                content = content.replace(
+                    dev_version,
+                    candidate_version + " (staged candidate; not published)", 1)
             readme.write_text(content, encoding="utf-8")
         changes = {}
         for rel in ("DESCRIPTION", "NEWS.md", "README.md"):
