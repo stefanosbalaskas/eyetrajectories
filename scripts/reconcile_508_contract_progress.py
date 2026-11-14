@@ -137,7 +137,8 @@ def read_pilot_numeric_evidence(path: str | Path,
         entry["developer_findings"] = (
             "Only finite-domain, author-performed paired numerical pilot "
             "observations passed; input, boundary, schema and full scientific "
-            "scope are NOT established. Historical source gap remains open."
+            "scope are NOT established. This partial numeric evidence never "
+            "changes the separately author-reviewed source gap status."
         )
         partial[key] = entry
     return partial
@@ -278,6 +279,9 @@ def reconcile(packet_dir: str | Path, expected_r_head: str,
             "evidence_sha256": ev["evidence_sha256"] if ev else "",
             "developer_status": state,
             "review_priority": rank,
+            # An action flag: this reconciler has not closed any gap.
+            # source_gap_open in the independently verified packet is the
+            # separate author-review status at the exact R commit.
             "source_gap_closed": "FALSE",
             "independent_replay_verified": "FALSE",
             "independently_certified": "FALSE",
@@ -289,13 +293,26 @@ def reconcile(packet_dir: str | Path, expected_r_head: str,
                    "score_distance_matrix", "functional_trapezoid_weights")
     index_by_name = {(q["namespace"], q["python_name"]): q for q in candidates}
     pilot = [index_by_name[("root", n)] for n in pilot_names]
-    check(all(x["historical_source_gap_open"] == "TRUE" for x in pilot),
-          "Four source-gap pilots cannot be silently promoted")
+    # These four are historical source-gap *pilots*, not necessarily
+    # currently-open gaps. Their author-reviewed source status can now be
+    # FALSE at the exact R commit; it must never be upgraded to independent
+    # scientific certification by this developer reconciliation.
+    check(all(x["kind"] == "function" and
+              x["historical_source_gap_open"] in {"TRUE", "FALSE"} and
+              x["source_gap_closed"] == "FALSE" and
+              x["independent_replay_verified"] == "FALSE" and
+              x["independently_certified"] == "FALSE"
+              for x in pilot),
+          "Pilot source statuses or certification guards are invalid")
+    pilot_keys = {(x["namespace"], x["python_name"]) for x in pilot}
     def select_candidates(function: bool, size: int):
         eligible = [q for q in candidates
                     if (q["kind"] == "function") == function
                     and q["historical_source_gap_open"] == "FALSE"
-                    and q["backend_or_estimand_distinct"] == "FALSE"]
+                    and q["backend_or_estimand_distinct"] == "FALSE"
+                    # Closed pilots have their own dedicated reviewer lane;
+                    # never allocate the same export twice in 28-item dispatch.
+                    and (q["namespace"], q["python_name"]) not in pilot_keys]
         if function:
             eligible = [q for q in eligible
                         if queue_by_key[(q["namespace"], q["python_name"])]
@@ -324,7 +341,8 @@ def reconcile(packet_dir: str | Path, expected_r_head: str,
     for lane, rows, action in (
         ("KNOWN_GAP_PILOT_REPLAY", pilot,
          "Independently reproduce finite and adversarial Python/R cases; "
-         "source gap remains blocking"),
+         "review any current source gap and author-reviewed closures; "
+         "independent full-domain approval remains pending"),
         ("FUNCTION_SOURCE_FULL_DOMAIN_REVIEW", first_functions,
          "Independently examine full input/error/numeric/schema domain; "
          "no-recorded-gap is not parity evidence"),
