@@ -155,6 +155,16 @@ class StageTests(unittest.TestCase):
             self.assertIn("error: missing installed R package", err.getvalue())
             self.assertIn("error: missing installed R package", (folder/"STAGED_R_CMD_CHECK.log").read_text())
 
+    def test_cli_rejects_pre_312_python_before_archive_extraction(self):
+        # Never downgrade to unsafe tar extraction merely to support an
+        # interpreter older than the documented safe staging runtime.
+        stderr = io.StringIO()
+        with patch.object(stage.sys, "version_info", (3, 11, 9)):
+            with contextlib.redirect_stderr(stderr):
+                result = stage.main([])
+        self.assertEqual(result, 1)
+        self.assertIn("Python 3.12 or later is required", stderr.getvalue())
+
     def test_invalid_version_fails(self):
         with self.assertRaises(ValueError):
             stage.prepare(Path("."), Path("/tmp/unused"), "0.4.1.9000")
