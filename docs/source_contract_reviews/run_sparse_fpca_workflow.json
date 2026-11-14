@@ -2,8 +2,8 @@
   "audit_version": "source-contract-v1",
   "python_name": "run_sparse_fpca_workflow",
   "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
-  "scope": "FULL_SOURCE_SCIENTIFIC_CONTRACT_REVIEW_ON_DECLARED_DOMAIN",
-  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "scope": "SCOPED_SPARSE_SCIENTIFIC_SOURCE_CONTRACT_ON_DECLARED_DOMAIN",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
   "independently_certified": false,
   "source_location": "src/eyetrajectoriespy/workflows/_sparse_fpca.py::run_sparse_fpca_workflow; workflows/_sparse_shared.py; sparse_native.py::fit_sparse_fpca",
   "native_signature": "etr_run_sparse_fpca_workflow(trajectories,config,observation_process=NULL,strict_source_record=TRUE)",
@@ -90,5 +90,17 @@
     "source_change": "Exception wording now names forbidden R-only fold_assignments field exactly; all estimator operations unchanged. Test compares Python tuple workflow steps using correct zero-based reticulate indexing (name/function/status), preserving all numerical and schema cases.",
     "run_evidence": "User-confirmed frozen Python 1.2 W2 suite PASS 158 assertions, 25 changed source tests PASS 4866 without failure or skip.",
     "independent_508_certification": false
+  },
+  "classification_reconciliation_20261114": {
+    "previous_classification": {
+      "scope": "FULL_SOURCE_SCIENTIFIC_CONTRACT_REVIEW_ON_DECLARED_DOMAIN",
+      "author_decision": "FULL_CONTRACT_REVIEWED"
+    },
+    "new_classification": {
+      "scope": "SCOPED_SPARSE_SCIENTIFIC_SOURCE_CONTRACT_ON_DECLARED_DOMAIN",
+      "author_decision": "SCOPED_CONTRACT_REVIEWED"
+    },
+    "reason": "Declared sparse FPCA/MFPCA/PACE or W2 workflow source-scientific behavior has existing six-domain evidence, but the documented exclusion of Python dataclass and NumPy runtime identity, unverified ill-conditioned/error boundaries, and pending exact-head tests do not justify an unrestricted FULL_SOURCE_CONTRACT classification. Retain the original evidence, limit claims to the declared scientific R-native domain, do not alter any numerical estimator.",
+    "independently_certified": false
   }
 }
