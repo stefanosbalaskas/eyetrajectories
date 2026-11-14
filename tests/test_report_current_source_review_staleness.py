@@ -36,7 +36,12 @@ class LiveReviewStalenessTests(unittest.TestCase):
         original_code = b"source_value <- function(x) x + 1\n"
         original_test = b"testthat::expect_equal(source_value(2),3)\n"
         original_namespace = b"export(source_value)\n"
+        original_description = b"Package: eyetrajectories\n"
+        original_manual = b"\\name{source_value}\n\\alias{source_value}\n"
         (self.root / "NAMESPACE").write_bytes(original_namespace)
+        (self.root / "DESCRIPTION").write_bytes(original_description)
+        (self.root / "man").mkdir()
+        (self.root / "man" / "source_value.Rd").write_bytes(original_manual)
         (self.root / "R" / "source.R").write_bytes(original_code)
         (self.root / "tests" / "source_test.R").write_bytes(original_test)
         self.test_pin = digest(original_test)
@@ -52,7 +57,11 @@ class LiveReviewStalenessTests(unittest.TestCase):
             ],
             "additional_regression_evidence": [
                 {"kind": "namespace_export", "path": "NAMESPACE",
-                 "sha256": digest(original_namespace)}
+                 "sha256": digest(original_namespace)},
+                {"kind": "package_metadata", "path": "DESCRIPTION",
+                 "sha256": digest(original_description)},
+                {"kind": "rd_manual", "path": "man/source_value.Rd",
+                 "sha256": digest(original_manual)}
             ],
         }
         record_bytes = (json.dumps(record, sort_keys=True) + "\n").encode()
@@ -86,7 +95,7 @@ class LiveReviewStalenessTests(unittest.TestCase):
         self.git("commit", "-m", "test evidence changed since author review")
         report, counts = audit.report(self.root)
         self.assertEqual(counts["FAIL_STALE_PIN_VERSUS_GIT_HEAD"], 6)
-        self.assertEqual(counts["PASS_ORIGINAL_PIN_MATCHES_CURRENT_CANONICAL_SOURCE"], 3)
+        self.assertEqual(counts["PASS_ORIGINAL_PIN_MATCHES_CURRENT_CANONICAL_SOURCE"], 5)
         with report.open("r", newline="", encoding="utf-8") as handle:
             lines = list(csv.DictReader(handle))
         self.assertEqual(len(lines), 6)
@@ -114,16 +123,39 @@ class LiveReviewStalenessTests(unittest.TestCase):
         self.git("commit", "-m", "namespace changed since original review")
         output, counts = audit.report(self.root)
         self.assertEqual(counts["FAIL_STALE_PIN_VERSUS_GIT_HEAD"], 1)
-        self.assertEqual(counts["PASS_ORIGINAL_PIN_MATCHES_CURRENT_CANONICAL_SOURCE"], 8)
+        self.assertEqual(counts["PASS_ORIGINAL_PIN_MATCHES_CURRENT_CANONICAL_SOURCE"], 10)
         with output.open("r", encoding="utf-8", newline="") as stream:
             findings = list(csv.DictReader(stream))
         self.assertEqual(len(findings), 1)
         self.assertEqual(findings[0]["path"], "NAMESPACE")
         self.assertEqual(findings[0]["independent_certification"], "FALSE")
 
+    def test_root_description_and_rd_man_proofs_are_strictly_checked(self):
+        self.assertEqual(audit.resolve_path(self.root, "DESCRIPTION"),
+                         self.root / "DESCRIPTION")
+        self.assertEqual(audit.resolve_path(self.root, "man/source_value.Rd"),
+                         self.root / "man" / "source_value.Rd")
+        (self.root / "DESCRIPTION").write_bytes(
+            b"Package: eyetrajectories\nVersion: 2.0\n")
+        (self.root / "man" / "source_value.Rd").write_bytes(
+            b"\\name{source_value}\n\\title{Modified}\n")
+        self.git("add", "DESCRIPTION", "man/source_value.Rd")
+        self.git("commit", "-m", "package metadata and Rd changed since review")
+        output, counts = audit.report(self.root)
+        self.assertEqual(counts["FAIL_STALE_PIN_VERSUS_GIT_HEAD"], 2)
+        self.assertEqual(
+            counts["PASS_ORIGINAL_PIN_MATCHES_CURRENT_CANONICAL_SOURCE"], 9)
+        with output.open("r", encoding="utf-8", newline="") as stream:
+            findings = list(csv.DictReader(stream))
+        self.assertEqual({x["path"] for x in findings},
+                         {"DESCRIPTION", "man/source_value.Rd"})
+        self.assertTrue(all(x["independent_certification"] == "FALSE"
+                            for x in findings))
+
     def test_missing_or_unsafe_path_stops_diagnostics(self):
         for path in ("../out-of-scope", "NAMESPACE/private",
-                     "NAMESPACE.bak", "R/../NAMESPACE"):
+                     "NAMESPACE.bak", "DESCRIPTION.bak",
+                     "man/../DESCRIPTION", "man/evil.txt", "R/../NAMESPACE"):
             with self.subTest(path=path):
                 with self.assertRaisesRegex(ValueError, "Unsafe"):
                     audit.resolve_path(self.root, path)
