@@ -24,12 +24,30 @@ class LiveAuthorSourceReviewGateTests(TestCase):
                           SourceGapInventoryError(
                               "Native implementation changed after "
                               "full-contract review: synthetic_export")), \
+             patch("report_current_source_review_staleness.report") as diagnostics, \
+             contextlib.redirect_stdout(stream):
+            status = gate.main()
+        self.assertEqual(status, 2)
+        diagnostics.assert_called_once()
+        self.assertIn("LIVE_AUTHOR_SOURCE_REVIEW_SHA256=FAIL",
+                      stream.getvalue())
+        self.assertIn("synthetic_export", stream.getvalue())
+        self.assertIn("INDEPENDENT_508_CERTIFICATION=FALSE",
+                      stream.getvalue())
+
+    def test_secondary_diagnostic_failure_cannot_override_hard_failure(self):
+        stream = io.StringIO()
+        with patch.object(gate, "read_inventory", side_effect=
+                          SourceGapInventoryError("stale review SHA256")), \
+             patch("report_current_source_review_staleness.report",
+                   side_effect=RuntimeError("synthetic diagnostic unavailable")), \
              contextlib.redirect_stdout(stream):
             status = gate.main()
         self.assertEqual(status, 2)
         self.assertIn("LIVE_AUTHOR_SOURCE_REVIEW_SHA256=FAIL",
                       stream.getvalue())
-        self.assertIn("synthetic_export", stream.getvalue())
+        self.assertIn("synthetic diagnostic unavailable",
+                      stream.getvalue())
         self.assertIn("INDEPENDENT_508_CERTIFICATION=FALSE",
                       stream.getvalue())
 
