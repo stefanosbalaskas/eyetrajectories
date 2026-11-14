@@ -214,7 +214,7 @@ class SourceGapInventoryTests(unittest.TestCase):
 
     def test_exact_top_level_namespace_allowed_only_as_native_evidence(self):
         namespace = self.root / "NAMESPACE"
-        namespace.write_text("export(etr_trajectory_set)\\n",
+        namespace.write_text("export(etr_trajectory_set)\n",
                              encoding="utf-8")
         accepted = ledger._source_file(self.root, "NAMESPACE",
             expected_prefix="R/", allow_namespace=True)
@@ -237,7 +237,7 @@ class SourceGapInventoryTests(unittest.TestCase):
         _, record, receipt = self._add_reviewed_full_contract_fixture(
             "TrajectorySet", scoped=True)
         namespace = self.root / "NAMESPACE"
-        namespace.write_text("export(etr_trajectory_set)\\n",
+        namespace.write_text("export(etr_trajectory_set)\n",
                              encoding="utf-8")
         payload = json.loads(record.read_text(encoding="utf-8"))
         native = {"path": "NAMESPACE",
