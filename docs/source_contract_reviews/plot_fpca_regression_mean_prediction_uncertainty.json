@@ -16,7 +16,7 @@
     },
     {
       "path": "R/native-fpcr-two-prediction-artists.R",
-      "sha256": "df34c6ac0f4f8e26f9f36dc1d4bc2cfa79bf857d24cee715b36fb50bba2718e7"
+      "sha256": "8185be3aec0ed3c8f4f64f2993183671c9702f9627a59bec5d3895e313deaa85"
     }
   ],
   "case_evidence": [
@@ -24,37 +24,37 @@
       "kind": "source_signature",
       "description": "Pinned Python 1.2 public Matplotlib plot compared with native strict_source_record=TRUE; no live Python Axes injection, original base-R plotting remains the default.",
       "path": "tests/testthat/test-native-fpcr-two-prediction-artists-20261112.R",
-      "sha256": "25d3f72ca2bf248b6c66b1781cac222872c8c1f17799b60a63a2363a389614b5"
+      "sha256": "0774d0ec505ae39dcd49d342eb9c94bb87b3c54d1d08031f54ee941cbcfa1916"
     },
     {
       "kind": "accepted_input_domain",
       "description": "Genuine source-shaped validated native fixed target predictions and bootstrap uncertainty arrays, source target ID ordering, finite intervals and reference predictions, positive max_targets and explicitly logical strict flag. Python runtime object protocols remain language-specific.",
       "path": "tests/testthat/test-native-fpcr-two-prediction-artists-20261112.R",
-      "sha256": "25d3f72ca2bf248b6c66b1781cac222872c8c1f17799b60a63a2363a389614b5"
+      "sha256": "0774d0ec505ae39dcd49d342eb9c94bb87b3c54d1d08031f54ee941cbcfa1916"
     },
     {
       "kind": "numerical_outputs",
       "description": "Original zero-based fixed target x positions and bootstrap conditional mean median/errorbar source arrays, lower/upper asymmetric intervals, capsize 3, marker o and full-sample conditional mean marker x scatter preserve Python 1.2 scientific geometry and legend. Direct frozen Python 1.2 errorbar vertical segment and scatter offsets are compared in authored tests; exact-head CI execution is pending.",
       "path": "tests/testthat/test-native-fpcr-two-prediction-artists-20261112.R",
-      "sha256": "25d3f72ca2bf248b6c66b1781cac222872c8c1f17799b60a63a2363a389614b5"
+      "sha256": "0774d0ec505ae39dcd49d342eb9c94bb87b3c54d1d08031f54ee941cbcfa1916"
     },
     {
       "kind": "exception_semantics",
       "description": "Input domain, missing fields, nonfinite reference arrays and invalid interval endpoints fail with R conditions, not necessarily Python TypeError or IndexError classes.",
       "path": "tests/testthat/test-native-fpcr-two-prediction-artists-20261112.R",
-      "sha256": "25d3f72ca2bf248b6c66b1781cac222872c8c1f17799b60a63a2363a389614b5"
+      "sha256": "0774d0ec505ae39dcd49d342eb9c94bb87b3c54d1d08031f54ee941cbcfa1916"
     },
     {
       "kind": "returned_schema",
       "description": "Strict mode returns typed R record of scientific source Matplotlib errorbar, scatter, label and tick geometry; original invisible numeric source geometry default is preserved. No Python Axes identity or pixel parity.",
       "path": "tests/testthat/test-native-fpcr-two-prediction-artists-20261112.R",
-      "sha256": "25d3f72ca2bf248b6c66b1781cac222872c8c1f17799b60a63a2363a389614b5"
+      "sha256": "0774d0ec505ae39dcd49d342eb9c94bb87b3c54d1d08031f54ee941cbcfa1916"
     },
     {
       "kind": "scientific_estimand",
       "description": "Paired-bootstrap conditional-mean FPCR uncertainty for fixed targets; the native plotting function reads already-calculated reference mean predictions and bootstrap median/percentile bounds without changing training, resampling, or coverage claims.",
       "path": "tests/testthat/test-native-fpcr-two-prediction-artists-20261112.R",
-      "sha256": "25d3f72ca2bf248b6c66b1781cac222872c8c1f17799b60a63a2363a389614b5"
+      "sha256": "0774d0ec505ae39dcd49d342eb9c94bb87b3c54d1d08031f54ee941cbcfa1916"
     }
   ],
   "additional_regression_evidence": [
@@ -68,5 +68,21 @@
     "Python Matplotlib Axes/Figure and dataclass runtime identity and exception classes are not native R representations.",
     "Calibration and scientific estimators are unchanged; scientific artist geometry alone is in scope.",
     "No source-wide independent scientific certification or CRAN readiness is implied."
-  ]
+  ],
+  "figure_source_artist_revalidation_20261114": {
+    "scope": "AUTHOR_SCOPED_EXACT_FROZEN_PYTHON_ARTIST_LEGEND_AND_TEST_PROOF",
+    "head_reviewed": "b2d3832b6937e8191b7011996ec4a7adfdf75cee",
+    "source_file": "R/native-fpcr-two-prediction-artists.R",
+    "source_old_sha256": "df34c6ac0f4f8e26f9f36dc1d4bc2cfa79bf857d24cee715b36fb50bba2718e7",
+    "source_new_sha256": "8185be3aec0ed3c8f4f64f2993183671c9702f9627a59bec5d3895e313deaa85",
+    "original_source_commit": "17bb1c3d3714",
+    "test_file": "tests/testthat/test-native-fpcr-two-prediction-artists-20261112.R",
+    "test_old_sha256": "25d3f72ca2bf248b6c66b1781cac222872c8c1f17799b60a63a2363a389614b5",
+    "test_new_sha256": "0774d0ec505ae39dcd49d342eb9c94bb87b3c54d1d08031f54ee941cbcfa1916",
+    "original_test_commit": "b495e4b46414",
+    "previous_review_record_sha256": "f5da9453c3f927ea1dff490fbb56aa2e547e2b1a9ad56f0c8b64fcd799b2a8ed",
+    "change_classification": "Source Python 1.2 draws full-sample conditional mean legend first. Changed only legend ordering in native artist fields and test expectations; numerical intervals, targets, input domain and output records unchanged.",
+    "oracle_replay": "Frozen Python 1.2 source-artist test file PASS 81 assertions (user-confirmed); 25-file replay PASS 4866 with 0 fail/warn/skip.",
+    "independent_certification": false
+  }
 }
