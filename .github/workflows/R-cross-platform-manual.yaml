@@ -33,26 +33,32 @@ jobs:
         with:
           r-version: ${{ matrix.r }}
           use-public-rspm: true
+      # The compact TinyTeX-1 bundle omitted pcrr8t.tfm on Windows.
+      # Use the community-enhanced prebuilt bundle (GitHub Releases),
+      # avoiding TeX package downloads when Courier is already included.
       - uses: r-lib/actions/setup-tinytex@v2
-      # Windows TinyTeX lacked pcrr8t.tfm (Courier): verify the actual
-      # PDF-manual prerequisite instead of suppressing --as-cran.
-      - name: Install Windows Courier font for PDF manual
+        env:
+          TINYTEX_INSTALLER: ${{ runner.os == 'Windows' && 'TinyTeX' || 'TinyTeX-1' }}
+      - name: Verify Windows Courier font for full PDF manual
         if: runner.os == 'Windows'
         shell: pwsh
-        timeout-minutes: 12
+        timeout-minutes: 7
         run: |
           $ErrorActionPreference = 'Stop'
-          # Do not run a TeX Live self-update during CI; it may block on CTAN.
-          # Install the one required font package with a bounded step duration.
-          $tlmgr = (Get-Command tlmgr -ErrorAction Stop).Source
-          & $tlmgr install courier
-          if ($LASTEXITCODE -ne 0) { throw "Courier installation failed" }
           $kpsewhich = (Get-Command kpsewhich -ErrorAction Stop).Source
           $font = & $kpsewhich pcrr8t.tfm
-          if ($LASTEXITCODE -ne 0 -or -not $font) {
-            throw "Courier font metric pcrr8t.tfm is unavailable"
+          if (-not $font) {
+            # The previous default CDN hung during the 470-KB Courier fetch.
+            # This independently indexed, up-to-date CTAN mirror is explicit.
+            $mirror = 'https://mirrors.ibiblio.org/pub/mirrors/CTAN/systems/texlive/tlnet'
+            $tlmgr = (Get-Command tlmgr -ErrorAction Stop).Source
+            Write-Host "Courier absent from bundle. Installing from: $mirror"
+            & $tlmgr --repository $mirror install courier
+            if ($LASTEXITCODE -ne 0) { throw "Courier installation failed: $LASTEXITCODE" }
+            $font = & $kpsewhich pcrr8t.tfm
           }
-          Write-Host "Courier TFM found: $font"
+          if (-not $font) { throw "Courier font metric pcrr8t.tfm is missing" }
+          Write-Host "Courier found: $font"
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck
