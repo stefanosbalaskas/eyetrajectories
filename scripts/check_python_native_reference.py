@@ -53,7 +53,10 @@ check("dtw_curve1_curve2", dynamic_time_warping_distance(values[0], values[1]))
 
 regular = TrajectorySet(time=np.arange(4, dtype=float), values=values,
                         curve_ids=("c1", "c2", "c3"), dimension_names=("x", "y"), time_unit="s")
-rec = recurrence_matrix(regular, curve="c1", radius=0.0)
+# All four observations in c1 are identical, so any small positive radius
+# yields the same all-recurrent matrix as the original zero-radius fixture.
+# The pinned Python 1.2.0 API explicitly rejects radius=0.
+rec = recurrence_matrix(regular, curve="c1", radius=1e-9)
 qa = rqa_metrics(rec)
 check("rqa_recurrence_rate", qa.recurrence_rate)
 check("rqa_determinism", qa.determinism)
