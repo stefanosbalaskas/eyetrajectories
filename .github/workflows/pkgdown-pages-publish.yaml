@@ -1,0 +1,71 @@
+name: Publish approved pkgdown website
+
+# Manual-only. NEVER deploy automatically from this draft branch.
+# Owner must first approve/merge the website, then enable Pages on GitHub.
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_publish:
+        description: "I approved the design and want the website PUBLIC"
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build approved scientific site
+    if: ${{ github.ref == 'refs/heads/main' && inputs.confirm_publish == true }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      NOT_CRAN: 'true'
+      ET_RUN_PYTHON_TESTS: 'false'
+      RETICULATE_USE_MANAGED_VENV: 'no'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::pkgdown, any::pkgload, any::ggplot2
+          needs: check
+      - name: Generate synthetic scientific gallery
+        shell: Rscript {0}
+        run: source("scripts/build_pkgdown_gallery.R")
+      - name: Render and verify pkgdown site
+        shell: Rscript {0}
+        run: |
+          pkgdown::build_site(
+            pkg = ".", examples = FALSE, devel = TRUE,
+            new_process = FALSE, install = FALSE, preview = FALSE
+          )
+          stopifnot(file.exists("site/index.html"),
+                    file.exists("site/reference/index.html"),
+                    file.exists("site/SITE_GALLERY.html"),
+                    file.exists("site/gallery/01_multilevel_variance.png"),
+                    file.exists("site/gallery/05_transfer_entropy_surrogates.png"))
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: site/
+
+  deploy:
+    name: Public GitHub Pages deployment
+    if: ${{ github.ref == 'refs/heads/main' && inputs.confirm_publish == true }}
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - name: Publish approved website
+        id: deployment
+        uses: actions/deploy-pages@v4
