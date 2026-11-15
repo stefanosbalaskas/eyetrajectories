@@ -1,0 +1,54 @@
+name: pkgdown scientific website prototype
+
+# Preview build only. No Pages deployment, no automatic branch writes.
+on:
+  pull_request:
+    paths:
+      - '_pkgdown.yml'
+      - 'pkgdown/**'
+      - 'SITE_*.md'
+      - '.github/workflows/pkgdown-prototype.yaml'
+      - '.Rbuildignore'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preview:
+    name: Build pkgdown preview artifact
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      NOT_CRAN: 'true'
+      ET_RUN_PYTHON_TESTS: 'false'
+      RETICULATE_USE_MANAGED_VENV: 'no'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::pkgdown, any::pkgload
+          needs: check
+      - name: Build pkgdown in isolated site directory
+        shell: Rscript {0}
+        run: |
+          pkgdown::build_site(
+            pkg = ".", examples = FALSE, devel = TRUE,
+            new_process = FALSE, install = FALSE, preview = FALSE
+          )
+          stopifnot(
+            file.exists("site/index.html"),
+            file.exists("site/reference/index.html"),
+            file.exists("site/SITE_START.html"),
+            file.exists("site/SITE_VALIDATION.html")
+          )
+      - name: Upload preview (not published)
+        uses: actions/upload-artifact@v4
+        with:
+          name: eyetrajectories-pkgdown-preview
+          path: site/
+          if-no-files-found: error
+          retention-days: 7

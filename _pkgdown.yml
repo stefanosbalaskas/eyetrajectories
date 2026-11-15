@@ -1,0 +1,61 @@
+# Experimental scientific package site. Pages are built into site/, not docs/,
+# because docs/ contains original research and qualification evidence.
+url: https://stefanosbalaskas.github.io/eyetrajectories/
+title: eyetrajectories
+destination: site
+
+template:
+  bootstrap: 5
+  bootswatch: flatly
+  bslib:
+    primary: "#0E7186"
+    secondary: "#53697B"
+    bg: "#FAFCFE"
+    fg: "#193047"
+    base_font: {google: "Inter"}
+    heading_font: {google: "Inter"}
+    code_font: {google: "IBM Plex Mono"}
+
+repo:
+  url:
+    home: https://github.com/stefanosbalaskas/eyetrajectories/
+    source: https://github.com/stefanosbalaskas/eyetrajectories/blob/HEAD/
+    issue: https://github.com/stefanosbalaskas/eyetrajectories/issues/
+    user: https://github.com/
+
+navbar:
+  bg: light
+  structure:
+    left: [start, methods, reference, bridge, validation, news]
+    right: [search, github, lightswitch]
+  components:
+    start:
+      text: Get started
+      href: SITE_START.html
+    methods:
+      text: Methods
+      href: SITE_METHODS.html
+    bridge:
+      text: Python bridge
+      href: SITE_BRIDGE.html
+    validation:
+      text: Validation
+      href: SITE_VALIDATION.html
+
+reference:
+  - title: Native R scientific methods
+    desc: >
+      Executable R functions with method-specific assumptions. A native
+      implementation does not by itself establish Python numerical parity.
+  - contents:
+      - matches("^etr")
+  - title: Optional Python-backed R interface
+    desc: >
+      Interfaces and helpers that depend on the separately installed Python
+      backend. These functions are not native R implementations.
+  - contents:
+      - matches("^et_")
+      - matches("^etpy")
+  - title: Package, workflow and qualification contracts
+  - contents:
+      - matches("^(advanced-phase3|eyetrajectories-package|native-)")

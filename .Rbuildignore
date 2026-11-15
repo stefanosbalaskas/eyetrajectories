@@ -11,3 +11,7 @@
 
 # Exclude any compiled binary/object files left in src/ by local R builds
 ^src/.*\.(o|obj|dll|so|dylib|a)$
+^_pkgdown\.yml$
+^pkgdown$
+^site$
+^SITE_.*\.md$
