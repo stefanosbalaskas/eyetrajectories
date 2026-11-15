@@ -38,11 +38,21 @@ jobs:
       # PDF-manual prerequisite instead of suppressing --as-cran.
       - name: Install Windows Courier font for PDF manual
         if: runner.os == 'Windows'
-        shell: bash
+        shell: pwsh
         run: |
-          set -euo pipefail
-          tlmgr install courier
-          kpsewhich pcrr8t.tfm | grep -F 'pcrr8t.tfm'
+          $ErrorActionPreference = 'Stop'
+          # TeX Live exposes tlmgr.bat on Windows, which PowerShell resolves via PATHEXT.
+          $tlmgr = (Get-Command tlmgr -ErrorAction Stop).Source
+          & $tlmgr update --self
+          if ($LASTEXITCODE -ne 0) { throw "tlmgr self-update failed" }
+          & $tlmgr install courier
+          if ($LASTEXITCODE -ne 0) { throw "Courier installation failed" }
+          $kpsewhich = (Get-Command kpsewhich -ErrorAction Stop).Source
+          $font = & $kpsewhich pcrr8t.tfm
+          if ($LASTEXITCODE -ne 0 -or -not $font) {
+            throw "Courier font metric pcrr8t.tfm is unavailable"
+          }
+          Write-Host "Courier TFM found: $font"
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck
