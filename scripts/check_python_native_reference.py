@@ -56,7 +56,8 @@ regular = TrajectorySet(time=np.arange(4, dtype=float), values=values,
 # All four observations in c1 are identical, so any small positive radius
 # yields the same all-recurrent matrix as the original zero-radius fixture.
 # The pinned Python 1.2.0 API explicitly rejects radius=0.
-rec = recurrence_matrix(regular, curve="c1", radius=1e-9)
+# Published eyetrajectoriespy==1.2.0 requires explicitly declared dimensions.
+rec = recurrence_matrix(regular, curve="c1", radius=1e-9, dimensions=("x", "y"))
 qa = rqa_metrics(rec)
 check("rqa_recurrence_rate", qa.recurrence_rate)
 check("rqa_determinism", qa.determinism)
