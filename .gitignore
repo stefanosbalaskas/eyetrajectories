@@ -11,3 +11,14 @@
 
 __pycache__/
 *.pyc
+
+# Local qualification environments and generated R build outputs
+/.venv-science/
+/.venv/
+/eyetrajectories_source_*.zip
+/src/*.o
+/src/*.obj
+/src/*.dll
+/src/*.so
+/src/*.dylib
+/src/*.a

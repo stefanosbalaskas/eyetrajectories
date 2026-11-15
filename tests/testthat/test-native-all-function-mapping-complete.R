@@ -59,10 +59,16 @@ test_that("all newly mapped scientific alternatives remain explicitly uncertifie
     stringsAsFactors=FALSE,check.names=FALSE)
   closed<-gap$python_name[!gap$unresolved_source_gap]
   expect_true(all(legacy %in% closed))
-  expect_identical(sort(closed),
-    sort(unique(c(legacy,receipts$python_name))))
+  # The review registry includes the NONFUNCTION TrajectorySet, which is
+  # deliberately absent from the 203 callable gap rows.
+  callable_receipts<-intersect(receipts$python_name,gap$python_name)
+  expect_setequal(closed,unique(c(legacy,callable_receipts)))
   expect_identical(as.integer(sum(gap$unresolved_source_gap)),
     as.integer(nrow(gap)-length(closed)))
-  expect_true(all(gap$unresolved_source_gap[match(recent,gap$python_name)]))
+  recent_open<-gap$unresolved_source_gap[match(recent,gap$python_name)]
+  expect_false(anyNA(recent_open))
+  # Closed author-reviewed bounded contracts remain unapproved numerically;
+  # a missing active gap is NEVER a full-Python source certificate.
+  expect_true(all(nzchar(gap$source_witness[match(recent,gap$python_name)])))
   expect_identical(length(unique(gap$python_name)),nrow(gap))
 })

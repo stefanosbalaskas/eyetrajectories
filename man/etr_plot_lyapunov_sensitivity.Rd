@@ -2,7 +2,8 @@
 \alias{etr_plot_lyapunov_sensitivity}
 \title{Plot source scientific Rosenstein Lyapunov parameter sensitivity}
 \usage{
-etr_plot_lyapunov_sensitivity(result, parameter, response = "exponent", filters = NULL, strict_source_record = FALSE, ...)
+etr_plot_lyapunov_sensitivity(result, parameter, response = "exponent", filters = NULL,
+  strict_source_record = FALSE, ...)
 }
 \arguments{
 \item{result}{Native precomputed Lyapunov sensitivity grid.}

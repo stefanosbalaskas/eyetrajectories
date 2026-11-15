@@ -37,7 +37,7 @@
     {
       "kind": "exception_semantics",
       "path": "tests/testthat/test-native-workflow-source-audit.R",
-      "sha256": "523a3112b7544118339062c1ae8b88c0a5875542c083a448917d9676b7ac27ed",
+      "sha256": "4a19525539a3dead99d007f6dc9ad97320e55aab69c303c76a4af72d61a9a688",
       "description": "Invalid workflow record, version, status, selector criterion, nonfinite nested configuration/provenance and empty identifiers are rejected"
     },
     {
@@ -68,5 +68,17 @@
     "Python dataclass and pandas runtime identities are not identical to native R S3 records/data.frames",
     "Native R conditions do not claim Python TypeError or ValueError class identity",
     "R cannot execute arbitrary user-defined Python __repr__ or dataclass hooks"
-  ]
+  ],
+  "test_evidence_revalidation_20261114": {
+    "scope": "AUTHOR_FULL_SOURCE_TEST_EVIDENCE_REVIEW_ONLY",
+    "git_head_reviewed": "7510b7b325d57ab7598e5e76659cd8d9692fd254",
+    "old_pinned_test_sha256": "523a3112b7544118339062c1ae8b88c0a5875542c083a448917d9676b7ac27ed",
+    "new_test_sha256": "4a19525539a3dead99d007f6dc9ad97320e55aab69c303c76a4af72d61a9a688",
+    "original_test_git_revision": "9adc9e99074b",
+    "old_record_sha256": "cec320b5e2a7fdfff45eb2798e2903bbf0576b4c19f3892e9350e1b166d60664",
+    "changed_case_domain": "exception_semantics",
+    "rationale": "The changed assertions concern author-side catalog candidate counts and the bounded TrajectorySet class scope; all original workflow data-frame direct frozen Python 1.2 oracle comparisons and prior source schema inputs are unchanged. New tests explicitly forbid false one-to-one completeness flags and preserve the four established numeric fixtures.",
+    "direct_replay": "User-reported 2026-11-14 frozen-Python 1.2 evidence suite passed all 139 workflow-source-audit assertions (4866 total across 25 files; no failures/skips).",
+    "independent_source_certification": false
+  }
 }

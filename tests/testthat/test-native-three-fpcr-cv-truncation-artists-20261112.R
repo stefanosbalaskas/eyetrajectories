@@ -241,7 +241,8 @@ scan=_plot_obj(et.FPCAWildBootstrapTruncationScanResult,
     candidate_components=(1,2,3),
     target_curve_ids=('first','second'),
     widths=np.array([[4.,5.],[3.,6.],[2.,7.]]),
-    centers=np.array([[.2,.5],[.3,.6],[.4,.7]]))
+    centers=np.array([[.2,.5],[.3,.6],[.4,.7]]),
+    studentized_roots=np.zeros((3,2,2),dtype=float))
 selection=_plot_obj(et.FPCAWildBootstrapTruncationSelectionResult,
     scan=scan,selected_components=np.array([2.,np.nan]))
 compare=pd.DataFrame({

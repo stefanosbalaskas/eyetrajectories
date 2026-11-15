@@ -155,7 +155,7 @@ test_that("strict paired/async W2 mode rejects alternative estimator and supplie
   p$bandwidth_selection<-list(mean_bandwidths=.5,
     covariance_bandwidths=.85,fold_assignments=rep(0L,24L))
   expect_error(etr_run_sparse_mfpca_workflow(x,p,
-    strict_source_record=TRUE),"fold assignments")
+    strict_source_record=TRUE),"fold_assignments")
 })
 
 test_that("direct Python 1.2 paired and async sparse W2 workflows match source scientific outputs",{
@@ -265,12 +265,16 @@ def _w2_mfpca_input(times,values,ids,group_column,groups):
     }
     expect_length(native$steps,length(et_to_r(source$steps)))
     for(i in seq_along(native$steps)){
+      # A reticulate Python tuple indexes from zero, unlike native R lists.
+      # Preserve exact source order and every field comparison, including
+      # both paired fit and score-uncertainty workflow steps.
+      python_step<-source$steps[[i-1L]]
       expect_identical(native$steps[[i]]$name,
-        et_to_r(source$steps[[i]]$name))
+        et_to_r(python_step$name))
       expect_identical(native$steps[[i]][["function"]],
-        et_to_r(source$steps[[i]][["function"]]))
+        et_to_r(python_step[["function"]]))
       expect_identical(native$steps[[i]]$status,
-        et_to_r(source$steps[[i]]$status))
+        et_to_r(python_step$status))
       expect_true(is.finite(native$steps[[i]]$elapsed_seconds))
     }
     if(!is_async){

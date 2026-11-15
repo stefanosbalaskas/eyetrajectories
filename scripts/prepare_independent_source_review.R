@@ -99,8 +99,10 @@ etr_prepare_independent_source_review<-function(
       names(gaps))&&!anyDuplicated(gaps$python_name),
     "Source-gap register malformed")
   gap_idx<-match(records$python_name,gaps$python_name)
-  .checked(!anyNA(gap_idx)&&all(gaps$unresolved_source_gap[gap_idx]),
-    "Every queued source contract needs an explicit unresolved difference")
+  .checked(!anyNA(gap_idx)&&
+    is.logical(gaps$unresolved_source_gap)&&
+    !anyNA(gaps$unresolved_source_gap[gap_idx]),
+    "Every selected source contract must retain an explicit current author review status")
   .checked(all(file.exists(file.path(root,records$fixture_test))),
     "A queued contract has no corresponding checked-in source oracle test")
 
@@ -317,14 +319,15 @@ etr_prepare_independent_source_review<-function(
   nonfun_keys<-paste(nonfun_gap$namespace,
     nonfun_gap$python_name,sep="::")
   .checked(nrow(nonfun_gap)==1L&&!anyDuplicated(nonfun_keys)&&
-    isTRUE(nonfun_gap$unresolved[[1L]]),
-    "Native TrajectorySet class source gap must be explicit and unresolved")
+    is.logical(nonfun_gap$unresolved)&&!anyNA(nonfun_gap$unresolved),
+    "Native TrajectorySet class source difference must have an explicit status")
   ngidx<-match(paste(readiness$namespace,readiness$python_name,sep="::"),
     nonfun_keys)
   .checked(sum(!is.na(ngidx))==1L&&
     identical(readiness$python_name[!is.na(ngidx)],"TrajectorySet")&&
-    identical(sum(readiness$nonfunction_source_difference_open),1L),
-    "One frozen Python class gap must reconcile to the 508 readiness ledger")
+    identical(as.logical(readiness$nonfunction_source_difference_open[
+      !is.na(ngidx)]),as.logical(nonfun_gap$unresolved)),
+    "TrajectorySet author-scoped gap status must reconcile to 508 readiness")
   queued_idx<-match(readiness$python_name,records$python_name)
   .checked(all(records$python_name%in%readiness$python_name)&&
     all(!is.na(queued_idx[match(records$python_name,
@@ -430,10 +433,10 @@ etr_prepare_independent_source_review<-function(
   utils::write.csv(review_triage,file.path(output_dir,
     "all_508_contract_review_priority.csv"),
     row.names=FALSE,na="")
-  # All 203 historical callable witnesses remain reviewable, but only
-  # 201 are currently OPEN after two deterministic semantic table closures.
-  # The first independently recorded CLASS source gap is separately
-  # handed to reviewers, never misreported as a callable source fixture.
+  # All historical callable witnesses remain reviewable; current OPEN flags
+  # come only from the source ledger. An author-scoped closure is never
+  # evidence of independent full-contract certification. TrajectorySet is
+  # separately handed to reviewers without mislabelling its author status.
   nonfun_review<-data.frame(namespace=nonfun_gap$namespace,
     python_name=nonfun_gap$python_name,
     native_r_candidate=nonfun_gap$native_r_candidate,
@@ -448,9 +451,13 @@ etr_prepare_independent_source_review<-function(
     independent_reviewer_approved=FALSE,
     fully_certified=FALSE,stringsAsFactors=FALSE)
   .checked(nrow(nonfun_review)==1L&&
-    all(nonfun_review$gap_open)&&
+    identical(as.logical(nonfun_review$gap_open),
+      as.logical(nonfun_gap$unresolved))&&
+    !any(nonfun_review$independently_replayed)&&
+    !any(nonfun_review$scientific_scope_approved)&&
+    !any(nonfun_review$independent_reviewer_approved)&&
     !any(nonfun_review$fully_certified),
-    "Nonfunction class review queue must remain unsigned and blocked")
+    "Nonfunction class review queue must retain its real author status and remain unsigned")
   utils::write.csv(nonfun_review,file.path(output_dir,
     "native_nonfunction_source_gap_resolution_queue.csv"),
     row.names=FALSE,na="")
@@ -489,9 +496,9 @@ etr_prepare_independent_source_review<-function(
     "Gap resolution queue must preserve every unapproved source difference")
   utils::write.csv(gap_resolution,file.path(output_dir,
     "known_source_gap_resolution_queue.csv"),row.names=FALSE,na="")
-  # Scientifically meaningful triage preserves ALL 203 historical
-  # records while counting only the 201 still-open source differences.
-  # These lanes prioritize review, not algorithm equivalence.
+  # Scientifically meaningful triage preserves all historical records while
+  # counting only source differences still marked OPEN by the current ledger.
+  # These lanes prioritize independent review, not algorithm equivalence.
   source_gap_lane<-ifelse(
     gap_resolution$alternative_backend_or_estimand,
     "01_different_estimator_or_backend",
@@ -519,10 +526,19 @@ etr_prepare_independent_source_review<-function(
     row.names=FALSE,na="")
   # Closed semantic rows stay in known_source_gap_resolution_queue.csv,
   # but must NEVER inflate the open-source-gap totals in lane summaries.
-  gap_lane_counts<-as.data.frame(table(
-    gap_resolution$scientific_resolution_lane[gap_resolution$gap_open]),
-    stringsAsFactors=FALSE)
-  names(gap_lane_counts)<-c("scientific_resolution_lane","open_source_gaps")
+  # With all 203 historical differences author-closed, table(character(0))
+  # has no category dimension. Keep a two-column, zero-row CSV rather than
+  # assigning two names to its one-column Freq-only data frame.
+  open_lanes<-gap_resolution$scientific_resolution_lane[
+    gap_resolution$gap_open]
+  if(length(open_lanes)){
+    gap_lane_counts<-as.data.frame(table(open_lanes),
+      stringsAsFactors=FALSE)
+    names(gap_lane_counts)<-c("scientific_resolution_lane","open_source_gaps")
+  }else{
+    gap_lane_counts<-data.frame(scientific_resolution_lane=character(),
+      open_source_gaps=integer(),stringsAsFactors=FALSE)
+  }
   utils::write.csv(gap_lane_counts,file.path(output_dir,
     "source_gap_resolution_lane_counts.csv"),row.names=FALSE)
 
@@ -555,8 +571,8 @@ etr_prepare_independent_source_review<-function(
     "Pilot contracts must not be silently auto-promoted")
   pilot_gap_idx<-match(pilot$python_name,gaps$python_name)
   .checked(!anyNA(pilot_gap_idx)&&
-    all(gaps$unresolved_source_gap[pilot_gap_idx]),
-    "Pilot review cannot proceed without its actual unresolved source gap")
+    !anyNA(gaps$unresolved_source_gap[pilot_gap_idx]),
+    "Numerical pilot review must reference the recorded current source-gap status")
   pilot_packet<-data.frame(
     priority=seq_len(nrow(pilot)),
     python_name=pilot$python_name,

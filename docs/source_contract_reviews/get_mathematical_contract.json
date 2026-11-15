@@ -33,7 +33,7 @@
     {
       "kind": "numerical_outputs",
       "path": "tests/testthat/test-native-catalog-contract-boundaries.R",
-      "sha256": "54f13840ca3926efa227276745feb270e61d218700d56eab782d6438953725ec",
+      "sha256": "24b3cb857e9072ac3b1a08c360c1ffe465224921ef7a013f3e1c65ee10c48d07",
       "description": "Metadata-only deterministic operation; no estimator or floating arithmetic. Exact six-field registered source values, lengths and record order compared to frozen Python, with 88-row lookup registry."
     },
     {
@@ -45,13 +45,13 @@
     {
       "kind": "returned_schema",
       "path": "tests/testthat/test-native-catalog-contract-boundaries.R",
-      "sha256": "54f13840ca3926efa227276745feb270e61d218700d56eab782d6438953725ec",
+      "sha256": "24b3cb857e9072ac3b1a08c360c1ffe465224921ef7a013f3e1c65ee10c48d07",
       "description": "Frozen Python MathematicalContract returned as native R etr_mathematical_contract record with identical source fields/values; does not claim Python dataclass class identity."
     },
     {
       "kind": "scientific_estimand",
       "path": "tests/testthat/test-native-catalog-contract-boundaries.R",
-      "sha256": "54f13840ca3926efa227276745feb270e61d218700d56eab782d6438953725ec",
+      "sha256": "24b3cb857e9072ac3b1a08c360c1ffe465224921ef7a013f3e1c65ee10c48d07",
       "description": "The frozen scientific meaning is finite immutable mathematical metadata, with all 41 keys and 88 aliases resolved and returned consistently; supplemental source registry CSV pinned separately for deterministic provenance."
     }
   ],
@@ -61,5 +61,15 @@
   "source_registry_snapshot": {
     "path": "inst/extdata/native_mathematical_contract_frame_py120.csv",
     "sha256": "05e55c0db3c1250a7369306665067130f75417f97d020f1cbee5b7a8798d34ca"
+  },
+  "ndarray_empty_contract_case_reconciliation_20261114": {
+    "kind": "AUTHOR_TEST_EXPECTATION_FIX",
+    "test_path": "tests/testthat/test-native-catalog-contract-boundaries.R",
+    "sha256": "24b3cb857e9072ac3b1a08c360c1ffe465224921ef7a013f3e1c65ee10c48d07",
+    "observed_frozen_python_1_2": "TypeError: name must be a string",
+    "prior_test_incorrectly_expected": "truth value of an empty array",
+    "scientific_estimator_changed": false,
+    "independently_certified": false,
+    "exact_head_replay": "PENDING"
   }
 }

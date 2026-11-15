@@ -93,7 +93,9 @@ test_that("multivariate surrogate strict histogram preserves exact NumPy boundar
     expect_identical(hist$alpha,.7)
     expect_equal(hist$edges,c(.1,.2,.3,.4,.5),
       tolerance=1e-12)
-    expect_equal(hist$counts,c(1,1,1,2),tolerance=0)
+    # numpy.histogram uses binary-float edges: 0.3 falls just below
+    # the computed third edge, into bin two.
+    expect_equal(hist$counts,c(1,2,0,2),tolerance=0)
     expect_equal(sum(hist$counts),5)
     expect_identical(ax$artists[[2L]]$label,"Observed")
     expect_identical(ax$artists[[2L]]$linestyle,"--")

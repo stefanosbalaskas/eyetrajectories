@@ -12,7 +12,7 @@
   "native_files": [
     {
       "path": "R/native-fpcr-bootstrap-uncertainty.R",
-      "sha256": "445e75d2255d8b84313f045341e0eaf5f93552899bfec3c92646c37265c00bb0"
+      "sha256": "58b552a28d6e2c4a3e87459ae15e4b32f325e6bfd1c7046e04d56ed2a487e6a1"
     },
     {
       "path": "R/native-scalar-on-fpca-source.R",
@@ -23,37 +23,37 @@
     {
       "kind": "source_signature",
       "path": "tests/testthat/test-native-fpcr-bootstrap-full-source-20261111.R",
-      "sha256": "19ed51ee62690a1d4d3c4b13799ffdb257b192150d4649b1e717735d9510b166",
+      "sha256": "569ebd7329f206e78b1713c90aae2c79cce7c530dff48152803f56d3a3f6abab",
       "description": "Frozen Python 1.2 regression_inference.py Gaussian paired-bootstrap uncertainty signature: complete TrajectorySet, numeric scalar outcome, optional fixed target TrajectorySet, bootstrap replicate count, retained FPCA components, scaling, curve or participant sampling, confidence mass and integer/default RNG seed. Native R explicit source mode accepts corresponding inputs and excludes external fixed bootstrap indices."
     },
     {
       "kind": "accepted_input_domain",
       "path": "tests/testthat/test-native-fpcr-bootstrap-full-source-20261111.R",
-      "sha256": "19ed51ee62690a1d4d3c4b13799ffdb257b192150d4649b1e717735d9510b166",
+      "sha256": "569ebd7329f206e78b1713c90aae2c79cce7c530dff48152803f56d3a3f6abab",
       "description": "Fourteen complete scalar-aligned training trajectories, 15 sample times, 7 participants with two curves each; whole-curve or paired whole-participant bootstrap, fixed source seed 7 and 23, Gaussian scalar response, one retained FPC, 20 bootstrap refits, training curves and three external targets."
     },
     {
       "kind": "numerical_outputs",
       "path": "tests/testthat/test-native-fpcr-bootstrap-full-source-20261111.R",
-      "sha256": "19ed51ee62690a1d4d3c4b13799ffdb257b192150d4649b1e717735d9510b166",
+      "sha256": "569ebd7329f206e78b1713c90aae2c79cce7c530dff48152803f56d3a3f6abab",
       "description": "Exactly matched source Gaussian FPCA-plus-OLS regression refits and original-coordinate slope reconstruction; reference slope and scalar intercept, all paired-bootstrap slope arrays, pointwise slope quantiles and standard errors, target conditional mean prediction matrices, prediction percentile quantiles and standard errors; never future-outcome intervals or slope simultaneous bands."
     },
     {
       "kind": "exception_semantics",
       "path": "tests/testthat/test-native-fpcr-bootstrap-full-source-20261111.R",
-      "sha256": "19ed51ee62690a1d4d3c4b13799ffdb257b192150d4649b1e717735d9510b166",
+      "sha256": "569ebd7329f206e78b1713c90aae2c79cce7c530dff48152803f56d3a3f6abab",
       "description": "Finite scalar one-per-curve outcome, count >=20, retained component <= source theoretical nonzero rank, exactly aligned targets, declared independent resampling unit, no incomplete participant metadata, valid confidence mass and seed; strict Python mode fails on native-only supplied index replay or invalid source mode."
     },
     {
       "kind": "returned_schema",
       "path": "tests/testthat/test-native-fpcr-bootstrap-full-source-20261111.R",
-      "sha256": "19ed51ee62690a1d4d3c4b13799ffdb257b192150d4649b1e717735d9510b166",
+      "sha256": "569ebd7329f206e78b1713c90aae2c79cce7c530dff48152803f56d3a3f6abab",
       "description": "Exact 25-field FPCARegressionUncertaintyResult outer source order with reference FPCA scientific record, six-field nested FunctionalRegressionResult scientific record (R lm analogue of statsmodels), all bootstrap numerical fields, full fixed-target metadata and original-source provenance; native-only sampled index audit removed in source mode."
     },
     {
       "kind": "scientific_estimand",
       "path": "tests/testthat/test-native-fpcr-bootstrap-full-source-20261111.R",
-      "sha256": "19ed51ee62690a1d4d3c4b13799ffdb257b192150d4649b1e717735d9510b166",
+      "sha256": "569ebd7329f206e78b1713c90aae2c79cce7c530dff48152803f56d3a3f6abab",
       "description": "Paired nonparametric refit bootstrap of fixed FPC-component Gaussian scalar-on-function model, reconstructing scientific functional slope and fixed-target conditional mean. No component-count reselection, operator-scaled test, heteroscedastic future-outcome interval or simultaneous coverage claim."
     }
   ],
@@ -64,5 +64,19 @@
     "Python float-coercible text outcome is outside the R source mode's finite numeric-outcome domain, while unsupported Python scalar object coercion remains an input difference.",
     "Unseeded random_state=NULL uses each language's independent entropy stream and cannot reproduce identical realized sample indices; seeded NumPy PCG64 source draws are compared.",
     "Existing R-specific fixed bootstrap indices and sampled-row audit are retained in default mode but explicitly rejected/removed in source mode."
-  ]
+  ],
+  "fpcr_bootstrap_orientation_revalidation_20261114": {
+    "scope": "AUTHOR_FROZEN_SKLEARN_SVD_SIGN_CONVENTION_SOURCE_REVIEW",
+    "reviewed_git_head": "178a85da91b1c810de87770452be84b6b6505c72",
+    "original_source_commit": "adac5474cb07",
+    "old_source_sha256": "445e75d2255d8b84313f045341e0eaf5f93552899bfec3c92646c37265c00bb0",
+    "new_source_sha256": "58b552a28d6e2c4a3e87459ae15e4b32f325e6bfd1c7046e04d56ed2a487e6a1",
+    "original_test_commit": "497de02e1c00",
+    "old_test_sha256": "19ed51ee62690a1d4d3c4b13799ffdb257b192150d4649b1e717735d9510b166",
+    "new_test_sha256": "569ebd7329f206e78b1713c90aae2c79cce7c530dff48152803f56d3a3f6abab",
+    "previous_record_sha256": "4414a6b6404fa4ddbda38a199e6a0aebe068579b42df21546d9e6a09f70fbbf1",
+    "scientific_review": "New native source-orientation routine exactly applies sklearn full-SVD largest-absolute-right-vector pivot sign to BOTH FPCA component and score, retaining original fitted rank/estimand and component score product. The bootstrap source oracle now directly compares Python reference FPCA components and scores, preventing visually plausible sign-inverted estimates. This source helper is shared by future interval generation; source calculations otherwise remain unchanged.",
+    "runtime_witness": "User-confirmed frozen Python 1.2 FPCR full bootstrap scientific tests PASS 249 assertions, and entire frozen 25-file review PASS 4866; local previously full R CMD check 0 errors/warnings, 1 NOTE.",
+    "independent_certification": false
+  }
 }

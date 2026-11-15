@@ -12,11 +12,11 @@
   "native_files": [
     {
       "path": "R/native-fpca-bootstrap-source.R",
-      "sha256": "9c6ecbd07fb6d37fa9317a33513c9f3e192e100692f31110433397bc4a645cb5"
+      "sha256": "9af63750f956da7a92f67105f8725c7374f6eceb0fe6218ad0d9e48e6e2d0ce2"
     },
     {
       "path": "R/native-fpca-three-uncertainty-artist-source.R",
-      "sha256": "bb802ab62d201dd5fd43b4f612221ddcccfb2519153527f891b0e508eec40c53"
+      "sha256": "7f05b9a5200b7af3f1f0c08acaebff31043c4090cc76d59fabe39c57bc681512"
     }
   ],
   "case_evidence": [
@@ -24,37 +24,37 @@
       "kind": "source_signature",
       "description": "Frozen public eyetrajectoriespy==1.2.0 src/eyetrajectoriespy/plotting.py::plot_fpca_score_uncertainty, matched by optional native strict scientific artist data.",
       "path": "tests/testthat/test-native-fpca-three-uncertainty-artists-20261112.R",
-      "sha256": "2fc662502e69a05d302edc58d49c5436f0d40ea2ec4c42438cb52ce618ff4674"
+      "sha256": "504c2338b521a3d0c251ee353b0929de337efedfd43eec68822f233c4721ac23"
     },
     {
       "kind": "accepted_input_domain",
       "description": "Supported native result is actual fixed-target matched-bootstrap FPCA score uncertainty with complete original target IDs, reference-score matrix and finite median/lower/upper percentile matrices. The component index is zero-based as in Python, max_targets a positive non-Boolean integer, and the source plot is limited to the first n targets. Native R cannot accept Python ax injection or return Python Figure/Axes runtime objects.",
       "path": "tests/testthat/test-native-fpca-three-uncertainty-artists-20261112.R",
-      "sha256": "2fc662502e69a05d302edc58d49c5436f0d40ea2ec4c42438cb52ce618ff4674"
+      "sha256": "504c2338b521a3d0c251ee353b0929de337efedfd43eec68822f233c4721ac23"
     },
     {
       "kind": "numerical_outputs",
       "description": "The source errorbar artist is located at exact x=0..n-1 with median, asymmetric yerr=[median-lower,upper-median], marker='o', linestyle='none', capsize=3. The fixed full-sample reference-score scatter is marker='x', and y=0 reference, original ordered target labels rotated 90°, source legend and title are preserved. Committed direct public frozen Python 1.2 Matplotlib get_xdata/get_ydata, actual scatter get_offsets and legend/axis comparisons on the same fixed-target source bootstrap arrays. Also tests actual independently generated native 20-replicate FPCA score bootstrap; exact-head green CI not yet witnessed.",
       "path": "tests/testthat/test-native-fpca-three-uncertainty-artists-20261112.R",
-      "sha256": "2fc662502e69a05d302edc58d49c5436f0d40ea2ec4c42438cb52ce618ff4674"
+      "sha256": "504c2338b521a3d0c251ee353b0929de337efedfd43eec68822f233c4721ac23"
     },
     {
       "kind": "exception_semantics",
       "description": "Strict rejects nonlogical opt-in mode, wrong native source class, out-of-range zero-based index, nonpositive/noninteger max_targets, mismatched target/reference array dimensions, nonfinite scores or interval inversions. Python TypeError/IndexError and external Axes mutation are not replicated by native R.",
       "path": "tests/testthat/test-native-fpca-three-uncertainty-artists-20261112.R",
-      "sha256": "2fc662502e69a05d302edc58d49c5436f0d40ea2ec4c42438cb52ce618ff4674"
+      "sha256": "504c2338b521a3d0c251ee353b0929de337efedfd43eec68822f233c4721ac23"
     },
     {
       "kind": "returned_schema",
       "description": "Frozen Python returns one Matplotlib Axes with ErrorbarContainer, scatter PathCollection and horizontal reference line. The native R default still returns the same five-column score data frame, while strict mode draws native R graphics and returns a typed one-panel source scientific artist record with exact coordinates, cap settings, reference scatter, labels, and explicit false Python object identity.",
       "path": "tests/testthat/test-native-fpca-three-uncertainty-artists-20261112.R",
-      "sha256": "2fc662502e69a05d302edc58d49c5436f0d40ea2ec4c42438cb52ce618ff4674"
+      "sha256": "504c2338b521a3d0c251ee353b0929de337efedfd43eec68822f233c4721ac23"
     },
     {
       "kind": "scientific_estimand",
       "description": "Bootstrap uncertainty in original fixed target FPCA scores induced by re-estimation, matching and sign-aligning the FPCA basis. The plotted percentile envelope does not include measurement error, future trajectory randomness or a different inference estimand.",
       "path": "tests/testthat/test-native-fpca-three-uncertainty-artists-20261112.R",
-      "sha256": "2fc662502e69a05d302edc58d49c5436f0d40ea2ec4c42438cb52ce618ff4674"
+      "sha256": "504c2338b521a3d0c251ee353b0929de337efedfd43eec68822f233c4721ac23"
     }
   ],
   "additional_regression_evidence": [
@@ -69,5 +69,33 @@
     "Supported R classes and numerical domains are restricted to genuine native FPCA bootstrap results; general Python ax injection and runtime object protocol equivalence are not delivered.",
     "Python and R exception classes and implementation-specific random bootstrap PCG64/base-R draws remain distinct.",
     "No independent scientific parity approval, merged main-branch source or CRAN qualification is implied."
-  ]
+  ],
+  "fpca_uncertainty_revalidation_20261114": {
+    "scope": "AUTHOR_SCOPED_PYTHON_1_2_FPCA_UNCERTAINTY_GEOMETRY",
+    "reviewed_head": "02f6e1b1a915b738b9a516a83914b1b8fbbcbec7",
+    "original_source_versions": [
+      {
+        "path": "R/native-fpca-bootstrap-source.R",
+        "historical_commit": "05cfa03caeda",
+        "previous_sha256": "9c6ecbd07fb6d37fa9317a33513c9f3e192e100692f31110433397bc4a645cb5",
+        "current_sha256": "9af63750f956da7a92f67105f8725c7374f6eceb0fe6218ad0d9e48e6e2d0ce2"
+      },
+      {
+        "path": "R/native-fpca-three-uncertainty-artist-source.R",
+        "historical_commit": "8b6f8857ed36",
+        "previous_sha256": "bb802ab62d201dd5fd43b4f612221ddcccfb2519153527f891b0e508eec40c53",
+        "current_sha256": "7f05b9a5200b7af3f1f0c08acaebff31043c4090cc76d59fabe39c57bc681512"
+      },
+      {
+        "path": "tests/testthat/test-native-fpca-three-uncertainty-artists-20261112.R",
+        "historical_commit": "d501c022b70b",
+        "previous_sha256": "2fc662502e69a05d302edc58d49c5436f0d40ea2ec4c42438cb52ce618ff4674",
+        "current_sha256": "504c2338b521a3d0c251ee353b0929de337efedfd43eec68822f233c4721ac23"
+      }
+    ],
+    "previous_review_record_sha256": "a60b14534bb0e323aada7ef4e3e8d6bd0afb6b73d39e433bf99b3a5408e0c56c",
+    "scientific_change_review": "FPCA bootstrap component band uses fitted reference$n_components for valid rank/shape checks (top-level rank was absent); strict source plot record retains zero-based component selection with finite validation. Uncertainty score source artist legend now puts full-sample reference before bootstrap envelope, matching Python Matplotlib. Test adds reference rank and lower-array axis verification; existing six numerical/input/error/schema/estimand assertions remain.",
+    "source_replay": "User-confirmed frozen Python 1.2 uncertainty-artists suite PASS 111 assertions; changed-25 suite 4866 PASS, 0 fail/warn/skip.",
+    "independent_certification": false
+  }
 }

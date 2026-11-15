@@ -2,7 +2,8 @@
 \alias{etr_plot_conformal_fpca_anomaly}
 \title{Plot direct-source conformal FPCA marginal anomaly p-values}
 \usage{
-etr_plot_conformal_fpca_anomaly(result, max_targets = 50L, strict_source_record = FALSE, ...)
+etr_plot_conformal_fpca_anomaly(result, max_targets = 50L,
+  strict_source_record = FALSE, ...)
 }
 \arguments{
 \item{result}{Default mode accepts a native split-conformal calibration/test score record and reconstructs conservative p-values. Strict source mode instead requires an explicit source-shaped list with target_curve_ids, original marginal p_values and alpha, optionally review_flags.}

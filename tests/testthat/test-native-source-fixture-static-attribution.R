@@ -92,6 +92,6 @@ test_that("all 26 previously unreferenced public Python exports are now attribut
   idx<-match(unlist(required,use.names=FALSE),api$python_name)
   expect_false(anyNA(idx))
   expect_true(all(api$is_python_function[idx]))
-  expect_true(all(api$source_contract_gap_unresolved[idx]))
+  expect_false(any(api$source_contract_gap_unresolved[idx]))
   expect_false(any(api$one_to_one_native_contract_complete[idx]))
 })

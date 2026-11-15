@@ -28,37 +28,37 @@
       "kind": "source_signature",
       "description": "Pinned frozen Python 1.2 public src/eyetrajectoriespy/recovery.py::plot_functional_recovery_summary inspected. Native R adds optional strict_source_record=TRUE without changing the original function's default R numeric and graphic return.",
       "path": "tests/testthat/test-native-four-multivar-rqa-recovery-artists-20261112.R",
-      "sha256": "bf403f8ef83b0ea40fc9ac42a54257008dda45b47ef6782f95325889f3154891"
+      "sha256": "7c2e421285d281a8befb285129ed3005288487f77313b20c31aa5787920256f6"
     },
     {
       "kind": "accepted_input_domain",
       "description": "Bounded validated finite native R numeric source records and data.frames with declared fields, explicit metric/statistic names and strict source NumPy bin counts. Python pandas/dataclass runtime and arbitrary supplied Matplotlib Axes or exception classes are excluded.",
       "path": "tests/testthat/test-native-four-multivar-rqa-recovery-artists-20261112.R",
-      "sha256": "bf403f8ef83b0ea40fc9ac42a54257008dda45b47ef6782f95325889f3154891"
+      "sha256": "7c2e421285d281a8befb285129ed3005288487f77313b20c31aa5787920256f6"
     },
     {
       "kind": "numerical_outputs",
       "description": "Published recovery scenario/source/component labels in retained order, conditional median q25/q75 asymmetric errorbar capsize=3, singleton zero-width group, point-only nonmedian alternative, 45-degree rotated ticks, source labels and layout. The author wrote direct frozen Python 1.2 public Matplotlib artist differential tests, along with native numerical, singleton, malformed-domain and legacy-default regression cases. Exact-head CI success has not been observed.",
       "path": "tests/testthat/test-native-four-multivar-rqa-recovery-artists-20261112.R",
-      "sha256": "bf403f8ef83b0ea40fc9ac42a54257008dda45b47ef6782f95325889f3154891"
+      "sha256": "7c2e421285d281a8befb285129ed3005288487f77313b20c31aa5787920256f6"
     },
     {
       "kind": "exception_semantics",
       "description": "Source semantic checks fail closed for invalid strict flags, nonfinite scientific geometry, incorrect metrics, impossible source intervals and source bin types. Exact Python TypeError, IndexError, ValueError, KeyError identity is not implemented in R.",
       "path": "tests/testthat/test-native-four-multivar-rqa-recovery-artists-20261112.R",
-      "sha256": "bf403f8ef83b0ea40fc9ac42a54257008dda45b47ef6782f95325889f3154891"
+      "sha256": "7c2e421285d281a8befb285129ed3005288487f77313b20c31aa5787920256f6"
     },
     {
       "kind": "returned_schema",
       "description": "Default R plotting output and invisible numerical source geometry preserved. Strict mode returns typed native etr_nonlinear_scientific_artist_record of ordered Matplotlib scientific coordinates/axes rather than live Python matplotlib.axes.Axes or pixel/raster identity.",
       "path": "tests/testthat/test-native-four-multivar-rqa-recovery-artists-20261112.R",
-      "sha256": "bf403f8ef83b0ea40fc9ac42a54257008dda45b47ef6782f95325889f3154891"
+      "sha256": "7c2e421285d281a8befb285129ed3005288487f77313b20c31aa5787920256f6"
     },
     {
       "kind": "scientific_estimand",
       "description": "Descriptive simulation known-truth recovery metric summaries; no revised failures, pass/fail judgments, estimator refits, bias or coverage calculations.",
       "path": "tests/testthat/test-native-four-multivar-rqa-recovery-artists-20261112.R",
-      "sha256": "bf403f8ef83b0ea40fc9ac42a54257008dda45b47ef6782f95325889f3154891"
+      "sha256": "7c2e421285d281a8befb285129ed3005288487f77313b20c31aa5787920256f6"
     }
   ],
   "additional_regression_evidence": [
@@ -72,5 +72,16 @@
     "No live Python Matplotlib Axes/Figure object, arbitrary pandas or Python dataclass protocol, Python exception-class or pixel-level rendering parity.",
     "Scientific data arrays and source numerical coordinates are scoped to validated native R result frames only.",
     "All original statistical estimands, surrogate and bootstrap calibration, recovery results and base R defaults are preserved."
-  ]
+  ],
+  "test_evidence_revalidation_20261114": {
+    "scope": "AUTHOR_CURRENT_SIX_DOMAIN_TEST_PROOF_REPLAY",
+    "head_reviewed": "203c5aee077fcfcdb18a295c60a323db336e6cf5",
+    "original_git_revision": "c30964c9a46e",
+    "previous_test_sha256": "bf403f8ef83b0ea40fc9ac42a54257008dda45b47ef6782f95325889f3154891",
+    "current_test_sha256": "7c2e421285d281a8befb285129ed3005288487f77313b20c31aa5787920256f6",
+    "previous_record_sha256": "8bfbb26326bb0bc9ef1a44a288b7a7a2ed324886e38dd16382923a600ae7a936",
+    "reviewed_test_change": "Correct Python NumPy histogram edge accounting: due binary-floating 0.3 placement, a previously expected 1,1,1,2 is corrected to source 1,2,0,2; all other R/Python artist and geometry tests unchanged.",
+    "replay_witness": "User-confirmed frozen Python 1.2 25-file replay passed this file's 131 assertions; aggregate 4866 PASS, FAIL/WARN/SKIP 0.",
+    "independent_reviewer_signoff": false
+  }
 }

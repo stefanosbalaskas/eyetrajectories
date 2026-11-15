@@ -153,7 +153,7 @@ test_that("invalid plotting source domains and strict flags fail explicitly",{
       strict_source_record=TRUE),"inside supplied diagnostic bounds")
     bad<-x$uncertainty;bad$slope_lower[1L,1L]<-Inf
     expect_error(etr_plot_fpca_regression_slope_uncertainty(bad,
-      strict_source_record=TRUE),"slope")
+      strict_source_record=TRUE),"finite matrix with expected shape")
     bad<-x$sparse;bad$score_diagnostics$condition_number[]<-0
     expect_error(etr_plot_sparse_fpca_score_diagnostics(bad,
       strict_source_record=TRUE),"positive finite condition numbers")

@@ -1,3 +1,4 @@
+useDynLib(eyetrajectories, .registration=TRUE)
 export(et_python)
 export(et_python_version)
 export(et_call)

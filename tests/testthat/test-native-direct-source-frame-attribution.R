@@ -34,12 +34,8 @@ test_that("eight typed source-frame exports have explicit pinned Python oracles"
   expect_true(all(api$is_python_function[idx]))
   expect_true(all(api$named_native_candidate[idx]))
   expect_true(all(api$native_implementation_started[idx]))
-  still_open<-setdiff(exports,
-    c("sparse_fpca_score_frame","sparse_mfpca_score_frame"))
-  source_closed<-c("sparse_fpca_score_frame","sparse_mfpca_score_frame")
-  expect_true(all(api$source_contract_gap_unresolved[
-    match(still_open,api$python_name)]))
-  expect_false(any(api$source_contract_gap_unresolved[
-    match(source_closed,api$python_name)]))
+  # All eight are now developer-reviewed source-gap closures, without
+  # implying independent full-domain or Python object-class certification.
+  expect_false(any(api$source_contract_gap_unresolved[idx]))
   expect_false(any(api$one_to_one_native_contract_complete[idx]))
 })

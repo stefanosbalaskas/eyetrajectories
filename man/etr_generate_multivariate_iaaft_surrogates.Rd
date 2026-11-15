@@ -5,7 +5,7 @@
 etr_generate_multivariate_iaaft_surrogates(trajectories, curve, dimensions,
   reference_dimension, n_surrogates = 199L, max_iterations = 1000L,
   tolerance = 1e-8, random_state = NULL, initial_permutations = NULL,
-  phase_replay = NULL)
+  phase_replay = NULL, python_boundary_mode = FALSE)
 }
 \arguments{
 \item{trajectories}{Complete regular-grid native trajectory set.}
@@ -28,6 +28,8 @@ bin. Entries are radians in \eqn{[-\pi, \pi]} or NA to keep the native phase.
 Channel and bin order match the selected dimensions and the real half
 spectrum. The first row of a reference matrix is the phase during the
 first iteration. Supplied values after convergence cause an error.}
+\item{python_boundary_mode}{If TRUE, use the declared source boundary
+semantics; FALSE preserves native validation defaults.}
 }
 \value{Native multivariate IAAFT source-shaped surrogate array, exact
 empirical marginals, spectral/cross-spectral residual errors,

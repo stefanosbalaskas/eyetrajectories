@@ -24,43 +24,43 @@
       "kind": "source_signature",
       "description": "Frozen Python 1.2 public src/eyetrajectoriespy/plotting.py::plot_fpca_stability. Source-scientific native strict mode is explicitly optional.",
       "path": "tests/testthat/test-native-fpca-three-source-artists-20261112.R",
-      "sha256": "fb5b3b214d7a8c876e1a4c1389e6425313ca461260676cfbdd060329a7f938d7"
+      "sha256": "954f9955d64216df6b805ae86d444baafff172b741568788957cec0344aa9be5"
     },
     {
       "kind": "accepted_input_domain",
       "description": "Actual native bootstrap FPCA stability scientific result with finite n_bootstrap×n_reference_FPC matched absolute similarity matrix bounded 0..1 and reference n_components. Python Source allows Matplotlib ax injection but native R base graphics only accepts native result and drawing device; arbitrary Python object protocol remains out-of-scope.",
       "path": "tests/testthat/test-native-fpca-three-source-artists-20261112.R",
-      "sha256": "fb5b3b214d7a8c876e1a4c1389e6425313ca461260676cfbdd060329a7f938d7"
+      "sha256": "954f9955d64216df6b805ae86d444baafff172b741568788957cec0344aa9be5"
     },
     {
       "kind": "numerical_outputs",
       "description": "Native scientific source record preserves the exact original matched FPCA bootstrap similarity for every retained reference component, source 0..1.02 y-limits, per-component FPCk labels, NumPy linear interpolation 25/50/75 percentiles, source 1.5 IQR whiskers and explicit outlier values. Pinned Python 1.2 public Matplotlib ax.boxplot artist medians and titles compared directly to same native matrix, plus offline native scientific tests; exact-head CI not yet observed green.",
       "path": "tests/testthat/test-native-fpca-three-source-artists-20261112.R",
-      "sha256": "fb5b3b214d7a8c876e1a4c1389e6425313ca461260676cfbdd060329a7f938d7"
+      "sha256": "954f9955d64216df6b805ae86d444baafff172b741568788957cec0344aa9be5"
     },
     {
       "kind": "exception_semantics",
       "description": "Refuses unsupported class, malformed finite/similarity bounds or component matrix, absent reference n_components and nonlogical strict flag, without silently clipping true outliers. Python TypeError and live Axes exceptions are not replicated by R native graphics.",
       "path": "tests/testthat/test-native-fpca-three-source-artists-20261112.R",
-      "sha256": "fb5b3b214d7a8c876e1a4c1389e6425313ca461260676cfbdd060329a7f938d7"
+      "sha256": "954f9955d64216df6b805ae86d444baafff172b741568788957cec0344aa9be5"
     },
     {
       "kind": "returned_schema",
       "description": "Python returns one Matplotlib Axes with per-FPC boxplots. Native R returns one scientific source-geometry record with full replicate vectors, exact quartile/whisker values, labels and y-range, and also draws a base-R boxplot. Pixel-identical Matplotlib boxes and Python axes identity are explicitly not represented.",
       "path": "tests/testthat/test-native-fpca-three-source-artists-20261112.R",
-      "sha256": "fb5b3b214d7a8c876e1a4c1389e6425313ca461260676cfbdd060329a7f938d7"
+      "sha256": "954f9955d64216df6b805ae86d444baafff172b741568788957cec0344aa9be5"
     },
     {
       "kind": "scientific_estimand",
       "description": "Bootstrap distribution of absolute matched functional principal-component similarities to reference FPCA components, preserving the actual resampling source without generating new bootstrap results or inferring coverage.",
       "path": "tests/testthat/test-native-fpca-three-source-artists-20261112.R",
-      "sha256": "fb5b3b214d7a8c876e1a4c1389e6425313ca461260676cfbdd060329a7f938d7"
+      "sha256": "954f9955d64216df6b805ae86d444baafff172b741568788957cec0344aa9be5"
     }
   ],
   "additional_regression_evidence": [
     {
       "path": "tests/testthat/test-native-nine-scientific-plots.R",
-      "sha256": "d12da90bfe0983442569fa6311cdd0dd18e6fad730ad1149af85b455ffa855c8"
+      "sha256": "b52ae70bbb4135f5b9d5ecd22abd441a7ff761cd3b2f227860a9126ae3949be7"
     }
   ],
   "independent_review_status": "Developer source-scientific geometry review; exact-head native/Python test run not yet confirmed green, no independent reviewer signed off.",
@@ -69,5 +69,32 @@
     "No end-to-end bootstrap/random-replication parity is asserted beyond native scientific source arrays used as plotting inputs.",
     "Python exception classes, dtype/protocol acceptance and optional ax injection remain outside bounded source geometry review.",
     "Zero independent source-contract certification remains; no promise of merged branch or CRAN readiness."
-  ]
+  ],
+  "additional_test_evidence_revalidation_20261114": {
+    "scope": "AUTHOR_SCOPED_ADDITIONAL_REGRESSION_PROOF_RENEWAL_ONLY",
+    "reviewed_git_head": "07694e4619e663b7cd0e5d14c7dcd775203ed874",
+    "historical_test_git_commit": "b763f5006e65",
+    "test_evidence_path": "tests/testthat/test-native-nine-scientific-plots.R",
+    "prior_test_sha256": "d12da90bfe0983442569fa6311cdd0dd18e6fad730ad1149af85b455ffa855c8",
+    "current_test_sha256": "b52ae70bbb4135f5b9d5ecd22abd441a7ff761cd3b2f227860a9126ae3949be7",
+    "prior_review_record_sha256": "ee078f400626b8651551e1dc8ee38a6821a3ea2b74e8cc038977bbf512219b9a",
+    "diff_description": "Test-only strengthening: update expected count of contract-certification candidates 4->5, and add assertion that no native contract falsely claims one-to-one source completeness; all existing scientific test cases retained unchanged.",
+    "replay_witness": "User-reported 2026-11-14 frozen-Python-1.2 25-file evidence replay PASS 4866 assertions, no fail/warn/skip; this file alone PASS 95 assertions. Package source and other six-domain evidence pinned in this record are unchanged by this renewal.",
+    "full_source_parity_granted": false,
+    "independent_certification_granted": false
+  },
+  "source_review_revision_20261114": {
+    "scope": "AUTHOR_SCOPED_FPCA_SOURCE_ARTIST_FIGURE_REVALIDATION",
+    "reviewed_git_head": "07d46e045d02d67ced46648be3991dcf72d5a9f7",
+    "historical_source_revision": "3d1efc7550be",
+    "original_native_sha256": "e169b0e4988fdd87760837b87f09ee966082b4b4002c5f8754acf9b48e16278b",
+    "current_native_sha256": "73a26871664ab54ab95c6ad79c35bb1ca14f87d48c17ef83fa88f597fb133752",
+    "original_test_revision": "f3277b08a91b",
+    "previous_test_sha256": "fb5b3b214d7a8c876e1a4c1389e6425313ca461260676cfbdd060329a7f938d7",
+    "current_test_sha256": "954f9955d64216df6b805ae86d444baafff172b741568788957cec0344aa9be5",
+    "prior_review_record_sha256": "f08d51070038dcb15f46c430e1833f00973a6326bc02f60f69e00c84b497cf5d",
+    "source_change": "One stray closing parenthesis in outlier flier geometry fixed; Python FPCA source artist test fixture now constructs actual components array rather than a missing n_components dataclass attribute. All scientific calculations and full R/Python artist array tests unchanged.",
+    "replay": "User-confirmed frozen Python 1.2 source artist suite PASS 76 assertions and 25 changed-test suites PASS 4866 0 failures/skip.",
+    "independent_certification": false
+  }
 }

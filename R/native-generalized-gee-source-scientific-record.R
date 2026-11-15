@@ -29,8 +29,8 @@
     n_participants=as.integer(length(fit$participant_ids)),
     n_source_curves=as.integer(length(fit$source_curve_ids)),
     n_grid_observations=as.integer(length(fit$source_curve_ids)*length(fit$time)),
-    coefficient_names=as.list(fit$coefficient_names),
-    predictors=as.list(fit$predictor_names),
+    coefficient_names=as.character(fit$coefficient_names),
+    predictors=as.character(fit$predictor_names),
     design_alignment=audit$design_alignment,
     coefficient_basis="clamped_bspline",
     basis_size=fit$basis_size,
@@ -62,7 +62,7 @@
     grouped_binomial_backend_representation=if(grouped)
       "proportion_plus_gee_weights" else NULL,
     binomial_denominator_shape=if(grouped)
-      as.list(as.integer(dim(fit$binomial_denominators))) else NULL,
+      as.integer(dim(fit$binomial_denominators)) else NULL,
     binomial_denominator_expanded_from_curve=
       fit$binomial_denominator_expanded_from_curve,
     binomial_denominator_inferred=FALSE,
@@ -72,7 +72,7 @@
     generic_offset_supported=FALSE,
     poisson_exposure_supported=TRUE,
     exposure_supplied=exposed,
-    exposure_shape=if(exposed)as.list(as.integer(dim(fit$exposure))) else NULL,
+    exposure_shape=if(exposed)as.integer(dim(fit$exposure)) else NULL,
     exposure_units=fit$exposure_units,
     exposure_expanded_from_curve=fit$exposure_expanded_from_curve,
     exposure_inferred_from_time_grid=FALSE,
@@ -117,7 +117,10 @@
   fit$model<-model
   .etr_assert(length(order)==47L&&setequal(names(fit),order),
     "strict GEE source record requires exactly 47 scientific fields")
-  fit<-fit[order]
+  # Base-R list subsetting drops the S3 class of a fitted native model.
+  # Keep the source field order without discarding the class required by
+  # the bootstrap and downstream strict GEE scientific workflows.
+  fit<-structure(fit[order],class="etr_generalized_function_on_scalar")
   # Preserve native convergence diagnostics as an attribute for downstream
   # R calculations, never impersonate an executed Python backend.
   attr(fit,"native_audit")<-audit

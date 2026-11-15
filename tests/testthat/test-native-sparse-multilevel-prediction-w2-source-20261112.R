@@ -96,7 +96,7 @@ test_that("sparse multilevel W2 preserves native BLUP and canonical scientific s
 test_that("sparse future conformal W2 binds disjoint roles with nested source training",{
   proper<-.etr_spn_source_fixture()
   cal<-.etr_spnpc_fixture()
-  target<-.etr_spnpc_partial_target_safe()
+  target<-.etr_spnp_partial_target_safe()
   cfg<-.etr_spw2_prediction_cfg()
   prior<-etr_run_sparse_prediction_workflow(proper,cal,target,cfg)
   source<-etr_run_sparse_prediction_workflow(proper,cal,target,cfg,
@@ -163,7 +163,7 @@ test_that("strict W2 refuses interpolated or mean-curve substitute and R-only CV
     strict_source_record=TRUE),"native_covariance")
   proper<-.etr_spn_source_fixture()
   cal<-.etr_spnpc_fixture()
-  target<-.etr_spnpc_partial_target_safe()
+  target<-.etr_spnp_partial_target_safe()
   p<-.etr_spw2_prediction_cfg()
   expect_error(etr_run_sparse_prediction_workflow(
     proper,cal,target,p,strict_source_record=1L),
@@ -259,7 +259,7 @@ def _w2_irregular(time,values,ids,field,metadata,dimensions):
   }
   proper<-.etr_spn_source_fixture()
   cal<-.etr_spnpc_fixture()
-  target<-.etr_spnpc_partial_target_safe()
+  target<-.etr_spnp_partial_target_safe()
   pcfg<-.etr_spw2_prediction_cfg()
   rpred<-etr_run_sparse_prediction_workflow(proper,cal,target,pcfg,
     strict_source_record=TRUE)
@@ -316,12 +316,14 @@ def _w2_irregular(time,values,ids,field,metadata,dimensions):
   }
   expect_length(rpred$steps,length(et_to_r(pp$steps)))
   for(i in seq_along(rpred$steps)){
+    # R indexes from 1, but reticulate retains Python tuple indexing from 0.
+    py_step<-pp$steps[[i-1L]]
     expect_identical(rpred$steps[[i]]$name,
-      et_to_r(pp$steps[[i]]$name))
+      et_to_r(py_step$name))
     expect_identical(rpred$steps[[i]][["function"]],
-      et_to_r(pp$steps[[i]][["function"]]))
+      et_to_r(py_step[["function"]]))
     expect_identical(rpred$steps[[i]]$status,
-      et_to_r(pp$steps[[i]]$status))
+      et_to_r(py_step$status))
     expect_true(is.finite(rpred$steps[[i]]$elapsed_seconds))
   }
 })

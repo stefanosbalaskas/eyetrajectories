@@ -2,7 +2,9 @@
 \alias{etr_plot_transfer_entropy_circular_shift_test}
 \title{Plot observed transfer entropy versus circular-shift null histogram}
 \usage{
-etr_plot_transfer_entropy_circular_shift_test(result, bins = "auto", python_boundary_mode = FALSE, numpy_auto_policy = "relaxed", strict_source_record = FALSE, ...)
+etr_plot_transfer_entropy_circular_shift_test(result, bins = "auto",
+  python_boundary_mode = FALSE, numpy_auto_policy = "relaxed",
+  strict_source_record = FALSE, ...)
 }
 \arguments{
 \item{result}{Native precomputed TE circular-shift null test result.}

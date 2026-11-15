@@ -2,7 +2,8 @@
 \alias{etr_plot_generalized_function_on_scalar_mean_difference}
 \title{Plot generalized FoSR response-scale contrast with source band geometry}
 \usage{
-etr_plot_generalized_function_on_scalar_mean_difference(result, strict_source_record = FALSE)
+etr_plot_generalized_function_on_scalar_mean_difference(result,
+  strict_source_record = FALSE)
 }
 \arguments{
 \item{result}{A native precomputed pairwise response-scale difference or ratio and simultaneous interval.}

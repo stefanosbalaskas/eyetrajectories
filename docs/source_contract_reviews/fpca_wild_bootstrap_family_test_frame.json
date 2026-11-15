@@ -12,7 +12,7 @@
   "native_files": [
     {
       "path": "R/native-wild-source-inference.R",
-      "sha256": "96951ac14fecfaca2a98506f5f647ca25142c2a4bc2d10fad6ddb216a08c681f"
+      "sha256": "1f97b80b6bc4a484101745e8c1229bfa6cb43c1c00b525bfd9411cc3e1092b6e"
     }
   ],
   "case_evidence": [
@@ -65,5 +65,18 @@
     "Python pandas and R data.frame are language-native table types, not class-identical",
     "Python exception class identity differs from native R condition types",
     "Invalid ad hoc Python dataclasses outside scientific fit domain are not supported native inputs"
-  ]
+  ],
+  "native_selection_source_revalidation_20261114": {
+    "scope": "AUTHOR_SOURCE_ERROR_BOUNDARY_AND_UNCHANGED_VALID_ESTIMAND",
+    "reviewed_source_head": "7398331b9f00d4e2efe2982077754afc9bee6e34",
+    "source_file": "R/native-wild-source-inference.R",
+    "original_source_git_revision": "97fa14a88523",
+    "previous_source_sha256": "96951ac14fecfaca2a98506f5f647ca25142c2a4bc2d10fad6ddb216a08c681f",
+    "current_source_sha256": "1f97b80b6bc4a484101745e8c1229bfa6cb43c1c00b525bfd9411cc3e1092b6e",
+    "prior_record_sha256": "c6bfc871fb7c0794b3ca748ed49a8d6cba0fbc151143769673d6e225e952014d",
+    "change_review": "Prevent R 32-bit integer overflow when the valid Python integer stability_run exceeds finite grid transitions; reject before as.integer conversion, preserving original chosen truncation for all previously accepted finite run lengths. No FPCA or wild-bootstrap estimation algorithm changed.",
+    "new_regression_test": "tests/testthat/test-native-wild-selection-stability-overflow-20261114.R (committed; full execution on new HEAD pending)",
+    "earlier_test_evidence": "2026-11-14 R CMD check 0 ERROR, 0 WARNING, 1 NOTE on unchanged R scientific source implementation",
+    "independently_certified": false
+  }
 }

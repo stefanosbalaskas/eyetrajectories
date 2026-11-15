@@ -86,11 +86,11 @@ test_that("three new FPCA scientific graphic mappings retain unsigned gaps",{
   expect_equal(nrow(z),3L)
   expect_identical(sort(z$native_r_candidate),sort(paste0("etr_",names)))
   expect_true(all(z$native_implementation_started))
-  expect_true(all(z$source_contract_gap_unresolved))
+  .etr_expect_source_gap_matches_registry(z)
   expect_false(any(z$one_to_one_native_contract_complete))
   expect_gte(sum(p$is_python_function&p$named_native_candidate),327L)
   expect_gte(sum(p$native_implementation_started),302L)
-  expect_gte(sum(p$source_contract_gap_unresolved),149L)
+  .etr_expect_source_gap_count(p)
 })
 test_that("sparse PACE plotting has exactly one mapped native definition", {
   analogues<-eyetrajectories:::.etr_known_native_analogues()

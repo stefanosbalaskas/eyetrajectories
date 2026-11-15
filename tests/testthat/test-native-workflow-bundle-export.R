@@ -90,6 +90,9 @@ test_that("Python 1.2 workflow bundles carry the complete native FPCA state",{
   dest<-tempfile("etr_python_bundle_")
   on.exit(unlink(dest,recursive=TRUE),add=TRUE)
   out<-etr_export_workflow_bundle(w,dest,format="python_1_2")
+  steps_file<-file.path(out,"steps.csv")
+  steps_bytes<-readBin(steps_file,what="raw",n=file.info(steps_file)$size)
+  expect_false(any(steps_bytes==as.raw(13L)))
   manifest<-jsonlite::fromJSON(file.path(out,"workflow.json"),simplifyVector=FALSE)
   expect_identical(manifest$format,"eyetrajectoriespy-workflow-bundle")
   expect_identical(manifest$reports,list("fit.txt","notes.txt"))
@@ -218,6 +221,7 @@ test_that("frozen Python reads, reconstructs and re-exports a native FPCA workfl
     "    assert result.steps[0].function == 'etr_fit_fpca'",
     "    assert result.steps[0].elapsed_seconds == elapsed_seconds >= 0",
     "    assert pd.read_csv(native / 'steps.csv', float_precision='round_trip').loc[0, 'elapsed_seconds'] == elapsed_seconds",
+    "    assert pd.read_csv(native / 'steps.csv').loc[0, 'warnings'] == chr(10).join(result.steps[0].warnings)",
     "    assert result.steps[0].warnings == ('fixture \\\"quoted\\\" warning', 'numeric \\u03bc')",
     "    assert wf.workflow_summary_frame(result).loc[0, 'warning_count'] == 2",
     "    wf.export_workflow_bundle(result, reexport)",

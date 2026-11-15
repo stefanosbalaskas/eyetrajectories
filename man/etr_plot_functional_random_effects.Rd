@@ -2,7 +2,8 @@
 \alias{etr_plot_functional_random_effects}
 \title{Plot source participant functional random-effects scientific artists}
 \usage{
-etr_plot_functional_random_effects(result, effect = "intercept", max_participants = NULL, alpha = 0.35, strict_source_record = FALSE)
+etr_plot_functional_random_effects(result, effect = "intercept",
+  max_participants = NULL, alpha = 0.35, strict_source_record = FALSE)
 }
 \arguments{
 \item{result}{Native realized participant mixed-model random-effect result, including source participant IDs and fitted random-intercept or random-slope functions.}

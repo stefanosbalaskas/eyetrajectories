@@ -1,12 +1,6 @@
-\name{etr_plot_embedding_delay_diagnostics}
-\alias{etr_plot_embedding_delay_diagnostics}
-\alias{etr_plot_embedding_dimension_diagnostics}
-\alias{etr_plot_recurrence_network_degree}
-\alias{etr_plot_recurrence_rate_curve}
-\alias{etr_plot_windowed_rqa}
-\alias{etr_plot_local_divergence}
-\alias{etr_plot_surrogate_nonlinearity}
-\alias{etr_plot_poincare_return_map}
+\name{etr_native_scientific_visualization}
+\alias{etr_native_scientific_visualization}
+
 \title{Native R embedding, recurrence and nonlinear-dynamics visual diagnostics}
 \description{
 Eight Python-free native R descriptive graphics plotting the exact
@@ -14,18 +8,7 @@ stored scientific geometry without automatic parameter tuning or
 mathematical estimator modification. These functions are experimental
 source-name analogues; they are not exact Matplotlib output contracts.
 }
-\usage{
-etr_plot_embedding_delay_diagnostics(result, ...)
-etr_plot_embedding_dimension_diagnostics(result, ...)
-etr_plot_recurrence_network_degree(result, normalized = TRUE, ...)
-etr_plot_recurrence_rate_curve(result, ...)
-etr_plot_windowed_rqa(result,
-  metrics = c("recurrence_rate", "determinism", "laminarity"), ...)
-etr_plot_local_divergence(result, ...)
-etr_plot_surrogate_nonlinearity(result, bins = 20L,
-  python_boundary_mode = FALSE, ...)
-etr_plot_poincare_return_map(crossings, fit = NULL, ...)
-}
+
 \arguments{
 \item{result}{A corresponding native embedding-delay, FNN-dimension,
 recurrence-network, radius-profile, windowed-RQA, local-divergence,

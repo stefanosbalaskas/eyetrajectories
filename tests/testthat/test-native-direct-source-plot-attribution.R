@@ -26,7 +26,7 @@ test_that("seven frozen graphical source exports are directly replayed",{
   expect_false(anyNA(idx))
   expect_true(all(api$is_python_function[idx]))
   expect_true(all(api$native_implementation_started[idx]))
-  expect_true(all(api$source_contract_gap_unresolved[idx]))
+  expect_false(any(api$source_contract_gap_unresolved[idx]))
   expect_false(any(api$one_to_one_native_contract_complete[idx]))
 })
 
@@ -46,7 +46,7 @@ test_that("two frozen sparse plot exports carry typed direct Python oracles",{
   api<-etr_native_parity_catalog()
   idx<-match(expected,api$python_name)
   expect_false(anyNA(idx))
-  expect_true(all(api$source_contract_gap_unresolved[idx]))
+  expect_false(any(api$source_contract_gap_unresolved[idx]))
   expect_false(any(api$one_to_one_native_contract_complete[idx]))
 })
 
@@ -66,6 +66,6 @@ test_that("both IAAFT plot exports have direct frozen Python geometry witnesses"
   api<-etr_native_parity_catalog()
   idx<-match(expected,api$python_name)
   expect_false(anyNA(idx))
-  expect_true(all(api$source_contract_gap_unresolved[idx]))
+  expect_false(any(api$source_contract_gap_unresolved[idx]))
   expect_false(any(api$one_to_one_native_contract_complete[idx]))
 })

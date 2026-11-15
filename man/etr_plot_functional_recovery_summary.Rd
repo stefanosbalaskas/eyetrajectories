@@ -2,7 +2,8 @@
 \alias{etr_plot_functional_recovery_summary}
 \title{Plot functional recovery metric summaries with source point or IQR geometry}
 \usage{
-etr_plot_functional_recovery_summary(summary, metric, statistic = "median", strict_source_record = FALSE, ...)
+etr_plot_functional_recovery_summary(summary, metric, statistic = "median",
+  strict_source_record = FALSE, ...)
 }
 \arguments{
 \item{summary}{A native source-shaped recovery summary data frame, corresponding to Python's summary pandas DataFrame.}

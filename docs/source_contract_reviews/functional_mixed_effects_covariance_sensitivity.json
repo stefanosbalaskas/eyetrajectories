@@ -16,7 +16,7 @@
     },
     {
       "path": "R/native-mixed-w3-source-records.R",
-      "sha256": "ec89a8ed02a6c8278e00d233b08450715f9448eb8441d9ae78a25b13e8c26eb1"
+      "sha256": "27ac39dc8b3298cef49f303be8cebaee2617df2d90714823a7de4968456610c7"
     }
   ],
   "case_evidence": [
@@ -63,5 +63,20 @@
     "Source scientific record is a native R list with ordered fields, not a Python dataclass, and no Python exception-type or serialization identity is promised.",
     "Additional covariance/warning boundary cases, numerical singular limits and optimizer convergence surfaces are not fully source-differential-tested.",
     "Record is not an independently certified full contract; no completed CI, merge, or CRAN readiness is claimed."
-  ]
+  ],
+  "source_change_revalidation_20261114": {
+    "scope": "AUTHOR_SCOPED_SOURCE_PIN_RENEWAL_ONLY",
+    "git_head_reviewed": "b5705e200da6cddeb7379f6d7bef39c511a92635",
+    "source_path": "R/native-mixed-w3-source-records.R",
+    "previous_source_sha256": "ec89a8ed02a6c8278e00d233b08450715f9448eb8441d9ae78a25b13e8c26eb1",
+    "current_source_sha256": "27ac39dc8b3298cef49f303be8cebaee2617df2d90714823a7de4968456610c7",
+    "historical_source_commit": "269a180ff406",
+    "original_review_record_sha256": "c9a0e4087ae4da6558ed989f96f1ab7e18143d4a1554abd85f66fe20fb11f064",
+    "exact_diff_line": 52,
+    "prior_error_text": "\"strict mixed W3 source requires genuine native likelihood spline model\")",
+    "current_error_text": "\"strict mixed W3 source requires genuine native joint spline likelihood model\")",
+    "review_result": "Only human-readable strict mixed-W3 exception wording changed. Numerical algorithms, inputs, return schema and scientific estimands in this source file are byte-identical. Exact Python exception-message identity was never claimed; original contract remains scoped to native nlme and must not be promoted to full Python optimizer parity.",
+    "evidence_context": "User-confirmed 2026-11-14 CRAN-style R CMD check 0 errors, 0 warnings, 1 NOTE at prior unchanged R source head 41e38afc; no independent cross-language mixed optimizer certification.",
+    "independently_certified": false
+  }
 }

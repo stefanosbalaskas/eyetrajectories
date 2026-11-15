@@ -2,7 +2,8 @@
 \alias{etr_plot_multivariate_surrogate_nonlinearity}
 \title{Show multivariate surrogate histogram with NumPy scientific source bins}
 \usage{
-etr_plot_multivariate_surrogate_nonlinearity(result, bins = 20L, python_boundary_mode = FALSE, strict_source_record = FALSE, ...)
+etr_plot_multivariate_surrogate_nonlinearity(result, bins = 20L,
+  python_boundary_mode = FALSE, strict_source_record = FALSE, ...)
 }
 \arguments{
 \item{result}{Native multivariate surrogate nonlinearity result with observed and surrogate statistics, p-value and statistic name.}

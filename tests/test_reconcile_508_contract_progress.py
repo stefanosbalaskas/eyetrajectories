@@ -210,6 +210,79 @@ class ReconciliationTests(unittest.TestCase):
         self.assertEqual(one["historical_source_gap_open"], "TRUE")
         self.assertEqual(one["independently_certified"], "FALSE")
 
+    def test_all_source_gaps_author_closed_pilots_remain_unsigned_and_unique(self):
+        # The real package ledger now records zero open gaps; original
+        # numerical pilots are still separate unsigned reviewer work items.
+        for row in self.rows:
+            row["source_gap_open"] = "FALSE"
+        pilot_file = self.pilot_csv()
+        case_file = self.case_evidence_csv()
+        result = progress.reconcile(self.root, HEAD,
+                                    pilot_evidence_csv=pilot_file,
+                                    case_evidence_csv=case_file)
+        self.assertEqual(result["historical_documented_source_gaps"], 0)
+        self.assertEqual(result["no_recorded_gap_exports_total"], 508)
+        self.assertEqual(result["no_recorded_gap_callable_exports_total"], 380)
+        self.assertEqual(result["no_recorded_gap_nonfunction_exports_total"], 128)
+        self.assertEqual(result["no_recorded_gap_fastlane_exports_total"], 489)
+        self.assertEqual(result["no_recorded_gap_fastlane_callable_exports"], 361)
+        self.assertEqual(result["no_recorded_gap_fastlane_nonfunction_exports"], 128)
+        self.assertEqual(result["no_recorded_gap_backend_distinct_exclusions"], 19)
+        self.assertEqual(result["evidence_records_verified_sha256"], 4)
+        self.assertEqual(result["developer_evidence_ready_for_review"], 0)
+        self.assertEqual(result["source_gaps_closed"], 0)
+        self.assertEqual(result["independently_certified"], 0)
+        self.assertEqual(result["reviewer_dispatch_work_items"], 28)
+
+        output = Path(result["output_dir"])
+        queue = progress.baseline.read_csv(output / progress.PROGRESS)
+        self.assertEqual(len(queue), 508)
+        self.assertTrue(all(r["historical_source_gap_open"] == "FALSE"
+                            for r in queue))
+        self.assertTrue(all(r["source_gap_closed"] == "FALSE" and
+                            r["independent_replay_verified"] == "FALSE" and
+                            r["independently_certified"] == "FALSE"
+                            for r in queue))
+        dispatch = progress.baseline.read_csv(output / progress.DISPATCH)
+        keys = [(r["namespace"], r["python_name"]) for r in dispatch]
+        self.assertEqual(len(keys), 28)
+        self.assertEqual(len(set(keys)), 28)
+        historical_pilots = {"alr_transform", "inverse_alr",
+                             "score_distance_matrix",
+                             "functional_trapezoid_weights"}
+        pilot_rows = [r for r in dispatch
+                      if r["dispatch_lane"] == "KNOWN_GAP_PILOT_REPLAY"]
+        self.assertEqual({r["python_name"] for r in pilot_rows},
+                         historical_pilots)
+        self.assertTrue(all(r["historical_source_gap_open"] == "FALSE" and
+                            r["independently_certified"] == "FALSE" and
+                            r["independently_replayed"] == "FALSE"
+                            for r in pilot_rows))
+        self.assertTrue(all(r["python_name"] not in historical_pilots
+                            for r in dispatch if r["dispatch_lane"] ==
+                            "FUNCTION_SOURCE_FULL_DOMAIN_REVIEW"))
+
+    def test_mixed_open_closed_pilot_statuses_never_override_packet(self):
+        for row in self.rows:
+            if row["python_name"] in ("alr_transform", "inverse_alr"):
+                row["source_gap_open"] = "FALSE"
+        pilot_file = self.pilot_csv()
+        result = progress.reconcile(self.root, HEAD,
+                                    pilot_evidence_csv=pilot_file)
+        dispatch = progress.baseline.read_csv(
+            Path(result["output_dir"]) / progress.DISPATCH)
+        pilots = {r["python_name"]: r for r in dispatch
+                  if r["dispatch_lane"] == "KNOWN_GAP_PILOT_REPLAY"}
+        self.assertEqual(len(pilots), 4)
+        for name in ("alr_transform", "inverse_alr"):
+            self.assertEqual(pilots[name]["historical_source_gap_open"], "FALSE")
+        for name in ("score_distance_matrix", "functional_trapezoid_weights"):
+            self.assertEqual(pilots[name]["historical_source_gap_open"], "TRUE")
+        self.assertTrue(all(q["independently_certified"] == "FALSE"
+                            for q in dispatch))
+        self.assertEqual(result["source_gaps_closed"], 0)
+        self.assertEqual(result["independently_certified"], 0)
+
     def test_pilot_forged_independent_claim_is_rejected(self):
         file = self.pilot_csv(forged=True)
         with self.assertRaisesRegex(progress.baseline.ReviewBatchError,

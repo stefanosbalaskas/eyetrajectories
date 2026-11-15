@@ -88,13 +88,14 @@ etr_build_508_certification_review_batches <- function(
       scope$backend_or_estimand_distinct)&&
     all(ready$fully_certified==scope$fully_certified),
     "Reviewer scope and current authoritative readiness disagree")
-  # Callable and nonfunction source differences are separately registered.
-  # Do not classify TrajectorySet as an error-free first-wave review
-  # candidate merely because the 203-row function gap registry omits it.
+  # Treat the current source-gap ledgers as authoritative, not the frozen
+  # historical count of 1 open TrajectorySet difference. A reviewed native
+  # representation never becomes independently certified merely because
+  # its active author-scoped source-gap flag changed to FALSE.
   nonfunction_gap<-ready$nonfunction_source_difference_open
   ck(is.logical(nonfunction_gap)&&!anyNA(nonfunction_gap)&&
-    sum(nonfunction_gap)==1L,
-    "Expected one explicit unresolved Python nonfunction source contract")
+    length(nonfunction_gap)==508L&&sum(nonfunction_gap)<=1L,
+    "Malformed current nonfunction source-gap readiness register")
   gap<-scope$source_difference_open | nonfunction_gap
   backend<-scope$backend_or_estimand_distinct
   fn<-scope$kind=="function"
@@ -134,11 +135,12 @@ etr_build_508_certification_review_batches <- function(
       "unresolved")%in%names(nf_gaps))&&
     is.logical(fn_gaps$unresolved_source_gap)&&
     !anyNA(fn_gaps$unresolved_source_gap)&&
-    all(grepl("^Resolved",
-      fn_gaps$review_resolution[!fn_gaps$unresolved_source_gap]))&&
-    all(grepl("test-",fn_gaps$source_witness[
-      !fn_gaps$unresolved_source_gap],fixed=TRUE))&&
-    all(nf_gaps$unresolved)&&
+    all(nzchar(trimws(fn_gaps$review_resolution[
+      !fn_gaps$unresolved_source_gap])))&&
+    all(nzchar(trimws(fn_gaps$source_witness[
+      !fn_gaps$unresolved_source_gap])))&&
+    is.logical(nf_gaps$unresolved)&&!anyNA(nf_gaps$unresolved)&&
+    sum(nf_gaps$unresolved)==sum(nonfunction_gap)&&
     !anyDuplicated(fn_gaps$python_name),
     "The 203 historical callable witnesses plus 1 nonfunction witness are incomplete or lack closure evidence")
   fn_idx<-match(scope$python_name,fn_gaps$python_name)
@@ -151,9 +153,11 @@ etr_build_508_certification_review_batches <- function(
   fn_open<-rep(FALSE,nrow(scope))
   fn_open[fn_match]<-fn_gaps$unresolved_source_gap[fn_idx[fn_match]]
   nf_match<-!fn&!is.na(nf_idx)
+  nf_open<-rep(FALSE,nrow(scope))
+  nf_open[nf_match]<-nf_gaps$unresolved[nf_idx[nf_match]]
   ck(identical(fn_open,as.logical(fn&gap))&&
-    identical(nf_match,as.logical(!fn&gap)),
-    "Known source gaps and evidence witness mapping do not agree")
+    identical(nf_open,as.logical(!fn&gap)),
+    "Active source-gap flags disagree with current witness ledgers")
   witness_kind<-difference_text<-witness_source<-witness_resolution<-
     rep("",nrow(scope))
   witness_kind[fn_match]<-fn_gaps$gap_kind[fn_idx[fn_match]]

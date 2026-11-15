@@ -1,34 +1,13 @@
-\name{etr_plot_fpca_stability}
-\alias{etr_plot_fpca_stability}
-\alias{etr_plot_fpca_influence}
-\alias{etr_plot_fpca_outlier_diagnostics}
-\alias{etr_plot_fpca_cross_validation}
-\alias{etr_plot_fpca_subspace_stability}
-\alias{etr_plot_functional_mean_band}
-\alias{etr_plot_joint_recurrence}
-\alias{etr_plot_windowed_rqa_trajectories}
-\alias{etr_plot_rqa_sensitivity}
+\name{etr_native_nine_scientific_plots}
+\alias{etr_native_nine_scientific_plots}
+
 \title{Native R FPCA, simultaneous-band and recurrence visualizations}
 \description{
 Nine Python-free native R scientific plots derived from the explicitly
 declared FPCA bootstrap, influence, cross-validation, outlier,
 functional-band and recurrence analysis result objects.
 }
-\usage{
-etr_plot_fpca_stability(result, ...)
-etr_plot_fpca_influence(result,
-  metric = "min_abs_component_similarity", ...)
-etr_plot_fpca_outlier_diagnostics(result, ...)
-etr_plot_fpca_cross_validation(result, ...)
-etr_plot_fpca_subspace_stability(result,
-  metric = "normalized_projector_distance", ...)
-etr_plot_functional_mean_band(result, dimension = NULL, ...)
-etr_plot_joint_recurrence(result, max_points = 200000L, ...)
-etr_plot_windowed_rqa_trajectories(result, metric,
-  show_mean = FALSE, max_curves = NULL, ...)
-etr_plot_rqa_sensitivity(result, parameter, metric,
-  filters = NULL, ...)
-}
+
 \arguments{
 \item{result}{Compatible native R result for the individual plot.}
 \item{metric}{Declared influence summary, eigenspace stability or

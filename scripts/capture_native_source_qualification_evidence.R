@@ -159,9 +159,20 @@ queue_path<-file.path("artifacts","native_inference_contract_review",
   "python_1_2_scientific_contract_review_queue.csv")
 queue<-utils::read.csv(queue_path,stringsAsFactors=FALSE,
   check.names=FALSE)
+# The queue tracks all current author-scoped source-difference verdicts.
+# A previously closed difference must remain in the independent review
+# population, not be falsely reopened to satisfy a historical assertion.
+current_readiness<-etr_native_certification_readiness_frame()
+queue_idx<-match(queue$python_name,current_readiness$python_name)
 stopifnot(nrow(queue)==111L,!anyDuplicated(queue$python_name),
+  !anyNA(queue_idx),
+  is.logical(queue$source_difference_open),
+  !anyNA(queue$source_difference_open),
+  identical(as.logical(queue$source_difference_open),
+    as.logical(current_readiness$published_source_difference_open[queue_idx])),
+  all(queue$mapped),
+  all(queue$native_implementation_started),
   all(!queue$fully_certified),
-  all(queue$source_difference_open),
   all(file.exists(queue$oracle_test)))
 filter<-paste(c(
   "full-native-r-parity-ledger",
@@ -337,6 +348,11 @@ stopifnot(file.exists(selection_file),length(readLines(
 # Capture real test_that outcomes in each mode without rerunning tests.
 # Static literals inside a completed case are *not* proof of a source call.
 source("scripts/capture_case_execution_evidence.R",local=TRUE)
+# The default summary reporter truncates the actionable failure list at ten.
+# Preserve a detailed offline/Python execution transcript for source review,
+# and never interpret a truncated list as a pass.
+options(testthat.progress.max_fails=200L)
+Sys.setenv(TESTTHAT_MAX_FAILS="200")
 qualify_once<-function(python=FALSE){
   label<-if(python)"python_1_2_direct_source" else "native_r_offline"
   if(python)Sys.setenv(ET_RUN_PYTHON_TESTS="true") else
@@ -348,7 +364,7 @@ qualify_once<-function(python=FALSE){
   tryCatch(
     capture.output(
       structured_results<-testthat::test_local(".",filter=filter,
-        reporter="summary",stop_on_failure=TRUE,stop_on_warning=TRUE),
+        reporter="progress",stop_on_failure=TRUE,stop_on_warning=TRUE),
       file=path,type="output"),
     error=function(e){failed<<-conditionMessage(e);invisible(NULL)})
   outcome<-if(is.null(failed)) {
@@ -385,6 +401,7 @@ stopifnot(length(py_executable)==1L,nzchar(py_executable))
 tooling_log_path<-file.path(output_dir,
   "python_unsigned_review_packet_tooling_tests.txt")
 tooling_patterns<-c("test_verify_four_pilot_review_bundle.py",
+  "test_verify_current_author_source_reviews.py",
   "test_verify_508_certification_batch.py",
   "test_verify_508_external_attestation.py",
   "test_build_508_all_export_review_waves.py",
@@ -426,6 +443,40 @@ if(any(failed_tooling)){
 message("Author-side Python reviewer integrity suites PASS: ",
   tooling_log_path," (this is NOT independent scientific certification).")
 
+# A PASS on intentionally synthetic tamper/signature packet tests does NOT
+# establish the real historical six-domain source evidence is current.
+# Run the unmocked authoritative ledger before expensive numerical replay.
+# Changed production/test bytes must keep this entire scientific gate red
+# until the original reviews are reconciled. Do not repin hashes here.
+live_review_script<-"scripts/verify_current_author_source_reviews.py"
+live_review_log<-file.path(output_dir,
+  "live_author_source_review_sha256_integrity.txt")
+live_review_output<-tryCatch(
+  suppressWarnings(system2(py_executable,args=live_review_script,
+    stdout=TRUE,stderr=TRUE)),
+  error=function(e)structure(
+    paste0("LIVE SOURCE REVIEW INVOCATION ERROR: ",conditionMessage(e)),
+    status=1L))
+live_review_code<-attr(live_review_output,"status")
+if(is.null(live_review_code))live_review_code<-0L
+writeLines(c(as.character(live_review_output),
+  paste0("LIVE_SOURCE_REVIEW_INTEGRITY_EXIT_CODE=",
+    as.integer(live_review_code))),live_review_log,useBytes=TRUE)
+if(!identical(as.integer(live_review_code),0L)){
+  message("===== CURRENT six-domain source-review receipt blocker =====")
+  for(line in tail(as.character(live_review_output),30L))message(line)
+  stop("LIVE source-review SHA256 evidence is stale/invalid. ",
+    "All synthetic reviewer packet integrity tests can still pass; ",
+    "the scientific candidate must remain BLOCKED until the changed ",
+    "R/test files receive fresh six-domain author review. ",
+    "Evidence: ",live_review_log,
+    ". No historical receipts or independent approvals were modified.",
+    call.=FALSE)
+}
+message("LIVE author source-review receipt integrity PASS (author-scoped; ",
+  "independent scientific certification=FALSE). Evidence: ",
+  live_review_log)
+
 results<-list(
   qualify_once(FALSE),
   qualify_once(TRUE)
@@ -462,6 +513,8 @@ source_files<-unique(c(
   "inst/extdata/native_workflow_28_class_field_schema_v1.csv",
   "NAMESPACE",
   "scripts/verify_508_certification_batch.py",
+  "scripts/verify_current_author_source_reviews.py",
+  "tests/test_verify_current_author_source_reviews.py",
   "tests/test_verify_508_certification_batch.py",
   "scripts/verify_508_external_attestation.py",
   "tests/test_verify_508_external_attestation.py",
@@ -790,15 +843,14 @@ historical_gap_registry<-utils::read.csv(
   stringsAsFactors=FALSE,check.names=FALSE)
 historical_gap_count<-nrow(historical_gap_registry)
 source_gap_count<-sum(historical_gap_registry$unresolved_source_gap)
+# The recorded 203 historical source differences are an *inventory*,
+# not a permanent assertion that 201 remain open. The current ledger is
+# authoritative for author-scoped status; external review is separate.
 stopifnot(historical_gap_count==203L,
-  all(historical_gap_registry$unresolved_source_gap[
-    !historical_gap_registry$python_name%in%c(
-      "functional_recovery_metric_catalog_frame",
-      "mathematical_contract_frame")]),
-  identical(sort(historical_gap_registry$python_name[
-    !historical_gap_registry$unresolved_source_gap]),
-    sort(c("functional_recovery_metric_catalog_frame",
-      "mathematical_contract_frame"))))
+  !anyDuplicated(historical_gap_registry$python_name),
+  is.logical(historical_gap_registry$unresolved_source_gap),
+  !anyNA(historical_gap_registry$unresolved_source_gap),
+  source_gap_count>=0L&&source_gap_count<=historical_gap_count)
 fixture_attribution_path<-file.path(packet_root,
   "selected_111_fixture_static_attribution.csv")
 stopifnot(file.exists(fixture_attribution_path))
@@ -860,34 +912,52 @@ stopifnot(nrow(triage)==508L,
   sum(triage$selected_oracle_candidate)==nrow(queue),
   nrow(gap_review)==historical_gap_count,
   identical(sum(gap_review$gap_open),source_gap_count),
-  identical(sort(gap_review$python_name[!gap_review$gap_open]),
-    sort(c("functional_recovery_metric_catalog_frame",
-      "mathematical_contract_frame"))),
+  setequal(gap_review$python_name,
+    historical_gap_registry$python_name),
+  identical(as.logical(gap_review$gap_open),
+    as.logical(historical_gap_registry$unresolved_source_gap[
+      match(gap_review$python_name,
+        historical_gap_registry$python_name)])),
   all(!triage$independent_source_contract_approved),
   all(!gap_review$resolved),
+  all(!gap_review$independently_replayed),
   !anyDuplicated(gap_review$python_name))
-# The 201 function source gaps and the one native class source gap must
-# remain separately reviewable; no signed reviewer decisions are inferred.
+# All 203 historical callable records and the one bounded TrajectorySet
+# class record remain separately reviewable. Closed author-scoped gaps
+# never imply independent numerical or full-domain signoff.
 class_gap_file<-file.path(packet_root,
   "native_nonfunction_source_gap_resolution_queue.csv")
 stopifnot(file.exists(class_gap_file))
 class_gap_review<-utils::read.csv(class_gap_file,
   stringsAsFactors=FALSE,check.names=FALSE)
 traj_triage<-triage[triage$python_name=="TrajectorySet",,drop=FALSE]
-stopifnot(nrow(class_gap_review)==1L,
+class_ledger<-utils::read.csv(file.path("inst","extdata",
+  "native_nonfunction_source_gaps_v1.csv"),
+  stringsAsFactors=FALSE,check.names=FALSE)
+class_open<-as.logical(class_ledger$unresolved)
+stopifnot(nrow(class_ledger)==1L,
+  identical(class_ledger$python_name,"TrajectorySet"),
+  !anyNA(class_open),
+  nrow(class_gap_review)==1L,
   identical(class_gap_review$python_name,"TrajectorySet"),
-  isTRUE(class_gap_review$gap_open),
+  identical(as.logical(class_gap_review$gap_open),class_open),
   all(!class_gap_review$independently_replayed),
   all(!class_gap_review$scientific_scope_approved),
   all(!class_gap_review$independent_reviewer_approved),
   all(!class_gap_review$fully_certified),
   nrow(traj_triage)==1L,
-  isTRUE(traj_triage$unresolved_source_difference),
-  identical(traj_triage$review_lane,"nonfunction_open_source_gap"),
-  sum(triage$unresolved_source_difference)==source_gap_count+1L)
+  identical(as.logical(traj_triage$unresolved_source_difference),
+    class_open),
+  identical(traj_triage$review_lane,
+    if(class_open)"nonfunction_open_source_gap" else
+      "nonfunction_contract_review"),
+  sum(triage$unresolved_source_difference)==
+    source_gap_count+sum(class_open))
 message("Review triage: ",nrow(triage)," public exports; ",
-  nrow(gap_review)," callable source differences plus ",
-  nrow(class_gap_review)," unresolved nonfunction source difference; ",
+  nrow(gap_review)," historical callable source records (",
+  source_gap_count," currently author-open); ",
+  nrow(class_gap_review)," nonfunction source record (",
+  sum(class_open)," author-open); ",
   sum(triage$backend_or_estimand_distinct),
   " alternative backends/estimands; zero independent approvals.")
 stopifnot(nrow(missing_refs)==0L,

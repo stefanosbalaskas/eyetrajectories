@@ -36,7 +36,7 @@
   axis<-list(title=title,xlabel="Fixed target trajectory",ylabel=ylabel,
     xticks=x,xticklabels=as.character(frame$curve_id),xtick_rotation=90,
     artists=artists,legend=TRUE,
-    legend_labels=c(label,"full-sample conditional mean"))
+    legend_labels=c("full-sample conditional mean",label))
   .etr_fpca_inference_artist_record(operation,axis,options=list(
     max_targets=as.integer(max_targets),n_plotted=nrow(frame)))
 }

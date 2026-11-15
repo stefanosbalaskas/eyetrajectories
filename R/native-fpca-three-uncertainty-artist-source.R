@@ -73,8 +73,8 @@
         linestyle="--",xdata=c(0,1),ydata=c(0,0),
         x_transform="axes_fraction")),
     legend=TRUE,
-    legend_labels=c("bootstrap median + percentile envelope",
-      "full-sample reference score"))
+    legend_labels=c("full-sample reference score",
+      "bootstrap median + percentile envelope"))
   .etr_fpca_uncertainty_record("plot_fpca_score_uncertainty",axis,
     options=list(component=as.integer(component),
       max_targets=as.integer(max_targets),n_plotted=n))

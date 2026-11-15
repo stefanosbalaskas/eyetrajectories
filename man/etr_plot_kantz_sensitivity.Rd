@@ -2,7 +2,8 @@
 \alias{etr_plot_kantz_sensitivity}
 \title{Plot source scientific Kantz parameter sensitivity}
 \usage{
-etr_plot_kantz_sensitivity(result, parameter, response = "exponent", filters = NULL, strict_source_record = FALSE, ...)
+etr_plot_kantz_sensitivity(result, parameter, response = "exponent", filters = NULL,
+  strict_source_record = FALSE, ...)
 }
 \arguments{
 \item{result}{Native precomputed Kantz parameter sensitivity result with finite declared source table.}

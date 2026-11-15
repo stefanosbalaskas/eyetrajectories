@@ -23,7 +23,8 @@ vertical line runs directly from nonzero coordinates, including large sparse
 recurrence systems, without the former 2500-node dense-conversion guard.
 }
 \usage{
-etr_recurrence_network(recurrence, adjacency_storage = c("dense", "sparse"))
+etr_recurrence_network(recurrence, adjacency_storage = c("dense", "sparse"),
+  python_boundary_mode = FALSE)
 etr_recurrence_network_node_frame(result)
 etr_recurrence_network_summary_frame(result)
 etr_joint_recurrence_matrix(recurrences, labels = NULL)
@@ -86,6 +87,8 @@ controls the density, recurrence_rate cannot be a derived outcome.}
 \item{metrics}{Distinct named RQA metrics forming functional channels.}
 \item{undefined_policy}{\code{"raise"} to reject undefined RQA metrics
 or \code{"keep"} to preserve them as explicit missing values.}
+\item{python_boundary_mode}{If TRUE, use the published Python 1.2
+boundary conditions; FALSE retains native validation defaults.}
 }
 \value{
 \code{etr_recurrence_network()} returns a native

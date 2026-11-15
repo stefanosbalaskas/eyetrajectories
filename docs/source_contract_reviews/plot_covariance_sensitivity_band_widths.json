@@ -28,37 +28,37 @@
       "kind": "source_signature",
       "description": "Pinned source Python 1.2 plot_covariance_sensitivity_band_widths signature result, keyword-only coefficient and optional ax, with source _validate_bands and _band_width_frame rules. Native R strict_source_record preserves existing native default.",
       "path": "tests/testthat/test-native-paired-mixed-band-sensitivity-20261112.R",
-      "sha256": "5fec8934aac0f579a6ea5ad6ffc29eff62165974c16653d820f145b0b34b8bb5"
+      "sha256": "fe07b19441bfb3344f6ba6fd74b248c6b0a830c9bfbf96672a8c80e910a216ea"
     },
     {
       "kind": "accepted_input_domain",
       "description": "Only native R real calibrated mixed simultaneous coefficient bands, tied to actual successful Gaussian joint spline likelihood fits, same paired bootstrap type, count, confidence/scope, coefficient/time support and identical participant draws; excludes arbitrary Python dataclass/pandas/axes identity.",
       "path": "tests/testthat/test-native-paired-mixed-band-sensitivity-20261112.R",
-      "sha256": "5fec8934aac0f579a6ea5ad6ffc29eff62165974c16653d820f145b0b34b8bb5"
+      "sha256": "fe07b19441bfb3344f6ba6fd74b248c6b0a830c9bfbf96672a8c80e910a216ea"
     },
     {
       "kind": "numerical_outputs",
       "description": "Exact Python source success-model/coefficient/time ordered six-column band width ratios from precomputed upper and lower, denominator strictly positive else NaN, complete reference y=1 scientific Matplotlib artist geometry, source titles and ordered legends; no inference recalibration.",
       "path": "tests/testthat/test-native-paired-mixed-band-sensitivity-20261112.R",
-      "sha256": "5fec8934aac0f579a6ea5ad6ffc29eff62165974c16653d820f145b0b34b8bb5"
+      "sha256": "fe07b19441bfb3344f6ba6fd74b248c6b0a830c9bfbf96672a8c80e910a216ea"
     },
     {
       "kind": "exception_semantics",
       "description": "Reject missing reference band, unknown model label, inconsistent source fitted reference, bootstrap type, draws, replicate counts, confidence or scope; reject nonfinite/invalid band matrices and tampered plotted ratio values. Native R error classes are not Python TypeError/ValueError/KeyError identity.",
       "path": "tests/testthat/test-native-paired-mixed-band-sensitivity-20261112.R",
-      "sha256": "5fec8934aac0f579a6ea5ad6ffc29eff62165974c16653d820f145b0b34b8bb5"
+      "sha256": "fe07b19441bfb3344f6ba6fd74b248c6b0a830c9bfbf96672a8c80e910a216ea"
     },
     {
       "kind": "returned_schema",
       "description": "Strict source native mixed W3 sensitivity emits actual band_width_frame; strict plotting returns typed etr_mixed_diagnostic_artist_source_record with ordered lines, labels, reference y=1 and NaN breaks; not Python Matplotlib Axes object.",
       "path": "tests/testthat/test-native-paired-mixed-band-sensitivity-20261112.R",
-      "sha256": "5fec8934aac0f579a6ea5ad6ffc29eff62165974c16653d820f145b0b34b8bb5"
+      "sha256": "fe07b19441bfb3344f6ba6fd74b248c6b0a830c9bfbf96672a8c80e910a216ea"
     },
     {
       "kind": "scientific_estimand",
       "description": "Descriptive model-to-reference simultaneous coefficient band width ratios conditional on predeclared paired participant-cluster bootstrap draws and observed grid; zero-denominator undefined; no model selection or new covariance optimization.",
       "path": "tests/testthat/test-native-paired-mixed-band-sensitivity-20261112.R",
-      "sha256": "5fec8934aac0f579a6ea5ad6ffc29eff62165974c16653d820f145b0b34b8bb5"
+      "sha256": "fe07b19441bfb3344f6ba6fd74b248c6b0a830c9bfbf96672a8c80e910a216ea"
     }
   ],
   "additional_regression_evidence": [
@@ -72,5 +72,17 @@
     "R nlme joint spline Gaussian optimizer and Python statsmodels mixed likelihood have no independently established full numerical or class parity.",
     "R structural equality cannot certify Python object identity; Python pandas, plotting axes, exceptional domains and full source input polymorphism remain different.",
     "No refitting, band re-calibration, false finite value for undefined reference width, automatic covariance model choice or inference-selection claims."
-  ]
+  ],
+  "test_evidence_revalidation_20261114": {
+    "scope": "AUTHOR_SIX_DOMAIN_DIRECT_TEST_REVALIDATION",
+    "source_head": "50006e3979937c277ff5dd2a72707fe427cbd130",
+    "test_git_commit": "1c41328af813",
+    "old_test_sha256": "5fec8934aac0f579a6ea5ad6ffc29eff62165974c16653d820f145b0b34b8bb5",
+    "current_test_sha256": "fe07b19441bfb3344f6ba6fd74b248c6b0a830c9bfbf96672a8c80e910a216ea",
+    "previous_review_record_sha256": "fe8d6a70d773b48097161dd527866a2656ab288da5c75f93c413c6e9ac8c1594",
+    "reviewed_difference": "Scientific fixture now requests source-valid >=100 participant bootstrap replicates; Matplotlib X/Y line array conversions explicitly coerce to NumPy arrays before exact source ordinate checks, preserving numerical comparisons.",
+    "verified_changed_hunks": 2,
+    "replay": "2026-11-14 user-confirmed frozen Python 1.2 replay: 43 passing assertions in this affected test file, 4866 passing across all changed source-test files, 0 fail/warn/skip",
+    "independent_certification": false
+  }
 }

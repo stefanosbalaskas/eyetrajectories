@@ -202,11 +202,11 @@ def _w2_make_irregular(times,values,ids,metadata):
     expect_length(native$steps,length(et_to_r(py$steps)))
     for(i in seq_along(native$steps)){
       expect_identical(native$steps[[i]]$name,
-        et_to_r(py$steps[[i]]$name))
+        et_to_r(py$steps[[i-1L]]$name))
       expect_identical(native$steps[[i]][["function"]],
-        et_to_r(py$steps[[i]][["function"]]))
+        et_to_r(py$steps[[i-1L]][["function"]]))
       expect_identical(native$steps[[i]]$status,
-        et_to_r(py$steps[[i]]$status))
+        et_to_r(py$steps[[i-1L]]$status))
     }
     if(with_uncertainty){
       for(field in c("covariance","standard_errors","correlations"))

@@ -10,7 +10,8 @@ etr_multivariate_surrogate_nonlinearity_test(trajectories, curve,
   fit_units = "samples", n_surrogates = 199L,
   alternative = "greater", max_iterations = 1000L,
   tolerance = 1e-8, random_state = NULL,
-  initial_permutations = NULL, phase_replay = NULL)
+  initial_permutations = NULL, phase_replay = NULL,
+  python_boundary_mode = FALSE)
 }
 \arguments{
 \item{trajectories}{Native complete regular common-grid trajectory set.}
@@ -31,6 +32,8 @@ n_selected_dimensions) complete per-channel initialization permutations,
 forwarded to the MIAAFT generator.}
 \item{phase_replay}{Optional Fourier phases for unresolved bins, forwarded to
 \code{\link{etr_generate_multivariate_iaaft_surrogates}}.}
+\item{python_boundary_mode}{If TRUE, use the declared source boundary
+semantics; FALSE preserves native validation defaults.}
 }
 \value{Native multivariate Lyapunov statistic, surrogate distribution,
 source-defined plus-one tail p-value and complete surrogate diagnostics.}

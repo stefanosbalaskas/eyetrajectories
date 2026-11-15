@@ -19,37 +19,37 @@
     {
       "kind": "source_signature",
       "path": "tests/testthat/test-native-declarative-source-pair-20261111.R",
-      "sha256": "dfdb77681ba99c39cbd28f3ca8db983cfecc6a12e32c8f1cf752bf8c58c28787",
+      "sha256": "ee0be8f25072d4b7ef83fa5914e123a5619ad0a342dfa4dd1ba909ba5c7fc0c7",
       "description": "Frozen Python 1.2 src/eyetrajectoriespy/workflows/_core.py entrypoint signature and typed scientific declaration schema, mapped to native R validated S3/list record semantics."
     },
     {
       "kind": "accepted_input_domain",
       "path": "tests/testthat/test-native-declarative-source-pair-20261111.R",
-      "sha256": "dfdb77681ba99c39cbd28f3ca8db983cfecc6a12e32c8f1cf752bf8c58c28787",
+      "sha256": "ee0be8f25072d4b7ef83fa5914e123a5619ad0a342dfa4dd1ba909ba5c7fc0c7",
       "description": "Five typed Python dataclass configuration cases (empty/one/multi-step, nested ndarray/Index/Path and decision provenance), plus 8 fully paired Cartesian simulation matrices across four factor families and shared/disjoint seeds; representable native R scientific object domains only."
     },
     {
       "kind": "numerical_outputs",
       "path": "tests/testthat/test-native-declarative-source-pair-20261111.R",
-      "sha256": "dfdb77681ba99c39cbd28f3ca8db983cfecc6a12e32c8f1cf752bf8c58c28787",
+      "sha256": "ee0be8f25072d4b7ef83fa5914e123a5619ad0a342dfa4dd1ba909ba5c7fc0c7",
       "description": "Thirteen proposed direct frozen Python 1.2 source-vs-native R full-output cases, comparing every JSON mapping value and every 23-column scenario frame value, source slug, factor enumeration order and exact integer seed policies."
     },
     {
       "kind": "exception_semantics",
       "path": "tests/testthat/test-native-declarative-source-pair-20261111.R",
-      "sha256": "dfdb77681ba99c39cbd28f3ca8db983cfecc6a12e32c8f1cf752bf8c58c28787",
+      "sha256": "ee0be8f25072d4b7ef83fa5914e123a5619ad0a342dfa4dd1ba909ba5c7fc0c7",
       "description": "Native R rechecks mutable S3 scenario and preprocessing plan metadata to match Python frozen-constructor invariants; rejects duplicate/invalid factors, invalid source records, nonfinite parameter payloads and seed block overflow. Python TypeError identity and unbounded bigint domain explicitly excluded."
     },
     {
       "kind": "returned_schema",
       "path": "tests/testthat/test-native-declarative-source-pair-20261111.R",
-      "sha256": "dfdb77681ba99c39cbd28f3ca8db983cfecc6a12e32c8f1cf752bf8c58c28787",
+      "sha256": "ee0be8f25072d4b7ef83fa5914e123a5619ad0a342dfa4dd1ba909ba5c7fc0c7",
       "description": "Python dict maps to ordered named native R list, original dataclass tuple to native ordered S3 record list, complete source 23-column pandas scenario table to native R data.frame preserving value/JSON text and nullable scientific provenance."
     },
     {
       "kind": "scientific_estimand",
       "path": "tests/testthat/test-native-declarative-source-pair-20261111.R",
-      "sha256": "dfdb77681ba99c39cbd28f3ca8db983cfecc6a12e32c8f1cf752bf8c58c28787",
+      "sha256": "ee0be8f25072d4b7ef83fa5914e123a5619ad0a342dfa4dd1ba909ba5c7fc0c7",
       "description": "Strict dataclass-backed workflow and preprocessing configuration projection to ordered JSON-compatible mapping, preserving explicit analyst choices, nested preprocessing plans, numeric arrays, pandas Index-like values, Path-like strings and nullable fields without silent defaults."
     }
   ],
@@ -64,5 +64,16 @@
     "Native R S3/list/matrix/path-string is not Python frozen dataclass, pandas.Index, numpy.ndarray, pathlib.Path, or Python mapping runtime identity",
     "Python arbitrary custom __iter__/__str__, unbounded positive integers and exception classes are language-specific and outside native R representable scientific records",
     "These contracts declare/report parameters; they do not imply simulation RNG, scientific estimator, or external artifact export parity"
-  ]
+  ],
+  "test_evidence_revalidation_20261114": {
+    "scope": "AUTHOR_DIRECT_FROZEN_PYTHON_REPLAY_TEST_PROOF",
+    "current_git_head": "f7f3713b14055e69ecd076ad0255d46a71cab284",
+    "historical_test_commit": "9f45392f489d",
+    "prior_test_sha256": "dfdb77681ba99c39cbd28f3ca8db983cfecc6a12e32c8f1cf752bf8c58c28787",
+    "current_test_sha256": "ee0be8f25072d4b7ef83fa5914e123a5619ad0a342dfa4dd1ba909ba5c7fc0c7",
+    "previous_review_record_sha256": "93603516ceb2b1bd3a725ea831460688e336c492eb7e7ccf61af5fcf80bace4d",
+    "change_review": "Only two Python/R data-conversion fixture changes: pathlib.Path converts platform-specifically (Windows backslashes, POSIX slash); and empty Python dictionaries represented by reticulate list names=character(0) compare equal to native list() names=NULL when and only when both mappings have zero fields. Strict nonempty nested key/order, numerical, error, and semantic tests are unchanged.",
+    "replay": "User-confirmed direct frozen Python 1.2 declarative pair source suite PASS 518 assertions; full 25-file frozen Python replay PASS 4866 with zero failures or skips. No new independent reviewer signoff.",
+    "independently_certified": false
+  }
 }

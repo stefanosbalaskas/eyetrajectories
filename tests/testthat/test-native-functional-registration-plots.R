@@ -102,7 +102,7 @@ test_that("three real published Python names added to strict 508-export inventor
   expect_true(mapped >= 225L)
   expect_equal(mapped+unmapped,380L)
   expect_true(sum(catalog$native_implementation_started)>=200L)
-  expect_true(sum(catalog$source_contract_gap_unresolved)>=46L)
+  .etr_expect_source_gap_count(catalog)
   expect_equal(sum(catalog$one_to_one_native_contract_complete),0L)
 })
 

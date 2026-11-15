@@ -11,7 +11,8 @@ recovery assessments with component/source labels and metric definitions.
 etr_run_functional_recovery_scenarios(
   scenarios, mean, eigenfunctions, estimator, recovery,
   failure_action = "raise", source_draws_by_replicate = NULL,
-  observation_times_by_replicate = NULL, random_engine = "base_R"
+  observation_times_by_replicate = NULL, random_engine = "base_R",
+  python_boundary_mode = FALSE
 )
 }
 \arguments{
@@ -36,6 +37,8 @@ in source records and shown one-based in output keys/frames.}
 \item{failure_action}{Either \code{"raise"} to propagate a failure
 or \code{"record"} to preserve explicit simulation, fit, or
 recovery errors without redraw or fabricated metric output.}
+\item{python_boundary_mode}{If TRUE, follow declared published-source
+boundary semantics; FALSE retains native validation defaults.}
 }
 \value{
 An \code{etr_functional_recovery_result} with one ordered record

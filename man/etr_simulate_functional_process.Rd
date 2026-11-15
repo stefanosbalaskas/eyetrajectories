@@ -22,7 +22,8 @@ etr_simulate_functional_process(
   missingness = NULL, phase_variation = NULL,
   score_distribution = "normal", score_df = 5,
   orthonormal_tolerance = 1e-6, random_state = 42L,
-  source_draws = NULL, random_engine = "base_R"
+  source_draws = NULL, random_engine = "base_R",
+  python_boundary_mode = FALSE
 )
 }
 \arguments{
@@ -98,6 +99,8 @@ per curve; with declared power-phase variation, an optional
 \code{phase_exponents} field contains one finite positive numeric exponent
 per curve, allowing exact frozen-Python realized-mask and
 realized-warp replay with \code{random_engine="base_R"}.}
+\item{python_boundary_mode}{If TRUE, follow declared published-source
+boundary semantics; FALSE retains native validation defaults.}
 }
 \value{
 An \code{etr_functional_simulation_result} with

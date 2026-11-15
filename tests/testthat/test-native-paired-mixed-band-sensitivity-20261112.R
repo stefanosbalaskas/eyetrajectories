@@ -135,7 +135,7 @@ test_that("actual native joint-likelihood source integration retains audited pai
     fixed_basis_size=2L,random_basis_size=2L,
     spline_degree=1L,reml=TRUE)
   bootstrap<-etr_bootstrap_functional_mixed_effects_coefficients(
-    fit,n_bootstrap=12L,random_state=11L)
+    fit,n_bootstrap=100L,random_state=11L)
   band<-etr_functional_mixed_effects_simultaneous_bands(
     bootstrap,confidence_level=.9,simultaneous_scope="family")
   source<-etr_functional_mixed_effects_covariance_sensitivity(
@@ -203,9 +203,9 @@ for k,v in dict(
 ax=et.plot_covariance_sensitivity_band_widths(obj,coefficient='dose')
 native_python_w4=dict(
   labels=[line.get_label() for line in ax.lines[:2]],
-  xs=[line.get_xdata().tolist() for line in ax.lines[:2]],
-  ys=[line.get_ydata().tolist() for line in ax.lines[:2]],
-  ref=ax.lines[-1].get_ydata().tolist(),
+  xs=[np.asarray(line.get_xdata()).tolist() for line in ax.lines[:2]],
+  ys=[np.asarray(line.get_ydata()).tolist() for line in ax.lines[:2]],
+  ref=np.asarray(ax.lines[-1].get_ydata()).tolist(),
   title=ax.get_title(),xlabel=ax.get_xlabel(),ylabel=ax.get_ylabel())
 ")
   f<-.etr_paired_band_fixture()

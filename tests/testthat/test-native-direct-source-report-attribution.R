@@ -72,6 +72,6 @@ test_that("mixed-effects report has an exact direct frozen Python export oracle"
   api<-etr_native_parity_catalog()
   idx<-match("functional_mixed_effects_reporting_text",api$python_name)
   expect_false(is.na(idx))
-  expect_true(api$source_contract_gap_unresolved[idx])
+  expect_false(api$source_contract_gap_unresolved[idx])
   expect_false(api$one_to_one_native_contract_complete[idx])
 })

@@ -83,7 +83,10 @@ test_that("nonfunction native representations are not silently inferred",{
     paste(reg$namespace[populated],reg$python_name[populated],sep="::"))
   expect_setequal(names(observed),names(expected))
   expect_identical(unname(observed[names(expected)]),unname(expected))
-  expect_true(all(reg$evidence_state[populated]=="not_reviewed"))
+  expect_identical(sum(reg$evidence_state[populated]=="not_reviewed"),31L)
+  expect_identical(sum(reg$evidence_state[populated]=="author_scoped_reviewed"),1L)
+  expect_identical(reg$evidence_state[reg$python_name=="TrajectorySet"],
+    "author_scoped_reviewed")
   expect_true(all(!reg$numerical_or_value_approved))
   expect_true(all(!reg$schema_boundary_approved))
   expect_true(all(!reg$scientific_scope_approved))

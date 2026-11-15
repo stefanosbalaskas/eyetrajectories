@@ -12,7 +12,7 @@
   "native_files": [
     {
       "path": "R/native-multivariate-iaaft-generator.R",
-      "sha256": "39a31d749a67906e550058d18caf874a12a66f13663dcdc1b7d6dbee0435c89b"
+      "sha256": "f820c2be743ba8f800bd077bed96e35e3855c988a505ff9baab9538038e28c65"
     },
     {
       "path": "R/native-multivariate-surrogate-nonlinearity.R",
@@ -68,5 +68,16 @@
     "Near-zero target Fourier phases create machine-precision sensitivity; such unresolved bins are audited but source public API does not expose fixed replay for equivalence claims.",
     "Exact per-channel empirical marginal distributions and approximate auto/cross-spectral fit are the scientific properties, not a guarantee of bitwise FFT identity across NumPy and base R.",
     "Explicit native fixed initial permutations and Fourier-phase replay are out-of-source extensions and are rejected in strict source mode."
-  ]
+  ],
+  "multivariate_source_provenance_review_20261114": {
+    "scope": "AUTHOR_SOURCE_PYTHON_TUPLE_DIMENSIONS_TO_R_CHARACTER_VECTOR",
+    "reviewed_git_head": "593c62d5fc8565950f4660d599ee921b6a68f43e",
+    "old_revision": "36f9d750b981",
+    "source_path": "R/native-multivariate-iaaft-generator.R",
+    "old_sha256": "39a31d749a67906e550058d18caf874a12a66f13663dcdc1b7d6dbee0435c89b",
+    "current_sha256": "f820c2be743ba8f800bd077bed96e35e3855c988a505ff9baab9538038e28c65",
+    "original_review_sha256": "c496dd3308f071ba2cbc53973ba482ecd20a60cabe69e06a0157f733c49e7da1",
+    "change_review": "Added a single source-provenance dimensions normalization, preserving the IAAFT generator, surrogate timing, stochastic draws and scientific estimand. Frozen Python tuple of dimension names maps to R character vector rather than list. User-confirmed 131 direct multivariate source-artist test assertions and R installed package tests pass; no independent scientific approval.",
+    "independent_certification": false
+  }
 }

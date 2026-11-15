@@ -41,6 +41,6 @@ test_that("thirteen advanced sparse and bootstrap source exports are explicit",{
   expect_true(all(api$is_python_function[idx]))
   expect_true(all(api$named_native_candidate[idx]))
   expect_true(all(api$native_implementation_started[idx]))
-  expect_true(all(api$source_contract_gap_unresolved[idx]))
+  expect_false(any(api$source_contract_gap_unresolved[idx]))
   expect_false(any(api$one_to_one_native_contract_complete[idx]))
 })

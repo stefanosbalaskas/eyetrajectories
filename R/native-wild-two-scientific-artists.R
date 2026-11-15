@@ -43,7 +43,8 @@
     xlabel="Fixed target trajectory",ylabel="Bootstrap exceedance probability",
     xticks=x,xticklabels=as.character(frame$target_curve_id),
     xtick_rotation=90,ylim=c(-.02,1.02),artists=artists,
-    legend=TRUE,legend_labels=vapply(artists,function(a)a$label,character(1L)))
+    legend=TRUE,legend_labels=c(alpha_label,
+      vapply(artists[-length(artists)],function(a)a$label,character(1L))))
   .etr_fpca_inference_artist_record(
     "plot_fpca_wild_bootstrap_monte_carlo_diagnostics",axis,
     options=list(max_targets=as.integer(max_targets),

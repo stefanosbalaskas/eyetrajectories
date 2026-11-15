@@ -189,10 +189,19 @@ etr_fpca_component_band_reporting_text <- function(result,digits=2L) {
 }
 
 .etr_validate_fpca_plot_component <- function(result,component,kind) {
-  .etr_assert(inherits(result,kind)&&is.numeric(component)&&
-    length(component)==1L&&!is.logical(component)&&
-    is.finite(component)&&component==as.integer(component)&&
-    component>=0L&&component<result$n_components,
+  .etr_assert(inherits(result,kind),
+    paste0("result must be a native ",kind," record"))
+  fitted <- result$n_components
+  # Bootstrap component bands carry retained rank in the fitted reference,
+  # not in a second top-level field. Do not mutate their public schema.
+  if(is.null(fitted)&&identical(kind,"etr_fpca_component_band"))
+    fitted <- result$reference$n_components
+  .etr_assert(is.numeric(fitted)&&length(fitted)==1L&&
+    is.finite(fitted)&&fitted>=1&&fitted==floor(fitted),
+    "result must declare a positive fitted FPC count")
+  .etr_assert(is.numeric(component)&&length(component)==1L&&
+    !is.logical(component)&&is.finite(component)&&
+    component==floor(component)&&component>=0&&component<fitted,
     "component must identify a zero-based fitted FPC")
   as.integer(component)+1L
 }
@@ -322,13 +331,16 @@ etr_plot_fpca_component_band <- function(result,component=0L,
     !is.na(dimension)&&dimension%in%ref$dimension_names,
     "dimension must identify a fitted FPCA channel")
   j<-match(dimension,ref$dimension_names)
+  # Genuine bootstrap component bands store retained rank on the fitted
+  # reference; the top-level result has no n_components field.
+  expected_shape<-c(ref$n_components,length(ref$time),
+    length(ref$dimension_names))
   .etr_assert(is.array(ref$components)&&
     length(dim(ref$components))==3L&&
+    identical(dim(ref$components),expected_shape)&&
     is.array(result$lower)&&is.array(result$upper)&&
     identical(dim(result$lower),dim(result$upper))&&
-    identical(dim(result$lower),
-      c(result$n_components,length(ref$time),
-        length(ref$dimension_names))),
+    identical(dim(result$lower),expected_shape),
     "component bootstrap bands must have matching 3D shapes")
   out<-data.frame(time=ref$time,
     estimate=as.numeric(ref$components[k,,j]),

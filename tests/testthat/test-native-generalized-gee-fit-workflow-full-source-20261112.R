@@ -248,7 +248,7 @@ test_that("actual frozen Python generalized workflow matches report and numerica
     pyd<-pd$DataFrame(lapply(f$d,as.list))
     pycfg<-reticulate::py_call(
       pycore$GeneralizedFunctionalWorkflowConfig,
-      predictors=builtins$tuple("treatment"),
+      predictors=reticulate::tuple("treatment"),
       participant_column="participant_id",dimension="outcome",
       family=spec$family,basis_size=4L,spline_degree=3L,
       exposure=f$config$exposure,exposure_units=f$config$exposure_units,

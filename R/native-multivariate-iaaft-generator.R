@@ -365,6 +365,9 @@ etr_generate_multivariate_iaaft_surrogates<-function(
     # ambient RNG. The estimand is unchanged but these realizations are
     # not identical. Source mode never claims identical unseeded paths.
     p<-result$provenance
+    # Frozen Python emits a tuple of dimension names; reticulate maps this
+    # to a character vector, not a list of length-one R strings.
+    p$dimensions<-as.character(dimensions)
     p$interpretation_boundary<-paste(
       "surrogates target a multivariate linear-stochastic null",
       "with retained marginal distributions and approximate",

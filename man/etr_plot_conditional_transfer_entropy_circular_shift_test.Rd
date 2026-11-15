@@ -2,7 +2,9 @@
 \alias{etr_plot_conditional_transfer_entropy_circular_shift_test}
 \title{Plot conditional transfer entropy versus source-only circular-shift null}
 \usage{
-etr_plot_conditional_transfer_entropy_circular_shift_test(result, bins = "auto", python_boundary_mode = FALSE, numpy_auto_policy = "relaxed", strict_source_record = FALSE, ...)
+etr_plot_conditional_transfer_entropy_circular_shift_test(result, bins = "auto",
+  python_boundary_mode = FALSE, numpy_auto_policy = "relaxed",
+  strict_source_record = FALSE, ...)
 }
 \arguments{
 \item{result}{Native precomputed conditional TE source-only circular-shift null test result.}

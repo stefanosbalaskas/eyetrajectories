@@ -20,13 +20,16 @@ test_that("certification census never treats candidate as complete",{
   expect_gte(sum(z$native_implementation_started),211L)
   expect_lte(sum(z$is_python_function & !z$named_native_candidate),144L)
   expect_equal(sum(z$native_implementation_stage==20L,na.rm=TRUE),1L)
-  expect_equal(sum(z$contract_certification_candidate),4L)
+  expect_equal(sum(z$contract_certification_candidate),5L)
   expect_identical(sort(z$python_name[z$contract_certification_candidate]),
     sort(c("alr_transform","inverse_alr","score_distance_matrix",
-      "functional_trapezoid_weights")))
+      "functional_trapezoid_weights","TrajectorySet")))
   expect_equal(sum(z$contract_numerical_fixture_pass),4L)
+  # The bounded TrajectorySet candidate is not independently numeric-qualified.
   expect_true(all(z$contract_numerical_fixture_pass[
-    z$contract_certification_candidate]))
+    z$contract_certification_candidate & z$is_python_function]))
+  expect_false(z$contract_numerical_fixture_pass[
+    z$python_name=="TrajectorySet"])
   # Source-oracle fixture PASS is not the same as complete-domain
   # independent numeric-equivalence approval.
   expect_true(all(!z$independent_numeric_parity_pass))
@@ -35,9 +38,10 @@ test_that("certification census never treats candidate as complete",{
   expect_true(all(!z$independent_contract_review_pass))
   expect_true(all(!z$one_to_one_native_contract_complete))
   expect_equal(sum(z$one_to_one_native_contract_complete),0L)
-  expect_identical(unique(z$contract_certification_evidence_state[
+  expect_setequal(unique(z$contract_certification_evidence_state[
     z$contract_certification_candidate]),
-    "numeric_fixtures_passed_full_contract_review_pending")
+    c("numeric_fixtures_passed_full_contract_review_pending",
+      "author_scoped_reviewed"))
   expect_error(etr_native_parity_catalog(require_complete=TRUE),
     "NOT complete")
   expect_identical(before,reticulate::py_available(initialize=FALSE))
@@ -187,6 +191,6 @@ test_that("exact published Python 1.2 ALR and distance contract oracle is opt-in
   # Source-oracle PASS means candidate evidence exists. It does not
   # self-authorize reviewer approval or automatic full certification.
   z<-etr_native_parity_catalog()
-  expect_equal(sum(z$contract_certification_candidate),4L)
+  expect_equal(sum(z$contract_certification_candidate),5L)
   expect_equal(sum(z$one_to_one_native_contract_complete),0L)
 })

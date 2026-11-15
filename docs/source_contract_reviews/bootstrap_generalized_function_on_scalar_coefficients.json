@@ -20,7 +20,7 @@
     },
     {
       "path": "R/native-generalized-gee-source-scientific-record.R",
-      "sha256": "2bf1ca1b94381bb67e371556a184a628f7ac0197ddf9133df0533d33ab5ed3e1"
+      "sha256": "5279f204efe3889d4727231d1a04e6f2174a60c533c94efc5afa2da8fe5af01c"
     }
   ],
   "case_evidence": [
@@ -67,5 +67,20 @@
     "Unseeded NumPy random_state=None streams cannot be made identically random to unseeded R streams; seeded NumPy PCG64 streams and explicit index matrices are the tested contracts.",
     "Broader ill-conditioned convergence, non-integer Python seed objects and uncommon NumPy input coercions require further independent testing.",
     "Source reviews and hash attestations are developer-prepared; no independent certificate and no CRAN release claim."
-  ]
+  ],
+  "generalized_gee_source_review_20261114": {
+    "scope": "AUTHOR_SCOPED_NATIVE_GEE_SOURCE_FIELD_AND_MODEL_CLASS_REVALIDATION",
+    "head": "b840e42b1bb6c5096af47e8625e53ec805fe9cb6",
+    "old_native_sha256": "2bf1ca1b94381bb67e371556a184a628f7ac0197ddf9133df0533d33ab5ed3e1",
+    "current_native_sha256": "5279f204efe3889d4727231d1a04e6f2174a60c533c94efc5afa2da8fe5af01c",
+    "source_historical_revision": "e9b354165745",
+    "old_test_sha256": null,
+    "current_test_sha256": null,
+    "test_historical_revision": null,
+    "prior_review_record_sha256": "9b5ab1f4c40e4c3533b70a9ae7467642bc5652fbe0ac2a2b9053e6a2d9b3b372",
+    "review": "R record uses character-vector predictors/coefficient names and integer shape arrays, matching frozen Python 1.2 reticulate field semantics; restored S3 class during source field ordering so native GEE bootstrap methods are callable. Frozen Python test fixture now constructs tuple with reticulate::tuple. No GEE working correlation, covariance estimator or scientific estimand was changed.",
+    "frozen_python_replay": "User-confirmed direct frozen Python GEE fit/workflow source suite PASS 477 assertions with no failures; full changed-suite 4866 PASS, and earlier CRAN-style R build 0 errors/warnings.",
+    "full_backend_python_identity": false,
+    "independently_certified": false
+  }
 }

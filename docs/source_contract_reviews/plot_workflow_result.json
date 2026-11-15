@@ -12,7 +12,7 @@
   "native_files": [
     {
       "path": "R/native-workflow-plot-dispatch.R",
-      "sha256": "5c859514980cab78084b9f8c8625c6e1d6a3324b141a70c79f1a1c357b223f55"
+      "sha256": "42ce3d77db6e773a9a1c291938e0385b2b39f364a857e2e7aa85841126ace69b"
     }
   ],
   "case_evidence": [
@@ -59,5 +59,14 @@
     "No Python Matplotlib Axes identity or arbitrary axes injection.",
     "Native strict recurrence does not silently subsample a matrix exceeding max_points.",
     "Underlying fit, covariance, optimizer, scientific sampling semantics and Python exception classes are not fully independently qualified."
-  ]
+  ],
+  "legacy_public_function_deduplication_revalidation_20261114": {
+    "review_type": "SOURCE_REFACTOR_NO_ESTIMAND_CHANGE",
+    "previous_sha256": "5c859514980cab78084b9f8c8625c6e1d6a3324b141a70c79f1a1c357b223f55",
+    "current_sha256": "42ce3d77db6e773a9a1c291938e0385b2b39f364a857e2e7aa85841126ace69b",
+    "source_path": "R/native-workflow-plot-dispatch.R",
+    "reason": "Public plot_workflow_result/save_workflow_figure had two top-level R definitions, where later strict-source wrappers captured earlier implementations. The first implementations are now named stable .etr_workflow_legacy_plot/.etr_workflow_legacy_save helpers and the redundant capture aliases removed. The public strict-source wrappers and functional bodies are unchanged. This is a source structure fix, not new Python full-domain parity or independent review.",
+    "exact_head_regression_replay": "PENDING",
+    "independently_certified": false
+  }
 }

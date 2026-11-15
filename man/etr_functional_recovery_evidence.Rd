@@ -1,9 +1,10 @@
-\name{etr_functional_recovery_result}
+\name{etr_functional_recovery_evidence}
+\alias{etr_functional_recovery_evidence}
 \alias{etr_functional_recovery_result}
 \alias{etr_functional_recovery_frame}
 \alias{etr_functional_recovery_failure_frame}
 \alias{etr_functional_recovery_summary_frame}
-\alias{etr_plot_functional_recovery_summary}
+
 \title{Native functional recovery evidence and descriptive Monte Carlo diagnostics}
 \description{
 Independently validated recovery records, per-replicate source metric
@@ -16,9 +17,7 @@ or infer scientific qualification cutoffs.
 etr_functional_recovery_result(records, metric_definitions = list())
 etr_functional_recovery_frame(result)
 etr_functional_recovery_failure_frame(result)
-etr_functional_recovery_summary_frame(result, python_boundary_mode = FALSE)
-etr_plot_functional_recovery_summary(summary, metric,
-  statistic = "median", ...)
+etr_functional_recovery_summary_frame(result, python_boundary_mode = TRUE)
 }
 \arguments{
 \item{records}{Nonempty list of explicit scenario replicate records:
@@ -36,12 +35,10 @@ constructor; not a Python dataclass.}
 \item{python_boundary_mode}{Use the frozen NumPy double-precision
 pairwise reductions and linear interpolation arithmetic for the
 group summary. The default uses R's native arithmetic.}
-\item{summary}{Native descriptive functional recovery summary data frame.}
-\item{metric}{Exact recovery metric name in the summary.}
-\item{statistic}{Numeric recovery summary field; median displays
-the observed IQR if q25 and q75 are present. Other scalar statistics
-are drawn without invented uncertainty intervals.}
-\item{...}{Further base R graphics parameters.}
+
+
+
+
 }
 \value{
 The constructor returns an explicit \code{etr_functional_recovery_result}

@@ -2,8 +2,8 @@
   "audit_version": "source-contract-v1",
   "python_name": "fit_sparse_mfpca",
   "frozen_python_commit": "c1cd95ad718327550f7e55393ff38582872f7a94",
-  "scope": "FULL_SOURCE_SCIENTIFIC_CONTRACT_REVIEW_ON_DECLARED_DOMAIN",
-  "author_decision": "FULL_CONTRACT_REVIEWED",
+  "scope": "SCOPED_SPARSE_SCIENTIFIC_SOURCE_CONTRACT_ON_DECLARED_DOMAIN",
+  "author_decision": "SCOPED_CONTRACT_REVIEWED",
   "independently_certified": false,
   "source_location": "src/eyetrajectoriespy/sparse_multivariate.py::fit_sparse_mfpca and src/eyetrajectoriespy/types.py::SparseMFPCAResult",
   "native_signature": "etr_fit_sparse_mfpca(trajectories,...,backend='native_covariance',strict_source_record=TRUE)",
@@ -63,5 +63,17 @@
     "R record is a strict scientific field envelope, not a drop-in Python object or backend-native fitted model.",
     "The full domain of poorly conditioned score systems, low-support covariance, nonfinite missingness policies and optional source coercions needs further Python source differential evidence.",
     "No independently certified contract, no completed CI qualification, no merge to main or CRAN claim."
-  ]
+  ],
+  "classification_reconciliation_20261114": {
+    "previous_classification": {
+      "scope": "FULL_SOURCE_SCIENTIFIC_CONTRACT_REVIEW_ON_DECLARED_DOMAIN",
+      "author_decision": "FULL_CONTRACT_REVIEWED"
+    },
+    "new_classification": {
+      "scope": "SCOPED_SPARSE_SCIENTIFIC_SOURCE_CONTRACT_ON_DECLARED_DOMAIN",
+      "author_decision": "SCOPED_CONTRACT_REVIEWED"
+    },
+    "reason": "Declared sparse FPCA/MFPCA/PACE or W2 workflow source-scientific behavior has existing six-domain evidence, but the documented exclusion of Python dataclass and NumPy runtime identity, unverified ill-conditioned/error boundaries, and pending exact-head tests do not justify an unrestricted FULL_SOURCE_CONTRACT classification. Retain the original evidence, limit claims to the declared scientific R-native domain, do not alter any numerical estimator.",
+    "independently_certified": false
+  }
 }

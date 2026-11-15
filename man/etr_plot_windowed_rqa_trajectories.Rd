@@ -2,7 +2,8 @@
 \alias{etr_plot_windowed_rqa_trajectories}
 \title{Plot source functional windowed RQA trajectories and optional ensemble mean}
 \usage{
-etr_plot_windowed_rqa_trajectories(result, metric, show_mean = FALSE, max_curves = NULL, strict_source_record = FALSE, ...)
+etr_plot_windowed_rqa_trajectories(result, metric, show_mean = FALSE,
+  max_curves = NULL, strict_source_record = FALSE, ...)
 }
 \arguments{
 \item{result}{Native precomputed functional windowed RQA trajectories.}

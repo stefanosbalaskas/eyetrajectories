@@ -186,6 +186,8 @@ test_that("genuine native FPCA bootstrap model output drives all three scientifi
   expect_s3_class(scores,"etr_fpca_score_uncertainty")
   expect_s3_class(spec,"etr_fpca_spectrum_uncertainty")
   expect_s3_class(band,"etr_fpca_component_band")
+  expect_identical(band$reference$n_components,2L)
+  expect_identical(dim(band$lower)[1L],2L)
   .etr_uncertainty_three_pdf({
     a<-etr_plot_fpca_score_uncertainty(scores,
       component=0L,max_targets=3L,strict_source_record=TRUE)

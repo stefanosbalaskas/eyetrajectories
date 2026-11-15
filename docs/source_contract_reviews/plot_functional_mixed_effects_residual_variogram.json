@@ -24,37 +24,37 @@
       "kind": "source_signature",
       "description": "Pinned Python 1.2 src/eyetrajectoriespy/functional_mixed_effects_diagnostics.py::plot_functional_mixed_effects_residual_variogram, matched by native strict scientific plot mode rather than replacing actual statistical calculations.",
       "path": "tests/testthat/test-native-mixed-four-diagnostic-artists-20261112.R",
-      "sha256": "04a0a55a98b5a253a4b2503f830c06a7b09eee887046f77a06e0aeb79069ca3f"
+      "sha256": "b49e77302a5f5c1432f99a7104a4b907b11f6474827e299c6914eb7cd5c3034f"
     },
     {
       "kind": "accepted_input_domain",
       "description": "Real joint likelihood native residual diagnostics with explicit raw or covariance-whitened scale, trial curve ID, participant ID or overall summary; genuine nlme likelihood provenance required by strict R source scientific mode. No moments estimator/unknown Python Matplotlib object is substituted.",
       "path": "tests/testthat/test-native-mixed-four-diagnostic-artists-20261112.R",
-      "sha256": "04a0a55a98b5a253a4b2503f830c06a7b09eee887046f77a06e0aeb79069ca3f"
+      "sha256": "b49e77302a5f5c1432f99a7104a4b907b11f6474827e299c6914eb7cd5c3034f"
     },
     {
       "kind": "numerical_outputs",
       "description": "Retains source semivariance: one-half of observed within-trial squared residual differences at each index lag, x=mean observed physical time displacement; retains all paired min/max lag bounds. Native strict scientific plots compare real likelihood-derived source line arrays and labels against pinned Python 1.2 public Matplotlib artist on same diagnostics. Exact-head CI has not run green.",
       "path": "tests/testthat/test-native-mixed-four-diagnostic-artists-20261112.R",
-      "sha256": "04a0a55a98b5a253a4b2503f830c06a7b09eee887046f77a06e0aeb79069ca3f"
+      "sha256": "b49e77302a5f5c1432f99a7104a4b907b11f6474827e299c6914eb7cd5c3034f"
     },
     {
       "kind": "exception_semantics",
       "description": "Fail closed for nonnative diagnostics, unselected trial/participant, unknown curve ID, invalid physical lag bounds and nonlogical strict flag; maintain valid lag zero semivariance exactly zero. Python KeyError/ValueError and axes injection are not identical.",
       "path": "tests/testthat/test-native-mixed-four-diagnostic-artists-20261112.R",
-      "sha256": "04a0a55a98b5a253a4b2503f830c06a7b09eee887046f77a06e0aeb79069ca3f"
+      "sha256": "b49e77302a5f5c1432f99a7104a4b907b11f6474827e299c6914eb7cd5c3034f"
     },
     {
       "kind": "returned_schema",
       "description": "Native strict R one-panel source semivariance artist marker=o with original Time physical-lag labels, raw/whitened residual y-axis, conditional nonuniform-lag warning title, no zero-reference line as in Python. Not a live Matplotlib Axes; default native dataframe return unchanged.",
       "path": "tests/testthat/test-native-mixed-four-diagnostic-artists-20261112.R",
-      "sha256": "04a0a55a98b5a253a4b2503f830c06a7b09eee887046f77a06e0aeb79069ca3f"
+      "sha256": "b49e77302a5f5c1432f99a7104a4b907b11f6474827e299c6914eb7cd5c3034f"
     },
     {
       "kind": "scientific_estimand",
       "description": "Within-trial residual process empirical semivariogram at index lags, weighted descriptive participant/overall summaries, source true physical lag offsets and no hidden Gaussian serial family selection.",
       "path": "tests/testthat/test-native-mixed-four-diagnostic-artists-20261112.R",
-      "sha256": "04a0a55a98b5a253a4b2503f830c06a7b09eee887046f77a06e0aeb79069ca3f"
+      "sha256": "b49e77302a5f5c1432f99a7104a4b907b11f6474827e299c6914eb7cd5c3034f"
     }
   ],
   "additional_regression_evidence": [
@@ -70,5 +70,17 @@
     "Accepted source plot data reflect the exact already-fitted native scientific model, not independently proved end-to-end optimizer parity.",
     "The band-width ratio plot remains OPEN because current joint likelihood sensitivity intentionally refuses unqualified simultaneous bands; it is NOT counted as closed.",
     "Independent Python exception type/state parity and external reviewer sign-off are outstanding."
-  ]
+  ],
+  "test_evidence_revalidation_20261114": {
+    "scope": "AUTHOR_SIX_DOMAIN_DIRECT_TEST_REVALIDATION",
+    "source_head": "50006e3979937c277ff5dd2a72707fe427cbd130",
+    "test_git_commit": "bd8365bec71f",
+    "old_test_sha256": "04a0a55a98b5a253a4b2503f830c06a7b09eee887046f77a06e0aeb79069ca3f",
+    "current_test_sha256": "b49e77302a5f5c1432f99a7104a4b907b11f6474827e299c6914eb7cd5c3034f",
+    "previous_review_record_sha256": "296dd2303c9402a189d276500e7dc040a9aa1d30c1bf43c51e4ea008b23ff47e",
+    "reviewed_difference": "One-line correction of expected explicit failure message; actual calibration precondition and all native/Python scientific plot cases unchanged.",
+    "verified_changed_hunks": 1,
+    "replay": "2026-11-14 user-confirmed frozen Python 1.2 replay: 95 passing assertions in this affected test file, 4866 passing across all changed source-test files, 0 fail/warn/skip",
+    "independent_certification": false
+  }
 }

@@ -85,7 +85,9 @@ test_that("portable fixed-mode W2 workflow retains nested fitted scientific stat
     file.path(output,"result"))
   expect_identical(snapshot$result_type,
     "eyetrajectoriespy.workflows._sparse_mfpca.SparseMFPCAWorkflowResult")
-  expect_identical(names(snapshot$payload)[-1L],
+  # Frozen portable_results.py writes JSON with sort_keys=True;
+  # round-tripped mapping order is lexical, not dataclass field order.
+  expect_setequal(names(snapshot$payload)[-1L],
     names(f$workflow))
   expect_identical(snapshot$payload$fit[["__python_type__"]],
     "eyetrajectoriespy.types.SparseMFPCAResult")
@@ -102,10 +104,13 @@ test_that("portable fixed-mode W2 workflow retains nested fitted scientific stat
   expect_true(is.finite(snapshot$payload$steps[[1L]]$elapsed_seconds))
   expect_identical(snapshot$payload$config[["__python_type__"]],
     "eyetrajectoriespy.workflows._sparse_mfpca.SparseMFPCAWorkflowConfig")
-  expect_identical(names(snapshot$payload$config)[-1L],
+  expect_setequal(names(snapshot$payload$config)[-1L],
     names(f$workflow$config))
-  expect_identical(snapshot$payload$provenance,
-    f$workflow$provenance)
+  # Python 1.2 portable manifests sort nested JSON mapping keys too.
+  # Compare canonical source JSON values rather than R list insertion order.
+  expect_identical(
+    eyetrajectories:::.etr_python_json_encode(snapshot$payload$provenance),
+    eyetrajectories:::.etr_python_json_encode(f$workflow$provenance))
   expect_length(snapshot$nonportable_fields,0L)
   checks<-readLines(file.path(output,"SHA256SUMS"))
   expect_setequal(substring(checks,67L),
@@ -175,7 +180,8 @@ def _spm_validate_portable(fitdir,bundledir,score0,source_field_count):
     w=et.load_portable_result(root/manifest['portable_result_directory'])
     def assert_source(payload,cls):
         assert payload['__python_type__']==cls.__module__+'.'+cls.__qualname__
-        assert list(payload)[1:]==[field.name for field in fields(cls)]
+        assert set(payload)-{'__python_type__'}=={field.name for field in fields(cls)}
+        assert len(payload)==len(fields(cls))+1
     assert_source(f.payload,et.SparseMFPCAResult)
     assert len(fields(et.SparseMFPCAResult))==source_field_count==29
     assert np.isclose(f.payload['scores'][0,0],score0)
@@ -192,8 +198,11 @@ def _spm_validate_portable(fitdir,bundledir,score0,source_field_count):
     assert w.payload['steps'][0]['elapsed_seconds']>=0
     assert w.payload['decisions']['psd_action']['source']=='analyst'
     lines=(root/'SHA256SUMS').read_text(encoding='utf-8').splitlines()
-    actual={str(p.relative_to(root)) for p in root.rglob('*') if p.is_file()}
-    assert {line.split('  ',1)[1] for line in lines}==actual-{'SHA256SUMS'}
+    # WindowsPath.__str__ uses backslashes; frozen Python exporter hashes
+    # POSIX-form relative archive paths (Path.as_posix()).
+    actual={p.relative_to(root).as_posix() for p in root.rglob('*') if p.is_file()}
+    checksum_names={line.split('  ',1)[1] for line in lines}
+    assert checksum_names==actual-{'SHA256SUMS'}, (sorted(checksum_names),sorted(actual))
     for line in lines:
         sha,path=line.split('  ',1)
         assert sha256((root/path).read_bytes()).hexdigest()==sha,path

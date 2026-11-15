@@ -5,3 +5,9 @@
 ^docs$
 ^scripts$
 ^LICENSE\.md$
+^\.venv-science$
+^\.venv([.-].*)?$
+^eyetrajectories_source_[0-9a-fA-F]+\.zip$
+
+# Exclude any compiled binary/object files left in src/ by local R builds
+^src/.*\.(o|obj|dll|so|dylib|a)$

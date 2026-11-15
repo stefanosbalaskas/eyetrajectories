@@ -154,7 +154,7 @@ test_that("native mixed diagnostic artists preserve physical index lags, error b
       "strict source sensitivity")
     expect_error(etr_plot_covariance_sensitivity_band_widths(
       sens,coefficient="cue",strict_source_record=TRUE),
-      "independently qualified native bands")
+      "paired calibrated participant bootstrap provenance")
     expect_error(etr_plot_functional_variance_decomposition(
       fit,model="base",strict_source_record=TRUE),
       "only accepted for a covariance sensitivity")

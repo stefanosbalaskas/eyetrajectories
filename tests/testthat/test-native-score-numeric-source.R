@@ -17,8 +17,8 @@ test_that("finite source-mode score distances retain symmetric Euclidean geometr
   expect_identical(dim(source),c(3L,3L))
   expect_equal(unname(diag(source)),rep(0,3L),tolerance=0)
   expect_equal(unname(source),unname(t(source)),tolerance=0)
-  expect_true(etr_native_parity_catalog()$source_contract_gap_unresolved[
-    etr_native_parity_catalog()$python_name=="score_distance_matrix"])
+  .etr_expect_source_gap_matches_registry(etr_native_parity_catalog()[
+    etr_native_parity_catalog()$python_name=="score_distance_matrix",,drop=FALSE])
 })
 
 test_that("source-mode dense score overflow follows frozen sklearn output domain", {
