@@ -1,22 +1,20 @@
 Package: eyetrajectories
-Title: R Interface for Functional Eye-Tracking Trajectories
-Version: 0.4.1.9000
+Title: Functional Analysis of Eye-Tracking Trajectories
+Version: 0.4.2
 Authors@R: person("Stefanos", "Balaskas", email = "s.balaskas@ac.upatras.gr", role = c("aut", "cre"))
-Description: Provides an experimental R interface to the Python package
-    'eyetrajectoriespy' for continuous eye-tracking trajectory analysis.
-    Provides a standalone native R core for common-grid trajectories,
-    explicit preprocessing, quadrature-weighted dense FPCA and MFPCA,
-    distances, kinematics, basic recurrence analysis and plots, alongside
-    optional Python-backed advanced methods through reticulate. The native
-    functionality requires no Python installation. Includes an experimental
-    R-native sparse PACE adapter backed by 'fdapace', participant-level
-    functional decomposition, cluster bootstrap diagnostics and discrete
-    transfer entropy. Provides additional optional Python-backed wrappers
-    for the 380 public Python functions recorded in the 2026-10-25 source
-    snapshot, without implying native R parity. Research-only native
-    extensions provide explicit landmark registration, delayed embeddings,
-    binary recurrence network diagnostics and split-conformal anomaly screens.
+Description: Provides native R tools for time-indexed eye-tracking
+    trajectories, including validation, explicit preprocessing, kinematics,
+    trajectory distances, functional principal component analysis, multivariate
+    functional principal component analysis and recurrence diagnostics.
+    Includes experimental sparse and multilevel functional methods and
+    participant-level resampling with documented methodological restrictions.
+    An optional interface to the Python package 'eyetrajectoriespy' is
+    available through 'reticulate'; native R methods do not require Python.
+    Availability of an interface does not imply numerical equivalence between
+    implementations.
 License: MIT + file LICENSE
+URL: https://github.com/stefanosbalaskas/eyetrajectories
+BugReports: https://github.com/stefanosbalaskas/eyetrajectories/issues
 Encoding: UTF-8
 Depends: R (>= 4.2.0)
 Imports:
