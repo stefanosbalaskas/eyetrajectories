@@ -42,4 +42,6 @@ jobs:
         uses: r-lib/actions/check-r-package@v2
         with:
           args: 'c("--as-cran")'
-          error-on: never
+          # The action evaluates this input as R code: quote the R string.
+          # Reject errors and warnings; retain NOTES for inspection.
+          error-on: '"warning"'
