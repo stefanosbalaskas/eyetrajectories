@@ -1,8 +1,15 @@
 name: R cross-platform CRAN-style matrix (manual)
 
-# Private-repository runner admission unresolved; manual dispatch only.
+# Manual qualification is retained. A temporary branch-only push trigger
+# validates the complete four-platform matrix on the approved Windows font fix.
+# The branch filter cannot trigger this workflow on main or any stacked PR.
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - fix/ci-matrix-oracle-validation-20261115
+    paths:
+      - '.github/workflows/R-cross-platform-manual.yaml'
 
 permissions:
   contents: read
