@@ -46,6 +46,15 @@
   </a>
 </div>
 
+<div class="et-gallery-home">
+  <div class="et-gallery-home-copy"><p class="et-eyebrow">SCIENTIFIC FIGURE ATLAS</p>
+    <h2>See functional methods in action.</h2>
+    <p>Five reproducible native R figures: multilevel variation, participant means, time-varying contrasts, sparse sampling and nonlinear sensitivity. All use synthetic examples with explicit limitations.</p>
+    <a class="et-button et-button-primary" href="SITE_GALLERY.html">Explore the figure gallery →</a>
+  </div>
+  <a href="SITE_GALLERY.html" class="et-gallery-home-image" aria-label="Explore scientific figures"><img loading="lazy" src="gallery/02_participant_mean_band.png" alt="A synthetic functional mean and an experimental uncertainty ribbon." /></a>
+</div>
+
 <div class="et-section-intro et-section-intro-small">
   <p class="et-eyebrow">TWO IMPLEMENTATION PATHS</p>
   <h2>Native R first. Python only when requested.</h2>

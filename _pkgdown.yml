@@ -26,7 +26,7 @@ repo:
 navbar:
   bg: light
   structure:
-    left: [start, methods, reference, bridge, validation, news]
+    left: [start, methods, gallery, reference, bridge, validation, news]
     right: [search, github, lightswitch]
   components:
     start:
@@ -35,6 +35,9 @@ navbar:
     methods:
       text: Methods
       href: SITE_METHODS.html
+    gallery:
+      text: Figure gallery
+      href: SITE_GALLERY.html
     bridge:
       text: Python bridge
       href: SITE_BRIDGE.html
