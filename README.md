@@ -8,28 +8,28 @@
 
 The package contains **native, Python-free R methods** for trajectory structures and explicit preprocessing, kinematics, distances, dense common-grid functional PCA and multivariate PCA, recurrence analysis and visualization. Additional methods for sparse functional observations, multilevel decomposition, functional regression, uncertainty assessment and nonlinear analysis are experimental and have method-specific assumptions.
 
-An **optional Python 1.2 bridge** through \`reticulate\` exposes selected functions from the separately published \`eyetrajectoriespy\` package. Loading \`eyetrajectories\` does **not** require a Python installation. Python wrappers, source-API mapping and author-tested R code should not be interpreted as exact native R implementations of all Python algorithms.
+An **optional Python 1.2 bridge** through `reticulate` exposes selected functions from the separately published `eyetrajectoriespy` package. Loading `eyetrajectories` does **not** require a Python installation. Python wrappers, source-API mapping and author-tested R code should not be interpreted as exact native R implementations of all Python algorithms.
 
 ## Install the exact source revision
 
 For source installation while release review is ongoing, use a specific GitHub revision:
 
-\`\`\`r
+```r
 install.packages("remotes")
 remotes::install_github(
   "stefanosbalaskas/eyetrajectories",
   ref = "release/eyetrajectories-0.4.2-rc1-20261116",
-  dependencies = TRUE
+  dependencies = NA
 )
 library(eyetrajectories)
 packageVersion("eyetrajectories")
-\`\`\`
+```
 
 Installing from GitHub requires relevant R build tools and optional packages for the methods you choose. Do not treat this command as a CRAN installation until a CRAN release actually appears.
 
 ## Native R: reproducible synthetic example
 
-\`\`\`r
+```r
 library(eyetrajectories)
 
 synthetic <- etr_simulate_hierarchical(
@@ -45,9 +45,9 @@ fit <- etr_fit_multilevel_fpca(
   n_within = 2L
 )
 etr_multilevel_variance(fit)
-\`\`\`
+```
 
-This is **synthetic demonstration data**, not human observations, and the output is descriptive. Assess method-specific numerical assumptions and sampling units before drawing inferential conclusions. Review the individual function documentation with \`help(package = "eyetrajectories")\`.
+This is **synthetic demonstration data**, not human observations, and the output is descriptive. Assess method-specific numerical assumptions and sampling units before drawing inferential conclusions. Review the individual function documentation with `help(package = "eyetrajectories")`.
 
 ## Scientific assurance: what we do and do not claim
 
@@ -57,9 +57,9 @@ The CRAN-style release checks test packaging, examples and included tests. Passi
 
 ## Reproduce qualification
 
-- [Scientific versus source parity](docs/SCIENTIFIC_VS_SOURCE_PARITY.md)
-- [Experimental R release scope](docs/experimental-release-scope.md)
-- [Release qualification runbook](docs/QUALIFICATION_RUNBOOK_20261113.md)
+- [Scientific versus source parity](https://github.com/stefanosbalaskas/eyetrajectories/blob/release/eyetrajectories-0.4.2-rc1-20261116/docs/SCIENTIFIC_VS_SOURCE_PARITY.md)
+- [Experimental R release scope](https://github.com/stefanosbalaskas/eyetrajectories/blob/release/eyetrajectories-0.4.2-rc1-20261116/docs/experimental-release-scope.md)
+- [Release qualification runbook](https://github.com/stefanosbalaskas/eyetrajectories/blob/release/eyetrajectories-0.4.2-rc1-20261116/docs/QUALIFICATION_RUNBOOK_20261113.md)
 - [GitHub Actions](https://github.com/stefanosbalaskas/eyetrajectories/actions)
 - [Issue tracker](https://github.com/stefanosbalaskas/eyetrajectories/issues)
 
@@ -67,4 +67,4 @@ The complete prior development README remains available in Git history; this rel
 
 ## License
 
-MIT. See [LICENSE](LICENSE) and [LICENSE.md](LICENSE.md) if present.
+MIT. See the [LICENSE](LICENSE) file.

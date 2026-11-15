@@ -19,7 +19,7 @@ scientific source parity or independent certificate is claimed.
 ## Publication gates
 
 - [ ] Freeze candidate commit after all necessary fixes.
-- [ ] R CMD build creates \`eyetrajectories_0.4.2.tar.gz\` and SHA256.
+- [ ] R CMD build creates `eyetrajectories_0.4.2.tar.gz` and SHA256.
 - [ ] Exact same tarball passes R CMD check --as-cran on R-devel, Windows,
       macOS, Ubuntu release and Ubuntu previous-release environments.
 - [ ] 0 ERROR and 0 WARNING everywhere; all NOTES reviewed and explained.

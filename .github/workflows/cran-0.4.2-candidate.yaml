@@ -80,6 +80,9 @@ jobs:
       R_KEEP_PKG_SOURCE: 'yes'
     steps:
       - uses: actions/checkout@v6
+      - uses: r-lib/actions/setup-pandoc@v2
+        with:
+          pandoc-version: '3.8.3'
       - uses: actions/download-artifact@v4
         with:
           name: eyetrajectories-0.4.2-CRAN-source
@@ -108,6 +111,22 @@ jobs:
           }
           if (-not $font) { throw "Courier font metric missing" }
           Write-Host "WINDOWS_COURIER_FOUND: $font"
+      - name: Install recent HTML Tidy for genuine CRAN Rd validation
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            sudo apt-get update -qq
+            sudo apt-get install -y tidy
+            tidy --version
+          else
+            brew install tidy-html5
+            TIDY="$(brew --prefix tidy-html5)/bin/tidy"
+            test -x "$TIDY"
+            "$TIDY" --version
+            echo "R_TIDYCMD=$TIDY" >> "$GITHUB_ENV"
+          fi
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck, any::V8, any::digest
