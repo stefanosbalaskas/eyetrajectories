@@ -39,12 +39,12 @@ jobs:
       - name: Install Windows Courier font for PDF manual
         if: runner.os == 'Windows'
         shell: pwsh
+        timeout-minutes: 12
         run: |
           $ErrorActionPreference = 'Stop'
-          # TeX Live exposes tlmgr.bat on Windows, which PowerShell resolves via PATHEXT.
+          # Do not run a TeX Live self-update during CI; it may block on CTAN.
+          # Install the one required font package with a bounded step duration.
           $tlmgr = (Get-Command tlmgr -ErrorAction Stop).Source
-          & $tlmgr update --self
-          if ($LASTEXITCODE -ne 0) { throw "tlmgr self-update failed" }
           & $tlmgr install courier
           if ($LASTEXITCODE -ne 0) { throw "Courier installation failed" }
           $kpsewhich = (Get-Command kpsewhich -ErrorAction Stop).Source
