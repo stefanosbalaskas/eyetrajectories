@@ -34,6 +34,19 @@ jobs:
           r-version: ${{ matrix.r }}
           use-public-rspm: true
       - uses: r-lib/actions/setup-tinytex@v2
+      # Windows TinyTeX lacked pcrr8t.tfm (Courier): verify the actual
+      # PDF-manual prerequisite instead of suppressing --as-cran.
+      - name: Install Windows Courier font for PDF manual
+        if: runner.os == 'Windows'
+        shell: Rscript {0}
+        run: |
+          tinytex::tlmgr_install("courier")
+          font <- suppressWarnings(system2(
+            "kpsewhich", "pcrr8t.tfm", stdout = TRUE, stderr = TRUE
+          ))
+          if (!length(font) || !any(grepl("pcrr8t.tfm", font, fixed = TRUE))) {
+            stop("Missing Courier TFM pcrr8t.tfm after TeX package installation")
+          }
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck
