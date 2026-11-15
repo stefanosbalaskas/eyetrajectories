@@ -8,7 +8,7 @@ if (!requireNamespace("V8", quietly = TRUE)) {
 }
 tarball <- file.path("candidate", "eyetrajectories_0.4.2.tar.gz")
 if (!file.exists(tarball)) stop("Missing exact candidate tarball.")
-expected_md5 <- readLines(file.path("candidate", "candidate.md5"), warn = FALSE)
+expected_md5 <- trimws(readLines(file.path("candidate", "candidate.md5"), warn = FALSE))
 actual_md5 <- unname(tools::md5sum(tarball))
 if (length(expected_md5) != 1L || !identical(actual_md5, expected_md5)) {
   stop("Downloaded tarball failed source checksum verification.")
