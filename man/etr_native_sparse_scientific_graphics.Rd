@@ -6,7 +6,8 @@
 population objects and original irregular observations, retaining scientific
 coordinate values from the frozen Python 1.2 source. No estimator is refit.}
 
-\arguments{
+\section{Plotting parameters}{
+\describe{
 \item{result}{Explicit native R-list fitted sparse FPCA or MFPCA record
 with grid, covariance, eigenfunctions, uncertainty and dimensions.}
 \item{component}{Zero-based integer index of a retained component.}
@@ -17,6 +18,7 @@ standard deviation used for the mean-plus/minus perturbation.}
 \item{trajectories}{Native irregular-trajectory R-list with per-curve times
 and observed coordinate matrices.}
 \item{dimension}{Explicit dimension identifier from trajectories.}
+}
 }
 \value{Base R plots on the active graphics device. In each case the
 source-ordered numerical plot geometry is returned invisibly; unlike
