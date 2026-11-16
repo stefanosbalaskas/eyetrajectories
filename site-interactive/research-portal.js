@@ -177,7 +177,7 @@ function displayAudit(a){
  el("p",root,"Preflight does not read calibration files, classify fixations/AOIs, estimate effects, infer MNAR mechanisms or run R/Python. No raw observations are retained in the exported summary.");
 }
 function clearAudit(){
- audit=null;$("exportAudit").disabled=true;
+ audit=null;$("exportAudit").disabled=true;$("applyStructure").disabled=true;
  $("preflightReport").replaceChildren(el("p",null,"No local data has been inspected yet."));
 }
 const sample=[
@@ -204,6 +204,7 @@ $("preflightForm").addEventListener("submit",async event=>{
   const content=file?await file.text():typed;
   audit=inspectCSV(content,$("timeUnit").value,$("coordUnit").value);
   $("exportAudit").disabled=false;
+  $("applyStructure").disabled=audit.participants===0||audit.invalidIds>0;
   displayAudit(audit);setStatus("Browser-only structural inspection completed for "+audit.rows+" rows. No raw gaze data was uploaded.","success");
  }catch(e){clearAudit();setStatus("Inspection blocked: "+e.message,"error");}
 });
@@ -213,6 +214,12 @@ $("exportAudit").addEventListener("click",()=>{
  const url=URL.createObjectURL(blob),a=el("a",document.body);
  a.href=url;a.download="eyetrajectories_structural_preflight_summary.json";
  a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);
+});
+$("applyStructure").addEventListener("click",()=>{
+ if(!audit)return;
+ $("obsGrid").value=audit.commonGrid?"dense":"unknown";
+ $("studyHierarchy").value=audit.repeatedParticipants?"repeated":"independent";
+ renderWizard();$("selector").scrollIntoView({block:"start"});
 });
 // Native R mapping is a scientific navigator, never a model fit.
 function chooseRoute({grid,goal,hierarchy,uncertainty}){
