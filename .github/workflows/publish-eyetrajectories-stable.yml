@@ -54,8 +54,15 @@ jobs:
         run: |
           set -euo pipefail
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            echo "::error::Stable release already exists; refusing to overwrite immutable published assets"
-            exit 1
+            current_digest="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq '.assets[] | select(.name == "eyetrajectories_0.4.2.tar.gz") | .digest')"
+            current_prerelease="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq '.prerelease')"
+            current_target="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq '.target_commitish')"
+            test "$current_digest" = "sha256:$SHA256"
+            test "$current_prerelease" = "false"
+            test "$current_target" = "$SOURCE_COMMIT"
+            echo "Existing stable release and exact source archive independently verified; no changes necessary."
+            gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json url,tagName,isPrerelease,assets
+            exit 0
           fi
           cat > release-notes.md <<'NOTES'
           ## eyetrajectories 0.4.2
@@ -85,4 +92,4 @@ jobs:
             --target "$SOURCE_COMMIT" \
             --title "eyetrajectories 0.4.2" \
             --notes-file release-notes.md --latest=true
-          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json url,tagName,isPrerelease,isLatest,assets
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json url,tagName,isPrerelease,assets
