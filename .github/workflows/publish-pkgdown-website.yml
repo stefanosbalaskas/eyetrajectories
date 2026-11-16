@@ -102,6 +102,10 @@ jobs:
           stopifnot(grepl('class="et-advanced-grid"', home, fixed=TRUE))
           stopifnot(grepl('href="methods-laboratory.html"', home, fixed=TRUE))
           stopifnot(grepl('href="SITE_INTERACTIVE.html"', home, fixed=TRUE))
+          atlas_page <- paste(readLines('site/plot-atlas.html', warn=FALSE), collapse='\n')
+          stopifnot(grepl('id="onlyPreview" type="checkbox" checked',
+                         atlas_page, fixed=TRUE))
+          stopifnot(grepl('id="coverageNote"', atlas_page, fixed=TRUE))
           stopifnot(file.exists('site/reference/etr_fit_fpca.html'),
                     file.exists('site/reference/etr_dtw.html'),
                     file.exists('site/reference/etr_rqa_metrics.html'))
