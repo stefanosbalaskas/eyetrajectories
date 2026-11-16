@@ -77,6 +77,10 @@ jobs:
           stopifnot(grepl('class="et-hero-content"', home, fixed=TRUE))
           stopifnot(grepl('src="trajectory-explorer.html"', home, fixed=TRUE))
           stopifnot(!grepl('class="sourceCode"', home, fixed=TRUE))
+          stopifnot(grepl('class="et-interactive-showcase"', home, fixed=TRUE))
+          gallery <- paste(readLines('site/SITE_GALLERY.html', warn=FALSE), collapse='\n')
+          stopifnot(sum(gregexpr('<figure class="et-figure', gallery,
+                                 fixed=TRUE)[[1L]] > 0L) >= 5L)
           required <- c(
             'site/index.html', 'site/reference/index.html',
             'site/SITE_START.html', 'site/SITE_METHODS.html',
