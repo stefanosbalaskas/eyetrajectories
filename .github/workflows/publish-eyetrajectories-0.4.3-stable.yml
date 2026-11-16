@@ -1,0 +1,103 @@
+name: Publish eyetrajectories 0.4.3 stable GitHub release
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-eyetrajectories-0.4.3-stable.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: eyetrajectories-v0.4.3-stable-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.repository == 'stefanosbalaskas/eyetrajectories'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      QUALIFICATION_RUN: '43862845556'
+      SOURCE_COMMIT: '20e6db830d480b55456c2acf85e5fdb12cfa398f'
+      SHA256: '38f7b8eb05c71c3a0c4c266cc590b9afdb73906b0d9412cf52185523f649da5e'
+      TAG: 'v0.4.3'
+    steps:
+      - name: Verify six-platform qualification and exact release artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$QUALIFICATION_RUN" --jq '.conclusion')" = success
+          test "$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$QUALIFICATION_RUN" --jq '.head_sha')" = "$SOURCE_COMMIT"
+          jobs="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$QUALIFICATION_RUN/jobs?per_page=100")"
+          for matrix in \
+            "devel / windows-latest" \
+            "release / windows-latest" \
+            "release / macos-latest" \
+            "devel / ubuntu-latest" \
+            "release / ubuntu-latest" \
+            "oldrel-1 / ubuntu-latest"; do
+            jq -e --arg term "$matrix" \
+              '[.jobs[] | select(.name | contains($term)) | .conclusion] == ["success"]' \
+              <<< "$jobs" >/dev/null || { echo "::error::Matrix job incomplete: $matrix"; exit 1; }
+          done
+          mkdir -p candidate
+          gh run download "$QUALIFICATION_RUN" --repo "$GITHUB_REPOSITORY" \
+            --name eyetrajectories-0.4.3-CRAN-source --dir candidate
+          test -s candidate/eyetrajectories_0.4.3.tar.gz
+          printf '%s  %s\n' "$SHA256" candidate/eyetrajectories_0.4.3.tar.gz | sha256sum --check -
+          version="$(tar -xOf candidate/eyetrajectories_0.4.3.tar.gz eyetrajectories/DESCRIPTION | sed -n 's/^Version: //p' | tr -d '\r')"
+          test "$version" = '0.4.3'
+          ref_sha="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" 2>/dev/null | jq -r '.object.sha // empty' || true)"
+          if [ -n "$ref_sha" ] && [ "$ref_sha" != "$SOURCE_COMMIT" ]; then
+            echo "::error::Existing tag points to unqualified source"
+            exit 1
+          fi
+
+      - name: Publish stable GitHub release or verify existing publication
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            digest="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq '.assets[] | select(.name == "eyetrajectories_0.4.3.tar.gz") | .digest')"
+            published_type="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq '.prerelease')"
+            target="$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/$TAG" --jq '.target_commitish')"
+            test "$digest" = "sha256:$SHA256"
+            test "$published_type" = "false"
+            test "$target" = "$SOURCE_COMMIT"
+            echo "Exact v0.4.3 release already published and verified"
+            gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json url,tagName,isPrerelease,assets
+            exit 0
+          fi
+          cat > release-notes.md <<'NOTES'
+          ## eyetrajectories 0.4.3 — stable GitHub software release
+
+          First-submission CRAN pretest correction for the R package providing functional, geometric and statistical analysis of time-indexed eye-movement trajectories.
+
+          ### Changes since 0.4.2
+          - Corrected ten plotting-group Rd documentation topics with `\\arguments` but no corresponding `\\usage`, retaining their parameter descriptions.
+          - Enabled testthat edition-3 two-worker execution to reduce package check time without removing tests.
+          - Strengthened Rd documentation preflight against the issue raised by Debian CRAN incoming checks.
+          - No changes to statistical estimator algorithms or exported function signatures.
+
+          ### Verified source archive
+          - Attachment: `eyetrajectories_0.4.3.tar.gz`
+          - SHA-256: `38f7b8eb05c71c3a0c4c266cc590b9afdb73906b0d9412cf52185523f649da5e`
+          - Pinned qualified source commit: `20e6db830d480b55456c2acf85e5fdb12cfa398f`
+          - [Six-platform exact-source R CMD check --as-cran qualification](https://github.com/stefanosbalaskas/eyetrajectories/actions/runs/43862845556): Windows release/devel, macOS release, Linux release/oldrel-1/devel, all successful.
+          - Windows R-devel CI: zero errors, zero warnings, one expected "New submission" NOTE; overall check 390.8 seconds.
+          - Additional local Windows 11 / R 4.6.1 check of the identical archive: zero errors, zero warnings, one expected NOTE; check 265.1 seconds, all 199 Rd manuals parse, zero arguments-without-usage topics.
+
+          ### CRAN and scientific status
+          This is a stable **GitHub** source release, not a published CRAN package. The CRAN 0.4.3 resubmission and its independent incoming checks remain separate. Advanced scientific methods and Python-facing interfaces have method-specific validation limitations; the public API size does not imply independently certified parity for every algorithm.
+
+          The 0.4.2 GitHub release is preserved unchanged. For reproducible installation, use the attached SHA-256-verified archive rather than assuming the default main branch matches this qualified source.
+          NOTES
+          gh release create "$TAG" candidate/eyetrajectories_0.4.3.tar.gz \
+            --repo "$GITHUB_REPOSITORY" --target "$SOURCE_COMMIT" \
+            --title "eyetrajectories 0.4.3" \
+            --notes-file release-notes.md --latest=true
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json url,tagName,isPrerelease,assets
