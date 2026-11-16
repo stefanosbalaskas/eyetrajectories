@@ -156,6 +156,8 @@ add("etr_plot_transfer_surrogates","Recurrence & nonlinear",
       function()eyetrajectories::etr_plot_transfer_surrogates(worked$te),
       te_code,"etr_plot_transfer_surrogates(te)")))
 
+# Extend with validated scientific fixtures from the qualified native package.
+sys.source("scripts/extend_plot_atlas.R",envir=environment())
 ns <- readLines("NAMESPACE",warn=FALSE)
 exports <- grep("^export\\([A-Za-z][A-Za-z0-9_]*\\)$",ns,value=TRUE)
 exports <- sub("^export\\(([^)]+)\\)$","\\1",exports)
@@ -194,6 +196,8 @@ writeLines(c("eyetrajectories v0.4.3 actual native R plotting atlas",
   paste("Native plotting exports:",length(native)),
   paste("Python-backed plotting exports:",length(bridge)),
   paste("Directly illustrated exported native functions:",length(plot_spec)),
+  paste("New additional native R plotting exports:",length(atlas_new_success)),
+  paste("Unrendered additional fixture candidates:",length(atlas_new_failures)),
   paste("Native R generated PNG examples:",png_count),
   "The searchable function inventory was generated from the actual NAMESPACE.",
   "All previews are direct output from exported native R plotting functions, not recreated JavaScript approximations.",
