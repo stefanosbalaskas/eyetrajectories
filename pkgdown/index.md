@@ -5,6 +5,7 @@
 <p class="et-lead">Explore eye movements as time-varying mathematical trajectories. Use native R functional data analysis, kinematics, distances, recurrence and experimental statistical methods, with optional Python integration and explicit scientific limitations.</p>
 <div class="et-hero-actions">
 <a class="et-button et-button-primary" href="trajectory-explorer.html">Explore the trajectory lab <span aria-hidden="true">→</span></a>
+<a class="et-button et-button-ghost" href="plot-atlas.html">Browse actual R plots <span aria-hidden="true">→</span></a>
 <a class="et-button et-button-ghost" href="SITE_START.html">Get started with R</a>
 </div>
 <div class="et-hero-meta">
@@ -25,6 +26,13 @@
 <strong>Version 0.4.3 is archived on Zenodo.</strong>
 <p>Cite the exact software version used in research. The DOI is an archival identifier, not an endorsement by CRAN or independent validation of all methods.</p>
 <a href="https://doi.org/10.5281/zenodo.24288857" target="_blank" rel="noopener noreferrer">10.5281/zenodo.24288857</a>
+</section>
+
+<section class="et-atlas-spotlight" aria-labelledby="et-atlas-spotlight-heading">
+<div><p class="et-eyebrow">NEW · INTERACTIVE R PLOTTING ATLAS</p>
+<h2 id="et-atlas-spotlight-heading">Find a plotting function. See its real output.</h2>
+<p>Search the native R plotting API, compare variants directly produced by released <code>etr_plot_*()</code> functions, and copy the synthetic R examples. Optional Python-backed interfaces are listed separately rather than misrepresented by R figures.</p></div>
+<a href="plot-atlas.html" class="et-button et-button-primary">Explore actual R plot gallery →</a>
 </section>
 
 <div class="et-section-intro">
