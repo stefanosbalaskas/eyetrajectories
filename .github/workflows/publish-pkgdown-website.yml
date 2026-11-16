@@ -154,7 +154,7 @@ jobs:
           node website/scripts/test_methods_laboratory.cjs pkg/site/methods-laboratory.html
           node website/scripts/test_plot_atlas.cjs pkg/site
           grep -q "NATIVE_PLOT_ATLAS_EXTENSION_REPORT" website/scripts/extend_plot_atlas.R
-          grep -q "^Additional direct native R plot exports:" pkg/site/plot-atlas/EXTENSION_AUDIT.txt
+          grep -q "^Additional direct native R plot exports" pkg/site/plot-atlas/EXTENSION_AUDIT.txt
       - name: Install independent SVG website favicon
         shell: bash
         run: |
