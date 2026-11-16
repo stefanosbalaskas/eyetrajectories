@@ -94,7 +94,8 @@ jobs:
           http-user-agent: release
       - uses: r-lib/actions/setup-tinytex@v2
         env:
-          TINYTEX_INSTALLER: ${{ runner.os == 'Windows' && 'TinyTeX' || 'TinyTeX-1' }}
+          # R-devel Linux also needs the complete Courier font metrics for Rd PDFs.
+          TINYTEX_INSTALLER: ${{ (runner.os == 'Windows' || matrix.r == 'devel') && 'TinyTeX' || 'TinyTeX-1' }}
       - name: Verify Windows Courier for PDF manual
         if: runner.os == 'Windows'
         shell: pwsh
@@ -111,6 +112,20 @@ jobs:
           }
           if (-not $font) { throw "Courier font metric missing" }
           Write-Host "WINDOWS_COURIER_FOUND: $font"
+      - name: Verify Linux Courier font metrics for R-devel PDF manual
+        if: runner.os == 'Linux'
+        shell: bash
+        timeout-minutes: 5
+        run: |
+          set -euo pipefail
+          font="$(kpsewhich pcrr8t.tfm || true)"
+          if [ -z "$font" ]; then
+            echo "Missing pcrr8t.tfm. Installing Courier from explicit CTAN mirror."
+            timeout 150 tlmgr --repository https://mirrors.ibiblio.org/pub/mirrors/CTAN/systems/texlive/tlnet install courier
+            font="$(kpsewhich pcrr8t.tfm || true)"
+          fi
+          test -n "$font" || { echo "::error::Missing pcrr8t.tfm needed by R-devel PDF manual"; exit 1; }
+          echo "LINUX_COURIER_FOUND: $font"
       - name: Install recent HTML Tidy for genuine CRAN Rd validation
         if: runner.os != 'Windows'
         shell: bash
