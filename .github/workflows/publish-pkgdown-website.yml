@@ -144,7 +144,7 @@ jobs:
           PY
           node --check /tmp/eyetrajectories-lab.js
           node website/scripts/test_methods_laboratory.cjs pkg/site/methods-laboratory.html
-          node website/scripts/test_plot_atlas.cjs pkg/site/methods-laboratory.html
+          node website/scripts/test_plot_atlas.cjs pkg/site
       - name: Install independent SVG website favicon
         shell: bash
         run: |
