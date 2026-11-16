@@ -9,13 +9,15 @@ on their declared scientific scopes. Existing PACE score diagnostics retain
 separate prior documentation.
 }
 
-\arguments{
+\section{Plotting parameters}{
+\describe{
 \item{result}{Declared native R scientific result record with source
 geometry, fitted population quantities and precomputed diagnostics.}
 \item{component}{Zero-based retained FPCA component index.}
 \item{dimension}{Named functional dimension. The first is the default.}
 \item{max_targets}{Positive maximum count of prespecified fixed targets.}
 \item{show_targetwise}{Whether to include unadjusted targetwise tail p-values.}
+}
 }
 \value{
 R base graphics written to the active device. The exact numeric
