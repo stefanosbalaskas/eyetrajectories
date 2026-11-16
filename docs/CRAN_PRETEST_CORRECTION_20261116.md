@@ -2,14 +2,14 @@
 
 ## Scope and provenance
 
-This correction branch starts from the **exact source commit** of the original
+The correction ancestry starts from the **exact source commit** of the original
 CRAN submission: `948901e087c2176bd23e01845ba2747b2b602cd8`.
 
 Original source archive SHA-256:
 `20d31cab8930e4846968dc268e7a7c4737f7b12ad45c0d657519ddfd76822b28`.
 
 The original tarball and `v0.4.2` GitHub stable release must remain immutable.
-Any CRAN resubmission requires a freshly built `eyetrajectories_0.4.2.tar.gz`
+CRAN prefers increasing the version for each resubmission. The new target is **0.4.3**. Any CRAN resubmission requires a freshly built `eyetrajectories_0.4.3.tar.gz`
 from this correction branch, a **different SHA-256**, and a complete qualification.
 
 ## Incoming CRAN result
@@ -48,7 +48,7 @@ all platforms, with particular attention to shared test fixtures and
 inter-file state. If it fails or gives negligible benefit, revert it and
 profile/optimize the actual slow tests.
 
-Two GitHub Actions qualification runs provide a before/after comparison:
+Two GitHub Actions qualification runs provide the before/after comparison. On Windows R-devel, test execution improved from **145 to 93 seconds (36%)**, with 0 errors and 0 warnings:
 
 - Serial tests, corrected manuals: https://github.com/stefanosbalaskas/eyetrajectories/actions/runs/43861031885
 - Parallel experiment, corrected manuals: https://github.com/stefanosbalaskas/eyetrajectories/actions/runs/43861459562
@@ -57,6 +57,8 @@ Each run rebuilds the exact tarball and checks Windows release and devel,
 Linux release/oldrel-1/devel and macOS release. The stricter Rd incoming
 setting `_R_CHECK_RD_CONTENTS_USAGE_=true` and
 `_R_CHECK_TIMINGS_=0` are enabled.
+
+The final 0.4.3 exact-source archive was built with SHA-256 `38f7b8eb05c71c3a0c4c266cc590b9afdb73906b0d9412cf52185523f649da5e`. Six-platform CI: https://github.com/stefanosbalaskas/eyetrajectories/actions/runs/43862845556.
 
 The pretest problem is NOT resolved merely by a successful local
 `R CMD check --as-cran`. We need a clean result on the external CRAN
@@ -76,6 +78,6 @@ incoming pretest after submitting the replacement archive.
 6. Resubmit the **new archive** using the CRAN webform, with an optional comment
    referring to the resolved 2026-11-16 pretest issues.
 
-**Status:** qualification in progress. Do not resubmit the original archived
+**Status:** version 0.4.3 qualification in progress. Do not resubmit the original archived
 source, do not assert that CRAN accepted the package, and do not change the
 public release assets simply to make the old source resemble the new candidate.
