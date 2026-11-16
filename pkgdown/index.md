@@ -11,11 +11,10 @@
 <span>Native R core</span><span>Functional trajectories</span><span>Transparent validation</span>
 </div>
 </div>
-<div class="et-hero-graphic" aria-hidden="true">
-<div class="et-orbit et-orbit-a"></div><div class="et-orbit et-orbit-b"></div>
-<div class="et-scan-line et-scan-a"></div><div class="et-scan-line et-scan-b"></div>
-<div class="et-center-dot"></div>
-<div class="et-graphic-caption">GAZE · TIME · INFERENCE</div>
+<div class="et-hero-graphic et-hero-brand">
+<img class="et-hero-brand-logo" src="branding/eyetrajectories-logo-240.png" width="240" height="278" loading="eager" decoding="async" alt="eyetrajectories hexagonal logo showing an eye, functional principal component curves, a mean function, and a variability ribbon">
+<p class="et-hero-brand-caption">Eye movements · functional trajectories · statistical inference</p>
+</div>
 </div>
 </div>
 
