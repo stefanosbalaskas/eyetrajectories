@@ -19,7 +19,7 @@ template:
 repo:
   url:
     home: https://github.com/stefanosbalaskas/eyetrajectories/
-    source: https://github.com/stefanosbalaskas/eyetrajectories/blob/v0.4.2/
+    source: https://github.com/stefanosbalaskas/eyetrajectories/blob/v0.4.3/
     issue: https://github.com/stefanosbalaskas/eyetrajectories/issues/
     user: https://github.com/
 
