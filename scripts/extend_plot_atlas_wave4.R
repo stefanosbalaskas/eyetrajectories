@@ -216,6 +216,7 @@ reg4("etr_plot_conditional_transfer_entropy_circular_shift_test",
 # the plotting function is executed, but the IAAFT optimizer is not.
 mv_iaaft_record <- list(
   n_surrogates=5L,reference_dimension="x",
+  convergence_iterations=c(4L,7L,5L,8L,6L),
   spectral_errors=matrix(c(.09,.11,.12,.17,.08,.11,.06,.08,.10,.14),
     nrow=5L,ncol=2L,byrow=TRUE),
   cross_spectral_errors=matrix(c(.03,.04,.05,.04,.07),ncol=1L),
