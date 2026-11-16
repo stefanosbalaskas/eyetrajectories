@@ -194,7 +194,11 @@ pills.appendChild(element("span","pill"+(x.backend==="Python-backed"?" gray":"")
 pills.appendChild(element("span","pill"+(has(x)?" orange":" gray"),has(x)?"Actual R figure":"Docs / API only"));
 b.appendChild(pills);b.addEventListener("click",()=>selectEntry(x));box.appendChild(b);
 }
-if(!current||!matches.some(x=>x.name===current.name))selectEntry(matches.find(x=>x.name==="etr_plot_trajectories")||matches[0],true);
+if(!current||!matches.some(x=>x.name===current.name)){
+ const linkedPlot=new URLSearchParams(window.location.search).get("function");
+ selectEntry(matches.find(x=>x.name===linkedPlot&&x.backend==="Native R"&&has(x))||
+   matches.find(x=>x.name==="etr_plot_trajectories")||matches[0],true);
+}
 renderListSelection();
 }
 function setVariants(){

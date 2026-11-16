@@ -2,6 +2,12 @@
 
 Explore trajectories through two browser-based teaching environments. Both are self-contained, use **synthetic deterministic inputs**, and run locally in the browser without data uploads or scientific claims about real participants.
 
+## Research Workflow Portal — from recorded data to native R methods
+
+[**Open the Research Workflow Portal**](research-portal.html)
+
+This new website-only research navigator inspects long-format CSV **locally in your browser**, identifies structural support and repeated participant/trial design, and helps navigate a ten-route scientific method-selection matrix. Each mapped R function and selected example plot is verified against the frozen v0.4.3 source and actual native plotting atlas. It does not upload participant data, fit statistical models or claim calibrated inference; see the [complete scientific specification](SITE_RESEARCH_PORTAL.html).
+
 ## Trajectory Explorer
 
 [**Open the Trajectory Explorer**](trajectory-explorer.html)
@@ -41,4 +47,4 @@ Unlike the browser-only trajectory and methods teaching demos, this new atlas di
 
 Use the **Export CSV** option in either laboratory to download the synthetic observations for further experimentation in R. No experimental participant data are collected or uploaded.
 
-For package installation, use the [stable GitHub v0.4.2 release](https://github.com/stefanosbalaskas/eyetrajectories/releases/tag/v0.4.2). CRAN acceptance is not established by this website.
+For package installation, use the [stable GitHub v0.4.3 release](https://github.com/stefanosbalaskas/eyetrajectories/releases/tag/v0.4.3). CRAN acceptance is not established by this website.

@@ -2,6 +2,8 @@
 
 This package represents eye-tracking observations as trajectories over time. Each analysis is conditional on the available observation structure, coordinate units, preprocessing choices and sampling design. The list below is an orientation to documented functionality, not a claim that every method has full Python source parity.
 
+For structured research decisions, use the [Research Workflow Portal](research-portal.html), which links ten source-defined Python workflow concepts to actual native R estimators and synthetic plots without claiming full Python parity.
+
 ## Common-grid trajectories
 
 Native R tools cover trajectory construction and validation, explicit preprocessing, channel-wise kinematics, time-weighted distances and descriptive plots. Keep original time and coordinate units explicit. Interpolation, regridding and normalization require documented choices rather than hidden defaults.

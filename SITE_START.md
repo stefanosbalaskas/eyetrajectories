@@ -39,8 +39,13 @@ Read the help topic before selecting coordinate-system assumptions, units, missi
 
 For explicitly Python-backed operations, install the matching Python version and configure reticulate to use it. Read [Python bridge](SITE_BRIDGE.html) for the procedure and for the distinction between wrapper availability and native R parity.
 
+## Choose a scientific workflow before running an estimator
+
+[Open the Research Workflow Portal](research-portal.html) to inspect the structure of a local CSV in your own browser, declare a scientific target and compare ten verified native R workflow mappings. It is a navigation tool, not an estimator, and no CSV is uploaded.
+
 ## Navigate the site
 
+- [Research workflow portal](SITE_RESEARCH_PORTAL.html): local CSV preflight, method-selection wizard, ten real R workflow references and boundaries.
 - [Methods](SITE_METHODS.html): which methods and assumptions belong to which analysis family.
 - [Reference](reference/index.html): auto-generated R help pages.
 - [Validation](SITE_VALIDATION.html): evidence categories, tests and limits on scientific claims.

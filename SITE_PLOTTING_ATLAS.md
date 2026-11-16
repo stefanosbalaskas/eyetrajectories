@@ -2,6 +2,8 @@
 
 The [**Interactive Plotting Atlas**](plot-atlas.html) catalogs the **exported plotting functions in eyetrajectories v0.4.3** directly from its `NAMESPACE`. It distinguishes native R plotting functions from optional Python-backed R bridges, and supports search by function name, method family, and implementation type.
 
+For help selecting a method before browsing its graphics, use the [Research Workflow Portal](research-portal.html). Its ten native workflow references deep-link to the appropriate plotting function and explain the estimand, observation support and limitations.
+
 ## Wave 6 — scientific research interaction and reproducibility
 
 The [interactive atlas](plot-atlas.html) now supports **side-by-side comparisons of two different native R plotting functions**, with independent example settings, images, method labels, exact documentation links and downloadable reproducible R scripts. The existing *compare all variants* mode remains available for contrasting different settings of a **single** plotting function. Comparison is a visual teaching aid: plots may be based on different synthetic fixtures, axes, input representations, estimands, and model assumptions, and should **not** be read as a controlled method-performance benchmark.
