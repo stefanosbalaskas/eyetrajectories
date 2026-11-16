@@ -31,9 +31,9 @@ assert(rows.length===new Set(rows.map(x=>x.name)).size,"Duplicate plotting expor
 assert(native.every(x=>x.name.startsWith("etr_plot_")),"Non-exported native title in inventory");
 assert(bridge.every(x=>/^etpy_plot_|^et_plot_/.test(x.name)),"Unexpected bridge");
 const shown=rows.filter(x=>x.variants&&x.variants.length);
-assert(shown.length>=62,"Wave 3 requires >=62 real native R plotting functions");
+assert(shown.length>=73,"Wave 4 requires >=73 real native R plotting functions");
 const count=shown.reduce((a,x)=>a+x.variants.length,0);
-assert(count>=82,"Wave 3 requires >=82 direct native R PNG variants");
+assert(count>=96,"Wave 4 requires >=96 direct native R PNG variants");
 for(const entry of rows){
  assert(entry.doc&&fs.existsSync(path.join(root,entry.doc)),entry.name+": broken documentation route "+entry.doc);
  if(!entry.variants.length)continue;
@@ -77,6 +77,32 @@ for(const name of expectedWave3){
   assert(entry && entry.backend==="Native R",name+": missing native R export");
   assert(entry.variants?.length>0,name+": no executed direct R figure");
   assert(wave3.includes("PASS "+name),name+": missing wave-3 proof");
+}
+
+const wave4=fs.readFileSync(path.join(root,"plot-atlas","WAVE4_AUDIT.txt"),"utf8");
+assert(wave4.includes("Rendered native plotting functions: 11"),
+  "All 11 native nonlinear dynamics plots must render");
+assert(wave4.includes("Not yet rendered: 0"),
+  "Unrendered nonlinear plots cannot be counted");
+const expectedWave4=[
+  "etr_plot_recurrence_network_degree",
+  "etr_plot_local_divergence",
+  "etr_plot_surrogate_nonlinearity",
+  "etr_plot_kantz_sensitivity",
+  "etr_plot_lyapunov_sensitivity",
+  "etr_plot_windowed_rqa_sensitivity",
+  "etr_plot_transfer_entropy_sensitivity",
+  "etr_plot_transfer_entropy_circular_shift_test",
+  "etr_plot_conditional_transfer_entropy_circular_shift_test",
+  "etr_plot_multivariate_iaaft_diagnostics",
+  "etr_plot_multivariate_surrogate_nonlinearity"
+];
+for(const name of expectedWave4){
+  const entry=rows.find(x=>x.name===name);
+  assert(entry&&entry.backend==="Native R",name+": missing native export");
+  assert(entry.variants?.length>0,name+": missing real executed R preview");
+  assert(wave4.includes("PASS "+name),name+": missing Wave 4 evidence");
+  assert(entry.category==="Recurrence & nonlinear",name+": wrong scientific family");
 }
 
 assert(html.includes("pre-generated R outputs"),"Cannot claim client-side R recomputation");
