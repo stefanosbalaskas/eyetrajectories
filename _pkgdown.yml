@@ -26,7 +26,7 @@ repo:
 navbar:
   bg: light
   structure:
-    left: [start, labs, methods, gallery, reference, bridge, validation, news]
+    left: [start, labs, methods, gallery, reference, bridge, validation, cite, news]
     right: [search, github, lightswitch]
   components:
     start:
@@ -47,6 +47,9 @@ navbar:
     validation:
       text: Validation
       href: SITE_VALIDATION.html
+    cite:
+      text: Cite
+      href: SITE_CITATION.html
 
 reference:
   - title: Native R scientific methods
