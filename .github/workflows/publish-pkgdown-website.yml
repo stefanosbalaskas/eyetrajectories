@@ -52,7 +52,9 @@ jobs:
           cp website/scripts/build_pkgdown_gallery.R pkg/scripts/
           cp website/scripts/build_plot_atlas.R pkg/scripts/
           cp website/scripts/extend_plot_atlas.R pkg/scripts/
+          cp website/scripts/extend_plot_atlas_wave2.R pkg/scripts/
           test -s website/scripts/extend_plot_atlas.R
+          test -s website/scripts/extend_plot_atlas_wave2.R
           test -s website/scripts/test_plot_atlas.cjs
           test -s website/site-interactive/plot-atlas.html
           test -s pkg/pkgdown/index.md
