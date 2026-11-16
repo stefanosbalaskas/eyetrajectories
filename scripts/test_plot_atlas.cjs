@@ -31,9 +31,11 @@ assert(rows.length===new Set(rows.map(x=>x.name)).size,"Duplicate plotting expor
 assert(native.every(x=>x.name.startsWith("etr_plot_")),"Non-exported native title in inventory");
 assert(bridge.every(x=>/^etpy_plot_|^et_plot_/.test(x.name)),"Unexpected bridge");
 const shown=rows.filter(x=>x.variants&&x.variants.length);
-assert(shown.length>=73,"Wave 4 requires >=73 real native R plotting functions");
+assert(shown.length===81,"Wave 5 requires all 81 real native R plotting functions");
+assert(native.every(x=>x.variants&&x.variants.length>0),
+  "No native R function may remain documentation-only");
 const count=shown.reduce((a,x)=>a+x.variants.length,0);
-assert(count>=96,"Wave 4 requires >=96 direct native R PNG variants");
+assert(count>=108,"Wave 5 requires >=108 direct native R PNG variants");
 for(const entry of rows){
  assert(entry.doc&&fs.existsSync(path.join(root,entry.doc)),entry.name+": broken documentation route "+entry.doc);
  if(!entry.variants.length)continue;
@@ -103,6 +105,27 @@ for(const name of expectedWave4){
   assert(entry.variants?.length>0,name+": missing real executed R preview");
   assert(wave4.includes("PASS "+name),name+": missing Wave 4 evidence");
   assert(entry.category==="Recurrence & nonlinear",name+": wrong scientific family");
+}
+
+const wave5=fs.readFileSync(path.join(root,"plot-atlas","WAVE5_AUDIT.txt"),"utf8");
+assert(wave5.includes("Rendered native plotting functions: 8"),
+  "All eight remaining native R plotting functions must render");
+assert(wave5.includes("Not yet rendered: 0"),"Wave 5 must have zero missing plots");
+const expectedWave5=[
+  "etr_plot_function_on_scalar_coefficients",
+  "etr_plot_rqa_metric_mean_bootstrap",
+  "etr_plot_functional_recovery_summary",
+  "etr_plot_functional_random_effects",
+  "etr_plot_functional_trial_random_effects",
+  "etr_plot_generalized_function_on_scalar_mean_difference",
+  "etr_plot_generalized_function_on_scalar_coefficients",
+  "etr_plot_workflow_result"
+];
+for(const name of expectedWave5){
+  const entry=rows.find(x=>x.name===name);
+  assert(entry && entry.backend==="Native R",name+": must be a real native export");
+  assert(entry.variants?.length>0,name+": missing R-executed figure");
+  assert(wave5.includes("PASS "+name),name+": missing Wave 5 evidence");
 }
 
 assert(html.includes("pre-generated R outputs"),"Cannot claim client-side R recomputation");

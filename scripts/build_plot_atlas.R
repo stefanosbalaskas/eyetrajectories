@@ -161,9 +161,10 @@ sys.source("scripts/extend_plot_atlas.R",envir=environment())
 sys.source("scripts/extend_plot_atlas_wave2.R",envir=environment())
 sys.source("scripts/extend_plot_atlas_wave3.R",envir=environment())
 sys.source("scripts/extend_plot_atlas_wave4.R",envir=environment())
+sys.source("scripts/extend_plot_atlas_wave5.R",envir=environment())
 stopifnot(length(atlas_new_success)>=36L)
 stopifnot(length(wave3_pass)==14L, length(wave4_pass)==11L,
-          length(plot_spec)>=73L)
+          length(wave5_pass)==8L, length(plot_spec)==81L)
 ns <- readLines("NAMESPACE",warn=FALSE)
 exports <- grep("^export\\([A-Za-z][A-Za-z0-9_]*\\)$",ns,value=TRUE)
 exports <- sub("^export\\(([^)]+)\\)$","\\1",exports)
@@ -197,7 +198,7 @@ json <- jsonlite::toJSON(catalog,auto_unbox=TRUE,null="null",digits=9)
 writeLines(paste0("window.ET_PLOT_ATLAS_CATALOG=",json,";"),
   file.path(out,"catalog.js"),useBytes=TRUE)
 png_count <- length(list.files(images,pattern="\\.png$"))
-stopifnot(png_count>=96L)
+stopifnot(png_count>=108L)
 writeLines(c("eyetrajectories v0.4.3 actual native R plotting atlas",
   paste("Native plotting exports:",length(native)),
   paste("Python-backed plotting exports:",length(bridge)),
@@ -205,6 +206,7 @@ writeLines(c("eyetrajectories v0.4.3 actual native R plotting atlas",
   paste("New additional native R plotting exports:",length(atlas_new_success)),
   paste("Wave 3 advanced inference functions:",length(wave3_pass)),
   paste("Wave 4 nonlinear dynamics functions:",length(wave4_pass)),
+  paste("Wave 5 final native plotting functions:",length(wave5_pass)),
   paste("Unrendered additional fixture candidates:",length(atlas_new_failures)),
   paste("Native R generated PNG examples:",png_count),
   "The searchable function inventory was generated from the actual NAMESPACE.",
