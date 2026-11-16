@@ -5,7 +5,7 @@ name: Deploy built eyetrajectories website to GitHub Pages
 on:
   workflow_dispatch:
   workflow_run:
-    workflows: ['Build and publish eyetrajectories 0.4.2 website']
+    workflows: ['Build and publish eyetrajectories website']
     types: [completed]
 
 permissions:
@@ -37,7 +37,7 @@ jobs:
           set -euo pipefail
           for required in index.html reference/index.html SITE_START.html \
             SITE_METHODS.html SITE_BRIDGE.html SITE_VALIDATION.html \
-            SITE_GALLERY.html SITE_INTERACTIVE.html SITE_BRANDING.html \
+            SITE_GALLERY.html SITE_INTERACTIVE.html SITE_BRANDING.html SITE_CITATION.html \
             methods-laboratory.html branding/eyetrajectories-logo-240.png \
             branding/eyetrajectories-symbol.svg branding/eyetrajectories-horizontal.svg \
             favicon.svg gallery/01_multilevel_variance.png \
@@ -45,6 +45,60 @@ jobs:
             test -s "published/$required" || { echo "::error::Missing $required"; exit 1; }
           done
           test -f published/.nojekyll || touch published/.nojekyll
+      - name: Audit DOI, release metadata and internal website routes
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from html.parser import HTMLParser
+          from urllib.parse import urlparse, unquote
+          class Links(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.links = []
+              def handle_starttag(self, tag, attrs):
+                  attrs = dict(attrs)
+                  for field in ('href', 'src'):
+                      if field in attrs:
+                          self.links.append(attrs[field])
+          root = Path('published')
+          pages = ['index.html', 'SITE_START.html', 'SITE_INTERACTIVE.html',
+                   'SITE_CITATION.html', 'SITE_VALIDATION.html',
+                   'methods-laboratory.html', 'trajectory-explorer.html']
+          failures = []
+          for name in pages:
+              file = root / name
+              if not file.is_file():
+                  failures.append(name + ' missing')
+                  continue
+              html = file.read_text(encoding='utf-8')
+              parser = Links()
+              parser.feed(html)
+              for link in parser.links:
+                  url = urlparse(link)
+                  if url.scheme or link.startswith(('#','//','mailto:','data:','javascript:')):
+                      continue
+                  dest = unquote(url.path)
+                  if not dest:
+                      continue
+                  if dest.startswith('/eyetrajectories/'):
+                      dest = dest[len('/eyetrajectories/'):]
+                      target = root / dest
+                  elif dest.startswith('/'):
+                      continue
+                  else:
+                      target = file.parent / dest
+                  if not target.exists():
+                      failures.append(name + ': missing ' + dest)
+          homepage=(root/'index.html').read_text(encoding='utf-8')
+          citation=(root/'SITE_CITATION.html').read_text(encoding='utf-8')
+          assert '0.4.3' in homepage
+          assert '10.5281/zenodo.24288857' in homepage
+          assert '10.5281/zenodo.24288857' in citation
+          if failures:
+              raise SystemExit('SITE_LINK_AUDIT_FAILURE:\\n' + '\\n'.join(failures[:50]))
+          print('SITE_LINK_AUDIT_PASS', len(pages), 'critical pages')
+          PY
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
       - name: Upload the checked website
@@ -54,3 +108,29 @@ jobs:
       - name: Deploy to the public GitHub Pages URL
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Smoke test public website and interactive routes
+        env:
+          SITE_BASE: ${{ steps.deployment.outputs.page_url }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          base="${SITE_BASE%/}"
+          test -n "$base"
+          for page in '' 'SITE_CITATION.html' 'SITE_INTERACTIVE.html' \
+            'trajectory-explorer.html' 'methods-laboratory.html' 'reference/index.html'; do
+            echo "GET $base/$page"
+            curl --fail --location --silent --show-error \
+              --retry 10 --retry-delay 4 --retry-all-errors \
+              --connect-timeout 10 --max-time 30 \
+              "$base/$page" -o /tmp/eyetrajectories-page.html
+            test -s /tmp/eyetrajectories-page.html
+            if [ -z "$page" ]; then
+              grep -q 'From eye movements to mathematical trajectories' /tmp/eyetrajectories-page.html
+              grep -q '10.5281/zenodo.24288857' /tmp/eyetrajectories-page.html
+            fi
+            if [ "$page" = 'methods-laboratory.html' ]; then
+              grep -q 'Interactive Methods Laboratory' /tmp/eyetrajectories-page.html
+            fi
+          done
+          echo "PUBLIC_PAGES_HTTP_SMOKE_PASS"
+
