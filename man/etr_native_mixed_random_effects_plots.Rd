@@ -9,7 +9,8 @@ plots expose ordered numerical line data for source qualification and do not
 fit a mixed model, bootstrap observations or select a scientific threshold.
 }
 
-\arguments{
+\section{Plotting parameters}{
+\describe{
 \item{result}{Explicit realized mixed-model source-compatible native
 record including random-effect arrays, names, time and time unit.}
 \item{effect}{Participant random functional effect: intercept or slope.}
@@ -17,6 +18,7 @@ record including random-effect arrays, names, time and time unit.}
 \item{alpha}{Line opacity within (0, 1].}
 \item{participant_id}{Optional named source participant; NULL for all.}
 \item{max_trials}{Positive integer number of unique retained trial IDs.}
+}
 }
 \details{
 The published scientific source is \pkg{eyetrajectoriespy} 1.2.0,
