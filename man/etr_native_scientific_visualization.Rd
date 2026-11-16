@@ -9,7 +9,8 @@ mathematical estimator modification. These functions are experimental
 source-name analogues; they are not exact Matplotlib output contracts.
 }
 
-\arguments{
+\section{Plotting parameters}{
+\describe{
 \item{result}{A corresponding native embedding-delay, FNN-dimension,
 recurrence-network, radius-profile, windowed-RQA, local-divergence,
 largest-Lyapunov or surrogate-nonlinearity diagnostic result.}
@@ -26,6 +27,7 @@ histogram interpretation and validation.}
 at least two observed crossings.}
 \item{fit}{Optional compatible one-dimensional native local affine map.}
 \item{...}{Additional native plotting parameters.}
+}
 }
 \value{
 Each function draws into the active R graphics device and returns the
