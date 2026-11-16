@@ -1,4 +1,4 @@
-name: Qualify Wave 5 complete native R plotting atlas before merge
+name: Qualify Wave 6 scientific interactive native R plotting atlas before merge
 on:
   pull_request:
     branches:
@@ -15,12 +15,12 @@ permissions:
   contents: read
 
 concurrency:
-  group: eyetrajectories-wave5-pr-${{ github.event.pull_request.number }}
+  group: eyetrajectories-wave6-pr-${{ github.event.pull_request.number }}
   cancel-in-progress: false
 
 jobs:
   publish-website:
-    name: Build frozen-source site and verify all 81 native R figures
+    name: Qualify native R gallery and Chromium interactive research lab
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
@@ -65,6 +65,9 @@ jobs:
           test -s website/scripts/extend_plot_atlas_wave5.R
           test -s website/scripts/test_plot_atlas.cjs
           test -s website/site-interactive/plot-atlas.html
+          test -s website/site-interactive/plot-atlas-wave6.js
+          test -s website/site-interactive/test_plot_atlas_browser.mjs
+          test -s website/site-interactive/package.json
           test -s pkg/pkgdown/index.md
           test -s pkg/pkgdown/extra.css
           test -s pkg/SITE_VALIDATION.md
@@ -96,6 +99,8 @@ jobs:
                               'site/methods-laboratory.html', overwrite=TRUE))
           stopifnot(file.copy('../website/site-interactive/plot-atlas.html',
                               'site/plot-atlas.html', overwrite=TRUE))
+          stopifnot(file.copy('../website/site-interactive/plot-atlas-wave6.js',
+                              'site/plot-atlas-wave6.js', overwrite=TRUE))
           dir.create('site/branding', recursive=TRUE, showWarnings=FALSE)
           assets <- list.files('../website/branding', full.names=TRUE,
                                pattern='\\.(png|svg)$')
@@ -171,10 +176,30 @@ jobs:
           grep -q 'Rendered native plotting functions: 8' pkg/site/plot-atlas/WAVE5_AUDIT.txt
           grep -q 'Not yet rendered: 0' pkg/site/plot-atlas/WAVE5_AUDIT.txt
           grep -q '^Directly illustrated exported native functions: 81' pkg/site/plot-atlas/MANIFEST.txt
+          test -s pkg/site/plot-atlas/WAVE6_AUDIT.txt
+          grep -q '^Scientific method categories: 11' pkg/site/plot-atlas/WAVE6_AUDIT.txt
+          grep -q '^Native plotting functions: 81' pkg/site/plot-atlas/WAVE6_AUDIT.txt
+          test "$(find pkg/site/plot-atlas/scripts -name '*.R' -type f | wc -l)" -ge 108
+          node --check pkg/site/plot-atlas-wave6.js
           grep -q "NATIVE_PLOT_ATLAS_EXTENSION_REPORT" website/scripts/extend_plot_atlas.R
           grep -q "^Additional direct native R plot exports" pkg/site/plot-atlas/EXTENSION_AUDIT.txt
           test "$(find pkg/site/plot-atlas/images -name '*.png' -type f | wc -l)" -ge 108
           grep -q '^Unrendered candidate exports:' pkg/site/plot-atlas/EXTENSION_AUDIT.txt
+      - name: Exercise desktop and mobile interactions in real Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm --prefix website/site-interactive install --no-audit --no-fund
+          npm --prefix website/site-interactive exec -- playwright install --with-deps chromium
+          node website/site-interactive/test_plot_atlas_browser.mjs pkg/site website/browser-evidence
+      - name: Upload Chromium visual interaction evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wave6-chromium-desktop-mobile-screenshots
+          path: website/browser-evidence/
+          if-no-files-found: warn
+          retention-days: 14
       - name: Install independent SVG website favicon
         shell: bash
         run: |
@@ -198,7 +223,7 @@ jobs:
       - name: Upload website build evidence
         uses: actions/upload-artifact@v4
         with:
-          name: wave5-native-81-function-plot-atlas-qualified-site
+          name: wave6-native-scientific-interactive-plot-atlas-qualified-site
           path: pkg/site/
           if-no-files-found: error
           retention-days: 14
