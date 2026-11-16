@@ -1,0 +1,38 @@
+# Interactive laboratories
+
+Explore trajectories through two browser-based teaching environments. Both are self-contained, use **synthetic deterministic inputs**, and run locally in the browser without data uploads or scientific claims about real participants.
+
+## Trajectory Explorer
+
+[**Open the Trajectory Explorer**](trajectory-explorer.html)
+
+Explore the geometry of two moving paths in an x–y plane. Change phase, amplitude, sample resolution, and deviations. Watch the paths animate, compare paired Euclidean distances, and examine discrete Fréchet and dynamic time warping (DTW) comparisons.
+
+**What to ask:** When two paths have similar shapes but different timing, how do simultaneous distances differ from alignment-based distances?
+
+## Interactive Methods Laboratory
+
+[**Open the Methods Laboratory**](methods-laboratory.html)
+
+A three-part interactive introduction to:
+
+1. **Functional PCA:** see how component retention changes the reconstruction of a selected synthetic functional observation.
+2. **Dynamic time warping:** compare time-series displacement and the monotone alignment path. Study how temporal offsets affect pointwise versus aligned comparisons.
+3. **Recurrence analysis:** manipulate recurrence radius and Theiler exclusion and watch changes in recurrence matrices, recurrence rate, and diagonal-line statistics.
+
+**What to ask:** What properties of time-varying data are captured by each method? Which parameters influence the interpretation?
+
+## How these demonstrations relate to the R package
+
+| Browser demonstration | Relevant native R reference |
+| --- | --- |
+| Functional PCA | [`etr_fit_fpca()`](reference/etr_fit_fpca.html), [`etr_fit_mfpca()`](reference/etr_fit_mfpca.html) |
+| Dynamic time warping | [`etr_dtw()`](reference/etr_dtw.html), [`etr_pairwise_dtw()`](reference/etr_pairwise_dtw.html) |
+| Recurrence | [`etr_recurrence_matrix()`](reference/etr_recurrence_matrix.html), [`etr_rqa_metrics()`](reference/etr_rqa_metrics.html) |
+| Trajectory kinematics | [`etr_velocity()`](reference/etr_velocity.html), [`etr_speed()`](reference/etr_speed.html) |
+
+**Scientific boundary:** The interactions use independently written educational JavaScript implementations, not the actual R estimators. They do not establish numerical equivalence, independently validated uncertainty calibration, or physical trajectory dynamics. For real analysis use the documented R functions and report preprocessing, time scales, coordinate conventions, estimator settings, and sampling units.
+
+Use the **Export CSV** option in either laboratory to download the synthetic observations for further experimentation in R. No experimental participant data are collected or uploaded.
+
+For package installation, use the [stable GitHub v0.4.2 release](https://github.com/stefanosbalaskas/eyetrajectories/releases/tag/v0.4.2). CRAN acceptance is not established by this website.
