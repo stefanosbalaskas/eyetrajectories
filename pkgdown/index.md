@@ -10,12 +10,22 @@
 <div class="et-hero-meta">
 <span>Native R core</span><span>Functional trajectories</span><span>Transparent validation</span>
 </div>
+<div class="et-hero-doi">
+<a href="https://doi.org/10.5281/zenodo.24288857" target="_blank" rel="noopener noreferrer" aria-label="Open permanent Zenodo record for eyetrajectories version 0.4.3">Zenodo DOI · 10.5281/zenodo.24288857</a>
+<a href="SITE_CITATION.html" aria-label="Citation and reproducibility details">How to cite this package →</a>
+</div>
 </div>
 <div class="et-hero-graphic et-hero-brand">
 <img class="et-hero-brand-logo" src="branding/eyetrajectories-logo-240.png" width="240" height="278" loading="eager" decoding="async" alt="eyetrajectories hexagonal logo showing an eye, functional principal component curves, a mean function, and a variability ribbon">
 <p class="et-hero-brand-caption">Eye movements · functional trajectories · statistical inference</p>
 </div>
 </div>
+
+<section class="et-citation-strip" aria-label="Software archiving and persistent identifier">
+<strong>Version 0.4.3 is archived on Zenodo.</strong>
+<p>Cite the exact software version used in research. The DOI is an archival identifier, not an endorsement by CRAN or independent validation of all methods.</p>
+<a href="https://doi.org/10.5281/zenodo.24288857" target="_blank" rel="noopener noreferrer">10.5281/zenodo.24288857</a>
+</section>
 
 <div class="et-section-intro">
 <p class="et-eyebrow">RESEARCH WORKFLOW</p>
