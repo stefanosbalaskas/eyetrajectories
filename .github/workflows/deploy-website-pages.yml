@@ -4,6 +4,9 @@ name: Deploy built eyetrajectories website to GitHub Pages
 # Builds are produced independently by publish-pkgdown-website.yml.
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows: ['Build and publish eyetrajectories 0.4.2 website']
+    types: [completed]
 
 permissions:
   contents: read
@@ -16,6 +19,7 @@ concurrency:
 
 jobs:
   deploy:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     name: Deploy verified static pkgdown website
     runs-on: ubuntu-latest
     environment:
