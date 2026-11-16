@@ -31,6 +31,13 @@ for(file in files){
       sub("^\\\\alias\\{([^}]+)\\}$","\\1",alias_lines))
     alias_files<-c(alias_files,rep(file,length(alias_lines)))
   }
+  # The CRAN incoming Linux check enables the stricter Rd-content rule.
+  # Topic/group manuals cannot have an arguments block without a usage block.
+  if (any(startsWith(lines, key("arguments"))) &&
+      !any(startsWith(lines, key("usage")))) {
+    issues <- c(issues, paste(file,
+      ": CRAN incoming: \\arguments without \\usage; use a descriptive section"))
+  }
   usage_open<-which(startsWith(lines,key("usage")))
   if(length(usage_open)){
     for(i in usage_open){
