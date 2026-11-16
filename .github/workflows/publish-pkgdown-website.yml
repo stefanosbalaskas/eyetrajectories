@@ -84,6 +84,10 @@ jobs:
           stopifnot(grepl('class="et-interactive-showcase"', home, fixed=TRUE))
           stopifnot(grepl('class="et-advanced-grid"', home, fixed=TRUE))
           stopifnot(grepl('href="methods-laboratory.html"', home, fixed=TRUE))
+          stopifnot(grepl('href="SITE_INTERACTIVE.html"', home, fixed=TRUE))
+          stopifnot(file.exists('site/reference/etr_fit_fpca.html'),
+                    file.exists('site/reference/etr_dtw.html'),
+                    file.exists('site/reference/etr_rqa_metrics.html'))
           gallery <- paste(readLines('site/SITE_GALLERY.html', warn=FALSE), collapse='\n')
           stopifnot(sum(gregexpr('<figure class="et-figure', gallery,
                                  fixed=TRUE)[[1L]] > 0L) >= 5L)
