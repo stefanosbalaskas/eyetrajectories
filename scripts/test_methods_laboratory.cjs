@@ -52,7 +52,8 @@ const element=id=>{
   return nodes.get(id);
 };
 const document={
-  getElementById:element,
+  // Browser semantics: getElementById returns null for optional, absent outputs.
+  getElementById:id=>nodes.get(id)||null,
   body:{appendChild(){}},
   createElement(){return{set href(v){},set download(v){},click(){},remove(){}};}
 };
