@@ -52,6 +52,8 @@ jobs:
           test -s pkg/pkgdown/extra.css
           test -s pkg/SITE_VALIDATION.md
           test -s website/site-interactive/trajectory-explorer.html
+          test -s website/site-interactive/methods-laboratory.html
+          test -s website/scripts/test_methods_laboratory.cjs
       - uses: r-lib/actions/setup-r@v2
         with:
           r-version: release
@@ -73,11 +75,15 @@ jobs:
                               new_process=FALSE, install=FALSE, preview=FALSE)
           stopifnot(file.copy('../website/site-interactive/trajectory-explorer.html',
                               'site/trajectory-explorer.html', overwrite=TRUE))
+          stopifnot(file.copy('../website/site-interactive/methods-laboratory.html',
+                              'site/methods-laboratory.html', overwrite=TRUE))
           home <- paste(readLines('site/index.html', warn=FALSE), collapse='\n')
           stopifnot(grepl('class="et-hero-content"', home, fixed=TRUE))
           stopifnot(grepl('src="trajectory-explorer.html"', home, fixed=TRUE))
           stopifnot(!grepl('class="sourceCode"', home, fixed=TRUE))
           stopifnot(grepl('class="et-interactive-showcase"', home, fixed=TRUE))
+          stopifnot(grepl('class="et-advanced-grid"', home, fixed=TRUE))
+          stopifnot(grepl('href="methods-laboratory.html"', home, fixed=TRUE))
           gallery <- paste(readLines('site/SITE_GALLERY.html', warn=FALSE), collapse='\n')
           stopifnot(sum(gregexpr('<figure class="et-figure', gallery,
                                  fixed=TRUE)[[1L]] > 0L) >= 5L)
@@ -85,8 +91,8 @@ jobs:
             'site/index.html', 'site/reference/index.html',
             'site/SITE_START.html', 'site/SITE_METHODS.html',
             'site/SITE_BRIDGE.html', 'site/SITE_VALIDATION.html',
-            'site/SITE_GALLERY.html',
-            'site/trajectory-explorer.html',
+            'site/SITE_GALLERY.html', 'site/SITE_INTERACTIVE.html',
+            'site/trajectory-explorer.html', 'site/methods-laboratory.html',
             paste0('site/gallery/', c('01_multilevel_variance',
               '02_participant_mean_band', '03_group_contrast_band',
               '04_sparse_support', '05_transfer_entropy_surrogates'), '.png'))
@@ -106,6 +112,7 @@ jobs:
           assert 'URL.createObjectURL' in match.group(1)
           PY
           node --check /tmp/eyetrajectories-lab.js
+          node website/scripts/test_methods_laboratory.cjs pkg/site/methods-laboratory.html
       - name: Upload website build evidence
         uses: actions/upload-artifact@v4
         with:
