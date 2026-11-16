@@ -155,6 +155,8 @@ jobs:
           node website/scripts/test_plot_atlas.cjs pkg/site
           grep -q "NATIVE_PLOT_ATLAS_EXTENSION_REPORT" website/scripts/extend_plot_atlas.R
           grep -q "^Additional direct native R plot exports" pkg/site/plot-atlas/EXTENSION_AUDIT.txt
+          test "$(find pkg/site/plot-atlas/images -name '*.png' -type f | wc -l)" -ge 62
+          grep -q '^Unrendered candidate exports:' pkg/site/plot-atlas/EXTENSION_AUDIT.txt
       - name: Install independent SVG website favicon
         shell: bash
         run: |
