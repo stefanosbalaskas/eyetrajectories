@@ -1,8 +1,8 @@
 # Get started
 
-**Stable GitHub release · version 0.4.2.** Not yet published on CRAN. Advanced methods retain documented scientific limitations.
+**Stable GitHub release · version 0.4.3.** Not yet published on CRAN. Advanced methods retain documented scientific limitations.
 
-## Install the stable GitHub v0.4.2 release
+## Install the stable GitHub v0.4.3 release
 
 Requires R 4.2 or newer. Install from a known branch or commit rather than silently using an unspecified development state:
 
@@ -10,14 +10,14 @@ Requires R 4.2 or newer. Install from a known branch or commit rather than silen
 install.packages("remotes")
 remotes::install_github(
   "stefanosbalaskas/eyetrajectories",
-  ref = "v0.4.2",
+  ref = "v0.4.3",
   dependencies = TRUE
 )
 library(eyetrajectories)
 packageVersion("eyetrajectories")
 ~~~
 
-The exact qualified source archive is available from the [stable GitHub release](https://github.com/stefanosbalaskas/eyetrajectories/releases/tag/v0.4.2); verify SHA-256 `20d31cab8930e4846968dc268e7a7c4737f7b12ad45c0d657519ddfd76822b28`.
+The exact qualified source archive is available from the [stable GitHub release](https://github.com/stefanosbalaskas/eyetrajectories/releases/tag/v0.4.3); verify SHA-256 `38f7b8eb05c71c3a0c4c266cc590b9afdb73906b0d9412cf52185523f649da5e`.
 
 ## Start with the native R API
 
