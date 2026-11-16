@@ -61,7 +61,7 @@ pre{margin:0;white-space:pre;max-height:410px;overflow:auto;padding:19px;border-
 <div class="wrap">
 <header class="head"><div><div class="kicker">eyetrajectories · version 0.4.3 · native-R figure library</div>
 <h1>Searchable Plotting Atlas</h1>
-<p>Start with actual plots produced by the released R functions, then optionally browse the complete exported API. Search methods, compare deterministic R-rendered variants, and copy executable R code. <strong>Only 9 of 81 native plotting exports currently have preview images;</strong> other functions appear in the complete catalogue as documentation-only. Browser controls select <strong>pre-generated R outputs</strong>—no client-side R estimation or participant data.</p></div>
+<p>Start with actual plots produced by the released R functions, then optionally browse the complete exported API. Search methods, compare deterministic R-rendered variants, and copy executable R code. <strong><span id="coverageSummary">Preview coverage is computed from the release catalogue.</span></strong> Other functions remain accessible as documentation-only entries. Browser controls select <strong>pre-generated R outputs</strong>—no client-side R estimation or participant data.</p></div>
 <a href="index.html">← Package home</a></header>
 <div class="stats" aria-live="polite">
 <span><strong id="nativeCount">—</strong> native R plotting exports</span>
@@ -76,7 +76,7 @@ pre{margin:0;white-space:pre;max-height:410px;overflow:auto;padding:19px;border-
 <div class="filter"><label for="backend">Implementation type</label><select id="backend"><option value="all">Native R + Python bridge</option><option>Native R</option><option>Python-backed</option></select></div>
 <label class="check" for="onlyPreview"><input id="onlyPreview" type="checkbox" checked> <span id="previewFilterLabel">Show illustrated functions only</span></label>
 </section>
-<p class="coverage-note" id="coverageNote"><strong>Figure gallery mode:</strong> Showing only the 9 native plotting functions with verified R-generated images. Uncheck the illustrated-functions filter to browse all 160 exported plotting interfaces, including 151 documentation-only entries.</p>
+<p class="coverage-note" id="coverageNote"><strong>Figure gallery mode:</strong> Showing verified native R plots. Uncheck the illustrated-functions filter to browse every documented export, including entries that do not yet have a real generated figure.</p>
 <div class="main">
 <section class="listbox" aria-label="Plotting functions"><div class="listhead"><span id="resultCount">Loading catalogue…</span><span>v0.4.3 NAMESPACE</span></div><div class="results" id="results"></div></section>
 <article class="detail" aria-live="polite">
@@ -104,6 +104,7 @@ const previews=entries.filter(x=>x.variants&&x.variants.length);
 $("nativeCount").textContent=entries.filter(x=>x.backend==="Native R").length;
 $("pythonCount").textContent=entries.filter(x=>x.backend==="Python-backed").length;
 $("previewCount").textContent=previews.length;
+$("coverageSummary").textContent=previews.length+" of "+entries.filter(x=>x.backend==="Native R").length+" native plotting exports currently have preview images;";
 $("previewFilterLabel").textContent="Only functions with real figures ("+previews.length+")";
 $("onlyPreview").checked=true;
 $("figureCount").textContent=previews.reduce((n,x)=>n+x.variants.length,0);
