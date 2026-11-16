@@ -350,7 +350,7 @@ function renderMatrix(){
  $("workflowRows").replaceChildren();
  for(const x of match)createRow(x);
  if(!match.length){
-  const tr=el("tr",$("workflowRows");
+  const tr=el("tr",$("workflowRows"));
   el("td",tr,"No matching workflows. Clear the filters and reconsider your observation support.").colSpan=4;
  }else if(!selectedRoute||!match.some(x=>x.id===selectedRoute))
   selectRoute(match[0].id);
