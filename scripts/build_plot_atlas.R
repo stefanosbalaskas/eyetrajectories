@@ -274,9 +274,12 @@ parameters_for <- function(name,backend,family){
  ff <- formals(fn)
  nms <- names(ff)
  lapply(nms,function(arg){
-   expr <- ff[[arg]]
-   default <- if(identical(expr,quote(expr=))) "(required)" else
-     paste(deparse(expr,width.cutoff=120L),collapse=" ")
+   default <- tryCatch({
+     # Required R formals (including ...) are missing arguments, not
+     # ordinary R values. Never pass them through identical() or assign.
+     text <- paste(deparse(ff[[arg]],width.cutoff=120L),collapse=" ")
+     if(is.na(text)||!nzchar(text))"(required)" else text
+   },error=function(e)"(required)")
    if(nchar(default)>150L)default <- paste0(substr(default,1,147L),"...")
    list(name=arg,default=default,
         explanation=parameter_note(arg,family))
