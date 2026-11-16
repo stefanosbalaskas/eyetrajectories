@@ -130,3 +130,14 @@ nav.navbar, .navbar.bg-light { background:#fff!important; border-bottom:1px soli
  .et-hero-brand-logo{width:min(240px,72vw);max-height:265px}
 }
 @media(max-width:650px){.et-hero .et-hero-brand{min-height:0}.et-hero-brand-logo{width:min(180px,65vw)}.et-hero .et-hero-brand-caption{font-size:.6rem}}
+
+/* Archival DOI presentation and transparent citation status */
+.et-hero-doi{display:flex;flex-wrap:wrap;gap:.5rem 1.15rem;align-items:center;margin-top:1.2rem}
+.et-hero-doi a{color:#a6f5f0!important;font-size:.78rem;font-weight:730;text-decoration:underline;text-underline-offset:4px}
+.et-hero-doi a:hover{color:#fff!important}
+.et-citation-strip{margin:1.5rem 0 2.7rem;padding:1rem 1.3rem;border-radius:14px;background:#eff8f9;border:1px solid #cfe5e9;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.65rem 1.4rem}
+.et-citation-strip strong{font-size:.93rem;color:#164254}
+.et-citation-strip p{margin:0;max-width:620px;font-size:.82rem;line-height:1.55;color:#587182}
+.et-citation-strip a{font-weight:780;color:#087c91;white-space:nowrap;font-size:.85rem}
+.et-doi-display img{max-width:100%;height:auto;min-height:20px}
+@media(max-width:680px){.et-citation-strip{display:block}.et-citation-strip p{margin:.6rem 0}.et-citation-strip a{white-space:normal;overflow-wrap:anywhere}}
