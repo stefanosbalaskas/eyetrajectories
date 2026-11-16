@@ -1,6 +1,6 @@
 # Scientific validation and limitations
 
-**Version 0.4.2 is a stable GitHub software release, while advanced scientific methods remain experimental.** A successful GitHub Actions check establishes that the tested code passed the specified job on a specified revision and environment. It does not independently certify every method or validate general scientific inference.
+**Version 0.4.3 is a stable GitHub software release, while advanced scientific methods remain experimental.** A successful GitHub Actions check establishes that the tested code passed the specified job on a specified revision and environment. It does not independently certify every method or validate general scientific inference.
 
 ## Interpret the evidence correctly
 
@@ -19,9 +19,9 @@ The internal 508-export development ledger is *provisional author-side evidence*
 
 See the [original qualification runbook](https://github.com/stefanosbalaskas/eyetrajectories/blob/fix/package-wide-qualification-20261113/docs/QUALIFICATION_RUNBOOK_20261113.md) and [experimental release scope](https://github.com/stefanosbalaskas/eyetrajectories/blob/fix/package-wide-qualification-20261113/docs/experimental-release-scope.md).
 
-## Stable GitHub release 0.4.2 and scientific qualification
+## Stable GitHub release 0.4.3 and scientific qualification
 
-The exact 0.4.2 archive passed [five cross-platform package qualification jobs](https://github.com/stefanosbalaskas/eyetrajectories/actions/runs/43780072928). The maintainer's additional local Windows `R CMD check --as-cran` recorded zero errors, zero warnings, and one `New submission` NOTE.
+The exact 0.4.3 archive passed [six cross-platform package qualification jobs](https://github.com/stefanosbalaskas/eyetrajectories/actions/runs/43862845556). The maintainer's additional local Windows `R CMD check --as-cran` recorded zero errors, zero warnings, and one `New submission` NOTE.
 
 The published Python package and the development R package have distinct release histories. The stable R package release on GitHub is **not yet a CRAN publication**.
 
