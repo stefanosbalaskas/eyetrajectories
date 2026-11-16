@@ -2,6 +2,8 @@
 
 <img src="man/figures/logo.png" alt="eyetrajectories: eye movements represented by functional trajectories in a hexagonal R package sticker" width="170" align="right"/>
 
+[![Zenodo DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24288857.svg)](https://doi.org/10.5281/zenodo.24288857) [![Latest GitHub Release](https://img.shields.io/github/v/release/stefanosbalaskas/eyetrajectories?label=GitHub%20release)](https://github.com/stefanosbalaskas/eyetrajectories/releases/latest)
+
 **From eye movements to mathematical trajectories.**
 
 *Functional and dynamical analysis of time-varying visual attention in R.*
@@ -112,6 +114,18 @@ Passing these checks demonstrates successful package installation, documentation
 - [Scientific vs. source parity](https://github.com/stefanosbalaskas/eyetrajectories/blob/release/eyetrajectories-0.4.2-rc1-20261116/docs/SCIENTIFIC_VS_SOURCE_PARITY.md)
 - [Experimental release scope](https://github.com/stefanosbalaskas/eyetrajectories/blob/release/eyetrajectories-0.4.2-rc1-20261116/docs/experimental-release-scope.md)
 - [Website work in progress](https://github.com/stefanosbalaskas/eyetrajectories/pull/180)
+
+## Cite the software
+
+**eyetrajectories 0.4.3** is archived on Zenodo with a version-specific DOI:
+
+[**https://doi.org/10.5281/zenodo.24288857**](https://doi.org/10.5281/zenodo.24288857)
+
+Suggested reference:
+
+> Balaskas, S. (2026). *eyetrajectories* (Version 0.4.3) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.24288857
+
+For reuse of a particular software version, cite the DOI for that version. GitHub also provides a citation file, `CITATION.cff`. The GitHub release is publicly available; CRAN acceptance remains a separate process.
 
 ## Project and license
 
