@@ -50,6 +50,9 @@ jobs:
           cp website/branding/eyetrajectories-logo-240.png pkg/man/figures/logo.png
           cp -a website/pkgdown/. pkg/pkgdown/
           cp website/scripts/build_pkgdown_gallery.R pkg/scripts/
+          cp website/scripts/build_plot_atlas.R pkg/scripts/
+          test -s website/scripts/test_plot_atlas.cjs
+          test -s website/site-interactive/plot-atlas.html
           test -s pkg/pkgdown/index.md
           test -s pkg/pkgdown/extra.css
           test -s pkg/SITE_VALIDATION.md
@@ -63,7 +66,7 @@ jobs:
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           working-directory: pkg
-          extra-packages: any::pkgdown, any::pkgload, any::ggplot2
+          extra-packages: any::pkgdown, any::pkgload, any::ggplot2, any::jsonlite
           needs: check
       - name: Generate reproducible synthetic R figure gallery
         shell: Rscript {0}
@@ -79,6 +82,8 @@ jobs:
                               'site/trajectory-explorer.html', overwrite=TRUE))
           stopifnot(file.copy('../website/site-interactive/methods-laboratory.html',
                               'site/methods-laboratory.html', overwrite=TRUE))
+          stopifnot(file.copy('../website/site-interactive/plot-atlas.html',
+                              'site/plot-atlas.html', overwrite=TRUE))
           dir.create('site/branding', recursive=TRUE, showWarnings=FALSE)
           assets <- list.files('../website/branding', full.names=TRUE,
                                pattern='\\.(png|svg)$')
@@ -90,6 +95,7 @@ jobs:
           stopifnot(grepl('class="et-hero-content"', home, fixed=TRUE))
           stopifnot(grepl('src="branding/eyetrajectories-logo-240.png"', home, fixed=TRUE))
           stopifnot(grepl('10.5281/zenodo.24288857', home, fixed=TRUE))
+          stopifnot(grepl('href="plot-atlas.html"', home, fixed=TRUE))
           stopifnot(grepl('src="trajectory-explorer.html"', home, fixed=TRUE))
           stopifnot(!grepl('class="sourceCode"', home, fixed=TRUE))
           stopifnot(grepl('class="et-interactive-showcase"', home, fixed=TRUE))
@@ -108,6 +114,7 @@ jobs:
             'site/SITE_BRIDGE.html', 'site/SITE_VALIDATION.html',
             'site/SITE_GALLERY.html', 'site/SITE_INTERACTIVE.html',
             'site/SITE_BRANDING.html', 'site/SITE_CITATION.html',
+            'site/SITE_PLOTTING_ATLAS.html', 'site/plot-atlas.html',
             'site/branding/eyetrajectories-logo-240.png',
             'site/branding/eyetrajectories-symbol.svg',
             'site/branding/eyetrajectories-horizontal.svg',
@@ -118,7 +125,11 @@ jobs:
               '04_sparse_support', '05_transfer_entropy_surrogates'), '.png'))
           stopifnot(all(file.exists(required)))
           for (p in required) stopifnot(file.info(p)$size > 100)
-          message('EYETRAJECTORIES_042_WEBSITE_BUILD_PASS')
+          message('EYETRAJECTORIES_043_WEBSITE_BUILD_PASS')
+      - name: Build full exported API atlas and render real native R plots
+        shell: Rscript {0}
+        working-directory: pkg
+        run: source('scripts/build_plot_atlas.R')
       - name: Verify interactive trajectory JavaScript syntax
         shell: bash
         run: |
@@ -133,6 +144,7 @@ jobs:
           PY
           node --check /tmp/eyetrajectories-lab.js
           node website/scripts/test_methods_laboratory.cjs pkg/site/methods-laboratory.html
+          node website/scripts/test_plot_atlas.cjs pkg/site/methods-laboratory.html
       - name: Install independent SVG website favicon
         shell: bash
         run: |
