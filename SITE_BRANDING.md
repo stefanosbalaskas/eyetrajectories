@@ -20,4 +20,4 @@ The visual identity uses dark navy, teal, aqua, and amber. A simplified vector i
 
 The selected sticker is a rendered PNG; the SVGs are original *adaptations* of its visual ideas, not exact vector traces.
 
-These website and repository branding assets do **not** modify the `eyetrajectories_0.4.2.tar.gz` archive already submitted to CRAN. Logo updates on the development branch are separate from CRAN review and future versioned source releases.
+These website and repository branding assets do **not** modify either the original `eyetrajectories_0.4.2.tar.gz` archive or the corrected `eyetrajectories_0.4.3.tar.gz` source archive. Version 0.4.3 is available as a stable GitHub release but has not been confirmed as accepted by CRAN. Logo updates on the website are separate from CRAN review and future versioned source releases.
