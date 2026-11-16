@@ -1,6 +1,6 @@
 # Scientific validation and limitations
 
-**The package is under active research development.** A successful GitHub Actions check establishes that the tested code passed the specified job on a specified revision and environment. It does not independently certify every method or validate general scientific inference.
+**Version 0.4.2 is a stable GitHub software release, while advanced scientific methods remain experimental.** A successful GitHub Actions check establishes that the tested code passed the specified job on a specified revision and environment. It does not independently certify every method or validate general scientific inference.
 
 ## Interpret the evidence correctly
 
@@ -19,11 +19,11 @@ The internal 508-export development ledger is *provisional author-side evidence*
 
 See the [original qualification runbook](https://github.com/stefanosbalaskas/eyetrajectories/blob/fix/package-wide-qualification-20261113/docs/QUALIFICATION_RUNBOOK_20261113.md) and [experimental release scope](https://github.com/stefanosbalaskas/eyetrajectories/blob/fix/package-wide-qualification-20261113/docs/experimental-release-scope.md).
 
-## Current CI and release decisions
+## Stable GitHub release 0.4.2 and scientific qualification
 
-Review the [live Actions runs](https://github.com/stefanosbalaskas/eyetrajectories/actions), their **exact commit SHA**, test logs and notes before describing an environment as qualified. This website prototype does not dynamically assert that any future CI result or CRAN submission has passed.
+The exact 0.4.2 archive passed [five cross-platform package qualification jobs](https://github.com/stefanosbalaskas/eyetrajectories/actions/runs/43780072928). The maintainer's additional local Windows `R CMD check --as-cran` recorded zero errors, zero warnings, and one `New submission` NOTE.
 
-The published Python package and the development R package have distinct release histories. The R development package should not be called CRAN-published until an actual CRAN release is verified.
+The published Python package and the development R package have distinct release histories. The stable R package release on GitHub is **not yet a CRAN publication**.
 
 ## Reproducible reporting checklist
 
