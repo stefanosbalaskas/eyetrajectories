@@ -64,6 +64,10 @@ packageVersion("eyetrajectories")
 
 Do not use `install.packages("eyetrajectories")` as a CRAN installation instruction unless CRAN has actually accepted and published the package.
 
+## Browse actual R plotting functions
+
+The [**searchable plotting atlas**](https://stefanosbalaskas.github.io/eyetrajectories/plot-atlas.html) indexes the R package's exported plotting functions and provides directly rendered plots for selected native R methods, with reproducible synthetic R code and adjustable pre-rendered comparisons. Functions without a verified generated preview are clearly marked as documentation-only. Optional Python-backed plotting interfaces are listed separately.
+
 ## Quick start — native R, without Python
 
 This example uses synthetic mathematical trajectories; it contains **no human participant data**.
