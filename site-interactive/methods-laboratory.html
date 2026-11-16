@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="description" content="Interactive educational demonstrations of functional PCA, dynamic time warping and recurrence analysis for time-varying trajectories in eyetrajectories.">
+<title>Interactive Methods Laboratory | eyetrajectories</title>
+<style>
+:root{--bg:#f3f8fa;--ink:#153247;--muted:#597587;--teal:#0e8293;--orange:#e18b3d;--line:#d9e8ee;--card:#fff;--accent:#0c6578;font:14px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg)}
+*{box-sizing:border-box}body{margin:0}a{color:#077b90;text-underline-offset:3px}button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #e9ad50;outline-offset:3px}
+.wrap{max-width:1210px;margin:auto;padding:clamp(16px,3vw,37px)}header{display:flex;justify-content:space-between;align-items:start;gap:18px;padding:0 0 23px}.eyebrow{text-transform:uppercase;letter-spacing:.16em;font-weight:800;font-size:11px;color:var(--teal);margin:0 0 7px}h1{font-size:clamp(27px,3.7vw,43px);letter-spacing:-.055em;line-height:1.1;margin:0 0 11px}header p:not(.eyebrow){max-width:710px;color:var(--muted);line-height:1.7;margin:0}header a{border:1px solid var(--line);border-radius:9px;padding:9px 14px;white-space:nowrap;background:#fff;text-decoration:none;font-weight:700;font-size:12px}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;border-bottom:1px solid var(--line);padding-bottom:11px;margin-bottom:20px}
+.tabs button{padding:10px 17px;border-radius:10px;border:1px solid var(--line);background:#fff;color:#415f70;font-weight:750}
+.tabs button[aria-selected=true]{background:#0d5a6d;border-color:#0d5a6d;color:white;box-shadow:0 5px 17px rgba(15,99,116,.13)}
+.lab{display:grid;grid-template-columns:minmax(260px,295px) minmax(0,1fr);gap:16px;align-items:start}
+.box,.graph,.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 6px 25px rgba(16,62,83,.035)}
+.box{padding:22px}.box h2,.graph h2{font-size:16px;letter-spacing:-.035em;margin:0 0 12px}.box p{color:var(--muted);margin:0 0 17px;font-size:12px;line-height:1.65}
+.form-grid{display:grid;gap:19px}.control{display:grid;gap:7px}.control-head{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12px}.control-head label{font-weight:720}.control-head output{font-weight:750;color:#0c7a8e;font-variant-numeric:tabular-nums}input[type=range]{width:100%;accent-color:var(--teal);cursor:pointer}select{padding:9px 11px;border-radius:9px;border:1px solid #c7dce5;color:var(--ink);background:white;width:100%}
+.plot-area{display:grid;gap:13px;min-width:0}.graph{padding:16px}.graph-head{display:flex;justify-content:space-between;gap:12px;align-items:baseline;margin-bottom:10px}.graph h2{font-size:14px;margin:0}.graph-head small{color:var(--muted);font-size:11px}.plot{display:block;background:#f8fbfc;width:100%;height:310px;border-radius:9px}.plot.secondary{height:220px}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.stat{padding:14px 16px}.stat strong{display:block;font-size:clamp(18px,2.2vw,26px);font-variant-numeric:tabular-nums;letter-spacing:-.055em}.stat span{font-size:11px;color:var(--muted);line-height:1.5;display:block}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:19px}.actions button,.actions a{padding:9px 12px;border-radius:9px;border:1px solid #c7dee6;background:#f8fcfd;font-size:12px;font-weight:750;text-decoration:none}.actions .primary{background:#0d6578;color:#fff;border-color:#0d6578}
+.method-foot{margin:20px 0 0;padding:17px 19px;border-radius:12px;background:#edf6f8;border:1px solid #d4e7eb;font-size:12px;color:#496b7b;line-height:1.75}.method-foot strong{color:var(--ink)}.tip{color:var(--muted);font-size:11px;margin-top:14px!important}.hidden{display:none!important}
+#method-title{font-size:16px}.badge{display:inline-flex;gap:6px;align-items:center;border-radius:999px;padding:5px 10px;font-size:10px;font-weight:750;background:#e2f3f5;color:#0d7587}.key{display:flex;gap:14px;font-size:11px;color:var(--muted)}.key span::before{content:"";display:inline-block;width:12px;height:3px;background:var(--teal);vertical-align:middle;margin-right:5px;border-radius:3px}.key span:nth-child(2)::before{background:var(--orange)}
+#method-reference a{font-weight:720}
+@media(max-width:900px){.lab{grid-template-columns:1fr}.form-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.form-grid .control:last-child{grid-column:1/-1}header{display:block}header a{display:inline-block;margin-top:13px}}
+@media(max-width:580px){.form-grid{grid-template-columns:1fr}.form-grid .control:last-child{grid-column:auto}.box,.graph{padding:14px}.stats{grid-template-columns:1fr}.plot{height:250px}.plot.secondary{height:210px}.tabs button{padding:8px 11px;font-size:12px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<div><p class="eyebrow">eyetrajectories · method-by-method exploration</p><h1>Interactive Methods Laboratory</h1><p>Discover what functional decomposition, temporal alignment and recurrence can tell us about trajectories. Change the simulated observations and see the mathematics update instantly. These are independent teaching implementations, not executions of the R estimators.</p></div>
+<a href="index.html">← Return to package website</a>
+</header>
+<nav class="tabs" role="tablist" aria-label="Choose a mathematical method">
+<button id="tab-fpca" role="tab" aria-selected="true" aria-controls="panel-fpca" tabindex="0" data-method="fpca">Functional PCA</button>
+<button id="tab-dtw" role="tab" aria-selected="false" aria-controls="panel-dtw" tabindex="-1" data-method="dtw">Dynamic time warping</button>
+<button id="tab-rqa" role="tab" aria-selected="false" aria-controls="panel-rqa" tabindex="-1" data-method="rqa">Recurrence analysis</button>
+</nav>
+<div class="lab">
+<aside class="box">
+<span class="badge">Live · synthetic data</span>
+<h2 id="method-title" style="margin-top:14px">Functional principal components</h2>
+<p id="method-intro">Find the dominant modes by which smooth sample trajectories vary around their mean, then reconstruct a selected curve.</p>
+<section id="panel-fpca" role="tabpanel" aria-labelledby="tab-fpca">
+<div class="form-grid">
+<div class="control"><div class="control-head"><label for="fpca-n">Number of curves</label><output id="fpca-n-out" for="fpca-n">24</output></div><input id="fpca-n" type="range" min="12" max="60" step="4" value="24"></div>
+<div class="control"><div class="control-head"><label for="fpca-noise">Measurement variation</label><output id="fpca-noise-out" for="fpca-noise">0.08</output></div><input id="fpca-noise" type="range" min="0" max=".24" step=".02" value=".08"></div>
+<div class="control"><div class="control-head"><label for="fpca-k">Retained components</label><output id="fpca-k-out" for="fpca-k">2</output></div><input id="fpca-k" type="range" min="1" max="3" step="1" value="2"></div>
+<div class="control"><div class="control-head"><label for="fpca-example">Curve to reconstruct</label><output id="fpca-example-out" for="fpca-example">4</output></div><input id="fpca-example" type="range" min="1" max="24" step="1" value="4"></div>
+</div>
+<p class="tip">The PCA is calculated from the sample's discretized covariance (common grid). Scores and components are recomputed whenever the data change.</p>
+</section>
+<section id="panel-dtw" class="hidden" role="tabpanel" aria-labelledby="tab-dtw">
+<div class="form-grid">
+<div class="control"><div class="control-head"><label for="dtw-phase">Temporal displacement</label><output id="dtw-phase-out" for="dtw-phase">0.16</output></div><input id="dtw-phase" type="range" min="0" max=".38" step=".02" value=".16"></div>
+<div class="control"><div class="control-head"><label for="dtw-amp">Amplitude difference</label><output id="dtw-amp-out" for="dtw-amp">1.00×</output></div><input id="dtw-amp" type="range" min=".60" max="1.4" step=".05" value="1"></div>
+<div class="control"><div class="control-head"><label for="dtw-samples">Samples per series</label><output id="dtw-samples-out" for="dtw-samples">81</output></div><input id="dtw-samples" type="range" min="41" max="121" step="20" value="81"></div>
+<div class="control"><div class="control-head"><label for="dtw-links">Alignment links</label><output id="dtw-links-out" for="dtw-links">18</output></div><input id="dtw-links" type="range" min="0" max="36" step="3" value="18"></div>
+</div>
+<p class="tip">DTW finds a minimum-cost monotonic alignment between two scalar sequences. It does not infer why timing differs.</p>
+</section>
+<section id="panel-rqa" class="hidden" role="tabpanel" aria-labelledby="tab-rqa">
+<div class="form-grid">
+<div class="control"><div class="control-head"><label for="rqa-model">State-space pattern</label></div><select id="rqa-model"><option value="orbit">Repeated loop</option><option value="figure">Figure-eight</option><option value="drift">Drifting path</option></select></div>
+<div class="control"><div class="control-head"><label for="rqa-radius">Recurrence radius</label><output id="rqa-radius-out" for="rqa-radius">0.16</output></div><input id="rqa-radius" type="range" min=".04" max=".50" step=".02" value=".16"></div>
+<div class="control"><div class="control-head"><label for="rqa-theiler">Theiler exclusion (samples)</label><output id="rqa-theiler-out" for="rqa-theiler">2</output></div><input id="rqa-theiler" type="range" min="0" max="12" step="1" value="2"></div>
+<div class="control"><div class="control-head"><label for="rqa-samples">Sample resolution</label><output id="rqa-samples-out" for="rqa-samples">90</output></div><input id="rqa-samples" type="range" min="50" max="130" step="10" value="90"></div>
+</div>
+<p class="tip">Recurrence requires a declared state-space metric and threshold. Rates and line statistics depend strongly on radius and temporal exclusion.</p>
+</section>
+<div class="actions"><button id="reset" type="button">↺ Reset controls</button><button id="export" class="primary" type="button">↓ Export data CSV</button></div>
+</aside>
+<div class="plot-area">
+<section class="graph"><div class="graph-head"><h2 id="primary-heading">Functional curve ensemble &amp; reconstruction</h2><div class="key"><span>Reference</span><span>Model / comparison</span></div></div><canvas id="primary" class="plot" role="img" aria-label="Primary interactive method visualization"></canvas></section>
+<section class="graph"><div class="graph-head"><h2 id="secondary-heading">Component variation and retained variance</h2><small id="secondary-caption">Functional eigenvalues</small></div><canvas id="secondary" class="plot secondary" role="img" aria-label="Secondary method visualization"></canvas></section>
+<div class="stats" aria-live="polite"><div class="stat"><strong id="stat-1">—</strong><span id="stat-1-label">First component variance</span></div><div class="stat"><strong id="stat-2">—</strong><span id="stat-2-label">Second component variance</span></div><div class="stat"><strong id="stat-3">—</strong><span id="stat-3-label">Reconstruction RMSE</span></div></div>
+</div>
+</div>
+<section class="method-foot"><strong id="equation-label">Mathematical idea</strong><p id="equation" style="margin:.4rem 0">Xᵢ(t) = μ(t) + Σₖ ξᵢₖ φₖ(t) + εᵢ(t). Retained principal components summarize covariance structure on the common grid.</p><div id="method-reference">Relevant R documentation: <a href="reference/etr_fit_fpca.html">etr_fit_fpca()</a>, <a href="reference/etr_fit_mfpca.html">etr_fit_mfpca()</a>.</div><p style="margin-bottom:0">These browser calculations illustrate mathematical ideas. The actual eyetrajectories R package may use different estimators, defaults, input contracts, numerical tolerances and uncertainty procedures. This page is not a numerical parity or scientific validation benchmark. <a href="SITE_VALIDATION.html">Read validation boundaries</a>.</p></section>
+</div>
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const colors={a:"#087f92",b:"#db8d42",grid:"#dce8ed",faint:"rgba(11,104,131,.16)",ink:"#59788a",dark:"#144156"};
+const methods=["fpca","dtw","rqa"];let mode="fpca",dataset=null,renderQueued=false;
+const fieldIds=["fpca-n","fpca-noise","fpca-k","fpca-example","dtw-phase","dtw-amp","dtw-samples","dtw-links","rqa-model","rqa-radius","rqa-theiler","rqa-samples"];
+const defaults={};fieldIds.forEach(id=>{defaults[id]=$(id).value;});
+const fmt=(v,d=3)=>Number.isFinite(v)?v.toFixed(d):"—";
+function canvas(id){const el=$(id),box=el.getBoundingClientRect(),w=Math.max(230,box.width),h=Math.max(140,box.height),dpr=Math.min(2,window.devicePixelRatio||1),ctx=el.getContext("2d");if(el.width!==Math.round(w*dpr)||el.height!==Math.round(h*dpr)){el.width=Math.round(w*dpr);el.height=Math.round(h*dpr);}ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);return{ctx,w,h};}
+function axes(z,ylim,labels=true){const {ctx,w,h}=z,p={x:44,y:17,w:w-61,h:h-52};ctx.lineWidth=1;ctx.strokeStyle=colors.grid;ctx.fillStyle=colors.ink;ctx.font="10px system-ui";for(let j=0;j<=4;j++){let x=p.x+j*p.w/4,y=p.y+j*p.h/4;ctx.beginPath();ctx.moveTo(x,p.y);ctx.lineTo(x,p.y+p.h);ctx.moveTo(p.x,y);ctx.lineTo(p.x+p.w,y);ctx.stroke();if(labels){ctx.fillText((j/4).toFixed(2),x-9,h-11);ctx.fillText((ylim[1]+(ylim[0]-ylim[1])*j/4).toFixed(2),3,y+4);}}return p;}
+function poly(ctx,pts,color,width=2,opacity=1){if(!pts.length)return;ctx.beginPath();pts.forEach((pt,i)=>i?ctx.lineTo(pt[0],pt[1]):ctx.moveTo(pt[0],pt[1]));ctx.globalAlpha=opacity;ctx.strokeStyle=color;ctx.lineWidth=width;ctx.lineJoin="round";ctx.lineCap="round";ctx.stroke();ctx.globalAlpha=1;}
+function stat(i,value,label){$("stat-"+i).textContent=value;$("stat-"+i+"-label").textContent=label;}
+function labels(){fieldIds.forEach(id=>{const out=$(id+"-out");if(out){let t=$(id).value;out.textContent=id==="dtw-amp"?Number(t).toFixed(2)+"×":id==="fpca-noise"||id==="dtw-phase"||id==="rqa-radius"?Number(t).toFixed(2):t;}});$("fpca-example").max=$("fpca-n").value;if(Number($("fpca-example").value)>Number($("fpca-n").value))$("fpca-example").value=$("fpca-n").value;$("fpca-example-out").textContent=$("fpca-example").value;}
+function eigenGram(X,kmax){const n=X.length,m=X[0].length,K=Array.from({length:n},()=>new Float64Array(n)),tr=X.map(row=>row.reduce((a,b)=>a+b*b,0)/m/(n-1)).reduce((a,b)=>a+b,0);
+for(let i=0;i<n;i++)for(let j=0;j<=i;j++){let dot=0;for(let t=0;t<m;t++)dot+=X[i][t]*X[j][t];K[i][j]=K[j][i]=dot/m/(n-1);}
+let eigen=[],vecs=[];
+for(let k=0;k<kmax;k++){let v=Float64Array.from({length:n},(_,i)=>Math.sin((i+1)*(k+1)*1.19)+.37*Math.cos((i+1)*(k+2)));let norm=Math.hypot(...v);for(let i=0;i<n;i++)v[i]/=norm;
+ for(let it=0;it<75;it++){let q=new Float64Array(n);for(let i=0;i<n;i++)for(let j=0;j<n;j++)q[i]+=K[i][j]*v[j];for(const u of vecs){let dp=0;for(let i=0;i<n;i++)dp+=q[i]*u[i];for(let i=0;i<n;i++)q[i]-=dp*u[i];}let len=Math.hypot(...q);if(len<1e-10)break;for(let i=0;i<n;i++)v[i]=q[i]/len;}
+ let kv=new Float64Array(n);for(let i=0;i<n;i++)for(let j=0;j<n;j++)kv[i]+=K[i][j]*v[j];let lam=0;for(let i=0;i<n;i++)lam+=v[i]*kv[i];lam=Math.max(0,lam);let phi=new Float64Array(m);if(lam>1e-12)for(let t=0;t<m;t++){for(let i=0;i<n;i++)phi[t]+=X[i][t]*v[i];phi[t]/=Math.sqrt(lam*(n-1));}eigen.push({lam,vec:v,phi});vecs.push(v);
+}return{eigen,trace:tr};}
+function fpcaData(){const n=Number($("fpca-n").value),m=101,noise=Number($("fpca-noise").value),k=Number($("fpca-k").value),selected=Number($("fpca-example").value)-1;
+const curves=Array.from({length:n},(_,i)=>Float64Array.from({length:m},(_,j)=>{const t=j/(m-1),a=.27*Math.sin((i+1)*2.11),b=.20*Math.cos((i+2)*1.71),base=.43+.20*Math.sin(2*Math.PI*t);return base+a*Math.sin(2*Math.PI*t)+b*Math.cos(4*Math.PI*t)+noise*(.55*Math.sin(17*Math.PI*t+i*1.63)+.45*Math.cos(25*Math.PI*t+i*.73));}));
+const mean=Float64Array.from({length:m},(_,t)=>curves.reduce((a,row)=>a+row[t],0)/n);
+const centered=curves.map(row=>Float64Array.from(row,(v,t)=>v-mean[t]));const fitted=eigenGram(centered,3);
+const reconstruction=Float64Array.from({length:m},(_,t)=>{let v=mean[t];for(let h=0;h<k;h++){let e=fitted.eigen[h];v+=Math.sqrt(e.lam*(n-1))*e.vec[selected]*e.phi[t];}return v;});
+let mse=0;for(let j=0;j<m;j++)mse+=(curves[selected][j]-reconstruction[j])**2;
+return {curves,mean,reconstruction,eigen:fitted.eigen,trace:fitted.trace,selected,k,rmse:Math.sqrt(mse/m),m,n};}
+function plotFpca(data){$("primary-heading").textContent="Functional ensemble & reconstructed observation";$("secondary-heading").textContent="Dominant functional directions";$("secondary-caption").textContent="Empirical covariance spectrum";let z=canvas("primary"),{ctx}=z;let all=data.curves.flatMap(x=>Array.from(x)),mi=Math.min(...all)-.06,ma=Math.max(...all)+.06,p=axes(z,[mi,ma]);let proj=row=>Array.from(row,(v,i)=>[p.x+p.w*i/(data.m-1),p.y+p.h*(1-(v-mi)/(ma-mi))]);data.curves.forEach(row=>poly(ctx,proj(row),colors.a,.8,.12));poly(ctx,proj(data.mean),colors.a,3);poly(ctx,proj(data.curves[data.selected]),colors.dark,2.6,.45);poly(ctx,proj(data.reconstruction),colors.b,3);
+z=canvas("secondary");let sums=data.eigen.map(e=>e.lam/Math.max(1e-12,data.trace));p=axes(z,[0,Math.max(.05,...sums)*1.13]);for(let i=0;i<sums.length;i++){let bw=p.w/8,cx=p.x+p.w*(i+1)/4-p.w/8;ctx=z.ctx;ctx.fillStyle=i<data.k?colors.a:"#b7cdd8";ctx.fillRect(cx,p.y+p.h*(1-sums[i]/(Math.max(.05,...sums)*1.13)),bw,p.h*sums[i]/(Math.max(.05,...sums)*1.13));ctx.fillStyle=colors.ink;ctx.font="11px system-ui";ctx.fillText("PC "+(i+1),cx,p.y+p.h+31);}
+stat(1,fmt(100*sums[0],1)+"%","Variance explained by PC1");stat(2,fmt(100*(sums.slice(0,data.k).reduce((a,b)=>a+b,0)),1)+"%","Cumulative variance ("+data.k+" PCs)");stat(3,fmt(data.rmse,3),"Selected curve reconstruction RMSE");
+$("equation").textContent="Xᵢ(t) = μ(t) + Σₖ ξᵢₖ φₖ(t) + εᵢ(t). Components are computed from the empirical covariance of these synthetic, equally spaced curves.";
+$("method-reference").innerHTML='Relevant native R reference: <a href="reference/etr_fit_fpca.html">etr_fit_fpca()</a> and <a href="reference/etr_fit_mfpca.html">etr_fit_mfpca()</a>.';}
+function dtwData(){const n=Number($("dtw-samples").value),phase=Number($("dtw-phase").value),amp=Number($("dtw-amp").value),A=Float64Array.from({length:n},(_,i)=>.52+.22*Math.sin(2*Math.PI*i/(n-1))+.09*Math.sin(6*Math.PI*i/(n-1))),B=Float64Array.from({length:n},(_,i)=>.52+amp*(.22*Math.sin(2*Math.PI*(i/(n-1)+phase))+.09*Math.sin(6*Math.PI*(i/(n-1)+phase))));
+const D=Array.from({length:n},()=>new Float64Array(n));const dir=Array.from({length:n},()=>new Uint8Array(n));
+for(let i=0;i<n;i++)for(let j=0;j<n;j++){const cost=Math.abs(A[i]-B[j]);if(!i&&!j){D[i][j]=cost;continue;}let best=Infinity,way=0;if(i&&j&&D[i-1][j-1]<best){best=D[i-1][j-1];way=0;}if(i&&D[i-1][j]<best){best=D[i-1][j];way=1;}if(j&&D[i][j-1]<best){best=D[i][j-1];way=2;}D[i][j]=cost+best;dir[i][j]=way;}
+const path=[];let i=n-1,j=n-1;while(true){path.push([i,j]);if(i===0&&j===0)break;const d=dir[i][j];if(d===0){i--;j--;}else if(d===1)i--;else j--;}path.reverse();
+let simultaneous=0;for(let t=0;t<n;t++)simultaneous+=Math.abs(A[t]-B[t]);return{A,B,n,D,path,simultaneous:simultaneous/n,dtw:D[n-1][n-1]/path.length,pathlen:path.length};}
+function plotDtw(d){$("primary-heading").textContent="Time series and monotonic alignment";$("secondary-heading").textContent="DTW cumulative-cost surface";$("secondary-caption").textContent="Optimal warping path";let z=canvas("primary"),{ctx}=z,p=axes(z,[.05,.95]);let q=(i,v)=>[p.x+p.w*i/(d.n-1),p.y+p.h*(1-(v-.05)/.9)];const links=Number($("dtw-links").value);
+if(links)for(let s=0;s<links;s++){const ij=d.path[Math.floor(s*(d.path.length-1)/Math.max(1,links-1))];let a=q(ij[0],d.A[ij[0]]),b=q(ij[1],d.B[ij[1]]);ctx.beginPath();ctx.moveTo(...a);ctx.lineTo(...b);ctx.strokeStyle="rgba(190,156,105,.33)";ctx.lineWidth=1;ctx.stroke();}
+poly(ctx,Array.from(d.A,(v,i)=>q(i,v)),colors.a,3);poly(ctx,Array.from(d.B,(v,i)=>q(i,v)),colors.b,3);
+z=canvas("secondary");p={x:45,y:10,w:z.w-64,h:z.h-49};ctx=z.ctx;const n=d.n,cw=p.w/n,ch=p.h/n,max=d.D[n-1][n-1];for(let i=0;i<n;i++)for(let j=0;j<n;j++){const r=Math.min(1,d.D[i][j]/Math.max(.0001,max));ctx.fillStyle="rgb("+Math.round(235-150*r)+","+Math.round(247-95*r)+","+Math.round(249-66*r)+")";ctx.fillRect(p.x+cw*j,p.y+ch*i,cw+.3,ch+.3);}
+poly(ctx,d.path.map(pair=>[p.x+cw*(pair[1]+.5),p.y+ch*(pair[0]+.5)]),colors.b,2.4);
+ctx.fillStyle=colors.ink;ctx.font="11px system-ui";ctx.fillText("B samples →",z.w-115,z.h-10);ctx.fillText("A",15,22);
+stat(1,fmt(d.simultaneous),"Mean pointwise absolute difference");stat(2,fmt(d.dtw),"DTW mean cost per matched step");stat(3,String(d.pathlen),"Number of matched index pairs");
+$("equation").textContent="DTW(i,j) = |Aᵢ − Bⱼ| + min[DTW(i−1,j−1), DTW(i−1,j), DTW(i,j−1)]. The reported DTW cost is divided by the length of the optimal alignment path.";
+$("method-reference").innerHTML='Related native R reference: <a href="reference/etr_dtw.html">etr_dtw()</a> and <a href="reference/etr_pairwise_dtw.html">etr_pairwise_dtw()</a>.';}
+function rqaData(){const n=Number($("rqa-samples").value),rad=Number($("rqa-radius").value),theiler=Number($("rqa-theiler").value),model=$("rqa-model").value;
+const xy=Array.from({length:n},(_,i)=>{const t=i/(n-1);if(model==="orbit")return [.52+.30*Math.cos(4*Math.PI*t),.5+.26*Math.sin(4*Math.PI*t)];if(model==="figure")return [.5+.36*Math.sin(4*Math.PI*t),.5+.30*Math.sin(8*Math.PI*t)];return [.17+.65*t+.10*Math.sin(12*Math.PI*t),.50+.18*Math.sin(5*Math.PI*t)+.10*Math.cos(17*Math.PI*t)];});
+const matrix=Array.from({length:n},()=>new Uint8Array(n));let sum=0;for(let i=0;i<n;i++)for(let j=0;j<n;j++){if(Math.abs(i-j)<=theiler)continue;let a=xy[i],b=xy[j],dist=Math.hypot(a[0]-b[0],a[1]-b[1]);if(dist<=rad){matrix[i][j]=1;sum++;}}
+let diagCells=0,longest=0;for(let i=0;i<n;i++)for(let j=0;j<n;j++){if(!matrix[i][j]||(i&&j&&matrix[i-1][j-1]))continue;let len=0;while(i+len<n&&j+len<n&&matrix[i+len][j+len])len++;if(len>=2){diagCells+=len;longest=Math.max(longest,len);}}
+return{xy,matrix,n,rad,theiler,rate:sum/(n*n-n*(2*theiler+1)+theiler*(theiler+1)),det:sum?diagCells/sum:0,longest};}
+function plotRqa(d){$("primary-heading").textContent="Recurrence matrix (pairwise state-space returns)";$("secondary-heading").textContent="Synthetic state-space trajectory";$("secondary-caption").textContent="2D normalized coordinates";let z=canvas("primary"),ctx=z.ctx,side=Math.min(z.h-20,z.w-40),step=side/d.n,x=(z.w-side)/2,y=9;ctx.fillStyle="#e9f2f6";ctx.fillRect(x,y,side,side);for(let i=0;i<d.n;i++)for(let j=0;j<d.n;j++)if(d.matrix[i][j]){ctx.fillStyle="#0d7f91";ctx.fillRect(x+j*step,y+i*step,Math.ceil(step),Math.ceil(step));}ctx.fillStyle=colors.ink;ctx.font="11px system-ui";ctx.fillText("tⱼ →",x+side-40,y+side+17);ctx.fillText("tᵢ",x-16,y+14);
+z=canvas("secondary");const p={x:36,y:12,w:z.w-52,h:z.h-48};ctx=z.ctx;ctx.fillStyle=colors.grid;for(let j=0;j<=4;j++){ctx.beginPath();ctx.moveTo(p.x+j*p.w/4,p.y);ctx.lineTo(p.x+j*p.w/4,p.y+p.h);ctx.moveTo(p.x,p.y+j*p.h/4);ctx.lineTo(p.x+p.w,p.y+j*p.h/4);ctx.strokeStyle=colors.grid;ctx.stroke();}
+poly(ctx,d.xy.map(q=>[p.x+q[0]*p.w,p.y+(1-q[1])*p.h]),colors.a,2.3);ctx.fillStyle=colors.b;ctx.beginPath();ctx.arc(p.x+d.xy[0][0]*p.w,p.y+(1-d.xy[0][1])*p.h,5,0,Math.PI*2);ctx.fill();
+stat(1,fmt(100*d.rate,1)+"%","Recurrence rate, eligible pairs");stat(2,fmt(100*d.det,1)+"%","DET: recurrence points in diagonal lines ≥ 2");stat(3,String(d.longest),"Longest diagonal line (samples)");
+$("equation").textContent="Rᵢⱼ = 1 when ||x(tᵢ) − x(tⱼ)||₂ ≤ radius and |i−j| > Theiler window. DET is the proportion of recurrent points belonging to diagonal runs of at least two.";
+$("method-reference").innerHTML='Related native R reference: <a href="reference/etr_recurrence_matrix.html">etr_recurrence_matrix()</a> and <a href="reference/etr_rqa_metrics.html">etr_rqa_metrics()</a>.';}
+function render(){if(mode==="fpca"){dataset=fpcaData();plotFpca(dataset);}else if(mode==="dtw"){dataset=dtwData();plotDtw(dataset);}else{dataset=rqaData();plotRqa(dataset);}}
+function schedule(){if(renderQueued)return;renderQueued=true;requestAnimationFrame(()=>{renderQueued=false;render();});}
+function switchTo(value,focus=false){mode=value;methods.forEach(m=>{const active=m===value;$("panel-"+m).classList.toggle("hidden",!active);$("tab-"+m).setAttribute("aria-selected",String(active));$("tab-"+m).tabIndex=active?0:-1;});const titles={fpca:"Functional principal components",dtw:"Dynamic time warping",rqa:"Recurrence quantification"};const texts={fpca:"Find dominant modes of variation among continuous synthetic curves and reconstruct a selected observation.",dtw:"Align two time series while allowing locally stretched or compressed time.",rqa:"Detect when a trajectory returns to neighborhoods of previously visited states."};$("method-title").textContent=titles[value];$("method-intro").textContent=texts[value];if(focus)$("tab-"+value).focus();schedule();}
+function csv(){if(!dataset)render();let lines=[];if(mode==="fpca"){lines=["curve,time,value,mean,reconstruction_if_selected"];for(let i=0;i<dataset.n;i++)for(let t=0;t<dataset.m;t++)lines.push([i+1,t/(dataset.m-1),dataset.curves[i][t],dataset.mean[t],i===dataset.selected?dataset.reconstruction[t]:""].join(","));}
+else if(mode==="dtw"){lines=["time,a,b"];for(let i=0;i<dataset.n;i++)lines.push([i/(dataset.n-1),dataset.A[i],dataset.B[i]].join(","));}
+else{lines=["time,x,y"];dataset.xy.forEach((p,i)=>lines.push([i/(dataset.n-1),p[0],p[1]].join(",")));}
+const blob=new Blob([lines.join("\n")+"\n"],{type:"text/csv;charset=utf-8"}),url=URL.createObjectURL(blob),link=document.createElement("a");link.href=url;link.download="eyetrajectories-method-lab-"+mode+".csv";document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+methods.forEach((m,i)=>{$("tab-"+m).addEventListener("click",()=>switchTo(m));$("tab-"+m).addEventListener("keydown",e=>{if(["ArrowRight","ArrowLeft","Home","End"].includes(e.key)){e.preventDefault();let idx=e.key==="Home"?0:e.key==="End"?methods.length-1:(i+(e.key==="ArrowRight"?1:methods.length-1))%methods.length;switchTo(methods[idx],true);}});});
+fieldIds.forEach(id=>$(id).addEventListener("input",()=>{labels();schedule();}));
+$("reset").addEventListener("click",()=>{fieldIds.forEach(id=>{$(id).value=defaults[id];});labels();schedule();});
+$("export").addEventListener("click",csv);
+if(window.ResizeObserver){const obs=new ResizeObserver(schedule);obs.observe($("primary"));obs.observe($("secondary"));}else window.addEventListener("resize",schedule);
+labels();switchTo("fpca");
+})();
+</script>
+</body>
+</html>
