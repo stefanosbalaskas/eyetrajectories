@@ -26,7 +26,7 @@ repo:
 navbar:
   bg: light
   structure:
-    left: [start, labs, methods, gallery, reference, bridge, validation, cite, news]
+    left: [start, labs, atlas, methods, gallery, reference, bridge, validation, cite, news]
     right: [search, github, lightswitch]
   components:
     start:
@@ -35,6 +35,9 @@ navbar:
     labs:
       text: Interactive labs
       href: SITE_INTERACTIVE.html
+    atlas:
+      text: Plot atlas
+      href: SITE_PLOTTING_ATLAS.html
     methods:
       text: Methods
       href: SITE_METHODS.html
