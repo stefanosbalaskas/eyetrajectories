@@ -159,7 +159,9 @@ add("etr_plot_transfer_surrogates","Recurrence & nonlinear",
 # Extend with validated scientific fixtures from the qualified native package.
 sys.source("scripts/extend_plot_atlas.R",envir=environment())
 sys.source("scripts/extend_plot_atlas_wave2.R",envir=environment())
+sys.source("scripts/extend_plot_atlas_wave3.R",envir=environment())
 stopifnot(length(atlas_new_success)>=36L)
+stopifnot(length(wave3_pass)==14L, length(plot_spec)>=62L)
 ns <- readLines("NAMESPACE",warn=FALSE)
 exports <- grep("^export\\([A-Za-z][A-Za-z0-9_]*\\)$",ns,value=TRUE)
 exports <- sub("^export\\(([^)]+)\\)$","\\1",exports)
@@ -199,6 +201,7 @@ writeLines(c("eyetrajectories v0.4.3 actual native R plotting atlas",
   paste("Python-backed plotting exports:",length(bridge)),
   paste("Directly illustrated exported native functions:",length(plot_spec)),
   paste("New additional native R plotting exports:",length(atlas_new_success)),
+  paste("Wave 3 advanced inference functions:",length(wave3_pass)),
   paste("Unrendered additional fixture candidates:",length(atlas_new_failures)),
   paste("Native R generated PNG examples:",png_count),
   "The searchable function inventory was generated from the actual NAMESPACE.",
