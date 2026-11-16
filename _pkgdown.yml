@@ -26,12 +26,15 @@ repo:
 navbar:
   bg: light
   structure:
-    left: [start, methods, gallery, reference, bridge, validation, news]
+    left: [start, lab, methods, gallery, reference, bridge, validation, news]
     right: [search, github, lightswitch]
   components:
     start:
       text: Get started
       href: SITE_START.html
+    lab:
+      text: Trajectory lab
+      href: trajectory-explorer.html
     methods:
       text: Methods
       href: SITE_METHODS.html
