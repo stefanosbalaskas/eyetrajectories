@@ -8,7 +8,8 @@ declared FPCA bootstrap, influence, cross-validation, outlier,
 functional-band and recurrence analysis result objects.
 }
 
-\arguments{
+\section{Plotting parameters}{
+\describe{
 \item{result}{Compatible native R result for the individual plot.}
 \item{metric}{Declared influence summary, eigenspace stability or
 recurrence functional metric.}
@@ -21,6 +22,7 @@ or \code{NULL}. Exceeding it raises an error rather than subsampling.}
 \item{filters}{Named list restricting the other varying RQA parameters
 to explicit fixed values.}
 \item{...}{Further base R graphics options.}
+}
 }
 \value{
 Each routine draws on the active R graphics device and returns its
