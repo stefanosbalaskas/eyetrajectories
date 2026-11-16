@@ -244,22 +244,22 @@ rqa_code <- paste(path_code,
  "rqa <- etr_rqa_parameter_sensitivity(",
  '  paths,curve="synthetic_1",dimensions=c("x","y"),',
  "  embedding_dimensions=2L,delays=1L,",
- "  theiler_windows=2L,radii=c(.20,.35,.50),",
- "  min_diagonal_lengths=2L,min_vertical_lengths=2L)",sep="\n")
+ "  theiler_windows=2L,radii=.35,",
+ "  min_diagonal_lengths=c(2L,3L,4L),min_vertical_lengths=2L)",sep="\n")
 register_native("etr_plot_rqa_sensitivity","Recurrence & nonlinear",
- "Full fixed-radius native recurrence sensitivity grid; varying only the declared radius.",
+ "Native RQA determinism across declared minimum diagonal-line lengths, with a fixed radius and Theiler exclusion.",
  function(){
    rqa<-fixture("rqa_grid",function()
      eyetrajectories::etr_rqa_parameter_sensitivity(
        paths,curve="synthetic_1",dimensions=c("x","y"),
        embedding_dimensions=2L,delays=1L,
-       theiler_windows=2L,radii=c(.20,.35,.50),
-       min_diagonal_lengths=2L,min_vertical_lengths=2L))
+       theiler_windows=2L,radii=.35,
+       min_diagonal_lengths=c(2L,3L,4L),min_vertical_lengths=2L))
    stopifnot(inherits(rqa,"etr_rqa_parameter_sensitivity"))
-   list(v("etr_plot_rqa_sensitivity","radius","Recurrence rate by radius",
+   list(v("etr_plot_rqa_sensitivity","min_diagonal","Determinism by line-length threshold",
       function()eyetrajectories::etr_plot_rqa_sensitivity(rqa,
-        parameter="requested_radius",metric="recurrence_rate"),
-      rqa_code,'etr_plot_rqa_sensitivity(rqa,parameter="requested_radius",metric="recurrence_rate")'))
+        parameter="min_diagonal_length",metric="determinism"),
+      rqa_code,'etr_plot_rqa_sensitivity(rqa,parameter="min_diagonal_length",metric="determinism")'))
  })
 poincare_setup <- paste(c(
  "library(eyetrajectories)",
