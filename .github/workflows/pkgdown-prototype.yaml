@@ -21,7 +21,8 @@ concurrency:
 jobs:
   publish-website:
     name: Qualify native R gallery and Chromium interactive research lab
-    runs-on: ubuntu-latest
+    # Playwright 1.56.1 supports Ubuntu 24.04, not ubuntu-latest 26.04.
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     env:
       NOT_CRAN: 'true'
