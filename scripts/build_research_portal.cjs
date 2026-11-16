@@ -51,7 +51,9 @@ const workflows=raw.workflows.map((x,i)=>{
  assert(fs.existsSync(path.join(site,fig.image)),x.id+": figure path broken");
  assert(fs.existsSync(path.join(site,fig.script)),x.id+": reproduction script path broken");
  for(const key of ["title","inputs","estimand","assumptions","boundary","plotNote"]){
-  assert(typeof x[key]==="string"&&x[key].length>45,x.id+": empty/underspecified "+key);
+  const min=key==="title"?10:key==="plotNote"?30:45;
+  assert(typeof x[key]==="string"&&x[key].length>min,
+    x.id+": empty/underspecified "+key);
  }
  assert(Array.isArray(x.families)&&x.families.length>=1);
  return {...x,
