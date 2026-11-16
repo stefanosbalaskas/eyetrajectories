@@ -1,0 +1,99 @@
+name: Build and publish eyetrajectories 0.4.2 website
+
+# Builds docs from the immutable v0.4.2 tag, overlays separate site sources,
+# and publishes rendered static files to gh-pages. CRAN source is untouched.
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-pkgdown-website.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: eyetrajectories-pkgdown-publication
+  cancel-in-progress: false
+
+jobs:
+  publish-website:
+    name: Build pkgdown and publish gh-pages branch
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      NOT_CRAN: 'true'
+      ET_RUN_PYTHON_TESTS: 'false'
+      MPLBACKEND: Agg
+    steps:
+      - name: Checkout qualified stable package source
+        uses: actions/checkout@v4
+        with:
+          ref: v0.4.2
+          path: pkg
+          persist-credentials: false
+      - name: Checkout isolated scientific website source
+        uses: actions/checkout@v4
+        with:
+          ref: feat/pkgdown-scientific-site-20261116
+          path: website
+          persist-credentials: false
+      - name: Overlay site files without changing release source
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -qx 'Version: 0.4.2' pkg/DESCRIPTION
+          cp website/_pkgdown.yml pkg/
+          cp website/SITE_*.md pkg/
+          mkdir -p pkg/pkgdown pkg/scripts
+          cp -a website/pkgdown/. pkg/pkgdown/
+          cp website/scripts/build_pkgdown_gallery.R pkg/scripts/
+          test -s pkg/pkgdown/index.md
+          test -s pkg/pkgdown/extra.css
+          test -s pkg/SITE_VALIDATION.md
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: release
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          working-directory: pkg
+          extra-packages: any::pkgdown, any::pkgload, any::ggplot2
+          needs: check
+      - name: Generate reproducible synthetic R figure gallery
+        shell: Rscript {0}
+        working-directory: pkg
+        run: source('scripts/build_pkgdown_gallery.R')
+      - name: Build complete scientific site and verify routes
+        shell: Rscript {0}
+        working-directory: pkg
+        run: |
+          pkgdown::build_site(pkg='.', examples=FALSE, devel=TRUE,
+                              new_process=FALSE, install=FALSE, preview=FALSE)
+          required <- c(
+            'site/index.html', 'site/reference/index.html',
+            'site/SITE_START.html', 'site/SITE_METHODS.html',
+            'site/SITE_BRIDGE.html', 'site/SITE_VALIDATION.html',
+            'site/SITE_GALLERY.html',
+            paste0('site/gallery/', c('01_multilevel_variance',
+              '02_participant_mean_band', '03_group_contrast_band',
+              '04_sparse_support', '05_transfer_entropy_surrogates'), '.png'))
+          stopifnot(all(file.exists(required)))
+          for (p in required) stopifnot(file.info(p)$size > 100)
+          message('EYETRAJECTORIES_042_WEBSITE_BUILD_PASS')
+      - name: Upload website build evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: eyetrajectories-0.4.2-website
+          path: pkg/site/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Publish site to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./pkg/site
+          force_orphan: true
+          enable_jekyll: false
+          commit_message: 'docs(site): publish qualified v0.4.2 pkgdown website'
