@@ -69,6 +69,37 @@
 <p class="et-lab-footnote">Interactive educational simulation, not empirical eye-tracking data or validated orbital dynamics. <a href="SITE_METHODS.html">Read method assumptions</a>.</p>
 </section>
 
+
+<section class="et-advanced-section" aria-labelledby="et-advanced-heading">
+<p class="et-eyebrow">BEYOND VISUALIZATION</p>
+<h2 id="et-advanced-heading">Three methods. Three ways to understand a trajectory.</h2>
+<p class="et-advanced-lead">A trajectory's shape, timing, and return structure reveal different information. Explore what changes when you adjust the data—and where interpretation depends on modelling assumptions.</p>
+<div class="et-advanced-grid">
+<a class="et-advanced-card" href="methods-laboratory.html" aria-label="Explore functional principal component analysis in the interactive methods laboratory">
+<span class="et-advanced-icon" aria-hidden="true">φ₁(t)</span>
+<span class="et-advanced-kicker">01 · FUNCTIONAL DATA ANALYSIS</span>
+<strong>Functional PCA</strong>
+<span>Decompose variation across whole curves and inspect reconstruction errors as more components are retained.</span>
+<em>Try the live example →</em>
+</a>
+<a class="et-advanced-card" href="methods-laboratory.html" aria-label="Explore dynamic time warping in the interactive methods laboratory">
+<span class="et-advanced-icon" aria-hidden="true">DTW</span>
+<span class="et-advanced-kicker">02 · TEMPORAL ALIGNMENT</span>
+<strong>Dynamic time warping</strong>
+<span>Change the phase of two signals and trace the minimum-cost monotone alignment.</span>
+<em>Try the live example →</em>
+</a>
+<a class="et-advanced-card" href="methods-laboratory.html" aria-label="Explore recurrence quantification in the interactive methods laboratory">
+<span class="et-advanced-icon" aria-hidden="true">Rᵢⱼ</span>
+<span class="et-advanced-kicker">03 · NONLINEAR DYNAMICS</span>
+<strong>Recurrence analysis</strong>
+<span>Change state-space radius and temporal exclusion, then inspect the recurrence matrix and line statistics.</span>
+<em>Try the live example →</em>
+</a>
+</div>
+<p class="et-advanced-footnote">Educational browser implementations with synthetic trajectories. For real analyses, use the documented R methods and inspect their assumptions. <a href="SITE_INTERACTIVE.html">Compare all interactive laboratories</a>.</p>
+</section>
+
 <div class="et-section-intro et-section-intro-small">
 <p class="et-eyebrow">TWO IMPLEMENTATION PATHS</p>
 <h2>Native R first. Python only when requested.</h2>
@@ -87,10 +118,6 @@
 <p>Call selected published Python methods through reticulate. Python wrappers are not automatically equivalent to native R algorithms.</p>
 <a href="SITE_BRIDGE.html">Understand the Python bridge →</a>
 </div>
-</div>
-
-<div class="et-integrity-note">
-<strong>Research-stage package:</strong> This site documents a stable GitHub software release, not yet a CRAN publication or an independently certified 508-export parity claim. Consult <a href="SITE_VALIDATION.html">Validation &amp; limitations</a> before reporting scientific equivalence.
 </div>
 
 <div class="et-integrity-note"><strong>Stable GitHub release:</strong> <a href="https://github.com/stefanosbalaskas/eyetrajectories/releases/tag/v0.4.2">Download eyetrajectories v0.4.2</a>. The exact archive passed the five-platform qualification matrix; this does not independently certify every estimator.</div>
