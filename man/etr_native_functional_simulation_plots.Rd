@@ -10,7 +10,8 @@ score-source variances. They do not simulate data, fit models, or calibrate
 statistical uncertainty.
 }
 
-\arguments{
+\section{Plotting parameters}{
+\describe{
 \item{result}{Named native R record containing observations with curve IDs and
 fully specified realized simulation truth, measurement schedules, score sources,
 phase warps and observation arrays.}
@@ -19,6 +20,7 @@ phase warps and observation arrays.}
 \item{show_pre_missing}{Logical: mark measurements removed by design.}
 \item{max_curves}{Positive number of curves to show, or NULL for all curves.}
 \item{alpha}{Opacity of phase-warp curves in the interval (0, 1].}
+}
 }
 \details{
 The scientific source is published \pkg{eyetrajectoriespy} 1.2.0,
