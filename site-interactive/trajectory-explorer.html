@@ -56,10 +56,10 @@
 </section>
 <div class="metrics" aria-live="polite" aria-atomic="true">
 <div class="metric"><strong id="meanDistance">—</strong><span>Mean simultaneous separation</span></div>
-<div class="metric"><strong id="dtw">—</strong><span>DTW distance · average cost per step</span></div>
+<div class="metric"><strong id="dtw">—</strong><span>DTW cost ÷ (2n − 1)</span></div>
 <div class="metric"><strong id="frechet">—</strong><span>Discrete Fréchet distance</span></div>
 </div>
-<p class="methodnote">Methods: Euclidean distances in normalized 2D space; classical dynamic time warping (DTW) with unrestricted monotonic steps; and discrete Fréchet distance. Pairwise alignment and sample resolution influence the results. These are descriptive computations, not inferential statistics.</p>
+<p class="methodnote">Methods: Euclidean distances in normalized 2D space; classical dynamic time warping (DTW) with unrestricted monotonic steps, with its accumulated cost divided by a fixed 2n−1 scale factor for display; and discrete Fréchet distance. Pairwise alignment and sample resolution influence the results. These are descriptive computations, not inferential statistics.</p>
 </div>
 </div>
 <p class="bottom">The gaze-like mode uses smooth transitions between synthetic targets; movement and orbit-shaped modes use parametric curves. No participant data, eye-tracker hardware, gravitational dynamics or scientifically validated orbital propagation are involved. <a href="SITE_METHODS.html">Explore package methods</a> · <a href="https://github.com/stefanosbalaskas/eyetrajectories/releases/tag/v0.4.2">Stable software release v0.4.2</a>.</p>
