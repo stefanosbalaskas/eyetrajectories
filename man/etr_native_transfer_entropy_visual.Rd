@@ -9,7 +9,8 @@ circular-shift null distributions, and conditional transfer entropy.
 No TE estimator is rerun or adjusted by the plots.
 }
 
-\arguments{
+\section{Plotting parameters}{
+\describe{
 \item{result}{Native TE parameter sensitivity or circular source-shift
 test result, including a complete observed statistic and surrogate
 distribution as relevant.}
@@ -31,6 +32,7 @@ FD/Sturges fallback observed in older NumPy). Explicit selection is
 necessary because frozen Python 1.2 declares \code{numpy>=1.26},
 not a single histogram implementation.}
 \item{...}{Additional base R graphics arguments.}
+}
 }
 \value{
 Plots render on the active native R graphics device and invisibly
