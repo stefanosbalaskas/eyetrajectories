@@ -31,9 +31,9 @@ assert(rows.length===new Set(rows.map(x=>x.name)).size,"Duplicate plotting expor
 assert(native.every(x=>x.name.startsWith("etr_plot_")),"Non-exported native title in inventory");
 assert(bridge.every(x=>/^etpy_plot_|^et_plot_/.test(x.name)),"Unexpected bridge");
 const shown=rows.filter(x=>x.variants&&x.variants.length);
-assert(shown.length>=9,"Expected 9 direct native function demos");
+assert(shown.length>=45,"Expected at least 45 real native-R illustrated plotting exports");
 const count=shown.reduce((a,x)=>a+x.variants.length,0);
-assert(count>=16,"Expected >=16 real R-rendered variants");
+assert(count>=62,"Expected at least 62 genuinely rendered native R figure variants");
 for(const entry of rows){
  assert(entry.doc&&fs.existsSync(path.join(root,entry.doc)),entry.name+": broken documentation route "+entry.doc);
  if(!entry.variants.length)continue;
@@ -51,6 +51,8 @@ for(const entry of rows){
 }
 const manifest=fs.readFileSync(path.join(root,"plot-atlas","MANIFEST.txt"),"utf8");
 assert(manifest.includes("v0.4.3")&&manifest.includes("actual"),"Missing provenance");
+const audit=fs.readFileSync(path.join(root,"plot-atlas","EXTENSION_AUDIT.txt"),"utf8");
+assert(audit.includes("Additional direct native R plot exports"),"Missing scientific fixture audit");
 assert(html.includes("pre-generated R outputs"),"Cannot claim client-side R recomputation");
 assert(html.includes("10.5281/zenodo.24288857"),"Missing Zenodo citation");
 console.log("ACTUAL_R_PLOT_ATLAS_PASS native="+native.length+
