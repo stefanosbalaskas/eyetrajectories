@@ -260,7 +260,7 @@ parameter_note <- function(arg,family){
     strict_source_record="Requests a native source-oriented geometry/artist record; this does not return a Python Matplotlib Axes object.",
     plot="Exact workflow plot identifier, dispatched only for supported result types.",
     alpha="Context-dependent opacity or alpha-level argument; check the exact function reference before interpreting it.",
-    ...="Additional graphical arguments passed to the plotting backend; read the specific reference for accepted options."
+    "..."="Additional graphical arguments passed to the plotting backend; read the specific reference for accepted options."
   )
   if(arg%in%names(notes))return(unname(notes[[arg]]))
   paste0("Argument declared in the frozen v0.4.3 R function signature. ",
