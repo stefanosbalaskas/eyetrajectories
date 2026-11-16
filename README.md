@@ -4,9 +4,9 @@
 
 *Functional and dynamical analysis of time-varying visual attention in R.*
 
-[Release candidate 0.4.2](https://github.com/stefanosbalaskas/eyetrajectories/releases/tag/v0.4.2-rc1) · [Exact-archive qualification](https://github.com/stefanosbalaskas/eyetrajectories/actions/runs/43780072928) · [Documentation](https://stefanosbalaskas.github.io/eyetrajectories/) · [Issues](https://github.com/stefanosbalaskas/eyetrajectories/issues)
+[Stable GitHub release 0.4.2](https://github.com/stefanosbalaskas/eyetrajectories/releases/tag/v0.4.2) · [Exact-archive qualification](https://github.com/stefanosbalaskas/eyetrajectories/actions/runs/43780072928) · [Documentation](https://stefanosbalaskas.github.io/eyetrajectories/) · [Issues](https://github.com/stefanosbalaskas/eyetrajectories/issues)
 
-> **Release status:** Version **0.4.2** is an **experimental GitHub release candidate**, not a CRAN-published package. The qualified 0.4.2 source is maintained on a [dedicated release branch](https://github.com/stefanosbalaskas/eyetrajectories/tree/release/eyetrajectories-0.4.2-rc1-20261116), while `main` currently contains an older development snapshot. Do not assume that installing the default `main` branch gives the qualified 0.4.2 archive.
+> **Release status:** Version **0.4.2** is published as a **stable GitHub software release** (not a prerelease). It has **not** been accepted or published by CRAN. The qualified 0.4.2 source is maintained on a [dedicated release branch](https://github.com/stefanosbalaskas/eyetrajectories/tree/release/eyetrajectories-0.4.2-rc1-20261116), while `main` currently contains an older development snapshot. Do not assume that installing the default `main` branch gives the qualified 0.4.2 archive.
 
 ## Why trajectories?
 
@@ -35,9 +35,9 @@ This general mathematical viewpoint is part of the project's inspiration: **what
 
 **Scientific limitations matter.** Some implementations are planar (2D), assume matching time grids, or use experimental statistical inference. Functional equivalence, calibrated confidence bands and generalization to arbitrary measurements should not be assumed without method-specific tests.
 
-## Install the qualified 0.4.2 candidate
+## Install the qualified 0.4.2 stable GitHub release
 
-For the independently checked *exact source archive*, use the `eyetrajectories_0.4.2.tar.gz` attachment on the [GitHub prerelease](https://github.com/stefanosbalaskas/eyetrajectories/releases/tag/v0.4.2-rc1) and verify its SHA-256.
+For the independently checked *exact source archive*, use the `eyetrajectories_0.4.2.tar.gz` attachment on the [stable GitHub release](https://github.com/stefanosbalaskas/eyetrajectories/releases/tag/v0.4.2) and verify its SHA-256.
 
 ```text
 20d31cab8930e4846968dc268e7a7c4737f7b12ad45c0d657519ddfd76822b28
@@ -94,7 +94,7 @@ Native `etr_*` analyses do not initialize Python. The optional `et_*` and `etpy_
 
 ## API size is not scientific certification
 
-The **0.4.2 candidate** exports **904 named R functions**, comprising **507 `etr_*` native interfaces**, **383 `etpy_*` Python-facing interfaces** (380 mapped Python callables plus three API helpers), and **14 `et_*` higher-level interfaces**. An exported interface is not necessarily a distinct numerical estimator.
+The **0.4.2 release** exports **904 named R functions**, comprising **507 `etr_*` native interfaces**, **383 `etpy_*` Python-facing interfaces** (380 mapped Python callables plus three API helpers), and **14 `et_*` higher-level interfaces**. An exported interface is not necessarily a distinct numerical estimator.
 
 The frozen **508-symbol Python reference inventory** consists of **380 functions and 128 classes/constants/other public symbols**. Matching source APIs or passing automated tests does **not** prove 508 independently certified numerical and scientific equivalents. Advanced inference and cross-domain use remain subject to explicit validation.
 
