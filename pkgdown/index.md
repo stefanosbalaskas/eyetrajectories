@@ -1,6 +1,6 @@
 <div class="et-hero">
 <div class="et-hero-content">
-<p class="et-eyebrow">SCIENTIFIC R PACKAGE · STABLE GITHUB RELEASE 0.4.2</p>
+<p class="et-eyebrow">SCIENTIFIC R PACKAGE · STABLE GITHUB RELEASE 0.4.3</p>
 <h1>From eye movements to mathematical trajectories.</h1>
 <p class="et-lead">Explore eye movements as time-varying mathematical trajectories. Use native R functional data analysis, kinematics, distances, recurrence and experimental statistical methods, with optional Python integration and explicit scientific limitations.</p>
 <div class="et-hero-actions">
@@ -118,4 +118,4 @@
 </div>
 </div>
 
-<div class="et-integrity-note"><strong>Stable GitHub release:</strong> <a href="https://github.com/stefanosbalaskas/eyetrajectories/releases/tag/v0.4.2">Download eyetrajectories v0.4.2</a>. The exact archive passed the five-platform qualification matrix; this does not independently certify every estimator.</div>
+<div class="et-integrity-note"><strong>Stable GitHub release:</strong> <a href="https://github.com/stefanosbalaskas/eyetrajectories/releases/tag/v0.4.3">Download eyetrajectories v0.4.3</a>. The exact archive passed the six-platform qualification matrix; this does not independently certify every estimator.</div>
