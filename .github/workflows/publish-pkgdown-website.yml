@@ -63,6 +63,9 @@ jobs:
           test -s website/scripts/extend_plot_atlas_wave5.R
           test -s website/scripts/test_plot_atlas.cjs
           test -s website/site-interactive/plot-atlas.html
+          test -s website/site-interactive/plot-atlas-wave6.js
+          test -s website/site-interactive/test_plot_atlas_browser.mjs
+          test -s website/site-interactive/package.json
           test -s pkg/pkgdown/index.md
           test -s pkg/pkgdown/extra.css
           test -s pkg/SITE_VALIDATION.md
@@ -94,6 +97,8 @@ jobs:
                               'site/methods-laboratory.html', overwrite=TRUE))
           stopifnot(file.copy('../website/site-interactive/plot-atlas.html',
                               'site/plot-atlas.html', overwrite=TRUE))
+          stopifnot(file.copy('../website/site-interactive/plot-atlas-wave6.js',
+                              'site/plot-atlas-wave6.js', overwrite=TRUE))
           dir.create('site/branding', recursive=TRUE, showWarnings=FALSE)
           assets <- list.files('../website/branding', full.names=TRUE,
                                pattern='\\.(png|svg)$')
@@ -176,6 +181,26 @@ jobs:
           grep -q '^Wave 4 nonlinear dynamics functions: 11' pkg/site/plot-atlas/MANIFEST.txt
           grep -q '^Directly illustrated exported native functions: 81' pkg/site/plot-atlas/MANIFEST.txt
           grep -q '^Wave 5 final native plotting functions: 8' pkg/site/plot-atlas/MANIFEST.txt
+          test -s pkg/site/plot-atlas/WAVE6_AUDIT.txt
+          grep -q '^Native plotting functions: 81' pkg/site/plot-atlas/WAVE6_AUDIT.txt
+          grep -q '^Scientific method categories: 11' pkg/site/plot-atlas/WAVE6_AUDIT.txt
+          test "$(find pkg/site/plot-atlas/scripts -name '*.R' -type f | wc -l)" -ge 108
+          node --check pkg/site/plot-atlas-wave6.js
+      - name: Qualify side-by-side atlas in real desktop and mobile Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm --prefix website/site-interactive install --no-audit --no-fund
+          npm --prefix website/site-interactive exec -- playwright install --with-deps chromium
+          node website/site-interactive/test_plot_atlas_browser.mjs pkg/site website/browser-evidence
+      - name: Upload browser screenshots for independent visual review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wave6-production-desktop-mobile-chromium
+          path: website/browser-evidence/
+          if-no-files-found: warn
+          retention-days: 14
       - name: Install independent SVG website favicon
         shell: bash
         run: |
