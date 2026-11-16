@@ -10,11 +10,13 @@ conditional-mean uncertainty, simultaneous and pointwise slope bands,
 and sparse PACE score-system conditioning.
 }
 
-\arguments{
+\section{Plotting parameters}{
+\describe{
 \item{result}{Named native record of previously computed source-compatible
 FPCR or sparse PACE quantities; no estimator is run.}
 \item{max_targets}{Positive integer maximum number of targets shown.}
 \item{dimension}{Optional named FPCA dimension, defaulting to the first.}
+}
 }
 \details{
 The published source is \pkg{eyetrajectoriespy} 1.2.0,
