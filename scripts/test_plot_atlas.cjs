@@ -10,6 +10,17 @@ assert(html.includes('id="search"')&&html.includes('id="family"')&&
   html.includes('id="backend"')&&html.includes('id="onlyPreview"'),"Missing filtering controls");
 const inline=html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
 assert(inline,"Inline UI script missing");new vm.Script(inline,{filename:"plot-atlas-ui.js"});
+assert(/id="onlyPreview"\s+type="checkbox" checked/.test(html),
+  "Atlas must start with R-illustrated functions enabled");
+assert(inline.includes('$("onlyPreview").checked=true'),
+  "Browser must initialize in illustrated-only mode");
+assert(inline.includes('matches.find(x=>x.name==="etr_plot_trajectories")'),
+  "Atlas must select a real gaze plot at startup");
+assert(inline.includes('Number(has(b))-Number(has(a))'),
+  "Atlas must list illustrated functions first");
+assert(html.includes("documentation-only entries")&&
+       html.includes('id="coverageNote"'),
+  "Atlas must explain preview limitations to readers");
 const code=fs.readFileSync(path.join(root,"plot-atlas","catalog.js"),"utf8");
 const sandbox={window:{}};vm.runInNewContext(code,sandbox,{timeout:10000});
 const rows=sandbox.window.ET_PLOT_ATLAS_CATALOG;
