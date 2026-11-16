@@ -10,13 +10,15 @@ mixed-effects simultaneous band-width ratios, and target-specific FPCA
 wild-bootstrap truncation width or center.
 }
 
-\arguments{
+\section{Plotting parameters}{
+\describe{
 \item{result}{Explicit native R record of already-computed fold losses,
 outer-fold losses, or FPCA wild-bootstrap scan/selection values.}
 \item{comparison}{Data frame of already-computed bootstrap sensitivity ratios.}
 \item{coefficient}{Nonempty name of the coefficient to visualize.}
 \item{target}{Native one-based target index or named source curve identifier.}
 \item{metric}{Truncation interval \code{width} or \code{center}.}
+}
 }
 \details{
 Published Python 1.2 source \code{plotting.py},
