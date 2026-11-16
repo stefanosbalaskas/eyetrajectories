@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use eyetrajectories in research, please cite the version of the software you used."
+type: software
+title: "eyetrajectories"
+abstract: "Native R tools for functional, geometric and statistical analysis of time-indexed eye-movement trajectories, with optional Python interoperability."
+authors:
+  - family-names: Balaskas
+    given-names: Stefanos
+version: 0.4.3
+date-released: 2026-11-16
+doi: 10.5281/zenodo.24288857
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.24288857
+    description: "Zenodo archived release of version 0.4.3"
+repository-code: https://github.com/stefanosbalaskas/eyetrajectories
+url: https://stefanosbalaskas.github.io/eyetrajectories/
+license: MIT
