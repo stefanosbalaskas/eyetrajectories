@@ -49,7 +49,41 @@ jobs:
           set -euo pipefail
           TAG='v0.4.2-rc1'
           SOURCE_COMMIT='948901e087c2176bd23e01845ba2747b2b602cd8'
-          REF_SHA="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --jq '.object.sha' 2>/dev/null || true)"
+          REF_SHA="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --jq '.object.sha' 2>/dev/null | grep -E '^[[:xdigit:]]{40}
+          if [ -n "$REF_SHA" ] && [ "$REF_SHA" != "$SOURCE_COMMIT" ]; then
+            echo "::error::Existing tag points to a different commit: $REF_SHA"
+            exit 1
+          fi
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Prerelease already exists: $TAG"
+            exit 0
+          fi
+          cat > release-notes.md <<'NOTES'
+          ## eyetrajectories 0.4.2 — experimental release candidate
+
+          Native R tools for the analysis of time-indexed eye-movement trajectories, drawing on general mathematical methods for functional, spatial and nonlinear trajectories.
+
+          Includes trajectory representations and preprocessing, kinematics, trajectory distances (L2, DTW and discrete Fréchet), functional PCA/MFPCA, recurrence diagnostics, exploratory visualizations, and experimental sparse/multilevel and inferential methods. Optional Python interoperability uses reticulate.
+
+          ### Verified source archive
+          - Archive: `eyetrajectories_0.4.2.tar.gz`
+          - SHA-256: `20d31cab8930e4846968dc268e7a7c4737f7b12ad45c0d657519ddfd76822b28`
+          - Pinned source commit: `948901e087c2176bd23e01845ba2747b2b602cd8`
+          - GitHub qualification: [five-platform exact-archive matrix](https://github.com/stefanosbalaskas/eyetrajectories/actions/runs/43780072928) completed successfully.
+          - Maintainer's independent local Windows `R CMD check --as-cran`: 0 errors, 0 warnings, 1 new-submission NOTE.
+
+          ### Research and publication scope
+          **Pre-release; not yet on CRAN.** CI success does not establish complete scientific validation, calibrated confidence bands, or independently certified parity for all 508 Python reference symbols. Some methods assume planar coordinates, common time grids, or participant-based designs; cross-domain reuse requires method-specific validation.
+
+          Download the attached, SHA-256-verified archive if you need the exact checked CRAN candidate. The release source is taken from the release-candidate branch, while `main` may show an older development snapshot.
+          NOTES
+          gh release create "$TAG" candidate/eyetrajectories_0.4.2.tar.gz \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$SOURCE_COMMIT" \
+            --title 'eyetrajectories 0.4.2 — experimental release candidate' \
+            --notes-file release-notes.md --prerelease --latest=false
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json url,tagName,isPrerelease,assets
+ || true)"
           if [ -n "$REF_SHA" ] && [ "$REF_SHA" != "$SOURCE_COMMIT" ]; then
             echo "::error::Existing tag points to a different commit: $REF_SHA"
             exit 1
