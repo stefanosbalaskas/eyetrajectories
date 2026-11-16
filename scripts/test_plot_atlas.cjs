@@ -31,9 +31,9 @@ assert(rows.length===new Set(rows.map(x=>x.name)).size,"Duplicate plotting expor
 assert(native.every(x=>x.name.startsWith("etr_plot_")),"Non-exported native title in inventory");
 assert(bridge.every(x=>/^etpy_plot_|^et_plot_/.test(x.name)),"Unexpected bridge");
 const shown=rows.filter(x=>x.variants&&x.variants.length);
-assert(shown.length>=45,"Expected at least 45 real native-R illustrated plotting exports");
+assert(shown.length>=62,"Wave 3 requires >=62 real native R plotting functions");
 const count=shown.reduce((a,x)=>a+x.variants.length,0);
-assert(count>=62,"Expected at least 62 genuinely rendered native R figure variants");
+assert(count>=82,"Wave 3 requires >=82 direct native R PNG variants");
 for(const entry of rows){
  assert(entry.doc&&fs.existsSync(path.join(root,entry.doc)),entry.name+": broken documentation route "+entry.doc);
  if(!entry.variants.length)continue;
@@ -53,6 +53,32 @@ const manifest=fs.readFileSync(path.join(root,"plot-atlas","MANIFEST.txt"),"utf8
 assert(manifest.includes("v0.4.3")&&manifest.includes("actual"),"Missing provenance");
 const audit=fs.readFileSync(path.join(root,"plot-atlas","EXTENSION_AUDIT.txt"),"utf8");
 assert(audit.includes("Additional direct native R plot exports"),"Missing scientific fixture audit");
+const wave3=fs.readFileSync(path.join(root,"plot-atlas","WAVE3_AUDIT.txt"),"utf8");
+assert(wave3.includes("Rendered native plotting functions: 14"),"All 14 advanced-inference functions must render");
+assert(wave3.includes("Not yet rendered: 0"),"No incomplete Wave 3 plot may be marked illustrated");
+const expectedWave3=[
+  "etr_plot_fpca_regression_future_prediction_interval",
+  "etr_plot_fpca_regression_mean_prediction_uncertainty",
+  "etr_plot_fpca_regression_slope_band",
+  "etr_plot_fpca_regression_slope_uncertainty",
+  "etr_plot_fpca_wild_bootstrap_projection",
+  "etr_plot_fpca_wild_bootstrap_simultaneous_interval",
+  "etr_plot_fpca_wild_bootstrap_family_test",
+  "etr_plot_fpca_wild_bootstrap_monte_carlo_diagnostics",
+  "etr_plot_fpca_wild_bootstrap_truncation_scan",
+  "etr_plot_conformal_fpca_anomaly",
+  "etr_plot_covariance_sensitivity_coefficients",
+  "etr_plot_covariance_sensitivity_band_widths",
+  "etr_plot_functional_mixed_effects_bootstrap_comparison",
+  "etr_plot_generalized_function_on_scalar_predictions"
+];
+for(const name of expectedWave3){
+  const entry=rows.find(x=>x.name===name);
+  assert(entry && entry.backend==="Native R",name+": missing native R export");
+  assert(entry.variants?.length>0,name+": no executed direct R figure");
+  assert(wave3.includes("PASS "+name),name+": missing wave-3 proof");
+}
+
 assert(html.includes("pre-generated R outputs"),"Cannot claim client-side R recomputation");
 assert(html.includes("10.5281/zenodo.24288857"),"Missing Zenodo citation");
 console.log("ACTUAL_R_PLOT_ATLAS_PASS native="+native.length+
