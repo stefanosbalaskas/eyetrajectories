@@ -2,7 +2,7 @@
 
 **Functional analysis of time-indexed eye-tracking trajectories in R**
 
-**Release candidate: 0.4.2.** This repository contains scientific software under active development. This release candidate is being evaluated for a *limited experimental R package release* and is **not** a claim of CRAN acceptance or independently certified numerical parity with all Python methods.
+**CRAN resubmission candidate: 0.4.3.** This repository contains scientific software under active development. This release candidate is being evaluated for a *limited experimental R package release* and is **not** a claim of CRAN acceptance or independently certified numerical parity with all Python methods.
 
 ## Scope
 
@@ -18,7 +18,7 @@ For source installation while release review is ongoing, use a specific GitHub r
 install.packages("remotes")
 remotes::install_github(
   "stefanosbalaskas/eyetrajectories",
-  ref = "release/eyetrajectories-0.4.2-rc1-20261116",
+  ref = "release/eyetrajectories-0.4.3-cran-resubmission-20261116",
   dependencies = NA
 )
 library(eyetrajectories)
