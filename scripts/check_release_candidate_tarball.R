@@ -33,7 +33,7 @@ candidate <- rcmdcheck::rcmdcheck(
   quiet = FALSE, error_on = "never", timeout = 45 * 60
 )
 check_elapsed_seconds <- unname(proc.time()[["elapsed"]] - check_start)
-cat("CHECK_ELAPSED_SECONDS=", round(check_elapsed_seconds, 1), "\\n", sep = "")
+cat("CHECK_ELAPSED_SECONDS=", round(check_elapsed_seconds, 1), "\n", sep = "")
 summary <- c(
   paste("Candidate archive:", basename(tarball)),
   paste("SHA256: see candidate.sha256"),
