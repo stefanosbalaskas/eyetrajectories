@@ -81,7 +81,11 @@ jobs:
                               'site/methods-laboratory.html', overwrite=TRUE))
           dir.create('site/branding', recursive=TRUE, showWarnings=FALSE)
           assets <- list.files('../website/branding', full.names=TRUE,
-                               pattern='\\.(png|svg)
+                               pattern='\\.(png|svg)$')
+          stopifnot(length(assets) >= 4L)
+          stopifnot(all(file.copy(assets, 'site/branding/', overwrite=TRUE)))
+          stopifnot(file.copy('../website/branding/eyetrajectories-symbol.svg',
+                              'site/favicon.svg', overwrite=TRUE))
           home <- paste(readLines('site/index.html', warn=FALSE), collapse='\n')
           stopifnot(grepl('class="et-hero-content"', home, fixed=TRUE))
           stopifnot(grepl('src="branding/eyetrajectories-logo-240.png"', home, fixed=TRUE))
