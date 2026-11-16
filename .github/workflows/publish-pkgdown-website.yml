@@ -54,9 +54,11 @@ jobs:
           cp website/scripts/extend_plot_atlas.R pkg/scripts/
           cp website/scripts/extend_plot_atlas_wave2.R pkg/scripts/
           cp website/scripts/extend_plot_atlas_wave3.R pkg/scripts/
+          cp website/scripts/extend_plot_atlas_wave4.R pkg/scripts/
           test -s website/scripts/extend_plot_atlas.R
           test -s website/scripts/extend_plot_atlas_wave2.R
           test -s website/scripts/extend_plot_atlas_wave3.R
+          test -s website/scripts/extend_plot_atlas_wave4.R
           test -s website/scripts/test_plot_atlas.cjs
           test -s website/site-interactive/plot-atlas.html
           test -s pkg/pkgdown/index.md
@@ -158,11 +160,16 @@ jobs:
           test -s pkg/site/plot-atlas/WAVE3_AUDIT.txt
           grep -q 'Rendered native plotting functions: 14' pkg/site/plot-atlas/WAVE3_AUDIT.txt
           grep -q 'Not yet rendered: 0' pkg/site/plot-atlas/WAVE3_AUDIT.txt
+          test -s pkg/site/plot-atlas/WAVE4_AUDIT.txt
+          grep -q 'Rendered native plotting functions: 11' pkg/site/plot-atlas/WAVE4_AUDIT.txt
+          grep -q 'Not yet rendered: 0' pkg/site/plot-atlas/WAVE4_AUDIT.txt
           grep -q "NATIVE_PLOT_ATLAS_EXTENSION_REPORT" website/scripts/extend_plot_atlas.R
           grep -q "^Additional direct native R plot exports" pkg/site/plot-atlas/EXTENSION_AUDIT.txt
-          test "$(find pkg/site/plot-atlas/images -name '*.png' -type f | wc -l)" -ge 82
+          test "$(find pkg/site/plot-atlas/images -name '*.png' -type f | wc -l)" -ge 96
           grep -q '^Unrendered candidate exports:' pkg/site/plot-atlas/EXTENSION_AUDIT.txt
           grep -q '^Wave 3 advanced inference functions: 14' pkg/site/plot-atlas/MANIFEST.txt
+          grep -q '^Wave 4 nonlinear dynamics functions: 11' pkg/site/plot-atlas/MANIFEST.txt
+          grep -q '^Directly illustrated exported native functions: 73' pkg/site/plot-atlas/MANIFEST.txt
       - name: Install independent SVG website favicon
         shell: bash
         run: |
