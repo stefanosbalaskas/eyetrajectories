@@ -1,0 +1,88 @@
+name: Publish eyetrajectories 0.4.2 stable GitHub release
+
+# Publication gate: exact previously qualified source archive only.
+# Stable on GitHub does not imply CRAN acceptance or scientific certification.
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/publish-eyetrajectories-stable.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: eyetrajectories-v0.4.2-stable-release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.repository == 'stefanosbalaskas/eyetrajectories'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      QUALIFICATION_RUN: '43780072928'
+      SOURCE_COMMIT: '948901e087c2176bd23e01845ba2747b2b602cd8'
+      SHA256: '20d31cab8930e4846968dc268e7a7c4737f7b12ad45c0d657519ddfd76822b28'
+      TAG: 'v0.4.2'
+    steps:
+      - name: Verify qualified provenance and archive bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          result="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$QUALIFICATION_RUN" --jq '.conclusion')"
+          test "$result" = "success"
+          source_sha="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$QUALIFICATION_RUN" --jq '.head_sha')"
+          test "$source_sha" = "$SOURCE_COMMIT"
+          mkdir -p candidate
+          gh run download "$QUALIFICATION_RUN" --repo "$GITHUB_REPOSITORY" --name eyetrajectories-0.4.2-CRAN-source --dir candidate
+          test -s candidate/eyetrajectories_0.4.2.tar.gz
+          echo "$SHA256  candidate/eyetrajectories_0.4.2.tar.gz" | sha256sum -c -
+          test "$(tar -xOf candidate/eyetrajectories_0.4.2.tar.gz eyetrajectories/DESCRIPTION | sed -n 's/^Version: //p')" = "0.4.2"
+          # A tag may already exist only when it points to this precisely qualified commit.
+          existing="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$TAG" --jq '.object.sha' 2>/dev/null | grep -E '^[a-f0-9]{40}$' || true)"
+          if [ -n "$existing" ] && [ "$existing" != "$SOURCE_COMMIT" ]; then
+            echo "::error::Refusing to publish: existing tag $TAG points at an unqualified source commit"
+            exit 1
+          fi
+
+      - name: Publish stable GitHub release with exact checked source artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::error::Stable release already exists; refusing to overwrite immutable published assets"
+            exit 1
+          fi
+          cat > release-notes.md <<'NOTES'
+          ## eyetrajectories 0.4.2
+
+          Initial **stable GitHub release** of the eyetrajectories R package, providing native R functionality for the analysis of time-varying eye-movement trajectories using functional data analysis, numerical geometry, recurrence methods, and exploratory statistical visualizations.
+
+          ### Highlights
+          - Native R trajectory data structures, validation, and explicit preprocessing
+          - Velocity, acceleration, planar movement descriptors and trajectory distances (functional L2, dynamic time warping, discrete Frechet)
+          - Dense functional PCA and multivariate FPCA; experimental sparse, multilevel, nonlinear and regression workflows
+          - Reproducibility, reporting, visualizations and optional Python interoperation via reticulate
+
+          ### Qualification and immutable archive
+          - Download asset: `eyetrajectories_0.4.2.tar.gz`
+          - SHA-256: `20d31cab8930e4846968dc268e7a7c4737f7b12ad45c0d657519ddfd76822b28`
+          - Exact qualified source commit: `948901e087c2176bd23e01845ba2747b2b602cd8`
+          - [R CMD check --as-cran CI](https://github.com/stefanosbalaskas/eyetrajectories/actions/runs/43780072928): five platform jobs passed
+          - Independent maintainer-run local Windows R CMD check: zero errors, zero warnings; one expected "New submission" note
+
+          ### Scientific and publication limits
+          This is a **stable GitHub software release**, not a CRAN publication or independent certification of every estimator. Advanced uncertainty methods and Python parity remain experimentally qualified under explicit method-specific limitations. Many mathematical algorithms are not intrinsically eye-specific, but non-eye-tracking use has not been generally validated. Some functions assume planar coordinates or common time grids. Do not treat transfer entropy as causal evidence.
+
+          The release is built from the pinned, validated release-candidate commit. The default `main` branch may contain older development documentation or source. The exact source archive attached here is the checked release artifact.
+          NOTES
+          gh release create "$TAG" candidate/eyetrajectories_0.4.2.tar.gz \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$SOURCE_COMMIT" \
+            --title "eyetrajectories 0.4.2" \
+            --notes-file release-notes.md --latest=true
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json url,tagName,isPrerelease,isLatest,assets
