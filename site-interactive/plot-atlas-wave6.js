@@ -158,8 +158,8 @@ $("swapFunctions").addEventListener("click",()=>{
  // A swap is a user selection: the existing main catalogue remains
  // authoritative. Expose only this explicitly triggered callback.
  const saved=active.name;
- if(typeof window.ET_ATLAS_WAVE6?.choosePrimary==="function")
-    window.ET_ATLAS_WAVE6.choosePrimary(r.entry);
+ document.dispatchEvent(new CustomEvent("et-atlas-choose-primary",
+   {detail:{name:r.entry.name}}));
  second.value=saved;right=null;rightIndex=0;renderRight();
 });
 $("downloadScript").setAttribute("aria-label","Download the selected, version-pinned R reproduction script");
