@@ -1,6 +1,6 @@
-name: Build and publish eyetrajectories 0.4.2 website
+name: Build and publish eyetrajectories 0.4.3 website
 
-# Builds docs from the immutable v0.4.2 tag, overlays separate site sources,
+# Builds docs from the immutable v0.4.3 tag, overlays separate site sources,
 # and publishes rendered static files to gh-pages. CRAN source is untouched.
 on:
   push:
@@ -29,7 +29,7 @@ jobs:
       - name: Checkout qualified stable package source
         uses: actions/checkout@v4
         with:
-          ref: v0.4.2
+          ref: v0.4.3
           path: pkg
           persist-credentials: false
       - name: Checkout isolated scientific website source
@@ -42,7 +42,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          grep -qx 'Version: 0.4.2' pkg/DESCRIPTION
+          grep -qx 'Version: 0.4.3' pkg/DESCRIPTION
           cp website/_pkgdown.yml pkg/
           cp website/SITE_*.md pkg/
           mkdir -p pkg/pkgdown pkg/scripts pkg/man/figures
@@ -155,7 +155,7 @@ jobs:
       - name: Upload website build evidence
         uses: actions/upload-artifact@v4
         with:
-          name: eyetrajectories-0.4.2-website
+          name: eyetrajectories-0.4.3-website
           path: pkg/site/
           if-no-files-found: error
           retention-days: 14
@@ -167,4 +167,4 @@ jobs:
           publish_dir: ./pkg/site
           force_orphan: true
           enable_jekyll: false
-          commit_message: 'docs(site): publish qualified v0.4.2 pkgdown website'
+          commit_message: 'docs(site): publish qualified v0.4.3 pkgdown website'
