@@ -90,7 +90,7 @@ render <- function(name,slug,label,fn,code) {
             grepl(paste0(name,"\\("),complete_code))
   list(label=label,image=paste0("plot-atlas/images/",basename(path)),
        script=paste0("plot-atlas/scripts/",script_name),
-       code=complete_code)
+       code=paste0(complete_code,"\n"))
 }
 add <- function(name,category,description,variants)
   plot_spec[[name]] <<- list(category=category,description=description,variants=variants)
