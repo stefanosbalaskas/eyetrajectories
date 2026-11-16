@@ -1,8 +1,8 @@
 <div class="et-hero">
   <div class="et-hero-content">
-    <p class="et-eyebrow">SCIENTIFIC R PACKAGE · DEVELOPMENT PREVIEW</p>
-    <h1>From gaze coordinates to functional insight.</h1>
-    <p class="et-lead">Analyse time-indexed eye-tracking trajectories with native R methods and an optional bridge to the published Python 1.2 backend. Explore the mathematics, inspect assumptions, and keep scientific qualification separate from API availability.</p>
+    <p class="et-eyebrow">SCIENTIFIC R PACKAGE · STABLE GITHUB RELEASE 0.4.2</p>
+    <h1>From eye movements to mathematical trajectories.</h1>
+    <p class="et-lead">Explore eye movements as time-varying mathematical trajectories. Use native R functional data analysis, kinematics, distances, recurrence and experimental statistical methods, with optional Python integration and explicit scientific limitations.</p>
     <div class="et-hero-actions">
       <a class="et-button et-button-primary" href="SITE_START.html">Get started <span aria-hidden="true">→</span></a>
       <a class="et-button et-button-ghost" href="reference/index.html">Explore the R reference</a>
@@ -76,5 +76,7 @@
 </div>
 
 <div class="et-integrity-note">
-  <strong>Research-stage package:</strong> This site documents development code, not a CRAN release or an independently certified 508-export parity claim. Consult <a href="SITE_VALIDATION.html">Validation &amp; limitations</a> before reporting scientific equivalence.
+  <strong>Research-stage package:</strong> This site documents a stable GitHub software release, not yet a CRAN publication or an independently certified 508-export parity claim. Consult <a href="SITE_VALIDATION.html">Validation &amp; limitations</a> before reporting scientific equivalence.
 </div>
+
+<div class="et-integrity-note"><strong>Stable GitHub release:</strong> <a href="https://github.com/stefanosbalaskas/eyetrajectories/releases/tag/v0.4.2">Download eyetrajectories v0.4.2</a>. The exact archive passed the five-platform qualification matrix; this does not independently certify every estimator.</div>
