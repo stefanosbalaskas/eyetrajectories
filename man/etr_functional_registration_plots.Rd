@@ -9,7 +9,8 @@ original versus registered complete functional curves, and source
 landmark time warping/displacement curves.
 }
 
-\arguments{
+\section{Plotting parameters}{
+\describe{
 \item{reconstruction_summary}{An FPCA reconstruction result data frame
 with numeric \code{n_components} and \code{mean_integrated_rmse} columns.}
 \item{result}{A complete native \code{etr_landmark_registration} object
@@ -20,6 +21,7 @@ registered curves to show.}
 \item{displacement}{If \code{TRUE}, show \eqn{h(t)-t} instead of the
 warped source time \eqn{h(t)}.}
 \item{...}{Additional base graphics arguments.}
+}
 }
 \value{
 Plots are rendered on an R graphics device, and exact source
