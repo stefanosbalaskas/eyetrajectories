@@ -1,3 +1,19 @@
+# eyetrajectories 0.4.3 (CRAN incoming pretest correction candidate)
+
+## First-submission pretest remediation
+
+- Corrected ten group plotting documentation topics that incorrectly
+  declared \\arguments without function \\usage. Parameter explanations
+  remain available in descriptive \\section/\\describe structures.
+- Added a stricter Rd-manual preflight mirroring the Debian incoming checks.
+- Evaluating two-worker, third-edition testthat execution to lower elapsed
+  Windows R-devel CRAN check time without dropping or skipping tests.
+- Scientific model implementations, exported function names and numerical
+  analysis algorithms are unchanged relative to the original 0.4.2
+  submitted source.
+
+Version 0.4.3 is a CRAN resubmission candidate; acceptance is not implied.
+
 # eyetrajectories 0.4.2 (release candidate; not yet published to CRAN)
 
 ## Package scope and native analysis
