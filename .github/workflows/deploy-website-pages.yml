@@ -37,7 +37,7 @@ jobs:
           set -euo pipefail
           for required in index.html reference/index.html SITE_START.html \
             SITE_METHODS.html SITE_BRIDGE.html SITE_VALIDATION.html \
-            SITE_GALLERY.html gallery/01_multilevel_variance.png \
+            SITE_GALLERY.html SITE_INTERACTIVE.html methods-laboratory.html gallery/01_multilevel_variance.png \
             gallery/05_transfer_entropy_surrogates.png; do
             test -s "published/$required" || { echo "::error::Missing $required"; exit 1; }
           done
