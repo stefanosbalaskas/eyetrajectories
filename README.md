@@ -1,5 +1,7 @@
 # eyetrajectories
 
+<img src="man/figures/logo.png" alt="eyetrajectories: eye movements represented by functional trajectories in a hexagonal R package sticker" width="170" align="right"/>
+
 **From eye movements to mathematical trajectories.**
 
 *Functional and dynamical analysis of time-varying visual attention in R.*
@@ -7,6 +9,8 @@
 [Stable GitHub release 0.4.2](https://github.com/stefanosbalaskas/eyetrajectories/releases/tag/v0.4.2) · [Exact-archive qualification](https://github.com/stefanosbalaskas/eyetrajectories/actions/runs/43780072928) · [Documentation](https://stefanosbalaskas.github.io/eyetrajectories/) · [Issues](https://github.com/stefanosbalaskas/eyetrajectories/issues)
 
 > **Release status:** Version **0.4.2** is published as a **stable GitHub software release** (not a prerelease). It has **not** been accepted or published by CRAN. The qualified 0.4.2 source is maintained on a [dedicated release branch](https://github.com/stefanosbalaskas/eyetrajectories/tree/release/eyetrajectories-0.4.2-rc1-20261116), while `main` currently contains an older development snapshot. Do not assume that installing the default `main` branch gives the qualified 0.4.2 archive.
+
+**Branding:** [Selected R-package sticker and scalable companion artwork](branding/README.md).
 
 ## Why trajectories?
 
