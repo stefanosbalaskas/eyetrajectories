@@ -1,4 +1,4 @@
-name: Build and publish eyetrajectories 0.4.3 website
+name: Build and publish eyetrajectories website
 
 # Builds docs from the immutable v0.4.3 tag, overlays separate site sources,
 # and publishes rendered static files to gh-pages. CRAN source is untouched.
@@ -89,6 +89,7 @@ jobs:
           home <- paste(readLines('site/index.html', warn=FALSE), collapse='\n')
           stopifnot(grepl('class="et-hero-content"', home, fixed=TRUE))
           stopifnot(grepl('src="branding/eyetrajectories-logo-240.png"', home, fixed=TRUE))
+          stopifnot(grepl('10.5281/zenodo.24288857', home, fixed=TRUE))
           stopifnot(grepl('src="trajectory-explorer.html"', home, fixed=TRUE))
           stopifnot(!grepl('class="sourceCode"', home, fixed=TRUE))
           stopifnot(grepl('class="et-interactive-showcase"', home, fixed=TRUE))
@@ -106,7 +107,7 @@ jobs:
             'site/SITE_START.html', 'site/SITE_METHODS.html',
             'site/SITE_BRIDGE.html', 'site/SITE_VALIDATION.html',
             'site/SITE_GALLERY.html', 'site/SITE_INTERACTIVE.html',
-            'site/SITE_BRANDING.html',
+            'site/SITE_BRANDING.html', 'site/SITE_CITATION.html',
             'site/branding/eyetrajectories-logo-240.png',
             'site/branding/eyetrajectories-symbol.svg',
             'site/branding/eyetrajectories-horizontal.svg',
