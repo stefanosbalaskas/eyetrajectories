@@ -7,6 +7,8 @@ pkgload::load_all(".",quiet=TRUE)
 out <- "site/plot-atlas"
 images <- file.path(out,"images")
 dir.create(images,recursive=TRUE,showWarnings=FALSE)
+scripts_out <- file.path(out,"scripts")
+dir.create(scripts_out,recursive=TRUE,showWarnings=FALSE)
 time <- seq(0,1,length.out=81L)
 values <- array(0,c(12L,length(time),2L))
 for(i in seq_len(12L)){
@@ -73,7 +75,22 @@ render <- function(name,slug,label,fn,code) {
   finally=grDevices::dev.off())
   if(!is.null(error))stop(name,": ",error,call.=FALSE)
   stopifnot(file.exists(path),file.info(path)$size>3500)
-  list(label=label,image=paste0("plot-atlas/images/",basename(path)),code=code)
+  stopifnot(grepl("^etr_plot_[A-Za-z0-9_]+$",name),
+            grepl("^[A-Za-z0-9_-]+$",slug),
+            is.character(code),length(code)==1L,nzchar(code))
+  script_name <- paste0(name,"__",slug,".R")
+  script_path <- file.path(scripts_out,script_name)
+  complete_code <- paste(
+    "# eyetrajectories plotting atlas | v0.4.3 | synthetic teaching fixture",
+    "# This demonstrates the native plotting API; not independent validation.",
+    'stopifnot(as.character(utils::packageVersion("eyetrajectories")) == "0.4.3")',
+    code,sep="\n")
+  writeLines(complete_code,script_path,useBytes=TRUE)
+  stopifnot(file.exists(script_path),file.info(script_path)$size>100,
+            grepl(paste0(name,"\\("),complete_code))
+  list(label=label,image=paste0("plot-atlas/images/",basename(path)),
+       script=paste0("plot-atlas/scripts/",script_name),
+       code=paste0(complete_code,"\n"))
 }
 add <- function(name,category,description,variants)
   plot_spec[[name]] <<- list(category=category,description=description,variants=variants)
@@ -171,25 +188,115 @@ exports <- sub("^export\\(([^)]+)\\)$","\\1",exports)
 native <- sort(unique(grep("^etr_plot_",exports,value=TRUE)))
 bridge <- sort(unique(grep("^(etpy_plot_|et_plot_)",exports,value=TRUE)))
 stopifnot(length(native)>40L,all(names(plot_spec)%in%native))
-category <- function(name){
-  if(grepl("sparse|irregular|pace",name))return("Sparse observations")
-  if(grepl("transfer|surrogate|recurrence|rqa|lyapunov|kantz|poincare|embedding|divergence",name))return("Recurrence & nonlinear")
-  if(grepl("distance|warping|alignment|registration",name))return("Distances & alignment")
-  if(grepl("band|uncertainty|interval|bootstrap|conformal|prediction|sensitivity",name))return("Functional uncertainty")
-  if(grepl("fpca|eigen|component|functional|regression|mixed|random_effects|reconstruction",name))return("Functional PCA")
-  "Trajectory geometry"
+# Exact, version-frozen scientific taxonomy. Order is deliberately
+# mutually exclusive for all 81 v0.4.3 native plotting exports.
+scientific_categories <- c(
+ "Trajectories & reconstruction",
+ "Functional PCA & diagnostics",
+ "Functional regression",
+ "Mixed-effects & covariance",
+ "Functional inference & bootstrap",
+ "Sparse functional data",
+ "Nonlinear dynamics & RQA",
+ "Information transfer & surrogates",
+ "Registration & alignment",
+ "Simulation & recovery",
+ "Workflow dispatch")
+category <- function(name,strict=FALSE){
+  x <- sub("^(etpy_plot_|et_plot_)","etr_plot_",name)
+  patterns <- c(
+    "^etr_plot_(trajectories|planar_trajectories|reconstruction_curve)$",
+    "^etr_plot_fpca_(?!regression|wild_bootstrap)",
+    "^etr_plot_(generalized_function_on_scalar|function_on_scalar|fpca_regression|nested_fpca_regression)",
+    "^etr_plot_(functional_mixed_effects|functional_random_effects|functional_trial_random_effects|functional_variance_decomposition|covariance_sensitivity)",
+    "^etr_plot_(functional_band|functional_mean_band|conformal_fpca|fpca_wild_bootstrap)",
+    "^etr_plot_sparse_",
+    "^etr_plot_(recurrence|joint_recurrence|rqa_|windowed_rqa|embedding_|poincare_|kantz_|lyapunov_|local_divergence)",
+    "^etr_plot_(transfer_|conditional_transfer_|surrogate_|multivariate_iaaft_|multivariate_surrogate_)",
+    "^etr_plot_(dynamic_time_warping_alignment|registration|warping_functions|trajectory_distance_rank_correlations)$",
+    "^etr_plot_(functional_simulation_|functional_recovery_)",
+    "^etr_plot_workflow_result$")
+  hits <- vapply(patterns,function(pattern)grepl(pattern,x,perl=TRUE),
+                 logical(1L))
+  if(sum(hits)==1L)return(scientific_categories[which(hits)])
+  if(strict)stop("Unclassified or ambiguous native plot: ",name,
+                 " (matched ",sum(hits)," categories)")
+  "Optional Python bridge (other)"
+}
+stopifnot(length(native)==81L,
+  length(scientific_categories)==11L,
+  all(vapply(native,function(name)
+    category(name,strict=TRUE)%in%scientific_categories,logical(1L))))
+# An educational reference is only as accurate as its source: formals()
+# lists the actual v0.4.3 R native plotting signature. Explanations
+# are deliberately conservative rather than inferring unsupported units.
+parameter_note <- function(arg,family){
+  notes <- c(
+    result="Precomputed fit, diagnostic, or plotting result; inspect the exact required object class in the reference.",
+    trajectories="Trajectory-set input. Check coordinate system, sampling and missing-data requirements.",
+    dimension="Functional response or channel selector; see the function's documented naming/index convention.",
+    dimensions="Selected functional channels, not necessarily independent observations.",
+    component="Principal-component selector; see the documented index convention.",
+    coefficient="Exactly named fitted coefficient; interpretation depends on the model and link scale.",
+    interval="Interval display selector. Pointwise and simultaneous bands target different coverage statements.",
+    band="Optional precomputed uncertainty-band object; it is not estimated by the plotting call.",
+    confidence_level="Nominal interval level supplied to a diagnostic; calibration and coverage depend on how its input was obtained.",
+    n_bootstrap="Bootstrap replicate count for the underlying procedure; small values do not support stable tail inference.",
+    radius="Recurrence neighborhood threshold in the chosen measurement/distance space; sensitivity should be checked.",
+    theiler="Temporal-neighbor exclusion for recurrence analysis, in the units required by the estimator.",
+    theiler_window="Temporal-neighbor exclusion; check sample versus physical-time units.",
+    embedding_dimension="State-space reconstruction dimension; diagnostics are conditional on this choice.",
+    delay="Embedding lag; use the estimator's declared sample or physical-time units.",
+    sd_multiplier="Visual multiplier of the fitted component's score SD; not a confidence interval.",
+    max_curves="Upper bound on the number of displayed curves; does not change the fitted analysis.",
+    invert_y="Coordinate-display convention: reverse screen-space Y versus Cartesian Y.",
+    max_participants="Limits rendered participant-level random-effect functions; does not re-estimate them.",
+    max_trials="Limits displayed nested trial functions; does not re-estimate them.",
+    participant_id="Subset to a named participant already present in the result.",
+    max_points="Display guard on the number of rendered points; not a data-imputation option.",
+    metric="Named source diagnostic metric. Its meaning and range depend on the estimator.",
+    metrics="Metrics selected from a source diagnostic; see the returned metric definitions.",
+    statistic="Summary statistic from the supplied result, such as a mean or median; not automatically an effect estimate.",
+    strict_source_record="Requests a native source-oriented geometry/artist record; this does not return a Python Matplotlib Axes object.",
+    plot="Exact workflow plot identifier, dispatched only for supported result types.",
+    alpha="Context-dependent opacity or alpha-level argument; check the exact function reference before interpreting it.",
+    "..."="Additional graphical arguments passed to the plotting backend; read the specific reference for accepted options."
+  )
+  if(arg%in%names(notes))return(unname(notes[[arg]]))
+  paste0("Argument declared in the frozen v0.4.3 R function signature. ",
+         "See this function's exact reference for accepted values, units, ",
+         "and scientific interpretation.")
+}
+parameters_for <- function(name,backend,family){
+ if(backend!="Native R")return(list())
+ fn <- getExportedValue("eyetrajectories",name)
+ stopifnot(is.function(fn))
+ ff <- formals(fn)
+ nms <- names(ff)
+ lapply(nms,function(arg){
+   default <- tryCatch({
+     # Required R formals (including ...) are missing arguments, not
+     # ordinary R values. Never pass them through identical() or assign.
+     text <- paste(deparse(ff[[arg]],width.cutoff=120L),collapse=" ")
+     if(is.na(text)||!nzchar(text))"(required)" else text
+   },error=function(e)"(required)")
+   if(nchar(default)>150L)default <- paste0(substr(default,1,147L),"...")
+   list(name=arg,default=default,
+        explanation=parameter_note(arg,family))
+ })
 }
 entry <- function(name,backend){
   sp <- plot_spec[[name]]
   doc <- paste0("reference/",name,".html")
   has_doc <- file.exists(file.path("site",doc))
   list(name=name,title=gsub("_"," ",sub("^(etr_plot_|etpy_plot_|et_plot_)","",name)),
-    category=if(is.null(sp))category(name) else sp$category,backend=backend,
+    category=category(name,strict=identical(backend,"Native R")),backend=backend,
     description=if(!is.null(sp))sp$description else if(backend=="Native R")
       "Exported native R plotting function. Consult the documented input and model assumptions." else
       "Optional Python-backed plotting interface; requires the separately installed Python backend.",
     doc=if(has_doc)doc else "reference/index.html",
-    exactDoc=has_doc,variants=if(is.null(sp))list() else sp$variants)
+    exactDoc=has_doc,variants=if(is.null(sp))list() else sp$variants,
+    parameters=parameters_for(name,backend,category(name)))
 }
 catalog <- c(lapply(native,entry,backend="Native R"),
              lapply(bridge,entry,backend="Python-backed"))
@@ -199,6 +306,23 @@ writeLines(paste0("window.ET_PLOT_ATLAS_CATALOG=",json,";"),
   file.path(out,"catalog.js"),useBytes=TRUE)
 png_count <- length(list.files(images,pattern="\\.png$"))
 stopifnot(png_count>=108L)
+script_count <- length(list.files(scripts_out,pattern="\\.R$"))
+stopifnot(script_count==png_count,
+          all(vapply(catalog[seq_along(native)],function(x)
+            length(x$parameters)>=1L,logical(1L))),
+          all(vapply(catalog[seq_along(native)],function(x)
+            x$category%in%scientific_categories,logical(1L))))
+writeLines(c("WAVE6_INTERACTIVE_ATLAS_AUDIT",
+  "Source: immutable eyetrajectories v0.4.3 native API",
+  paste("Native plotting functions:",length(native)),
+  paste("Scientific method categories:",length(scientific_categories)),
+  paste("Generated R reproduction scripts:",script_count),
+  paste("Generated native R PNGs:",png_count),
+  "Every native function has source-signature parameters; browser explanations are conservative and refer to exact documentation.",
+  "Python-backed interfaces remain catalogued but are not executed.",
+  "R images are precomputed; comparison is visual, not a controlled causal or inferential comparison.",
+  "Scientific validation: rendering and browser checks do not independently validate estimation methods."),
+  file.path(out,"WAVE6_AUDIT.txt"))
 writeLines(c("eyetrajectories v0.4.3 actual native R plotting atlas",
   paste("Native plotting exports:",length(native)),
   paste("Python-backed plotting exports:",length(bridge)),
@@ -209,6 +333,8 @@ writeLines(c("eyetrajectories v0.4.3 actual native R plotting atlas",
   paste("Wave 5 final native plotting functions:",length(wave5_pass)),
   paste("Unrendered additional fixture candidates:",length(atlas_new_failures)),
   paste("Native R generated PNG examples:",png_count),
+  paste("Wave 6 scientific categories:",length(scientific_categories)),
+  paste("Wave 6 downloadable R scripts:",script_count),
   "The searchable function inventory was generated from the actual NAMESPACE.",
   "All previews are direct output from exported native R plotting functions, not recreated JavaScript approximations.",
   "Synthetic data only; optional Python bridge never executed. No empirical validation claim."

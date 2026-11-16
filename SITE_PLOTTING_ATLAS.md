@@ -2,7 +2,19 @@
 
 The [**Interactive Plotting Atlas**](plot-atlas.html) catalogs the **exported plotting functions in eyetrajectories v0.4.3** directly from its `NAMESPACE`. It distinguishes native R plotting functions from optional Python-backed R bridges, and supports search by function name, method family, and implementation type.
 
-## Coverage and what the previews demonstrate
+## Wave 6 — scientific research interaction and reproducibility
+
+The [interactive atlas](plot-atlas.html) now supports **side-by-side comparisons of two different native R plotting functions**, with independent example settings, images, method labels, exact documentation links and downloadable reproducible R scripts. The existing *compare all variants* mode remains available for contrasting different settings of a **single** plotting function. Comparison is a visual teaching aid: plots may be based on different synthetic fixtures, axes, input representations, estimands, and model assumptions, and should **not** be read as a controlled method-performance benchmark.
+
+Every one of the **81 native plotting exports** now carries a parameter guide extracted from the exact **v0.4.3 native R function formals**, including its actual argument names, formal defaults and conservative methodological explanations. The exact reference pages remain authoritative for valid units, input structures, numerical conventions and scientific interpretation. The 79 optional Python-facing entries remain documentation-only; they do not acquire fictitious native R signatures or figures.
+
+The method filter now uses **11 nonoverlapping scientific families** for the version-frozen native R inventory, separating functional regression from FPCA, mixed effects from inference, nonlinear RQA from transfer-entropy/surrogate testing, and simulation recovery from empirical benchmarking. Previously ambiguous automatic assignments are eliminated by failing the website build when a native function is unmatched or matches multiple categories.
+
+Each image is paired with a **downloadable .R reproduction script**, containing the same actual exported R plotting call shown in the copyable code panel, synthetic fixture setup and a **v0.4.3 package-version guard**. The [Wave 6 audit](plot-atlas/WAVE6_AUDIT.txt) records the 81 native exports, 11 categories, image count, and script count; the [rendering manifest](plot-atlas/MANIFEST.txt) preserves these alongside prior wave evidence.
+
+Qualification now also executes a **headless Chromium browser test** with desktop and mobile layouts, filtering, keyboard-controlled comparison, two-function selection, variant changes, primary-function switching, real .R browser downloads, error/404 monitoring and bounded decoding of **every generated native PNG**. Screenshots are retained as CI evidence. This browser test is a check of website behavior and generated assets, not scientific estimator validation.
+
+\n## Coverage and what the previews demonstrate
 
 The atlas **opens in illustrated-only mode**, showing genuine images produced by the exact native R plotting functions in the qualified v0.4.3 source. The number of illustrated functions and rendered figures is computed automatically at every build and displayed at the top of the [live atlas](plot-atlas.html).
 
