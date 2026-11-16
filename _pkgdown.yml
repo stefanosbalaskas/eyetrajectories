@@ -26,12 +26,15 @@ repo:
 navbar:
   bg: light
   structure:
-    left: [start, labs, atlas, methods, gallery, reference, bridge, validation, cite, news]
+    left: [start, research, labs, atlas, methods, gallery, reference, bridge, validation, cite, news]
     right: [search, github, lightswitch]
   components:
     start:
       text: Get started
       href: SITE_START.html
+    research:
+      text: Research portal
+      href: SITE_RESEARCH_PORTAL.html
     labs:
       text: Interactive labs
       href: SITE_INTERACTIVE.html
