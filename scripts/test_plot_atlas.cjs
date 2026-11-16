@@ -95,7 +95,7 @@ for(const entry of rows){
    assert(fs.existsSync(script),entry.name+": missing R script file");
    const source=fs.readFileSync(script,"utf8");
    assert.equal(source,variant.code,entry.name+": download does not match copyable code");
-   assert(source.includes('packageVersion("eyetrajectories") == "0.4.3"'),
+   assert(source.includes('packageVersion("eyetrajectories")) == "0.4.3"'),
       entry.name+": missing R package version check");
    assert(source.includes(entry.name+"("),
      entry.name+": downloaded file omits its actual native plotting function");
