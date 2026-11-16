@@ -74,7 +74,7 @@ pre{margin:0;white-space:pre;max-height:410px;overflow:auto;padding:19px;border-
 <div class="filter"><label for="family">Scientific method</label>
 <select id="family"><option value="all">All method families</option><option>Trajectory geometry</option><option>Functional PCA</option><option>Functional uncertainty</option><option>Distances &amp; alignment</option><option>Recurrence &amp; nonlinear</option><option>Sparse observations</option></select></div>
 <div class="filter"><label for="backend">Implementation type</label><select id="backend"><option value="all">Native R + Python bridge</option><option>Native R</option><option>Python-backed</option></select></div>
-<label class="check" for="onlyPreview"><input id="onlyPreview" type="checkbox" checked> Show illustrated functions only (9)</label>
+<label class="check" for="onlyPreview"><input id="onlyPreview" type="checkbox" checked> <span id="previewFilterLabel">Show illustrated functions only</span></label>
 </section>
 <p class="coverage-note" id="coverageNote"><strong>Figure gallery mode:</strong> Showing only the 9 native plotting functions with verified R-generated images. Uncheck the illustrated-functions filter to browse all 160 exported plotting interfaces, including 151 documentation-only entries.</p>
 <div class="main">
@@ -104,6 +104,7 @@ const previews=entries.filter(x=>x.variants&&x.variants.length);
 $("nativeCount").textContent=entries.filter(x=>x.backend==="Native R").length;
 $("pythonCount").textContent=entries.filter(x=>x.backend==="Python-backed").length;
 $("previewCount").textContent=previews.length;
+$("previewFilterLabel").textContent="Only functions with real figures ("+previews.length+")";
 $("onlyPreview").checked=true;
 $("figureCount").textContent=previews.reduce((n,x)=>n+x.variants.length,0);
 const has=x=>x.variants&&x.variants.length>0;
@@ -122,7 +123,22 @@ $("coverageNote").innerHTML=$("onlyPreview").checked?
 "<strong>Figure gallery mode:</strong> Showing the "+previews.length+" functions with genuine native R illustrations ("+previews.reduce((n,x)=>n+x.variants.length,0)+" figure variants). Uncheck <em>Show illustrated functions only</em> to browse all "+entries.length+" documented exports.":
 "<strong>Complete API catalogue:</strong> "+previews.length+" of "+entries.length+" plotting interfaces have actual rendered previews. The rest are documentation-only entries—not missing images. Illustrated functions appear first.";
 const box=$("results");box.replaceChildren();
-if(!matches.length){box.appendChild(element("p","empty","No matching plotting functions. Try a broader search."));return;}
+if(!matches.length){
+  box.appendChild(element("p","empty","No matching functions. Try a broader search or turn off the illustrated-only filter."));
+  current=null;
+  $("functionName").textContent="No matching functions";
+  $("description").textContent="Change the filters to select a plotting function.";
+  $("imageView").classList.add("hidden");
+  $("compareView").classList.add("hidden");
+  $("no-preview").classList.remove("hidden");
+  $("codeSection").classList.add("hidden");
+  $("variant").classList.add("hidden");
+  $("variantLabel").classList.add("hidden");
+  $("comparison").classList.add("hidden");
+  $("downloadImage").classList.add("hidden");
+  $("docs").classList.add("hidden");
+  return;
+}
 for(const x of matches){
 const b=element("button","entry");
 b.type="button";b.setAttribute("aria-pressed",String(current&&current.name===x.name));
@@ -133,7 +149,7 @@ pills.appendChild(element("span","pill"+(x.backend==="Python-backed"?" gray":"")
 pills.appendChild(element("span","pill"+(has(x)?" orange":" gray"),has(x)?"Actual R figure":"Docs / API only"));
 b.appendChild(pills);b.addEventListener("click",()=>selectEntry(x));box.appendChild(b);
 }
-if(!current||!matches.some(x=>x.name===current.name))selectEntry(matches[0],true);
+if(!current||!matches.some(x=>x.name===current.name))selectEntry(matches.find(x=>x.name==="etr_plot_trajectories")||matches[0],true);
 renderListSelection();
 }
 function setVariants(){
@@ -143,6 +159,8 @@ $("variant").replaceChildren();
 vars.forEach((v,i)=>{const o=element("option","",v.label);o.value=String(i);$("variant").appendChild(o);});
 $("variant").value=String(variantIndex);
 $("variant").disabled=!yes;
+$("variant").classList.toggle("hidden",!yes);
+$("docs").classList.remove("hidden");
 $("variantLabel").classList.toggle("hidden",!yes);
 $("comparison").classList.toggle("hidden",vars.length<2);
 $("downloadImage").classList.toggle("hidden",!yes);
