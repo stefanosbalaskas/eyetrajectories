@@ -1,0 +1,49 @@
+name: Deploy built eyetrajectories website to GitHub Pages
+
+# One-time prerequisite: Settings > Pages > Source: GitHub Actions.
+# Builds are produced independently by publish-pkgdown-website.yml.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: eyetrajectories-pages-deployment
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy verified static pkgdown website
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout generated website, not development R source
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: published
+      - name: Assert public website has required routes and figures
+        shell: bash
+        run: |
+          set -euo pipefail
+          for required in index.html reference/index.html SITE_START.html \
+            SITE_METHODS.html SITE_BRIDGE.html SITE_VALIDATION.html \
+            SITE_GALLERY.html gallery/01_multilevel_variance.png \
+            gallery/05_transfer_entropy_surrogates.png; do
+            test -s "published/$required" || { echo "::error::Missing $required"; exit 1; }
+          done
+          test -f published/.nojekyll || touch published/.nojekyll
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload the checked website
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: published
+      - name: Deploy to the public GitHub Pages URL
+        id: deployment
+        uses: actions/deploy-pages@v4
