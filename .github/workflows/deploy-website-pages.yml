@@ -38,6 +38,8 @@ jobs:
           for required in index.html reference/index.html SITE_START.html \
             SITE_METHODS.html SITE_BRIDGE.html SITE_VALIDATION.html \
             SITE_GALLERY.html SITE_INTERACTIVE.html SITE_BRANDING.html SITE_CITATION.html \
+            SITE_PLOTTING_ATLAS.html plot-atlas.html plot-atlas/catalog.js \
+            plot-atlas/MANIFEST.txt plot-atlas/images/etr_plot_fpca_variance__cumulative.png \
             methods-laboratory.html branding/eyetrajectories-logo-240.png \
             branding/eyetrajectories-symbol.svg branding/eyetrajectories-horizontal.svg \
             favicon.svg gallery/01_multilevel_variance.png \
@@ -64,7 +66,8 @@ jobs:
           root = Path('published')
           pages = ['index.html', 'SITE_START.html', 'SITE_INTERACTIVE.html',
                    'SITE_CITATION.html', 'SITE_VALIDATION.html',
-                   'methods-laboratory.html', 'trajectory-explorer.html']
+                   'methods-laboratory.html', 'trajectory-explorer.html',
+                   'plot-atlas.html', 'SITE_PLOTTING_ATLAS.html']
           failures = []
           for name in pages:
               file = root / name
@@ -95,6 +98,7 @@ jobs:
           assert '0.4.3' in homepage
           assert '10.5281/zenodo.24288857' in homepage
           assert '10.5281/zenodo.24288857' in citation
+          assert 'plot-atlas.html' in homepage
           if failures:
               raise SystemExit('SITE_LINK_AUDIT_FAILURE:\\n' + '\\n'.join(failures[:50]))
           print('SITE_LINK_AUDIT_PASS', len(pages), 'critical pages')
@@ -117,6 +121,7 @@ jobs:
           base="${SITE_BASE%/}"
           test -n "$base"
           for page in '' 'SITE_CITATION.html' 'SITE_INTERACTIVE.html' \
+            'plot-atlas.html' 'SITE_PLOTTING_ATLAS.html' \
             'trajectory-explorer.html' 'methods-laboratory.html' 'reference/index.html'; do
             echo "GET $base/$page"
             curl --fail --location --silent --show-error \
@@ -127,6 +132,9 @@ jobs:
             if [ -z "$page" ]; then
               grep -q 'From eye movements to mathematical trajectories' /tmp/eyetrajectories-page.html
               grep -q '10.5281/zenodo.24288857' /tmp/eyetrajectories-page.html
+            fi
+            if [ "$page" = 'plot-atlas.html' ]; then
+              grep -q 'Searchable Plotting Atlas' /tmp/eyetrajectories-page.html
             fi
             if [ "$page" = 'methods-laboratory.html' ]; then
               grep -q 'Interactive Methods Laboratory' /tmp/eyetrajectories-page.html
