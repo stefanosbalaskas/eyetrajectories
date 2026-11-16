@@ -159,7 +159,7 @@ add("etr_plot_transfer_surrogates","Recurrence & nonlinear",
 # Extend with validated scientific fixtures from the qualified native package.
 sys.source("scripts/extend_plot_atlas.R",envir=environment())
 sys.source("scripts/extend_plot_atlas_wave2.R",envir=environment())
-stopifnot(length(atlas_new_success)>=30L)
+stopifnot(length(atlas_new_success)>=36L)
 ns <- readLines("NAMESPACE",warn=FALSE)
 exports <- grep("^export\\([A-Za-z][A-Za-z0-9_]*\\)$",ns,value=TRUE)
 exports <- sub("^export\\(([^)]+)\\)$","\\1",exports)
