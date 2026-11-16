@@ -50,6 +50,7 @@ pre{margin:0;white-space:pre;max-height:410px;overflow:auto;padding:19px;border-
 .notice strong{color:#244a5a}
 .empty{padding:35px;text-align:center;color:#66808f}
 #no-preview{padding:48px 20px;background:#f6fafb;text-align:center;border:1px dashed #c7dfe6;color:#617a88;border-radius:11px;line-height:1.7}
+.coverage-note{margin:0 0 16px;border:1px solid #cce7eb;border-radius:12px;background:#eaf5f7;padding:11px 15px;font-size:12px;color:#3f6071;line-height:1.6}.coverage-note strong{color:#124b5a}
 .footer{font-size:12px;color:#5d7888;margin:24px 0}
 .hidden{display:none!important}
 @media(max-width:900px){.main{grid-template-columns:1fr}.results{max-height:340px;min-height:130px}.head{display:block}.head a{margin-top:12px}}
@@ -60,12 +61,12 @@ pre{margin:0;white-space:pre;max-height:410px;overflow:auto;padding:19px;border-
 <div class="wrap">
 <header class="head"><div><div class="kicker">eyetrajectories · version 0.4.3 · native-R figure library</div>
 <h1>Searchable Plotting Atlas</h1>
-<p>Explore plotting functions exported by the actual R package. Search the API, open function documentation and compare figures that were rendered by those native R functions with deterministic synthetic inputs. Changes to plotting options select <strong>pre-generated R outputs</strong>—the browser does not execute R, estimate models or access participant data.</p></div>
+<p>Start with actual plots produced by the released R functions, then optionally browse the complete exported API. Search methods, compare deterministic R-rendered variants, and copy executable R code. <strong>Only 9 of 81 native plotting exports currently have preview images;</strong> other functions appear in the complete catalogue as documentation-only. Browser controls select <strong>pre-generated R outputs</strong>—no client-side R estimation or participant data.</p></div>
 <a href="index.html">← Package home</a></header>
 <div class="stats" aria-live="polite">
 <span><strong id="nativeCount">—</strong> native R plotting exports</span>
 <span><strong id="pythonCount">—</strong> optional Python-facing exports</span>
-<span><strong id="previewCount">—</strong> directly illustrated functions</span>
+<span><strong id="previewCount">—</strong> native functions with real previews (of 81)</span>
 <span><strong id="figureCount">—</strong> real R figure variants</span>
 </div>
 <section class="control-panel" aria-label="Filter plotting functions">
@@ -73,8 +74,9 @@ pre{margin:0;white-space:pre;max-height:410px;overflow:auto;padding:19px;border-
 <div class="filter"><label for="family">Scientific method</label>
 <select id="family"><option value="all">All method families</option><option>Trajectory geometry</option><option>Functional PCA</option><option>Functional uncertainty</option><option>Distances &amp; alignment</option><option>Recurrence &amp; nonlinear</option><option>Sparse observations</option></select></div>
 <div class="filter"><label for="backend">Implementation type</label><select id="backend"><option value="all">Native R + Python bridge</option><option>Native R</option><option>Python-backed</option></select></div>
-<label class="check" for="onlyPreview"><input id="onlyPreview" type="checkbox"> Only R-rendered previews</label>
+<label class="check" for="onlyPreview"><input id="onlyPreview" type="checkbox" checked> Show illustrated functions only (9)</label>
 </section>
+<p class="coverage-note" id="coverageNote"><strong>Figure gallery mode:</strong> Showing only the 9 native plotting functions with verified R-generated images. Uncheck the illustrated-functions filter to browse all 160 exported plotting interfaces, including 151 documentation-only entries.</p>
 <div class="main">
 <section class="listbox" aria-label="Plotting functions"><div class="listhead"><span id="resultCount">Loading catalogue…</span><span>v0.4.3 NAMESPACE</span></div><div class="results" id="results"></div></section>
 <article class="detail" aria-live="polite">
@@ -84,7 +86,7 @@ pre{margin:0;white-space:pre;max-height:410px;overflow:auto;padding:19px;border-
 <div class="toolbar"><label for="variant" id="variantLabel">Example setting</label><select id="variant"></select><button type="button" id="comparison">Compare all variants</button><a id="docs" class="primary" href="reference/index.html">Open R documentation</a><a id="downloadImage" href="#" download>Download figure</a></div>
 <div id="imageView"><figure class="figure"><img id="mainImage" src="" alt="Original R-generated plot" decoding="async"><figcaption id="imageCaption"></figcaption></figure></div>
 <div id="compareView" class="compare hidden"></div>
-<div id="no-preview" class="hidden">This function is included because it is exported by v0.4.3, but there is <strong>no executed R preview for it in this atlas yet.</strong> Open its documentation to inspect required inputs and scientific assumptions.</div>
+<div id="no-preview" class="hidden">This is a <strong>documentation-only</strong> entry—not a broken image. The function is exported by v0.4.3, but its R-generated preview has not yet been implemented in this atlas. <strong>Uncheck the filter to browse all exports</strong>, or use the documentation link to inspect its inputs and scientific assumptions.</div>
 <div id="codeSection"><div class="code-title"><h3>Run this example in R</h3><button type="button" id="copyCode">Copy R code</button></div><pre><code id="rcode"></code></pre></div>
 <div class="notice"><strong>Scientific boundaries:</strong> Every preview image is produced by a real exported native R plotting function, using synthetic observations. Search-only entries are not falsely represented with surrogate graphics. Optional Python-facing \`et_plot_*\` / \`etpy_plot_*\` interfaces are listed separately and are not executed here. Experimental inferential bands and nonlinear diagnostics are not independently validated just because they render.</div>
 </article>
@@ -102,18 +104,23 @@ const previews=entries.filter(x=>x.variants&&x.variants.length);
 $("nativeCount").textContent=entries.filter(x=>x.backend==="Native R").length;
 $("pythonCount").textContent=entries.filter(x=>x.backend==="Python-backed").length;
 $("previewCount").textContent=previews.length;
+$("onlyPreview").checked=true;
 $("figureCount").textContent=previews.reduce((n,x)=>n+x.variants.length,0);
 const has=x=>x.variants&&x.variants.length>0;
 function filter(){
 const term=$("search").value.trim().toLowerCase(),family=$("family").value,backend=$("backend").value,only=$("onlyPreview").checked;
-return entries.filter(x=>(family==="all"||x.category===family)&&(backend==="all"||x.backend===backend)&&(!only||has(x))&&(!term||[x.name,x.title,x.category,x.description].join(" ").toLowerCase().includes(term)));
+return entries.filter(x=>(family==="all"||x.category===family)&&(backend==="all"||x.backend===backend)&&(!only||has(x))&&(!term||[x.name,x.title,x.category,x.description].join(" ").toLowerCase().includes(term)))
+.sort((a,b)=>Number(has(b))-Number(has(a))||a.name.localeCompare(b.name));
 }
 function element(tag,cls,text){
  const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;
 }
 function renderList(){
 const matches=filter();
-$("resultCount").textContent=matches.length+" of "+entries.length+" functions";
+$("resultCount").textContent=matches.length+($("onlyPreview").checked?" with figures":" of "+entries.length+" functions");
+$("coverageNote").innerHTML=$("onlyPreview").checked?
+"<strong>Figure gallery mode:</strong> Showing the "+previews.length+" functions with genuine native R illustrations ("+previews.reduce((n,x)=>n+x.variants.length,0)+" figure variants). Uncheck <em>Show illustrated functions only</em> to browse all "+entries.length+" documented exports.":
+"<strong>Complete API catalogue:</strong> "+previews.length+" of "+entries.length+" plotting interfaces have actual rendered previews. The rest are documentation-only entries—not missing images. Illustrated functions appear first.";
 const box=$("results");box.replaceChildren();
 if(!matches.length){box.appendChild(element("p","empty","No matching plotting functions. Try a broader search."));return;}
 for(const x of matches){
@@ -127,6 +134,7 @@ pills.appendChild(element("span","pill"+(has(x)?" orange":" gray"),has(x)?"Actua
 b.appendChild(pills);b.addEventListener("click",()=>selectEntry(x));box.appendChild(b);
 }
 if(!current||!matches.some(x=>x.name===current.name))selectEntry(matches[0],true);
+renderListSelection();
 }
 function setVariants(){
 if(!current)return;
