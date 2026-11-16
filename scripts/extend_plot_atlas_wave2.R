@@ -114,7 +114,7 @@ register_native("etr_plot_sparse_mfpca_component","Sparse observations",
  "Actual joint x/y sparse multivariate FPCA component modes, fitted from simulated observed data.",
  function(){
    joint <- fixture("sparse_mfpca",make_sparse2)
-   stopifnot(inherits(joint,"etr_sparse_mfpca_native"))
+   stopifnot(inherits(joint,"etr_sparse_mfpca_source"))
    list(v("etr_plot_sparse_mfpca_component","component1","First multivariate component",
      function()eyetrajectories::etr_plot_sparse_mfpca_component(joint,component=0L),
      sparse2_code,"etr_plot_sparse_mfpca_component(joint,component=0L)"),
@@ -126,7 +126,7 @@ register_native("etr_plot_sparse_mfpca_covariance_blocks","Sparse observations",
  "All four covariance blocks of the real native sparse multivariate FPCA fit.",
  function(){
    joint <- fixture("sparse_mfpca",make_sparse2)
-   stopifnot(inherits(joint,"etr_sparse_mfpca_native"))
+   stopifnot(inherits(joint,"etr_sparse_mfpca_source"))
    list(v("etr_plot_sparse_mfpca_covariance_blocks","estimated","Joint covariance blocks",
      function()eyetrajectories::etr_plot_sparse_mfpca_covariance_blocks(joint),
      sparse2_code,"etr_plot_sparse_mfpca_covariance_blocks(joint)"))
@@ -135,7 +135,7 @@ register_native("etr_plot_sparse_mfpca_cross_covariance","Sparse observations",
  "The estimated x-to-y cross-covariance structure from the same native multivariate sparse functional fit.",
  function(){
    joint <- fixture("sparse_mfpca",make_sparse2)
-   stopifnot(inherits(joint,"etr_sparse_mfpca_native"))
+   stopifnot(inherits(joint,"etr_sparse_mfpca_source"))
    list(v("etr_plot_sparse_mfpca_cross_covariance","estimated","Cross-channel covariance",
      function()eyetrajectories::etr_plot_sparse_mfpca_cross_covariance(joint),
      sparse2_code,"etr_plot_sparse_mfpca_cross_covariance(joint)"))
@@ -144,7 +144,7 @@ register_native("etr_plot_sparse_mfpca_score_diagnostics","Sparse observations",
  "Observed joint-PACE score-conditioning diagnostics from the actual sparse multivariate fit.",
  function(){
    joint <- fixture("sparse_mfpca",make_sparse2)
-   stopifnot(inherits(joint,"etr_sparse_mfpca_native"))
+   stopifnot(inherits(joint,"etr_sparse_mfpca_source"))
    list(v("etr_plot_sparse_mfpca_score_diagnostics","conditioning","Joint-PACE conditioning",
      function()eyetrajectories::etr_plot_sparse_mfpca_score_diagnostics(joint),
      sparse2_code,"etr_plot_sparse_mfpca_score_diagnostics(joint)"))
@@ -258,8 +258,8 @@ register_native("etr_plot_rqa_sensitivity","Recurrence & nonlinear",
    stopifnot(inherits(rqa,"etr_rqa_parameter_sensitivity"))
    list(v("etr_plot_rqa_sensitivity","radius","Recurrence rate by radius",
       function()eyetrajectories::etr_plot_rqa_sensitivity(rqa,
-        parameter="radius",metric="recurrence_rate"),
-      rqa_code,'etr_plot_rqa_sensitivity(rqa,parameter="radius",metric="recurrence_rate")'))
+        parameter="requested_radius",metric="recurrence_rate"),
+      rqa_code,'etr_plot_rqa_sensitivity(rqa,parameter="requested_radius",metric="recurrence_rate")'))
  })
 poincare_setup <- paste(c(
  "library(eyetrajectories)",
