@@ -141,3 +141,12 @@ nav.navbar, .navbar.bg-light { background:#fff!important; border-bottom:1px soli
 .et-citation-strip a{font-weight:780;color:#087c91;white-space:nowrap;font-size:.85rem}
 .et-doi-display img{max-width:100%;height:auto;min-height:20px}
 @media(max-width:680px){.et-citation-strip{display:block}.et-citation-strip p{margin:.6rem 0}.et-citation-strip a{white-space:normal;overflow-wrap:anywhere}}
+
+/* Spotlight for the executable native plotting atlas */
+.et-atlas-spotlight{display:flex;align-items:center;justify-content:space-between;gap:2rem;margin:1.4rem 0 3.5rem;padding:clamp(1.2rem,3vw,2rem);border-radius:16px;background:linear-gradient(125deg,#e9f7f8,#f5fafc);border:1px solid #c9e4e9}
+.et-atlas-spotlight>div{flex:1;max-width:770px}
+.et-atlas-spotlight h2{font-size:clamp(1.45rem,2.5vw,2rem);font-weight:800;letter-spacing:-.035em;color:#133d53}
+.et-atlas-spotlight p:not(.et-eyebrow){color:#547181;line-height:1.75}
+.et-atlas-spotlight .et-button-primary{background:#0c6275;color:white!important;white-space:nowrap}
+.et-atlas-spotlight .et-button-primary:hover{background:#0d7c8b;color:white!important}
+@media(max-width:750px){.et-atlas-spotlight{display:block}.et-atlas-spotlight .et-button{margin-top:.5rem;white-space:normal}}
