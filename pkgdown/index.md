@@ -16,7 +16,6 @@
 <p class="et-hero-brand-caption">Eye movements · functional trajectories · statistical inference</p>
 </div>
 </div>
-</div>
 
 <div class="et-section-intro">
 <p class="et-eyebrow">RESEARCH WORKFLOW</p>
