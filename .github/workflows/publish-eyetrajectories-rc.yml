@@ -40,7 +40,7 @@ jobs:
           printf '%s  %s\n' "$EXPECTED_SHA256" candidate/eyetrajectories_0.4.2.tar.gz | sha256sum --check -
           tar -xOf candidate/eyetrajectories_0.4.2.tar.gz eyetrajectories/DESCRIPTION | grep -qx 'Version: 0.4.2'
           test "$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$QUALIFICATION_RUN" --jq '.head_sha')" = '948901e087c2176bd23e01845ba2747b2b602cd8'
-- name: Publish GitHub prerelease from pinned source revision
+      - name: Publish GitHub prerelease from pinned source revision
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
