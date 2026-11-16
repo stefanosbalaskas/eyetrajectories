@@ -51,6 +51,7 @@ jobs:
           test -s pkg/pkgdown/index.md
           test -s pkg/pkgdown/extra.css
           test -s pkg/SITE_VALIDATION.md
+          test -s website/site-interactive/trajectory-explorer.html
       - uses: r-lib/actions/setup-r@v2
         with:
           r-version: release
@@ -70,17 +71,37 @@ jobs:
         run: |
           pkgdown::build_site(pkg='.', examples=FALSE, devel=TRUE,
                               new_process=FALSE, install=FALSE, preview=FALSE)
+          stopifnot(file.copy('../website/site-interactive/trajectory-explorer.html',
+                              'site/trajectory-explorer.html', overwrite=TRUE))
+          home <- paste(readLines('site/index.html', warn=FALSE), collapse='\n')
+          stopifnot(grepl('class="et-hero-content"', home, fixed=TRUE))
+          stopifnot(grepl('src="trajectory-explorer.html"', home, fixed=TRUE))
+          stopifnot(!grepl('class="sourceCode"', home, fixed=TRUE))
           required <- c(
             'site/index.html', 'site/reference/index.html',
             'site/SITE_START.html', 'site/SITE_METHODS.html',
             'site/SITE_BRIDGE.html', 'site/SITE_VALIDATION.html',
             'site/SITE_GALLERY.html',
+            'site/trajectory-explorer.html',
             paste0('site/gallery/', c('01_multilevel_variance',
               '02_participant_mean_band', '03_group_contrast_band',
               '04_sparse_support', '05_transfer_entropy_surrogates'), '.png'))
           stopifnot(all(file.exists(required)))
           for (p in required) stopifnot(file.info(p)$size > 100)
           message('EYETRAJECTORIES_042_WEBSITE_BUILD_PASS')
+      - name: Verify interactive trajectory JavaScript syntax
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import pathlib, re
+          page=pathlib.Path('pkg/site/trajectory-explorer.html').read_text(encoding='utf-8')
+          match=re.search(r'<script>([\s\S]*?)</script>', page)
+          assert match, 'Missing interactive trajectory script'
+          pathlib.Path('/tmp/eyetrajectories-lab.js').write_text(match.group(1), encoding='utf-8')
+          assert 'requestAnimationFrame' in match.group(1)
+          assert 'URL.createObjectURL' in match.group(1)
+          PY
+          node --check /tmp/eyetrajectories-lab.js
       - name: Upload website build evidence
         uses: actions/upload-artifact@v4
         with:
