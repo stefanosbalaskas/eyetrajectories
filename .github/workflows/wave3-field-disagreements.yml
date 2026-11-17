@@ -1,0 +1,38 @@
+name: Wave 3 per-field archive diagnostics
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/qualify_wave3_field_disagreements.R'
+      - 'scripts/test_wave3_field_disagreements.R'
+      - '.github/workflows/wave3-field-disagreements.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/qualify_wave3_field_disagreements.R'
+      - 'scripts/test_wave3_field_disagreements.R'
+      - '.github/workflows/wave3-field-disagreements.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic-field-diagnostics:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - name: Install ZIP
+        run: sudo apt-get update -qq && sudo apt-get install -y zip
+      - name: Parse and execute synthetic event alignment tests
+        shell: Rscript {0}
+        run: |
+          parse(file='scripts/qualify_wave3_field_disagreements.R')
+          parse(file='scripts/test_wave3_field_disagreements.R')
+          source('scripts/test_wave3_field_disagreements.R')
+          cat('WAVE3_FIELD_DIAGNOSTICS_CI_PASS\n')
