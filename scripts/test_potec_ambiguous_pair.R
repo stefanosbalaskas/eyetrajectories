@@ -23,6 +23,9 @@ stopifnot(nrow(q)==1L,q$unit_ordinal==182L,
           q$corrected_AOI_distinct_nonmissing==2L,
           q$corrected_AOI_equal_to_source_count==1L,
           q$corrected_adjustment_flags==1L,
+          q$same_row_duration_and_AOI_match_count==1L,
+          q$duration_match_but_AOI_not_match_count==0L,
+          q$AOI_match_but_duration_not_match_count==0L,
           q$corrected_rows_adjacent,
           q$corrected_fixation_index_unique_for_unit,
           q$status=="UNRESOLVED_DO_NOT_AUTO_PAIR")
@@ -31,7 +34,20 @@ identical_duration$data$fixation_duration[3L]<-"100"
 q2<-.pp_profile(a,identical_duration,182L)
 stopifnot(q2$corrected_durations_equal_source_count==2L,
           q2$distinct_corrected_durations==1L,
+          q2$same_row_duration_and_AOI_match_count==1L,
+          q2$duration_match_but_AOI_not_match_count==1L,
           q2$status=="UNRESOLVED_DO_NOT_AUTO_PAIR")
+# Crucial negative case: marginal duration/AOI match counts are both one
+# but belong to DIFFERENT corrected rows; no joint matching signature.
+disjoint <- b
+disjoint$data$aoi[2:3] <- c("c","b")
+d <- .pp_profile(a,disjoint,182L)
+stopifnot(d$corrected_durations_equal_source_count==1L,
+          d$corrected_AOI_equal_to_source_count==1L,
+          d$same_row_duration_and_AOI_match_count==0L,
+          d$duration_match_but_AOI_not_match_count==1L,
+          d$AOI_match_but_duration_not_match_count==1L,
+          d$status=="UNRESOLVED_DO_NOT_AUTO_PAIR")
 if(!nzchar(Sys.which("zip")))stop("Synthetic ZIP binary is required")
 root<-tempfile("potec_profile_");dir.create(root)
 for(f in c("fixations","fixations_uncorrected"))
@@ -53,6 +69,7 @@ before<-tools::md5sum(zips)
 res<-potec_profile_duplicate_pair(root=root,ordinal=1L,max_rows=100L)
 stopifnot(identical(before,tools::md5sum(zips)),
           res$profile$corrected_group_size==2L,
+          res$profile$same_row_duration_and_AOI_match_count==1L,
           res$profile$status=="UNRESOLVED_DO_NOT_AUTO_PAIR",
           file.exists(file.path(res$output,"duplicate_pair_metadata.csv")),
           file.exists(file.path(res$output,"DUPLICATE_PAIR_SCOPE.md")),
