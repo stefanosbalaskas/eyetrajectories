@@ -1,0 +1,72 @@
+name: Four-track scientific-qualification evidence (R native)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/science_*.R'
+      - 'scripts/test_scientific_validation_tracks.R'
+      - '.github/workflows/scientific-validation-four-tracks.yml'
+      - 'docs/SCIENTIFIC_VALIDATION_FOUR_TRACKS.md'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/science_*.R'
+      - 'scripts/test_scientific_validation_tracks.R'
+      - '.github/workflows/scientific-validation-four-tracks.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cross-platform-synthetic-contracts:
+    name: Synthetic oracles (OS)
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 35
+    env:
+      ET_SCI_ASC_NO_AUTORUN: 'true'
+      ET_SCI_MODEL_NO_AUTORUN: 'true'
+      ET_SCI_MC_NO_AUTORUN: 'true'
+      ET_SCI_BENCH_NO_AUTORUN: 'true'
+      RETICULATE_PYTHON: 'NA'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - name: Install R test dependencies
+        shell: Rscript {0}
+        run: |
+          install.packages(c("pkgload", "reticulate", "peakRAM"),
+            repos = Sys.getenv("RSPM", "https://cloud.r-project.org"))
+      - name: Syntax and test synthetic validation contracts
+        shell: Rscript {0}
+        run: |
+          scripts <- c("science_validate_potec_asc.R",
+             "science_validate_models.R", "science_inference_calibration.R",
+             "science_benchmark_multiplatform.R",
+             "test_scientific_validation_tracks.R")
+          for (s in scripts) parse(file=file.path("scripts",s))
+          pkgload::load_all(".", quiet=TRUE)
+          source("scripts/test_scientific_validation_tracks.R")
+      - name: Cross-platform synthetic scaling and memory evidence
+        shell: Rscript {0}
+        run: |
+          Sys.setenv(ET_SCI_BENCH_NO_AUTORUN="true")
+          pkgload::load_all(".",quiet=TRUE)
+          source("scripts/science_benchmark_multiplatform.R")
+          sci_benchmark_multiplatform(source_mode="synthetic",
+            sizes=c(250L,500L,1000L),grids=c(64L,128L),
+            repetitions=2L,out="validation_artifacts")
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: four-track-synthetic-${{ matrix.os }}
+          path: validation_artifacts/
+          if-no-files-found: ignore
+          retention-days: 30
