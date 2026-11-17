@@ -12,6 +12,17 @@ stopifnot(identical(picked$trial, "TRIAL_INDEX"))
 stopifnot(identical(picked$x, "CURRENT_FIX_X"))
 stopifnot(identical(picked$y, "CURRENT_FIX_Y"))
 
+# Regression: the real OneStop ZIP can have multiple entries, including
+# metadata. Every predicate must be vectorized and preserve member order.
+member_names <- c("fixations_Paragraph_repeated.csv",
+                  "__MACOSX/._fixations_Paragraph_repeated.csv",
+                  "folder/", "notes.txt", "._sidecar.csv",
+                  "subdir/scans.ASC", "other.tsv")
+stopifnot(identical(.et8_supported_members(member_names),
+                     c(TRUE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE)))
+stopifnot(identical(.et8_supported_members(character()), logical()))
+
+
 dat <- do.call(rbind, lapply(seq_len(5L), function(i) {
   t <- seq(0, 2, length.out = 30L)
   data.frame(participant_id = paste0("p", i),
@@ -40,10 +51,18 @@ if (nzchar(Sys.which("zip"))) {
   dir.create(root)
   file <- file.path(root, "fixations_Paragraph_repeated.csv")
   utils::write.csv(dat, file, row.names = FALSE)
+  # Include an AppleDouble-style CSV and an unrelated note in the actual ZIP.
+  # The member enumeration must ignore these while processing the real CSV.
+  dir.create(file.path(root, "__MACOSX"))
+  writeLines("metadata placeholder",
+    file.path(root, "__MACOSX", "._fixations_Paragraph_repeated.csv"))
+  writeLines("unrelated note", file.path(root, "notes.txt"))
   old <- getwd()
   setwd(root)
   utils::zip("fixations_Paragraph_repeated.csv.zip",
-             files = basename(file), flags = "-q")
+             files = c(basename(file),
+               "__MACOSX/._fixations_Paragraph_repeated.csv",
+               "notes.txt"), flags = "-q")
   setwd(old)
   source_archive <- file.path(root, "fixations_Paragraph_repeated.csv.zip")
   before <- unname(tools::md5sum(source_archive))
@@ -55,6 +74,15 @@ if (nzchar(Sys.which("zip"))) {
             file.exists(file.path(out, "member_schema.csv")),
             file.exists(file.path(out, "numeric_checks.csv")),
             file.exists(file.path(out, "VALIDATION_SUMMARY.md")))
+  inventory <- utils::read.csv(file.path(out, "archive_inventory.csv"),
+                              stringsAsFactors = FALSE)
+  row <- inventory[inventory$archive == "fixations_Paragraph_repeated.csv.zip", ]
+  stopifnot(nrow(row) == 1L, row$valid_members == 1L,
+            row$sampled_members == 1L)
+  schema <- utils::read.csv(file.path(out, "member_schema.csv"),
+                           stringsAsFactors = FALSE)
+  stopifnot(nrow(schema) == 1L,
+            identical(schema$member, "fixations_Paragraph_repeated.csv"))
   checks <- utils::read.csv(file.path(out, "numeric_checks.csv"),
                             stringsAsFactors = FALSE)
   status <- checks$status[checks$archive ==
