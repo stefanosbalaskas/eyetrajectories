@@ -1,0 +1,62 @@
+# Synthetic-only test of ambiguous PoTeC original fixation index.
+Sys.setenv(ET_POTEC_PAIR_NO_AUTORUN="true",
+           ET_POTEC_DUP_NO_AUTORUN="true",
+           ET_POTEC_UNCORRECTED_NO_AUTORUN="true")
+source("scripts/profile_potec_ambiguous_pair.R",local=FALSE)
+a<-list(status="READ",data=data.frame(
+  trial=c("1","1","1","1"),fixation_index=c("1","2","3","4"),
+  fixation_duration=c("80","100","105","90"),aoi=c("a","b","c","d"),
+  stringsAsFactors=FALSE),capped=FALSE)
+b<-list(status="READ",data=data.frame(
+  trial=c("1","1","1","1"),original_fixation_index=c("1","2","2","4"),
+  fixation_index=c("1","2","3","4"),
+  fixation_duration=c("80","100","101","90"),
+  aoi=c("a","b","c","d"),is_fixation_adjusted=c("FALSE","FALSE","TRUE","FALSE"),
+  stringsAsFactors=FALSE),capped=FALSE)
+q<-.pp_profile(a,b,182L)
+stopifnot(nrow(q)==1L,q$unit_ordinal==182L,
+          q$source_original_key_unique,
+          q$corrected_group_size==2L,
+          q$uncorrected_group_size==1L,
+          q$distinct_corrected_durations==2L,
+          q$corrected_durations_equal_source_count==1L,
+          q$corrected_AOI_distinct_nonmissing==2L,
+          q$corrected_AOI_equal_to_source_count==1L,
+          q$corrected_adjustment_flags==1L,
+          q$corrected_rows_adjacent,
+          q$corrected_fixation_index_unique_for_unit,
+          q$status=="UNRESOLVED_DO_NOT_AUTO_PAIR")
+identical_duration<-b
+identical_duration$data$fixation_duration[3L]<-"100"
+q2<-.pp_profile(a,identical_duration,182L)
+stopifnot(q2$corrected_durations_equal_source_count==2L,
+          q2$distinct_corrected_durations==1L,
+          q2$status=="UNRESOLVED_DO_NOT_AUTO_PAIR")
+if(!nzchar(Sys.which("zip")))stop("Synthetic ZIP binary is required")
+root<-tempfile("potec_profile_");dir.create(root)
+for(f in c("fixations","fixations_uncorrected"))
+  dir.create(file.path(root,f))
+utils::write.table(a$data,file.path(root,"fixations_uncorrected",
+                  "reader100_b3_uncorrected_fixations.tsv"),
+                  sep="\t",quote=FALSE,row.names=FALSE)
+utils::write.table(b$data,file.path(root,"fixations",
+                  "reader100_b3_fixations.tsv"),
+                  sep="\t",quote=FALSE,row.names=FALSE)
+pack<-function(folder,zipname){
+  wd<-getwd();setwd(root);on.exit(setwd(wd),add=TRUE)
+  utils::zip(zipname,paste0(folder,"/",list.files(folder)),flags="-q")
+}
+pack("fixations","fixations.zip")
+pack("fixations_uncorrected","fixations_uncorrected.zip")
+zips<-list.files(root,pattern="\\.zip$",full.names=TRUE)
+before<-tools::md5sum(zips)
+res<-potec_profile_duplicate_pair(root=root,ordinal=1L,max_rows=100L)
+stopifnot(identical(before,tools::md5sum(zips)),
+          res$profile$corrected_group_size==2L,
+          res$profile$status=="UNRESOLVED_DO_NOT_AUTO_PAIR",
+          file.exists(file.path(res$output,"duplicate_pair_metadata.csv")),
+          file.exists(file.path(res$output,"DUPLICATE_PAIR_SCOPE.md")),
+          !grepl("reader100",paste(readLines(file.path(
+              res$output,"DUPLICATE_PAIR_SCOPE.md")),collapse=" "),
+              fixed=TRUE))
+cat("POTEC_DUPLICATE_PAIR_PROVENANCE_SYNTHETIC_PASS\n")
