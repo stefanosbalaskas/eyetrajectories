@@ -36,7 +36,7 @@
         stdout=TRUE,stderr=FALSE)),error=function(e)character())
       if(length(z)>100L && is.null(attr(z,"status")))return(z)
     }
-    readLines(url(url),warn=FALSE)
+    readLines(base::url(url),warn=FALSE)
   }
   old<-readsrc("v0.4.3",.pl_old_url)
   fast<-readsrc(.pl_fast_sha,.pl_new_url)
