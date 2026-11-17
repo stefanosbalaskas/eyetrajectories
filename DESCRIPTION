@@ -1,6 +1,6 @@
 Package: eyetrajectories
 Title: Functional Analysis of Eye-Tracking Trajectories
-Version: 0.4.3
+Version: 0.4.3.9000
 Authors@R: person("Stefanos", "Balaskas", email = "s.balaskas@ac.upatras.gr", role = c("aut", "cre"))
 Description: Provides native R tools for time-indexed eye-tracking
     trajectories, including validation, explicit preprocessing, kinematics,
