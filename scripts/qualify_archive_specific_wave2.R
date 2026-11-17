@@ -262,7 +262,7 @@ w2_run <- function(root=Sys.getenv("ET_WAVE2_ROOT",
     is.finite(max_asc_lines),max_asc_lines>=100L)
   namesZip<-c(scanpaths="scanpaths.zip",merged="scanpaths_merged.zip",
               fixations="fixations.zip")
-  paths<-file.path(root,namesZip)
+  paths<-stats::setNames(file.path(root,unname(namesZip)),names(namesZip))
   if(!all(file.exists(paths)))stop("Missing scanpath-family archive(s): ",
     paste(basename(paths[!file.exists(paths)]),collapse=", "))
   other<-file.path(root,c("ia_Paragraph_repeated.csv.zip",
