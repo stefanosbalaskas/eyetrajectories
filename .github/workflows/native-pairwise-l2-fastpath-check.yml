@@ -1,0 +1,47 @@
+name: Native pairwise L2 fast-path regression
+
+on:
+  push:
+    branches:
+      - perf/native-pairwise-l2-v043-20261117
+    paths:
+      - 'R/native-distances.R'
+      - 'tests/testthat/test-native-pairwise-l2-fastpath.R'
+      - '.github/workflows/native-pairwise-l2-fastpath-check.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  focused-native-r-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      ET_RUN_PYTHON_TESTS: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - name: Install only the native test dependencies
+        shell: Rscript {0}
+        run: |
+          install.packages(c("pkgload", "testthat", "reticulate"),
+                           repos = "https://cloud.r-project.org")
+      - name: Parse patched source and focused regression tests
+        shell: Rscript {0}
+        run: |
+          parse(file = "R/native-distances.R")
+          parse(file = "tests/testthat/test-native-pairwise-l2-fastpath.R")
+          cat("R_PARSE_PASS\\n")
+      - name: Execute native-only pairwise L2 regression tests
+        shell: Rscript {0}
+        run: |
+          testthat::test_local(
+            ".",
+            filter = "native-pairwise-l2-fastpath",
+            reporter = "summary",
+            stop_on_failure = TRUE
+          )
+          cat("NATIVE_PAIRWISE_L2_REGRESSION_PASS\\n")
