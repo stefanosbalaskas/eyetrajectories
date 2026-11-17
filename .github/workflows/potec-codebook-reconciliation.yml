@@ -1,0 +1,39 @@
+name: PoTeC authoritative codebook source reconciliation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/qualify_potec_codebook_domains.R'
+      - 'scripts/test_potec_codebook_domains.R'
+      - 'docs/POTEC_CODEBOOK_RECONCILIATION.md'
+      - '.github/workflows/potec-codebook-reconciliation.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/qualify_potec_codebook_domains.R'
+      - 'scripts/test_potec_codebook_domains.R'
+      - '.github/workflows/potec-codebook-reconciliation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic-codebook-mapping:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - name: Install ZIP for synthetic fixtures
+        run: sudo apt-get update -qq && sudo apt-get install -y zip
+      - name: Parse and execute source-label contract
+        shell: Rscript {0}
+        run: |
+          parse(file='scripts/qualify_potec_codebook_domains.R')
+          parse(file='scripts/test_potec_codebook_domains.R')
+          source('scripts/test_potec_codebook_domains.R')
+          cat('POTEC_CODEBOOK_RECONCILIATION_CI_PASS\n')

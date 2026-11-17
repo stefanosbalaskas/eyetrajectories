@@ -1,5 +1,7 @@
 # Wave 4 — text_domain source/category provenance
 
+> **Corpus attribution and validation update (17 November 2026):** The two paragraph fixation CSVs and their interest-area exports are from **OneStop**; the 900-file `scanpaths`, `scanpaths_merged` and `fixations` TSV families and the related ASC recordings are from the independent **Potsdam Textbook Corpus (PoTeC)**. The 198,985 PoTeC raw label mismatches are accounted for by the source authors' documented `bio` versus `biology` spellings. This page records an earlier stage of the protocol, not the latest conclusion. See [PoTeC codebook reconciliation](POTEC_CODEBOOK_RECONCILIATION.md) and the [official authors' codebook](https://github.com/DiLi-Lab/PoTeC/blob/main/CODEBOOK.md). No OneStop–PoTeC participant join is justified.
+
 Wave 3's local November 17, 2026 audit found 404,420 matched fixation keys in each of 900 reader-file triplets. Among eight shared columns, seven were exactly equal in all comparable records. All 198,985 unequal nonmissing field cells were confined to text_domain in scanpath↔fixation and fixation↔merged comparisons; scanpath↔merged had zero. In 439 of 900 units, all matched records differed on text_domain, and the label was internally constant in both files. The other 461 units agreed.
 
 This supports a systematic file-level label difference, but does not establish which source is correct.
