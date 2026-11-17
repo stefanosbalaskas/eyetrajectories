@@ -57,6 +57,21 @@ if(is.na(.pp_prior))Sys.unsetenv("ET_POTEC_DUP_NO_AUTORUN") else
     source_aoi<-if("aoi"%in%names(a$data))as.character(a$data$aoi[ia]) else character()
     flags<-if("is_fixation_adjusted"%in%names(b$data))
       .pp_bool(b$data$is_fixation_adjusted[ib]) else logical()
+    # Previous exports only reported marginal duration/AOI match counts.
+    # Count their intersection on the SAME corrected row without exporting
+    # identifiers or any original values; this is still not identity truth.
+    possible_joint<-length(srcduration)==1L&&is.finite(srcduration) &&
+      length(cduration)==length(ib)&&length(aoi)==length(ib) &&
+      length(source_aoi)==1L&&!is.na(source_aoi)
+    joint_count<-if(possible_joint)sum(
+      is.finite(cduration)&abs(cduration-srcduration)<=1e-7 &
+      !is.na(aoi)&aoi==source_aoi) else NA_integer_
+    duration_only<-if(possible_joint)sum(
+      is.finite(cduration)&abs(cduration-srcduration)<=1e-7 &
+      (is.na(aoi)|aoi!=source_aoi)) else NA_integer_
+    aoi_only<-if(possible_joint)sum(
+      !is.na(aoi)&aoi==source_aoi &
+      !(is.finite(cduration)&abs(cduration-srcduration)<=1e-7)) else NA_integer_
     list(unit_ordinal=ordinal,duplicate_group_ordinal=i,
       corrected_group_size=length(ib),uncorrected_group_size=length(ia),
       duplicate_extra_corrected_rows=length(ib)-1L,
@@ -67,6 +82,9 @@ if(is.na(.pp_prior))Sys.unsetenv("ET_POTEC_DUP_NO_AUTORUN") else
          length(unique(aoi[!is.na(aoi)])) else NA_integer_,
       corrected_AOI_equal_to_source_count=if(length(aoi)&&length(source_aoi)==1L&&
         !is.na(source_aoi))sum(!is.na(aoi)&aoi==source_aoi) else NA_integer_,
+      same_row_duration_and_AOI_match_count=joint_count,
+      duration_match_but_AOI_not_match_count=duration_only,
+      AOI_match_but_duration_not_match_count=aoi_only,
       corrected_adjustment_flags=if(length(flags))sum(flags) else NA_integer_,
       corrected_rows_adjacent=if(length(ib)>1L)
         all(diff(sort(ib))==1L) else NA,
@@ -117,6 +135,12 @@ potec_profile_duplicate_pair<-function(
     paste0("Corrected AOI labels within each group: ",
            paste(profile$corrected_AOI_distinct_nonmissing,collapse=", "),
            " distinct nonmissing values."),
+    paste0("SAME corrected row matching BOTH source duration and AOI: ",
+           paste(profile$same_row_duration_and_AOI_match_count,collapse=", "),"."),
+    paste0("Duration match with AOI mismatch: ",
+           paste(profile$duration_match_but_AOI_not_match_count,collapse=", "),"."),
+    paste0("AOI match with duration mismatch: ",
+           paste(profile$AOI_match_but_duration_not_match_count,collapse=", "),"."),
     "",
     "**No unique correction-stage pairing has been established for the",
     "two originally ambiguous corrected rows.** Duration equality, adjacency",
