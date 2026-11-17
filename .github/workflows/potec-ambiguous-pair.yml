@@ -1,0 +1,38 @@
+name: PoTeC ambiguous pair source-metadata checks
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/profile_potec_ambiguous_pair.R'
+      - 'scripts/test_potec_ambiguous_pair.R'
+      - '.github/workflows/potec-ambiguous-pair.yml'
+      - 'docs/POTEC_DUPLICATE_PAIR_AUDIT_20261118.md'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/profile_potec_ambiguous_pair.R'
+      - 'scripts/test_potec_ambiguous_pair.R'
+      - '.github/workflows/potec-ambiguous-pair.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic-pair-provenance:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - name: Install ZIP synthetic fixture executable
+        run: sudo apt-get update -qq && sudo apt-get install -y zip
+      - name: Syntax and synthetic duplicate-pair metadata test
+        shell: Rscript {0}
+        run: |
+          parse(file="scripts/profile_potec_ambiguous_pair.R")
+          parse(file="scripts/test_potec_ambiguous_pair.R")
+          source("scripts/test_potec_ambiguous_pair.R")
