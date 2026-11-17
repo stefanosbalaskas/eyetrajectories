@@ -84,7 +84,7 @@
       "MSG" = sum(grepl("^MSG[[:space:]]", lines)),
       "EFIX" = sum(grepl("^EFIX[[:space:]]", lines)),
       "SFIX" = sum(grepl("^SFIX[[:space:]]", lines)),
-      "numeric_lines" = sum(grepl("^[[:space:]]*[0-9]+[[:space:]]", lines)))
+      "numeric_lines" = sum(grepl("^[[:space:]]*[0-9]+[[:space:]]", lines))
     )
     return(list(type = "ASC", status = "RAW_SOURCE_SAMPLE_ONLY",
       n = length(lines), cols = character(), roles = list(), df = NULL,
