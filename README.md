@@ -10,7 +10,7 @@
 
 [Stable GitHub release 0.4.3](https://github.com/stefanosbalaskas/eyetrajectories/releases/tag/v0.4.3) · [Six-platform qualification](https://github.com/stefanosbalaskas/eyetrajectories/actions/runs/43862845556) · [Documentation](https://stefanosbalaskas.github.io/eyetrajectories/) · [Issues](https://github.com/stefanosbalaskas/eyetrajectories/issues)
 
-> **Release status:** Version **0.4.3** is published as a **stable GitHub software release** (not a prerelease). It has **not** been accepted or published by CRAN. The qualified 0.4.3 source is pinned to [commit 20e6db8](https://github.com/stefanosbalaskas/eyetrajectories/commit/20e6db830d480b55456c2acf85e5fdb12cfa398f), while `main` currently contains an older development snapshot. Do not assume that installing the default `main` branch gives the qualified 0.4.3 archive.
+> **Release status:** Version **0.4.3** is published as a **stable GitHub software release** (not a prerelease). It has **not** been accepted or published by CRAN. The qualified 0.4.3 source is pinned to [commit 20e6db8](https://github.com/stefanosbalaskas/eyetrajectories/commit/20e6db830d480b55456c2acf85e5fdb12cfa398f), while `main` is a separate development snapshot (0.4.0.9000) with selected post-release improvements, including the optimized pairwise L² implementation. Installing `main` does **not** install the qualified 0.4.3 archive.
 
 **Branding:** [Selected R-package sticker and scalable companion artwork](branding/README.md).
 
@@ -107,6 +107,25 @@ Native `etr_*` analyses do not initialize Python. The optional `et_*` and `etpy_
 The **0.4.3 release** exports **904 named R functions**, comprising **507 `etr_*` native interfaces**, **383 `etpy_*` Python-facing interfaces** (380 mapped Python callables plus three API helpers), and **14 `et_*` higher-level interfaces**. An exported interface is not necessarily a distinct numerical estimator.
 
 The frozen **508-symbol Python reference inventory** consists of **380 functions and 128 classes/constants/other public symbols**. Matching source APIs or passing automated tests does **not** prove 508 independently certified numerical and scientific equivalents. Advanced inference and cross-domain use remain subject to explicit validation.
+
+## Real-data pairwise L² performance (development branch)
+
+The `etr_pairwise_l2()` development implementation uses trapezoid- and channel-weighted Euclidean distances via base R's compiled `stats::dist()`, retaining a scalar fallback for unsafe finite arithmetic. The public function signature remains unchanged on `main`.
+
+A November 17, 2026 R-only OneStop repeated-reading **fixation-level** benchmark measured the corresponding optimization on the isolated 0.4.3 development branch at commit [2799d7e](https://github.com/stefanosbalaskas/eyetrajectories/commit/2799d7e37360f2c3a897adfb0c4ea28fb069c13b). That benchmark is **not** an independent performance run of this older `main` snapshot or a change to the archived v0.4.3 release.
+
+| Curves | Samples/curve | Original median | Optimized median | Observed speedup |
+| ---: | ---: | ---: | ---: | ---: |
+| 250 | 64 | 1.82 s | 0.00866 s | 210.2× |
+| 500 | 64 | 7.52 s | 0.035 s | 214.9× |
+| 1,000 | 64 | 29.58 s | 0.150 s | 197.2× |
+| 250 | 128 | 1.95 s | 0.01722 s | 113.2× |
+| 500 | 128 | 7.94 s | 0.068 s | 116.8× |
+| 1,000 | 128 | 31.91 s | 0.305 s | 104.6× |
+
+Both benchmark runs passed 21/21 defined numerical checks; the largest optimized L² reference discrepancy was approximately `4.55e-13`. Timings reflect three R measurement repetitions on one machine. The data are real fixations interpolated to normalized within-trial time grids, **not** raw 1,000 Hz gaze recordings. GC-based heap measurements are not peak process RSS; uncertainty calibration and competing software were not benchmarked.
+
+Read the [technical benchmark report](docs/onestop-pairwise-l2-performance-2026-11-17.md) and [PR #191 qualification record](https://github.com/stefanosbalaskas/eyetrajectories/pull/191).
 
 ## Qualification and transparency
 

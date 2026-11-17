@@ -37,7 +37,7 @@ jobs:
           set -euo pipefail
           for required in index.html reference/index.html SITE_START.html \
             SITE_METHODS.html SITE_BRIDGE.html SITE_VALIDATION.html \
-            SITE_GALLERY.html SITE_INTERACTIVE.html SITE_BRANDING.html SITE_CITATION.html \
+            SITE_GALLERY.html SITE_INTERACTIVE.html SITE_BRANDING.html SITE_CITATION.html SITE_PERFORMANCE.html \
             SITE_PLOTTING_ATLAS.html plot-atlas.html plot-atlas/catalog.js \
             plot-atlas/MANIFEST.txt plot-atlas/images/etr_plot_fpca_variance__cumulative.png \
             methods-laboratory.html branding/eyetrajectories-logo-240.png \
@@ -67,6 +67,7 @@ jobs:
           pages = ['index.html', 'SITE_START.html', 'SITE_INTERACTIVE.html',
                    'SITE_CITATION.html', 'SITE_VALIDATION.html',
                    'methods-laboratory.html', 'trajectory-explorer.html',
+                   'SITE_PERFORMANCE.html',
                    'plot-atlas.html', 'SITE_PLOTTING_ATLAS.html']
           failures = []
           for name in pages:
@@ -122,7 +123,7 @@ jobs:
           test -n "$base"
           for page in '' 'SITE_CITATION.html' 'SITE_INTERACTIVE.html' \
             'plot-atlas.html' 'SITE_PLOTTING_ATLAS.html' \
-            'trajectory-explorer.html' 'methods-laboratory.html' 'reference/index.html'; do
+            'trajectory-explorer.html' 'methods-laboratory.html' 'SITE_PERFORMANCE.html' 'reference/index.html'; do
             echo "GET $base/$page"
             curl --fail --location --silent --show-error \
               --retry 10 --retry-delay 4 --retry-all-errors \
