@@ -104,8 +104,40 @@ etr_pairwise_l2 <- function(x, dimension_weights = NULL,
                 !is.na(python_boundary_mode),
               "python_boundary_mode must be a nonmissing logical scalar")
   etr_validate(x, require_complete = TRUE)
-  n <- dim(x$values)[1]
+  n <- dim(x$values)[1L]
   d <- matrix(0, n, n, dimnames = list(x$curve_ids, x$curve_ids))
+  # The established contract does not validate weights when there are no
+  # pairs. Keep this behavior, including zero/one-curve source-mode inputs.
+  if (n < 2L) return(d)
+
+  # The optional Python boundary allows non-finite values and weights and
+  # has deliberate NumPy-like propagation semantics. Keep its exact
+  # scalar implementation; stats::dist cannot reproduce that domain.
+  if (!isTRUE(python_boundary_mode)) {
+    nt <- length(x$time)
+    nd <- dim(x$values)[3L]
+    w <- etr_trapezoid_weights(x$time)
+    dw <- .etr_dimweights(nd, dimension_weights)
+    # x$values is [curve, time, dimension]. With nrow=n this becomes
+    # [curve, time-1..nt of channel-1, time-1..nt of channel-2, ...].
+    # Square roots avoid overflow in forming w * dw for large finite
+    # individual weights. A zero channel weight eliminates that channel.
+    scale <- rep(sqrt(w), times = nd) * rep(sqrt(dw), each = nt)
+    if (all(is.finite(scale))) {
+      z <- matrix(x$values, nrow = n)
+      # Translation leaves all Euclidean distances unchanged; centering
+      # before scaling avoids overflow of a large common coordinate offset.
+      z <- sweep(z, 2L, z[1L, ], "-")
+      z <- sweep(z, 2L, scale, "*")
+      if (all(is.finite(z))) {
+        d <- as.matrix(stats::dist(z, method = "euclidean"))
+        dimnames(d) <- list(x$curve_ids, x$curve_ids)
+        return(d)
+      }
+    }
+  }
+  # Overflow/underflow edge cases and optional source boundary mode retain
+  # the previous per-pair evaluation and its numerical propagation.
   for (i in seq_len(n)) for (j in seq_len(n)) if (i < j) {
     d[i, j] <- etr_l2_distance(.etr_curve(x, i), .etr_curve(x, j),
                                x$time, dimension_weights,
