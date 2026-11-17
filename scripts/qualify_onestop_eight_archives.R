@@ -67,6 +67,17 @@
   if (inherits(z, "et8_error")) paste0("HASH_ERROR: ", z$message) else as.character(z)
 }
 
+# ZIP manifests contain vectors of entries, including directories and metadata.
+# Use vectorized & (never &&), and skip common AppleDouble/MacOS metadata.
+.et8_supported_members <- function(names0) {
+  if (!is.character(names0)) stop("ZIP member names must be character")
+  !is.na(names0) & nzchar(names0) &
+    !grepl("/$", names0) &
+    !grepl("(^|/)__MACOSX(/|$)", names0, ignore.case = TRUE) &
+    !grepl("(^|/)\\._[^/]*$", names0) &
+    grepl("\\.(csv|tsv|asc)$", names0, ignore.case = TRUE)
+}
+
 .et8_scan_member <- function(zip, member, max_rows = 30000L) {
   ext <- tolower(tools::file_ext(member))
   if (ext == "asc") {
@@ -336,9 +347,7 @@ et8_run_audit <- function(root = Sys.getenv("ET_EIGHT_ARCHIVE_ROOT",
         a$archive_status <- paste("ZIP_LIST_ERROR", listing$message)
       } else {
         names0 <- listing$Name
-        good <- !grepl("/$", names0) &&
-          !grepl("(^|/)__MACOSX(/|$)", names0, ignore.case = TRUE) &&
-          grepl("\\.(csv|tsv|asc)$", names0, ignore.case = TRUE)
+        good <- .et8_supported_members(names0)
         names0 <- names0[good]
         a$valid_members <- length(names0)
         names0 <- head(names0, max_members)
