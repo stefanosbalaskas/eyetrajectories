@@ -93,14 +93,41 @@
   if(!length(z))return(NA_real_)
   as.numeric(gsub("[^0-9]","",z[[1L]]))
 }
+.sci_process_peak_rss <- function() {
+  # Entire-process high-water mark since launch; NOT operation-specific.
+  os<-Sys.info()[["sysname"]]
+  if(identical(os,"Linux")){
+    kib<-.sci_linux_peak_rss_kib()
+    return(list(mib=if(is.finite(kib))kib/1024 else NA_real_,
+                method="linux_proc_VmHWM_RSS_since_process_start"))
+  }
+  if(os %in% c("Windows","Darwin")){
+    if(!requireNamespace("bench",quietly=TRUE))
+      return(list(mib=NA_real_,method="NOT_MEASURED_install_bench"))
+    x<-tryCatch(bench::bench_process_memory(),error=function(e)NULL)
+    if(is.null(x)||!("max" %in% names(x)))
+      return(list(mib=NA_real_,method="NOT_MEASURED_bench_OS_API_ERROR"))
+    peak<-as.numeric(x[["max"]])/1024^2
+    return(list(mib=if(is.finite(peak) && peak>=0)peak else NA_real_,
+      method=if(os=="Windows")"windows_PeakWorkingSetSize_since_process_start"
+             else "macos_rusage_ru_maxrss_since_process_start"))
+  }
+  list(mib=NA_real_,method="NOT_MEASURED_unrecognized_OS")
+}
 .sci_bench_once <- function(fun) {
   # 'peakRAM' estimates max RAM allocated within expression, not peak
   # resident set size. Each configured invocation is a separate repetition.
   if(requireNamespace("peakRAM",quietly=TRUE)){
     p<-peakRAM::peakRAM(fun())
+    value<-as.numeric(p$Peak_RAM_Used_MiB[[1L]])
+    # A macOS run of this benchmark returned 4,798,193 "MiB" for a
+    # 1000-curve input (~2 MiB raw array): obvious unit/GC reporting defect.
+    # Do not silently treat implausible peakRAM output as real allocation.
+    plausible<-is.finite(value)&&value>=0&&value<1e5
     return(list(time=as.numeric(p$Elapsed_Time_sec[[1L]]),
-       expression_peak_MiB=as.numeric(p$Peak_RAM_Used_MiB[[1L]]),
-       memory_method="peakRAM_expression"))
+       expression_peak_MiB=if(plausible)value else NA_real_,
+       memory_method=if(plausible)"peakRAM_expression" else
+         "INVALID_peakRAM_value_units_or_overflow"))
   }
   timed<-system.time(fun())
   list(time=unname(timed[["elapsed"]]),expression_peak_MiB=NA_real_,
@@ -132,6 +159,8 @@ sci_benchmark_multiplatform <- function(
         function_name="etr_pairwise_l2",replicate=NA_integer_,
         elapsed_sec=NA_real_,expression_peak_MiB=NA_real_,
         linux_process_VmHWM_kib=NA_real_,
+        process_peak_RSS_MiB=NA_real_,
+        process_peak_method="NOT_RUN",
         status="NOT_RUN_NOT_ENOUGH_CURVES",memory_method="NOT_RUN")
       next
     }
@@ -143,12 +172,15 @@ sci_benchmark_multiplatform <- function(
       invisible(fun()) # warmup; exclude cold compilation/startup
       for(rep in seq_len(repetitions)){
         result<-.sci_bench_once(fun)
+        rss<-.sci_process_peak_rss()
         rows[[length(rows)+1L]]<-data.frame(
           source=if(real)"real_OneStop_fixation" else "synthetic",
           n_curves=n,n_grid=nt,function_name=f,replicate=rep,
           elapsed_sec=result$time,
           expression_peak_MiB=result$expression_peak_MiB,
           linux_process_VmHWM_kib=.sci_linux_peak_rss_kib(),
+          process_peak_RSS_MiB=rss$mib,
+          process_peak_method=rss$method,
           status="MEASURED",memory_method=result$memory_method)
       }
     }
@@ -171,6 +203,9 @@ sci_benchmark_multiplatform <- function(
         NA_real_ else max(z$expression_peak_MiB,na.rm=TRUE),
       linux_process_VmHWM_kib=if(all(is.na(z$linux_process_VmHWM_kib)))
         NA_real_ else max(z$linux_process_VmHWM_kib,na.rm=TRUE),
+      max_process_peak_RSS_MiB=if(all(is.na(z$process_peak_RSS_MiB)))
+        NA_real_ else max(z$process_peak_RSS_MiB,na.rm=TRUE),
+      process_peak_method=as.character(z$process_peak_method[[1L]]),
       replicates=nrow(z))
   }))
   utils::write.csv(summary,file.path(out,"benchmark_summary.csv"),
@@ -185,10 +220,14 @@ sci_benchmark_multiplatform <- function(
     paste0("Real archive MD5: ",if(real)raw$input_md5 else "NOT_APPLICABLE"),
     "",
     "R-only native functions measured after one warmup with repeated runtimes.",
-    "peakRAM Peak_RAM_Used_MiB reports expression allocation peak, not a",
-    "portable measurement of peak resident process RSS. Linux /proc/self/status",
-    "VmHWM is whole-process high-water RSS since process start, not per-call",
-    "attributable peak. Windows/macOS VmHWM is NOT_MEASURED.",
+    "peakRAM reports expression allocation peak, not process RSS; implausible",
+    "values (e.g., macOS multi-million MiB for a small array) are INVALID and",
+    "written as NA, never accepted as performance evidence.",
+    "Process_peak_RSS_MiB is the WHOLE-PROCESS high-water mark since launch:",
+    "Linux /proc/self/status VmHWM, Windows bench PeakWorkingSetSize,",
+    "macOS bench ru_maxrss. It is NOT attributable to one function call.",
+    "Runs share a process, so maxima may be monotone; memory comparisons",
+    "require isolated child processes per configuration for stronger evidence.",
     "No cross-platform CPU standardization, cold-start timing, competitor",
     "package speed comparison, energy or numerical convergence certification.",
     "Two corpora remain distinct; PoTeC correction is not used as OneStop input.")
