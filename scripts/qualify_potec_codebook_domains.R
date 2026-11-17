@@ -29,7 +29,7 @@ if(is.na(.old_w4))Sys.unsetenv("ET_WAVE4_NO_AUTORUN") else
 
 .p5_norm <- function(v){
   x<-tolower(trimws(as.character(v)))
-  x[x=="bio"] <- "biology"
+  x[!is.na(x)&x=="bio"] <- "biology"
   x[is.na(v)|!(x %in% c("biology","physics"))] <- NA_character_
   x
 }
