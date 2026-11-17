@@ -141,7 +141,26 @@ sci_validate_models <- function(out=tempfile("SCIENCE_MODEL_ORACLES_"),
           status=if(all(is.finite(fitted$fitted)))"PASS" else "FAIL",
           observed=mean(fitted$fitted^2),reference=NA_real_,
           tolerance=NA_real_,
-          caveat="Known truth available, but no universal accuracy criterion asserted")
+          caveat="Finite reconstructed sparse curves, not a coverage test")
+        # Separate estimator accuracy from backend parity. Compare the fitted
+        # conditional-expectation curves to an INDEPENDENT analytic generator.
+        truth <- matrix(0,n,length(fitted$time))
+        for(i in seq_len(n))
+          truth[i,] <- 1+sin(pi*fitted$time)+xi[i]*cos(2*pi*fitted$time)
+        sparse_rmse <- sqrt(mean((fitted$fitted-truth)^2))
+        mean_only <- matrix(rep(1+sin(pi*fitted$time),each=n),
+                            nrow=n,ncol=length(fitted$time))
+        baseline_rmse <- sqrt(mean((mean_only-truth)^2))
+        rows[[length(rows)+1L]] <- list(check="sparse_PACE_independent_known_truth_RMSE",
+          status="MEASURED_NOT_CERTIFIED",observed=sparse_rmse,
+          reference=baseline_rmse,tolerance=NA_real_,
+          caveat="Sparse Gaussian one-factor process; benchmark versus known generator and mean-only baseline")
+        # This is sign-invariant and diagnostic, never a universal quality PASS.
+        abs_score_corr <- abs(stats::cor(as.vector(p$model$xiEst[,1L]),xi))
+        rows[[length(rows)+1L]] <- list(check="sparse_PACE_known_truth_score_correlation",
+          status="MEASURED_NOT_CERTIFIED",observed=abs_score_corr,
+          reference=1,tolerance=NA_real_,
+          caveat="Absolute correlation to independent latent score, one-factor process")
       }
     }
   } else rows[[length(rows)+1L]]<-list(check="sparse_PACE_fdapace_backend",
