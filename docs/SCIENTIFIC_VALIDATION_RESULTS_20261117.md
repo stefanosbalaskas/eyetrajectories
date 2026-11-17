@@ -1,5 +1,7 @@
 # Four-track scientific qualification — executed evidence (17 November 2026)
 
+> **Author-side full real-source audit (17 November 2026, 23:21–23:33 EET):** All 78 original PoTeC ASC files were read to EOF: 283,565,421 lines, 914,776 correctly parsed EFIX events, and no malformed EFIX durations or reverse sample timestamps. Event count imbalances (20 unmatched fixation starts, 50 extra sentence-stop markers) need trial-aware follow-up; raw-to-uncorrected fixation correspondence remains OPEN. Separately, real OneStop benchmarks on installed **v0.4.3** measured the *older scalar L² loop*, **not** the later vectorized development implementation. Complete de-identified evidence: [local ASC and 0.4.3 qualification](LOCAL_FULL_ASC_043_QUALIFICATION_20261117.md).
+
 ## Provenance
 
 This page records executed CI results rather than planned work. The implementation was merged in PRs [#201](https://github.com/stefanosbalaskas/eyetrajectories/pull/201), [#202](https://github.com/stefanosbalaskas/eyetrajectories/pull/202), and [#203](https://github.com/stefanosbalaskas/eyetrajectories/pull/203).
