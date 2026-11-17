@@ -379,6 +379,14 @@ et8_run_audit <- function(root = Sys.getenv("ET_EIGHT_ARCHIVE_ROOT",
                  "; CURVES=", nstatus$curves, "; REASON=", nstatus$reason)
           }
         }
+        # ASC sources are event-line data, not missing archives. Preserve
+        # NOT_RUN for the coordinate-only contract, but report the actual
+        # verified intake rather than the misleading missing-file fallback.
+        if (identical(nstatus$status, "NOT_RUN") &&
+            any(grepl("\\.asc$", names0, ignore.case = TRUE)) &&
+            a$sampled_members > 0L) {
+          nstatus$reason <- "ASC event-line members sampled; L2/FPCA coordinate tests not applicable"
+        }
         if (a$sampled_members < a$valid_members) {
           note("  MORE_MEMBERS_EXIST=", a$valid_members - a$sampled_members,
                " (not inspected)")
