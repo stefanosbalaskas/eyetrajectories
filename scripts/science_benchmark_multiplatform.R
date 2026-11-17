@@ -93,16 +93,16 @@
   if(!length(z))return(NA_real_)
   as.numeric(gsub("[^0-9]","",z[[1L]]))
 }
-.sci_bench_once <- function(expr) {
+.sci_bench_once <- function(fun) {
   # 'peakRAM' estimates max RAM allocated within expression, not peak
   # resident set size. Each configured invocation is a separate repetition.
   if(requireNamespace("peakRAM",quietly=TRUE)){
-    p<-peakRAM::peakRAM(eval(expr,envir=parent.frame()))
+    p<-peakRAM::peakRAM(fun())
     return(list(time=as.numeric(p$Elapsed_Time_sec[[1L]]),
        expression_peak_MiB=as.numeric(p$Peak_RAM_Used_MiB[[1L]]),
        memory_method="peakRAM_expression"))
   }
-  timed<-system.time(eval(expr,envir=parent.frame()))
+  timed<-system.time(fun())
   list(time=unname(timed[["elapsed"]]),expression_peak_MiB=NA_real_,
        memory_method="NOT_MEASURED_peakRAM_not_installed")
 }
@@ -142,7 +142,7 @@ sci_benchmark_multiplatform <- function(
           eyetrajectories::etr_fit_mfpca(obj,n_components=2L))
       invisible(fun()) # warmup; exclude cold compilation/startup
       for(rep in seq_len(repetitions)){
-        result<-.sci_bench_once(substitute(fun()))
+        result<-.sci_bench_once(fun)
         rows[[length(rows)+1L]]<-data.frame(
           source=if(real)"real_OneStop_fixation" else "synthetic",
           n_curves=n,n_grid=nt,function_name=f,replicate=rep,
