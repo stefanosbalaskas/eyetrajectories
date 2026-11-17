@@ -1,5 +1,7 @@
 # Real-data empirical qualification evidence — 17 November 2026
 
+> **Additional synthetic qualification (17 November 2026):** [Four-track executed evidence](SCIENTIFIC_VALIDATION_RESULTS_20261117.md) includes independent algebraic FPCA/regression checks, one-factor sparse PACE recovery, 400 Monte Carlo coverage experiments, and synthetic three-OS performance/memory benchmarks. These data are from development main, and do not establish full raw PoTeC ASC reconstruction or archived-v0.4.3 scientific certification.
+
 **Status:** Author-side real-data evidence reviewed; limited numerical, structural and codebook source-consistency validations completed. **Not a general scientific validation certificate.**
 
 ## Distinct corpora and sources
