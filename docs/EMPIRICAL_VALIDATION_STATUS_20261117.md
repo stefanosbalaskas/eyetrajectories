@@ -1,5 +1,7 @@
 # Real-data empirical qualification evidence — 17 November 2026
 
+> **Author-side full real-source audit (17 November 2026, 23:21–23:33 EET):** All 78 original PoTeC ASC files were read to EOF: 283,565,421 lines, 914,776 correctly parsed EFIX events, and no malformed EFIX durations or reverse sample timestamps. Event count imbalances (20 unmatched fixation starts, 50 extra sentence-stop markers) need trial-aware follow-up; raw-to-uncorrected fixation correspondence remains OPEN. Separately, real OneStop benchmarks on installed **v0.4.3** measured the *older scalar L² loop*, **not** the later vectorized development implementation. Complete de-identified evidence: [local ASC and 0.4.3 qualification](LOCAL_FULL_ASC_043_QUALIFICATION_20261117.md).
+
 > **Additional synthetic qualification (17 November 2026):** [Four-track executed evidence](SCIENTIFIC_VALIDATION_RESULTS_20261117.md) includes independent algebraic FPCA/regression checks, one-factor sparse PACE recovery, 400 Monte Carlo coverage experiments, and synthetic three-OS performance/memory benchmarks. These data are from development main, and do not establish full raw PoTeC ASC reconstruction or archived-v0.4.3 scientific certification.
 
 **Status:** Author-side real-data evidence reviewed; limited numerical, structural and codebook source-consistency validations completed. **Not a general scientific validation certificate.**
