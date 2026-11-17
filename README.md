@@ -133,7 +133,7 @@ Two distinct real eye-tracking resources are used for evidence, with **no assume
 
 PoTeC source-label audits found exact (trial, fixation_index) correspondence across 404,420 recorded fixations and seven matching shared fields. The single raw-label difference is the documented equivalent spellings `bio` versus `biology` of the categorical `text_domain`; the [official PoTeC codebook](https://github.com/DiLi-Lab/PoTeC/blob/main/CODEBOOK.md) reproduces precisely the observed 198,985 unequal raw cells. The [R-only codebook audit](scripts/qualify_potec_codebook_domains.R) tests full local record-wise canonical equality while leaving source ZIPs unchanged.
 
-Read the [corpus attribution and official-label evidence](docs/POTEC_CODEBOOK_RECONCILIATION.md). These are **source-consistency and selected computational numerical tests, not a certification of gaze calibration, event-detection truth or all package inference methods**.
+The **17 November 2026 author-side Wave 5 run passed** full 900-file / 404,420-record codebook-anchored domain-label reconciliation after in-memory `bio` → `biology` normalization. All nine published raw category totals matched exactly, with zero unmatched records, unknown labels or remaining canonical differences. See the [Wave 5 evidence](docs/POTEC_CODEBOOK_RECONCILIATION.md) and [real-data qualification matrix](docs/EMPIRICAL_VALIDATION_STATUS_20261117.md). These are **source-consistency and selected computational numerical tests, not certification of gaze calibration, event-detection ground truth or all package inference methods**.
 
 ## Qualification and transparency
 
