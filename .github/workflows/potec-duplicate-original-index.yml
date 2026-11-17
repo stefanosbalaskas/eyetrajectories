@@ -1,0 +1,38 @@
+name: PoTeC correction-stage duplicate-key diagnostics
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/diagnose_potec_duplicate_original_keys.R'
+      - 'scripts/test_potec_duplicate_original_keys.R'
+      - 'docs/POTEC_REAL_SOURCE_AND_L2_RESULTS_20261118.md'
+      - '.github/workflows/potec-duplicate-original-index.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/diagnose_potec_duplicate_original_keys.R'
+      - 'scripts/test_potec_duplicate_original_keys.R'
+      - '.github/workflows/potec-duplicate-original-index.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic-duplicate-key-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - name: Install ZIP fixture utility
+        run: sudo apt-get update -qq && sudo apt-get install -y zip
+      - name: Parse and execute synthetic fail-closed diagnostic tests
+        shell: Rscript {0}
+        run: |
+          parse(file="scripts/diagnose_potec_duplicate_original_keys.R")
+          parse(file="scripts/test_potec_duplicate_original_keys.R")
+          source("scripts/test_potec_duplicate_original_keys.R")
