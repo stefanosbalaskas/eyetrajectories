@@ -106,6 +106,36 @@ etr_pairwise_l2 <- function(x, dimension_weights = NULL,
   etr_validate(x, require_complete = TRUE)
   n <- dim(x$values)[1]
   d <- matrix(0, n, n, dimnames = list(x$curve_ids, x$curve_ids))
+
+  # Preserve the original n=1 short circuit, including optional weights:
+  # no pairwise evaluation means no per-channel weight validation.
+  if (n < 2L) return(d)
+
+  # Only the strict, finite native-R path is mathematically reducible to
+  # Euclidean distance in a centered, quadrature-scaled vector space.
+  # The frozen Python-boundary branch has intentionally different coercion
+  # and nonfinite-weight semantics; it MUST keep the original scalar path.
+  if (!isTRUE(python_boundary_mode)) {
+    nt <- length(x$time)
+    nd <- dim(x$values)[3L]
+    w <- etr_trapezoid_weights(x$time)
+    dw <- .etr_dimweights(nd, dimension_weights)
+    scale <- rep(sqrt(w), times = nd) * rep(sqrt(dw), each = nt)
+    if (all(is.finite(scale))) {
+      z <- matrix(x$values, nrow = n)
+      # Center before scaling to avoid avoidable common-offset overflow.
+      z <- sweep(z, 2L, z[1L, ], "-")
+      z <- sweep(z, 2L, scale, "*")
+      if (all(is.finite(z))) {
+        fast <- as.matrix(stats::dist(z, method = "euclidean"))
+        dimnames(fast) <- list(x$curve_ids, x$curve_ids)
+        return(fast)
+      }
+    }
+  }
+
+  # Exact archived v0.4.3 algorithm remains the fallback for source-boundary
+  # coercion and numeric overflow: do not alter its original semantics.
   for (i in seq_len(n)) for (j in seq_len(n)) if (i < j) {
     d[i, j] <- etr_l2_distance(.etr_curve(x, i), .etr_curve(x, j),
                                x$time, dimension_weights,
