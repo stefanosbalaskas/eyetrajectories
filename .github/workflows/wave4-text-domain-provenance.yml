@@ -1,0 +1,39 @@
+name: Wave 4 text_domain provenance synthetic QA
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/qualify_wave4_text_domain_provenance.R'
+      - 'scripts/test_wave4_text_domain_provenance.R'
+      - '.github/workflows/wave4-text-domain-provenance.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/qualify_wave4_text_domain_provenance.R'
+      - 'scripts/test_wave4_text_domain_provenance.R'
+      - '.github/workflows/wave4-text-domain-provenance.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  wave4-synthetic-source-mapping:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - name: Install ZIP executable
+        shell: bash
+        run: sudo apt-get update -qq && sudo apt-get install -y zip
+      - name: Check syntax and read-only synthetic evidence contracts
+        shell: Rscript {0}
+        run: |
+          parse(file='scripts/qualify_wave4_text_domain_provenance.R')
+          parse(file='scripts/test_wave4_text_domain_provenance.R')
+          source('scripts/test_wave4_text_domain_provenance.R')
+          cat('WAVE4_DOMAIN_PROVENANCE_CI_PASS\n')
