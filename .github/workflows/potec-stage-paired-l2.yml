@@ -1,0 +1,61 @@
+name: PoTeC correction-stage and controlled v0.4.3 L2 comparison
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/validate_potec_uncorrected_stage.R'
+      - 'scripts/benchmark_paired_l2_versions.R'
+      - 'scripts/test_potec_uncorrected_and_paired_l2.R'
+      - '.github/workflows/potec-stage-paired-l2.yml'
+      - 'docs/POTEC_STAGE_AND_CONTROLLED_L2_PROTOCOL.md'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/validate_potec_uncorrected_stage.R'
+      - 'scripts/benchmark_paired_l2_versions.R'
+      - 'scripts/test_potec_uncorrected_and_paired_l2.R'
+      - '.github/workflows/potec-stage-paired-l2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  independent-stage-and-sourced-algorithm:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      RETICULATE_PYTHON: 'NA'
+      ET_PAIRED_L2_NO_AUTORUN: 'true'
+      ET_POTEC_UNCORRECTED_NO_AUTORUN: 'true'
+      ET_POTEC_FETCH_UNCORRECTED: 'false'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - name: Install R loader and ZIP fixture utility
+        shell: bash
+        run: sudo apt-get update -qq && sudo apt-get install -y zip
+      - name: Install R test dependencies
+        shell: Rscript {0}
+        run: |
+          install.packages(c("pkgload","reticulate"),
+             repos=Sys.getenv("RSPM","https://cloud.r-project.org"))
+      - name: Source syntax and synthetic full-pipeline qualification
+        shell: Rscript {0}
+        run: |
+          for (name in c("validate_potec_uncorrected_stage.R",
+                         "benchmark_paired_l2_versions.R",
+                         "test_potec_uncorrected_and_paired_l2.R"))
+            parse(file=file.path("scripts",name))
+          pkgload::load_all(".",quiet=TRUE)
+          source("scripts/test_potec_uncorrected_and_paired_l2.R")
+      - name: Authoritative release tag presence and exact archived source
+        shell: bash
+        run: |
+          git rev-parse v0.4.3:R/native-distances.R
+          git rev-parse 8920ec907677b994078720bdb5ecd2afbcc832bb:R/native-distances.R
