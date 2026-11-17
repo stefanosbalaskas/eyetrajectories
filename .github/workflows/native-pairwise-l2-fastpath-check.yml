@@ -49,7 +49,7 @@ jobs:
         run: |
           testthat::test_local(
             ".",
-            filter = "native-pairwise-l2-fastpath",
+            filter = "native-(core|pairwise-l2-fastpath|pairwise-distance-source-options|distance-source-boundaries)",
             reporter = "summary",
             stop_on_failure = TRUE
           )
