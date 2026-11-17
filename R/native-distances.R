@@ -41,8 +41,34 @@ etr_l2_distance <- function(a, b, time, dimension_weights = NULL) {
 #' @export
 etr_pairwise_l2 <- function(x, dimension_weights = NULL) {
   etr_validate(x, require_complete = TRUE)
-  n <- dim(x$values)[1]
+  n <- dim(x$values)[1L]
   d <- matrix(0, n, n, dimnames = list(x$curve_ids, x$curve_ids))
+  # Preserve the established single-curve contract: no pairwise evaluation,
+  # hence no validation of optional weights.
+  if (n < 2L) return(d)
+
+  nt <- length(x$time)
+  nd <- dim(x$values)[3L]
+  w <- etr_trapezoid_weights(x$time)
+  dw <- .etr_dimweights(nd, dimension_weights)
+  # Array layout is [curve, time, channel]. Matrix columns preserve this
+  # order as [channel 1 time points, channel 2 time points, ...].
+  # The weighted L2 norm is exactly the Euclidean distance after scaling.
+  scale <- rep(sqrt(w), times = nd) * rep(sqrt(dw), each = nt)
+  if (all(is.finite(scale))) {
+    z <- matrix(x$values, nrow = n)
+    # Center before scaling to avoid avoidable overflow from large shared
+    # coordinate offsets, without changing pairwise Euclidean distances.
+    z <- sweep(z, 2L, z[1L, ], "-")
+    z <- sweep(z, 2L, scale, "*")
+    if (all(is.finite(z))) {
+      d <- as.matrix(stats::dist(z, method = "euclidean"))
+      dimnames(d) <- list(x$curve_ids, x$curve_ids)
+      return(d)
+    }
+  }
+
+  # Preserve the existing scalar calculation for numerically unsafe cases.
   for (i in seq_len(n)) for (j in seq_len(n)) if (i < j) {
     d[i, j] <- etr_l2_distance(.etr_curve(x, i), .etr_curve(x, j),
                                x$time, dimension_weights)

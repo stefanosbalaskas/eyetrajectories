@@ -75,6 +75,7 @@ jobs:
           test -s website/scripts/build_research_portal.cjs
           test -s website/scripts/test_research_portal.cjs
           test -s website/SITE_RESEARCH_PORTAL.md
+          test -s website/SITE_PERFORMANCE.md
           test -s pkg/pkgdown/index.md
           test -s pkg/pkgdown/extra.css
           test -s pkg/SITE_VALIDATION.md
@@ -126,6 +127,7 @@ jobs:
           stopifnot(grepl('10.5281/zenodo.24288857', home, fixed=TRUE))
           stopifnot(grepl('href="plot-atlas.html"', home, fixed=TRUE))
           stopifnot(grepl('href="research-portal.html"', home, fixed=TRUE))
+          stopifnot(grepl('href="SITE_PERFORMANCE.html"', home, fixed=TRUE))
           stopifnot(grepl('src="trajectory-explorer.html"', home, fixed=TRUE))
           stopifnot(!grepl('class="sourceCode"', home, fixed=TRUE))
           stopifnot(grepl('class="et-interactive-showcase"', home, fixed=TRUE))
@@ -149,7 +151,7 @@ jobs:
             'site/SITE_GALLERY.html', 'site/SITE_INTERACTIVE.html',
             'site/SITE_BRANDING.html', 'site/SITE_CITATION.html',
             'site/SITE_PLOTTING_ATLAS.html', 'site/plot-atlas.html',
-            'site/SITE_RESEARCH_PORTAL.html',
+            'site/SITE_RESEARCH_PORTAL.html', 'site/SITE_PERFORMANCE.html',
             'site/research-portal.html',
             'site/research-portal.css', 'site/research-portal.js',
             'site/branding/eyetrajectories-logo-240.png',
