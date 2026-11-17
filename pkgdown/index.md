@@ -35,6 +35,13 @@
 <p>Inspect a local eye-tracking CSV without uploading it, choose methods by observation grid, estimand and participant hierarchy, and explore ten exported native-R workflow routes alongside real figures, source references and scientific limitations. No browser-side model fitting or automatic inference claims.</p></div>
 <a href="research-portal.html" class="et-button et-button-primary">Open Research Workflow Portal →</a>
 </section>
+<section class="et-atlas-spotlight" aria-labelledby="et-performance-spotlight-heading">
+<div><p class="et-eyebrow">NEW · VERIFIED REAL-DATA PERFORMANCE BENCHMARK</p>
+<h2 id="et-performance-spotlight-heading">Pairwise trajectory distances, 104–215× faster in the tested configurations.</h2>
+<p>On real OneStop fixation trajectories, the R-only weighted L² distance optimization reduced the 1,000-curve, 128-point median from 31.91 s to 0.305 s, with 21/21 declared numerical checks passing. Explore all six configurations, the numerical safeguards, and the release-version boundary. This is a development-branch benchmark, not a change to the archived v0.4.3 software.</p></div>
+<a href="SITE_PERFORMANCE.html" class="et-button et-button-primary">Read the benchmark and limitations →</a>
+</section>
+
 <section class="et-atlas-spotlight" aria-labelledby="et-atlas-spotlight-heading">
 <div><p class="et-eyebrow">NEW · INTERACTIVE R PLOTTING ATLAS</p>
 <h2 id="et-atlas-spotlight-heading">Find a plotting function. See its real output.</h2>
