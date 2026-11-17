@@ -135,6 +135,10 @@ PoTeC source-label audits found exact (trial, fixation_index) correspondence acr
 
 The **17 November 2026 author-side Wave 5 run passed** full 900-file / 404,420-record codebook-anchored domain-label reconciliation after in-memory `bio` → `biology` normalization. All nine published raw category totals matched exactly, with zero unmatched records, unknown labels or remaining canonical differences. See the [Wave 5 evidence](docs/POTEC_CODEBOOK_RECONCILIATION.md) and [real-data qualification matrix](docs/EMPIRICAL_VALIDATION_STATUS_20261117.md). These are **source-consistency and selected computational numerical tests, not certification of gaze calibration, event-detection ground truth or all package inference methods**.
 
+## Executed scientific validation evidence (November 2026)
+
+The new [four-track scientific-qualification results](docs/SCIENTIFIC_VALIDATION_RESULTS_20261117.md) report synthetic independent FPCA/regression oracles, optional sparse PACE known-truth recovery, 400 participant-cluster confidence-band Monte Carlo experiments, and synthetic benchmarking across Windows, Ubuntu and macOS. Results are backed by [five successful qualification jobs](https://github.com/stefanosbalaskas/eyetrajectories/actions/runs/44167385889) and separate deep inference/sparse evidence. **PoTeC raw ASC-to-uncorrected fixation event matching and external measurement truth remain unverified.** These new checks were executed on development main, not on the frozen 0.4.3 release.
+
 ## Qualification and transparency
 
 The exact 0.4.3 source archive passed [six GitHub cross-platform R CMD check qualification jobs](https://github.com/stefanosbalaskas/eyetrajectories/actions/runs/43862845556) (Windows release and R-devel, macOS release, Linux release, Linux previous release, and Linux R-devel). A further maintainer-run Windows `R CMD check --as-cran` returned **0 errors, 0 warnings, 1 NOTE** ("New submission").
