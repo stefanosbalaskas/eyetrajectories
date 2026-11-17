@@ -42,7 +42,7 @@ jobs:
       - name: Install R test dependencies
         shell: Rscript {0}
         run: |
-          install.packages(c("pkgload", "reticulate", "peakRAM"),
+          install.packages(c("pkgload", "reticulate", "peakRAM", "bench"),
             repos = Sys.getenv("RSPM", "https://cloud.r-project.org"))
       - name: Syntax and test synthetic validation contracts
         shell: Rscript {0}
@@ -60,9 +60,14 @@ jobs:
           Sys.setenv(ET_SCI_BENCH_NO_AUTORUN="true")
           pkgload::load_all(".",quiet=TRUE)
           source("scripts/science_benchmark_multiplatform.R")
-          sci_benchmark_multiplatform(source_mode="synthetic",
+          df <- sci_benchmark_multiplatform(source_mode="synthetic",
             sizes=c(250L,500L,1000L),grids=c(64L,128L),
             repetitions=2L,out="validation_artifacts")
+          stopifnot(nrow(df)==12L,
+                    all(is.finite(df$max_process_peak_RSS_MiB)))
+          print(df[, c("n_curves","n_grid","function_name",
+                     "median_sec","max_expression_peak_MiB",
+                     "max_process_peak_RSS_MiB","process_peak_method")])
       - uses: actions/upload-artifact@v4
         if: always()
         with:
