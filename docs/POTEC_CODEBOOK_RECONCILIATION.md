@@ -1,5 +1,20 @@
 # PoTeC source-author codebook reconciliation (Wave 5, 17 November 2026)
 
+## Executed Wave 5: source-consistency qualification complete
+
+The author-side **17 November 2026, 21:36:54 EET** local R run reported `POTEC_CODEBOOK_SOURCE_LABEL_RECONCILIATION_PASS`. Its four uploaded outputs were independently reopened and cross-checked:
+
+- **900/900** TSV member triplets `READ`, with no row caps or unsupported domain labels.
+- **404,420** matched fixation records; no key losses or discrepancies in canonical domain labels.
+- **198,985** raw `text_domain` label differences, all resolved after in-memory `bio` → `biology` canonicalization.
+- **9/9** exact author-codebook raw-frequency matches, **0** filename biology/physics classification errors.
+- **450** biology text units (204,699 records) and **450** physics text units (199,721 records).
+- Raw ZIP files remain unchanged; this is an author-run source consistency check, **not** an independently certified validation of gaze calibration, event truth or all package inference.
+
+These findings upgrade the **source-label reconciliation** from a prepared protocol to a **documented local PASS**. See the [full empirical validation status matrix](EMPIRICAL_VALIDATION_STATUS_20261117.md). The detailed earlier protocol below is preserved for reproducibility.
+
+The PoTeC README (reviewed 17 November 2026) also warns that surprisal estimates were updated on **17 June 2026**. Researchers using linguistic surprisal predictors should check their data version independently; the present domain-label validation does not establish surprisal currency.
+
 ## Dataset provenance: critical distinction
 
 The 900-file families named scanpaths.zip, scanpaths_merged.zip and fixations.zip are the **Potsdam Textbook Corpus (PoTeC)**, not the OneStop corpus used in the separate paragraph-level fixation CSV benchmarks.
