@@ -1,5 +1,7 @@
 # OneStop: eight-archive qualification protocol (R only)
 
+> **Corpus attribution and validation update (17 November 2026):** The two paragraph fixation CSVs and their interest-area exports are from **OneStop**; the 900-file `scanpaths`, `scanpaths_merged` and `fixations` TSV families and the related ASC recordings are from the independent **Potsdam Textbook Corpus (PoTeC)**. The 198,985 PoTeC raw label mismatches are accounted for by the source authors' documented `bio` versus `biology` spellings. This page records an earlier stage of the protocol, not the latest conclusion. See [PoTeC codebook reconciliation](POTEC_CODEBOOK_RECONCILIATION.md) and the [official authors' codebook](https://github.com/DiLi-Lab/PoTeC/blob/main/CODEBOOK.md). No OneStop–PoTeC participant join is justified.
+
 **Status (17 November 2026): validation pipeline prepared; seven source archives not yet independently executed here.** No result in this protocol constitutes completed scientific certification.
 
 ## Scope and evidence levels
