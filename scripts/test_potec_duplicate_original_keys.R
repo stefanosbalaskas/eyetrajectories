@@ -1,0 +1,61 @@
+# Synthetic-only regression for ambiguous original-index correction stages.
+# No original participant IDs, trial values or gaze samples are committed.
+Sys.setenv(ET_POTEC_DUP_NO_AUTORUN="true",
+           ET_POTEC_UNCORRECTED_NO_AUTORUN="true")
+source("scripts/diagnose_potec_duplicate_original_keys.R",local=FALSE)
+a<-list(status="READ",data=data.frame(
+  trial=c("t1","t1","t1","t1"),
+  fixation_index=c("1","2","3","4"),
+  fixation_duration=c("100","150","70","80"),
+  aoi=c("2","3","4","5"),stringsAsFactors=FALSE))
+b<-list(status="READ",data=data.frame(
+  trial=c("t1","t1","t1","t1"),
+  original_fixation_index=c("1","2","2","4"),
+  fixation_duration=c("100","150","151","80"),
+  aoi=c("2","33","34","5"),stringsAsFactors=FALSE))
+s<-.pd_unit_evidence(a,b,182L)
+stopifnot(s$status=="PARTIAL_UNAMBIGUOUS_ONLY",
+          s$source_duplicate_groups==0L,
+          s$corrected_duplicate_groups==1L,
+          s$corrected_duplicate_extra_rows==1L,
+          s$corrected_rows_in_ambiguous_keys==2L,
+          s$source_rows_in_ambiguous_keys==1L,
+          s$strictly_unique_matched_keys==2L,
+          s$strictly_unique_source_only==1L,
+          s$strictly_unique_corrected_only==0L,
+          s$unique_key_duration_compared==2L,
+          s$unique_key_duration_differences==0L,
+          s$unique_key_AOI_differences==0L)
+bx<-b
+bx$data$original_fixation_index<-c("1","2","3","4")
+stopifnot(.pd_unit_evidence(a,bx,2L)$status=="ALL_KEYS_UNIQUE")
+ax<-a
+ax$data$fixation_index<-c("1","2","2","4")
+stopifnot(.pd_unit_evidence(ax,bx,3L)$source_duplicate_groups==1L,
+          .pd_unit_evidence(ax,bx,3L)$strictly_unique_matched_keys==2L)
+if(!nzchar(Sys.which("zip")))stop("zip executable required for CI fixtures")
+root<-tempfile("potec_key_fixture_");dir.create(root)
+for(folder in c("fixations","fixations_uncorrected"))
+  dir.create(file.path(root,folder))
+utils::write.table(a$data,file.path(root,"fixations_uncorrected",
+  "reader1_b0_uncorrected_fixations.tsv"),
+  sep="\t",row.names=FALSE,quote=FALSE)
+utils::write.table(b$data,file.path(root,"fixations",
+  "reader1_b0_fixations.tsv"),sep="\t",row.names=FALSE,quote=FALSE)
+zip_folder<-function(folder,zipfile){
+  old<-getwd();setwd(root);on.exit(setwd(old),add=TRUE)
+  utils::zip(zipfile,paste0(folder,"/",list.files(folder)),flags="-q")
+}
+zip_folder("fixations","fixations.zip")
+zip_folder("fixations_uncorrected","fixations_uncorrected.zip")
+files<-list.files(root,pattern="\\.zip$",full.names=TRUE)
+before<-tools::md5sum(files)
+x<-potec_diagnose_duplicate_stage(root,ordinals=1L,max_rows=100L)
+stopifnot(identical(before,tools::md5sum(files)),
+          nrow(x$diagnostics)==1L,
+          x$diagnostics$corrected_duplicate_groups==1L,
+          x$diagnostics$strictly_unique_matched_keys==2L,
+          file.exists(file.path(x$output,"AMBIGUITY_DIAGNOSTIC.md")),
+          !any(grepl("reader1",readLines(file.path(x$output,"AMBIGUITY_DIAGNOSTIC.md")),
+                     fixed=TRUE)))
+cat("POTEC_DUPLICATE_ORIGINAL_INDEX_DIAGNOSTIC_SYNTHETIC_PASS\n")
