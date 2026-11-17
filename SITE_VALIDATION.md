@@ -25,6 +25,14 @@ The exact 0.4.3 archive passed [six cross-platform package qualification jobs](h
 
 The published Python package and the development R package have distinct release histories. The stable R package release on GitHub is **not yet a CRAN publication**.
 
+## Measured real-data software performance (17 November 2026)
+
+The R-only OneStop repeated-reading fixation-level benchmark of the `etr_pairwise_l2()` optimization passed all 21 declared numerical checks in both original and optimized runs. Six cases with 250/500/1,000 trajectories and 64/128 interpolated normalized-time points showed 104.6×–214.9× observed L² speedups. At 1,000 curves and 128 points, the original 31.91-second median fell to 0.305 seconds. These are author-side measurements on specified hardware and data, not an independently replicated general benchmark. The source code and exact-head CI qualification are documented in [merged PR #191](https://github.com/stefanosbalaskas/eyetrajectories/pull/191).
+
+The optimized source was developed *after* the v0.4.3 archive was frozen. The archived release and DOI are unchanged. The benchmark used real fixations interpolated to standardized comparison grids, **not raw 1,000 Hz gaze samples**, and excluded preprocessing time. The validation did not measure process peak RSS, inference calibration or performance against competing implementations.
+
+[Read the technical benchmark article](SITE_PERFORMANCE.html).
+
 ## Reproducible reporting checklist
 
 For substantive methods, record: input schema, sample/time units, preprocessing, estimand, estimation backend, software commit and versions, uncertainty construction, participant/trial clustering, simulation or external validation, and known limits. Report negative or incomplete validation findings rather than silently broadening claims.
