@@ -127,6 +127,14 @@ Both benchmark runs passed 21/21 defined numerical checks; the largest optimized
 
 Read the [technical benchmark report](docs/onestop-pairwise-l2-performance-2026-11-17.md) and [PR #191 qualification record](https://github.com/stefanosbalaskas/eyetrajectories/pull/191).
 
+## Independent empirical corpora: OneStop and PoTeC
+
+Two distinct real eye-tracking resources are used for evidence, with **no assumed shared participant IDs**. The OneStop paragraph-level fixation CSVs supported selected 64-curve FPCA/L² numerical checks and a separate 1,000-trajectory L² scaling benchmark. The 900 paired scanpath/merged-scanpath/fixation TSV recordings come instead from the **[Potsdam Textbook Corpus (PoTeC)](https://github.com/DiLi-Lab/PoTeC)**, by [Jakobi et al. (2025)](https://doi.org/10.3758/s13428-024-02536-8). PoTeC has 75 readers × 12 texts.
+
+PoTeC source-label audits found exact (trial, fixation_index) correspondence across 404,420 recorded fixations and seven matching shared fields. The single raw-label difference is the documented equivalent spellings `bio` versus `biology` of the categorical `text_domain`; the [official PoTeC codebook](https://github.com/DiLi-Lab/PoTeC/blob/main/CODEBOOK.md) reproduces precisely the observed 198,985 unequal raw cells. The [R-only codebook audit](scripts/qualify_potec_codebook_domains.R) tests full local record-wise canonical equality while leaving source ZIPs unchanged.
+
+Read the [corpus attribution and official-label evidence](docs/POTEC_CODEBOOK_RECONCILIATION.md). These are **source-consistency and selected computational numerical tests, not a certification of gaze calibration, event-detection truth or all package inference methods**.
+
 ## Qualification and transparency
 
 The exact 0.4.3 source archive passed [six GitHub cross-platform R CMD check qualification jobs](https://github.com/stefanosbalaskas/eyetrajectories/actions/runs/43862845556) (Windows release and R-devel, macOS release, Linux release, Linux previous release, and Linux R-devel). A further maintainer-run Windows `R CMD check --as-cran` returned **0 errors, 0 warnings, 1 NOTE** ("New submission").
