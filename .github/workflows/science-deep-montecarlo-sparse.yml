@@ -1,0 +1,92 @@
+name: Deeper inference calibration and sparse PACE scientific evidence
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/science_validate_models.R'
+      - '.github/workflows/science-deep-montecarlo-sparse.yml'
+      - 'docs/SCIENTIFIC_VALIDATION_FOUR_TRACKS.md'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/science_validate_models.R'
+      - '.github/workflows/science-deep-montecarlo-sparse.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  known-truth-inference-scenarios:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      RETICULATE_PYTHON: 'NA'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - name: Install source loading dependencies
+        shell: Rscript {0}
+        run: |
+          install.packages(c("pkgload","reticulate"),
+            repos=Sys.getenv("RSPM","https://cloud.r-project.org"))
+      - name: Run 100x4 Monte Carlo with 199 participant-cluster draws
+        shell: Rscript {0}
+        run: |
+          Sys.setenv(ET_SCI_MC_NO_AUTORUN="true")
+          pkgload::load_all(".",quiet=TRUE)
+          source("scripts/science_inference_calibration.R")
+          result <- sci_calibrate_inference(out="calibration_artifacts",
+            repetitions=100L,B=199L,n_subjects=30L,seed=8102L)
+          print(result)
+          stopifnot(nrow(result)==4L,all(result$repetitions==100L),
+                    all(is.finite(result$simultaneous_coverage)),
+                    all(result$simultaneous_low<=result$simultaneous_coverage),
+                    all(result$simultaneous_high>=result$simultaneous_coverage))
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mc-coverage-100-replications
+          path: calibration_artifacts/
+          if-no-files-found: ignore
+          retention-days: 60
+
+  sparse-fdapace-reference:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      RETICULATE_PYTHON: 'NA'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - name: Install native sparse estimation and package dependencies
+        shell: Rscript {0}
+        run: |
+          install.packages(c("pkgload","reticulate","fdapace"),
+            repos=Sys.getenv("RSPM","https://cloud.r-project.org"))
+      - name: Execute independent analytic truth and backend parity
+        shell: Rscript {0}
+        run: |
+          Sys.setenv(ET_SCI_MODEL_NO_AUTORUN="true")
+          pkgload::load_all(".",quiet=TRUE)
+          source("scripts/science_validate_models.R")
+          stopifnot(requireNamespace("fdapace",quietly=TRUE))
+          z <- sci_validate_models(out="sparse_artifacts",run_sparse=TRUE)
+          print(z)
+          stopifnot(!any(z$status %in% c("ERROR","FAIL")),
+                    sum(z$check=="sparse_PACE_fdapace_adapter_parity" &
+                        z$status=="PASS")==1L,
+                    sum(z$check=="sparse_PACE_independent_known_truth_RMSE" &
+                        z$status=="MEASURED_NOT_CERTIFIED")==1L)
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sparse-fdapace-known-truth-oracles
+          path: sparse_artifacts/
+          if-no-files-found: ignore
+          retention-days: 60
