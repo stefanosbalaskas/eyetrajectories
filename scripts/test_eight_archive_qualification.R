@@ -63,6 +63,10 @@ if (nzchar(Sys.which("zip"))) {
              files = c(basename(file),
                "__MACOSX/._fixations_Paragraph_repeated.csv",
                "notes.txt"), flags = "-q")
+  dir.create("asc_files")
+  writeLines(c("MSG 1 START", "SFIX R 5", "1 50 80 100", "EFIX R 5 10 5 50 80"),
+             file.path("asc_files", "01.asc"))
+  utils::zip("asc_files.zip", files = "asc_files/01.asc", flags = "-q")
   setwd(old)
   source_archive <- file.path(root, "fixations_Paragraph_repeated.csv.zip")
   before <- unname(tools::md5sum(source_archive))
@@ -81,8 +85,9 @@ if (nzchar(Sys.which("zip"))) {
             row$sampled_members == 1L)
   schema <- utils::read.csv(file.path(out, "member_schema.csv"),
                            stringsAsFactors = FALSE)
-  stopifnot(nrow(schema) == 1L,
-            identical(schema$member, "fixations_Paragraph_repeated.csv"))
+  stopifnot(nrow(schema) == 2L,
+            "fixations_Paragraph_repeated.csv" %in% schema$member,
+            "asc_files/01.asc" %in% schema$member)
   checks <- utils::read.csv(file.path(out, "numeric_checks.csv"),
                             stringsAsFactors = FALSE)
   status <- checks$status[checks$archive ==
@@ -92,6 +97,9 @@ if (nzchar(Sys.which("zip"))) {
          "; see ", file.path(out, "member_schema.csv"))
   }
   stopifnot(sum(checks$status == "NOT_RUN") == 7L)
+  asc_reason <- checks$reason[checks$archive == "asc_files.zip"]
+  stopifnot(length(asc_reason) == 1L,
+            grepl("ASC event-line members sampled", asc_reason, fixed = TRUE))
   cat("EIGHT_ARCHIVE_SYNTHETIC_ZIP_END_TO_END_PASS\n")
 } else {
   cat("EIGHT_ARCHIVE_SYNTHETIC_ZIP_SKIPPED_NO_ZIP_BINARY\n")

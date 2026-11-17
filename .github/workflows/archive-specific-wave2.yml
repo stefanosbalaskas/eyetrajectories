@@ -1,0 +1,40 @@
+name: Wave 2 archive-specific synthetic QA
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/qualify_archive_specific_wave2.R'
+      - 'scripts/test_archive_specific_wave2.R'
+      - 'docs/ONESTOP_ARCHIVE_SPECIFIC_WAVE2.md'
+      - '.github/workflows/archive-specific-wave2.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/qualify_archive_specific_wave2.R'
+      - 'scripts/test_archive_specific_wave2.R'
+      - '.github/workflows/archive-specific-wave2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic-crosswalk:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - name: Install ZIP test program
+        shell: bash
+        run: sudo apt-get update -qq && sudo apt-get install -y zip
+      - name: Check script syntax and synthetic full pipeline
+        shell: Rscript {0}
+        run: |
+          parse(file = 'scripts/qualify_archive_specific_wave2.R')
+          parse(file = 'scripts/test_archive_specific_wave2.R')
+          source('scripts/test_archive_specific_wave2.R')
+          cat('ARCHIVE_SPECIFIC_WAVE2_CI_PASS\n')
