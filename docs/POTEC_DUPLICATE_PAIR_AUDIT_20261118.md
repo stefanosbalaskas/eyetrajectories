@@ -35,6 +35,16 @@ The source authors' [correction code](https://github.com/DiLi-Lab/PoTeC/blob/mai
 
 The new [privacy-preserving pair-level profile](../scripts/profile_potec_ambiguous_pair.R) reports whether the two corrected rows share the same duration, AOI and adjustment status, whether each equals the original duration, whether they are consecutive, and whether the corrected *newly assigned* fixation indices remain unique. These are **diagnostic flags only**; the script always marks the pair `UNRESOLVED_DO_NOT_AUTO_PAIR`.
 
+## New real-data pair-level metadata (executed 18 November 2026, 00:42:54 EET)
+
+The user ran `profile_potec_ambiguous_pair.R` locally on the unchanged original PoTeC ZIPs and supplied `duplicate_pair_metadata.csv`, `DUPLICATE_PAIR_SCOPE.md` and an R 4.6.1 / installed eyetrajectories 0.4.3 session log.
+
+The source row has exactly **two** corrected rows sharing its preserved original index; their fixation durations are distinct and their nonmissing AOIs are distinct. **One corrected duration** equals the source duration, and **one corrected AOI** equals the source AOI. **Neither** corrected row is flagged as manually adjusted. Both corrected rows are adjacent in the file and the *new corrected indices* remain unique.
+
+**Critical limitation:** The preceding diagnostic exported separate **marginal counts**, not the intersection. It does **not** establish whether the duration-equal row is also the AOI-equal row. Therefore it cannot identify the original source event uniquely and must remain `UNRESOLVED_DO_NOT_AUTO_PAIR`. The new joint-signature fields in `profile_potec_ambiguous_pair.R` record this intersection without exporting original participant IDs, fixation indices, AOI values or durations. A joint duration/AOI signature would be **candidate evidence only**, not authoritative correspondence.
+
+This real-data run is distinguished from the new *synthetic* CI tests, which alone cannot claim how the actual ambiguous rows correspond.
+
 ## Still open
 
 1. Execute the pair-level profile locally; review `duplicate_pair_metadata.csv` and `DUPLICATE_PAIR_SCOPE.md`, without uploading raw participant IDs.
