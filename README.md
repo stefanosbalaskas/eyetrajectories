@@ -2,7 +2,7 @@
 
 **Functional analysis of time-indexed eye-tracking trajectories in R**
 
-**Isolated v0.4.4 release candidate — not yet published or submitted to CRAN.** This repository contains scientific software under active development. This release candidate is being evaluated for a *limited experimental R package release* and is **not** a claim of CRAN acceptance or independently certified numerical parity with all Python methods.
+**v0.4.4 — qualified source release of the native L² optimization.** Scientific software remains under active development; publication on GitHub and acceptance by CRAN are separate events. The release is not a claim of independently certified numerical parity across the full R/Python interface.
 
 ## Scope
 
@@ -12,20 +12,20 @@ An **optional Python 1.2 bridge** through `reticulate` exposes selected function
 
 ## Install the exact source revision
 
-For pre-release testing, the following mutable candidate branch can be installed. For auditable analyses, replace its `ref` with the full commit SHA after version-specific CI has passed:
+For testing the isolated 0.4.4 source, the release branch can be installed as follows. Its branch name is mutable; for reproducibility, pin `ref` to the full exact commit SHA listed with the final GitHub release:
 
 ```r
 install.packages("remotes")
 remotes::install_github(
   "stefanosbalaskas/eyetrajectories",
-  ref = "release/0.4.4-l2-final-20261118",
+  ref = "release/0.4.4-l2-qualification-base",
   dependencies = NA
 )
 library(eyetrajectories)
 packageVersion("eyetrajectories")
 ```
 
-Installing from GitHub requires relevant R build tools and optional packages for the methods you choose. Do not treat this command as a CRAN installation until a CRAN release actually appears.
+Installing from GitHub requires relevant R build tools and optional packages for the methods you choose. Use `install.packages("eyetrajectories")` only after CRAN has published the package.
 
 ## Native R: reproducible synthetic example
 
@@ -53,11 +53,11 @@ This is **synthetic demonstration data**, not human observations, and the output
 
 A frozen Python 1.2 public-export ledger covers **508 names**, but this is a **provisional author-side source-contract inventory**, not 508 independent scientific certifications. The development qualification documentation records **0 independently certified full Python contracts**. Author-side unit tests and differential checks provide evidence only for their stated inputs and constraints.
 
-The release-candidate CRAN-style checks test packaging, examples and included tests. Passing them does **not** independently certify estimator equivalence, calibration of bootstrap confidence bands, causal inference from transfer entropy, or generalization to untested acquisition and sampling designs.
+The CRAN-style source checks test packaging, examples and included tests. Passing them does **not** independently certify estimator equivalence, calibration of bootstrap confidence bands, causal inference from transfer entropy, or generalization to untested acquisition and sampling designs.
 
 ## Reproduce qualification
 
-The v0.4.4 branch is derived from the qualified [v0.4.3-preserving L² candidate PR #211](https://github.com/stefanosbalaskas/eyetrajectories/pull/211). Its exact-v0.4.4 checks must be reviewed separately. The following links describe earlier scientific assurance and scope.
+v0.4.4 descends from the frozen v0.4.3 baseline via [PR #211](https://github.com/stefanosbalaskas/eyetrajectories/pull/211) and the [merged v0.4.4 qualification PR #220](https://github.com/stefanosbalaskas/eyetrajectories/pull/220). All 12 exact-candidate CI jobs passed. Consult the [publication checklist](https://github.com/stefanosbalaskas/eyetrajectories/issues/221) for final release-source provenance, separate CRAN status and the precise limitations of the OneStop benchmark. The following links describe earlier scientific assurance and scope.
 
 - [Scientific versus source parity](https://github.com/stefanosbalaskas/eyetrajectories/blob/release/eyetrajectories-0.4.2-rc1-20261116/docs/SCIENTIFIC_VS_SOURCE_PARITY.md)
 - [Experimental R release scope](https://github.com/stefanosbalaskas/eyetrajectories/blob/release/eyetrajectories-0.4.2-rc1-20261116/docs/experimental-release-scope.md)

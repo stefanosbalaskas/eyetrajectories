@@ -5,6 +5,9 @@ on:
     branches:
       - release/0.4.4-l2-qualification-base
     paths:
+      - 'NEWS.md'
+      - 'README.md'
+      - 'cran-comments.md'
       - 'R/native-distances.R'
       - 'tests/testthat/test-rc-l2-fastpath-043.R'
       - 'DESCRIPTION'

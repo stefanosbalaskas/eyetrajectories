@@ -1,12 +1,18 @@
-## eyetrajectories 0.4.4 — versioned release candidate, not yet submitted
+## eyetrajectories 0.4.4 — CRAN release-submission evidence
 
-This candidate is derived from the published v0.4.3 GitHub tag (`20e6db830d480b55456c2acf85e5fdb12cfa398f`). The optimization changes the strict native-R `etr_pairwise_l2()` path while retaining the published API, the original scalar boundary mode, and a numerically safe fallback. No changes from the divergent development `main` are incorporated.
+### Source provenance and scope
 
-**Prior qualification only:** the preceding `0.4.3.9000` commit `a435f2c3c36ebc7659cb43b4d0709d3b80f43f29` passed 12 CI jobs (four workflows on Windows, Linux and macOS). Those jobs included `R CMD check --as-cran` with 0 errors, 0 warnings and two environment/submission notes, plus exact-installed synthetic and public OneStop fixation-data comparisons. These results do NOT certify the new `0.4.4` archive.
+The proposed source is based on published v0.4.3 (`20e6db830d480b55456c2acf85e5fdb12cfa398f`), with an optimized strict native-R `etr_pairwise_l2()` implementation and original API/compatibility-mode behavior retained. The divergent development `main` branch is not included. Sparse, multilevel, regression and uncertainty functions retain their documented experimental scope; the 904-interface catalog is not an independently certified statistical-method library.
 
-**Version-specific gate:** rebuild `eyetrajectories_0.4.4.tar.gz`, record SHA-256, run its exact-archive CRAN-style matrix and independent numerical comparisons, inspect all notes/skips, and verify the source archive excludes benchmarks. Do not submit, tag or make a new Zenodo deposit before the version-specific gates pass.
+### Version-specific checks
 
-**Scientific scope:** native R core with experimental advanced methods, separate optional Python interop, and restricted method-specific performance claims. Real OneStop repeated-reading fixation-level interpolation is not raw-sample validation of the 904-interface catalog.
+The `0.4.4` source candidate at `4869d8c8ab24b273365559c8e6e3b670407bbc87` passed 12/12 qualification jobs across Windows, macOS and Ubuntu: frozen API and mathematical contracts, synthetic installed-source scaling, official OneStop fixation-level numerical comparisons, and source-tarball `R CMD check --as-cran` (0 errors, 0 warnings; two environment/new-submission notes). Local Windows R 4.6.1 produced 0 errors, 0 warnings and one NOTE ("New submission"), with PDF/HTML help checks passing and elapsed check time 4m12.4s. Release metadata-only changes must be checked anew on the final source archive.
+
+The earlier pretest reported ten plotting-group Rd `\\arguments` without `\\usage` (corrected in v0.4.3) and approximately 11-minute Windows check elapsed time. No scientific model-generalization claim is made from the distance benchmark.
+
+### Submission gate
+
+Before uploading, verify there is no unresolved earlier submission awaiting CRAN response. Build the exact intended `eyetrajectories_0.4.4.tar.gz` from the final qualified release commit, verify its SHA-256, run `R CMD check --as-cran` on that exact file and explain any expected incoming NOTE in the submission comment. The official CRAN acceptance decision remains independent of GitHub checks.
 
 ---
 

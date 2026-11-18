@@ -4,6 +4,9 @@ on:
   pull_request:
     branches: [release/0.4.4-l2-qualification-base]
     paths:
+      - 'NEWS.md'
+      - 'README.md'
+      - 'cran-comments.md'
       - 'benchmarks/rc_l2_*'
       - '.github/workflows/rc-043-official-onestop-real.yml'
       - 'R/native-distances.R'
