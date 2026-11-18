@@ -1,0 +1,60 @@
+name: Scientific Methods Atlas site-source integrity
+
+on:
+  pull_request:
+    branches: [feat/pkgdown-scientific-site-20261116]
+    paths:
+      - 'site-interactive/methods-atlas*'
+      - 'site-interactive/flagship-workflows*'
+      - 'scripts/build_methods_atlas.cjs'
+      - 'scripts/test_methods_atlas.cjs'
+      - 'SITE_METHODS_ATLAS.md'
+      - 'SITE_FLAGSHIP_WORKFLOWS.md'
+      - '_pkgdown.yml'
+      - 'pkgdown/index.md'
+      - '.github/workflows/methods-atlas-source-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  registry-and-static-interface:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: website
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: research
+      - uses: actions/checkout@v4
+        with:
+          ref: v0.4.3
+          path: stable
+      - name: Build source-pinned 904-method registry
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p preview/reference
+          printf '<!doctype html><title>Reference</title>' > preview/reference/index.html
+          python3 research/scripts/generate_scientific_method_registry.py \
+            --namespace stable/NAMESPACE \
+            --curated research/inst/method-registry/curated-evidence.json \
+            --output preview/method-registry-v0.4.3.json
+          node website/scripts/build_methods_atlas.cjs preview preview/method-registry-v0.4.3.json website/site-interactive
+          node --check preview/methods-atlas.js
+          node --check preview/methods-atlas-data.js
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('preview/method-registry-v0.4.3.json').read_text())
+          assert r['total_exports']==904
+          assert r['curated']==41
+          assert r['provisional']==863
+          assert all(m['reference_href']=='reference/index.html' for m in r['methods'])
+          assert Path('preview/flagship-workflows.html').is_file()
+          print('ATLAS_SOURCE_904_AND_FOUR_FLAGSHIP_LINKS_PASS')
+          PY
