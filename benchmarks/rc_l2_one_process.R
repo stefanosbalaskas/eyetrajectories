@@ -20,7 +20,7 @@ gc()
 # Windows elapsed clocks round fast single calls to 0.00 seconds.
 # Repeat only candidate calls to obtain a measurable interval, then
 # divide by the exact repetition count. Baseline stays at one call.
-batch_count <- if (expected_version=="0.4.3.9000") {
+batch_count <- if (expected_version=="0.4.4") {
   if (dim(x$values)[1L] <= 500L) 30L else 5L
 } else 1L
 elapsed_total <- unname(system.time({
