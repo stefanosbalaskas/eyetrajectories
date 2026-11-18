@@ -5,6 +5,7 @@ on:
     branches: [feat/pkgdown-scientific-site-20261116]
     paths:
       - 'site-interactive/methods-atlas*'
+      - 'site-interactive/test_methods_atlas_browser.mjs'
       - 'site-interactive/flagship-workflows*'
       - 'scripts/build_methods_atlas.cjs'
       - 'scripts/test_methods_atlas.cjs'
@@ -47,6 +48,7 @@ jobs:
           node website/scripts/build_methods_atlas.cjs preview preview/method-registry-v0.4.3.json website/site-interactive
           node --check preview/methods-atlas.js
           node --check preview/methods-atlas-data.js
+          node --check website/site-interactive/test_methods_atlas_browser.mjs
           python3 - <<'PY'
           import json
           from pathlib import Path
