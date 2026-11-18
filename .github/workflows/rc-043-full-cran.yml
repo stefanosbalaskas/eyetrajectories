@@ -33,14 +33,19 @@ jobs:
       - uses: r-lib/actions/setup-pandoc@v2
       - uses: r-lib/actions/setup-tinytex@v2
       - name: Install Adobe PostScript font metrics required by the R Rd PDF manual
-        shell: bash
+        shell: Rscript {0}
         run: |
-          set -euo pipefail
-          # Prior Windows full check failed in Rdlatex.log on pcrr8t.tfm:
-          # this is a missing Courier TeX font metric, not an R estimator error.
-          tlmgr install courier times helvetic
-          kpsewhich pcrr8t.tfm
-          echo 'TEX_COURIER_T1_FONT_METRICS_PRESENT'
+          # TinyTeX Windows exposes tlmgr.bat, not necessarily a Bash tlmgr.
+          # Use tinytex R's cross-platform executable lookup.
+          if (!requireNamespace("tinytex",quietly=TRUE))
+            install.packages("tinytex",
+              repos=Sys.getenv("RSPM","https://cloud.r-project.org"))
+          tinytex::tlmgr_install(c("courier","times","helvetic"))
+          font <- suppressWarnings(system2("kpsewhich","pcrr8t.tfm",
+            stdout=TRUE,stderr=TRUE))
+          stopifnot(length(font)>0L,
+             any(grepl("pcrr8t.tfm",font,fixed=TRUE)))
+          cat("TEX_COURIER_T1_FONT_METRICS_PRESENT\\n")
       - name: Check full CRAN documentation toolchain availability
         shell: Rscript {0}
         run: |
