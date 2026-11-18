@@ -1,0 +1,121 @@
+name: Scientific tiers and four flagship research workflows
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'inst/method-registry/**'
+      - 'inst/examples/flagship/**'
+      - 'scripts/generate_scientific_method_registry.py'
+      - 'docs/SCIENTIFIC_TIERS_AND_FLAGSHIP_WORKFLOWS.md'
+      - '.github/workflows/scientific-tiers-workflows.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'inst/method-registry/**'
+      - 'inst/examples/flagship/**'
+      - 'scripts/generate_scientific_method_registry.py'
+      - '.github/workflows/scientific-tiers-workflows.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  complete-source-registry:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Derive all 904 methods from immutable v0.4.3 NAMESPACE
+        shell: bash
+        run: |
+          set -euo pipefail
+          git show v0.4.3:NAMESPACE > /tmp/et-v043-NAMESPACE
+          python3 scripts/generate_scientific_method_registry.py \
+            --namespace /tmp/et-v043-NAMESPACE \
+            --curated inst/method-registry/curated-evidence.json \
+            --output scientific_artifacts/method-registry-v0.4.3.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path("scientific_artifacts/method-registry-v0.4.3.json").read_text())
+          assert data["total_exports"]==904
+          assert data["curated"]>=35
+          assert data["provisional"]+data["curated"]==904
+          assert set(r["tier"] for r in data["methods"])=={"core","advanced","experimental"}
+          assert all(r["caveat"] for r in data["methods"])
+          assert len(set(r["name"] for r in data["methods"]))==904
+          assert all(r["evidence_status"]!="fully_scientifically_certified"
+                     for r in data["methods"])
+          print("904_EXPORT_METHOD_REGISTRY_SOURCE_PASS")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v043-complete-evidence-separated-method-registry
+          path: scientific_artifacts/
+          retention-days: 60
+
+  flagship-research-workflows:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    env:
+      RETICULATE_PYTHON: NA
+      ET_FLAGSHIP_OUTPUT: flagship_artifacts
+    steps:
+      - name: Checkout research workflow sources
+        uses: actions/checkout@v4
+        with:
+          path: research
+      - name: Checkout exact published v0.4.3 package
+        uses: actions/checkout@v4
+        with:
+          ref: v0.4.3
+          path: stable
+          persist-credentials: false
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - name: Install native R workflow prerequisites
+        shell: Rscript {0}
+        run: |
+          install.packages(c("pkgload","reticulate","fdapace"),
+            repos=Sys.getenv("RSPM","https://cloud.r-project.org"))
+      - name: Run all four scientific workflows on exact published API
+        shell: Rscript {0}
+        run: |
+          pkgload::load_all("stable",quiet=TRUE)
+          stopifnot(as.character(utils::packageVersion("eyetrajectories"))=="0.4.3")
+          paths <- c(
+            "01_complete_gaze_trajectory.R",
+            "02_multilevel_functional_variation.R",
+            "03_sparse_irregular_recovery.R",
+            "04_uncertainty_paired_contrast.R")
+          for (name in paths) {
+            code <- file.path("research","inst","examples","flagship",name)
+            parse(file=code)
+            local <- new.env(parent=globalenv())
+            source(code,local=local)
+          }
+          dirs <- file.path("flagship_artifacts",
+             c("01-dense","02-multilevel","03-sparse","04-uncertainty"))
+          for (p in dirs) {
+            stopifnot(dir.exists(p),
+              length(list.files(p,pattern="\\.pdf$"))==3L,
+              file.exists(file.path(p,"METHODS_AND_LIMITATIONS.md")),
+              file.exists(file.path(p,"sessionInfo.txt")))
+          }
+          cat("FOUR_FLAGSHIP_SYNTHETIC_WORKFLOWS_ALL_PASS\n")
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: four-flagship-r043-${{ matrix.os }}
+          path: flagship_artifacts/
+          if-no-files-found: ignore
+          retention-days: 60
