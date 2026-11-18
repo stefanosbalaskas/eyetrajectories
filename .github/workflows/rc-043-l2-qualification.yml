@@ -1,4 +1,4 @@
-name: Release candidate L2 0.4.3 preservation tests
+name: v0.4.4 candidate L2 numerical and v0.4.3 API preservation tests
 
 on:
   pull_request:
@@ -40,11 +40,11 @@ jobs:
         shell: Rscript {0}
         run: |
           d <- read.dcf("DESCRIPTION", fields="Version")
-          stopifnot(identical(unname(d[1,1]),"0.4.3.9000"))
+          stopifnot(identical(unname(d[1,1]),"0.4.4"))
           parse(file="R/native-distances.R")
           parse(file="tests/testthat/test-rc-l2-fastpath-043.R")
           pkgload::load_all(".", quiet=TRUE)
-          stopifnot(as.character(utils::packageVersion("eyetrajectories"))=="0.4.3.9000")
+          stopifnot(as.character(utils::packageVersion("eyetrajectories"))=="0.4.4")
           testthat::test_local(".", filter="rc-l2-fastpath-043",
             reporter="summary", stop_on_failure=TRUE)
           cat("RELEASE_043_DERIVED_L2_FOCUS_PASS\n")
