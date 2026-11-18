@@ -3,7 +3,7 @@
 # Source the script from its immutable GitHub candidate commit, then run:
 # etr_qualify_real_onestop_l2(
 #   root=file.path(Sys.getenv("USERPROFILE"),"Downloads","eyetrajectoriesValidation"),
-#   candidate_sha="<qualified PR #211 exact commit SHA>"
+#   candidate_sha="<qualified v0.4.4 candidate exact commit SHA>"
 # )
 #
 # Operates on original zipped OneStop fixation CSV, locally. DOES NOT upload
@@ -155,7 +155,7 @@
     time_unit="within_trial_normalized")
   eyetrajectories::etr_validate(x,require_complete=TRUE)
   n<-dim(x$values)[1L]
-  batch<-if(version=="0.4.3.9000") {
+  batch<-if(version=="0.4.4") {
     if(n<=500L)30L else 8L
   }else 1L
   gc()
@@ -206,7 +206,7 @@ etr_qualify_real_onestop_l2 <- function(
   candidate<-.etr_rc_source_archive(candidate_sha,srcs)
   libs<-file.path(folder,"isolated_libraries",c("baseline","candidate"))
   .etr_rc_install_isolated(baseline$path,libs[[1L]],"0.4.3")
-  .etr_rc_install_isolated(candidate$path,libs[[2L]],"0.4.3.9000")
+  .etr_rc_install_isolated(candidate$path,libs[[2L]],"0.4.4")
   testscript<-file.path(folder,"rc_onestop_runner.R")
   # Obtain this same program from exact candidate revision; source differs
   # only in execution flags, and provenance records the fetched SHA.
@@ -228,7 +228,7 @@ etr_qualify_real_onestop_l2 <- function(
              else c("candidate","baseline")
       pair<-list()
       for(mode in order){
-        v<-if(mode=="baseline")"0.4.3" else "0.4.3.9000"
+        v<-if(mode=="baseline")"0.4.3" else "0.4.4"
         lib<-if(mode=="baseline")libs[[1L]] else libs[[2L]]
         output<-file.path(folder,"matrices",
                         sprintf("n%d_g%d_rep%d_%s",n,g,rep,mode))
