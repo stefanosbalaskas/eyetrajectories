@@ -1,0 +1,142 @@
+name: Official OneStop real-data exact-installed L2 release qualification
+
+on:
+  pull_request:
+    branches: [release/0.4.4-l2-qualification-base]
+    paths:
+      - 'benchmarks/rc_l2_*'
+      - '.github/workflows/rc-043-official-onestop-real.yml'
+      - 'R/native-distances.R'
+      - 'DESCRIPTION'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  real-onestop-release-validation:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 65
+    env:
+      RETICULATE_PYTHON: NA
+      _R_CHECK_FORCE_SUGGESTS_: "false"
+    steps:
+      - name: Checkout exact candidate
+        uses: actions/checkout@v4
+        with:
+          path: candidate
+      - name: Checkout immutable published v0.4.3
+        uses: actions/checkout@v4
+        with:
+          ref: v0.4.3
+          path: stable
+          persist-credentials: false
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Source syntax preflight and declared dependency setup
+        shell: Rscript {0}
+        run: |
+          files <- list.files("candidate/benchmarks",
+                             pattern="^rc_l2_.*[.]R$",full.names=TRUE)
+          stopifnot(length(files)==5L)
+          for(file in files)parse(file=file)
+          install.packages("reticulate",
+              repos=Sys.getenv("RSPM","https://cloud.r-project.org"))
+          cat("REAL_ONESTOP_R_SOURCE_PREFLIGHT_PASS\n")
+      - name: Install process-tree RSS sampling
+        shell: bash
+        run: |
+          python -m pip install --disable-pip-version-check psutil
+      - name: Download authors' public OneStop repeated-reading fixations
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p public_onestop
+          # Source authors' official download_data_files.py:
+          # https://github.com/lacclab/OneStop-Eye-Movements
+          # pinned upstream script commit:
+          # 481a87a00b700ba5c775bb76d92910547aae28df
+          # repeated -> fixations_Paragraph -> OSF resource 83ctd
+          curl --fail --show-error --location --retry 3 \
+            --connect-timeout 25 --max-time 240 \
+            'https://osf.io/download/83ctd' \
+            --output public_onestop/fixations_Paragraph_repeated.csv.zip
+          test -s public_onestop/fixations_Paragraph_repeated.csv.zip
+          Rscript -e 'zip<-"public_onestop/fixations_Paragraph_repeated.csv.zip"; stopifnot(identical(tolower(unname(tools::md5sum(zip))),"650d93a8c73af6a9b3ca19a7c4e542fb")); stopifnot("fixations_Paragraph_repeated.csv" %in% basename(utils::unzip(zip,list=TRUE)$Name));cat("OFFICIAL_ONESTOP_AUTHOR_ZIP_MD5_PASS\n")'
+      - name: Install baseline and candidate packages in isolated libraries
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p benchmark_lib/baseline benchmark_lib/candidate \
+                   real_inputs real_benchmark_output
+          R CMD INSTALL --library="$(pwd)/benchmark_lib/baseline" stable
+          R CMD INSTALL --library="$(pwd)/benchmark_lib/candidate" candidate
+      - name: Produce six common-grid inputs, withholding raw participants
+        shell: bash
+        run: |
+          Rscript candidate/benchmarks/rc_l2_prepare_onestop_public.R \
+            public_onestop real_inputs
+          test -s real_inputs/benchmark_cases.csv
+          test -s real_inputs/source_provenance.csv
+          test -s real_inputs/n1000_g128.rds
+      - name: Compare truly installed package versions on exact real inputs
+        shell: bash
+        run: |
+          python candidate/benchmarks/rc_l2_sampled_rss_harness.py \
+            --baseline-library benchmark_lib/baseline \
+            --candidate-library benchmark_lib/candidate \
+            --inputs real_inputs \
+            --work real_benchmark_output \
+            --runner candidate/benchmarks/rc_l2_one_process.R \
+            --data-source real_onestop_fixation \
+            --repetitions 2
+      - name: Verify full numerical agreement and independent L2 quadrature
+        shell: bash
+        run: |
+          set -euo pipefail
+          Rscript candidate/benchmarks/rc_l2_compare_matrices.R \
+             real_benchmark_output 2 real_inputs
+          python - <<'PY'
+          import csv,json,pathlib,math
+          out=pathlib.Path("real_benchmark_output")
+          perf=list(csv.DictReader((out/"performance_summary.csv").open()))
+          nums=list(csv.DictReader(
+            (out/"exact_installed_numerical_comparisons.csv").open()))
+          source=list(csv.DictReader(
+            pathlib.Path("real_inputs/source_provenance.csv").open()))
+          meta=json.loads((out/"benchmark_metadata.json").read_text())
+          assert len(perf)==6 and len(nums)==12 and len(source)==1
+          assert source[0]["archive_md5"]=="650d93a8c73af6a9b3ca19a7c4e542fb"
+          assert int(source[0]["eligible_trajectories"])>=1000
+          assert source[0]["row_cap_reached"]=="FALSE"
+          assert meta["data_source"]=="real_onestop_fixation"
+          assert meta["not_a_real_onestop_benchmark"] is False
+          assert all(float(x["max_absolute_difference"])<=1e-8
+                     and float(x["max_independent_oracle_error"])<=1e-8
+                     for x in nums)
+          assert all(math.isfinite(float(x["median_speedup_ratio"]))
+                     and float(x["median_speedup_ratio"])>0 for x in perf)
+          print("PUBLIC_ONESTOP_REAL_6_SIZE_12_PAIR_INSTALLED_PARITY_AND_REFERENCE_PASS")
+          PY
+      - name: Save deidentified real-data scientific evidence, never source ZIP/RDS
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: exact-rc043-official-onestop-real-${{ matrix.os }}
+          path: |
+            real_benchmark_output/performance_summary.csv
+            real_benchmark_output/raw_benchmark_runs.csv
+            real_benchmark_output/exact_installed_numerical_comparisons.csv
+            real_benchmark_output/benchmark_metadata.json
+            real_inputs/benchmark_cases.csv
+            real_inputs/source_provenance.csv
+          if-no-files-found: ignore
+          retention-days: 60
