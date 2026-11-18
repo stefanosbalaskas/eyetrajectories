@@ -13,3 +13,5 @@
 ^src/.*\.(o|obj|dll|so|dylib|a)$
 ^cran-comments\.md$
 ^CRAN-SUBMISSION$
+# Benchmarks are release qualification tools, not packaged user-facing files.
+^benchmarks$
