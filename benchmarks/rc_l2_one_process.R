@@ -8,7 +8,14 @@ prefix<-args[4L]
 suppressPackageStartupMessages(library(eyetrajectories,lib.loc=lib))
 actual<-as.character(utils::packageVersion("eyetrajectories"))
 stopifnot(identical(actual,expected_version))
-x<-readRDS(input);etr_validate(x,require_complete=TRUE)
+raw <- readRDS(input)
+x <- if (is.list(raw) && !inherits(raw,"etr_trajectory_set") &&
+          all(c("time","values","curve_ids") %in% names(raw))) {
+  etr_trajectory_set(raw$time,raw$values,curve_ids=raw$curve_ids,
+    dimension_names=c("x","y"),coordinate_system="pixels",
+    time_unit="within_trial_normalized")
+} else raw
+etr_validate(x,require_complete=TRUE)
 gc()
 # Windows elapsed clocks round fast single calls to 0.00 seconds.
 # Repeat only candidate calls to obtain a measurable interval, then
@@ -24,6 +31,18 @@ stopifnot(is.finite(elapsed),elapsed>0,
           all(is.finite(result)),all(diag(result)==0),
           isTRUE(all.equal(result,t(result),tolerance=1e-10)),
           identical(dimnames(result),list(x$curve_ids,x$curve_ids)))
+memory_mib<-NA_real_
+memory_method<-"NOT_MEASURED_no_native_bench_process_api"
+if(requireNamespace("bench",quietly=TRUE)){
+  mem<-tryCatch(bench::bench_process_memory(),error=function(e)NULL)
+  if(!is.null(mem)&&"max"%in%names(mem)){
+    value<-suppressWarnings(as.numeric(mem[["max"]])/1024^2)
+    if(length(value)==1L&&is.finite(value)&&value>0&&value<1e5){
+      memory_mib<-value
+      memory_method<-"bench_process_peak_RSS_since_Rscript_start_not_operation_specific"
+    }
+  }
+}
 dir.create(dirname(prefix),recursive=TRUE,showWarnings=FALSE)
 saveRDS(result,paste0(prefix,".rds"),version=3L)
 utils::write.csv(data.frame(
@@ -31,6 +50,7 @@ utils::write.csv(data.frame(
   grid_points=dim(x$values)[2L],
   channels=dim(x$values)[3L],elapsed_seconds=elapsed,
   batch_count=batch_count,total_timed_seconds=elapsed_total,
+  process_peak_RSS_MiB=memory_mib,process_memory_method=memory_method,
   stringsAsFactors=FALSE),
   paste0(prefix,".csv"),row.names=FALSE)
 cat("ISOLATED_INSTALLED_L2_BENCHMARK_PASS",actual,dim(result)[1L],elapsed,"\n")
