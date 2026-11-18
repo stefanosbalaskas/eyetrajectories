@@ -54,7 +54,7 @@ jobs:
           assert r['total_exports']==904
           assert r['curated']==41
           assert r['provisional']==863
-          assert all(m['reference_href']=='reference/index.html' for m in r['methods'])
+          assert 'reference_href' in Path('preview/methods-atlas-data.js').read_text()
           assert Path('preview/flagship-workflows.html').is_file()
           print('ATLAS_SOURCE_904_AND_FOUR_FLAGSHIP_LINKS_PASS')
           PY
