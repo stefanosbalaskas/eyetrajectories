@@ -25,7 +25,7 @@ for(i in seq_len(nrow(cases))){
   relative<-max(abs(baseline-candidate)/(1+abs(baseline)))
   stopifnot(is.finite(delta),is.finite(relative),delta<=1e-8)
   k<-k+1L
-  out[[k]]<-data.frame(n_curves=n,grid_points=g,repeat=rep,
+  out[[k]]<-data.frame(n_curves=n,grid_points=g,replicate_id=rep,
      max_absolute_difference=delta,
      max_scale_adjusted_difference=relative,
      numerical_contract_pass=TRUE)
