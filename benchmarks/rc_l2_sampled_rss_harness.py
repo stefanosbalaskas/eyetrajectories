@@ -39,10 +39,15 @@ def execute(run_script,lib,version,source,out):
     begin=time.perf_counter()
     while proc.poll() is None:
         try:
-            rss=psutil.Process(proc.pid).memory_info().rss
+            root=psutil.Process(proc.pid)
+            # Windows Rscript.exe can be a small launcher whose R interpreter
+            # runs in a child process; measuring only the launcher would
+            # falsely report a nearly fixed ~7 MB for every dataset.
+            processes=[root]+root.children(recursive=True)
+            rss=sum(p.memory_info().rss for p in processes if p.is_running())
             sample_peak=max(sample_peak,rss)
             samples+=1
-        except (psutil.NoSuchProcess,psutil.AccessDenied):
+        except (psutil.NoSuchProcess,psutil.AccessDenied,psutil.ZombieProcess):
             pass
         if time.perf_counter()-begin>600:
             proc.kill()
@@ -132,11 +137,12 @@ def main():
       "candidate":"v0.4.3-derived development v0.4.3.9000",
       "data":"entirely synthetic, nonhuman, deterministic within this R/OS",
       "python_role":"process harness and sampled RSS monitoring only; no estimator in Python",
-      "peak_memory":"maximum sampled process RSS every approximately 35 ms; not true kernel HWM or peak allocation",
+      "peak_memory":"maximum sampled R launcher+descendant process-tree RSS approximately every 35 ms; not true kernel HWM or peak allocation",
       "repetitions_per_version":a.repetitions,
       "platform":platform.platform(),
       "python":sys.version,
       "psutil":psutil.__version__,
+      "rss_aggregation":"sampled sum of active Rscript launcher and child R process RSS; may transiently miss short processes",
       "hardware_is_runner_specific":True,
       "not_a_real_onestop_benchmark":True,
       "results":output,
