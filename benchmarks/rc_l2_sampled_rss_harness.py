@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Benchmark exact installed v0.4.3 versus v0.4.3.9000 on matched RDS.
+"""Benchmark exact installed v0.4.3 versus v0.4.4 on matched RDS.
 
 Poll each R process with psutil. Report sampled peak RSS rather than an
 unmeasured kernel high-water mark. No raw gaze data or Python algorithms.
@@ -87,7 +87,7 @@ def main():
     root.mkdir(parents=True,exist_ok=True)
     lib={"baseline":a.baseline_library.resolve(strict=True),
          "candidate":a.candidate_library.resolve(strict=True)}
-    versions={"baseline":"0.4.3","candidate":"0.4.3.9000"}
+    versions={"baseline":"0.4.3","candidate":"0.4.4"}
     runner=a.runner.resolve(strict=True)
     case_path=a.inputs/"benchmark_cases.csv"
     if not case_path.exists():
@@ -139,7 +139,7 @@ def main():
     metadata={
       "schema":"eyetrajectories-exact-installed-l2-benchmark/v1",
       "baseline":"v0.4.3, immutable source",
-      "candidate":"v0.4.3-derived development v0.4.3.9000",
+      "candidate":"v0.4.3-derived release candidate v0.4.4",
       "data":("entirely synthetic, nonhuman, deterministic within this R/OS"
               if a.data_source=="synthetic" else
               "published OneStop repeated-reading fixation-level data; 0-1 time and declared interpolation"),
