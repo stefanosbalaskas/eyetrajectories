@@ -81,6 +81,7 @@ jobs:
           test -s website/site-interactive/research-portal.js
           test -s website/site-interactive/research-workflows.json
           test -s website/site-interactive/test_research_portal_browser.mjs
+          test -s website/site-interactive/test_methods_atlas_browser.mjs
           for required in methods-atlas.html methods-atlas.css methods-atlas.js flagship-workflows.html flagship-workflows.css; do
             test -s "website/site-interactive/$required"
           done
@@ -251,6 +252,7 @@ jobs:
           pdftoppm -f 1 -singlefile -png -r 135 pkg/site/workflows/03-sparse/02_sparse_known_truth.pdf pkg/site/workflows/03-sparse/preview
           pdftoppm -f 1 -singlefile -png -r 135 pkg/site/workflows/04-uncertainty/01_paired_difference_bands.pdf pkg/site/workflows/04-uncertainty/preview
           node website/scripts/test_methods_atlas.cjs pkg/site
+          node --check website/site-interactive/test_methods_atlas_browser.mjs
           echo 'SCIENTIFIC_904_METHOD_ATLAS_AND_FOUR_R_RENDERED_FLAGSHIPS_PASS'
       - name: Verify interactive trajectory JavaScript syntax
         shell: bash
@@ -299,6 +301,7 @@ jobs:
           npm --prefix website/site-interactive exec -- playwright install --with-deps chromium
           node website/site-interactive/test_plot_atlas_browser.mjs pkg/site website/browser-evidence
           node website/site-interactive/test_research_portal_browser.mjs pkg/site website/browser-evidence
+          node website/site-interactive/test_methods_atlas_browser.mjs pkg/site website/browser-evidence
       - name: Upload browser screenshots for independent visual review
         if: always()
         uses: actions/upload-artifact@v4
