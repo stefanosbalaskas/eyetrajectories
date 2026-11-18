@@ -7,6 +7,9 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/publish-pkgdown-website.yml'
+      - 'inst/method-registry/**'
+      - 'inst/examples/flagship/**'
+      - 'scripts/generate_scientific_method_registry.py'
   workflow_dispatch:
 
 permissions:
@@ -38,6 +41,12 @@ jobs:
         with:
           ref: feat/pkgdown-scientific-site-20261116
           path: website
+          persist-credentials: false
+      - name: Checkout curated method evidence and research examples
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: research
           persist-credentials: false
       - name: Overlay site files without changing release source
         shell: bash
@@ -72,6 +81,18 @@ jobs:
           test -s website/site-interactive/research-portal.js
           test -s website/site-interactive/research-workflows.json
           test -s website/site-interactive/test_research_portal_browser.mjs
+          for required in methods-atlas.html methods-atlas.css methods-atlas.js flagship-workflows.html flagship-workflows.css; do
+            test -s "website/site-interactive/$required"
+          done
+          test -s website/scripts/build_methods_atlas.cjs
+          test -s website/scripts/test_methods_atlas.cjs
+          test -s website/SITE_METHODS_ATLAS.md
+          test -s website/SITE_FLAGSHIP_WORKFLOWS.md
+          test -s research/inst/method-registry/curated-evidence.json
+          test -s research/scripts/generate_scientific_method_registry.py
+          for name in 01_complete_gaze_trajectory.R 02_multilevel_functional_variation.R 03_sparse_irregular_recovery.R 04_uncertainty_paired_contrast.R; do
+            test -s "research/inst/examples/flagship/$name"
+          done
           test -s website/scripts/build_research_portal.cjs
           test -s website/scripts/test_research_portal.cjs
           test -s website/SITE_RESEARCH_PORTAL.md
@@ -127,6 +148,8 @@ jobs:
           stopifnot(grepl('10.5281/zenodo.24288857', home, fixed=TRUE))
           stopifnot(grepl('href="plot-atlas.html"', home, fixed=TRUE))
           stopifnot(grepl('href="research-portal.html"', home, fixed=TRUE))
+          stopifnot(grepl('href="methods-atlas.html"', home, fixed=TRUE))
+          stopifnot(grepl('href="flagship-workflows.html"', home, fixed=TRUE))
           stopifnot(grepl('href="SITE_PERFORMANCE.html"', home, fixed=TRUE))
           stopifnot(grepl('src="trajectory-explorer.html"', home, fixed=TRUE))
           stopifnot(!grepl('class="sourceCode"', home, fixed=TRUE))
@@ -152,6 +175,7 @@ jobs:
             'site/SITE_BRANDING.html', 'site/SITE_CITATION.html',
             'site/SITE_PLOTTING_ATLAS.html', 'site/plot-atlas.html',
             'site/SITE_RESEARCH_PORTAL.html', 'site/SITE_PERFORMANCE.html',
+             'site/SITE_METHODS_ATLAS.html', 'site/SITE_FLAGSHIP_WORKFLOWS.html',
             'site/research-portal.html',
             'site/research-portal.css', 'site/research-portal.js',
             'site/branding/eyetrajectories-logo-240.png',
@@ -176,6 +200,58 @@ jobs:
           test -s pkg/site/research-workflows.js
           test -s pkg/site/research-workflows.json
           test -s pkg/site/research-portal-manifest.txt
+      - name: Generate complete source-derived scientific Method Registry and Atlas
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 research/scripts/generate_scientific_method_registry.py \
+            --namespace pkg/NAMESPACE \
+            --curated research/inst/method-registry/curated-evidence.json \
+            --output pkg/site/method-registry-v0.4.3.json
+          node website/scripts/build_methods_atlas.cjs pkg/site pkg/site/method-registry-v0.4.3.json website/site-interactive
+          node --check pkg/site/methods-atlas-data.js
+          node --check pkg/site/methods-atlas.js
+          test -s pkg/site/methods-atlas-manifest.json
+          test -s pkg/site/method-registry-v0.4.3.csv
+      - name: Execute four published-native R research workflows and retain outputs
+        shell: Rscript {0}
+        working-directory: pkg
+        run: |
+          if (!requireNamespace("fdapace",quietly=TRUE))
+            install.packages("fdapace",repos=Sys.getenv("RSPM","https://cloud.r-project.org"))
+          pkgload::load_all(".",quiet=TRUE)
+          stopifnot(as.character(utils::packageVersion("eyetrajectories"))=="0.4.3")
+          Sys.setenv(ET_FLAGSHIP_OUTPUT="site/workflows")
+          source_files <- file.path("../research/inst/examples/flagship",c(
+            "01_complete_gaze_trajectory.R",
+            "02_multilevel_functional_variation.R",
+            "03_sparse_irregular_recovery.R",
+            "04_uncertainty_paired_contrast.R"))
+          for (source_file in source_files) {
+            parse(file=source_file)
+            source(source_file,local=new.env(parent=globalenv()))
+          }
+          for (dir in file.path("site/workflows",c(
+            "01-dense","02-multilevel","03-sparse","04-uncertainty"))) {
+            stopifnot(dir.exists(dir),
+              length(list.files(dir,pattern="[.]pdf$"))==3L,
+              file.exists(file.path(dir,"METHODS_AND_LIMITATIONS.md")),
+              file.exists(file.path(dir,"sessionInfo.txt")))
+          }
+          stopifnot(all(file.copy(source_files,"site/workflows",overwrite=TRUE)))
+          cat("FOUR_R043_WEBSITE_FLAGSHIP_EXAMPLES_PASS\n")
+      - name: Render R-generated flagship figure previews and verify complete site
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y poppler-utils
+          pdftoppm -f 1 -singlefile -png -r 135 pkg/site/workflows/01-dense/01_planar_trajectories.pdf pkg/site/workflows/01-dense/preview
+          pdftoppm -f 1 -singlefile -png -r 135 pkg/site/workflows/02-multilevel/02_descriptive_variance.pdf pkg/site/workflows/02-multilevel/preview
+          pdftoppm -f 1 -singlefile -png -r 135 pkg/site/workflows/03-sparse/02_sparse_known_truth.pdf pkg/site/workflows/03-sparse/preview
+          pdftoppm -f 1 -singlefile -png -r 135 pkg/site/workflows/04-uncertainty/01_paired_difference_bands.pdf pkg/site/workflows/04-uncertainty/preview
+          node website/scripts/test_methods_atlas.cjs pkg/site
+          echo 'SCIENTIFIC_904_METHOD_ATLAS_AND_FOUR_R_RENDERED_FLAGSHIPS_PASS'
       - name: Verify interactive trajectory JavaScript syntax
         shell: bash
         run: |
