@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="556" viewBox="0 0 480 556" role="img" aria-labelledby="logoTitle logoDesc">
+<title id="logoTitle">eyetrajectories scientific R package logo</title>
+<desc id="logoDesc">A hexagonal emblem with an abstract eye, a sampled mathematical trajectory, and a functional-analysis curve.</desc>
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#123A50"/><stop offset="1" stop-color="#081F30"/></linearGradient>
+<linearGradient id="curve" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#73E9E2"/><stop offset="1" stop-color="#2AB6C9"/></linearGradient>
+<clipPath id="hexClip"><path d="M240 26 L447 148 L447 408 L240 530 L33 408 L33 148 Z"/></clipPath></defs>
+<path d="M240 8 L465 138 L465 418 L240 548 L15 418 L15 138 Z" fill="#0E8293"/>
+<path d="M240 26 L447 148 L447 408 L240 530 L33 408 L33 148 Z" fill="url(#bg)"/>
+<g clip-path="url(#hexClip)">
+<path d="M-10 366 Q160 266 487 346 L487 558 L-10 558 Z" fill="#0B4C61" opacity=".18"/>
+<path d="M112 126 Q240 41 368 126 Q240 202 112 126Z" fill="none" stroke="#F4FCFD" stroke-width="8" stroke-linejoin="round"/>
+<circle cx="240" cy="126" r="39" fill="#0E8293"/><circle cx="240" cy="126" r="26" fill="#071F32"/><circle cx="252" cy="116" r="10" fill="#F9FFFF"/>
+<g stroke="#72E3DC" stroke-width="5" opacity=".86" fill="none" stroke-linecap="square">
+<path d="M146 72H166 M146 72V92 M314 72H334 M334 72V92"/>
+<path d="M146 160V180 M146 180H166 M334 160V180 M314 180H334"/></g>
+<g stroke="#64B5C5" stroke-width="1.4" opacity=".26"><path d="M75 226H407 M75 263H407 M75 300H407 M122 200V328 M184 200V328 M246 200V328 M308 200V328 M370 200V328" stroke-dasharray="4 7"/></g>
+<g stroke="#F5FEFF" stroke-width="3.4" stroke-linecap="round" fill="none" opacity=".85"><path d="M85 324V198 M85 324H409"/><path d="M79 211L85 198L91 211 M396 318L409 324L396 330"/></g>
+<path d="M94 275 C132 257 138 229 172 229 S226 297 259 284 S312 220 349 234 S378 260 396 245" fill="none" stroke="#2B7B8B" stroke-width="15" opacity=".28" stroke-linecap="round"/>
+<path d="M94 275 C132 257 138 229 172 229 S226 297 259 284 S312 220 349 234 S378 260 396 245" fill="none" stroke="url(#curve)" stroke-width="7.8" stroke-linecap="round"/>
+<path d="M94 307 C144 324 172 277 222 277 S311 316 358 289 S383 274 398 278" fill="none" stroke="#E6A05A" stroke-width="4.7" opacity=".87" stroke-linecap="round"/>
+<g fill="#E6A05A" stroke="#FFF" stroke-width="3.6"><circle cx="125" cy="257" r="7.7"/><circle cx="172" cy="229" r="7.7"/><circle cx="258" cy="284" r="7.7"/><circle cx="349" cy="234" r="7.7"/></g>
+<text x="240" y="405" text-anchor="middle" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="38.3" font-weight="700" letter-spacing="-1.7" fill="#FFFFFF">eyetrajectories</text>
+<g opacity=".85" transform="translate(0 8)"><path d="M112 459 C143 436 151 476 179 454 S220 436 245 454 S290 474 316 452 S345 438 371 457" stroke="#63DDD9" stroke-width="3.8" fill="none" stroke-linecap="round"/>
+<path d="M130 472 C160 462 181 492 207 472 S260 450 282 472 S322 488 348 467" stroke="#E6A05A" stroke-width="3" fill="none" stroke-linecap="round"/></g>
+<text x="240" y="511" text-anchor="middle" font-family="DejaVu Serif, Georgia, serif" font-size="19" font-style="italic" fill="#D8F8F8">x(t)</text>
+</g></svg>

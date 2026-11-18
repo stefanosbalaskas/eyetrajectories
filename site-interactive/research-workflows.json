@@ -1,0 +1,192 @@
+{
+  "schema": "eyetrajectories-research-workflow-portal/v1",
+  "versions": {
+    "r": "0.4.3",
+    "python": "1.2.0"
+  },
+  "source": "Published Python 1.2.0 W1-W4 ten workflow routes; native R 0.4.3 source NAMESPACE; author-side mapping with no exact source parity implied.",
+  "evidence": "SITE_VALIDATION.html",
+  "fullSourceLedger": "https://github.com/stefanosbalaskas/eyetrajectories/blob/v0.4.3/docs/complete-508-independent-scientific-certification.md",
+  "pythonGuide": "https://stefanosbalaskas.github.io/eyetrajectoriespy/articles/choosing-the-ten-workflows/",
+  "workflows": [
+    {
+      "id": "sparse-fpca",
+      "title": "Sparse univariate FPCA",
+      "python": "run_sparse_fpca_workflow",
+      "rWorkflow": "etr_run_sparse_fpca_workflow",
+      "rEstimator": "etr_fit_sparse_fpca_native",
+      "plot": "etr_plot_sparse_fpca_component",
+      "families": [
+        "sparse",
+        "variation"
+      ],
+      "grid": "sparse",
+      "estimand": "Population mean, covariance, principal modes and conditional scores for a single sparsely observed functional channel.",
+      "inputs": "One measured coordinate with explicit irregular observed times, curve IDs and finite observed values.",
+      "assumptions": "Declare smoothing bandwidth, measurement error, positive-semidefinite handling and score-conditioning failure policy.",
+      "boundary": "Native R estimator has its own accepted-domain, numerical and output contracts. Score uncertainty is not whole-function inferential calibration.",
+      "plotNote": "Synthetic sparse-component example; not evidence of source parity."
+    },
+    {
+      "id": "sparse-paired",
+      "title": "Paired sparse multivariate FPCA",
+      "python": "run_sparse_mfpca_workflow",
+      "rWorkflow": "etr_run_sparse_mfpca_workflow",
+      "rEstimator": "etr_fit_sparse_mfpca_native",
+      "plot": "etr_plot_sparse_mfpca_component",
+      "families": [
+        "sparse",
+        "variation"
+      ],
+      "grid": "paired",
+      "estimand": "Joint x/y functional variation and cross-channel covariance for paired sparse observations.",
+      "inputs": "Both coordinates observed at shared within-curve times with retained curve identifiers.",
+      "assumptions": "Check paired support and cross-channel smoothing, measurement noise, covariance regularization and score conditioning.",
+      "boundary": "Do not substitute two marginal univariate models for a joint covariance claim. Native options and Python contracts may differ.",
+      "plotNote": "Synthetic joint sparse-FPCA component; not a numerical Python comparison."
+    },
+    {
+      "id": "sparse-async",
+      "title": "Coordinate-asynchronous sparse MFPCA",
+      "python": "run_sparse_mfpca_async_workflow",
+      "rWorkflow": "etr_run_sparse_mfpca_async_workflow",
+      "rEstimator": "etr_fit_sparse_mfpca_async_native",
+      "plot": "etr_plot_sparse_mfpca_cross_covariance",
+      "families": [
+        "sparse",
+        "variation"
+      ],
+      "grid": "async",
+      "estimand": "Cross-channel functional covariance when x and y are observed on different time supports.",
+      "inputs": "Separate x and y time arrays, retained participant/curve identities and declared channel units.",
+      "assumptions": "Preserve asynchronous timing; declare how estimation handles mean/covariance smoothing, lag and partial support.",
+      "boundary": "Missing x or y within a conventional paired CSV does not establish actual asynchronous acquisition. Do not silently align/interpolate.",
+      "plotNote": "Related synthetic multivariate cross-covariance figure; it is not an asynchronous fitting benchmark."
+    },
+    {
+      "id": "sparse-multilevel",
+      "title": "Sparse participant/trial decomposition",
+      "python": "run_sparse_multilevel_workflow",
+      "rWorkflow": "etr_run_sparse_multilevel_workflow",
+      "rEstimator": "etr_fit_sparse_multilevel_fpca_native",
+      "plot": "etr_plot_functional_variance_decomposition",
+      "families": [
+        "sparse",
+        "hierarchy",
+        "variation"
+      ],
+      "grid": "sparse",
+      "estimand": "Separating participant-level and within-participant functional variation in sparsely observed repeated trials.",
+      "inputs": "Participant identifiers, trial identifiers, observed-time support and a declared nesting structure.",
+      "assumptions": "Do not treat time samples or nested trials as independent people. Specify components, grouping and sparse support.",
+      "boundary": "The linked variance-decomposition figure is from a related synthetic functional model, not necessarily this sparse multilevel estimator.",
+      "plotNote": "Related synthetic variance-decomposition illustration; no estimator-equivalence claim."
+    },
+    {
+      "id": "sparse-prediction",
+      "title": "Partial sparse-path prediction",
+      "python": "run_sparse_prediction_workflow",
+      "rWorkflow": "etr_run_sparse_prediction_workflow",
+      "rEstimator": "etr_sparse_fpca_partial_trajectory_prediction_native",
+      "plot": "etr_plot_sparse_fpca_score_diagnostics",
+      "families": [
+        "sparse",
+        "prediction"
+      ],
+      "grid": "partial",
+      "estimand": "Conditional prediction of later trajectory values from a partially observed sparse history.",
+      "inputs": "Declared observed-history cutoff, held-out target horizon, training/validation separation and time units.",
+      "assumptions": "Define horizon, data partition, score conditioning and prediction uncertainty target before fitting.",
+      "boundary": "The linked score diagnostic is a related input-model plot, not a forecast or calibrated future-outcome interval. No general coverage guarantee.",
+      "plotNote": "Related sparse-score diagnostic; not a direct partial-prediction figure."
+    },
+    {
+      "id": "dense-fpca",
+      "title": "Dense common-grid FPCA",
+      "python": "run_fpca_workflow",
+      "rWorkflow": "etr_run_fpca_workflow",
+      "rEstimator": "etr_fit_mfpca",
+      "plot": "etr_plot_fpca_component",
+      "families": [
+        "variation"
+      ],
+      "grid": "dense",
+      "estimand": "Exploratory modes of variation and reconstruction of aligned, continuously valued trajectories.",
+      "inputs": "Common observed time grid, valid x/y channel units, consistent coordinate system and curve identifiers.",
+      "assumptions": "Document centering, scaling, integration weights, selection rule, retained rank and participant/trial dependence.",
+      "boundary": "FPCA scores/components are descriptive unless tied to a separately qualified inference or prediction procedure.",
+      "plotNote": "Native synthetic FPCA component; changing score SD is not a confidence interval."
+    },
+    {
+      "id": "fos",
+      "title": "Function-on-scalar effects",
+      "python": "run_function_on_scalar_workflow",
+      "rWorkflow": "etr_run_function_on_scalar_workflow",
+      "rEstimator": "etr_fit_function_on_scalar_regression",
+      "plot": "etr_plot_function_on_scalar_coefficients",
+      "families": [
+        "effects"
+      ],
+      "grid": "dense",
+      "estimand": "Time-varying coefficient functions for prespecified scalar predictors and a continuous functional response.",
+      "inputs": "Dense functional response, aligned observation times and a full-rank scalar design with declared covariates.",
+      "assumptions": "Specify estimand, encoding, functional basis, independent sampling unit and predictor missingness.",
+      "boundary": "A coefficient curve alone does not imply valid pointwise or simultaneous tests, especially under participant clustering.",
+      "plotNote": "Synthetic function-on-scalar coefficient example; inference coverage is not certified."
+    },
+    {
+      "id": "mixed",
+      "title": "Repeated-trial functional mixed effects",
+      "python": "run_functional_mixed_effects_workflow",
+      "rWorkflow": "etr_run_functional_mixed_effects_workflow",
+      "rEstimator": "etr_fit_functional_mixed_effects_regression",
+      "plot": "etr_plot_functional_mixed_effects_coefficient",
+      "families": [
+        "effects",
+        "hierarchy"
+      ],
+      "grid": "dense",
+      "estimand": "Fixed effects and participant/trial-dependent functional variation with declared random-effect structure.",
+      "inputs": "Repeated functional observations with valid participant IDs, trial IDs and fixed/random effect design.",
+      "assumptions": "Declare covariance, optimizer, repeated-unit clustering, residual dependence and resampling unit.",
+      "boundary": "Native R may use nlme or other declared backends rather than Python scipy/statsmodels; nominal whole-function bands are not generally calibrated.",
+      "plotNote": "Synthetic mixed-effects coefficient plot, not a source-identical Python fit."
+    },
+    {
+      "id": "generalized",
+      "title": "Generalized functional responses",
+      "python": "run_generalized_functional_workflow",
+      "rWorkflow": "etr_run_generalized_functional_workflow",
+      "rEstimator": "etr_fit_generalized_function_on_scalar_regression",
+      "plot": "etr_plot_generalized_function_on_scalar_predictions",
+      "families": [
+        "effects",
+        "outcomes"
+      ],
+      "grid": "dense",
+      "estimand": "Time-varying predictor effects for binary, grouped-binomial or count functional responses.",
+      "inputs": "Declared response family/link, outcome series, condition covariates and binomial denominators or Poisson exposures where relevant.",
+      "assumptions": "Use the correct distribution, link and mean/variance structure; inspect clustering, repeated units and support.",
+      "boundary": "Do not interpret a plotted response probability as a calibrated confidence interval; avoid implying that generalized repeated-trial inference is fully qualified.",
+      "plotNote": "Synthetic generalized response prediction for declared coefficients; not independently calibrated inference."
+    },
+    {
+      "id": "recurrence",
+      "title": "Recurrence and nonlinear state structure",
+      "python": "run_recurrence_workflow",
+      "rWorkflow": "etr_run_recurrence_workflow",
+      "rEstimator": "etr_recurrence_matrix",
+      "rSecondary": "etr_rqa_metrics",
+      "plot": "etr_plot_recurrence",
+      "families": [
+        "dynamics"
+      ],
+      "grid": "dense",
+      "estimand": "Descriptive revisits of reconstructed states, recurrence matrices and recurrence quantification.",
+      "inputs": "One ordered trajectory or reconstructed state path with known time spacing and metric.",
+      "assumptions": "Predeclare embedding dimension, time delay, recurrence radius, Theiler exclusion and RQA line-length thresholds.",
+      "boundary": "Recurrence structure alone cannot establish causal influence or nonlinear generator identification.",
+      "plotNote": "Real native R recurrence plot of synthetic trajectories; radius changes the visible density."
+    }
+  ]
+}

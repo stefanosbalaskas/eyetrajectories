@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="264" viewBox="0 0 1100 264" role="img" aria-labelledby="title desc"><title id="title">eyetrajectories horizontal wordmark</title><desc id="desc">Hexagonal eyetrajectories emblem beside the scientific package name and slogan.</desc>
+<g transform="translate(0 1) scale(.49)">
+<path d="M256 22 L456 138 L456 374 L256 490 L56 374 L56 138Z" fill="#0E8293"/>
+<path d="M256 41 L439 148 L439 364 L256 470 L73 364 L73 148Z" fill="#123A50"/>
+<path d="M147 218 Q256 118 365 218 Q256 305 147 218Z" fill="none" stroke="#F7FFFF" stroke-width="17" stroke-linejoin="round"/>
+<circle cx="256" cy="218" r="48" fill="#55DAD5"/><circle cx="256" cy="218" r="29" fill="#0A2537"/><circle cx="268" cy="207" r="11" fill="#FFF"/>
+<path d="M129 332 Q183 270 223 330 T314 330 T381 300" fill="none" stroke="#80ECE4" stroke-width="16" stroke-linecap="round"/>
+<g fill="#E6A05A" stroke="#FFF" stroke-width="7"><circle cx="168" cy="307" r="12"/><circle cx="252" cy="345" r="12"/><circle cx="342" cy="326" r="12"/></g>
+</g>
+<text x="253" y="127" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="65" font-weight="700" letter-spacing="-2.2" fill="#123A50">eyetrajectories</text>
+<text x="256" y="180" font-family="DejaVu Sans, Arial, Helvetica, sans-serif" font-size="22" fill="#517588">Functional analysis of eye-movement trajectories</text>
+</svg>

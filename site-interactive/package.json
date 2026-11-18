@@ -1,0 +1,12 @@
+{
+  "name": "eyetrajectories-website-browser-qualification",
+  "private": true,
+  "version": "0.0.6",
+  "description": "Website-only browser QA for immutable eyetrajectories v0.4.3",
+  "scripts": {
+    "test:browser": "node test_plot_atlas_browser.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.56.1"
+  }
+}

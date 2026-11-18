@@ -1,0 +1,257 @@
+name: Qualify Wave 7 research workflow portal and native R atlas before merge
+on:
+  pull_request:
+    branches:
+      - feat/pkgdown-scientific-site-20261116
+    paths:
+      - 'scripts/**'
+      - 'SITE_*.md'
+      - 'site-interactive/**'
+      - 'pkgdown/**'
+      - '_pkgdown.yml'
+      - '.github/workflows/pkgdown-prototype.yaml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: eyetrajectories-wave7-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  publish-website:
+    name: Qualify ten native scientific workflows, local CSV portal and Chromium atlas
+    # Playwright 1.56.1 supports Ubuntu 24.04, not ubuntu-latest 26.04.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      NOT_CRAN: 'true'
+      ET_RUN_PYTHON_TESTS: 'false'
+      MPLBACKEND: Agg
+    steps:
+      - name: Checkout qualified stable package source
+        uses: actions/checkout@v4
+        with:
+          ref: v0.4.3
+          path: pkg
+          persist-credentials: false
+      - name: Checkout isolated scientific website source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: website
+          persist-credentials: false
+      - name: Overlay site files without changing release source
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -qx 'Version: 0.4.3' pkg/DESCRIPTION
+          cp website/_pkgdown.yml pkg/
+          cp website/SITE_*.md pkg/
+          mkdir -p pkg/pkgdown pkg/scripts pkg/man/figures
+          echo 'ed3c8bc9a99f73aa2f21d992edb4c3d245702a5efafddc7aeda230aa6892e05c  website/branding/eyetrajectories-logo-240.png' | sha256sum -c -
+          cp website/branding/eyetrajectories-logo-240.png pkg/man/figures/logo.png
+          cp -a website/pkgdown/. pkg/pkgdown/
+          cp website/scripts/build_pkgdown_gallery.R pkg/scripts/
+          cp website/scripts/build_plot_atlas.R pkg/scripts/
+          cp website/scripts/extend_plot_atlas.R pkg/scripts/
+          cp website/scripts/extend_plot_atlas_wave2.R pkg/scripts/
+          cp website/scripts/extend_plot_atlas_wave3.R pkg/scripts/
+          cp website/scripts/extend_plot_atlas_wave4.R pkg/scripts/
+          cp website/scripts/extend_plot_atlas_wave5.R pkg/scripts/
+          test -s website/scripts/extend_plot_atlas.R
+          test -s website/scripts/extend_plot_atlas_wave2.R
+          test -s website/scripts/extend_plot_atlas_wave3.R
+          test -s website/scripts/extend_plot_atlas_wave4.R
+          test -s website/scripts/extend_plot_atlas_wave5.R
+          test -s website/scripts/test_plot_atlas.cjs
+          test -s website/site-interactive/plot-atlas.html
+          test -s website/site-interactive/plot-atlas-wave6.js
+          test -s website/site-interactive/test_plot_atlas_browser.mjs
+          test -s website/site-interactive/package.json
+          test -s website/site-interactive/research-portal.html
+          test -s website/site-interactive/research-portal.css
+          test -s website/site-interactive/research-portal.js
+          test -s website/site-interactive/research-workflows.json
+          test -s website/site-interactive/test_research_portal_browser.mjs
+          test -s website/scripts/build_research_portal.cjs
+          test -s website/scripts/test_research_portal.cjs
+          test -s website/SITE_RESEARCH_PORTAL.md
+          test -s pkg/pkgdown/index.md
+          test -s pkg/pkgdown/extra.css
+          test -s pkg/SITE_VALIDATION.md
+          test -s website/site-interactive/trajectory-explorer.html
+          test -s website/site-interactive/methods-laboratory.html
+          test -s website/scripts/test_methods_laboratory.cjs
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: release
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          working-directory: pkg
+          extra-packages: any::pkgdown, any::pkgload, any::ggplot2, any::jsonlite
+          needs: check
+      - name: Generate reproducible synthetic R figure gallery
+        shell: Rscript {0}
+        working-directory: pkg
+        run: source('scripts/build_pkgdown_gallery.R')
+      - name: Build complete scientific site and verify routes
+        shell: Rscript {0}
+        working-directory: pkg
+        run: |
+          pkgdown::build_site(pkg='.', examples=FALSE, devel=TRUE,
+                              new_process=FALSE, install=FALSE, preview=FALSE)
+          stopifnot(file.copy('../website/site-interactive/trajectory-explorer.html',
+                              'site/trajectory-explorer.html', overwrite=TRUE))
+          stopifnot(file.copy('../website/site-interactive/methods-laboratory.html',
+                              'site/methods-laboratory.html', overwrite=TRUE))
+          stopifnot(file.copy('../website/site-interactive/plot-atlas.html',
+                              'site/plot-atlas.html', overwrite=TRUE))
+          stopifnot(file.copy('../website/site-interactive/plot-atlas-wave6.js',
+                              'site/plot-atlas-wave6.js', overwrite=TRUE))
+          for (name in c('research-portal.html', 'research-portal.css',
+                         'research-portal.js')) {
+            stopifnot(file.copy(file.path('../website/site-interactive',name),
+                                file.path('site',name),overwrite=TRUE))
+          }
+          dir.create('site/branding', recursive=TRUE, showWarnings=FALSE)
+          assets <- list.files('../website/branding', full.names=TRUE,
+                               pattern='\\.(png|svg)$')
+          stopifnot(length(assets) >= 4L)
+          stopifnot(all(file.copy(assets, 'site/branding/', overwrite=TRUE)))
+          stopifnot(file.copy('../website/branding/eyetrajectories-symbol.svg',
+                              'site/favicon.svg', overwrite=TRUE))
+          home <- paste(readLines('site/index.html', warn=FALSE), collapse='\n')
+          stopifnot(grepl('class="et-hero-content"', home, fixed=TRUE))
+          stopifnot(grepl('src="branding/eyetrajectories-logo-240.png"', home, fixed=TRUE))
+          stopifnot(grepl('10.5281/zenodo.24288857', home, fixed=TRUE))
+          stopifnot(grepl('href="plot-atlas.html"', home, fixed=TRUE))
+          stopifnot(grepl('href="research-portal.html"', home, fixed=TRUE))
+          stopifnot(grepl('src="trajectory-explorer.html"', home, fixed=TRUE))
+          stopifnot(!grepl('class="sourceCode"', home, fixed=TRUE))
+          stopifnot(grepl('class="et-interactive-showcase"', home, fixed=TRUE))
+          stopifnot(grepl('class="et-advanced-grid"', home, fixed=TRUE))
+          stopifnot(grepl('href="methods-laboratory.html"', home, fixed=TRUE))
+          stopifnot(grepl('href="SITE_INTERACTIVE.html"', home, fixed=TRUE))
+          atlas_page <- paste(readLines('site/plot-atlas.html', warn=FALSE), collapse='\n')
+          stopifnot(grepl('id="onlyPreview" type="checkbox" checked',
+                         atlas_page, fixed=TRUE))
+          stopifnot(grepl('id="coverageNote"', atlas_page, fixed=TRUE))
+          stopifnot(file.exists('site/reference/etr_fit_fpca.html'),
+                    file.exists('site/reference/etr_dtw.html'),
+                    file.exists('site/reference/etr_rqa_metrics.html'))
+          gallery <- paste(readLines('site/SITE_GALLERY.html', warn=FALSE), collapse='\n')
+          stopifnot(sum(gregexpr('<figure class="et-figure', gallery,
+                                 fixed=TRUE)[[1L]] > 0L) >= 5L)
+          required <- c(
+            'site/index.html', 'site/reference/index.html',
+            'site/SITE_START.html', 'site/SITE_METHODS.html',
+            'site/SITE_BRIDGE.html', 'site/SITE_VALIDATION.html',
+            'site/SITE_GALLERY.html', 'site/SITE_INTERACTIVE.html',
+            'site/SITE_BRANDING.html', 'site/SITE_CITATION.html',
+            'site/SITE_PLOTTING_ATLAS.html', 'site/plot-atlas.html',
+            'site/SITE_RESEARCH_PORTAL.html',
+            'site/research-portal.html',
+            'site/research-portal.css', 'site/research-portal.js',
+            'site/branding/eyetrajectories-logo-240.png',
+            'site/branding/eyetrajectories-symbol.svg',
+            'site/branding/eyetrajectories-horizontal.svg',
+            'site/favicon.svg',
+            'site/trajectory-explorer.html', 'site/methods-laboratory.html',
+            paste0('site/gallery/', c('01_multilevel_variance',
+              '02_participant_mean_band', '03_group_contrast_band',
+              '04_sparse_support', '05_transfer_entropy_surrogates'), '.png'))
+          stopifnot(all(file.exists(required)))
+          for (p in required) stopifnot(file.info(p)$size > 100)
+          message('EYETRAJECTORIES_043_WEBSITE_BUILD_PASS')
+      - name: Build full exported API atlas and render real native R plots
+        shell: Rscript {0}
+        working-directory: pkg
+        run: source('scripts/build_plot_atlas.R')
+      - name: Generate verified ten-route workflow map from frozen native R exports
+        shell: bash
+        run: |
+          node website/scripts/build_research_portal.cjs pkg website/site-interactive/research-workflows.json
+          test -s pkg/site/research-workflows.js
+          test -s pkg/site/research-workflows.json
+          test -s pkg/site/research-portal-manifest.txt
+      - name: Verify interactive trajectory JavaScript syntax
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import pathlib, re
+          page=pathlib.Path('pkg/site/trajectory-explorer.html').read_text(encoding='utf-8')
+          match=re.search(r'<script>([\s\S]*?)</script>', page)
+          assert match, 'Missing interactive trajectory script'
+          pathlib.Path('/tmp/eyetrajectories-lab.js').write_text(match.group(1), encoding='utf-8')
+          assert 'requestAnimationFrame' in match.group(1)
+          assert 'URL.createObjectURL' in match.group(1)
+          PY
+          node --check /tmp/eyetrajectories-lab.js
+          node website/scripts/test_methods_laboratory.cjs pkg/site/methods-laboratory.html
+          node website/scripts/test_plot_atlas.cjs pkg/site
+          node --check pkg/site/research-portal.js
+          node website/scripts/test_research_portal.cjs pkg/site
+          test -s pkg/site/plot-atlas/WAVE3_AUDIT.txt
+          grep -q 'Rendered native plotting functions: 14' pkg/site/plot-atlas/WAVE3_AUDIT.txt
+          grep -q 'Not yet rendered: 0' pkg/site/plot-atlas/WAVE3_AUDIT.txt
+          test -s pkg/site/plot-atlas/WAVE4_AUDIT.txt
+          grep -q 'Rendered native plotting functions: 11' pkg/site/plot-atlas/WAVE4_AUDIT.txt
+          grep -q 'Not yet rendered: 0' pkg/site/plot-atlas/WAVE4_AUDIT.txt
+          test -s pkg/site/plot-atlas/WAVE5_AUDIT.txt
+          grep -q 'Rendered native plotting functions: 8' pkg/site/plot-atlas/WAVE5_AUDIT.txt
+          grep -q 'Not yet rendered: 0' pkg/site/plot-atlas/WAVE5_AUDIT.txt
+          grep -q '^Directly illustrated exported native functions: 81' pkg/site/plot-atlas/MANIFEST.txt
+          test -s pkg/site/plot-atlas/WAVE6_AUDIT.txt
+          grep -q '^Scientific method categories: 11' pkg/site/plot-atlas/WAVE6_AUDIT.txt
+          grep -q '^Native plotting functions: 81' pkg/site/plot-atlas/WAVE6_AUDIT.txt
+          test "$(find pkg/site/plot-atlas/scripts -name '*.R' -type f | wc -l)" -ge 108
+          node --check pkg/site/plot-atlas-wave6.js
+          grep -q "NATIVE_PLOT_ATLAS_EXTENSION_REPORT" website/scripts/extend_plot_atlas.R
+          grep -q "^Additional direct native R plot exports" pkg/site/plot-atlas/EXTENSION_AUDIT.txt
+          test "$(find pkg/site/plot-atlas/images -name '*.png' -type f | wc -l)" -ge 108
+          grep -q '^Unrendered candidate exports:' pkg/site/plot-atlas/EXTENSION_AUDIT.txt
+      - name: Exercise desktop and mobile interactions in real Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm --prefix website/site-interactive install --no-audit --no-fund
+          npm --prefix website/site-interactive exec -- playwright install --with-deps chromium
+          node website/site-interactive/test_plot_atlas_browser.mjs pkg/site website/browser-evidence
+          node website/site-interactive/test_research_portal_browser.mjs pkg/site website/browser-evidence
+      - name: Upload Chromium visual interaction evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wave7-research-workflow-chromium-desktop-mobile-screenshots
+          path: website/browser-evidence/
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Install independent SVG website favicon
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          from html import escape
+          root = Path('pkg/site')
+          href = '/eyetrajectories/branding/eyetrajectories-symbol.svg'
+          tag = '<link rel="icon" type="image/svg+xml" href="' + escape(href) + '">'
+          pages = list(root.rglob('*.html'))
+          assert len(pages) > 10, 'Expected generated pkgdown documentation pages'
+          for page in pages:
+              content = page.read_text(encoding='utf-8')
+              assert '</head>' in content, str(page)
+              if tag not in content:
+                  page.write_text(content.replace('</head>', tag + '\n</head>', 1), encoding='utf-8')
+          assert (root / 'branding/eyetrajectories-logo-240.png').is_file()
+          assert (root / 'branding/eyetrajectories-symbol.svg').is_file()
+          print('BRANDING_ROUTES_PASS', len(pages), 'HTML pages')
+          PY
+      - name: Upload website build evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: wave7-research-workflow-portal-source-qualified-site
+          path: pkg/site/
+          if-no-files-found: error
+          retention-days: 14
