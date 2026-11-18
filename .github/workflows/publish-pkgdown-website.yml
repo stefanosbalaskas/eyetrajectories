@@ -200,6 +200,58 @@ jobs:
           test -s pkg/site/research-workflows.js
           test -s pkg/site/research-workflows.json
           test -s pkg/site/research-portal-manifest.txt
+      - name: Generate complete source-derived scientific Method Registry and Atlas
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 research/scripts/generate_scientific_method_registry.py \
+            --namespace pkg/NAMESPACE \
+            --curated research/inst/method-registry/curated-evidence.json \
+            --output pkg/site/method-registry-v0.4.3.json
+          node website/scripts/build_methods_atlas.cjs pkg/site pkg/site/method-registry-v0.4.3.json website/site-interactive
+          node --check pkg/site/methods-atlas-data.js
+          node --check pkg/site/methods-atlas.js
+          test -s pkg/site/methods-atlas-manifest.json
+          test -s pkg/site/method-registry-v0.4.3.csv
+      - name: Execute four published-native R research workflows and retain outputs
+        shell: Rscript {0}
+        working-directory: pkg
+        run: |
+          if (!requireNamespace("fdapace",quietly=TRUE))
+            install.packages("fdapace",repos=Sys.getenv("RSPM","https://cloud.r-project.org"))
+          pkgload::load_all(".",quiet=TRUE)
+          stopifnot(as.character(utils::packageVersion("eyetrajectories"))=="0.4.3")
+          Sys.setenv(ET_FLAGSHIP_OUTPUT="site/workflows")
+          source_files <- file.path("../research/inst/examples/flagship",c(
+            "01_complete_gaze_trajectory.R",
+            "02_multilevel_functional_variation.R",
+            "03_sparse_irregular_recovery.R",
+            "04_uncertainty_paired_contrast.R"))
+          for (source_file in source_files) {
+            parse(file=source_file)
+            source(source_file,local=new.env(parent=globalenv()))
+          }
+          for (dir in file.path("site/workflows",c(
+            "01-dense","02-multilevel","03-sparse","04-uncertainty"))) {
+            stopifnot(dir.exists(dir),
+              length(list.files(dir,pattern="[.]pdf$"))==3L,
+              file.exists(file.path(dir,"METHODS_AND_LIMITATIONS.md")),
+              file.exists(file.path(dir,"sessionInfo.txt")))
+          }
+          stopifnot(all(file.copy(source_files,"site/workflows",overwrite=TRUE)))
+          cat("FOUR_R043_WEBSITE_FLAGSHIP_EXAMPLES_PASS\n")
+      - name: Render R-generated flagship figure previews and verify complete site
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y poppler-utils
+          pdftoppm -f 1 -singlefile -png -r 135 pkg/site/workflows/01-dense/01_planar_trajectories.pdf pkg/site/workflows/01-dense/preview
+          pdftoppm -f 1 -singlefile -png -r 135 pkg/site/workflows/02-multilevel/02_descriptive_variance.pdf pkg/site/workflows/02-multilevel/preview
+          pdftoppm -f 1 -singlefile -png -r 135 pkg/site/workflows/03-sparse/02_sparse_known_truth.pdf pkg/site/workflows/03-sparse/preview
+          pdftoppm -f 1 -singlefile -png -r 135 pkg/site/workflows/04-uncertainty/01_paired_difference_bands.pdf pkg/site/workflows/04-uncertainty/preview
+          node website/scripts/test_methods_atlas.cjs pkg/site
+          echo 'SCIENTIFIC_904_METHOD_ATLAS_AND_FOUR_R_RENDERED_FLAGSHIPS_PASS'
       - name: Verify interactive trajectory JavaScript syntax
         shell: bash
         run: |
