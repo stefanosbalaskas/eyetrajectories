@@ -41,6 +41,13 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Parse all benchmark R entrypoints before expensive package setup
+        shell: Rscript {0}
+        run: |
+          scripts <- list.files("candidate/benchmarks",pattern="[.]R$",full.names=TRUE)
+          stopifnot(length(scripts)==3L)
+          for (file in scripts) parse(file=file)
+          cat("R_BENCHMARK_SOURCE_SYNTAX_PREFLIGHT_PASS\\n")
       - name: Install only required R/Python runtime dependencies
         shell: Rscript {0}
         run: |
