@@ -1,3 +1,18 @@
+# eyetrajectories 0.4.4 (release candidate; NOT yet published)
+
+## Native R trajectory distance optimization
+
+- Derived directly from the immutable published v0.4.3 source baseline. The development `main` history is not treated as the release source.
+- Optimizes `etr_pairwise_l2()` for complete common-grid trajectories in strict native-R mode using centered, quadrature-weighted matrix geometry and `stats::dist`. Preserves the archived function signature, singleton behavior, numerical safety fallback and original scalar compatibility mode (`python_boundary_mode = TRUE`).
+- Retains existing experimental-method caveats; does not claim scientific certification of the broader R/Python interfaces.
+
+## Release qualification
+
+- The preceding unversioned candidate `0.4.3.9000` passed three-platform regression, synthetic installed-package scaling, full CRAN-style and official OneStop fixation-level installed-package gates at SHA `a435f2c3c36ebc7659cb43b4d0709d3b80f43f29`.
+- Version `0.4.4` must independently pass the same checks on its **own exact source tarball and commit**. Its results must not be inferred from the development candidate.
+- OneStop evidence uses public repeated-reading fixation summaries on declared interpolated grids, not unprocessed 1000 Hz signals. Numerical parity for L² does not establish general inferential validity of experimental methods.
+- Publication, tagging, CRAN submission and Zenodo deposit remain gated on the new version's qualification.
+
 # eyetrajectories 0.4.3 (CRAN incoming pretest correction candidate)
 
 ## First-submission pretest remediation

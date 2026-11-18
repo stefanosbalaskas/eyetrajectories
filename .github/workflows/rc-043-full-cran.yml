@@ -1,0 +1,136 @@
+name: Full 0.4.3-derived release-candidate CRAN qualification
+
+on:
+  pull_request:
+    branches: [release/0.4.4-l2-qualification-base]
+    paths:
+      - 'DESCRIPTION'
+      - 'R/**'
+      - 'tests/**'
+      - '.github/workflows/rc-043-full-cran.yml'
+      - '.Rbuildignore'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  full-as-cran-qualification:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 65
+    env:
+      RETICULATE_PYTHON: NA
+      ET_RUN_PYTHON_TESTS: "false"
+      _R_CHECK_FORCE_SUGGESTS_: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-pandoc@v2
+      - uses: r-lib/actions/setup-tinytex@v2
+      - name: Install Adobe PostScript font metrics required by the R Rd PDF manual
+        shell: Rscript {0}
+        run: |
+          # TinyTeX Windows exposes tlmgr.bat, not necessarily a Bash tlmgr.
+          # Use tinytex R's cross-platform executable lookup.
+          if (!requireNamespace("tinytex",quietly=TRUE))
+            install.packages("tinytex",
+              repos=Sys.getenv("RSPM","https://cloud.r-project.org"))
+          tinytex::tlmgr_install(c("courier","times","helvetic"))
+          font <- suppressWarnings(system2("kpsewhich","pcrr8t.tfm",
+            stdout=TRUE,stderr=TRUE))
+          stopifnot(length(font)>0L,
+             any(grepl("pcrr8t.tfm",font,fixed=TRUE)))
+          cat("TEX_COURIER_T1_FONT_METRICS_PRESENT\\n")
+      - name: Verify PDF indexing toolchain with an actual makeindex smoke test
+        shell: Rscript {0}
+        run: |
+          if (!nzchar(Sys.which("makeindex"))) {
+            if (!requireNamespace("tinytex",quietly=TRUE))
+              install.packages("tinytex",
+                repos=Sys.getenv("RSPM","https://cloud.r-project.org"))
+            tinytex::tlmgr_install("makeindex")
+          }
+          stopifnot(nzchar(Sys.which("pdflatex")),
+                    nzchar(Sys.which("pandoc")),
+                    nzchar(Sys.which("makeindex")))
+          dir <- tempfile("et-index-preflight-")
+          dir.create(dir)
+          index_smoke <- function(dir) {
+            oldwd <- getwd()
+            on.exit(setwd(oldwd),add=TRUE)
+            setwd(dir)
+            # TeX Live openout_any=p forbids writing an .ind next to an
+            # absolute input path. makeindex must run INSIDE its temp dir
+            # with a relative .idx input, exactly as Rd2pdf expects.
+            writeLines("\\indexentry{eyetrajectories}{1}","et-index.idx")
+            status <- suppressWarnings(system2(Sys.which("makeindex"),
+                         args="et-index.idx",stdout=TRUE,stderr=TRUE))
+            if (!file.exists("et-index.ind"))
+              stop("makeindex did not generate index: ",
+                   paste(status,collapse=" | "))
+            stopifnot(file.info("et-index.ind")$size>0)
+            writeLines(c("MAKEINDEX_PDF_INDEX_PREFLIGHT_PASS",
+                        paste("makeindex:",Sys.which("makeindex")),
+                        paste("index bytes:",file.info("et-index.ind")$size)),
+                       "index-preflight.txt")
+          }
+          index_smoke(dir)
+          cat("MAKEINDEX_PDF_INDEX_PREFLIGHT_PASS\\n")
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck, any::pkgbuild, any::digest
+          needs: check
+      - name: Build distributable source tarball and run --as-cran on that archive
+        shell: Rscript {0}
+        run: |
+          stopifnot(as.character(read.dcf("DESCRIPTION","Version")[1,1])=="0.4.4")
+          temp_build <- tempfile("etr-candidate-source-")
+          dir.create(temp_build)
+          tarball <- pkgbuild::build(path=".", dest_path=temp_build,
+                  vignettes=FALSE, manual=FALSE, quiet=FALSE)
+          stopifnot(identical(basename(tarball), "eyetrajectories_0.4.4.tar.gz"))
+          source_files <- utils::untar(tarball,list=TRUE)
+          dir.create("full_rc_evidence",recursive=TRUE,showWarnings=FALSE)
+          stopifnot(length(source_files)>500L,
+                    !any(grepl("(^|/)benchmarks(/|$)",source_files)))
+          writeLines(c(paste("SOURCE_TARBALL:",basename(tarball)),
+                       paste("SOURCE_TARBALL_SHA256:",digest::digest(file=tarball,algo="sha256")),
+                       "Excluded bench tools from release source: PASS"),
+                     "full_rc_evidence/source_tarball_manifest.txt")
+          result <- rcmdcheck::rcmdcheck(
+            path=tarball,args="--as-cran",
+            check_dir=file.path(getwd(),"full_rc_evidence","check"),
+            quiet=FALSE,error_on="never")
+          status <- c(
+            "Release candidate: v0.4.4 from frozen v0.4.3 source; NOT published",
+            paste("Platform:",R.version$platform),
+            paste("Errors:",length(result$errors)),
+            paste("Warnings:",length(result$warnings)),
+            paste("Notes:",length(result$notes)),
+            "",
+            "No stable release, new CRAN submission or Zenodo deposit is created.",
+            "Any NOTE must be independently assessed rather than silently ignored.",
+            "",
+            "Full R CMD --as-cran including PDF manual; pdflatex and pandoc must be present.",
+            "Optional dependency tests are bounded by _R_CHECK_FORCE_SUGGESTS_=false."
+          )
+          writeLines(c(status,capture.output(print(result))),
+                     "full_rc_evidence/qualification.txt")
+          writeLines(capture.output(utils::sessionInfo()),
+                     "full_rc_evidence/sessionInfo.txt")
+          stopifnot(length(result$errors)==0L,length(result$warnings)==0L)
+          cat("RC_043_DERIVED_FULL_AS_CRAN_ZERO_ERROR_WARNING_PASS\n")
+      - name: Upload full qualification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rc-043-full-as-cran-${{ matrix.os }}
+          path: full_rc_evidence/
+          retention-days: 60
+          if-no-files-found: warn

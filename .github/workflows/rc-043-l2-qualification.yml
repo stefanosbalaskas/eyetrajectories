@@ -1,0 +1,50 @@
+name: v0.4.4 candidate L2 numerical and v0.4.3 API preservation tests
+
+on:
+  pull_request:
+    branches:
+      - release/0.4.4-l2-qualification-base
+    paths:
+      - 'R/native-distances.R'
+      - 'tests/testthat/test-rc-l2-fastpath-043.R'
+      - 'DESCRIPTION'
+      - '.github/workflows/rc-043-l2-qualification.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rc-l2-contract:
+    name: Frozen 0.4.3 L2 contract (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-latest, macos-latest]
+    env:
+      RETICULATE_PYTHON: NA
+      R_REMOTES_NO_ERRORS_FROM_WARNINGS: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - name: Install minimal test dependencies
+        shell: Rscript {0}
+        run: |
+          install.packages(c("pkgload", "testthat", "reticulate"),
+            repos = Sys.getenv("RSPM", "https://cloud.r-project.org"))
+      - name: Verify baseline metadata, syntax, source and L2 mathematical preservation
+        shell: Rscript {0}
+        run: |
+          d <- read.dcf("DESCRIPTION", fields="Version")
+          stopifnot(identical(unname(d[1,1]),"0.4.4"))
+          parse(file="R/native-distances.R")
+          parse(file="tests/testthat/test-rc-l2-fastpath-043.R")
+          pkgload::load_all(".", quiet=TRUE)
+          stopifnot(as.character(utils::packageVersion("eyetrajectories"))=="0.4.4")
+          testthat::test_local(".", filter="rc-l2-fastpath-043",
+            reporter="summary", stop_on_failure=TRUE)
+          cat("RELEASE_043_DERIVED_L2_FOCUS_PASS\n")

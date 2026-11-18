@@ -2,7 +2,7 @@
 
 **Functional analysis of time-indexed eye-tracking trajectories in R**
 
-**CRAN resubmission candidate: 0.4.3.** This repository contains scientific software under active development. This release candidate is being evaluated for a *limited experimental R package release* and is **not** a claim of CRAN acceptance or independently certified numerical parity with all Python methods.
+**Isolated v0.4.4 release candidate — not yet published or submitted to CRAN.** This repository contains scientific software under active development. This release candidate is being evaluated for a *limited experimental R package release* and is **not** a claim of CRAN acceptance or independently certified numerical parity with all Python methods.
 
 ## Scope
 
@@ -12,13 +12,13 @@ An **optional Python 1.2 bridge** through `reticulate` exposes selected function
 
 ## Install the exact source revision
 
-For source installation while release review is ongoing, use a specific GitHub revision:
+For pre-release testing, the following mutable candidate branch can be installed. For auditable analyses, replace its `ref` with the full commit SHA after version-specific CI has passed:
 
 ```r
 install.packages("remotes")
 remotes::install_github(
   "stefanosbalaskas/eyetrajectories",
-  ref = "release/eyetrajectories-0.4.3-cran-resubmission-20261116",
+  ref = "release/0.4.4-l2-final-20261118",
   dependencies = NA
 )
 library(eyetrajectories)
@@ -53,9 +53,11 @@ This is **synthetic demonstration data**, not human observations, and the output
 
 A frozen Python 1.2 public-export ledger covers **508 names**, but this is a **provisional author-side source-contract inventory**, not 508 independent scientific certifications. The development qualification documentation records **0 independently certified full Python contracts**. Author-side unit tests and differential checks provide evidence only for their stated inputs and constraints.
 
-The CRAN-style release checks test packaging, examples and included tests. Passing them does **not** independently certify estimator equivalence, calibration of bootstrap confidence bands, causal inference from transfer entropy, or generalization to untested acquisition and sampling designs.
+The release-candidate CRAN-style checks test packaging, examples and included tests. Passing them does **not** independently certify estimator equivalence, calibration of bootstrap confidence bands, causal inference from transfer entropy, or generalization to untested acquisition and sampling designs.
 
 ## Reproduce qualification
+
+The v0.4.4 branch is derived from the qualified [v0.4.3-preserving L² candidate PR #211](https://github.com/stefanosbalaskas/eyetrajectories/pull/211). Its exact-v0.4.4 checks must be reviewed separately. The following links describe earlier scientific assurance and scope.
 
 - [Scientific versus source parity](https://github.com/stefanosbalaskas/eyetrajectories/blob/release/eyetrajectories-0.4.2-rc1-20261116/docs/SCIENTIFIC_VS_SOURCE_PARITY.md)
 - [Experimental R release scope](https://github.com/stefanosbalaskas/eyetrajectories/blob/release/eyetrajectories-0.4.2-rc1-20261116/docs/experimental-release-scope.md)
@@ -63,7 +65,7 @@ The CRAN-style release checks test packaging, examples and included tests. Passi
 - [GitHub Actions](https://github.com/stefanosbalaskas/eyetrajectories/actions)
 - [Issue tracker](https://github.com/stefanosbalaskas/eyetrajectories/issues)
 
-The complete prior development README remains available in Git history; this release-candidate README focuses on the supported user-facing scope. The website prototype is maintained separately in [PR #180](https://github.com/stefanosbalaskas/eyetrajectories/pull/180).
+The complete prior development README remains available in Git history; this release-candidate README focuses on the supported user-facing scope. The deployed scientific website and development-methods atlas have a separate lifecycle; they are not evidence of release-candidate numerical qualification.
 
 ## License
 

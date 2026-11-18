@@ -1,3 +1,15 @@
+## eyetrajectories 0.4.4 — versioned release candidate, not yet submitted
+
+This candidate is derived from the published v0.4.3 GitHub tag (`20e6db830d480b55456c2acf85e5fdb12cfa398f`). The optimization changes the strict native-R `etr_pairwise_l2()` path while retaining the published API, the original scalar boundary mode, and a numerically safe fallback. No changes from the divergent development `main` are incorporated.
+
+**Prior qualification only:** the preceding `0.4.3.9000` commit `a435f2c3c36ebc7659cb43b4d0709d3b80f43f29` passed 12 CI jobs (four workflows on Windows, Linux and macOS). Those jobs included `R CMD check --as-cran` with 0 errors, 0 warnings and two environment/submission notes, plus exact-installed synthetic and public OneStop fixation-data comparisons. These results do NOT certify the new `0.4.4` archive.
+
+**Version-specific gate:** rebuild `eyetrajectories_0.4.4.tar.gz`, record SHA-256, run its exact-archive CRAN-style matrix and independent numerical comparisons, inspect all notes/skips, and verify the source archive excludes benchmarks. Do not submit, tag or make a new Zenodo deposit before the version-specific gates pass.
+
+**Scientific scope:** native R core with experimental advanced methods, separate optional Python interop, and restricted method-specific performance claims. Real OneStop repeated-reading fixation-level interpolation is not raw-sample validation of the 904-interface catalog.
+
+---
+
 ## eyetrajectories 0.4.3 — first-submission CRAN pretest resubmission
 
 **Status:** revised source is undergoing six-platform CRAN-style validation.
