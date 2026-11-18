@@ -15,6 +15,7 @@ import json
 from pathlib import Path
 import re
 import shutil
+import subprocess
 import sys
 import zipfile
 
@@ -84,6 +85,16 @@ def main() -> None:
     if not re.search(r"(?m)^Version:\s*0\.4\.3\s*$", description):
         raise ValueError("Stable checkout is not exact v0.4.3 metadata")
     nonempty(stable / "NAMESPACE", 1000)
+    stable_head = subprocess.run(
+        ["git", "-C", str(stable), "rev-parse", "HEAD"],
+        check=True, capture_output=True, text=True).stdout.strip()
+    if stable_head != STABLE_SHA:
+        raise ValueError(f"Published source HEAD mismatches immutable v0.4.3 tag: {stable_head}")
+    research_head = subprocess.run(
+        ["git", "-C", str(base), "rev-parse", "HEAD"],
+        check=True, capture_output=True, text=True).stdout.strip()
+    if not re.fullmatch(r"[0-9a-f]{40}", research_head):
+        raise ValueError("Research source Git commit cannot be verified")
 
     copy_checked(stable / "DESCRIPTION", payload / "published-package" / "DESCRIPTION")
     copy_checked(stable / "NAMESPACE", payload / "published-package" / "NAMESPACE")
@@ -144,7 +155,7 @@ executed R calls.
 
 Re-run: check out the recorded research-source commit and exact v0.4.3
 package; install R >=4.2, reticulate and optional fdapace; set
-ET_FLAGSHIP_OUTPUT and source the four R scripts. Review METHOD_AND_LIMITATIONS
+ET_FLAGSHIP_OUTPUT and source the four R scripts. Review METHODS_AND_LIMITATIONS
 files and sessionInfo before interpreting results.
 
 This archive is an illustrative reproducibility bundle, NOT independent
@@ -171,8 +182,7 @@ and software revision and distinguish generated evidence from source integrity.
         "schema": "eyetrajectories-four-synthetic-flagships-reproducibility/v1",
         "source_package_release": STABLE_REF,
         "source_package_commit": STABLE_SHA,
-        "research_source_commit": str(
-            __import__("os").environ.get("GITHUB_SHA", "LOCAL_UNSPECIFIED")),
+        "research_source_commit": research_head,
         "data_type": "entirely_synthetic",
         "contains_private_human_observations": False,
         "qualified_as_independent_scientific_truth": False,
