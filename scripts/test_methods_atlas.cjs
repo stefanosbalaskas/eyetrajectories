@@ -15,6 +15,8 @@ assert.equal(data.methods.filter(m=>m.name==="etr_fit_sparse_pace")[0].backend,"
 assert.equal(data.methods.filter(m=>m.name==="etr_fit_multilevel_fpca")[0].evidence_status,"descriptive_only");
 assert.equal(data.methods.filter(m=>m.name==="etr_bootstrap_mean_band")[0].evidence_status,"simulation_characterized");
 assert(data.methods.some(m=>m.backend==="python-bridge"));
+assert(!data.methods.some(m=>m.backend==="native-r"));
+assert.equal(data.methods.filter(m=>m.backend==="native-R").length,502);
 assert(data.methods.some(m=>m.classification_basis==="provisional_lexical"));
 const js=read("methods-atlas-data.js");
 const global={window:{}};
