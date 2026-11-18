@@ -85,7 +85,7 @@ try{
  // Explicit source mapping; python-bridge API is not mislabeled native R.
  await page.locator("#backend").selectOption("python-bridge");
  await expectCount(page,383);
- assert.match(await page.locator("#results").innerText(),/Python bridge/i);
+ assert.match(await page.locator("#results").innerText(),/python-bridge/i);
  await page.locator("#filters button[type=reset]").click();
  await expectCount(page,904);
 
