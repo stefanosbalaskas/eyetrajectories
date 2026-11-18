@@ -74,18 +74,18 @@ jobs:
           cat("MAKEINDEX_PDF_INDEX_PREFLIGHT_PASS\\n")
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck, any::pkgbuild
+          extra-packages: any::rcmdcheck, any::pkgbuild, any::digest
           needs: check
       - name: Build distributable source tarball and run --as-cran on that archive
         shell: Rscript {0}
         run: |
           stopifnot(as.character(read.dcf("DESCRIPTION","Version")[1,1])=="0.4.3.9000")
-          dir.create("full_rc_evidence",recursive=TRUE,showWarnings=FALSE)
           temp_build <- tempfile("etr-candidate-source-")
           dir.create(temp_build)
           tarball <- pkgbuild::build(path=".", dest_path=temp_build,
                   vignettes=FALSE, manual=FALSE, quiet=FALSE)
           source_files <- utils::untar(tarball,list=TRUE)
+          dir.create("full_rc_evidence",recursive=TRUE,showWarnings=FALSE)
           stopifnot(length(source_files)>500L,
                     !any(grepl("(^|/)benchmarks(/|$)",source_files)))
           writeLines(c(paste("SOURCE_TARBALL:",basename(tarball)),
