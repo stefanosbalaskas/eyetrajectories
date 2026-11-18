@@ -61,16 +61,26 @@ jobs:
                     nzchar(Sys.which("makeindex")))
           dir <- tempfile("et-index-preflight-")
           dir.create(dir)
-          idx <- file.path(dir,"et-index.idx")
-          writeLines("\\indexentry{eyetrajectories}{1}",idx)
-          status <- suppressWarnings(system2(Sys.which("makeindex"),
-                       args=shQuote(idx),stdout=TRUE,stderr=TRUE))
-          ind <- sub("[.]idx$",".ind",idx)
-          stopifnot(file.exists(ind),file.info(ind)$size>0)
-          writeLines(c("MAKEINDEX_PDF_INDEX_PREFLIGHT_PASS",
-                       paste("makeindex:",Sys.which("makeindex")),
-                       paste("index bytes:",file.info(ind)$size)),
-                     file.path(dir,"index-preflight.txt"))
+          index_smoke <- function(dir) {
+            oldwd <- getwd()
+            on.exit(setwd(oldwd),add=TRUE)
+            setwd(dir)
+            # TeX Live openout_any=p forbids writing an .ind next to an
+            # absolute input path. makeindex must run INSIDE its temp dir
+            # with a relative .idx input, exactly as Rd2pdf expects.
+            writeLines("\\indexentry{eyetrajectories}{1}","et-index.idx")
+            status <- suppressWarnings(system2(Sys.which("makeindex"),
+                         args="et-index.idx",stdout=TRUE,stderr=TRUE))
+            if (!file.exists("et-index.ind"))
+              stop("makeindex did not generate index: ",
+                   paste(status,collapse=" | "))
+            stopifnot(file.info("et-index.ind")$size>0)
+            writeLines(c("MAKEINDEX_PDF_INDEX_PREFLIGHT_PASS",
+                        paste("makeindex:",Sys.which("makeindex")),
+                        paste("index bytes:",file.info("et-index.ind")$size)),
+                       "index-preflight.txt")
+          }
+          index_smoke(dir)
           cat("MAKEINDEX_PDF_INDEX_PREFLIGHT_PASS\\n")
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
