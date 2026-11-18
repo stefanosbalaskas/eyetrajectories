@@ -26,12 +26,18 @@ repo:
 navbar:
   bg: light
   structure:
-    left: [start, research, labs, atlas, performance, methods, gallery, reference, bridge, validation, cite, news]
+    left: [start, workflows, registry, research, labs, atlas, performance, methods, gallery, reference, bridge, validation, cite, news]
     right: [search, github, lightswitch]
   components:
     start:
       text: Get started
       href: SITE_START.html
+    workflows:
+      text: Four R workflows
+      href: flagship-workflows.html
+    registry:
+      text: Methods atlas
+      href: methods-atlas.html
     research:
       text: Research portal
       href: SITE_RESEARCH_PORTAL.html

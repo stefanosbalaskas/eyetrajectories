@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="description" content="Search the 904 exports of eyetrajectories v0.4.3 by intended scientific tier, backend and transparently curated validation evidence.">
+<title>Scientific Methods Atlas | eyetrajectories v0.4.3</title>
+<link rel="stylesheet" href="methods-atlas.css">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<script src="methods-atlas-data.js" defer></script>
+<script src="methods-atlas.js" defer></script>
+</head>
+<body>
+<main class="shell">
+<header class="hero">
+ <div class="eyebrow">EYETRAJECTORIES · PUBLISHED API V0.4.3 · SCIENTIFIC METHOD DISCOVERY</div>
+ <h1>Choose a research method, then inspect its evidence.</h1>
+ <p>Browse every exported interface from the frozen R release. A methodological tier identifies the intended role of a function, while evidence status identifies what has actually been documented. Provisional classifications are not certifications.</p>
+ <nav aria-label="Site navigation" class="links">
+  <a href="index.html">Package homepage</a>
+  <a href="flagship-workflows.html">Four complete R workflows</a>
+  <a href="research-portal.html">Research design navigator</a>
+  <a href="plot-atlas.html">Real R figure atlas</a>
+  <a href="SITE_VALIDATION.html">Scientific validation</a>
+ </nav>
+</header>
+<section class="stats" id="statistics" aria-label="Registry coverage">
+ <div class="stat"><strong id="totalExports">904</strong><span>Exact released R exports</span></div>
+ <div class="stat"><strong id="curatedCount">—</strong><span>Evidence-curated interfaces</span></div>
+ <div class="stat"><strong id="provisionalCount">—</strong><span>Provisional assignments</span></div>
+ <div class="stat"><strong>3</strong><span>Intended methodological tiers</span></div>
+</section>
+<section class="notice" aria-label="Scientific interpretation note">
+ <strong>Important distinction.</strong> Being in the stable scientific core does not mean that every numerical or inferential claim has received independent scientific certification. Conversely, an experimental classification does not imply a method is defective. Methods without curated evidence may still have existing source tests.
+</section>
+<section aria-labelledby="filterHeading" class="pane">
+ <div class="sectionhead"><div><span class="eyebrow">METHOD REGISTRY</span><h2 id="filterHeading">Find an exported R method</h2><p>Search names, method families, caveats and scientific goals. Filter by tier, execution backend or whether a method has a reviewed evidence record.</p></div></div>
+ <form id="filters" class="filters" action="#" role="search">
+  <label class="field wide" for="search"><span>Method or research goal</span><input type="search" id="search" autocomplete="off" placeholder="Try FPCA, sparse, bootstrap, distance, recurrence…" aria-controls="results"></label>
+  <label class="field" for="tier"><span>Scientific role</span><select id="tier"><option value="all">All roles</option><option value="core">Core</option><option value="advanced">Advanced</option><option value="experimental">Experimental / specialized</option></select></label>
+  <label class="field" for="backend"><span>Execution backend</span><select id="backend"><option value="all">All backends</option><option value="native-R">Native R</option><option value="r-delegated-fdapace">R → fdapace</option><option value="r-delegated-refund">R → refund</option><option value="python-bridge">Python bridge</option><option value="hybrid-interface">Hybrid interface</option></select></label>
+  <label class="field" for="review"><span>Evidence review</span><select id="review"><option value="all">All entries</option><option value="curated">Curated evidence record</option><option value="provisional_lexical">Provisional assignment</option></select></label>
+  <button type="reset" id="resetFilters" class="quiet">Reset filters</button>
+ </form>
+ <div class="resultbar"><p id="count" role="status" aria-live="polite">Loading method registry…</p><div class="pager"><button type="button" id="previous">Previous</button><span id="pageState"></span><button type="button" id="next">Next</button></div></div>
+ <div class="cards" id="results" aria-label="Matching scientific methods"></div>
+ <div class="resultbar"><span id="bottomCount"></span><div class="pager"><button type="button" id="previousBottom">Previous</button><button type="button" id="nextBottom">Next</button></div></div>
+</section>
+<section class="three" aria-labelledby="tierHeading">
+<h2 id="tierHeading">How to interpret the tiers</h2>
+<div class="tiles">
+ <article><h3>Tier 1 · Core</h3><p>Trajectory objects, preprocessing, functional distances and essential dense FDA. Expected to have a strong compatibility and numerical contract, but evidence remains method-specific.</p></article>
+ <article><h3>Tier 2 · Advanced</h3><p>Sparse data, regression, hierarchical analysis and uncertainty estimation. Data-generating conditions, dependence, estimands and assumptions must be reported explicitly.</p></article>
+ <article><h3>Tier 3 · Experimental / specialized</h3><p>Nonlinear methods, specialized workflows and optional bridges. Scientific claims must remain bounded to tested domains; source wrappers are not necessarily new estimators.</p></article>
+</div>
+</section>
+<footer><p>Registry derived from the immutable v0.4.3 NAMESPACE. Curated evidence is maintained in the project source; no participant data or local gaze records are read or transmitted by this page.</p><p>Software DOI <a href="https://doi.org/10.5281/zenodo.24288857">10.5281/zenodo.24288857</a> · <a href="SITE_CITATION.html">Cite exact version</a></p></footer>
+</main>
+</body>
+</html>

@@ -4,7 +4,9 @@
 <h1>From eye movements to mathematical trajectories.</h1>
 <p class="et-lead">Explore eye movements as time-varying mathematical trajectories. Use native R functional data analysis, kinematics, distances, recurrence and experimental statistical methods, with optional Python integration and explicit scientific limitations.</p>
 <div class="et-hero-actions">
-<a class="et-button et-button-primary" href="research-portal.html">Start with your research workflow <span aria-hidden="true">→</span></a>
+<a class="et-button et-button-primary" href="flagship-workflows.html">Explore four complete R studies <span aria-hidden="true">→</span></a>
+<a class="et-button et-button-ghost" href="methods-atlas.html">Methods Atlas</a>
+<a class="et-button et-button-ghost" href="research-portal.html">Research design navigator</a>
 <a class="et-button et-button-ghost" href="trajectory-explorer.html">Explore the trajectory lab <span aria-hidden="true">→</span></a>
 <a class="et-button et-button-ghost" href="plot-atlas.html">Browse actual R plots <span aria-hidden="true">→</span></a>
 <a class="et-button et-button-ghost" href="SITE_START.html">Get started with R</a>
@@ -29,6 +31,18 @@
 <a href="https://doi.org/10.5281/zenodo.24288857" target="_blank" rel="noopener noreferrer">10.5281/zenodo.24288857</a>
 </section>
 
+<section class="et-atlas-spotlight" aria-labelledby="et-methods-atlas-heading">
+<div><p class="et-eyebrow">NEW · COMPLETE SCIENTIFIC METHODS ATLAS</p>
+<h2 id="et-methods-atlas-heading">904 exported interfaces. One transparent scientific evidence registry.</h2>
+<p>Search the entire published v0.4.3 API by intended scientific tier, execution backend and method-specific evidence status. The catalogue distinguishes 41 curated method records from explicitly provisional classifications; it never equates API breadth with independent validation.</p></div>
+<a href="methods-atlas.html" class="et-button et-button-primary">Browse scientific methods →</a>
+</section>
+<section class="et-atlas-spotlight" aria-labelledby="et-workflows-heading">
+<div><p class="et-eyebrow">NEW · FOUR EXECUTED R RESEARCH WORKFLOWS</p>
+<h2 id="et-workflows-heading">Complete analyses from research question to reproducible figures.</h2>
+<p>Explore dense MFPCA, descriptive repeated-measures decomposition, sparse PACE recovery and participant-level bootstrap uncertainty. All four examples use synthetic data, generate real native R figures and state their inferential limits.</p></div>
+<a href="flagship-workflows.html" class="et-button et-button-primary">Explore four complete R studies →</a>
+</section>
 <section class="et-atlas-spotlight" aria-labelledby="et-research-spotlight-heading">
 <div><p class="et-eyebrow">NEW · RESEARCH WORKFLOW PORTAL</p>
 <h2 id="et-research-spotlight-heading">From CSV structure to the appropriate scientific R workflow.</h2>
