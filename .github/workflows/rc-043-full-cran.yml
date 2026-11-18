@@ -8,6 +8,7 @@ on:
       - 'R/**'
       - 'tests/**'
       - '.github/workflows/rc-043-full-cran.yml'
+      - '.Rbuildignore'
   workflow_dispatch:
 
 permissions:
@@ -46,23 +47,53 @@ jobs:
           stopifnot(length(font)>0L,
              any(grepl("pcrr8t.tfm",font,fixed=TRUE)))
           cat("TEX_COURIER_T1_FONT_METRICS_PRESENT\\n")
-      - name: Check full CRAN documentation toolchain availability
+      - name: Verify PDF indexing toolchain with an actual makeindex smoke test
         shell: Rscript {0}
         run: |
+          if (!nzchar(Sys.which("makeindex"))) {
+            if (!requireNamespace("tinytex",quietly=TRUE))
+              install.packages("tinytex",
+                repos=Sys.getenv("RSPM","https://cloud.r-project.org"))
+            tinytex::tlmgr_install("makeindex")
+          }
           stopifnot(nzchar(Sys.which("pdflatex")),
-                    nzchar(Sys.which("pandoc")))
-          cat("AS_CRAN_LATEX_AND_PANDOC_TOOLCHAIN_PRESENT\\n")
+                    nzchar(Sys.which("pandoc")),
+                    nzchar(Sys.which("makeindex")))
+          dir <- tempfile("et-index-preflight-")
+          dir.create(dir)
+          idx <- file.path(dir,"et-index.idx")
+          writeLines("\\indexentry{eyetrajectories}{1}",idx)
+          status <- suppressWarnings(system2(Sys.which("makeindex"),
+                       args=shQuote(idx),stdout=TRUE,stderr=TRUE))
+          ind <- sub("[.]idx$",".ind",idx)
+          stopifnot(file.exists(ind),file.info(ind)$size>0)
+          writeLines(c("MAKEINDEX_PDF_INDEX_PREFLIGHT_PASS",
+                       paste("makeindex:",Sys.which("makeindex")),
+                       paste("index bytes:",file.info(ind)$size)),
+                     file.path(dir,"index-preflight.txt"))
+          cat("MAKEINDEX_PDF_INDEX_PREFLIGHT_PASS\\n")
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck, any::pkgbuild
           needs: check
-      - name: Full native R CMD check --as-cran
+      - name: Build distributable source tarball and run --as-cran on that archive
         shell: Rscript {0}
         run: |
           stopifnot(as.character(read.dcf("DESCRIPTION","Version")[1,1])=="0.4.3.9000")
           dir.create("full_rc_evidence",recursive=TRUE,showWarnings=FALSE)
+          temp_build <- tempfile("etr-candidate-source-")
+          dir.create(temp_build)
+          tarball <- pkgbuild::build(path=".", dest_path=temp_build,
+                  vignettes=FALSE, manual=FALSE, quiet=FALSE)
+          source_files <- utils::untar(tarball,list=TRUE)
+          stopifnot(length(source_files)>500L,
+                    !any(grepl("(^|/)benchmarks(/|$)",source_files)))
+          writeLines(c(paste("SOURCE_TARBALL:",basename(tarball)),
+                       paste("SOURCE_TARBALL_SHA256:",digest::digest(file=tarball,algo="sha256")),
+                       "Excluded bench tools from release source: PASS"),
+                     "full_rc_evidence/source_tarball_manifest.txt")
           result <- rcmdcheck::rcmdcheck(
-            path=".",args="--as-cran",
+            path=tarball,args="--as-cran",
             check_dir=file.path(getwd(),"full_rc_evidence","check"),
             quiet=FALSE,error_on="never")
           status <- c(
