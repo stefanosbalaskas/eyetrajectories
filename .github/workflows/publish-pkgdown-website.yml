@@ -7,6 +7,9 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/publish-pkgdown-website.yml'
+      - 'inst/method-registry/**'
+      - 'inst/examples/flagship/**'
+      - 'scripts/generate_scientific_method_registry.py'
   workflow_dispatch:
 
 permissions:
@@ -38,6 +41,12 @@ jobs:
         with:
           ref: feat/pkgdown-scientific-site-20261116
           path: website
+          persist-credentials: false
+      - name: Checkout curated method evidence and research examples
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: research
           persist-credentials: false
       - name: Overlay site files without changing release source
         shell: bash
@@ -72,6 +81,18 @@ jobs:
           test -s website/site-interactive/research-portal.js
           test -s website/site-interactive/research-workflows.json
           test -s website/site-interactive/test_research_portal_browser.mjs
+          for required in methods-atlas.html methods-atlas.css methods-atlas.js flagship-workflows.html flagship-workflows.css; do
+            test -s "website/site-interactive/$required"
+          done
+          test -s website/scripts/build_methods_atlas.cjs
+          test -s website/scripts/test_methods_atlas.cjs
+          test -s website/SITE_METHODS_ATLAS.md
+          test -s website/SITE_FLAGSHIP_WORKFLOWS.md
+          test -s research/inst/method-registry/curated-evidence.json
+          test -s research/scripts/generate_scientific_method_registry.py
+          for name in 01_complete_gaze_trajectory.R 02_multilevel_functional_variation.R 03_sparse_irregular_recovery.R 04_uncertainty_paired_contrast.R; do
+            test -s "research/inst/examples/flagship/$name"
+          done
           test -s website/scripts/build_research_portal.cjs
           test -s website/scripts/test_research_portal.cjs
           test -s website/SITE_RESEARCH_PORTAL.md
@@ -127,6 +148,8 @@ jobs:
           stopifnot(grepl('10.5281/zenodo.24288857', home, fixed=TRUE))
           stopifnot(grepl('href="plot-atlas.html"', home, fixed=TRUE))
           stopifnot(grepl('href="research-portal.html"', home, fixed=TRUE))
+          stopifnot(grepl('href="methods-atlas.html"', home, fixed=TRUE))
+          stopifnot(grepl('href="flagship-workflows.html"', home, fixed=TRUE))
           stopifnot(grepl('href="SITE_PERFORMANCE.html"', home, fixed=TRUE))
           stopifnot(grepl('src="trajectory-explorer.html"', home, fixed=TRUE))
           stopifnot(!grepl('class="sourceCode"', home, fixed=TRUE))
@@ -152,6 +175,7 @@ jobs:
             'site/SITE_BRANDING.html', 'site/SITE_CITATION.html',
             'site/SITE_PLOTTING_ATLAS.html', 'site/plot-atlas.html',
             'site/SITE_RESEARCH_PORTAL.html', 'site/SITE_PERFORMANCE.html',
+             'site/SITE_METHODS_ATLAS.html', 'site/SITE_FLAGSHIP_WORKFLOWS.html',
             'site/research-portal.html',
             'site/research-portal.css', 'site/research-portal.js',
             'site/branding/eyetrajectories-logo-240.png',
