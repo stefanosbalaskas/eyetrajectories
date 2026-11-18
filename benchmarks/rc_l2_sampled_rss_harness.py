@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Benchmark exact installed v0.4.3 versus v0.4.3.9000 with matched synthetic RDS.
+"""Benchmark exact installed v0.4.3 versus v0.4.3.9000 on matched RDS.
 
 Poll each R process with psutil. Report sampled peak RSS rather than an
 unmeasured kernel high-water mark. No raw gaze data or Python algorithms.
@@ -27,6 +27,8 @@ def get_args():
     p.add_argument("--work",required=True,type=Path)
     p.add_argument("--runner",required=True,type=Path)
     p.add_argument("--repetitions",type=int,default=2)
+    p.add_argument("--data-source",choices=("synthetic","real_onestop_fixation"),
+                   default="synthetic")
     return p.parse_args()
 
 
@@ -87,7 +89,10 @@ def main():
          "candidate":a.candidate_library.resolve(strict=True)}
     versions={"baseline":"0.4.3","candidate":"0.4.3.9000"}
     runner=a.runner.resolve(strict=True)
-    cases=list(csv.DictReader((a.inputs/"synthetic_cases.csv").open(newline="")))
+    case_path=a.inputs/"benchmark_cases.csv"
+    if not case_path.exists():
+        case_path=a.inputs/"synthetic_cases.csv"
+    cases=list(csv.DictReader(case_path.open(newline="")))
     if len(cases)!=6:
         raise AssertionError("Exactly six pre-registered combinations required")
     allrows=[]
@@ -135,7 +140,10 @@ def main():
       "schema":"eyetrajectories-exact-installed-l2-benchmark/v1",
       "baseline":"v0.4.3, immutable source",
       "candidate":"v0.4.3-derived development v0.4.3.9000",
-      "data":"entirely synthetic, nonhuman, deterministic within this R/OS",
+      "data":("entirely synthetic, nonhuman, deterministic within this R/OS"
+              if a.data_source=="synthetic" else
+              "published OneStop repeated-reading fixation-level data; 0-1 time and declared interpolation"),
+      "data_source":a.data_source,
       "python_role":"process harness and sampled RSS monitoring only; no estimator in Python",
       "peak_memory":"maximum sampled R launcher+descendant process-tree RSS approximately every 35 ms; not true kernel HWM or peak allocation",
       "repetitions_per_version":a.repetitions,
@@ -144,15 +152,17 @@ def main():
       "psutil":psutil.__version__,
       "rss_aggregation":"sampled sum of active Rscript launcher and child R process RSS; may transiently miss short processes",
       "hardware_is_runner_specific":True,
-      "not_a_real_onestop_benchmark":True,
+      "not_a_real_onestop_benchmark":a.data_source!="real_onestop_fixation",
+      "source_archive_provenance_file":str(a.inputs/"source_provenance.csv")
+              if (a.inputs/"source_provenance.csv").exists() else None,
       "results":output,
     }
     (root/"benchmark_metadata.json").write_text(
       json.dumps(metadata,indent=2)+"\n",encoding="utf-8")
     if any(r["median_speedup_ratio"]<1.0 for r in output):
         print("WARNING: candidate not faster in at least one configuration")
-    print("EXACT_INSTALLED_L2_SYNTHETIC_SCALING_MEASURED",len(output),
-          "cases, independently timed + sampled process RSS")
+    print("EXACT_INSTALLED_L2_"+a.data_source.upper()+"_SCALING_MEASURED",
+          len(output),"cases, independently timed + sampled process RSS")
 
 
 if __name__=="__main__":
