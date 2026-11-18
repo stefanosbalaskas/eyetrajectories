@@ -89,11 +89,12 @@ jobs:
       - name: Build distributable source tarball and run --as-cran on that archive
         shell: Rscript {0}
         run: |
-          stopifnot(as.character(read.dcf("DESCRIPTION","Version")[1,1])=="0.4.3.9000")
+          stopifnot(as.character(read.dcf("DESCRIPTION","Version")[1,1])=="0.4.4")
           temp_build <- tempfile("etr-candidate-source-")
           dir.create(temp_build)
           tarball <- pkgbuild::build(path=".", dest_path=temp_build,
                   vignettes=FALSE, manual=FALSE, quiet=FALSE)
+          stopifnot(identical(basename(tarball), "eyetrajectories_0.4.4.tar.gz"))
           source_files <- utils::untar(tarball,list=TRUE)
           dir.create("full_rc_evidence",recursive=TRUE,showWarnings=FALSE)
           stopifnot(length(source_files)>500L,
@@ -107,7 +108,7 @@ jobs:
             check_dir=file.path(getwd(),"full_rc_evidence","check"),
             quiet=FALSE,error_on="never")
           status <- c(
-            "Release candidate: frozen v0.4.3-derived development 0.4.3.9000",
+            "Release candidate: v0.4.4 from frozen v0.4.3 source; NOT published",
             paste("Platform:",R.version$platform),
             paste("Errors:",length(result$errors)),
             paste("Warnings:",length(result$warnings)),
