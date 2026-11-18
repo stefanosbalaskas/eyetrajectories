@@ -1,0 +1,71 @@
+name: Full 0.4.3-derived release-candidate CRAN qualification
+
+on:
+  pull_request:
+    branches: [release/0.4.4-l2-qualification-base]
+    paths:
+      - 'DESCRIPTION'
+      - 'R/**'
+      - 'tests/**'
+      - '.github/workflows/rc-043-full-cran.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  full-as-cran-qualification:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 65
+    env:
+      RETICULATE_PYTHON: NA
+      ET_RUN_PYTHON_TESTS: "false"
+      _R_CHECK_FORCE_SUGGESTS_: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck, any::pkgbuild
+          needs: check
+      - name: Full native R CMD check --as-cran
+        shell: Rscript {0}
+        run: |
+          stopifnot(as.character(read.dcf("DESCRIPTION","Version")[1,1])=="0.4.3.9000")
+          dir.create("full_rc_evidence",recursive=TRUE,showWarnings=FALSE)
+          result <- rcmdcheck::rcmdcheck(
+            path=".",args="--as-cran",
+            check_dir=file.path(getwd(),"full_rc_evidence","check"),
+            quiet=FALSE,error_on="never")
+          status <- c(
+            "Release candidate: frozen v0.4.3-derived development 0.4.3.9000",
+            paste("Platform:",R.version$platform),
+            paste("Errors:",length(result$errors)),
+            paste("Warnings:",length(result$warnings)),
+            paste("Notes:",length(result$notes)),
+            "",
+            "No stable release, new CRAN submission or Zenodo deposit is created.",
+            "Any NOTE must be independently assessed rather than silently ignored.",
+            "",
+            "Checks are bounded by installed optional system dependencies."
+          )
+          writeLines(c(status,capture.output(print(result))),
+                     "full_rc_evidence/qualification.txt")
+          writeLines(capture.output(utils::sessionInfo()),
+                     "full_rc_evidence/sessionInfo.txt")
+          stopifnot(length(result$errors)==0L,length(result$warnings)==0L)
+          cat("RC_043_DERIVED_FULL_AS_CRAN_ZERO_ERROR_WARNING_PASS\n")
+      - name: Upload full qualification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rc-043-full-as-cran-${{ matrix.os }}
+          path: full_rc_evidence/
+          retention-days: 60
+          if-no-files-found: warn
