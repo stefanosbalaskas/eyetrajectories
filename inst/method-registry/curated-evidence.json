@@ -1,0 +1,350 @@
+{
+  "schema": "eyetrajectories-method-registry/v1",
+  "source_release": "v0.4.3",
+  "classification_policy": "Tier describes intended methodological role; evidence_status separately describes observed validation scope; no catch-all scientific certification.",
+  "unclassified_policy": {
+    "tier": "experimental",
+    "evidence_status": "not_independently_assessed",
+    "family": "other_or_specialized",
+    "caveat": "No method-specific independent scientific validation claim is assigned. Inspect the reference documentation and original implementation."
+  },
+  "backend_policy": {
+    "etr": "native-R unless specifically marked otherwise",
+    "etpy": "python-bridge; requires separately installed eyetrajectoriespy",
+    "et": "hybrid R/Python facade; inspect exact function"
+  },
+  "evidence_sources": [
+    "https://github.com/stefanosbalaskas/eyetrajectories/blob/main/docs/SCIENTIFIC_VALIDATION_RESULTS_20261117.md",
+    "https://github.com/stefanosbalaskas/eyetrajectories/blob/main/docs/POTEC_REAL_SOURCE_AND_L2_RESULTS_20261118.md"
+  ],
+  "method_overrides": {
+    "etr_trajectory_set": {
+      "tier": "core",
+      "family": "data representation",
+      "evidence_status": "source_contract_tested",
+      "backend": "native-r",
+      "caveat": "Explicit common-grid trajectory objects, channel units and identifiers; input correctness depends on declared source mapping.",
+      "evidence": "docs/EMPIRICAL_VALIDATION_STATUS_20261117.md"
+    },
+    "etr_validate": {
+      "tier": "core",
+      "family": "validation",
+      "evidence_status": "source_contract_tested",
+      "backend": "native-r",
+      "caveat": "Structural and numerical input checks do not establish external eye-tracker calibration.",
+      "evidence": "docs/EMPIRICAL_VALIDATION_STATUS_20261117.md"
+    },
+    "etr_from_long": {
+      "tier": "core",
+      "family": "data representation",
+      "evidence_status": "source_contract_tested",
+      "backend": "native-r",
+      "caveat": "Requires correct participant/trial grouping and time-grid specification.",
+      "evidence": "docs/EMPIRICAL_VALIDATION_STATUS_20261117.md"
+    },
+    "etr_as_long": {
+      "tier": "core",
+      "family": "data representation",
+      "evidence_status": "source_contract_tested",
+      "backend": "native-r",
+      "caveat": "Conversion is not an independent provenance audit.",
+      "evidence": "docs/EMPIRICAL_VALIDATION_STATUS_20261117.md"
+    },
+    "etr_subset": {
+      "tier": "core",
+      "family": "data representation",
+      "evidence_status": "source_contract_tested",
+      "backend": "native-r",
+      "caveat": "Selection and subject grouping must be verified.",
+      "evidence": "docs/EMPIRICAL_VALIDATION_STATUS_20261117.md"
+    },
+    "etr_dimension": {
+      "tier": "core",
+      "family": "data representation",
+      "evidence_status": "source_contract_tested",
+      "backend": "native-r",
+      "caveat": "Channels require declared compatible physical units.",
+      "evidence": "docs/EMPIRICAL_VALIDATION_STATUS_20261117.md"
+    },
+    "etr_summary": {
+      "tier": "core",
+      "family": "validation",
+      "evidence_status": "source_contract_tested",
+      "backend": "native-r",
+      "caveat": "Descriptive summaries do not establish source-event truth.",
+      "evidence": "docs/EMPIRICAL_VALIDATION_STATUS_20261117.md"
+    },
+    "etr_resample": {
+      "tier": "core",
+      "family": "preprocessing",
+      "evidence_status": "source_contract_tested",
+      "backend": "native-r",
+      "caveat": "Interpolation alters the observation process; retain original sampling record.",
+      "evidence": "docs/EMPIRICAL_VALIDATION_STATUS_20261117.md"
+    },
+    "etr_interpolate_gaps": {
+      "tier": "core",
+      "family": "preprocessing",
+      "evidence_status": "source_contract_tested",
+      "backend": "native-r",
+      "caveat": "Do not fill prolonged eye-tracking loss without explicit limits.",
+      "evidence": "docs/EMPIRICAL_VALIDATION_STATUS_20261117.md"
+    },
+    "etr_normalize_time": {
+      "tier": "core",
+      "family": "preprocessing",
+      "evidence_status": "source_contract_tested",
+      "backend": "native-r",
+      "caveat": "Normalized within-trial time is not acquisition time.",
+      "evidence": "docs/EMPIRICAL_VALIDATION_STATUS_20261117.md"
+    },
+    "etr_center": {
+      "tier": "core",
+      "family": "preprocessing",
+      "evidence_status": "source_contract_tested",
+      "backend": "native-r",
+      "caveat": "Centering changes the interpretand and must be declared.",
+      "evidence": "docs/EMPIRICAL_VALIDATION_STATUS_20261117.md"
+    },
+    "etr_smooth": {
+      "tier": "core",
+      "family": "preprocessing",
+      "evidence_status": "source_contract_tested",
+      "backend": "native-r",
+      "caveat": "Smoothing and temporal resolution alter high-frequency behavior.",
+      "evidence": "docs/EMPIRICAL_VALIDATION_STATUS_20261117.md"
+    },
+    "etr_scale_channels": {
+      "tier": "core",
+      "family": "preprocessing",
+      "evidence_status": "source_contract_tested",
+      "backend": "native-r",
+      "caveat": "Channel scaling must be scientifically justified.",
+      "evidence": "docs/EMPIRICAL_VALIDATION_STATUS_20261117.md"
+    },
+    "etr_trapezoid_weights": {
+      "tier": "core",
+      "family": "numerical integration",
+      "evidence_status": "numerically_checked",
+      "backend": "native-r",
+      "caveat": "Quadrature weights depend on monotonic time grid and units.",
+      "evidence": "docs/SCIENTIFIC_VALIDATION_RESULTS_20261117.md"
+    },
+    "etr_l2_distance": {
+      "tier": "core",
+      "family": "trajectory distances",
+      "evidence_status": "numerically_checked",
+      "backend": "native-r",
+      "caveat": "Weighted distance assumes channel units and quadrature are commensurable.",
+      "evidence": "docs/SCIENTIFIC_VALIDATION_RESULTS_20261117.md"
+    },
+    "etr_pairwise_l2": {
+      "tier": "core",
+      "family": "trajectory distances",
+      "evidence_status": "bounded_real_data_benchmark",
+      "backend": "native-r",
+      "caveat": "Matched-input OneStop benchmark verifies algorithms, not complete release.",
+      "evidence": "docs/POTEC_REAL_SOURCE_AND_L2_RESULTS_20261118.md"
+    },
+    "etr_fit_fpca": {
+      "tier": "core",
+      "family": "functional decomposition",
+      "evidence_status": "numerically_checked",
+      "backend": "native-r",
+      "caveat": "Descriptive eigenfunctions are not inferential confidence bands.",
+      "evidence": "docs/SCIENTIFIC_VALIDATION_RESULTS_20261117.md"
+    },
+    "etr_fit_mfpca": {
+      "tier": "core",
+      "family": "functional decomposition",
+      "evidence_status": "numerically_checked",
+      "backend": "native-r",
+      "caveat": "Scores depend on scaling, rank and observation grid.",
+      "evidence": "docs/SCIENTIFIC_VALIDATION_RESULTS_20261117.md"
+    },
+    "etr_fpca_scores": {
+      "tier": "core",
+      "family": "functional interpretation",
+      "evidence_status": "numerically_checked",
+      "backend": "native-r",
+      "caveat": "Component signs may reverse without changing model.",
+      "evidence": "docs/SCIENTIFIC_VALIDATION_RESULTS_20261117.md"
+    },
+    "etr_fpca_variance_frame": {
+      "tier": "core",
+      "family": "functional interpretation",
+      "evidence_status": "source_contract_tested",
+      "backend": "native-r",
+      "caveat": "Explained variance is descriptive and depends on preprocessing.",
+      "evidence": "docs/EMPIRICAL_VALIDATION_STATUS_20261117.md"
+    },
+    "etr_transform_fpca": {
+      "tier": "core",
+      "family": "functional interpretation",
+      "evidence_status": "numerically_checked",
+      "backend": "native-r",
+      "caveat": "Project onto training-fitted basis to avoid test leakage.",
+      "evidence": "docs/SCIENTIFIC_VALIDATION_RESULTS_20261117.md"
+    },
+    "etr_reconstruct_fpca": {
+      "tier": "core",
+      "family": "functional interpretation",
+      "evidence_status": "numerically_checked",
+      "backend": "native-r",
+      "caveat": "Low-rank reconstruction does not recreate missing raw measurements.",
+      "evidence": "docs/SCIENTIFIC_VALIDATION_RESULTS_20261117.md"
+    },
+    "etr_plot_trajectories": {
+      "tier": "core",
+      "family": "core visualization",
+      "evidence_status": "source_contract_tested",
+      "backend": "native-r",
+      "caveat": "Check plot axes, channel scales and synthetic/real labeling.",
+      "evidence": "docs/EMPIRICAL_VALIDATION_STATUS_20261117.md"
+    },
+    "etr_plot_fpca_variance": {
+      "tier": "core",
+      "family": "core visualization",
+      "evidence_status": "source_contract_tested",
+      "backend": "native-r",
+      "caveat": "Variance plot is descriptive; not evidence of model calibration.",
+      "evidence": "docs/EMPIRICAL_VALIDATION_STATUS_20261117.md"
+    },
+    "etr_sparse_curves": {
+      "tier": "advanced",
+      "family": "sparse input representation",
+      "evidence_status": "source_contract_tested",
+      "backend": "native-r",
+      "caveat": "Observed support must be genuine and not silently interpolated.",
+      "evidence": "docs/EMPIRICAL_VALIDATION_STATUS_20261117.md"
+    },
+    "etr_fit_sparse_pace": {
+      "tier": "advanced",
+      "family": "sparse FPCA",
+      "evidence_status": "bounded_known_truth_recovery",
+      "backend": "r-delegated-fdapace",
+      "caveat": "Delegates to optional fdapace; one-factor recovery is not general estimator certification.",
+      "evidence": "docs/SCIENTIFIC_VALIDATION_RESULTS_20261117.md"
+    },
+    "etr_sparse_pace_scores": {
+      "tier": "advanced",
+      "family": "sparse FPCA",
+      "evidence_status": "backend_parity",
+      "backend": "r-delegated-fdapace",
+      "caveat": "Conditional expectation scores under the delegated PACE model.",
+      "evidence": "docs/SCIENTIFIC_VALIDATION_RESULTS_20261117.md"
+    },
+    "etr_sparse_pace_fitted": {
+      "tier": "advanced",
+      "family": "sparse FPCA",
+      "evidence_status": "bounded_known_truth_recovery",
+      "backend": "r-delegated-fdapace",
+      "caveat": "Reconstruction assessed only under selected synthetic designs.",
+      "evidence": "docs/SCIENTIFIC_VALIDATION_RESULTS_20261117.md"
+    },
+    "etr_fit_scalar_on_fpca": {
+      "tier": "advanced",
+      "family": "functional regression",
+      "evidence_status": "numerically_checked",
+      "backend": "native-r",
+      "caveat": "Least-squares comparison conditional on estimated scores, not post-selection inference.",
+      "evidence": "docs/SCIENTIFIC_VALIDATION_RESULTS_20261117.md"
+    },
+    "etr_predict_scalar_on_fpca": {
+      "tier": "advanced",
+      "family": "functional regression",
+      "evidence_status": "bounded_subject_holdout",
+      "backend": "native-r",
+      "caveat": "Holdout validation must fit FPCA inside the training split.",
+      "evidence": "docs/SCIENTIFIC_VALIDATION_RESULTS_20261117.md"
+    },
+    "etr_fit_multilevel_fpca": {
+      "tier": "advanced",
+      "family": "multilevel analysis",
+      "evidence_status": "descriptive_only",
+      "backend": "native-r",
+      "caveat": "Equal-participant descriptive decomposition, not inferential REML mixed model.",
+      "evidence": "docs/EMPIRICAL_VALIDATION_STATUS_20261117.md"
+    },
+    "etr_multilevel_scores": {
+      "tier": "advanced",
+      "family": "multilevel analysis",
+      "evidence_status": "descriptive_only",
+      "backend": "native-r",
+      "caveat": "Scores are descriptive conditional on the fitted decomposition.",
+      "evidence": "docs/EMPIRICAL_VALIDATION_STATUS_20261117.md"
+    },
+    "etr_multilevel_variance": {
+      "tier": "advanced",
+      "family": "multilevel analysis",
+      "evidence_status": "descriptive_only",
+      "backend": "native-r",
+      "caveat": "Between and within strata traces are not automatically additive population covariance.",
+      "evidence": "docs/EMPIRICAL_VALIDATION_STATUS_20261117.md"
+    },
+    "etr_fit_functional_mixed": {
+      "tier": "advanced",
+      "family": "functional mixed models",
+      "evidence_status": "experimental_unqualified",
+      "backend": "r-delegated-refund",
+      "caveat": "Delegates to optional refund::pffr; inference not independently calibrated.",
+      "evidence": "docs/EMPIRICAL_VALIDATION_STATUS_20261117.md"
+    },
+    "etr_functional_mixed_fitted": {
+      "tier": "advanced",
+      "family": "functional mixed models",
+      "evidence_status": "experimental_unqualified",
+      "backend": "r-delegated-refund",
+      "caveat": "Fitted values do not establish covariance or coverage validity.",
+      "evidence": "docs/EMPIRICAL_VALIDATION_STATUS_20261117.md"
+    },
+    "etr_bootstrap_mean_band": {
+      "tier": "advanced",
+      "family": "cluster bootstrap",
+      "evidence_status": "simulation_characterized",
+      "backend": "native-r",
+      "caveat": "Complete-data 96% and missingness 90–92% coverage across tested scenarios (100 simulations each).",
+      "evidence": "docs/SCIENTIFIC_VALIDATION_FOUR_TRACKS.md"
+    },
+    "etr_simulate_hierarchical": {
+      "tier": "advanced",
+      "family": "simulation",
+      "evidence_status": "source_contract_tested",
+      "backend": "native-r",
+      "caveat": "Known-truth generator is not an external validation dataset.",
+      "evidence": "docs/EMPIRICAL_VALIDATION_STATUS_20261117.md"
+    },
+    "etr_evaluate_mean_band_coverage": {
+      "tier": "advanced",
+      "family": "simulation",
+      "evidence_status": "simulation_characterized",
+      "backend": "native-r",
+      "caveat": "Monte Carlo estimates have finite replicate uncertainty.",
+      "evidence": "docs/SCIENTIFIC_VALIDATION_FOUR_TRACKS.md"
+    },
+    "etr_frechet": {
+      "tier": "experimental",
+      "family": "trajectory geometry",
+      "evidence_status": "source_contract_tested",
+      "backend": "native-r",
+      "caveat": "Discrete Fréchet is not the continuous metric.",
+      "evidence": "docs/EMPIRICAL_VALIDATION_STATUS_20261117.md"
+    },
+    "etr_dtw": {
+      "tier": "experimental",
+      "family": "time warping",
+      "evidence_status": "source_contract_tested",
+      "backend": "native-r",
+      "caveat": "Alignment windows and step patterns govern interpretation.",
+      "evidence": "docs/EMPIRICAL_VALIDATION_STATUS_20261117.md"
+    },
+    "etr_pairwise_dtw": {
+      "tier": "experimental",
+      "family": "time warping",
+      "evidence_status": "source_contract_tested",
+      "backend": "native-r",
+      "caveat": "Computational cost and time-warp constraints require consideration.",
+      "evidence": "docs/EMPIRICAL_VALIDATION_STATUS_20261117.md"
+    }
+  }
+}
