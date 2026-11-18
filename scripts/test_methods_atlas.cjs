@@ -15,14 +15,18 @@ assert.equal(data.methods.filter(m=>m.name==="etr_fit_sparse_pace")[0].backend,"
 assert.equal(data.methods.filter(m=>m.name==="etr_fit_multilevel_fpca")[0].evidence_status,"descriptive_only");
 assert.equal(data.methods.filter(m=>m.name==="etr_bootstrap_mean_band")[0].evidence_status,"simulation_characterized");
 assert(data.methods.some(m=>m.backend==="python-bridge"));
+assert(!data.methods.some(m=>m.backend==="native-r"));
+assert.equal(data.methods.filter(m=>m.backend==="native-R").length,502);
 assert(data.methods.some(m=>m.classification_basis==="provisional_lexical"));
 const js=read("methods-atlas-data.js");
 const global={window:{}};
 vm.runInNewContext(js,global,{timeout:2000});
-assert.equal(global.window.ET_METHOD_REGISTRY.methods.length,904);
-for(const m of data.methods) {
- assert(fs.existsSync(path.join(root,m.reference_href)),
-      m.name+" has broken reference link");
+const enhanced=global.window.ET_METHOD_REGISTRY;
+assert.equal(enhanced.methods.length,904);
+for(const m of enhanced.methods) {
+ assert(typeof m.reference_href==="string"&&
+        fs.existsSync(path.join(root,m.reference_href)),
+      m.name+" has broken generated reference link");
  if(m.classification_basis!=="curated")
   assert(m.evidence_status==="evidence_not_curated");
 }
