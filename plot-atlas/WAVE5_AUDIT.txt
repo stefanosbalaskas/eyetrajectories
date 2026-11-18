@@ -1,0 +1,17 @@
+WAVE5_COMPLETE_NATIVE_PLOT_AUDIT
+Version: immutable eyetrajectories v0.4.3; website-only R renderer
+Requested functions: 8
+Rendered native plotting functions: 8
+Not yet rendered: 0
+Estimator-backed figures: native observed-grid FoSR, whole-curve RQA bootstrap, native synthetic recovery aggregation, and FPCA workflow dispatcher.
+Synthetic plotting-contract records: participant/trial random effects and generalized FoSR coefficient/contrast bootstrap inputs. Native analytic transformations and plotting functions execute but fitted data and calibrated inference are not claimed.
+Statistical validation: none inferred from render success; all observations are synthetic.
+PASS etr_plot_function_on_scalar_coefficients
+PASS etr_plot_rqa_metric_mean_bootstrap
+PASS etr_plot_functional_recovery_summary
+PASS etr_plot_functional_random_effects
+PASS etr_plot_functional_trial_random_effects
+PASS etr_plot_generalized_function_on_scalar_mean_difference
+PASS etr_plot_generalized_function_on_scalar_coefficients
+PASS etr_plot_workflow_result
+MISSING 

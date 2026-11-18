@@ -1,0 +1,15 @@
+eyetrajectories v0.4.3 actual native R plotting atlas
+Native plotting exports: 81
+Python-backed plotting exports: 79
+Directly illustrated exported native functions: 81
+New additional native R plotting exports: 72
+Wave 3 advanced inference functions: 14
+Wave 4 nonlinear dynamics functions: 11
+Wave 5 final native plotting functions: 8
+Unrendered additional fixture candidates: 0
+Native R generated PNG examples: 110
+Wave 6 scientific categories: 11
+Wave 6 downloadable R scripts: 110
+The searchable function inventory was generated from the actual NAMESPACE.
+All previews are direct output from exported native R plotting functions, not recreated JavaScript approximations.
+Synthetic data only; optional Python bridge never executed. No empirical validation claim.

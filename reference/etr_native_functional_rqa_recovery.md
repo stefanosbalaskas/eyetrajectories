@@ -1,0 +1,173 @@
+# Native windowed-recurrence functional sensitivity and source-pinned recovery metadata
+
+Six mapped public Python-source integrations plus the optional native
+value-key helper: fixed-radius multiscale windowed RQA sensitivity,
+unit-level simultaneous derived RQA mean bands, and metadata and
+recovery-value catalog utilities pinned to the published Python 1.2.0
+source.
+
+## Usage
+
+``` r
+etr_windowed_rqa_sensitivity(trajectories, metrics, window_step_pairs,
+  window_units = "samples", step_units = "samples", radius = NULL,
+  target_recurrence_rate = NULL, metric = "euclidean",
+  theiler_window = 0L, theiler_window_units = "samples",
+  dimensions = NULL, min_diagonal_length = 2L,
+  min_vertical_length = 2L, undefined_policy = "raise")
+etr_windowed_rqa_functional_mean_band(trajectories, metrics,
+  window, step, unit, participant_column = NULL,
+  window_units = "samples", step_units = "samples",
+  radius = NULL, target_recurrence_rate = NULL,
+  metric = "euclidean",
+  theiler_window = 0L, theiler_window_units = "samples",
+  dimensions = NULL, min_diagonal_length = 2L,
+  min_vertical_length = 2L, confidence_level = 0.95,
+  n_multiplier = 2000L, random_state = 0L,
+  gaussian_multiplier_draws = NULL, random_engine = "numpy")
+etr_functional_recovery_metric_catalog()
+etr_functional_recovery_metric_catalog_frame()
+etr_functional_recovery_value_key(value)
+etr_functional_recovery_assessment_frame(assessment, python_boundary_mode = FALSE)
+etr_functional_recovery_reporting_text(assessment, python_boundary_mode = FALSE)
+```
+
+## Arguments
+
+- trajectories:
+
+  Complete native functional trajectories, with analyst-declared
+  scientific coordinate system and time units.
+
+- metrics:
+
+  Unique windowed RQA statistic names.
+
+- window_step_pairs:
+
+  Nonempty list or two-column numeric matrix of explicit (window, step)
+  pairs. Each list entry can be an atomic numeric vector or a
+  two-element list of numeric scalars (for example `list(5L, 2.0)`), as
+  accepted by the pinned Python source. Boolean, text, nonfinite and
+  malformed scalar entries remain invalid. Sample-unit counts must be
+  integral; physical-time widths may be fractional if exactly
+  grid-convertible.
+
+- window,step:
+
+  Positive explicit window and step widths in the declared sample or
+  physical-time units.
+
+- window_units,step_units,theiler_window_units:
+
+  Either sample units or compatible physical time (including s/ms
+  aliases), converted to whole observed samples on an approximately
+  regular time grid.
+
+- radius:
+
+  Optional finite positive fixed recurrence radius; supply exactly one
+  radius policy.
+
+- target_recurrence_rate:
+
+  Optional target density strictly between zero and one, using a
+  source-aligned inclusive-radius search. The achieved rate may differ
+  owing to ties.
+
+- metric:
+
+  Recurrence distance metric: `"euclidean"`, `"cityblock"` or
+  `"chebyshev"`.
+
+- theiler_window:
+
+  Nonnegative Theiler exclusion in the units declared by
+  theiler_window_units.
+
+- dimensions:
+
+  Optional named source dimensions to analyze.
+
+- min_diagonal_length,min_vertical_length:
+
+  RQA diagonal and vertical run-length thresholds.
+
+- undefined_policy:
+
+  `"raise"` or `"keep"` for selected windowed RQA metrics. The mean-band
+  wrapper requires complete values.
+
+- unit:
+
+  Either independent source `"curve"` or declared `"participant"`
+  inference units.
+
+- participant_column:
+
+  Source metadata column grouping repeated trials by participant when
+  `unit="participant"`.
+
+- confidence_level,n_multiplier,random_state:
+
+  Gaussian multiplier simultaneous mean-band calibration settings. A
+  nonnegative integer seed below \\2^{53}\\ selects a reproducible
+  stream. `NULL` uses the current R RNG stream.
+
+- random_engine:
+
+  Use `"numpy"` for source-seeded Gaussian draws or `"base_R"` to
+  reproduce previous native seeded mean bands.
+
+- gaussian_multiplier_draws:
+
+  Optional finite source-aligned numeric matrix with one row per
+  Gaussian multiplier replicate and one column per independent curve or
+  participant. This explicit native extension enables same-draw
+  numerical replay with frozen Python 1.2 and takes precedence over the
+  seed.
+
+- value:
+
+  Native semantic recovery value with `metric`, `source` and zero-based
+  `component` fields.
+
+- assessment:
+
+  Native assessment list with a nonempty `values` list of finite
+  recovery values. Built-in and custom metric definitions carry
+  direction, units, scope and description.
+
+- python_boundary_mode:
+
+  Use source text stripping, numeric scalar coercion, and same-name
+  custom metric metadata for mapped records. Reporting accepts an
+  explicit `NULL` estimator or a plain R scalar, list or named mapping
+  with source-compatible representation.
+
+## Value
+
+`etr_windowed_rqa_sensitivity` returns native analyses, design and
+overlap-reuse table, a descriptive per-curve/metric summary and pairwise
+exact shared-center discrepancy table, without interpolation.
+`etr_windowed_rqa_functional_mean_band` returns a native whole-unit
+simultaneous mean band for derived RQA functions. The recovery catalog
+returns 27 ordered named S3 definitions or an auditable six-column
+native data frame; value-key returns one string, assessment-frame
+returns a native semantic value data frame, and reporting-text returns a
+compact source-aligned manuscript description.
+
+## Details
+
+The native implementation supports explicit sample or convertible
+physical-time windows, optional source-aligned target-density threshold
+selection, and three distance metrics. When density controls the
+threshold, recurrence_rate is not allowed as a derived outcome. Python
+dataclasses, pandas schemas and some exceptional input domains remain
+scientifically distinct from the native representations. These
+capabilities do not establish full Python source parity. Inference
+resamples entire derived functions at the declared independent
+curve/participant unit, never overlapping time windows independently.
+The temporal distance between RQA window centers is not an estimate of
+independent information resolution. Full source certification requires
+domain-wide oracle qualification and independent review.

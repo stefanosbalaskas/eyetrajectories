@@ -1,0 +1,144 @@
+# Stage 3 native R preprocessing, kinematics and trajectory distances
+
+Seven independently implemented R functions, corresponding to published
+eyetrajectoriespy 1.2.0 public functions. These implementations do not
+execute Python. Independent Python numerical oracles are provided
+separately as optional tests; numerical/generalized equivalence is not
+automatically certified by installation.
+
+## Usage
+
+``` r
+etr_normalize_coordinates(x, width, height,
+                          python_boundary_mode = FALSE)
+etr_center_on_landmark(x, landmark_x, landmark_y,
+                       python_boundary_mode = FALSE)
+etr_normalize_time_interval(x, start = 0, end = 1,
+                            python_boundary_mode = FALSE)
+etr_heading_function(x, dimensions = NULL, min_speed = 0,
+                     undefined_policy = c("nan", "raise"))
+etr_trajectory_tortuosity_frame(x, dimensions = NULL, min_displacement = 0,
+                                undefined_policy = c("nan", "raise"))
+etr_pairwise_frechet(x, dimensions = NULL, dimension_weights = NULL,
+                     python_boundary_mode = FALSE)
+etr_nearest_trajectory_indices(x, index, n_neighbors = 5L,
+                               python_boundary_mode = FALSE)
+```
+
+## Arguments
+
+- x:
+
+  An `etr_trajectory_set` with common, strictly increasing time values.
+  Derivative and distance functions may require complete observations.
+
+- width, height:
+
+  Strictly positive finite coordinate extents.
+
+- landmark_x, landmark_y:
+
+  Finite scalars or numeric vectors with one landmark per curve.
+
+- start, end:
+
+  Finite new time interval endpoints, with `end>start`.
+
+- dimensions:
+
+  Optional ordered distinct named channel selection. Planar methods
+  default to channels `x` and `y` only if explicitly present. Pairwise
+  Frechet defaults to all stored channels.
+
+- min_speed:
+
+  Non-negative lower speed limit (undefined when `speed<=min_speed`).
+
+- undefined_policy:
+
+  `"nan"` maps undefined Python numeric results to `NA_real_`; `"raise"`
+  stops on undefined samples/curves.
+
+- min_displacement:
+
+  Nonnegative endpoint displacement threshold.
+
+- dimension_weights:
+
+  Optional finite non-negative channel weights, containing at least one
+  strictly positive value. In explicit source-boundary mode, Fréchet
+  also accepts numeric-compatible logical and string weights.
+
+- index:
+
+  Zero-based integer target curve index, matching Python's
+  `nearest_trajectory_indices()`.
+
+- n_neighbors:
+
+  Positive integer number of nearest distinct curves. Requesting more
+  than exist returns all available distinct curves.
+
+- python_boundary_mode:
+
+  Logical opt-in to bounded Python 1.2 source-domain semantics for
+  coordinate normalization, time normalization, landmark centering and
+  nearest-neighbor slicing. Boolean coordinate extents (TRUE = 1, FALSE
+  invalid) and Boolean time endpoints are converted for native numerical
+  operations. Landmark centering accepts finite numeric-string and
+  Boolean inputs through NumPy-like scalar or per-curve conversions;
+  invalid strings and nonfinite values remain unsupported.
+  Nearest-neighbor counts follow Python's Boolean/integer slice-index
+  rules. Pairwise Fréchet accepts bounded finite NumPy-style dimension
+  weights but retains native R distance computations and results. FALSE
+  preserves strict native R defaults; no Python bridge is used.
+
+## Value
+
+The first four functions return a native `etr_trajectory_set`;
+`etr_trajectory_tortuosity_frame()` returns a base R data.frame;
+`etr_pairwise_frechet()` returns a symmetric numeric distance matrix
+without dimnames; `etr_nearest_trajectory_indices()` returns zero-based
+integer indices.
+
+## Details
+
+Coordinate normalization divides only the first two stored channels by
+width/height without clipping out-of-bounds gaze or modifying other
+channels. Centering subtracts explicitly supplied per-curve landmarks,
+not a trajectory's mean or first location. Time normalization accepts
+arbitrary valid endpoints and does not alter values.
+
+Heading is wrapped `atan2(v_y,v_x)` computed using the same second-order
+edge-aware nonuniform-grid derivative as the Python reference.
+Tortuosity reports sampled path length divided by endpoint displacement
+with the same inclusive zero-denominator rule as the Python reference.
+Pairwise Frechet uses ordered point sequences, not elapsed time, in the
+discrete dynamic-programming recurrence.
+
+As of native Stage 5,
+[`etr_trajectory_set()`](https://stefanosbalaskas.github.io/eyetrajectories/reference/native-api.md)
+can retain a JSON-like native R provenance mapping, and Stage 3
+normalization and landmark centering append their documented audit
+fields without Python. This does not qualify all Python source-schema
+details or serialization. The native tortuosity data frame still omits
+the Python pandas `DataFrame.attrs` provenance field. Full behavioral
+and schema parity remain open. For nearest-neighbor distance ties, the
+native R version uses ascending original index; Python NumPy's default
+argsort tie ordering may differ.
+
+## Examples
+
+``` r
+tt <- c(0,.2,.6,1,2)
+a <- array(0,c(2,length(tt),2))
+a[1,,1] <- tt
+a[1,,2] <- tt^2
+a[2,,1] <- tt+1
+a[2,,2] <- tt^2+1
+x <- etr_trajectory_set(tt,a,dimension_names=c("x","y"),
+                        coordinate_system="pixels")
+y <- etr_normalize_coordinates(x,1920,1080)
+z <- etr_center_on_landmark(x,1,1)
+p <- etr_pairwise_frechet(x)
+```

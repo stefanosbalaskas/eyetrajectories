@@ -1,0 +1,20 @@
+WAVE4_NONLINEAR_DYNAMICS_NATIVE_PLOT_AUDIT
+Version: immutable eyetrajectories v0.4.3, website-only renderer
+Requested functions: 11
+Rendered native plotting functions: 11
+Not yet rendered: 0
+Native computed fixtures: recurrence network, local divergence, windowed RQA sensitivity, transfer-entropy sensitivity, unconditional and conditional circular-shift tests.
+Synthetic plotting-contract records: Kantz and Rosenstein parameter sweeps, IAAFT surrogate-null histogram, multivariate IAAFT errors, multivariate nonlinearity histogram.
+No independent scientific validation, chaos identification, statistical calibration or causal inference is claimed.
+PASS etr_plot_recurrence_network_degree
+PASS etr_plot_local_divergence
+PASS etr_plot_surrogate_nonlinearity
+PASS etr_plot_kantz_sensitivity
+PASS etr_plot_lyapunov_sensitivity
+PASS etr_plot_windowed_rqa_sensitivity
+PASS etr_plot_transfer_entropy_sensitivity
+PASS etr_plot_transfer_entropy_circular_shift_test
+PASS etr_plot_conditional_transfer_entropy_circular_shift_test
+PASS etr_plot_multivariate_iaaft_diagnostics
+PASS etr_plot_multivariate_surrogate_nonlinearity
+MISSING 

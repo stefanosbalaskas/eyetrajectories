@@ -1,0 +1,20 @@
+{
+  "schema": "eyetrajectories-method-registry/v1",
+  "release": "v0.4.3",
+  "exported": 904,
+  "curated": 41,
+  "provisional": 863,
+  "tiers": {
+    "advanced": 271,
+    "core": 24,
+    "experimental": 609
+  },
+  "backends": {
+    "hybrid-interface": 14,
+    "native-R": 502,
+    "python-bridge": 383,
+    "r-delegated-fdapace": 3,
+    "r-delegated-refund": 2
+  },
+  "no_scientific_certification_claim": true
+}

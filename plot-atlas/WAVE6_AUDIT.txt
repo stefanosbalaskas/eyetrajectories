@@ -1,0 +1,10 @@
+WAVE6_INTERACTIVE_ATLAS_AUDIT
+Source: immutable eyetrajectories v0.4.3 native API
+Native plotting functions: 81
+Scientific method categories: 11
+Generated R reproduction scripts: 110
+Generated native R PNGs: 110
+Every native function has source-signature parameters; browser explanations are conservative and refer to exact documentation.
+Python-backed interfaces remain catalogued but are not executed.
+R images are precomputed; comparison is visual, not a controlled causal or inferential comparison.
+Scientific validation: rendering and browser checks do not independently validate estimation methods.

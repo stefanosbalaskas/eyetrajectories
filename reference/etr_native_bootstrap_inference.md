@@ -1,0 +1,125 @@
+# Native R observed-grid simultaneous mean and FPCA bootstrap uncertainty
+
+Python-free Gaussian multiplier mean bands, fixed-target sign-aligned
+FPCA score bootstrap, matched-spectrum bootstrap, FPC shape simultaneous
+bands and an auditable component band frame.
+
+## Usage
+
+``` r
+etr_multiplier_functional_mean_band(trajectories, confidence_level = 0.95,
+  n_multiplier = 2000L, unit = "curve", participant_column = NULL,
+  random_state = 0L, gaussian_multiplier_draws = NULL,
+  random_engine = "numpy")
+etr_bootstrap_fpca_score_uncertainty(trajectories, targets = NULL,
+  n_bootstrap = 500L, n_components = 3L, scaling = "none",
+  resample_unit = "curve", participant_column = NULL, level = 0.95, random_state = 0L)
+etr_bootstrap_fpca_spectrum_uncertainty(trajectories, n_bootstrap = 500L,
+  n_components = 3L, scaling = "none", resample_unit = "curve",
+  participant_column = NULL, confidence_level = 0.95,
+  simultaneous_scope = "component", random_state = 0L)
+etr_bootstrap_fpca_component_bands(trajectories, n_bootstrap = 500L,
+  n_components = 3L, scaling = "none", resample_unit = "curve",
+  participant_column = NULL, confidence_level = 0.95,
+  simultaneous_scope = "component", relative_gap_threshold = NULL,
+  on_near_tie = "error", random_state = 0L)
+etr_fpca_component_band_frame(result)
+```
+
+## Arguments
+
+- trajectories:
+
+  Complete common-grid native trajectories. Probability-simplex mean
+  bands require explicit log-ratio transformation.
+
+- targets:
+
+  Optional fixed external target trajectories with the exact training
+  representation.
+
+- confidence_level:
+
+  Nominal observed-grid confidence fraction in (0,1).
+
+- level:
+
+  Two-sided fixed-target percentile level in (0,1).
+
+- n_multiplier:
+
+  At least 100 Gaussian multiplier draws.
+
+- n_bootstrap:
+
+  At least 20 bootstrap FPCA basis refits.
+
+- unit:
+
+  Curve or equal-weight participant-level independent mean units.
+
+- resample_unit:
+
+  Curve or whole-participant bootstrap resampling.
+
+- participant_column:
+
+  Required participant metadata field when participant-level inference
+  is selected.
+
+- n_components:
+
+  Positive retained FPC count.
+
+- scaling:
+
+  Native FPCA dimension scaling.
+
+- simultaneous_scope:
+
+  Component-wise or within-metric family-wise maximum calibration.
+
+- relative_gap_threshold:
+
+  Optional component identifiability screen threshold \[0,1).
+
+- on_near_tie:
+
+  Error, warn or ignore an explicitly detected near tie.
+
+- random_state:
+
+  For mean bands, a nonnegative integer seed below \\2^{53}\\ or `NULL`
+  for the current R RNG stream. FPCA bootstrap methods on this page use
+  isolated base-R seeds. Fixed Gaussian draws take precedence over the
+  mean-band seed.
+
+- gaussian_multiplier_draws:
+
+  Optional finite numeric matrix of shape `n_multiplier` by number of
+  independent curve or participant units, used as exact Gaussian
+  multiplier realizations. Bypasses the R RNG for numerical source
+  replay; this native R parameter does not exist in the frozen Python
+  1.2 public interface.
+
+- random_engine:
+
+  Seeded mean-band RNG. `"numpy"` uses native NumPy-compatible PCG64
+  normal draws. `"base_R"` reproduces previous native seeded mean bands.
+
+- result:
+
+  Native FPC component band for tidy conversion.
+
+## Value
+
+A native uncertainty result or long-form component-band data frame.
+
+## Details
+
+These descriptive/bootstrap-calibrated procedures operate over the
+observed time-by-dimension grid, not a continuum. They do not establish
+exact frequentist coverage. Matched individual eigenvalues/ratios use
+shape alignment, whereas cumulative explained variance always retains
+descending-rank meaning. Zero-variance cells are not silently imputed.
+The 508-source certification gate remains closed.

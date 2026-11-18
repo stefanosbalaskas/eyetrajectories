@@ -1,0 +1,9 @@
+"metric","value"
+"trajectories",80
+"minimum_observations",7
+"median_observations",9
+"maximum_observations",12
+"noise_sd",0.08
+"reconstruction_rmse",0.118555445666177
+"mean_only_rmse",0.530707623735886
+"abs_latent_score_cor",0.994880325919185

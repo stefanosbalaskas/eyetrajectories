@@ -1,0 +1,2 @@
+"n_independent_participants","trials_per_condition","bootstrap_draws","nominal_level","whole_curve_truth_covered","midpoint_truth_covered"
+32,3,399,0.95,TRUE,TRUE

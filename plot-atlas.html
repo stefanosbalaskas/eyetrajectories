@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Search native R and optional Python-backed plotting exports in eyetrajectories, with original reproducible R-rendered figures and exact function references.">
+<title>Actual R Plotting Atlas | eyetrajectories</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<style>
+:root{font:14px/1.6 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:#14384c;background:#f4f8fa;--line:#d8e6eb;--ink:#14384c;--muted:#557487;--teal:#0b7a8b;--orange:#d99043}
+*{box-sizing:border-box}body{margin:0}a{color:#086d82;text-underline-offset:3px}button,input,select{font:inherit}button{cursor:pointer}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #e9a14b;outline-offset:3px}
+.wrap{max-width:1390px;margin:auto;padding:clamp(15px,2.7vw,36px)}
+.head{background:linear-gradient(125deg,#102e43,#0e5465);color:white;border-radius:19px;padding:clamp(20px,3.1vw,37px);display:flex;gap:18px;justify-content:space-between;align-items:start}
+.head h1{margin:0;font-size:clamp(25px,3vw,42px);letter-spacing:-.045em;line-height:1.13}
+.head p{max-width:870px;color:#d1e7eb;line-height:1.8;font-size:13px;margin:11px 0 0}
+.head a{display:inline-block;white-space:nowrap;border:1px solid #93bbca;border-radius:10px;padding:9px 12px;color:#e6f8fa;font-weight:700;text-decoration:none;font-size:12px}
+.kicker{color:#7ce1d8;text-transform:uppercase;letter-spacing:.16em;font-weight:800;font-size:10px;margin-bottom:8px}
+.stats{display:flex;gap:16px;flex-wrap:wrap;margin:17px 0;color:#4d6d7d;font-size:12px}
+.stats strong{font-size:20px;color:#164258;margin-right:4px;font-variant-numeric:tabular-nums}
+.control-panel{background:#fff;border:1px solid var(--line);border-radius:15px;padding:17px 19px;margin:0 0 17px;display:flex;flex-wrap:wrap;gap:15px;align-items:end}
+.control-panel label{font-size:11px;font-weight:800;color:#3c5d6f;display:block;margin-bottom:6px}
+.control-panel .search{flex:2 1 310px}.control-panel .filter{flex:1 1 180px}.control-panel input[type=search],.control-panel select{height:41px;width:100%;border:1px solid #cbdde4;border-radius:9px;padding:0 12px;color:var(--ink);background:white}
+.cross-picker select:focus-visible,.right-controls select:focus-visible{outline:3px solid #e9a14b;outline-offset:3px}
+.control-panel .check{display:flex;align-items:center;gap:8px;align-self:center;white-space:nowrap;font-size:12px;font-weight:720;margin-top:12px}.check input{width:17px;height:17px;accent-color:var(--teal)}
+.main{display:grid;grid-template-columns:minmax(275px,380px) minmax(0,1fr);gap:16px;align-items:start}
+.listbox,.detail{min-width:0;background:#fff;border:1px solid var(--line);border-radius:17px;overflow:hidden}
+.listhead{padding:12px 16px;border-bottom:1px solid var(--line);font-size:12px;color:#5f7b8a;font-weight:750;display:flex;justify-content:space-between}
+.results{max-height:77vh;min-height:330px;overflow-y:auto;scrollbar-color:#bdced6 transparent}
+.entry{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid #e9f0f3;background:#fff;padding:15px 17px;color:var(--ink)}
+.entry:hover{background:#f2f9fa}.entry[aria-pressed=true]{background:#eaf5f7;box-shadow:inset 4px 0 #0b7e91}
+.entry strong{display:block;font-size:12.5px;overflow-wrap:anywhere;font-weight:780;line-height:1.4}
+.entry small{color:#627f8b;font-size:11px;display:block;margin:7px 0 0;line-height:1.5}
+.pills{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+.pill{font-size:10px;display:inline-block;border-radius:99px;background:#e6f2f5;padding:3px 7px;color:#36697b;font-weight:760}.pill.orange{color:#a15e21;background:#fff1df}.pill.gray{background:#edf0f2;color:#6a7781}
+.detail{padding:clamp(16px,2.2vw,27px);min-height:530px}
+.detail-top{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:start;margin-bottom:7px}
+.detail h2{font-size:clamp(18px,2.2vw,27px);letter-spacing:-.03em;margin:2px 0 9px;overflow-wrap:anywhere}
+#description{color:var(--muted);line-height:1.75;margin:0 0 18px;font-size:13px;max-width:800px}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:13px 0}
+.toolbar select{min-width:170px;padding:9px;border:1px solid #c8dce3;border-radius:8px;background:#fff}
+.toolbar a,.toolbar button{font-size:12px;padding:8px 11px;border-radius:8px;border:1px solid #ccdee5;background:#f8fcfd;font-weight:740;text-decoration:none;color:#135c70}
+.toolbar a.primary{background:#0b6579;color:white;border-color:#0b6579}
+.figure{border:1px solid #deeaee;border-radius:12px;background:#fafcfd;padding:11px;overflow:hidden}
+.figure img{width:100%;height:auto;max-height:470px;object-fit:contain;display:block;border-radius:6px}
+.compare{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.compare .figure img{max-height:360px}
+.wave6-toolbar{margin-top:10px}.wave6-toolbar button,.wave6-actions button{font-size:12px;padding:8px 12px;border-radius:8px;border:1px solid #b3d5de;background:#f0f8fa;color:#125b70;font-weight:750}
+.wave6-toolbar button[aria-pressed=true]{background:#105d73;color:#fff}
+.cross-panel{margin:14px 0;padding:15px;border:1px solid #badbe4;border-radius:13px;background:#f5fafb}
+.cross-picker{display:flex;align-items:end;flex-wrap:wrap;gap:12px;margin-bottom:15px}
+.cross-picker label{display:block;font-size:11px;font-weight:800;color:#3e6070}
+.cross-picker select{display:block;width:min(100%,480px);min-width:180px;padding:9px 11px;background:#fff;border:1px solid #c5dce3;border-radius:8px}
+.cross-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;align-items:start}
+.cross-grid figure{min-width:0;background:#fff;border:1px solid #d4e5ea;padding:12px;border-radius:11px}
+.cross-grid img{width:100%;height:auto;object-fit:contain;max-height:340px;display:block}
+.cross-grid h3{font-size:12px;overflow-wrap:anywhere;margin:0 0 6px}
+.cross-grid .method{font-size:11px;color:#577b89;margin-bottom:8px}
+.cross-actions{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;margin:12px 0}
+.cross-caveat{padding:12px 14px;border:1px solid #dce8ec;border-radius:9px;background:#fff;color:#526b7c;font-size:12px}
+.parameter-guide{margin-top:21px;border:1px solid #d6e6eb;border-radius:13px;background:#f7fbfc;padding:15px}
+.parameter-guide h3{font-size:14px;color:#1c5163;margin:0 0 7px;overflow-wrap:anywhere}
+.parameter-guide p{font-size:12px;color:#526d7d;line-height:1.6}
+.parameter-list{display:grid;grid-template-columns:1fr;gap:0;margin:13px 0}
+.parameter-row{padding:10px 0;border-bottom:1px solid #dfeaf0}
+.parameter-row dt{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-weight:800;color:#173f50}
+.parameter-row dt code{background:#e6f2f5;padding:2px 6px;border-radius:5px;overflow-wrap:anywhere}
+.param-default{color:#64818e;font-size:11px;font-weight:550;overflow-wrap:anywhere}
+.parameter-row dd{margin:5px 0 0;font-size:12px;color:#496b7b;line-height:1.5}
+.param-boundary{font-style:italic}
+.right-controls{margin:12px 0}.right-controls select{max-width:100%;padding:7px;border:1px solid #cbdde4;border-radius:8px}
+details.right-source{margin-top:12px}details.right-source pre{margin-top:9px;max-height:220px}
+details.right-source summary{cursor:pointer;color:#135f72;font-size:12px;font-weight:800}
+.right-params{padding:0;border:0;background:transparent}
+@media(max-width:680px){.cross-grid{grid-template-columns:1fr}.cross-panel{padding:10px}}
+.figure figcaption{text-align:center;font-size:11px;color:#657e8b;margin:8px 0 3px}
+figure{margin:0}
+.code-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:25px 0 9px}
+.code-title h3{margin:0;font-size:14px}.code-title button{padding:7px 11px;border:1px solid #bcd7df;border-radius:8px;font-size:11px;background:#eff8fa;color:#0b6375;font-weight:770}
+pre{margin:0;white-space:pre;max-height:410px;overflow:auto;padding:19px;border-radius:12px;background:#102b3c;color:#d3f8f1;font-size:12px;line-height:1.8;tab-size:2}
+.notice{margin:15px 0;background:#eef6f8;border:1px solid #d4e8ed;color:#526e7e;border-radius:12px;padding:15px;font-size:12px;line-height:1.7}
+.notice strong{color:#244a5a}
+.empty{padding:35px;text-align:center;color:#66808f}
+#no-preview{padding:48px 20px;background:#f6fafb;text-align:center;border:1px dashed #c7dfe6;color:#617a88;border-radius:11px;line-height:1.7}
+.coverage-note{margin:0 0 16px;border:1px solid #cce7eb;border-radius:12px;background:#eaf5f7;padding:11px 15px;font-size:12px;color:#3f6071;line-height:1.6}.coverage-note strong{color:#124b5a}
+.footer{font-size:12px;color:#5d7888;margin:24px 0}
+.hidden{display:none!important}
+@media(max-width:900px){.main{grid-template-columns:1fr}.results{max-height:340px;min-height:130px}.head{display:block}.head a{margin-top:12px}}
+@media(max-width:530px){.control-panel{padding:13px}.entry{padding:12px}.compare{grid-template-columns:1fr}.detail{padding:14px}.stats{gap:10px}.stats strong{font-size:17px}}
+</style>
+<link rel="icon" type="image/svg+xml" href="/eyetrajectories/branding/eyetrajectories-symbol.svg">
+</head>
+<body>
+<div class="wrap">
+<header class="head"><div><div class="kicker">eyetrajectories · version 0.4.3 · native-R figure library</div>
+<h1>Searchable Plotting Atlas</h1>
+<p>Start with actual plots produced by the released R functions, then optionally browse the complete exported API. Search scientifically defined method families, compare any two native R plotting functions side by side, and download fully reproducible version-pinned R scripts. <strong><span id="coverageSummary">Preview coverage is computed from the release catalogue.</span></strong> Optional Python-backed interfaces remain accessible as documentation-only entries. Browser controls select <strong>pre-generated R outputs</strong>—no client-side R estimation or participant data.</p></div>
+<a href="index.html">← Package home</a></header>
+<div class="stats" aria-live="polite">
+<span><strong id="nativeCount">—</strong> native R plotting exports</span>
+<span><strong id="pythonCount">—</strong> optional Python-facing exports</span>
+<span><strong id="previewCount">—</strong> native functions with real previews (of 81)</span>
+<span><strong id="figureCount">—</strong> real R figure variants</span>
+</div>
+<section class="control-panel" aria-label="Filter plotting functions">
+<div class="search"><label for="search">Search function name or topic</label><input type="search" id="search" autocomplete="off" placeholder="Try: FPCA, recurrence, bootstrap, transfer, trajectory…"></div>
+<div class="filter"><label for="family">Scientific method</label>
+<select id="family"><option value="all">All method families</option></select></div>
+<div class="filter"><label for="backend">Implementation type</label><select id="backend"><option value="all">Native R + Python bridge</option><option>Native R</option><option>Python-backed</option></select></div>
+<label class="check" for="onlyPreview"><input id="onlyPreview" type="checkbox" checked> <span id="previewFilterLabel">Show illustrated functions only</span></label>
+</section>
+<p class="coverage-note" id="coverageNote"><strong>Figure gallery mode:</strong> Showing verified native R plots. Uncheck the illustrated-functions filter to browse every documented export, including entries that do not yet have a real generated figure.</p>
+<div class="main">
+<section class="listbox" aria-label="Plotting functions"><div class="listhead"><span id="resultCount">Loading catalogue…</span><span>v0.4.3 NAMESPACE</span></div><div class="results" id="results"></div></section>
+<article class="detail" aria-live="polite">
+<div class="detail-top"><span class="pill" id="kind">Native R</span><span class="pill orange" id="previewTag">Actual R plot</span></div>
+<h2 id="functionName">Select a plotting function</h2>
+<p id="description">Each preview is generated from the package's real plotting code.</p>
+<div class="toolbar"><label for="variant" id="variantLabel">Example setting</label><select id="variant"></select><button type="button" id="comparison">Compare all variants</button><a id="docs" class="primary" href="reference/index.html">Open R documentation</a><a id="downloadImage" href="#" download>Download figure</a><a id="downloadScript" href="#" download>Download R script</a></div>
+<div class="wave6-toolbar"><button type="button" id="compareFunctions" aria-pressed="false" aria-controls="crossCompare">Compare two functions</button></div>
+<section id="crossCompare" class="cross-panel hidden" aria-label="Side-by-side native R function comparison">
+<div class="cross-picker"><div><label for="rightFunction">Choose second native R function</label><select id="rightFunction"></select></div><div><label for="rightVariant">Second function example</label><select id="rightVariant"></select></div><button type="button" id="swapFunctions">Use right function as primary</button></div>
+<div class="cross-grid">
+<figure id="leftFigure"><h3 id="leftFunctionTitle"></h3><div class="method" id="leftCategory"></div><img id="leftImage" alt="" loading="lazy"><figcaption id="leftImageCaption"></figcaption></figure>
+<figure id="rightFigure"><h3 id="rightFunctionTitle"></h3><div class="method" id="rightCategory"></div><img id="rightImage" alt="" loading="lazy"><figcaption id="rightImageCaption"></figcaption></figure>
+</div>
+<div class="cross-actions"><a id="rightDocs" href="reference/index.html">Second function documentation</a><a id="rightScript" href="#" download>Download second R script</a><a id="rightDownloadImage" href="#" download>Download second figure</a></div>
+<details class="right-source"><summary>Second function R reproduction source</summary><pre><code id="rightCode"></code></pre></details>
+<details class="right-source"><summary>Second function parameters and assumptions</summary><div id="rightParameters" class="parameter-guide right-params"></div></details>
+<p id="crossCaveat" class="cross-caveat" role="status">Comparisons juxtapose synthetic examples; they do not establish matched data, common estimands, or inferential superiority.</p>
+</section>
+<div id="imageView"><figure class="figure"><img id="mainImage" src="" alt="Original R-generated plot" decoding="async"><figcaption id="imageCaption"></figcaption></figure></div>
+<div id="compareView" class="compare hidden"></div>
+<div id="no-preview" class="hidden">This is a <strong>documentation-only</strong> entry—not a broken image. This optional Python-backed function is documented but not executed in this native R atlas. <strong>Uncheck the filter to browse all exports</strong>, or use the documentation link to inspect its inputs and scientific assumptions.</div>
+<div id="codeSection"><div class="code-title"><h3>Run this version-pinned example in R</h3><button type="button" id="copyCode">Copy R code</button></div><pre><code id="rcode"></code></pre></div>
+<section id="parameterGuide" class="parameter-guide" aria-label="Scientific parameters and defaults"></section>
+<div class="notice"><strong>Scientific boundaries:</strong> Every preview image is produced by a real exported native R plotting function, using synthetic observations. Search-only entries are not falsely represented with surrogate graphics. Optional Python-facing \`et_plot_*\` / \`etpy_plot_*\` interfaces are listed separately and are not executed here. Experimental inferential bands and nonlinear diagnostics are not independently validated just because they render.</div>
+</article>
+</div>
+<div class="footer">Reproducibility: exact software version <a href="https://github.com/stefanosbalaskas/eyetrajectories/releases/tag/v0.4.3">v0.4.3</a> · <a href="https://doi.org/10.5281/zenodo.24288857">Zenodo DOI 10.5281/zenodo.24288857</a> · <a href="SITE_GALLERY.html">Original scientific gallery</a> · <a href="SITE_VALIDATION.html">Qualification and limitations</a>. All generated images have R code attached.</div>
+</div>
+<script src="plot-atlas/catalog.js"></script>
+<script>
+(function(){
+"use strict";
+const entries=window.ET_PLOT_ATLAS_CATALOG||[];
+const $=id=>document.getElementById(id);
+let current=null,variantIndex=0,comparing=false;
+const previews=entries.filter(x=>x.variants&&x.variants.length);
+$("nativeCount").textContent=entries.filter(x=>x.backend==="Native R").length;
+$("pythonCount").textContent=entries.filter(x=>x.backend==="Python-backed").length;
+$("previewCount").textContent=previews.length;
+$("coverageSummary").textContent=previews.length+" of "+entries.filter(x=>x.backend==="Native R").length+" native plotting exports currently have preview images;";
+$("previewFilterLabel").textContent="Only functions with real figures ("+previews.length+")";
+$("onlyPreview").checked=true;
+$("figureCount").textContent=previews.reduce((n,x)=>n+x.variants.length,0);
+const has=x=>x.variants&&x.variants.length>0;
+function filter(){
+const term=$("search").value.trim().toLowerCase(),family=$("family").value,backend=$("backend").value,only=$("onlyPreview").checked;
+return entries.filter(x=>(family==="all"||x.category===family)&&(backend==="all"||x.backend===backend)&&(!only||has(x))&&(!term||[x.name,x.title,x.category,x.description].join(" ").toLowerCase().includes(term)))
+.sort((a,b)=>Number(has(b))-Number(has(a))||a.name.localeCompare(b.name));
+}
+function element(tag,cls,text){
+ const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;
+}
+function renderList(){
+const matches=filter();
+$("resultCount").textContent=matches.length+($("onlyPreview").checked?" with figures":" of "+entries.length+" functions");
+$("coverageNote").innerHTML=$("onlyPreview").checked?
+"<strong>Figure gallery mode:</strong> Showing the "+previews.length+" functions with genuine native R illustrations ("+previews.reduce((n,x)=>n+x.variants.length,0)+" figure variants). Uncheck <em>Show illustrated functions only</em> to browse all "+entries.length+" documented exports.":
+"<strong>Complete API catalogue:</strong> "+previews.length+" of "+entries.length+" plotting interfaces have actual rendered previews. The rest are documentation-only entries—not missing images. Illustrated functions appear first.";
+const box=$("results");box.replaceChildren();
+if(!matches.length){
+  box.appendChild(element("p","empty","No matching functions. Try a broader search or turn off the illustrated-only filter."));
+  current=null;
+  $("functionName").textContent="No matching functions";
+  $("description").textContent="Change the filters to select a plotting function.";
+  $("imageView").classList.add("hidden");
+  $("compareView").classList.add("hidden");
+  $("no-preview").classList.remove("hidden");
+  $("codeSection").classList.add("hidden");
+  $("variant").classList.add("hidden");
+  $("variantLabel").classList.add("hidden");
+  $("comparison").classList.add("hidden");
+  $("downloadImage").classList.add("hidden");
+  $("docs").classList.add("hidden");
+  window.ET_ATLAS_WAVE6?.sync(null,0);
+  return;
+}
+for(const x of matches){
+const b=element("button","entry");
+b.type="button";b.setAttribute("aria-pressed",String(current&&current.name===x.name));
+b.appendChild(element("strong","",x.name+"()"));
+b.appendChild(element("small","",x.category));
+const pills=element("div","pills");
+pills.appendChild(element("span","pill"+(x.backend==="Python-backed"?" gray":""),x.backend));
+pills.appendChild(element("span","pill"+(has(x)?" orange":" gray"),has(x)?"Actual R figure":"Docs / API only"));
+b.appendChild(pills);b.addEventListener("click",()=>selectEntry(x));box.appendChild(b);
+}
+if(!current||!matches.some(x=>x.name===current.name)){
+ const linkedPlot=new URLSearchParams(window.location.search).get("function");
+ selectEntry(matches.find(x=>x.name===linkedPlot&&x.backend==="Native R"&&has(x))||
+   matches.find(x=>x.name==="etr_plot_trajectories")||matches[0],true);
+}
+renderListSelection();
+}
+function setVariants(){
+if(!current)return;
+const vars=current.variants||[],yes=has(current);
+$("variant").replaceChildren();
+vars.forEach((v,i)=>{const o=element("option","",v.label);o.value=String(i);$("variant").appendChild(o);});
+$("variant").value=String(variantIndex);
+$("variant").disabled=!yes;
+$("variant").classList.toggle("hidden",!yes);
+$("docs").classList.remove("hidden");
+$("variantLabel").classList.toggle("hidden",!yes);
+$("comparison").classList.toggle("hidden",vars.length<2);
+$("downloadImage").classList.toggle("hidden",!yes);
+$("downloadScript").classList.toggle("hidden",!yes);
+$("codeSection").classList.toggle("hidden",!yes);
+$("imageView").classList.toggle("hidden",!yes||comparing);
+$("compareView").classList.toggle("hidden",!yes||!comparing);
+$("no-preview").classList.toggle("hidden",yes);
+$("previewTag").textContent=yes?"Native R figure":"No generated figure";
+$("previewTag").className="pill "+(yes?"orange":"gray");
+$("kind").textContent=current.backend;
+$("functionName").textContent=current.name+"()";
+$("description").textContent=current.description;
+$("docs").href=current.doc;
+$("docs").textContent=current.exactDoc?"Function documentation":"Reference index";
+$("comparison").textContent=comparing?"Single figure":"Compare all variants";
+if(!yes){window.ET_ATLAS_WAVE6?.sync(current,variantIndex);return;}
+const variant=vars[variantIndex];
+$("mainImage").src=variant.image;
+$("mainImage").alt=current.name+" native R result: "+variant.label;
+$("imageCaption").textContent=variant.label+" · generated by "+current.name+"()";
+$("downloadImage").href=variant.image;
+$("downloadImage").download=current.name+"-"+String(variantIndex+1)+".png";
+$("downloadScript").href=variant.script;
+$("downloadScript").download=current.name+"-"+String(variantIndex+1)+".R";
+$("rcode").textContent=variant.code;
+const compare=$("compareView");compare.replaceChildren();
+if(comparing)for(const v of vars){
+ const fig=element("figure","figure"),img=element("img"),cap=element("figcaption","",v.label);
+ img.src=v.image;img.alt=current.name+": "+v.label;img.loading="lazy";
+ fig.append(img,cap);compare.appendChild(fig);
+}
+window.ET_ATLAS_WAVE6?.sync(current,variantIndex);
+}
+function selectEntry(item,skipList=false){
+current=item;variantIndex=0;comparing=false;setVariants();if(!skipList)renderListSelection();
+}
+function renderListSelection(){
+for(const b of $("results").querySelectorAll(".entry")){
+  b.setAttribute("aria-pressed",String(b.querySelector("strong")?.textContent===current.name+"()"));
+}
+}
+["search","family","backend","onlyPreview"].forEach(id=>$(id).addEventListener(id==="search"?"input":"change",renderList));
+$("variant").addEventListener("change",()=>{variantIndex=Number($("variant").value)||0;comparing=false;setVariants();});
+$("comparison").addEventListener("click",()=>{comparing=!comparing;setVariants();});
+document.addEventListener("et-atlas-choose-primary",(event)=>{
+ const chosen=entries.find(x=>x.name===event.detail?.name);
+ if(chosen&&chosen.backend==="Native R"&&has(chosen))selectEntry(chosen);
+});
+$("copyCode").addEventListener("click",async()=>{
+ const content=$("rcode").textContent;
+ try{
+  if(!navigator.clipboard?.writeText)throw Error("Clipboard unavailable");
+  await navigator.clipboard.writeText(content);
+  $("copyCode").textContent="Copied";
+ }catch(e){$("copyCode").textContent="Select and copy code below";}
+ $("rcode").setAttribute("tabindex","-1");
+});
+if(entries.length)renderList();else $("resultCount").textContent="Plotting catalogue not available; check the site build.";
+})();
+</script>
+<script src="plot-atlas-wave6.js"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+EYETRAJECTORIES_WAVE7_STATIC_NAVIGATION
+Immutable native R source version: 0.4.3
+Referenced Python workflows: 1.2.0 stable module API
+Source-matched Python workflow routes: 10
+Verified exported native R orchestration routes: 10
+Native R estimator references resolved: 10
+Qualified atlas native-R plot references: 10
+Full source-contract independent scientific certifications: 0/508
+CSV rows analysed in browser only; no server computation or upload.
+Figures are synthetic teaching examples, not workflow-specific estimator parity.
+Exact R reference pages available for 10 workflow routes and 10 estimators.
+All unresolved routes fall back to the verified reference index.

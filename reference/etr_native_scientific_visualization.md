@@ -1,0 +1,68 @@
+# Native R embedding, recurrence and nonlinear-dynamics visual diagnostics
+
+Eight Python-free native R descriptive graphics plotting the exact
+stored scientific geometry without automatic parameter tuning or
+mathematical estimator modification. These functions are experimental
+source-name analogues; they are not exact Matplotlib output contracts.
+
+## Plotting parameters
+
+- result:
+
+  A corresponding native embedding-delay, FNN-dimension,
+  recurrence-network, radius-profile, windowed-RQA, local-divergence,
+  largest-Lyapunov or surrogate-nonlinearity diagnostic result.
+
+- normalized:
+
+  Use degree normalized by source node count.
+
+- metrics:
+
+  Distinct available numeric windowed-RQA columns.
+
+- bins:
+
+  Integer histogram-break count (\>=2) for base R plotting. In the
+  explicit source-boundary mode, must be a Python-style integer within
+  the native finite 10000-bin safety limit.
+
+- python_boundary_mode:
+
+  If TRUE, reproduce exact finite NumPy equal-width integer-bin edges
+  and left-inclusive counts for the surrogate-nonlinearity histogram.
+  FALSE retains the existing base R histogram interpretation and
+  validation.
+
+- crossings:
+
+  One-dimensional native Poincare crossing result with at least two
+  observed crossings.
+
+- fit:
+
+  Optional compatible one-dimensional native local affine map.
+
+- ...:
+
+  Additional native plotting parameters.
+
+## Value
+
+Each function draws into the active R graphics device and returns the
+plotted numeric geometry invisibly. Return classes and graphics devices
+are not Matplotlib Axes. The source-boundary mode of
+[`etr_plot_surrogate_nonlinearity()`](https://stefanosbalaskas.github.io/eyetrajectories/reference/etr_plot_surrogate_nonlinearity.md)
+aligns NumPy integer-bin histogram geometry for finite surrogate
+samples, but all other graphics and native R result classes retain their
+native behavior.
+
+## Details
+
+The visualisations preserve the declared physical-time/lag coordinates,
+source sample-index semantics, ordered diagnostic tables, and recorded
+fit intervals. All source-name parity ledger entries remain
+full-contract certification pending: graphical-backend return objects
+are an explicit known divergence. These plots are descriptive and do not
+provide causal inference, chaos classification, or calibrated confidence
+by themselves.

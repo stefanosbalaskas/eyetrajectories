@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'">
+<meta name="description" content="Four complete, reproducible native R scientific eye-tracking trajectory workflows with generated synthetic figures, data provenance, and limitations.">
+<title>Four Flagship Research Workflows | eyetrajectories v0.4.3</title>
+<link rel="stylesheet" href="methods-atlas.css">
+<link rel="stylesheet" href="flagship-workflows.css">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/svg+xml" href="/eyetrajectories/branding/eyetrajectories-symbol.svg">
+</head>
+<body>
+<main class="shell">
+<header class="hero">
+ <div class="eyebrow">EYETRAJECTORIES · FOUR REPRODUCIBLE NATIVE R ANALYSES</div>
+ <h1>From scientific question to an executable analysis.</h1>
+ <p>Four fully scripted demonstrations using the exact eyetrajectories v0.4.3 API, with generated R figures, numerical CSVs, a source manifest and explicit limitations. Every dataset is synthetic. No participant data are included and no browser-side statistical fitting occurs.</p>
+ <nav class="links" aria-label="Project navigation">
+ <a href="index.html">Package homepage</a><a href="methods-atlas.html">Search all 904 methods</a>
+ <a href="research-portal.html">Design and method navigator</a><a href="plot-atlas.html">Plot atlas</a>
+ <a href="SITE_VALIDATION.html">Validation</a>
+ </nav>
+</header>
+<section class="stats" aria-label="Workflow coverage">
+ <div class="stat"><strong>4</strong><span>Complete native-R scripts</span></div>
+ <div class="stat"><strong>12</strong><span>Vector PDF scientific figures</span></div>
+ <div class="stat"><strong>0</strong><span>Real participant records distributed</span></div>
+ <div class="stat"><strong>0.4.3</strong><span>Exact published API baseline</span></div>
+</section>
+<section class="notice"><strong>Scientific use boundary:</strong> The examples exercise implementation contracts and illustrative analysis steps. Synthetic results do not establish real-world statistical performance, independent gaze measurement truth, source-equivalent Python estimators or calibrated uncertainty outside the tested simulation conditions.</section>
+<section class="workflow" id="dense">
+ <div class="whead"><span class="eyebrow">01 · CORE · DENSE FUNCTIONAL DATA</span><h2>Complete gaze-trajectory analysis</h2>
+ <p><strong>Research question:</strong> How do aligned two-channel trajectories vary across experimental viewing conditions?</p></div>
+ <div class="wgrid"><div><p>Generate 24 simulated participants viewing two conditions, construct two-channel trajectories on an explicit common grid, verify L² matrix symmetry, fit MFPCA and inspect scores and low-rank reconstruction.</p>
+ <p><strong>Methods:</strong> etr_trajectory_set, etr_pairwise_l2, etr_fit_mfpca, etr_fpca_scores, etr_reconstruct_fpca.</p>
+ <p><strong>Boundary:</strong> normalized time is not original sample time, synthetic x/y are not calibrated gaze angles, and descriptive FPCA does not test a condition effect.</p>
+ <div class="wlinks"><a href="workflows/01_complete_gaze_trajectory.R" download>Download complete R code</a><a href="workflows/01-dense/01_planar_trajectories.pdf">Vector figure PDF</a><a href="workflows/01-dense/METHODS_AND_LIMITATIONS.md">Full methods and limitations</a></div></div>
+ <figure><img src="workflows/01-dense/preview.png" loading="lazy" alt="R-generated synthetic planar functional gaze trajectories"><figcaption>R-generated synthetic planar trajectories; illustrative, not recorded gaze.</figcaption></figure></div>
+</section>
+<section class="workflow" id="multilevel">
+ <div class="whead"><span class="eyebrow">02 · ADVANCED · REPEATED-MEASURES STRUCTURE</span><h2>Descriptive multilevel functional variation</h2>
+ <p><strong>Research question:</strong> How much variation is expressed across participant mean curves versus repeated trial deviations?</p></div>
+ <div class="wgrid"><div><p>Generate 30 simulated people each with four repeated functional observations, fit the native descriptive multilevel FPCA model and visualize between-subject and within-subject functional strata.</p>
+ <p><strong>Methods:</strong> etr_fit_multilevel_fpca, etr_multilevel_scores, etr_multilevel_variance.</p>
+ <p><strong>Boundary:</strong> this decomposition is not an inferential functional mixed-effects model. The two reported strata are not automatically additive population variance components.</p>
+ <div class="wlinks"><a href="workflows/02_multilevel_functional_variation.R" download>Download complete R code</a><a href="workflows/02-multilevel/02_descriptive_variance.pdf">Vector figure PDF</a><a href="workflows/02-multilevel/METHODS_AND_LIMITATIONS.md">Full methods and limitations</a></div></div>
+ <figure><img src="workflows/02-multilevel/preview.png" loading="lazy" alt="R-generated two-stratum synthetic descriptive functional variance diagram"><figcaption>Two distinct design strata, not an additive population covariance decomposition.</figcaption></figure></div>
+</section>
+<section class="workflow" id="sparse">
+ <div class="whead"><span class="eyebrow">03 · ADVANCED · IRREGULAR OBSERVATIONS</span><h2>Sparse trajectory recovery under known truth</h2>
+ <p><strong>Research question:</strong> How accurately can a sparse functional estimator recover a trajectory when time support is irregular?</p></div>
+ <div class="wgrid"><div><p>Create 80 synthetic irregular curves with 7–12 observations each, estimate a sparse PACE model with the optional fdapace R backend and compare reconstruction with its independent analytic generating process and a mean-only baseline.</p>
+ <p><strong>Methods:</strong> etr_sparse_curves, etr_fit_sparse_pace, etr_sparse_pace_fitted, etr_sparse_pace_scores.</p>
+ <p><strong>Boundary:</strong> PACE estimation is delegated to fdapace; one-factor known-truth recovery is not a proof of performance for arbitrary missingness or sensor dropout.</p>
+ <div class="wlinks"><a href="workflows/03_sparse_irregular_recovery.R" download>Download complete R code</a><a href="workflows/03-sparse/02_sparse_known_truth.pdf">Vector figure PDF</a><a href="workflows/03-sparse/METHODS_AND_LIMITATIONS.md">Full methods and limitations</a></div></div>
+ <figure><img src="workflows/03-sparse/preview.png" loading="lazy" alt="Synthetic known-truth sparse function, observations and fdapace reconstruction from R"><figcaption>Analytic truth, irregular observations and PACE reconstruction in one selected synthetic model.</figcaption></figure></div>
+</section>
+<section class="workflow" id="uncertainty">
+ <div class="whead"><span class="eyebrow">04 · ADVANCED · PARTICIPANT-LEVEL INFERENCE</span><h2>Uncertainty-aware paired comparison</h2>
+ <p><strong>Research question:</strong> What is the estimated population mean participant-level functional contrast between two repeated experimental conditions?</p></div>
+ <div class="wgrid"><div><p>Generate 32 participants completing three trials per condition, compute each participant's paired B−A functional contrast, then construct participant-resampled pointwise and simultaneous mean bands.</p>
+ <p><strong>Methods:</strong> etr_trajectory_set, etr_bootstrap_mean_band.</p>
+ <p><strong>Boundary:</strong> the single example does not establish 95% coverage. Separate simulation experiments found missingness-sensitive empirical coverage, so participant dependence and missingness must be reported.</p>
+ <div class="wlinks"><a href="workflows/04_uncertainty_paired_contrast.R" download>Download complete R code</a><a href="workflows/04-uncertainty/01_paired_difference_bands.pdf">Vector figure PDF</a><a href="workflows/04-uncertainty/METHODS_AND_LIMITATIONS.md">Full methods and limitations</a></div></div>
+ <figure><img src="workflows/04-uncertainty/preview.png" loading="lazy" alt="R-generated synthetic mean functional difference with pointwise and simultaneous confidence bands"><figcaption>Known-truth paired contrast and example uncertainty bands, synthetic data only.</figcaption></figure></div>
+</section>
+<section class="pane" aria-label="Reproducibility contract"><h2>Reproducibility contract for all four examples</h2>
+<p>Each complete run creates three PDF figures, design/estimate CSV files, the generated methods and limitations report, and the R session manifest. Source files are versioned in the repository, and website figures are generated from those R scripts during the site build. The input datasets are generated deterministically by the examples and are not copied from OneStop or PoTeC.</p>
+<p>To run the scripts yourself, install the exact 0.4.3 GitHub release and the optional R package fdapace for workflow 03. All generated outputs should be considered illustrative until checked against an external research design and its data-generating assumptions.</p>
+<p><a href="https://github.com/stefanosbalaskas/eyetrajectories/blob/main/docs/SCIENTIFIC_TIERS_AND_FLAGSHIP_WORKFLOWS.md">Read the methodological architecture and validation gates</a>.</p>
+</section>
+<footer><p>Copyright and license details follow the package source. Evidence status is method-specific. Software version DOI: <a href="https://doi.org/10.5281/zenodo.24288857">10.5281/zenodo.24288857</a>.</p></footer>
+</main>
+</body>
+</html>

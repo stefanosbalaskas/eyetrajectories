@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Browser-local eye-tracking CSV structural inspection, scientific method selection and ten reproducible native R workflow references; no data upload.">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; font-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'; object-src 'none'">
+<title>Research Workflow Portal | eyetrajectories v0.4.3</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="stylesheet" href="research-portal.css">
+<link rel="icon" type="image/svg+xml" href="/eyetrajectories/branding/eyetrajectories-symbol.svg">
+</head>
+<body>
+<div class="wrap">
+<header class="hero">
+<div>
+<div class="eyebrow">eyetrajectories · v0.4.3 · research methods navigator</div>
+<h1>From raw gaze observations to defensible scientific workflows.</h1>
+<p>Inspect the structure of a local gaze CSV, choose a methodology around your observed time grid and research estimand, then navigate ten real native R workflow functions, example plots, source references and qualification boundaries. Analysis choices remain yours: this site does not fit models, upload gaze, infer missingness mechanisms or certify confidence intervals.</p>
+<nav class="hero-links" aria-label="Research portal navigation">
+<a href="#preflight">Inspect CSV locally</a>
+<a href="#selector">Choose a method</a>
+<a href="#matrix">Compare ten workflows</a>
+<a href="plot-atlas.html">Native R figure atlas</a>
+<a href="index.html">Package homepage</a>
+</nav>
+</div>
+<div class="hero-stats" aria-label="Workflow coverage">
+<div><strong>10 / 10</strong><span>Source-defined Python workflow routes mapped to exported native R entry points</span></div>
+<div><strong>81 / 81</strong><span>Native R functions illustrated in the separate plotting atlas</span></div>
+<div><strong>0 / 508</strong><span>Independently certified complete Python-source contracts; native methods remain documented separately</span></div>
+</div>
+</header>
+<nav class="jump" aria-label="Jump to a portal section">
+<a href="#preflight">01 · Local data preflight</a>
+<a href="#selector">02 · Method selection</a>
+<a href="#matrix">03 · Ten-route matrix</a>
+<a href="#evidence">04 · Scientific evidence</a>
+</nav>
+<section class="section" id="preflight">
+<div class="section-head"><div class="eyebrow">01 / structural data assessment</div><h2>Inspect a local CSV without uploading it.</h2>
+<p>Check actual recorded support before selecting dense, sparse, asynchronous or repeated-trial methods. Parsing occurs entirely in your browser. The tool neither transmits nor stores participant-level rows.</p></div>
+<div class="columns">
+<form class="panel" id="preflightForm" novalidate>
+<h3>Long-format gaze data</h3>
+<div class="fields">
+<label class="field"><span>Choose local CSV file</span><input type="file" accept=".csv,text/csv" id="csvFile" aria-describedby="privacyStatement"></label>
+<label class="field"><span>Recorded time unit</span><select id="timeUnit"><option value="unknown">Not declared</option><option value="seconds">Seconds</option><option value="milliseconds">Milliseconds</option><option value="normalized">Normalized 0–1</option></select></label>
+<label class="field"><span>Recorded coordinate system</span><select id="coordUnit"><option value="unknown">Not declared</option><option value="normalized">Screen-relative [0,1]</option><option value="pixels">Screen pixels</option><option value="degrees">Degrees of visual angle</option></select></label>
+<div class="full"><label class="field" for="csvPaste"><span>Or paste CSV text</span></label><textarea id="csvPaste" placeholder="participant_id,trial_id,time_s,x,y&#10;P01,T01,0,0.45,0.32" spellcheck="false"></textarea></div>
+</div>
+<div class="actions">
+<button type="button" id="sampleCSV" class="subtle">Load invented sample</button>
+<button type="submit" id="inspectCSV" class="primary">Inspect structure</button>
+<button type="button" id="clearCSV" class="subtle">Clear local data</button>
+<button type="button" id="exportAudit" disabled>Export aggregate JSON</button>
+<button type="button" id="applyStructure" disabled>Use observed structure in method wizard</button>
+</div>
+<p class="micro" id="privacyStatement"><strong>Browser-local:</strong> no fetch, tracking, upload or server-side analysis. Maximum 12,000 data rows and 1.2 MB of CSV text. Summary export excludes participant IDs, trial IDs, raw values and file names. File content is held only in this browser tab until cleared or reloaded.</p>
+<div id="csvStatus" class="status" role="status" aria-live="polite">Choose a local CSV, paste text, or open the invented sample.</div>
+</form>
+<div class="panel">
+<h3>Structural preflight</h3>
+<p>Required columns: <code>participant_id</code>, <code>trial_id</code>, <code>x</code>, <code>y</code>, and one of <code>time_s</code>, <code>time_ms</code> or <code>time</code>. Additional columns remain unprocessed. Missing coordinates are not zero.</p>
+<div class="inspector-hint">A shared set of time points is only a <strong>structural prerequisite</strong> for dense common-grid FPCA. Nonpaired or missing x/y values cannot establish true sensor-level asynchronous acquisition. The inspector cannot determine whether missing gaze is random or assess eye-tracker calibration, drift, AOI assignment, model fit or inferential calibration.</div>
+<div id="preflightReport" aria-live="polite"><p>No local data has been inspected yet.</p></div>
+</div>
+</div>
+</section>
+<section class="section" id="selector">
+<div class="section-head"><div class="eyebrow">02 / research-first method decisions</div><h2>Choose your method by design and estimand.</h2>
+<p>A transparent, conservative decision guide. In incompatible situations it refuses to select a single workflow, rather than silently changing your sampling design or forcing interpolation.</p></div>
+<div class="columns">
+<div class="panel">
+<h3>Declared scientific design</h3>
+<div class="fields">
+<label class="field"><span>Actual observation support</span><select id="obsGrid"><option value="dense">Common aligned, observed grid</option><option value="sparse">One sparse functional coordinate</option><option value="paired">Paired sparse x/y times</option><option value="async">Genuinely separate x and y timestamps</option><option value="unknown">Unknown / not verified</option></select></label>
+<label class="field"><span>Scientific question</span><select id="researchGoal"><option value="variation">Functional variation / decomposition</option><option value="effects">Time-varying scalar predictor effects</option><option value="prediction">Predict a partially observed path</option><option value="outcomes">Binary / grouped-binomial / counts</option><option value="dynamics">Recurrence and nonlinear structure</option></select></label>
+<label class="field"><span>Sampling hierarchy</span><select id="studyHierarchy"><option value="independent">Independent curves / units</option><option value="repeated">Repeated trials within participants</option></select></label>
+<label class="field"><span>Inference ambition</span><select id="uncertainty"><option value="descriptive">Descriptive or exploratory</option><option value="pointwise">Pointwise effects / prediction</option><option value="simultaneous">Nominal whole-function bands</option><option value="mnar">Identify missing gaze mechanism</option></select></label>
+</div>
+<div class="actions"><button id="resetMethod" type="button" class="subtle">Reset design</button><a href="#matrix">See full ten-route matrix</a></div>
+<p class="micro">Selection is a starting point, not model execution, automatic preprocessing, certified source parity or a validated statistical recommendation. No answers are uploaded.</p>
+</div>
+<div class="panel" id="selectorResult">
+<div class="choice" id="selection" aria-live="polite" aria-atomic="true">
+<div class="choice-kicker">Method suggestion</div><h3 id="choiceName">Reviewing scientific design…</h3><p id="choiceReason"></p>
+<ul id="choiceWarnings"></ul>
+<div class="choice-links" id="choiceLinks"></div>
+</div>
+</div>
+</div>
+</section>
+<section class="section" id="matrix">
+<div class="section-head"><div class="eyebrow">03 / published workflow correspondence</div><h2>Ten workflow routes. Real R estimators. Explicit limitations.</h2>
+<p>These ten routes are defined by <code>eyetrajectoriespy</code> 1.2.0 W1–W4. Every mapped <code>etr_run_*()</code> entry exists in the frozen native R 0.4.3 <code>NAMESPACE</code>. They do not necessarily use identical estimators, accept identical inputs or return the same scientific objects.</p></div>
+<div class="panel">
+<div class="matrix-controls">
+<label class="field wide"><span>Search workflows, estimands or assumptions</span><input type="search" id="matrixSearch" placeholder="sparse, mixed, time, covariance, recurrence…"></label>
+<label class="field"><span>Method family</span><select id="matrixFamily"><option value="all">All ten routes</option><option value="sparse">Sparse and irregular</option><option value="variation">Functional variation</option><option value="hierarchy">Participant/trial hierarchy</option><option value="prediction">Partial-path prediction</option><option value="effects">Predictor effects</option><option value="outcomes">Binary / counts</option><option value="dynamics">Recurrence</option></select></label>
+<label class="field"><span>Observation support</span><select id="matrixGrid"><option value="all">Any observation grid</option><option value="dense">Dense common-grid</option><option value="sparse">Sparse single-channel</option><option value="paired">Paired sparse x/y</option><option value="async">Asynchronous x/y</option><option value="partial">Partial sparse history</option></select></label>
+</div>
+<div id="matrixCount" class="matrix-count" role="status" aria-live="polite">Loading ten verified routes…</div>
+<div class="table-scroll"><table id="workflowTable">
+<thead><tr><th scope="col">Python 1.2 workflow</th><th scope="col">Native R 0.4.3 route</th><th scope="col">Question and support</th><th scope="col">Evidence, plot and caveat</th></tr></thead>
+<tbody id="workflowRows"></tbody>
+</table></div>
+<noscript><p>The filterable table needs JavaScript. The ten documented workflows are listed in <a href="https://stefanosbalaskas.github.io/eyetrajectoriespy/articles/choosing-the-ten-workflows/">the stable Python source workflow guide</a>; R 0.4.3 function documentation is available through the <a href="reference/index.html">native reference index</a>.</p></noscript>
+<div class="selected-detail" id="routeDetail" aria-label="Detailed native R method and evidence mapping">
+<div>
+<div class="eyebrow">Method-specific assumptions and evidence</div>
+<h3 id="detailTitle">Select a workflow</h3>
+<p id="detailInputs"></p>
+<h4>Scientific estimand</h4><p id="detailEstimand"></p>
+<h4>Required declarations</h4><p id="detailAssumptions"></p>
+<h4>Qualification boundary</h4><p id="detailBoundary"></p>
+<div class="card-actions" id="detailLinks"></div>
+</div>
+<figure><img id="detailImage" src="" alt="Related synthetic figure generated by the native R plotting function" loading="lazy"><figcaption id="detailCaption"></figcaption></figure>
+</div>
+</div>
+</section>
+<section class="section" id="evidence">
+<div class="section-head"><div class="eyebrow">04 / evidence is not a promise of parity</div><h2>What these links actually establish.</h2></div>
+<div class="columns">
+<div class="panel"><h3>Verified website and API references</h3>
+<p>Each workflow name is checked against the immutable R 0.4.3 export inventory; related figures are checked against executed native-R PNGs and their R scripts. Links resolve to exact generated help pages where available; otherwise the reference index is identified as such. Browser tests check interactive filtering, safety refusals, local CSV handling, downloads and mobile layout.</p>
+<p><a href="research-workflows.json">Download the versioned workflow mapping JSON</a> · <a href="research-portal-manifest.txt">View build verification manifest</a></p></div>
+<div class="panel"><h3>What remains unverified</h3>
+<p>No full-domain independent Python source-contract certification is claimed (0/508 in the frozen ledger). Website tests are not scientific replication. Native R statistical estimators can differ from Python backends and return different object classes; simultaneous coverage, prediction calibration, missingness mechanisms and causal interpretation must be separately justified.</p>
+<p><a href="SITE_VALIDATION.html">R qualification boundaries</a> · <a href="https://github.com/stefanosbalaskas/eyetrajectories/blob/v0.4.3/docs/complete-508-independent-scientific-certification.md">Independent 508-export ledger</a> · <a href="https://stefanosbalaskas.github.io/eyetrajectoriespy/articles/choosing-the-ten-workflows/">Python 1.2 source workflow definitions</a></p></div>
+</div>
+</section>
+<footer class="footer">Static public website · eyetrajectories 0.4.3 · synthetic figures · browser-local CSV inspection · no scientific estimation in JavaScript · no gaze file upload · <a href="https://doi.org/10.5281/zenodo.24288857">Zenodo DOI</a> · <a href="SITE_CITATION.html">Citation</a></footer>
+</div>
+<script src="research-workflows.js"></script>
+<script src="research-portal.js"></script>
+</body>
+</html>

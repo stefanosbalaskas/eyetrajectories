@@ -1,0 +1,52 @@
+# Native functional simulation truth and score-source audit plots
+
+Three source-pinned Python-independent R graphics methods for realized
+functional-simulation truth records: a latent-versus-observed curve with
+optional removed measurements, retained phase warps, and
+declared-versus-realized score-source variances. They do not simulate
+data, fit models, or calibrate statistical uncertainty.
+
+## Plotting parameters
+
+- result:
+
+  Named native R record containing observations with curve IDs and fully
+  specified realized simulation truth, measurement schedules, score
+  sources, phase warps and observation arrays.
+
+- curve:
+
+  R one-based curve index or recorded curve identifier.
+
+- dimension:
+
+  R one-based dimension index or declared dimension name.
+
+- show_pre_missing:
+
+  Logical: mark measurements removed by design.
+
+- max_curves:
+
+  Positive number of curves to show, or NULL for all curves.
+
+- alpha:
+
+  Opacity of phase-warp curves in the interval (0, 1\].
+
+## Details
+
+The scientific source is published eyetrajectoriespy 1.2.0,
+`plotting.py`, commit `c1cd95ad718327550f7e55393ff38582872f7a94`.
+Population variance uses a denominator equal to the number of
+observations, matching NumPy `ddof=0`, not R's sample variance.
+Matplotlib Axes objects, Python dataclass acceptance and all source
+validation/error boundaries are not native R contracts, and remain
+unresolved in the source-contract register. Native curve/dimension
+indices are one-based.
+
+## Value
+
+Each function draws to the active base R graphics device and invisibly
+returns a list of source-aligned numerical geometries and conservative
+provenance. No Python graphics backend is invoked.
