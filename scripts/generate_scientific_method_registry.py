@@ -80,6 +80,11 @@ def entries(namespace_text, config):
             })
         if row["tier"] not in ("core", "advanced", "experimental"):
             raise ValueError(f"{name}: unsupported tier {row['tier']}")
+        if row["backend"] not in (
+            "native-R", "r-delegated-fdapace", "r-delegated-refund",
+            "python-bridge", "hybrid-interface", "other"
+        ):
+            raise ValueError(f"{name}: unsupported backend {row['backend']}")
         if not row["caveat"].strip():
             raise ValueError(f"{name}: missing method caveat")
         out.append(row)
