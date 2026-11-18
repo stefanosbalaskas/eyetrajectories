@@ -4,6 +4,9 @@ on:
   pull_request:
     branches: [release/0.4.4-l2-qualification-base]
     paths:
+      - 'NEWS.md'
+      - 'README.md'
+      - 'cran-comments.md'
       - 'DESCRIPTION'
       - 'R/**'
       - 'tests/**'
