@@ -1,0 +1,104 @@
+name: Reproducibility archive for four synthetic flagship R workflows
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/package_four_flagship_reproducibility.py'
+      - 'docs/FOUR_FLAGSHIP_REPRODUCIBILITY_ARCHIVE.md'
+      - '.github/workflows/four-flagships-reproducibility-bundle.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/package_four_flagship_reproducibility.py'
+      - '.github/workflows/four-flagships-reproducibility-bundle.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  archive-synthetic-r-analysis:
+    name: Reproduce all four R043 studies and verify SHA256 archive
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      RETICULATE_PYTHON: NA
+      ET_FLAGSHIP_OUTPUT: synthetic_generated
+    steps:
+      - name: Checkout research archive builder and examples
+        uses: actions/checkout@v4
+        with:
+          path: research
+      - name: Checkout exact published v0.4.3 package
+        uses: actions/checkout@v4
+        with:
+          ref: v0.4.3
+          path: stable
+          persist-credentials: false
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - name: Install exact stable R package dependencies and optional PACE
+        shell: Rscript {0}
+        run: |
+          install.packages(c("pkgload","reticulate","fdapace"),
+                           repos=Sys.getenv("RSPM","https://cloud.r-project.org"))
+      - name: Execute four documented synthetic R scripts
+        shell: Rscript {0}
+        run: |
+          pkgload::load_all("stable",quiet=TRUE)
+          stopifnot(as.character(utils::packageVersion("eyetrajectories"))=="0.4.3")
+          paths <- file.path("research","inst","examples","flagship", c(
+             "01_complete_gaze_trajectory.R",
+             "02_multilevel_functional_variation.R",
+             "03_sparse_irregular_recovery.R",
+             "04_uncertainty_paired_contrast.R"))
+          for (f in paths) {
+            parse(file=f)
+            source(f,local=new.env(parent=globalenv()))
+          }
+          writeLines(capture.output(utils::sessionInfo()),
+             "synthetic_generated/R_release_sessionInfo.txt")
+          cat("ARCHIVE_INPUT_FOUR_EXECUTED_R043_SYNTHETIC_WORKFLOWS_PASS\n")
+      - name: Build source-pinned SHA256 package without human data
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 research/scripts/package_four_flagship_reproducibility.py \
+            --source research \
+            --stable stable \
+            --r-output synthetic_generated \
+            --destination reproducibility_artifacts
+          python3 - <<'PY'
+          import hashlib, json, pathlib, zipfile
+          root=pathlib.Path("reproducibility_artifacts")
+          files=list(root.glob("*.zip"))
+          assert len(files)==1
+          archive=files[0]
+          hashes=root/(archive.name+".sha256")
+          assert hashes.read_text().split()[0]==hashlib.sha256(archive.read_bytes()).hexdigest()
+          with zipfile.ZipFile(archive) as z:
+            assert z.testzip() is None
+            manifest=json.loads(z.read("reproducibility-v1/SHA256_MANIFEST.json"))
+            assert manifest["source_package_release"]=="v0.4.3"
+            assert manifest["counts"]["workflows"]==4
+            assert manifest["counts"]["pdf_figures"]==12
+            assert manifest["data_type"]=="entirely_synthetic"
+            assert manifest["contains_private_human_observations"] is False
+            for item in manifest["files"]:
+              filename="reproducibility-v1/"+item["relative_path"]
+              content=z.read(filename)
+              assert len(content)==item["bytes"]
+              assert hashlib.sha256(content).hexdigest()==item["sha256"]
+          print("FOUR_SYNTHETIC_R043_ARCHIVE_HASH_EVIDENCE_PASS")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: four-flagships-r043-versioned-reproducibility-bundle
+          path: |
+            reproducibility_artifacts/*.zip
+            reproducibility_artifacts/*.sha256
+            reproducibility_artifacts/reproducibility-v1/SHA256_MANIFEST.json
+          retention-days: 90
+          if-no-files-found: error
