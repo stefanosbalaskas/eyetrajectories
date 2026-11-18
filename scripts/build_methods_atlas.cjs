@@ -17,6 +17,9 @@ for(const m of data.methods){
  assert(/^(etr_|et_|etpy_)[A-Za-z0-9_]+$/.test(m.name),m.name);
  assert(!names.has(m.name),"Duplicate method "+m.name);names.add(m.name);
  assert(["core","advanced","experimental"].includes(m.tier),m.name);
+ assert(["native-R","r-delegated-fdapace","r-delegated-refund",
+         "python-bridge","hybrid-interface"].includes(m.backend),
+        "Unrecognized backend classification for "+m.name+": "+m.backend);
  tierSet.add(m.tier);
  assert(["curated","provisional_lexical"].includes(m.classification_basis),m.name);
  assert(typeof m.caveat==="string"&&m.caveat.length>=35,m.name);
