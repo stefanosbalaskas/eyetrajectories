@@ -40,7 +40,15 @@ jobs:
             SITE_GALLERY.html SITE_INTERACTIVE.html SITE_BRANDING.html SITE_CITATION.html SITE_PERFORMANCE.html \
             SITE_PLOTTING_ATLAS.html plot-atlas.html plot-atlas/catalog.js \
             plot-atlas/MANIFEST.txt plot-atlas/images/etr_plot_fpca_variance__cumulative.png \
-            methods-laboratory.html branding/eyetrajectories-logo-240.png \
+            methods-laboratory.html methods-atlas.html methods-atlas.js methods-atlas-data.js \
+            flagship-workflows.html flagship-workflows.css methods-atlas.css \
+            method-registry-v0.4.3.json method-registry-v0.4.3.csv \
+            SITE_METHODS_ATLAS.html SITE_FLAGSHIP_WORKFLOWS.html \
+            workflows/01-dense/preview.png workflows/02-multilevel/preview.png \
+            workflows/03-sparse/preview.png workflows/04-uncertainty/preview.png \
+            workflows/01_complete_gaze_trajectory.R workflows/02_multilevel_functional_variation.R \
+            workflows/03_sparse_irregular_recovery.R workflows/04_uncertainty_paired_contrast.R \
+            branding/eyetrajectories-logo-240.png \
             branding/eyetrajectories-symbol.svg branding/eyetrajectories-horizontal.svg \
             favicon.svg gallery/01_multilevel_variance.png \
             gallery/05_transfer_entropy_surrogates.png; do
@@ -67,7 +75,8 @@ jobs:
           pages = ['index.html', 'SITE_START.html', 'SITE_INTERACTIVE.html',
                    'SITE_CITATION.html', 'SITE_VALIDATION.html',
                    'methods-laboratory.html', 'trajectory-explorer.html',
-                   'SITE_PERFORMANCE.html',
+                   'SITE_PERFORMANCE.html', 'SITE_METHODS_ATLAS.html',
+                   'SITE_FLAGSHIP_WORKFLOWS.html', 'methods-atlas.html', 'flagship-workflows.html',
                    'plot-atlas.html', 'SITE_PLOTTING_ATLAS.html']
           failures = []
           for name in pages:
@@ -123,7 +132,8 @@ jobs:
           test -n "$base"
           for page in '' 'SITE_CITATION.html' 'SITE_INTERACTIVE.html' \
             'plot-atlas.html' 'SITE_PLOTTING_ATLAS.html' \
-            'trajectory-explorer.html' 'methods-laboratory.html' 'SITE_PERFORMANCE.html' 'reference/index.html'; do
+            'trajectory-explorer.html' 'methods-laboratory.html' 'SITE_PERFORMANCE.html' \
+            'methods-atlas.html' 'flagship-workflows.html' 'reference/index.html'; do
             echo "GET $base/$page"
             curl --fail --location --silent --show-error \
               --retry 10 --retry-delay 4 --retry-all-errors \
@@ -137,7 +147,13 @@ jobs:
             if [ "$page" = 'plot-atlas.html' ]; then
               grep -q 'Searchable Plotting Atlas' /tmp/eyetrajectories-page.html
             fi
-            if [ "$page" = 'methods-laboratory.html' ]; then
+            if [ "$page" = 'methods-atlas.html' ]; then
+               grep -q 'Scientific Methods Atlas' /tmp/eyetrajectories-page.html
+             fi
+             if [ "$page" = 'flagship-workflows.html' ]; then
+               grep -q 'Four Flagship Research Workflows' /tmp/eyetrajectories-page.html
+             fi
+             if [ "$page" = 'methods-laboratory.html' ]; then
               grep -q 'Interactive Methods Laboratory' /tmp/eyetrajectories-page.html
             fi
           done
