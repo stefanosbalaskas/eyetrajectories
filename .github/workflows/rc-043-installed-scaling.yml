@@ -1,0 +1,106 @@
+name: Exact-installed L2 release candidate synthetic scaling and process RSS
+
+on:
+  pull_request:
+    branches: [release/0.4.4-l2-qualification-base]
+    paths:
+      - 'benchmarks/rc_l2_*'
+      - '.github/workflows/rc-043-installed-scaling.yml'
+      - 'R/native-distances.R'
+      - 'DESCRIPTION'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  installed-baseline-versus-candidate:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 65
+    env:
+      RETICULATE_PYTHON: NA
+      _R_CHECK_FORCE_SUGGESTS_: "false"
+    steps:
+      - name: Checkout exact candidate development revision
+        uses: actions/checkout@v4
+        with:
+          path: candidate
+      - name: Checkout frozen v0.4.3 baseline
+        uses: actions/checkout@v4
+        with:
+          ref: v0.4.3
+          path: stable
+          persist-credentials: false
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install only required R/Python runtime dependencies
+        shell: Rscript {0}
+        run: |
+          install.packages("reticulate",
+            repos=Sys.getenv("RSPM","https://cloud.r-project.org"))
+      - name: Install process RSS sampler
+        shell: bash
+        run: python -m pip install --disable-pip-version-check psutil
+      - name: Install original and optimized R packages in disjoint libraries
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p bench_libs/baseline bench_libs/candidate benchmark_inputs benchmark_output
+          R CMD INSTALL --library="$(pwd)/bench_libs/baseline" stable
+          R CMD INSTALL --library="$(pwd)/bench_libs/candidate" candidate
+      - name: Generate six predeclared completely synthetic identical RDS inputs
+        shell: bash
+        run: |
+          Rscript candidate/benchmarks/rc_l2_prepare_inputs.R \
+            bench_libs/baseline benchmark_inputs
+      - name: Measure distinct installed versions in isolated R processes
+        shell: bash
+        run: |
+          python candidate/benchmarks/rc_l2_sampled_rss_harness.py \
+            --baseline-library bench_libs/baseline \
+            --candidate-library bench_libs/candidate \
+            --inputs benchmark_inputs \
+            --work benchmark_output \
+            --runner candidate/benchmarks/rc_l2_one_process.R \
+            --repetitions 2
+      - name: Verify all twelve exact-original-versus-candidate distance matrices
+        shell: bash
+        run: |
+          Rscript candidate/benchmarks/rc_l2_compare_matrices.R benchmark_output 2
+          python - <<'PY'
+          import csv, json, math, pathlib
+          root=pathlib.Path("benchmark_output")
+          summary=list(csv.DictReader((root/"performance_summary.csv").open()))
+          parity=list(csv.DictReader(
+            (root/"exact_installed_numerical_comparisons.csv").open()))
+          assert len(summary)==6 and len(parity)==12
+          assert all(float(x["max_absolute_difference"])<=1e-8 for x in parity)
+          assert all(math.isfinite(float(r["median_speedup_ratio"]))
+                     and float(r["median_speedup_ratio"])>0 for r in summary)
+          assert all(int(r["repetitions_per_version"])==2 for r in summary)
+          metadata=json.loads((root/"benchmark_metadata.json").read_text())
+          assert metadata["not_a_real_onestop_benchmark"] is True
+          assert "sampled" in metadata["peak_memory"].lower()
+          print("EXACT_INSTALLED_L2_6_CASES_12_MATRIX_PARITY_AND_RSS_PASS")
+          PY
+      - name: Upload version-scoped benchmark summary only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rc043-exact-installed-synthetic-scaling-${{ matrix.os }}
+          path: |
+            benchmark_output/performance_summary.csv
+            benchmark_output/raw_benchmark_runs.csv
+            benchmark_output/exact_installed_numerical_comparisons.csv
+            benchmark_output/benchmark_metadata.json
+            benchmark_inputs/synthetic_cases.csv
+          if-no-files-found: ignore
+          retention-days: 60
