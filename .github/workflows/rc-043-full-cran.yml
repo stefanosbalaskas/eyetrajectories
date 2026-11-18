@@ -30,6 +30,14 @@ jobs:
       - uses: r-lib/actions/setup-r@v2
         with:
           use-public-rspm: true
+      - uses: r-lib/actions/setup-pandoc@v2
+      - uses: r-lib/actions/setup-tinytex@v2
+      - name: Check full CRAN documentation toolchain availability
+        shell: Rscript {0}
+        run: |
+          stopifnot(nzchar(Sys.which("pdflatex")),
+                    nzchar(Sys.which("pandoc")))
+          cat("AS_CRAN_LATEX_AND_PANDOC_TOOLCHAIN_PRESENT\\n")
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck, any::pkgbuild
@@ -53,7 +61,8 @@ jobs:
             "No stable release, new CRAN submission or Zenodo deposit is created.",
             "Any NOTE must be independently assessed rather than silently ignored.",
             "",
-            "Checks are bounded by installed optional system dependencies."
+            "Full R CMD --as-cran including PDF manual; pdflatex and pandoc must be present.",
+            "Optional dependency tests are bounded by _R_CHECK_FORCE_SUGGESTS_=false."
           )
           writeLines(c(status,capture.output(print(result))),
                      "full_rc_evidence/qualification.txt")
