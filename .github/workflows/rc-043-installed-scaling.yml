@@ -45,9 +45,10 @@ jobs:
         shell: Rscript {0}
         run: |
           scripts <- list.files("candidate/benchmarks",pattern="[.]R$",full.names=TRUE)
-          stopifnot(length(scripts)==4L,
+          stopifnot(length(scripts)==5L,
                     all(c("rc_l2_compare_matrices.R",
                           "rc_l2_prepare_inputs.R",
+                          "rc_l2_prepare_onestop_public.R",
                           "rc_l2_one_process.R",
                           "rc_l2_onestop_real_release_audit.R") %in%
                         basename(scripts)))
